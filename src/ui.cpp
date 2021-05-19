@@ -377,47 +377,37 @@ V2I UI::calculateButtonSize(V2I contentSize, UIButtonStyle *buttonStyle, s32 max
 	return result;
 }
 
-bool UI::putTextButton(String text, Rect2I bounds, UIButtonStyle *style, ButtonState state, SDL_Keycode shortcutKey, String tooltip)
+bool UI::putTextButton(String text, Rect2I bounds, UIButtonStyle *style, ButtonState state, RenderBuffer *renderBuffer, bool invisible, String tooltip)
 {
-	bool result = putButton(bounds, style, state, &renderer->uiBuffer, false, shortcutKey, tooltip);
+	if (renderBuffer == null)
+	{
+		renderBuffer = &renderer->uiBuffer;
+	}
 
-	u32 textAlignment = style->textAlignment;
-	V2I textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
-	drawText(&renderer->uiBuffer, getFont(&style->font), text, textOrigin, textAlignment, style->textColor);
+	bool result = putButton(bounds, style, state, renderBuffer, invisible, tooltip);
 
+	if (!invisible)
+	{
+		u32 textAlignment = style->textAlignment;
+		V2I textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
+		drawText(renderBuffer, getFont(&style->font), text, textOrigin, textAlignment, style->textColor);
+	}
 	return result;
 }
 
-bool UI::putMenuButton(String text, Rect2I bounds, s32 menuID, UIButtonStyle *style, SDL_Keycode shortcutKey, String tooltip)
-{
-	DEBUG_FUNCTION();
-	
-	bool currentlyOpen = uiState.openMenu == menuID;
-	if (putTextButton(text, bounds, style, buttonIsActive(currentlyOpen), shortcutKey, tooltip))
-	{
-		if (currentlyOpen)
-		{
-			hideMenus();
-			currentlyOpen = false;
-		}
-		else
-		{
-			showMenu(menuID);
-			currentlyOpen = true;
-		}
-	}
 
-	return currentlyOpen;
-}
-
-
-bool UI::putButton(Rect2I bounds, UIButtonStyle *style, ButtonState state, RenderBuffer *renderBuffer, bool invisible, SDL_Keycode shortcutKey, String tooltip)
+bool UI::putButton(Rect2I bounds, UIButtonStyle *style, ButtonState state, RenderBuffer *renderBuffer, bool invisible, String tooltip)
 {
 	DEBUG_FUNCTION();
 	
 	if (style == null)
 	{
 		style = findStyle<UIButtonStyle>("default"_s);
+	}
+
+	if (renderBuffer == null)
+	{
+		renderBuffer = &renderer->uiBuffer;
 	}
 	
 	bool buttonClicked = false;
@@ -434,8 +424,6 @@ bool UI::putButton(Rect2I bounds, UIButtonStyle *style, ButtonState state, Rende
 		}
 		else if (mouseState.isHovered)
 		{
-			// Mouse pressed: must have started and currently be inside the bounds to show anything
-			// Mouse unpressed: show hover if in bounds
 			if (mouseState.isPressed)
 			{
 				backgroundStyle = &style->pressedBackground;
@@ -458,17 +446,11 @@ bool UI::putButton(Rect2I bounds, UIButtonStyle *style, ButtonState state, Rende
 		UIDrawable buttonBackground = UIDrawable(backgroundStyle);
 		buttonBackground.draw(renderBuffer, bounds);
 
-		// Keyboard shortcut!
-		if (state != Button_Disabled)
+		// Respond to click
+		if ((state != Button_Disabled) && justClickedOnUI(bounds))
 		{
-				// Click
-			if (justClickedOnUI(bounds)
-				// Keyboard shortcut
-			|| ((shortcutKey != SDLK_UNKNOWN) && keyJustPressed(shortcutKey)))
-			{
-				buttonClicked = true;
-				markMouseInputHandled();
-			}
+			buttonClicked = true;
+			markMouseInputHandled();
 		}
 	}
 

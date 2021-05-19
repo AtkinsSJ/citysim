@@ -138,10 +138,8 @@ namespace UI
 	// Buttons
 	V2I calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 maxWidth = 0, bool fillWidth = true);
 	V2I calculateButtonSize(V2I contentSize, UIButtonStyle *buttonStyle, s32 maxWidth = 0, bool fillWidth = true);
-	bool putButton(Rect2I bounds, UIButtonStyle *style, ButtonState state = Button_Normal, RenderBuffer *renderBuffer = null, bool invisible = false, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip = nullString);
-	bool putTextButton(String text, Rect2I bounds, UIButtonStyle *style, ButtonState state = Button_Normal, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
-	bool putMenuButton(String text, Rect2I bounds, s32 menuID, UIButtonStyle *style, SDL_Keycode shortcutKey=SDLK_UNKNOWN, String tooltip=nullString);
-
+	bool putButton(Rect2I bounds, UIButtonStyle *style, ButtonState state = Button_Normal, RenderBuffer *renderBuffer = null, bool invisible = false, String tooltip = nullString);
+	bool putTextButton(String text, Rect2I bounds, UIButtonStyle *style, ButtonState state = Button_Normal, RenderBuffer *renderBuffer = null, bool invisible = false, String tooltip=nullString);
 
 	// Checkboxes
 	V2I calculateCheckboxSize(UICheckboxStyle *checkboxStyle);

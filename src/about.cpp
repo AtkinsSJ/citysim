@@ -16,7 +16,7 @@ void aboutWindowProc(WindowContext *context, void * /*userData*/)
 
 	ui->startNewLine(ALIGN_EXPAND_H);
 
-	if (ui->addButton(getText("button_website"_s)))
+	if (ui->addTextButton(getText("button_website"_s)))
 	{
 		openUrlUnsafe("http://samatkins.co.uk");
 	}

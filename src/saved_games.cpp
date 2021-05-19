@@ -166,7 +166,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 				SavedGameInfo *savedGame = it.get();
 				s32 index = it.getIndex();
 
-				if (savesList.addButton(savedGame->shortName, buttonIsActive(catalogue->selectedSavedGameIndex == index)))
+				if (savesList.addTextButton(savedGame->shortName, buttonIsActive(catalogue->selectedSavedGameIndex == index)))
 				{
 					// Select it and show information in the details pane
 					catalogue->selectedSavedGameIndex = index;
@@ -211,7 +211,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 		{
 			// 'Save' buttons
 			bottomBar.alignWidgets(ALIGN_LEFT);
-			if (bottomBar.addButton(getText("button_back"_s)))
+			if (bottomBar.addTextButton(getText("button_back"_s)))
 			{
 				context->closeRequested = true;
 			}
@@ -219,7 +219,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 			bottomBar.addText("Save game name:"_s);
 
 			bottomBar.alignWidgets(ALIGN_RIGHT);
-			bool pressedSave = bottomBar.addButton(getText("button_save"_s), catalogue->saveGameName.isEmpty() ? Button_Disabled : Button_Normal);
+			bool pressedSave = bottomBar.addTextButton(getText("button_save"_s), catalogue->saveGameName.isEmpty() ? Button_Disabled : Button_Normal);
 
 			bottomBar.alignWidgets(ALIGN_EXPAND_H);
 			if (justClickedSavedGame)
@@ -263,13 +263,13 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 		else
 		{
 			bottomBar.alignWidgets(ALIGN_LEFT);
-			if (bottomBar.addButton(getText("button_back"_s)))
+			if (bottomBar.addTextButton(getText("button_back"_s)))
 			{
 				context->closeRequested = true;
 			}
 
 			bottomBar.alignWidgets(ALIGN_RIGHT);
-			if (bottomBar.addButton(getText("button_load"_s), selectedSavedGame ? Button_Normal : Button_Disabled))
+			if (bottomBar.addTextButton(getText("button_load"_s), selectedSavedGame ? Button_Normal : Button_Disabled))
 			{
 				loadGame(selectedSavedGame);
 				context->closeRequested = true;
@@ -288,13 +288,13 @@ void confirmOverwriteSaveWindowProc(WindowContext *context, void * /*userData*/)
 	ui->addText(getText("msg_save_overwrite_confirm"_s, {inputName}));
 	ui->startNewLine(ALIGN_RIGHT);
 
-	if (ui->addButton(getText("button_overwrite"_s), Button_Normal, "delete"_s))
+	if (ui->addTextButton(getText("button_overwrite"_s), Button_Normal, "delete"_s))
 	{
 		saveGame(inputName);
 		context->closeRequested = true;
 	}
 
-	if (ui->addButton(getText("button_cancel"_s)))
+	if (ui->addTextButton(getText("button_cancel"_s)))
 	{
 		context->closeRequested = true;
 	}
@@ -309,13 +309,13 @@ void confirmDeleteSaveWindowProc(WindowContext *context, void * /*userData*/)
 	ui->addText(getText("msg_delete_save_confirm"_s, {savedGame->shortName}));
 	ui->startNewLine(ALIGN_RIGHT);
 
-	if (ui->addButton(getText("button_delete"_s), Button_Normal, "delete"_s))
+	if (ui->addTextButton(getText("button_delete"_s), Button_Normal, "delete"_s))
 	{
 		deleteSave(savedGame);
 		context->closeRequested = true;
 	}
 
-	if (ui->addButton(getText("button_cancel"_s)))
+	if (ui->addTextButton(getText("button_cancel"_s)))
 	{
 		context->closeRequested = true;
 	}

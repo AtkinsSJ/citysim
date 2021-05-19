@@ -80,7 +80,7 @@ void UIPanel::enableVerticalScrolling(ScrollbarState *scrollbarState, bool expan
 	}
 }
 
-bool UIPanel::addButton(String text, ButtonState state, String styleName)
+bool UIPanel::addTextButton(String text, ButtonState state, String styleName)
 {
 	DEBUG_FUNCTION();
 	
@@ -88,19 +88,17 @@ bool UIPanel::addButton(String text, ButtonState state, String styleName)
 
 	UIButtonStyle *buttonStyle = findStyle<UIButtonStyle>(styleName, &this->style->buttonStyle);
 
+	s32 buttonAlignment = this->widgetAlignment;
 	Rect2I space = getCurrentLayoutPosition();
+	V2I buttonOrigin = alignWithinRectangle(space, buttonAlignment);
 	s32 availableButtonContentSize = space.w - (buttonStyle->padding * 2);
 
-	BitmapFont *font = getFont(&buttonStyle->font);
-	V2I textSize = calculateTextSize(font, text, availableButtonContentSize);
-	AddButtonInternalResult buttonResult = addButtonInternal(textSize, state, buttonStyle);
+	bool fillWidth = ((buttonAlignment & ALIGN_H) == ALIGN_EXPAND_H);
+	V2I buttonSize = UI::calculateButtonSize(text, buttonStyle, availableButtonContentSize, fillWidth);
+	Rect2I buttonBounds = irectAligned(buttonOrigin, buttonSize, buttonAlignment);
+	bool wasClicked = UI::putTextButton(text, buttonBounds, buttonStyle, state, renderBuffer, hideWidgets);
 
-	if (!hideWidgets)
-	{
-		drawText(renderBuffer, font, text, buttonResult.contentBounds, buttonStyle->textAlignment, buttonStyle->textColor, renderer->shaderIds.text);
-	}
-
-	return buttonResult.wasClicked;
+	return wasClicked;
 }
 
 bool UIPanel::addImageButton(Sprite *sprite, ButtonState state, String styleName)

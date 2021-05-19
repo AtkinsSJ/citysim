@@ -41,7 +41,7 @@ struct UIPanel
 	void enableVerticalScrolling(ScrollbarState *vScrollbar, bool expandWidth=false);
 
 	// Add stuff to the panel
-	bool addButton(String text, ButtonState state = Button_Normal, String styleName = nullString);
+	bool addTextButton(String text, ButtonState state = Button_Normal, String styleName = nullString);
 	bool addImageButton(Sprite *sprite, ButtonState state = Button_Normal, String styleName = nullString);
 	void addCheckbox(bool *checked, String styleName = nullString);
 	void addSprite(Sprite *sprite, s32 width = -1, s32 height = -1);

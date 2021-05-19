@@ -422,32 +422,32 @@ void pauseMenuWindowProc(WindowContext *context, void * /*userData*/)
 	UIPanel *ui = &context->windowPanel;
 	ui->alignWidgets(ALIGN_EXPAND_H);
 
-	if (ui->addButton(getText("button_resume"_s)))
+	if (ui->addTextButton(getText("button_resume"_s)))
 	{
 		context->closeRequested = true;
 	}
 
-	if (ui->addButton(getText("button_save"_s)))
+	if (ui->addTextButton(getText("button_save"_s)))
 	{
 		showSaveGameWindow();
 	}
 
-	if (ui->addButton(getText("button_load"_s)))
+	if (ui->addTextButton(getText("button_load"_s)))
 	{
 		showLoadGameWindow();
 	}
 
-	if (ui->addButton(getText("button_about"_s)))
+	if (ui->addTextButton(getText("button_about"_s)))
 	{
 		showAboutWindow();
 	}
 
-	if (ui->addButton(getText("button_settings"_s)))
+	if (ui->addTextButton(getText("button_settings"_s)))
 	{
 		showSettingsWindow();
 	}
 
-	if (ui->addButton(getText("button_exit"_s)))
+	if (ui->addTextButton(getText("button_exit"_s)))
 	{
 		globalAppState.gameState->status = GameStatus_Quit;
 		// NB: We don't close the window here, because doing so makes the window disappear one frame
@@ -579,7 +579,7 @@ void updateAndRenderGameUI(GameState *gameState)
 			UIPanel menu = UIPanel(irectXYWH(buttonRect.x - popupMenuPanelStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight), popupMenuPanelStyle);
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
-				if (menu.addButton(getText(getZoneDef(zoneIndex).textAssetName),
+				if (menu.addTextButton(getText(getZoneDef(zoneIndex).textAssetName),
 					buttonIsActive((gameState->actionMode == ActionMode_Zone) && (gameState->selectedZoneID == zoneIndex))))
 				{
 					UI::hideMenus();
@@ -616,7 +616,7 @@ void updateAndRenderGameUI(GameState *gameState)
 			{
 				BuildingDef *buildingDef = it.getValue();
 
-				if (menu.addButton(getText(buildingDef->textAssetName),
+				if (menu.addTextButton(getText(buildingDef->textAssetName),
 						buttonIsActive((gameState->actionMode == ActionMode_Build) && (gameState->selectedBuildingTypeID == buildingDef->typeID))))
 				{
 					UI::hideMenus();
@@ -651,8 +651,7 @@ void updateAndRenderGameUI(GameState *gameState)
 		String demolishButtonText = getText("button_demolish"_s);
 		buttonRect.size = UI::calculateButtonSize(demolishButtonText, buttonStyle);
 		if (UI::putTextButton(demolishButtonText, buttonRect, buttonStyle,
-					buttonIsActive(gameState->actionMode == ActionMode_Demolish),
-					SDLK_x, "(X)"_s))
+					buttonIsActive(gameState->actionMode == ActionMode_Demolish)))
 		{
 			gameState->actionMode = ActionMode_Demolish;
 			setCursor("demolish"_s);
@@ -689,25 +688,25 @@ void debugToolsWindowProc(WindowContext *context, void *userData)
 	UIPanel *ui = &context->windowPanel;
 	ui->alignWidgets(ALIGN_EXPAND_H);
 
-	if (ui->addButton("Inspect fire info"_s, buttonIsActive(gameState->inspectTileDebugFlags & DebugInspect_Fire)))
+	if (ui->addTextButton("Inspect fire info"_s, buttonIsActive(gameState->inspectTileDebugFlags & DebugInspect_Fire)))
 	{
 		gameState->inspectTileDebugFlags ^= DebugInspect_Fire;
 	}
-	if (ui->addButton("Add Fire"_s, buttonIsActive(gameState->actionMode == ActionMode_Debug_AddFire)))
+	if (ui->addTextButton("Add Fire"_s, buttonIsActive(gameState->actionMode == ActionMode_Debug_AddFire)))
 	{
 		gameState->actionMode = ActionMode_Debug_AddFire;
 	}
-	if (ui->addButton("Remove Fire"_s, buttonIsActive(gameState->actionMode == ActionMode_Debug_RemoveFire)))
+	if (ui->addTextButton("Remove Fire"_s, buttonIsActive(gameState->actionMode == ActionMode_Debug_RemoveFire)))
 	{
 		gameState->actionMode = ActionMode_Debug_RemoveFire;
 	}
 
-	if (ui->addButton("Inspect power info"_s, buttonIsActive(gameState->inspectTileDebugFlags & DebugInspect_Power)))
+	if (ui->addTextButton("Inspect power info"_s, buttonIsActive(gameState->inspectTileDebugFlags & DebugInspect_Power)))
 	{
 		gameState->inspectTileDebugFlags ^= DebugInspect_Power;
 	}
 	
-	if (ui->addButton("Inspect transport info"_s, buttonIsActive(gameState->inspectTileDebugFlags & DebugInspect_Transport)))
+	if (ui->addTextButton("Inspect transport info"_s, buttonIsActive(gameState->inspectTileDebugFlags & DebugInspect_Transport)))
 	{
 		gameState->inspectTileDebugFlags ^= DebugInspect_Transport;
 	}
@@ -1235,7 +1234,7 @@ void drawDataViewUI(GameState *gameState)
 		{
 			String buttonText = getText(gameState->dataViewUI[dataViewID].title);
 
-			if (menu.addButton(buttonText, buttonIsActive(gameState->dataLayerToDraw == dataViewID)))
+			if (menu.addTextButton(buttonText, buttonIsActive(gameState->dataLayerToDraw == dataViewID)))
 			{
 				UI::hideMenus();
 				gameState->dataLayerToDraw = (DataView) dataViewID;
@@ -1313,7 +1312,7 @@ void drawDataViewUI(GameState *gameState)
 			ui.addText(getText(dataView->title), "title"_s);
 
 			ui.alignWidgets(ALIGN_RIGHT);
-			if (ui.addButton("X"_s))
+			if (ui.addTextButton("X"_s))
 			{
 				gameState->dataLayerToDraw = DataView_None;
 			}

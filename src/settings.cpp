@@ -243,15 +243,15 @@ void settingsWindowProc(WindowContext *context, void*)
 	}
 
 	ui->startNewLine(ALIGN_LEFT);
-	if (ui->addButton(getText("button_cancel"_s)))
+	if (ui->addTextButton(getText("button_cancel"_s)))
 	{
 		context->closeRequested = true;
 	}
-	if (ui->addButton(getText("button_restore_defaults"_s)))
+	if (ui->addTextButton(getText("button_restore_defaults"_s)))
 	{
 		settings->workingState = makeDefaultSettings();
 	}
-	if (ui->addButton(getText("button_save"_s)))
+	if (ui->addTextButton(getText("button_save"_s)))
 	{
 		settings->settings = settings->workingState;
 		saveSettings();

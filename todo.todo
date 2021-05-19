@@ -27,6 +27,13 @@ UI Widgets:
 - Tabs!
 	- Basically just radio buttons with fancy styling
 
+Keyboard shortcuts for buttons
+- Don't do this inside the button logic, where it doesn't belong; instead, have a function to call to see if a keyboard shortcut has been pressed. We have a basic system already for debug shortcuts, but will want a nicer system. Probably give different shortcut actions names, like ACTION_CANCEL, and then the user sets a shortcut for that, and you'll do something like:
+		if (UI::putButton("Cancel", ...) || shortcutWasPressed(ACTION_CANCEL))
+		{
+			// Cancel stuff
+		}
+
 Settings window that lets you modify them
 	(Instead of the Settings Screen we have now. A window makes more sense.)
 
