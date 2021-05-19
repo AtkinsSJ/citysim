@@ -88,15 +88,17 @@ bool UIPanel::addTextButton(String text, ButtonState state, String styleName)
 
 	UIButtonStyle *buttonStyle = findStyle<UIButtonStyle>(styleName, &this->style->buttonStyle);
 
-	s32 buttonAlignment = this->widgetAlignment;
 	Rect2I space = getCurrentLayoutPosition();
-	V2I buttonOrigin = alignWithinRectangle(space, buttonAlignment);
+	V2I buttonOrigin = alignWithinRectangle(space, widgetAlignment);
 	s32 availableButtonContentSize = space.w - (buttonStyle->padding * 2);
 
-	bool fillWidth = ((buttonAlignment & ALIGN_H) == ALIGN_EXPAND_H);
+	bool fillWidth = ((widgetAlignment & ALIGN_H) == ALIGN_EXPAND_H);
 	V2I buttonSize = UI::calculateButtonSize(text, buttonStyle, availableButtonContentSize, fillWidth);
-	Rect2I buttonBounds = irectAligned(buttonOrigin, buttonSize, buttonAlignment);
+	Rect2I buttonBounds = irectAligned(buttonOrigin, buttonSize, widgetAlignment);
+
 	bool wasClicked = UI::putTextButton(text, buttonBounds, buttonStyle, state, renderBuffer, hideWidgets);
+
+	completeWidget(buttonBounds.size);
 
 	return wasClicked;
 }
@@ -110,27 +112,19 @@ bool UIPanel::addImageButton(Sprite *sprite, ButtonState state, String styleName
 	UIButtonStyle *buttonStyle = findStyle<UIButtonStyle>(styleName, &this->style->buttonStyle);
 
 	Rect2I space = getCurrentLayoutPosition();
+	V2I buttonOrigin = alignWithinRectangle(space, widgetAlignment);
 	s32 availableButtonContentSize = space.w - (buttonStyle->padding * 2);
 
+	bool fillWidth = ((widgetAlignment & ALIGN_H) == ALIGN_EXPAND_H);
 	V2I spriteSize = v2i(sprite->pixelWidth, sprite->pixelHeight);
+	V2I buttonSize = UI::calculateButtonSize(spriteSize, buttonStyle, availableButtonContentSize, fillWidth);
+	Rect2I buttonBounds = irectAligned(buttonOrigin, buttonSize, widgetAlignment);
 
-	if (availableButtonContentSize < sprite->pixelWidth)
-	{
-		// Scale the image so it fits
-		f32 ratio = (f32)availableButtonContentSize / (f32)sprite->pixelWidth;
+	bool wasClicked = UI::putImageButton(sprite, buttonBounds, buttonStyle, state, renderBuffer, hideWidgets);
 
-		spriteSize.x = availableButtonContentSize;
-		spriteSize.y = floor_s32(ratio * (f32)sprite->pixelHeight);
-	}
+	completeWidget(buttonBounds.size);
 
-	AddButtonInternalResult buttonResult = addButtonInternal(spriteSize, state, buttonStyle);
-
-	if (!hideWidgets)
-	{
-		drawSingleSprite(renderBuffer, sprite, rect2(buttonResult.contentBounds), renderer->shaderIds.textured, makeWhite());
-	}
-
-	return buttonResult.wasClicked;
+	return wasClicked;
 }
 
 void UIPanel::addCheckbox(bool *checked, String styleName)
@@ -516,33 +510,6 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 	{
 		UI::addUIRect(bounds);
 	}
-}
-
-UIPanel::AddButtonInternalResult UIPanel::addButtonInternal(V2I contentSize, ButtonState state, UIButtonStyle *buttonStyle)
-{
-	DEBUG_FUNCTION();
-
-	AddButtonInternalResult result = {};
-
-	s32 buttonAlignment = this->widgetAlignment;
-	Rect2I space = getCurrentLayoutPosition();
-	V2I buttonOrigin = alignWithinRectangle(space, buttonAlignment);
-
-	bool fillWidth = ((buttonAlignment & ALIGN_H) == ALIGN_EXPAND_H);
-	V2I buttonSize = UI::calculateButtonSize(contentSize, buttonStyle, space.w, fillWidth);
-	Rect2I buttonBounds = irectAligned(buttonOrigin, buttonSize, buttonAlignment);
-
-	result.contentBounds = irectAligned(
-		alignWithinRectangle(buttonBounds, buttonStyle->textAlignment, buttonStyle->padding),
-		contentSize,
-		buttonStyle->textAlignment
-	);
-
-	result.wasClicked = UI::putButton(buttonBounds, buttonStyle, state, renderBuffer, hideWidgets);
-
-	completeWidget(buttonBounds.size);
-
-	return result;
 }
 
 void UIPanel::prepareForWidgets()

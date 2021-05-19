@@ -377,25 +377,6 @@ V2I UI::calculateButtonSize(V2I contentSize, UIButtonStyle *buttonStyle, s32 max
 	return result;
 }
 
-bool UI::putTextButton(String text, Rect2I bounds, UIButtonStyle *style, ButtonState state, RenderBuffer *renderBuffer, bool invisible, String tooltip)
-{
-	if (renderBuffer == null)
-	{
-		renderBuffer = &renderer->uiBuffer;
-	}
-
-	bool result = putButton(bounds, style, state, renderBuffer, invisible, tooltip);
-
-	if (!invisible)
-	{
-		u32 textAlignment = style->textAlignment;
-		V2I textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
-		drawText(renderBuffer, getFont(&style->font), text, textOrigin, textAlignment, style->textColor);
-	}
-	return result;
-}
-
-
 bool UI::putButton(Rect2I bounds, UIButtonStyle *style, ButtonState state, RenderBuffer *renderBuffer, bool invisible, String tooltip)
 {
 	DEBUG_FUNCTION();
@@ -455,6 +436,40 @@ bool UI::putButton(Rect2I bounds, UIButtonStyle *style, ButtonState state, Rende
 	}
 
 	return buttonClicked;
+}
+
+bool UI::putTextButton(String text, Rect2I bounds, UIButtonStyle *style, ButtonState state, RenderBuffer *renderBuffer, bool invisible, String tooltip)
+{
+	if (renderBuffer == null)
+	{
+		renderBuffer = &renderer->uiBuffer;
+	}
+
+	bool result = putButton(bounds, style, state, renderBuffer, invisible, tooltip);
+
+	if (!invisible)
+	{
+		u32 textAlignment = style->textAlignment;
+		V2I textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
+		drawText(renderBuffer, getFont(&style->font), text, textOrigin, textAlignment, style->textColor);
+	}
+
+	return result;
+}
+
+bool UI::putImageButton(Sprite *sprite, Rect2I bounds, UIButtonStyle *style, ButtonState state, RenderBuffer *renderBuffer, bool invisible, String tooltip)
+{
+	if (renderBuffer == null) renderBuffer = &renderer->uiBuffer;
+
+	bool result = putButton(bounds, style, state, renderBuffer, invisible, tooltip);
+
+	if (!invisible)
+	{
+		Rect2 spriteBounds = rect2(shrink(bounds, style->padding));
+		drawSingleSprite(renderBuffer, sprite, spriteBounds, renderer->shaderIds.textured, makeWhite());
+	}
+
+	return result;
 }
 
 void UI::showMenu(s32 menuID)

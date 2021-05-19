@@ -59,6 +59,7 @@ struct WidgetMouseState
 
 struct RenderBuffer;
 struct BitmapFont;
+struct Sprite;
 struct UIButtonStyle;
 struct UICheckboxStyle;
 struct UIPanel;
@@ -140,6 +141,7 @@ namespace UI
 	V2I calculateButtonSize(V2I contentSize, UIButtonStyle *buttonStyle, s32 maxWidth = 0, bool fillWidth = true);
 	bool putButton(Rect2I bounds, UIButtonStyle *style, ButtonState state = Button_Normal, RenderBuffer *renderBuffer = null, bool invisible = false, String tooltip = nullString);
 	bool putTextButton(String text, Rect2I bounds, UIButtonStyle *style, ButtonState state = Button_Normal, RenderBuffer *renderBuffer = null, bool invisible = false, String tooltip=nullString);
+	bool putImageButton(Sprite *sprite, Rect2I bounds, UIButtonStyle *style, ButtonState state = Button_Normal, RenderBuffer *renderBuffer = null, bool invisible = false, String tooltip=nullString);
 
 	// Checkboxes
 	V2I calculateCheckboxSize(UICheckboxStyle *checkboxStyle);

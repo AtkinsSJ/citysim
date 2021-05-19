@@ -64,12 +64,6 @@ struct UIPanel
 	void end(bool shinkToContentHeight = false, bool shrinkToContentWidth = false);
 
 	// "Private"
-	struct AddButtonInternalResult
-	{
-		Rect2I contentBounds;
-		bool wasClicked;
-	};
-	AddButtonInternalResult addButtonInternal(V2I contentSize, ButtonState state, UIButtonStyle *buttonStyle);
 	void prepareForWidgets();
 	Rect2I getCurrentLayoutPosition();
 	void completeWidget(V2I widgetSize);
