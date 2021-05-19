@@ -540,43 +540,7 @@ UIPanel::AddButtonInternalResult UIPanel::addButtonInternal(V2I contentSize, But
 		buttonStyle->textAlignment
 	);
 
-	WidgetMouseState mouseState = UI::getWidgetMouseState(buttonBounds);
-
-	if (!hideWidgets)
-	{
-		UIDrawableStyle *backgroundStyle = &buttonStyle->background;
-
-		if (state == Button_Disabled)
-		{
-			backgroundStyle = &buttonStyle->disabledBackground;
-		}
-		else if (mouseState.isHovered)
-		{
-			// Mouse pressed: must have started and currently be inside the bounds to show anything
-			// Mouse unpressed: show hover if in bounds
-			if (mouseState.isPressed)
-			{
-				backgroundStyle = &buttonStyle->pressedBackground;
-			}
-			else
-			{
-				backgroundStyle = &buttonStyle->hoverBackground;
-			}
-		}
-		else if (state == Button_Active)
-		{
-			backgroundStyle = &buttonStyle->hoverBackground;
-		}
-
-		UIDrawable(backgroundStyle).draw(renderBuffer, buttonBounds);
-
-		if ((state != Button_Disabled)
-		 && UI::justClickedOnUI(buttonBounds))
-		{
-			result.wasClicked = true;
-			UI::markMouseInputHandled();
-		}
-	}
+	result.wasClicked = UI::putButton(buttonBounds, buttonStyle, state, renderBuffer, hideWidgets);
 
 	completeWidget(buttonBounds.size);
 

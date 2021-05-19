@@ -377,73 +377,15 @@ V2I UI::calculateButtonSize(V2I contentSize, UIButtonStyle *buttonStyle, s32 max
 	return result;
 }
 
-bool UI::putButton(String text, Rect2I bounds, UIButtonStyle *style, ButtonState state, SDL_Keycode shortcutKey, String tooltip)
+bool UI::putTextButton(String text, Rect2I bounds, UIButtonStyle *style, ButtonState state, SDL_Keycode shortcutKey, String tooltip)
 {
-	DEBUG_FUNCTION();
-	
-	if (style == null)
-	{
-		style = findStyle<UIButtonStyle>("default"_s);
-	}
-	
-	bool buttonClicked = false;
-
-	UIDrawableStyle *backgroundStyle = &style->background;
+	bool result = putButton(bounds, style, state, &renderer->uiBuffer, false, shortcutKey, tooltip);
 
 	u32 textAlignment = style->textAlignment;
-
-	if (state == Button_Disabled)
-	{
-		backgroundStyle = &style->disabledBackground;
-	}
-	else if (!isMouseInputHandled() && isMouseInUIBounds(bounds))
-	{
-		markMouseInputHandled();
-
-		// Mouse pressed: must have started and currently be inside the bounds to show anything
-		// Mouse unpressed: show hover if in bounds
-		if (mouseButtonPressed(MouseButton_Left))
-		{
-			if (isMouseInUIBounds(bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
-			{
-				backgroundStyle = &style->pressedBackground;
-			}
-		}
-		else
-		{
-			if (mouseButtonJustReleased(MouseButton_Left)
-			 && isMouseInUIBounds(bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
-			{
-				buttonClicked = true;
-			}
-			backgroundStyle = &style->hoverBackground;
-		}
-
-		if (tooltip.length)
-		{
-			showTooltip(tooltip);
-		}
-	}
-	else if (state == Button_Active)
-	{
-		backgroundStyle = &style->hoverBackground;
-	}
-
-	UIDrawable buttonBackground = UIDrawable(backgroundStyle);
-	buttonBackground.draw(&renderer->uiBuffer, bounds);
-
 	V2I textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
 	drawText(&renderer->uiBuffer, getFont(&style->font), text, textOrigin, textAlignment, style->textColor);
 
-	// Keyboard shortcut!
-	if (state != Button_Disabled
-	&& !isInputCaptured()
-	&& (shortcutKey != SDLK_UNKNOWN) && keyJustPressed(shortcutKey))
-	{
-		buttonClicked = true;
-	}
-
-	return buttonClicked;
+	return result;
 }
 
 bool UI::putMenuButton(String text, Rect2I bounds, s32 menuID, UIButtonStyle *style, SDL_Keycode shortcutKey, String tooltip)
@@ -451,7 +393,7 @@ bool UI::putMenuButton(String text, Rect2I bounds, s32 menuID, UIButtonStyle *st
 	DEBUG_FUNCTION();
 	
 	bool currentlyOpen = uiState.openMenu == menuID;
-	if (putButton(text, bounds, style, buttonIsActive(currentlyOpen), shortcutKey, tooltip))
+	if (putTextButton(text, bounds, style, buttonIsActive(currentlyOpen), shortcutKey, tooltip))
 	{
 		if (currentlyOpen)
 		{
@@ -466,6 +408,71 @@ bool UI::putMenuButton(String text, Rect2I bounds, s32 menuID, UIButtonStyle *st
 	}
 
 	return currentlyOpen;
+}
+
+
+bool UI::putButton(Rect2I bounds, UIButtonStyle *style, ButtonState state, RenderBuffer *renderBuffer, bool invisible, SDL_Keycode shortcutKey, String tooltip)
+{
+	DEBUG_FUNCTION();
+	
+	if (style == null)
+	{
+		style = findStyle<UIButtonStyle>("default"_s);
+	}
+	
+	bool buttonClicked = false;
+
+	WidgetMouseState mouseState = getWidgetMouseState(bounds);
+
+	if (!invisible)
+	{
+		UIDrawableStyle *backgroundStyle = &style->background;
+
+		if (state == Button_Disabled)
+		{
+			backgroundStyle = &style->disabledBackground;
+		}
+		else if (mouseState.isHovered)
+		{
+			// Mouse pressed: must have started and currently be inside the bounds to show anything
+			// Mouse unpressed: show hover if in bounds
+			if (mouseState.isPressed)
+			{
+				backgroundStyle = &style->pressedBackground;
+			}
+			else
+			{
+				backgroundStyle = &style->hoverBackground;
+			}
+
+			if (tooltip.length)
+			{
+				showTooltip(tooltip);
+			}
+		}
+		else if (state == Button_Active)
+		{
+			backgroundStyle = &style->hoverBackground;
+		}
+
+		UIDrawable buttonBackground = UIDrawable(backgroundStyle);
+		buttonBackground.draw(renderBuffer, bounds);
+
+		// Keyboard shortcut!
+		if (state != Button_Disabled)
+		{
+				// Click
+			if (justClickedOnUI(bounds)
+				// Keyboard shortcut
+			|| ((shortcutKey != SDLK_UNKNOWN) && keyJustPressed(shortcutKey)))
+			{
+				buttonClicked = true;
+				markMouseInputHandled();
+			}
+		}
+	}
+
+	return buttonClicked;
 }
 
 void UI::showMenu(s32 menuID)

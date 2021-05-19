@@ -54,34 +54,34 @@ AppStatus updateAndRenderMainMenu(f32 /*deltaTime*/)
 	);
 
 	Rect2I buttonRect = irectXYWH(position.x - (buttonWidth/2), position.y + buttonPadding, buttonWidth, buttonHeight);
-	if (UI::putButton(newGameText, buttonRect, style))
+	if (UI::putTextButton(newGameText, buttonRect, style))
 	{
 		beginNewGame();
 
 		result = AppStatus_Game;
 	}
 	buttonRect.y += buttonHeight + buttonPadding;
-	if (UI::putButton(loadText, buttonRect, style))
+	if (UI::putTextButton(loadText, buttonRect, style))
 	{
 		showLoadGameWindow();
 	}
 	buttonRect.y += buttonHeight + buttonPadding;
-	if (UI::putButton(creditsText, buttonRect, style))
+	if (UI::putTextButton(creditsText, buttonRect, style))
 	{
 		result = AppStatus_Credits;
 	}
 	buttonRect.y += buttonHeight + buttonPadding;
-	if (UI::putButton(settingsText, buttonRect, style))
+	if (UI::putTextButton(settingsText, buttonRect, style))
 	{
 		showSettingsWindow();
 	}
 	buttonRect.y += buttonHeight + buttonPadding;
-	if (UI::putButton(aboutText, buttonRect, style))
+	if (UI::putTextButton(aboutText, buttonRect, style))
 	{
 		showAboutWindow();
 	}
 	buttonRect.y += buttonHeight + buttonPadding;
-	if (UI::putButton(exitText, buttonRect, style))
+	if (UI::putTextButton(exitText, buttonRect, style))
 	{
 		result = AppStatus_Quit;
 	}
