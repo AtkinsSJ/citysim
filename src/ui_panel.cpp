@@ -21,12 +21,12 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, u32 flags, RenderBuffe
 	
 	this->bounds = bounds;
 	this->contentArea = shrink(bounds, this->style->margin);
-	this->topToBottom = (flags & Panel_LayoutTopToBottom) != 0;
+	this->layoutBottomToTop = (flags & Panel_LayoutBottomToTop) != 0;
 
 	// Default to left-aligned
 	u32 hAlignment = this->style->widgetAlignment & ALIGN_H;
 	if (hAlignment == 0) hAlignment = ALIGN_LEFT;
-	this->widgetAlignment = hAlignment | (topToBottom ? ALIGN_TOP : ALIGN_BOTTOM);
+	this->widgetAlignment = hAlignment | (layoutBottomToTop ? ALIGN_BOTTOM : ALIGN_TOP);
 
 	this->hScrollbar = null;
 	this->vScrollbar = null;
@@ -275,13 +275,13 @@ void UIPanel::startNewLine(u32 hAlignment)
 
 	if (largestItemHeightOnLine > 0)
 	{
-		if (topToBottom)
+		if (layoutBottomToTop)
 		{
-			currentTop += largestItemHeightOnLine + style->contentPadding;
+			currentBottom -= largestItemHeightOnLine + style->contentPadding;
 		}
 		else
 		{
-			currentBottom -= largestItemHeightOnLine + style->contentPadding;
+			currentTop += largestItemHeightOnLine + style->contentPadding;
 		}
 	}
 
@@ -312,14 +312,14 @@ UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 			contentArea.w, height
 		);
 
-		if (topToBottom)
-		{
-			completeWidget(rowBounds.size);
-		}
-		else
+		if (layoutBottomToTop)
 		{
 			contentArea.h -= height + style->contentPadding;
 			contentArea.y += height + style->contentPadding;
+		}
+		else
+		{
+			completeWidget(rowBounds.size);
 		}
 
 		updateLayoutPosition();
@@ -333,13 +333,13 @@ UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 			contentArea.w, height
 		);
 
-		if (topToBottom)
+		if (layoutBottomToTop)
 		{
-			contentArea.h -= height + style->contentPadding;
+			completeWidget(rowBounds.size);
 		}
 		else
 		{
-			completeWidget(rowBounds.size);
+			contentArea.h -= height + style->contentPadding;
 		}
 		
 		updateLayoutPosition();
@@ -394,13 +394,13 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 	startNewLine();
 
 	// @Hack! I don't at all understand why we get a trailing space of 2x the contentPadding at the end.
-	if (!topToBottom && hasAddedWidgets)
+	if (layoutBottomToTop && hasAddedWidgets)
 	{
 		currentBottom += (style->contentPadding * 2);
 	}
 
-	s32 contentHeight = (topToBottom ? (currentTop + style->margin)
-									 : (contentArea.h - currentBottom));
+	s32 contentHeight = (layoutBottomToTop ? (contentArea.h - currentBottom)
+									 : (currentTop + style->margin));
 
 	bool boundsChanged = false;
 
@@ -429,13 +429,7 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 
 	if (shrinkToContentHeight)
 	{
-		if (topToBottom)
-		{
-			contentHeight = currentTop - style->contentPadding + (2 *style->margin);
-			bounds.h = clamp(contentHeight, (2 *style->margin), bounds.h);
-			boundsChanged = true;
-		}
-		else
+		if (layoutBottomToTop)
 		{
 			contentHeight = (contentArea.h - currentBottom) + style->contentPadding + (2 *style->margin);
 			s32 newHeight = clamp(contentHeight, (2 *style->margin), bounds.h);
@@ -443,12 +437,18 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 			bounds.h = newHeight;
 			boundsChanged = true;
 		}
+		else
+		{
+			contentHeight = currentTop - style->contentPadding + (2 *style->margin);
+			bounds.h = clamp(contentHeight, (2 *style->margin), bounds.h);
+			boundsChanged = true;
+		}
 
 		// Make sure there is space for the scrollbar if we have one
 		if (hScrollbar)
 		{
 			bounds.h += hScrollbarBounds.h;
-			if (!topToBottom) bounds.y -= hScrollbarBounds.h;
+			if (layoutBottomToTop) bounds.y -= hScrollbarBounds.h;
 			boundsChanged = true;
 		}
 	}
@@ -567,7 +567,7 @@ UIPanel::AddButtonInternalResult UIPanel::addButtonInternal(V2I contentSize, But
 		}
 
 		UIDrawable(backgroundStyle).draw(renderBuffer, buttonBounds);
-		
+
 		if ((state != Button_Disabled)
 		 && UI::justClickedOnUI(buttonBounds))
 		{
@@ -585,8 +585,8 @@ inline u32 UIPanel::getFlagsForChild()
 {
 	u32 flags = 0;
 
-	if (hideWidgets) flags |= Panel_HideWidgets;
-	if (topToBottom) flags |= Panel_LayoutTopToBottom;
+	if (hideWidgets) 		flags |= Panel_HideWidgets;
+	if (layoutBottomToTop)  flags |= Panel_LayoutBottomToTop;
 
 	return flags;
 }
@@ -616,22 +616,22 @@ Rect2I UIPanel::getCurrentLayoutPosition()
 	result.x = contentArea.x + currentLeft;
 	result.w = currentRight - currentLeft;
 
-	if (topToBottom)
-	{
-		result.y = contentArea.y + currentTop;
-		
-		if (vScrollbar != null)
-		{
-			result.y -= getScrollbarContentOffset(vScrollbar, bounds.h);
-		}
-	}
-	else
+	if (layoutBottomToTop)
 	{
 		result.y = contentArea.y + currentBottom;
 
 		if (vScrollbar != null)
 		{
 			result.y += (vScrollbar->contentSize - getScrollbarContentOffset(vScrollbar, bounds.h) - bounds.h);
+		}
+	}
+	else
+	{
+		result.y = contentArea.y + currentTop;
+		
+		if (vScrollbar != null)
+		{
+			result.y -= getScrollbarContentOffset(vScrollbar, bounds.h);
 		}
 	}
 

@@ -25,11 +25,11 @@
 
 enum UIPanelFlags
 {
-	Panel_LayoutTopToBottom = 1 << 0,
+	Panel_LayoutBottomToTop = 1 << 0,
 	Panel_BlocksMouse 		= 1 << 1,
 	Panel_HideWidgets		= 1 << 2, // Widgets are not updated or rendered, just laid out
 
-	PanelDefaultFlags = Panel_LayoutTopToBottom | Panel_BlocksMouse
+	PanelDefaultFlags = Panel_BlocksMouse
 };
 
 struct UIPanel
@@ -97,7 +97,7 @@ struct UIPanel
 	Rect2I vScrollbarBounds;
 
 	// Relative to contentArea
-	bool topToBottom;
+	bool layoutBottomToTop;
 	s32 currentLeft;
 	s32 currentRight;
 	s32 currentTop;
