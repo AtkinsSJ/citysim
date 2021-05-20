@@ -22,7 +22,7 @@ BUG: we can click through the "Data overlay" button
 
 UI Widgets:
 - Radio buttons
-- Checkboxes
+✔ Checkboxes
 - Sliders (eg, volume)
 - Dropdown boxes? (eg, locale)
 	- I guess these are equivalent to our "menu buttons" but with special styling
@@ -38,6 +38,7 @@ Keyboard shortcuts for buttons
 
 Settings window that lets you modify them
 	(Instead of the Settings Screen we have now. A window makes more sense.)
+	- BUG: Setting fullscreen doesn't update things correctly. Maybe because we're not setting the resolution?
 
 Multi-threading!
 - Figure out how to get it working at all

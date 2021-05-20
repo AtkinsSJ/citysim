@@ -380,23 +380,16 @@ V2I UI::calculateButtonSize(V2I contentSize, UIButtonStyle *buttonStyle, s32 max
 bool UI::putButton(Rect2I bounds, UIButtonStyle *style, ButtonState state, RenderBuffer *renderBuffer, bool invisible, String tooltip)
 {
 	DEBUG_FUNCTION();
-	
-	if (style == null)
-	{
-		style = findStyle<UIButtonStyle>("default"_s);
-	}
 
-	if (renderBuffer == null)
-	{
-		renderBuffer = &renderer->uiBuffer;
-	}
+	if (style == null) 			style = findStyle<UIButtonStyle>("default"_s);
+	if (renderBuffer == null) 	renderBuffer = &renderer->uiBuffer;
 	
 	bool buttonClicked = false;
 
-	WidgetMouseState mouseState = getWidgetMouseState(bounds);
-
 	if (!invisible)
 	{
+		WidgetMouseState mouseState = getWidgetMouseState(bounds);
+
 		UIDrawableStyle *backgroundStyle = &style->background;
 
 		if (state == Button_Disabled)
@@ -470,6 +463,65 @@ bool UI::putImageButton(Sprite *sprite, Rect2I bounds, UIButtonStyle *style, But
 	}
 
 	return result;
+}
+
+V2I UI::calculateCheckboxSize(UICheckboxStyle *style)
+{
+	s32 doublePadding = (style->padding * 2);
+	
+	V2I result = v2i(style->contentSize.x + doublePadding, style->contentSize.y + doublePadding);
+
+	return result;
+}
+
+void UI::putCheckbox(bool *checked, Rect2I bounds, UICheckboxStyle *style, bool isDisabled, RenderBuffer *renderBuffer, bool invisible)
+{
+	DEBUG_FUNCTION();
+
+	if (style == null) 			style = findStyle<UICheckboxStyle>("default"_s);
+	if (renderBuffer == null) 	renderBuffer = &renderer->uiBuffer;
+
+	if (!invisible)
+	{
+		WidgetMouseState mouseState = getWidgetMouseState(bounds);
+
+		UIDrawableStyle *backgroundStyle = &style->background;
+		UIDrawableStyle *checkStyle = &style->checkImage;
+
+		if (isDisabled)
+		{
+			backgroundStyle = &style->disabledBackground;
+			checkStyle = &style->disabledCheckImage;
+		}
+		else if (mouseState.isHovered)
+		{
+			if (mouseState.isPressed)
+			{
+				backgroundStyle = &style->pressedBackground;
+				checkStyle = &style->pressedCheckImage;
+			}
+			else
+			{
+				backgroundStyle = &style->hoverBackground;
+				checkStyle = &style->hoverCheckImage;
+			}
+		}
+
+		if (!isDisabled && justClickedOnUI(bounds))
+		{
+			*checked = !(*checked);
+			markMouseInputHandled();
+		}
+
+		// Render it
+		UIDrawable(backgroundStyle).draw(renderBuffer, bounds);
+
+		if (*checked)
+		{
+			Rect2I checkBounds = shrink(bounds, style->padding);
+			UIDrawable(checkStyle).draw(renderBuffer, checkBounds);
+		}
+	}
 }
 
 void UI::showMenu(s32 menuID)

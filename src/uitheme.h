@@ -50,17 +50,18 @@ struct UICheckboxStyle
 {
 	String name;
 
-	UIDrawableStyle checkImage;
-	UIDrawableStyle hoverCheckImage;
-	UIDrawableStyle pressedCheckImage;
-	UIDrawableStyle disabledCheckImage;
+	s32 padding;
 
 	UIDrawableStyle background;
 	UIDrawableStyle hoverBackground;
 	UIDrawableStyle pressedBackground;
 	UIDrawableStyle disabledBackground;
 
-	s32 padding;
+	V2I contentSize;
+	UIDrawableStyle checkImage;
+	UIDrawableStyle hoverCheckImage;
+	UIDrawableStyle pressedCheckImage;
+	UIDrawableStyle disabledCheckImage;
 };
 
 enum ConsoleLineStyleID
@@ -176,6 +177,7 @@ struct UIStyle
 	// PROPERTIES
 	s32 padding;
 	s32 contentPadding;
+	V2I contentSize;
 	s32 margin;
 	V2I offsetFromMouse;
 	s32 width;

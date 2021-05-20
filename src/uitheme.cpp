@@ -103,6 +103,7 @@ void initUIStyleProperties()
 	PROP(caretFlashCycleDuration,  PropType_Float,      false, false, false, false, false, false,  true, false);
 	PROP(checkImage,               PropType_Drawable,   false,  true, false, false, false, false, false, false);
 	PROP(checkboxStyle,            PropType_Style,      false, false, false, false,  true, false, false, false);
+	PROP(contentSize,	           PropType_V2I,        false,  true, false, false, false, false, false, false);
 	PROP(contentPadding,           PropType_Int,        false, false, false, false,  true, false, false, false);
 	PROP(disabledBackground,       PropType_Drawable,    true,  true, false, false, false, false, false, false);
 	PROP(disabledCheckImage,       PropType_Drawable,   false,  true, false, false, false, false, false, false);
@@ -480,17 +481,18 @@ void loadUITheme(Blob data, Asset *asset)
 						UICheckboxStyle *checkbox = &childAsset->checkboxStyle;
 						checkbox->name = style->name;
 
-						checkbox->checkImage = style->checkImage;
-						checkbox->hoverCheckImage = style->hoverCheckImage;
-						checkbox->pressedCheckImage = style->pressedCheckImage;
-						checkbox->disabledCheckImage = style->disabledCheckImage;
+						checkbox->padding = style->padding;
 
 						checkbox->background = style->background;
 						checkbox->hoverBackground = style->hoverBackground;
 						checkbox->pressedBackground = style->pressedBackground;
 						checkbox->disabledBackground = style->disabledBackground;
 
-						checkbox->padding = style->padding;
+						checkbox->contentSize = style->contentSize;
+						checkbox->checkImage = style->checkImage;
+						checkbox->hoverCheckImage = style->hoverCheckImage;
+						checkbox->pressedCheckImage = style->pressedCheckImage;
+						checkbox->disabledCheckImage = style->disabledCheckImage;
 					} break;
 
 					case UIStyle_Console: {

@@ -146,8 +146,8 @@ namespace UI
 	bool putImageButton(Sprite *sprite, Rect2I bounds, UIButtonStyle *style, ButtonState state = Button_Normal, RenderBuffer *renderBuffer = null, bool invisible = false, String tooltip=nullString);
 
 	// Checkboxes
-	V2I calculateCheckboxSize(UICheckboxStyle *checkboxStyle);
-	void putCheckbox(bool *checked, UICheckboxStyle *checkboxStyle);
+	V2I calculateCheckboxSize(UICheckboxStyle *style);
+	void putCheckbox(bool *checked, Rect2I bounds, UICheckboxStyle *style, bool isDisabled = false, RenderBuffer *renderBuffer = null, bool invisible = false);
 
 	// Menus
 	void showMenu(s32 menuID);

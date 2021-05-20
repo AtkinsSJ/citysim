@@ -133,12 +133,16 @@ void UIPanel::addCheckbox(bool *checked, String styleName)
 
 	prepareForWidgets();
 
-	UICheckboxStyle *checkboxStyle = findStyle<UICheckboxStyle>(styleName, &this->style->checkboxStyle);
+	UICheckboxStyle *checkboxStyle = findStyle<UICheckboxStyle>(styleName, &style->checkboxStyle);
 
 	Rect2I space = getCurrentLayoutPosition();
-	// V2I checkboxBounds = UI::calculateCheckboxSize(checkboxStyle);
+	V2I checkboxOrigin = alignWithinRectangle(space, widgetAlignment);
+	V2I checkboxSize = UI::calculateCheckboxSize(checkboxStyle);
+	Rect2I checkboxBounds = irectAligned(checkboxOrigin, checkboxSize, widgetAlignment);
 
+	UI::putCheckbox(checked, checkboxBounds, checkboxStyle, false, renderBuffer, hideWidgets);
 
+	completeWidget(checkboxSize);
 }
 
 void UIPanel::addSprite(Sprite *sprite, s32 width, s32 height)

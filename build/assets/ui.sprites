@@ -5,3 +5,5 @@
 :Ninepatch btn_white btn_white_9.png   1 11 14 24     1 11 14 24
 
 :Sprite icon_delete icon_delete.png 24x24
+
+:Sprite check check.png 16x16
