@@ -38,7 +38,6 @@ Keyboard shortcuts for buttons
 
 Settings window that lets you modify them
 	(Instead of the Settings Screen we have now. A window makes more sense.)
-	- BUG: Setting fullscreen doesn't update things correctly. Maybe because we're not setting the resolution?
 
 Multi-threading!
 - Figure out how to get it working at all
@@ -397,6 +396,7 @@ Asset system:
 - Replace sdl_image with our own loader so we can control where the memory comes from!
 	- see https://github.com/spurious/SDL-mirror/blob/HEAD/src/stdlib/SDL_malloc.c
 	- Looks like I need to update my version of SDL. Actually, worse than that, it was added AFTER 2.0.9 which is the current release version.
+	- UPDATE: As on 20/05/2021 we're now on a high enough version of SDL!
 - Fancier memory management, if needed:
 	- (We only need to worry about this if our asset memory usage gets high.
 		If not, keep the current "load everything" system!)

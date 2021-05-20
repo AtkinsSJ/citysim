@@ -169,9 +169,29 @@ void resizeWindow(s32 w, s32 h, bool fullscreen)
 		// Window!
 		SDL_SetWindowSize(renderer->window, w, h);
 		SDL_SetWindowFullscreen(renderer->window, 0);
+
 		// Centre it
-		// TODO: This centres it on Display#0, which might not be the one it was on before!
-		SDL_SetWindowPosition(renderer->window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+		s32 displayIndex = SDL_GetWindowDisplayIndex(renderer->window);
+		SDL_Rect displayBounds;
+		if (SDL_GetDisplayBounds(displayIndex, &displayBounds) == 0)
+		{
+			s32 leftBorder, rightBorder, topBorder, bottomBorder;
+			SDL_GetWindowBordersSize(renderer->window, &topBorder, &leftBorder, &bottomBorder, &rightBorder);
+
+			s32 windowW = w + leftBorder + rightBorder;
+			s32 windowH = h + topBorder + bottomBorder;
+			s32 windowLeft = (displayBounds.w - windowW) / 2;
+			s32 windowTop  = (displayBounds.h - windowH) / 2;
+
+			SDL_SetWindowPosition(renderer->window, displayBounds.x + windowLeft, displayBounds.y + windowTop);
+		}
+		else
+		{
+			logError("Failed to get display bounds: {0}"_s, {makeString(SDL_GetError())});
+
+			// As a backup, just centre it on the main display
+			SDL_SetWindowPosition(renderer->window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+		}
 
 		// NB: Because InputState relies on SDL_WINDOWEVENT_RESIZED events,
 		// it simplifies things massively if we generate one ourselves.
