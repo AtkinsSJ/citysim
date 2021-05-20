@@ -131,37 +131,59 @@ void resizeWindow(s32 w, s32 h, bool fullscreen)
 {
 	SDL_RestoreWindow(renderer->window);
 
-	// There are functions in SDL that appear to get the min/max window size, but they actually
-	// return 0 unless we've already told it what they should be, which makes them useless.
-	// TODO: Maybe examine the screen resolutions for each available display and make a decent
-	// guess from that? It's not a pretty solution though.
-	s32 newW = w;
-	s32 newH = h;
-
-	SDL_SetWindowSize(renderer->window, newW, newH);
-
-	// NB: SDL_WINDOW_FULLSCREEN_DESKTOP is a fake-fullscreen window, rather than actual fullscreen.
-	// I think that's a better option, but it doesn't work properly right now if we request a
-	// non-native screen resolution with it!
-	// Then again, regular fullscreen does a bunch of flickery stuff in that case, so yeahhhhh
-	SDL_SetWindowFullscreen(renderer->window, fullscreen ? SDL_WINDOW_FULLSCREEN_DESKTOP : 0);
-
-	// Centre the window
-	if (!fullscreen)
+	// So, I'm not super sure how we want to handle fullscreen. Do we scan the
+	// available resolution options and list them to select from? Do we just use
+	// the native resolution? Do we use fullscreen or fullscreen-window?
+	// 
+	// For now, I'm thinking we use the native resolution, as a fullscreen window.
+	// - Sam, 20/05/2021
+	if (fullscreen)
 	{
-		SDL_SetWindowPosition(renderer->window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+		// Fullscreen!
+		// Grab the desktop resolution to use that
+		s32 displayIndex = SDL_GetWindowDisplayIndex(renderer->window);
+		SDL_DisplayMode displayMode;
+		if (SDL_GetDesktopDisplayMode(displayIndex, &displayMode) == 0)
+		{
+			SDL_SetWindowDisplayMode(renderer->window, &displayMode);
+			SDL_SetWindowFullscreen(renderer->window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+
+			// NB: Because InputState relies on SDL_WINDOWEVENT_RESIZED events,
+			// it simplifies things massively if we generate one ourselves.
+			SDL_Event resizeEvent = {};
+			resizeEvent.type = SDL_WINDOWEVENT;
+			resizeEvent.window.event = SDL_WINDOWEVENT_RESIZED;
+			resizeEvent.window.data1 = displayMode.w;
+			resizeEvent.window.data2 = displayMode.h;
+			SDL_PushEvent(&resizeEvent);
+
+			onWindowResized(displayMode.w, displayMode.h);
+		}
+		else
+		{
+			logError("Failed to get desktop display mode: {0}"_s, {makeString(SDL_GetError())});
+		}
 	}
+	else
+	{
+		// Window!
+		SDL_SetWindowSize(renderer->window, w, h);
+		SDL_SetWindowFullscreen(renderer->window, 0);
+		// Centre it
+		// TODO: This centres it on Display#0, which might not be the one it was on before!
+		SDL_SetWindowPosition(renderer->window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 
-	// NB: Because InputState relies on SDL_WINDOWEVENT_RESIZED events,
-	// it simplifies things massively if we generate one ourselves.
-	SDL_Event resizeEvent = {};
-	resizeEvent.type = SDL_WINDOWEVENT;
-	resizeEvent.window.event = SDL_WINDOWEVENT_RESIZED;
-	resizeEvent.window.data1 = newW;
-	resizeEvent.window.data2 = newH;
-	SDL_PushEvent(&resizeEvent);
+		// NB: Because InputState relies on SDL_WINDOWEVENT_RESIZED events,
+		// it simplifies things massively if we generate one ourselves.
+		SDL_Event resizeEvent = {};
+		resizeEvent.type = SDL_WINDOWEVENT;
+		resizeEvent.window.event = SDL_WINDOWEVENT_RESIZED;
+		resizeEvent.window.data1 = w;
+		resizeEvent.window.data2 = h;
+		SDL_PushEvent(&resizeEvent);
 
-	onWindowResized(newW, newH);
+		onWindowResized(w, h);
+	}
 }
 
 // Screen -> scene space
