@@ -137,6 +137,10 @@ void resizeWindow(s32 w, s32 h, bool fullscreen)
 	// 
 	// For now, I'm thinking we use the native resolution, as a fullscreen window.
 	// - Sam, 20/05/2021
+
+	s32 newW = w;
+	s32 newH = h;
+
 	if (fullscreen)
 	{
 		// Fullscreen!
@@ -147,17 +151,8 @@ void resizeWindow(s32 w, s32 h, bool fullscreen)
 		{
 			SDL_SetWindowDisplayMode(renderer->window, &displayMode);
 			SDL_SetWindowFullscreen(renderer->window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-
-			// NB: Because InputState relies on SDL_WINDOWEVENT_RESIZED events,
-			// it simplifies things massively if we generate one ourselves.
-			SDL_Event resizeEvent = {};
-			resizeEvent.type = SDL_WINDOWEVENT;
-			resizeEvent.window.event = SDL_WINDOWEVENT_RESIZED;
-			resizeEvent.window.data1 = displayMode.w;
-			resizeEvent.window.data2 = displayMode.h;
-			SDL_PushEvent(&resizeEvent);
-
-			onWindowResized(displayMode.w, displayMode.h);
+			newW = displayMode.w;
+			newH = displayMode.h;
 		}
 		else
 		{
@@ -192,18 +187,16 @@ void resizeWindow(s32 w, s32 h, bool fullscreen)
 			// As a backup, just centre it on the main display
 			SDL_SetWindowPosition(renderer->window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 		}
-
-		// NB: Because InputState relies on SDL_WINDOWEVENT_RESIZED events,
-		// it simplifies things massively if we generate one ourselves.
-		SDL_Event resizeEvent = {};
-		resizeEvent.type = SDL_WINDOWEVENT;
-		resizeEvent.window.event = SDL_WINDOWEVENT_RESIZED;
-		resizeEvent.window.data1 = w;
-		resizeEvent.window.data2 = h;
-		SDL_PushEvent(&resizeEvent);
-
-		onWindowResized(w, h);
 	}
+
+	// NB: Because InputState relies on SDL_WINDOWEVENT_RESIZED events,
+	// it simplifies things massively if we generate one ourselves.
+	SDL_Event resizeEvent = {};
+	resizeEvent.type = SDL_WINDOWEVENT;
+	resizeEvent.window.event = SDL_WINDOWEVENT_RESIZED;
+	resizeEvent.window.data1 = newW;
+	resizeEvent.window.data2 = newH;
+	SDL_PushEvent(&resizeEvent);
 }
 
 // Screen -> scene space
