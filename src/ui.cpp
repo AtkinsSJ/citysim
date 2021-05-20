@@ -506,6 +506,31 @@ inline ScrollbarState *UI::getMenuScrollbar()
 	return &uiState.openMenuScrollbar;
 }
 
+bool UI::putTextInput(TextInput *textInput, UITextInputStyle *style, Rect2I bounds, RenderBuffer *renderBuffer, bool invisible)
+{
+	if (style == null) style = findStyle<UITextInputStyle>("default"_s);
+	if (renderBuffer == null) renderBuffer = &renderer->uiBuffer;
+
+	bool submittedInput = false;
+
+	if (!invisible)
+	{
+		submittedInput = updateTextInput(textInput);
+
+		drawTextInput(renderBuffer, textInput, style, bounds);
+
+		// Capture the input focus if we just clicked on this TextInput
+		if (justClickedOnUI(bounds))
+		{
+			markMouseInputHandled();
+			captureInput(textInput);
+			textInput->caretFlashCounter = 0;
+		}
+	}
+
+	return submittedInput;
+}
+
 void UI::pushToast(String message)
 {
 	Toast *newToast = uiState.toasts.push();

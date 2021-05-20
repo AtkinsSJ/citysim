@@ -60,11 +60,13 @@ struct WidgetMouseState
 struct RenderBuffer;
 struct BitmapFont;
 struct Sprite;
+struct TextInput;
 struct UIButtonStyle;
 struct UICheckboxStyle;
 struct UIPanel;
 struct UIPanelStyle;
 struct UIScrollbarStyle;
+struct UITextInputStyle;
 struct WindowContext;
 struct Window;
 
@@ -153,6 +155,9 @@ namespace UI
 	void toggleMenuVisible(s32 menuID);
 	bool isMenuVisible(s32 menuID);
 	ScrollbarState *getMenuScrollbar();
+
+	// TextInputs
+	bool putTextInput(TextInput *textInput, UITextInputStyle *style, Rect2I bounds, RenderBuffer *renderBuffer = null, bool invisible = false);
 
 	// Toasts
 	// NB: `message` is copied into the UIState, so it can be a temporary allocation

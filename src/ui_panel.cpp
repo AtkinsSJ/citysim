@@ -199,40 +199,18 @@ bool UIPanel::addTextInput(TextInput *textInput, String styleName)
 	
 	prepareForWidgets();
 
-	bool result = false;
-	if (!hideWidgets)
-	{
-		result = updateTextInput(textInput);
-	}
-
 	UITextInputStyle *textInputStyle = findStyle<UITextInputStyle>(styleName, &this->style->textInputStyle);
 
-	s32 alignment = this->widgetAlignment;
 	Rect2I space = getCurrentLayoutPosition();
-	V2I origin = alignWithinRectangle(space, alignment);
+	V2I origin = alignWithinRectangle(space, this->widgetAlignment);
 
-	BitmapFont *font = getFont(&textInputStyle->font);
-	if (font)
-	{
-		bool fillWidth = ((alignment & ALIGN_H) == ALIGN_EXPAND_H);
-		V2I textInputSize = calculateTextInputSize(textInput, textInputStyle, space.w, fillWidth);
-		Rect2I textInputBounds = irectAligned(origin, textInputSize, alignment);
+	bool fillWidth = ((this->widgetAlignment & ALIGN_H) == ALIGN_EXPAND_H);
+	V2I textInputSize = calculateTextInputSize(textInput, textInputStyle, space.w, fillWidth);
+	Rect2I textInputBounds = irectAligned(origin, textInputSize, this->widgetAlignment);
 
-		if (!hideWidgets)
-		{
-			drawTextInput(renderBuffer, textInput, textInputStyle, textInputBounds);
-
-			// Capture the input focus if we just clicked on this TextInput
-			if (UI::justClickedOnUI(textInputBounds))
-			{
-				UI::markMouseInputHandled();
-				captureInput(textInput);
-				textInput->caretFlashCounter = 0;
-			}
-		}
-
-		completeWidget(textInputSize);
-	}
+	bool result = UI::putTextInput(textInput, textInputStyle, textInputBounds, renderBuffer, hideWidgets);
+	
+	completeWidget(textInputSize);
 
 	return result;
 }
