@@ -2,6 +2,12 @@
 
 struct TextInput
 {
+	struct TextInputPos
+	{
+		s32 bytePos;
+		s32 glyphPos;
+	};
+
 	char *buffer;
 
 	s32 byteLength;
@@ -9,8 +15,7 @@ struct TextInput
 
 	s32 maxByteLength;
 
-	s32 caretBytePos;
-	s32 caretGlyphPos;
+	TextInputPos caret;
 	f32 caretFlashCounter;
 
 	String characterBlacklist;
@@ -38,11 +43,6 @@ struct TextInput
 	void deleteWholeWord();
 
 // Internal
-	struct TextInputPos
-	{
-		s32 bytePos;
-		s32 glyphPos;
-	};
 	TextInputPos findStartOfWordLeft();
 	TextInputPos findStartOfWordRight();
 };
