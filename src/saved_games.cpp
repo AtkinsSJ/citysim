@@ -18,7 +18,7 @@ void initSavedGamesCatalogue()
 	// Window-related stuff
 	catalogue->selectedSavedGameName = nullString;
 	catalogue->selectedSavedGameIndex = -1;
-	catalogue->saveGameName = newTextInput(&catalogue->savedGamesArena, 64, "\\/:*?\"'`<>|[]()^#%&!@+={}~."_s);
+	catalogue->saveGameName = UI::newTextInput(&catalogue->savedGamesArena, 64, "\\/:*?\"'`<>|[]()^#%&!@+={}~."_s);
 
 	initScrollbar(&catalogue->savedGamesListScrollbar, false);
 
@@ -111,7 +111,7 @@ void showSaveGameWindow()
 {
 	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
 
-	clear(&catalogue->saveGameName);
+	catalogue->saveGameName.clear();
 	captureInput(&catalogue->saveGameName);
 
 	// If we're playing a save file, select that by default
@@ -122,7 +122,7 @@ void showSaveGameWindow()
 	{
 		catalogue->selectedSavedGameName = catalogue->activeSavedGameName;
 		catalogue->selectedSavedGameIndex = selectedSavedGame.index;
-		append(&catalogue->saveGameName, catalogue->selectedSavedGameName);
+		catalogue->saveGameName.append(catalogue->selectedSavedGameName);
 	}
 	else
 	{
@@ -224,12 +224,12 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 			bottomBar.alignWidgets(ALIGN_EXPAND_H);
 			if (justClickedSavedGame)
 			{
-				clear(&catalogue->saveGameName);
-				append(&catalogue->saveGameName, selectedSavedGame->shortName);
+				catalogue->saveGameName.clear();
+				catalogue->saveGameName.append(selectedSavedGame->shortName);
 			}
 
 			bool pressedEnterInTextInput = bottomBar.addTextInput(&catalogue->saveGameName);
-			String inputName = trim(textInputToString(&catalogue->saveGameName));
+			String inputName = trim(catalogue->saveGameName.toString());
 
 			// Show a warning if we're overwriting an existing save that ISN'T the active one
 			bool showOverwriteWarning = false;
@@ -283,7 +283,7 @@ void confirmOverwriteSaveWindowProc(WindowContext *context, void * /*userData*/)
 {
 	UIPanel *ui = &context->windowPanel;
 
-	String inputName = trim(textInputToString(&savedGamesCatalogue.saveGameName));
+	String inputName = trim(savedGamesCatalogue.saveGameName.toString());
 
 	ui->addText(getText("msg_save_overwrite_confirm"_s, {inputName}));
 	ui->startNewLine(ALIGN_RIGHT);

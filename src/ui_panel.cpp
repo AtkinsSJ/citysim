@@ -205,7 +205,7 @@ bool UIPanel::addTextInput(TextInput *textInput, String styleName)
 	V2I origin = alignWithinRectangle(space, this->widgetAlignment);
 
 	bool fillWidth = ((this->widgetAlignment & ALIGN_H) == ALIGN_EXPAND_H);
-	V2I textInputSize = calculateTextInputSize(textInput, textInputStyle, space.w, fillWidth);
+	V2I textInputSize = UI::calculateTextInputSize(textInput, textInputStyle, space.w, fillWidth);
 	Rect2I textInputBounds = irectAligned(origin, textInputSize, this->widgetAlignment);
 
 	bool result = UI::putTextInput(textInput, textInputStyle, textInputBounds, renderBuffer, hideWidgets);

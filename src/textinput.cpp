@@ -1,17 +1,267 @@
 
-
-TextInput newTextInput(MemoryArena *arena, s32 length, String characterBlacklist)
+inline bool TextInput::isEmpty()
 {
-	TextInput b = {};
-	b.buffer = allocateMultiple<char>(arena, length + 1);
-	b.maxByteLength = length;
-	b.characterBlacklist = characterBlacklist;
+	return byteLength == 0;
+}
 
-	return b;
+String TextInput::getLastWord()
+{
+	TextInputPos startOfWord = findStartOfWordLeft();
+	String result = makeString(buffer + startOfWord.bytePos, caretBytePos - startOfWord.bytePos);
+	return result;
+}
+
+inline String TextInput::toString()
+{
+	return makeString(buffer, byteLength);
+}
+
+void TextInput::moveCaretLeft(s32 count)
+{
+	if (count < 1) return;
+
+	if (caretGlyphPos > 0)
+	{
+		s32 toMove = min(count, caretGlyphPos);
+
+		while (toMove--)
+		{
+			caretBytePos = findStartOfGlyph(buffer, caretBytePos - 1);
+			caretGlyphPos--;
+		}
+	}
+}
+
+void TextInput::moveCaretRight(s32 count)
+{
+	if (count < 1) return;
+
+	if (caretGlyphPos < glyphLength)
+	{
+		s32 toMove = min(count, glyphLength - caretGlyphPos);
+
+		while (toMove--)
+		{
+			caretBytePos = findStartOfNextGlyph(buffer, caretBytePos, maxByteLength);
+			caretGlyphPos++;
+		}
+	}
+}
+
+void TextInput::moveCaretLeftWholeWord()
+{
+	TextInputPos newCaretPos = findStartOfWordLeft();
+	caretBytePos  = newCaretPos.bytePos;
+	caretGlyphPos = newCaretPos.glyphPos;
+}
+
+void TextInput::moveCaretRightWholeWord()
+{
+	TextInputPos newCaretPos = findStartOfWordRight();
+	caretBytePos  = newCaretPos.bytePos;
+	caretGlyphPos = newCaretPos.glyphPos;
+}
+
+
+void TextInput::append(char *source, s32 length)
+{
+	s32 bytesToCopy = length;
+	if ((byteLength + length) > maxByteLength)
+	{
+		s32 newByteLengthToCopy = maxByteLength - byteLength;
+
+		bytesToCopy = floorToWholeGlyphs(source, newByteLengthToCopy);
+	}
+
+	s32 glyphsToCopy = countGlyphs(source, bytesToCopy);
+
+	for (s32 i=0; i < bytesToCopy; i++)
+	{
+		buffer[byteLength++] = source[i];
+	}
+
+	caretBytePos += bytesToCopy;
+
+	caretGlyphPos += glyphsToCopy;
+	glyphLength += glyphsToCopy;
+}
+
+inline void TextInput::append(String source)
+{
+	append(source.chars, source.length);
+}
+
+void TextInput::insert(String source)
+{
+	if (caretBytePos == byteLength)
+	{
+		append(source);
+		return;
+	}
+
+	s32 bytesToCopy = source.length;
+	if ((byteLength + source.length) > maxByteLength)
+	{
+		s32 newByteLengthToCopy = maxByteLength - byteLength;
+
+		bytesToCopy = floorToWholeGlyphs(source.chars, newByteLengthToCopy);
+	}
+
+	s32 glyphsToCopy = countGlyphs(source.chars, bytesToCopy);
+
+	// move the existing chars by bytesToCopy
+	for (s32 i=byteLength - caretBytePos - 1; i>=0; i--)
+	{
+		buffer[caretBytePos + bytesToCopy + i] = buffer[caretBytePos + i];
+	}
+
+	// write from source
+	for (s32 i=0; i < bytesToCopy; i++)
+	{
+		buffer[caretBytePos + i] = source.chars[i];
+	}
+
+	byteLength += bytesToCopy;
+	caretBytePos += bytesToCopy;
+
+	glyphLength += glyphsToCopy;
+	caretGlyphPos += glyphsToCopy;
+}
+
+inline void TextInput::insert(char c)
+{
+	insert(makeString(&c, 1));
+}
+
+void TextInput::clear()
+{
+	byteLength = 0;
+	glyphLength = 0;
+	caretBytePos = 0;
+	caretGlyphPos = 0;
+}
+
+void TextInput::backspaceChars(s32 count)
+{
+	if (caretGlyphPos > 0) 
+	{
+		s32 charsToDelete = min(count, caretGlyphPos);
+
+		s32 oldBytePos = caretBytePos;
+
+		moveCaretLeft(charsToDelete);
+
+		s32 bytesToRemove = oldBytePos - caretBytePos;
+
+		// copy everything bytesToRemove to the left
+		for (s32 i = caretBytePos;
+		     i < byteLength - bytesToRemove;
+		     i++)
+		{
+			buffer[i] = buffer[i+bytesToRemove];
+		}
+
+		byteLength -= bytesToRemove;
+		glyphLength -= charsToDelete;
+	}
+}
+
+void TextInput::deleteChars(s32 count)
+{
+	s32 remainingChars = glyphLength - caretGlyphPos;
+	if (remainingChars > 0) 
+	{
+		s32 charsToDelete = min(count, remainingChars);
+
+		// Move the caret so we can count the bytes
+		s32 oldBytePos = caretBytePos;
+		s32 oldGlyphPos = caretGlyphPos;
+		moveCaretRight(charsToDelete);
+
+		s32 bytesToRemove = caretBytePos - oldBytePos;
+
+		// Move it back because we don't actually want it moved
+		caretBytePos = oldBytePos;
+		caretGlyphPos = oldGlyphPos;
+
+		// copy everything bytesToRemove to the left
+		for (s32 i = caretBytePos;
+		     i < byteLength - bytesToRemove;
+		     i++)
+		{
+			buffer[i] = buffer[i+bytesToRemove];
+		}
+
+		byteLength -= bytesToRemove;
+		glyphLength -= charsToDelete;
+	}
+}
+
+void TextInput::backspaceWholeWord()
+{
+	TextInputPos newCaretPos = findStartOfWordLeft();
+	s32 toBackspace = caretGlyphPos - newCaretPos.glyphPos;
+
+	backspaceChars(toBackspace);
+}
+
+void TextInput::deleteWholeWord()
+{
+	TextInputPos newCaretPos = findStartOfWordRight();
+	s32 toDelete = newCaretPos.glyphPos - caretGlyphPos;
+
+	deleteChars(toDelete);
+}
+
+
+TextInput::TextInputPos TextInput::findStartOfWordLeft()
+{
+	TextInputPos result = {caretBytePos, caretGlyphPos};
+
+	if (result.glyphPos > 0)
+	{
+		result.glyphPos--;
+		result.bytePos = findStartOfGlyph(buffer, result.bytePos - 1);
+	}
+
+	while (result.glyphPos > 0)
+	{
+		s32 nextBytePos = findStartOfGlyph(buffer, result.bytePos - 1);
+
+		unichar glyph = readUnicodeChar(buffer + nextBytePos);
+		if (isWhitespace(glyph))
+		{
+			break;
+		}
+
+		result.glyphPos--;
+		result.bytePos = nextBytePos;
+	}
+
+	return result;
+}
+
+TextInput::TextInputPos TextInput::findStartOfWordRight()
+{
+	TextInputPos result = {caretBytePos, caretGlyphPos};
+
+	while (result.glyphPos < glyphLength)
+	{
+		result.glyphPos++;
+		result.bytePos = findStartOfNextGlyph(buffer, result.bytePos, maxByteLength);
+
+		unichar glyph = readUnicodeChar(buffer + result.bytePos);
+		if (isWhitespace(glyph))
+		{
+			break;
+		}
+	}
+
+	return result;
 }
 
 // Returns true if pressed RETURN
-bool updateTextInput(TextInput *textInput)
+bool UI::updateTextInput(TextInput *textInput)
 {
 	bool pressedReturn = false;
 
@@ -19,23 +269,23 @@ bool updateTextInput(TextInput *textInput)
 	{
 		if (keyJustPressed(SDLK_BACKSPACE, KeyMod_Ctrl))
 		{
-			backspaceWholeWord(textInput);
+			textInput->backspaceWholeWord();
 			textInput->caretFlashCounter = 0;
 		}
 		else if (keyJustPressed(SDLK_BACKSPACE))
 		{
-			backspaceChars(textInput);
+			textInput->backspaceChars(1);
 			textInput->caretFlashCounter = 0;
 		}
 
 		if (keyJustPressed(SDLK_DELETE, KeyMod_Ctrl))
 		{
-			deleteWholeWord(textInput);
+			textInput->deleteWholeWord();
 			textInput->caretFlashCounter = 0;
 		}
 		else if (keyJustPressed(SDLK_DELETE))
 		{
-			deleteChars(textInput);
+			textInput->deleteChars(1);
 			textInput->caretFlashCounter = 0;
 		}
 
@@ -49,11 +299,11 @@ bool updateTextInput(TextInput *textInput)
 		{
 			if (modifierKeyIsPressed(KeyMod_Ctrl))
 			{
-				moveCaretLeftWholeWord(textInput);
+				textInput->moveCaretLeftWholeWord();
 			}
 			else
 			{
-				moveCaretLeft(textInput, 1);
+				textInput->moveCaretLeft(1);
 			}
 			textInput->caretFlashCounter = 0;
 		}
@@ -61,11 +311,11 @@ bool updateTextInput(TextInput *textInput)
 		{
 			if (modifierKeyIsPressed(KeyMod_Ctrl))
 			{
-				moveCaretRightWholeWord(textInput);
+				textInput->moveCaretRightWholeWord();
 			}
 			else
 			{
-				moveCaretRight(textInput, 1);
+				textInput->moveCaretRight(1);
 			}
 			textInput->caretFlashCounter = 0;
 		}
@@ -93,7 +343,7 @@ bool updateTextInput(TextInput *textInput)
 				char c = enteredText[charIndex];
 				if (!contains(textInput->characterBlacklist, c))
 				{
-					insert(textInput, c);
+					textInput->insert(c);
 				}
 			}
 
@@ -109,7 +359,7 @@ bool updateTextInput(TextInput *textInput)
 				char c = enteredText[charIndex];
 				if (!contains(textInput->characterBlacklist, c))
 				{
-					insert(textInput, c);
+					textInput->insert(c);
 				}
 			}
 			
@@ -120,18 +370,23 @@ bool updateTextInput(TextInput *textInput)
 	return pressedReturn;
 }
 
-String textInputToString(TextInput *textInput)
+TextInput UI::newTextInput(MemoryArena *arena, s32 length, String characterBlacklist)
 {
-	return makeString(textInput->buffer, textInput->byteLength);
+	TextInput b = {};
+	b.buffer = allocateMultiple<char>(arena, length + 1);
+	b.maxByteLength = length;
+	b.characterBlacklist = characterBlacklist;
+
+	return b;
 }
 
-V2I calculateTextInputSize(TextInput *textInput, UITextInputStyle *style, s32 maxWidth, bool fillWidth)
+V2I UI::calculateTextInputSize(TextInput *textInput, UITextInputStyle *style, s32 maxWidth, bool fillWidth)
 {
 	s32 doublePadding = (style->padding * 2);
 	s32 textMaxWidth = (maxWidth == 0) ? 0 : (maxWidth - doublePadding);
 
 	BitmapFont *font = getFont(&style->font);
-	String text = textInputToString(textInput);
+	String text = textInput->toString();
 	V2I textSize = calculateTextSize(font, text, textMaxWidth);
 
 	s32 resultWidth = 0;
@@ -150,11 +405,11 @@ V2I calculateTextInputSize(TextInput *textInput, UITextInputStyle *style, s32 ma
 	return result;
 }
 
-Rect2I drawTextInput(RenderBuffer *renderBuffer, TextInput *textInput, UITextInputStyle *style, Rect2I bounds)
+Rect2I UI::drawTextInput(RenderBuffer *renderBuffer, TextInput *textInput, UITextInputStyle *style, Rect2I bounds)
 {
 	DEBUG_FUNCTION();
 
-	String text = textInputToString(textInput);
+	String text = textInput->toString();
 	BitmapFont *font = getFont(&style->font);
 
 
@@ -187,258 +442,4 @@ Rect2I drawTextInput(RenderBuffer *renderBuffer, TextInput *textInput, UITextInp
 	}
 
 	return bounds;
-}
-
-void append(TextInput *textInput, char *source, s32 length)
-{
-	s32 bytesToCopy = length;
-	if ((textInput->byteLength + length) > textInput->maxByteLength)
-	{
-		s32 newByteLengthToCopy = textInput->maxByteLength - textInput->byteLength;
-
-		bytesToCopy = floorToWholeGlyphs(source, newByteLengthToCopy);
-	}
-
-	s32 glyphsToCopy = countGlyphs(source, bytesToCopy);
-
-	for (s32 i=0; i < bytesToCopy; i++)
-	{
-		textInput->buffer[textInput->byteLength++] = source[i];
-	}
-
-	textInput->caretBytePos += bytesToCopy;
-
-	textInput->caretGlyphPos += glyphsToCopy;
-	textInput->glyphLength += glyphsToCopy;
-}
-
-inline void append(TextInput *textInput, String source)
-{
-	append(textInput, source.chars, source.length);
-}
-
-void insert(TextInput *textInput, String source)
-{
-	if (textInput->caretBytePos == textInput->byteLength)
-	{
-		append(textInput, source);
-		return;
-	}
-
-	s32 bytesToCopy = source.length;
-	if ((textInput->byteLength + source.length) > textInput->maxByteLength)
-	{
-		s32 newByteLengthToCopy = textInput->maxByteLength - textInput->byteLength;
-
-		bytesToCopy = floorToWholeGlyphs(source.chars, newByteLengthToCopy);
-	}
-
-	s32 glyphsToCopy = countGlyphs(source.chars, bytesToCopy);
-
-	// move the existing chars by bytesToCopy
-	for (s32 i=textInput->byteLength - textInput->caretBytePos - 1; i>=0; i--)
-	{
-		textInput->buffer[textInput->caretBytePos + bytesToCopy + i] = textInput->buffer[textInput->caretBytePos + i];
-	}
-
-	// write from source
-	for (s32 i=0; i < bytesToCopy; i++)
-	{
-		textInput->buffer[textInput->caretBytePos + i] = source.chars[i];
-	}
-
-	textInput->byteLength += bytesToCopy;
-	textInput->caretBytePos += bytesToCopy;
-
-	textInput->glyphLength += glyphsToCopy;
-	textInput->caretGlyphPos += glyphsToCopy;
-}
-
-inline void insert(TextInput *textInput, char c)
-{
-	insert(textInput, makeString(&c, 1));
-}
-
-void clear(TextInput *textInput)
-{
-	textInput->byteLength = 0;
-	textInput->glyphLength = 0;
-	textInput->caretBytePos = 0;
-	textInput->caretGlyphPos = 0;
-}
-
-void backspaceChars(TextInput *textInput, s32 count)
-{
-	if (textInput->caretGlyphPos > 0) 
-	{
-		s32 charsToDelete = min(count, textInput->caretGlyphPos);
-
-		s32 oldBytePos = textInput->caretBytePos;
-
-		moveCaretLeft(textInput, charsToDelete);
-
-		s32 bytesToRemove = oldBytePos - textInput->caretBytePos;
-
-		// copy everything bytesToRemove to the left
-		for (s32 i = textInput->caretBytePos;
-		     i < textInput->byteLength - bytesToRemove;
-		     i++)
-		{
-			textInput->buffer[i] = textInput->buffer[i+bytesToRemove];
-		}
-
-		textInput->byteLength -= bytesToRemove;
-		textInput->glyphLength -= charsToDelete;
-	}
-}
-
-void deleteChars(TextInput *textInput, s32 count)
-{
-	s32 remainingChars = textInput->glyphLength - textInput->caretGlyphPos;
-	if (remainingChars > 0) 
-	{
-		s32 charsToDelete = min(count, remainingChars);
-
-		// Move the caret so we can count the bytes
-		s32 oldBytePos = textInput->caretBytePos;
-		s32 oldGlyphPos = textInput->caretGlyphPos;
-		moveCaretRight(textInput, charsToDelete);
-
-		s32 bytesToRemove = textInput->caretBytePos - oldBytePos;
-
-		// Move it back because we don't actually want it moved
-		textInput->caretBytePos = oldBytePos;
-		textInput->caretGlyphPos = oldGlyphPos;
-
-		// copy everything bytesToRemove to the left
-		for (s32 i = textInput->caretBytePos;
-		     i < textInput->byteLength - bytesToRemove;
-		     i++)
-		{
-			textInput->buffer[i] = textInput->buffer[i+bytesToRemove];
-		}
-
-		textInput->byteLength -= bytesToRemove;
-		textInput->glyphLength -= charsToDelete;
-	}
-}
-
-void backspaceWholeWord(TextInput *textInput)
-{
-	TextInputPos newCaretPos = findStartOfWordLeft(textInput);
-	s32 toBackspace = textInput->caretGlyphPos - newCaretPos.glyphPos;
-
-	backspaceChars(textInput, toBackspace);
-}
-
-void deleteWholeWord(TextInput *textInput)
-{
-	TextInputPos newCaretPos = findStartOfWordRight(textInput);
-	s32 toDelete = newCaretPos.glyphPos - textInput->caretGlyphPos;
-
-	deleteChars(textInput, toDelete);
-}
-
-void moveCaretLeft(TextInput *textInput, s32 count)
-{
-	if (count < 1) return;
-
-	if (textInput->caretGlyphPos > 0)
-	{
-		s32 toMove = min(count, textInput->caretGlyphPos);
-
-		while (toMove--)
-		{
-			textInput->caretBytePos = findStartOfGlyph(textInput->buffer, textInput->caretBytePos - 1);
-			textInput->caretGlyphPos--;
-		}
-	}
-}
-
-void moveCaretRight(TextInput *textInput, s32 count)
-{
-	if (count < 1) return;
-
-	if (textInput->caretGlyphPos < textInput->glyphLength)
-	{
-		s32 toMove = min(count, textInput->glyphLength - textInput->caretGlyphPos);
-
-		while (toMove--)
-		{
-			textInput->caretBytePos = findStartOfNextGlyph(textInput->buffer, textInput->caretBytePos, textInput->maxByteLength);
-			textInput->caretGlyphPos++;
-		}
-	}
-}
-
-inline void moveCaretLeftWholeWord(TextInput *textInput)
-{
-	TextInputPos newCaretPos = findStartOfWordLeft(textInput);
-	textInput->caretBytePos  = newCaretPos.bytePos;
-	textInput->caretGlyphPos = newCaretPos.glyphPos;
-}
-
-void moveCaretRightWholeWord(TextInput *textInput)
-{
-	TextInputPos newCaretPos = findStartOfWordRight(textInput);
-	textInput->caretBytePos  = newCaretPos.bytePos;
-	textInput->caretGlyphPos = newCaretPos.glyphPos;
-}
-
-inline bool TextInput::isEmpty()
-{
-	return byteLength == 0;
-}
-
-String TextInput::getLastWord()
-{
-	TextInputPos startOfWord = findStartOfWordLeft(this);
-	String result = makeString(buffer + startOfWord.bytePos, caretBytePos - startOfWord.bytePos);
-	return result;
-}
-
-TextInputPos findStartOfWordLeft(TextInput *textInput)
-{
-	TextInputPos result = {textInput->caretBytePos, textInput->caretGlyphPos};
-
-	if (result.glyphPos > 0)
-	{
-		result.glyphPos--;
-		result.bytePos = findStartOfGlyph(textInput->buffer, result.bytePos - 1);
-	}
-
-	while (result.glyphPos > 0)
-	{
-		s32 nextBytePos = findStartOfGlyph(textInput->buffer, result.bytePos - 1);
-
-		unichar glyph = readUnicodeChar(textInput->buffer + nextBytePos);
-		if (isWhitespace(glyph))
-		{
-			break;
-		}
-
-		result.glyphPos--;
-		result.bytePos = nextBytePos;
-	}
-
-	return result;
-}
-
-TextInputPos findStartOfWordRight(TextInput *textInput)
-{
-	TextInputPos result = {textInput->caretBytePos, textInput->caretGlyphPos};
-
-	while (result.glyphPos < textInput->glyphLength)
-	{
-		result.glyphPos++;
-		result.bytePos = findStartOfNextGlyph(textInput->buffer, result.bytePos, textInput->maxByteLength);
-
-		unichar glyph = readUnicodeChar(textInput->buffer + result.bytePos);
-		if (isWhitespace(glyph))
-		{
-			break;
-		}
-	}
-
-	return result;
 }

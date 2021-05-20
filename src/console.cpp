@@ -15,7 +15,7 @@ void initConsole(MemoryArena *debugArena, f32 openHeight, f32 maximisedHeight, f
 	console->maximisedHeight = maximisedHeight;
 	console->openSpeed = openSpeed;
 
-	console->input = newTextInput(debugArena, consoleLineLength);
+	console->input = UI::newTextInput(debugArena, consoleLineLength);
 	initChunkedArray(&console->inputHistory, debugArena, 256);
 	console->inputHistoryCursor = -1;
 
@@ -105,11 +105,11 @@ void updateConsole(Console *console)
 
 	if (hasCapturedInput(&console->input))
 	{
-		if (updateTextInput(&console->input))
+		if (UI::updateTextInput(&console->input))
 		{
-			consoleHandleCommand(console, textInputToString(&console->input));
+			consoleHandleCommand(console, console->input.toString());
 			scrollToBottom = true;
-			clear(&console->input);
+			console->input.clear();
 		}
 		else
 		{
@@ -138,7 +138,7 @@ void updateConsole(Console *console)
 					if (!completeCommand.isEmpty())
 					{
 						String completion = makeString(completeCommand.chars + wordToComplete.length, completeCommand.length - wordToComplete.length);
-						insert(&console->input, completion);
+						console->input.insert(completion);
 					}
 
 					if (completeCommand.isEmpty())
@@ -165,9 +165,9 @@ void updateConsole(Console *console)
 						console->inputHistoryCursor = max(console->inputHistoryCursor - 1, 0);
 					}
 
-					clear(&console->input);
+					console->input.clear();
 					String oldInput = *console->inputHistory.get(console->inputHistoryCursor);
-					append(&console->input, oldInput);
+					console->input.append(oldInput);
 				}
 			}
 			// Command history
@@ -184,9 +184,9 @@ void updateConsole(Console *console)
 						console->inputHistoryCursor = truncate32(min(console->inputHistoryCursor + 1, (s32)console->inputHistory.count - 1));
 					}
 
-					clear(&console->input);
+					console->input.clear();
 					String oldInput = *console->inputHistory.get(console->inputHistoryCursor);
-					append(&console->input, oldInput);
+					console->input.append(oldInput);
 				}
 			}
 		}
@@ -224,10 +224,10 @@ void renderConsole(Console *console)
 	UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&consoleStyle->scrollbarStyle);
 	UITextInputStyle *textInputStyle = findStyle<UITextInputStyle>(&consoleStyle->textInputStyle);
 
-	V2I textInputSize = calculateTextInputSize(&console->input, textInputStyle, screenWidth);
+	V2I textInputSize = UI::calculateTextInputSize(&console->input, textInputStyle, screenWidth);
 	V2I textInputPos  = v2i(0, actualConsoleHeight - textInputSize.y);
 	Rect2I textInputBounds = irectPosSize(textInputPos, textInputSize);
-	drawTextInput(renderBuffer, &console->input, textInputStyle, textInputBounds);
+	UI::drawTextInput(renderBuffer, &console->input, textInputStyle, textInputBounds);
 
 	V2I textPos = v2i(consoleStyle->padding, textInputBounds.y);
 	s32 textMaxWidth = screenWidth - (2*consoleStyle->padding);
@@ -379,7 +379,7 @@ Rect2I getConsoleScrollbarBounds(Console *console)
 	UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&consoleStyle->scrollbarStyle);
 	UITextInputStyle *textInputStyle = findStyle<UITextInputStyle>(&consoleStyle->textInputStyle);
 
-	V2I textInputSize = calculateTextInputSize(&console->input, textInputStyle, inputState->windowWidth);
+	V2I textInputSize = UI::calculateTextInputSize(&console->input, textInputStyle, inputState->windowWidth);
 
 	Rect2I scrollbarBounds = irectXYWH(inputState->windowWidth - scrollbarStyle->width, 0, scrollbarStyle->width, floor_s32(console->currentHeight * inputState->windowHeight) - textInputSize.y);
 
