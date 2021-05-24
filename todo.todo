@@ -22,8 +22,12 @@ BUG: we can click through the "Data overlay" button
 
 UI Widgets:
 - Radio buttons
+	- A group backed by an array
+	- Each radio button is associated with an index in that array
 ✔ Checkboxes
 - Sliders (eg, volume)
+	- Define a range
+	- Discrete (int) or continuous (float)
 - Dropdown boxes? (eg, locale)
 	- I guess these are equivalent to our "menu buttons" but with special styling
 - Tabs!

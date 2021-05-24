@@ -1,6 +1,6 @@
 #pragma once
 
-void registerSetting(String settingName, smm offset, Type type, s32 count, String textAssetName)
+void registerSetting(String settingName, smm offset, Type type, s32 count, String textAssetName, void *data)
 {
 	SettingDef def = {};
 	def.name = settingName;
@@ -8,6 +8,7 @@ void registerSetting(String settingName, smm offset, Type type, s32 count, Strin
 	def.offsetWithinSettingsState = offset;
 	def.type = type;
 	def.count = count;
+	def.data = data;
 
 	settings->defs.put(settingName, def);
 }
@@ -18,7 +19,7 @@ SettingsState makeDefaultSettings()
 
 	result.windowed = true;
 	result.resolution = v2i(1024, 600);
-	result.locale = "en"_s;
+	result.locale = Locale_en;
 
 	return result;
 }
@@ -31,11 +32,11 @@ void initSettings()
 	settings->userDataPath = makeString(SDL_GetPrefPath("Baffled Badger Games", "CitySim"));
 	settings->userSettingsFilename = "settings.cnf"_s;
 
-#define REGISTER_SETTING(settingName, type, count) registerSetting(makeString(#settingName), offsetof(SettingsState, settingName), Type_##type, count, makeString("setting_" #settingName))
+#define REGISTER_SETTING(settingName, type, count, ...) registerSetting(makeString(#settingName), offsetof(SettingsState, settingName), Type_##type, count, makeString("setting_" #settingName), __VA_ARGS__)
 
 	REGISTER_SETTING(windowed,   bool,   1);
 	REGISTER_SETTING(resolution, s32,    2);
-	REGISTER_SETTING(locale,     String, 1);
+	REGISTER_SETTING(locale,     enum,   1, &localeData);
 
 #undef REGISTER_SETTING
 }
@@ -81,6 +82,30 @@ void loadSettingsFile(String name, Blob settingsData)
 						}
 					} break;
 
+					case Type_enum:
+					{
+						String token = readToken(&reader);
+						// Look it up in the enum data
+						Array<SettingEnumData> enumData = *def->enumData;
+						bool foundValue = false;
+						for (s32 enumValueIndex = 0; enumValueIndex < enumData.count; enumValueIndex++)
+						{
+							if (equals(enumData[enumValueIndex].id, token))
+							{
+								setSettingData<s32>(&settings->settings, def, enumValueIndex, i);
+
+								foundValue = true;
+								break;
+							}
+						}
+
+						if (!foundValue)
+						{
+							error(&reader, "Couldn't find '{0}' in the list of valid values for setting '{1}'."_s, {token, def->name});
+						}
+
+					} break;
+
 					case Type_s32:
 					{
 						Maybe<s32> value = readInt<s32>(&reader);
@@ -115,7 +140,7 @@ void loadSettings()
 		loadSettingsFile(userSettingsFile.name, userSettingsFile.data);
 	}
 
-	logInfo("Settings loaded: windowed={0}, resolution={1}x{2}, locale={3}"_s, {formatBool(settings->settings.windowed), formatInt(settings->settings.resolution.x), formatInt(settings->settings.resolution.y), settings->settings.locale});
+	logInfo("Settings loaded: windowed={0}, resolution={1}x{2}, locale={3}"_s, {formatBool(settings->settings.windowed), formatInt(settings->settings.resolution.x), formatInt(settings->settings.resolution.y), localeData[settings->settings.locale].id});
 }
 
 void applySettings()
@@ -143,6 +168,12 @@ String settingToString(SettingsState *state, SettingDef *def)
 			case Type_s32:
 			{
 				append(&stb, formatInt(getSettingData<s32>(state, def, i)));
+			} break;
+
+			case Type_enum:
+			{
+				s32 enumValueIndex = getSettingData<s32>(state, def, i);
+				append(&stb, (*def->enumData)[enumValueIndex].id);
 			} break;
 
 			case Type_String:
@@ -204,7 +235,7 @@ WindowSettings getWindowSettings()
 
 String getLocale()
 {
-	return settings->settings.locale;
+	return localeData[settings->settings.locale].id;
 }
 
 void showSettingsWindow()

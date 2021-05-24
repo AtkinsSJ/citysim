@@ -77,6 +77,10 @@ setting_locale      Locale
 setting_resolution  Window resolution
 setting_windowed    Windowed
 
+locale_en English
+locale_es Español
+locale_pl Polski
+
 title_about          About
 title_delete_save    Delete saved game
 title_inspect        Inspecting {0}, {1}

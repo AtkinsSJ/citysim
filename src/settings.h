@@ -3,8 +3,15 @@
 enum Type
 {
 	Type_bool,
+	Type_enum,
 	Type_s32,
 	Type_String,
+};
+
+struct SettingEnumData
+{
+	String id;
+	String displayName;
 };
 
 struct SettingDef
@@ -14,13 +21,32 @@ struct SettingDef
 	smm offsetWithinSettingsState;
 	Type type;
 	s32 count;
+	union {
+		void *data;
+		Array<SettingEnumData> *enumData;
+	};
 };
+
+enum Locale
+{
+	Locale_en,
+	Locale_es,
+	Locale_pl,
+	LocaleCount
+};
+
+SettingEnumData _localeData[LocaleCount] = {
+	{"en"_s, "locale_en"_s},
+	{"es"_s, "locale_es"_s},
+	{"pl"_s, "locale_pl"_s},
+};
+Array<SettingEnumData> localeData = makeArray<SettingEnumData>(LocaleCount, _localeData, LocaleCount);
 
 struct SettingsState
 {
 	bool windowed;
 	V2I resolution;
-	String locale;
+	s32 locale; // Locale
 };
 
 struct Settings
@@ -63,7 +89,7 @@ void settingsWindowProc(WindowContext*, void*);
 //
 // INTERNAL
 //
-void registerSetting(String settingName, smm offset, Type type, s32 count, String textAssetName);
+void registerSetting(String settingName, smm offset, Type type, s32 count, String textAssetName, void *data = null);
 SettingsState makeDefaultSettings();
 void loadSettingsFile(String name, Blob settingsData);
 
