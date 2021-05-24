@@ -188,6 +188,8 @@ void UI::init(MemoryArena *arena)
 	initSet(&uiState.windowsToMakeActive, arena);
 
 	initScrollbar(&uiState.openMenuScrollbar, false);
+
+	initScrollbar(&uiState.openDropDownListScrollbar, false);
 }
 
 void UI::startFrame()
@@ -522,6 +524,21 @@ void UI::putCheckbox(bool *checked, Rect2I bounds, UICheckboxStyle *style, bool 
 			UIDrawable(checkStyle).draw(renderBuffer, checkBounds);
 		}
 	}
+}
+
+V2I UI::calculateDropDownListSize(String text, UIDropDownListStyle *style, s32 maxWidth, bool fillWidth)
+{
+	if (style == null) style = findStyle<UIDropDownListStyle>("default"_s);
+	UIButtonStyle *buttonStyle = findStyle<UIButtonStyle>(&style->buttonStyle);
+
+	// For now, we'll just piggy-back off the button size calculation, because we're just a button
+	return calculateButtonSize(text, buttonStyle, maxWidth, fillWidth);
+}
+
+template <typename T>
+void UI::putDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*getDisplayName)(T *data), Rect2I bounds, UIDropDownListStyle *style, RenderBuffer *renderBuffer, bool invisible)
+{
+
 }
 
 void UI::showMenu(s32 menuID)

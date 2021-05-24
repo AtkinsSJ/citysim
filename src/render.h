@@ -297,6 +297,7 @@ void addSetTextureRaw(RenderBuffer *buffer, s32 width, s32 height, u8 bytesPerPi
 
 void addClear(RenderBuffer *buffer, V4 clearColor = {});
 
+// Scissors are a stack, so you can nest them. Note that nested scissors don't crop to each other!
 // NB: bounds rectangle is in window pixels, with the origin at the top-left
 void addBeginScissor(RenderBuffer *buffer, Rect2I bounds);
 void addEndScissor(RenderBuffer *buffer);

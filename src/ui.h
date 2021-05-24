@@ -1,20 +1,6 @@
 #pragma once
 // ui.h
 
-enum UIStyleType {
-	// NB: When changing this, make sure to change the lambdas in findStyle() to match!
-	UIStyle_None = 0,
-	UIStyle_Button = 1,
-	UIStyle_Checkbox,
-	UIStyle_Console,
-	UIStyle_Label,
-	UIStyle_Panel,
-	UIStyle_Scrollbar,
-	UIStyle_TextInput,
-	UIStyle_Window,
-	UIStyleTypeCount
-};
-
 const f32 TOAST_APPEAR_TIME    = 0.2f;
 const f32 TOAST_DISPLAY_TIME   = 2.0f;
 const f32 TOAST_DISAPPEAR_TIME = 0.2f;
@@ -61,14 +47,19 @@ struct RenderBuffer;
 struct BitmapFont;
 struct Sprite;
 struct TextInput;
+struct Window;
+
+// Annoyingly, we have to predeclare all the style types. Yay for C++
+// (I tried rearranging our includes, it got messy fast.)
+// I guess the alternative is switching to an individual-files build. Might be a good idea.
 struct UIButtonStyle;
 struct UICheckboxStyle;
+struct UIDropDownListStyle;
 struct UIPanel;
 struct UIPanelStyle;
 struct UIScrollbarStyle;
 struct UITextInputStyle;
 struct WindowContext;
-struct Window;
 
 typedef void (*WindowProc)(WindowContext*, void*);
 
@@ -95,6 +86,10 @@ namespace UI
 		// they should set it to true. 
 		bool mouseInputHandled;
 		Stack<Rect2I> inputScissorRects;
+
+		// DropDownList stuff
+		void *openDropDownList;
+		ScrollbarState openDropDownListScrollbar;
 
 		// Toast stuff
 		Queue<Toast> toasts;
@@ -148,6 +143,11 @@ namespace UI
 	// Checkboxes
 	V2I calculateCheckboxSize(UICheckboxStyle *style);
 	void putCheckbox(bool *checked, Rect2I bounds, UICheckboxStyle *style, bool isDisabled = false, RenderBuffer *renderBuffer = null, bool invisible = false);
+
+	// Drop-down lists
+	V2I calculateDropDownListSize(String text, UIDropDownListStyle *style, s32 maxWidth = 0, bool fillWidth = true);
+	template <typename T>
+	void putDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*getDisplayName)(T *data), Rect2I bounds, UIDropDownListStyle *style, RenderBuffer *renderBuffer = null, bool invisible = false);
 
 	// Menus
 	void showMenu(s32 menuID);

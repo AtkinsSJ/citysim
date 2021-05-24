@@ -43,6 +43,10 @@ hoverCheckImage        sprite check
 pressedCheckImage      sprite check
 disabledCheckImage     sprite check 0 0 0 128
 
+:DropDownList default
+buttonStyle default
+panelStyle default
+
 :Label title
 font              normal
 textColor         255 255  64 255
@@ -74,6 +78,7 @@ widgetAlignment    TOP LEFT
 background        color 128 128 128 255
 buttonStyle       default
 checkboxStyle     default
+dropDownListStyle default
 labelStyle        default
 scrollbarStyle    default
 textInputStyle    default
@@ -109,6 +114,7 @@ widgetAlignment    TOP LEFT
 background        color 128 128 128 255
 buttonStyle       default
 checkboxStyle     default
+dropDownListStyle default # Remove me for a crash on the settings window
 labelStyle        small
 scrollbarStyle    default
 textInputStyle    default

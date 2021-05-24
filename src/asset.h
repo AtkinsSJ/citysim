@@ -23,6 +23,7 @@ enum AssetType
 	AssetType_ButtonStyle,
 	AssetType_CheckboxStyle,
 	AssetType_ConsoleStyle,
+	AssetType_DropDownListStyle,
 	AssetType_LabelStyle,
 	AssetType_PanelStyle,
 	AssetType_ScrollbarStyle,
@@ -52,7 +53,9 @@ String assetTypeNames[AssetTypeCount] = {
 	"UITheme"_s,
 
 	"ButtonStyle"_s,
+	"CheckboxStyle"_s,
 	"ConsoleStyle"_s,
+	"DropDownListStyle"_s,
 	"LabelStyle"_s,
 	"PanelStyle"_s,
 	"ScrollbarStyle"_s,
@@ -272,13 +275,14 @@ struct Asset
 
 		Texture texture;
 
-		UIButtonStyle    buttonStyle;
-		UICheckboxStyle  checkboxStyle;
-		UIConsoleStyle   consoleStyle;
-		UILabelStyle     labelStyle;
-		UIPanelStyle     panelStyle;
-		UIScrollbarStyle scrollbarStyle;
-		UITextInputStyle textInputStyle;
-		UIWindowStyle    windowStyle;
+		UIButtonStyle    	buttonStyle;
+		UICheckboxStyle  	checkboxStyle;
+		UIConsoleStyle   	consoleStyle;
+		UIDropDownListStyle	dropDownListStyle;
+		UILabelStyle     	labelStyle;
+		UIPanelStyle     	panelStyle;
+		UIScrollbarStyle 	scrollbarStyle;
+		UITextInputStyle 	textInputStyle;
+		UIWindowStyle    	windowStyle;
 	};
 };

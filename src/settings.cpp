@@ -1,5 +1,10 @@
 #pragma once
 
+String getEnumDisplayName(SettingEnumData *data)
+{
+	return getText(data->displayName);
+}
+
 void registerSetting(String settingName, smm offset, Type type, s32 count, String textAssetName, void *data)
 {
 	SettingDef def = {};
@@ -264,7 +269,16 @@ void settingsWindowProc(WindowContext *context, void*)
 		switch (def->type)
 		{
 			case Type_bool: {
+				ASSERT(def->count == 1);
 				ui->addCheckbox(getSettingDataRaw<bool>(&settings->workingState, def));
+			} break;
+
+			case Type_enum: {
+				ASSERT(def->count == 1);
+				
+				// We want to show a drop-down menu from the SettingEnumData.
+				// We know the currently-selected index.
+				ui->addDropDownList(def->enumData, getSettingDataRaw<s32>(&settings->workingState, def), getEnumDisplayName);
 			} break;
 
 			default: {

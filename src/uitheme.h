@@ -30,6 +30,20 @@ struct UIDrawableStyle
 };
 Maybe<UIDrawableStyle> readDrawableStyle(struct LineReader *reader);
 
+enum UIStyleType {
+	UIStyle_None = 0,
+	UIStyle_Button = 1,
+	UIStyle_Checkbox,
+	UIStyle_Console,
+	UIStyle_DropDownList,
+	UIStyle_Label,
+	UIStyle_Panel,
+	UIStyle_Scrollbar,
+	UIStyle_TextInput,
+	UIStyle_Window,
+	UIStyleTypeCount
+};
+
 struct UIButtonStyle
 {
 	String name;
@@ -89,6 +103,15 @@ struct UIConsoleStyle
 	AssetRef textInputStyle;
 };
 
+struct UIDropDownListStyle
+{
+	String name;
+
+	// For now, we'll just piggy-back off of other styles:
+	AssetRef buttonStyle; // For the normal state
+	AssetRef panelStyle;  // For the drop-down state
+};
+
 struct UILabelStyle
 {
 	String name;
@@ -109,6 +132,7 @@ struct UIPanelStyle
 
 	AssetRef buttonStyle;
 	AssetRef checkboxStyle;
+	AssetRef dropDownListStyle;
 	AssetRef labelStyle;
 	AssetRef scrollbarStyle;
 	AssetRef textInputStyle;
@@ -190,6 +214,7 @@ struct UIStyle
 
 	String buttonStyle;
 	String checkboxStyle;
+	String dropDownListStyle;
 	String labelStyle;
 	String panelStyle;
 	String scrollbarStyle;
@@ -252,6 +277,7 @@ T* findStyle(String styleName);
 template <> UIButtonStyle    *findStyle<UIButtonStyle>   (String styleName);
 template <> UICheckboxStyle  *findStyle<UICheckboxStyle> (String styleName);
 template <> UIConsoleStyle   *findStyle<UIConsoleStyle>  (String styleName);
+template <> UIDropDownListStyle   *findStyle<UIDropDownListStyle>  (String styleName);
 template <> UILabelStyle     *findStyle<UILabelStyle>    (String styleName);
 template <> UIPanelStyle     *findStyle<UIPanelStyle>    (String styleName);
 template <> UIScrollbarStyle *findStyle<UIScrollbarStyle>(String styleName);

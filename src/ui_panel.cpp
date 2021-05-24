@@ -90,10 +90,9 @@ bool UIPanel::addTextButton(String text, ButtonState state, String styleName)
 
 	Rect2I space = getCurrentLayoutPosition();
 	V2I buttonOrigin = alignWithinRectangle(space, widgetAlignment);
-	s32 availableButtonContentSize = space.w - (buttonStyle->padding * 2);
 
 	bool fillWidth = ((widgetAlignment & ALIGN_H) == ALIGN_EXPAND_H);
-	V2I buttonSize = UI::calculateButtonSize(text, buttonStyle, availableButtonContentSize, fillWidth);
+	V2I buttonSize = UI::calculateButtonSize(text, buttonStyle, space.w, fillWidth);
 	Rect2I buttonBounds = irectAligned(buttonOrigin, buttonSize, widgetAlignment);
 
 	bool wasClicked = UI::putTextButton(text, buttonBounds, buttonStyle, state, renderBuffer, hideWidgets);
@@ -113,11 +112,10 @@ bool UIPanel::addImageButton(Sprite *sprite, ButtonState state, String styleName
 
 	Rect2I space = getCurrentLayoutPosition();
 	V2I buttonOrigin = alignWithinRectangle(space, widgetAlignment);
-	s32 availableButtonContentSize = space.w - (buttonStyle->padding * 2);
 
 	bool fillWidth = ((widgetAlignment & ALIGN_H) == ALIGN_EXPAND_H);
 	V2I spriteSize = v2i(sprite->pixelWidth, sprite->pixelHeight);
-	V2I buttonSize = UI::calculateButtonSize(spriteSize, buttonStyle, availableButtonContentSize, fillWidth);
+	V2I buttonSize = UI::calculateButtonSize(spriteSize, buttonStyle, space.w, fillWidth);
 	Rect2I buttonBounds = irectAligned(buttonOrigin, buttonSize, widgetAlignment);
 
 	bool wasClicked = UI::putImageButton(sprite, buttonBounds, buttonStyle, state, renderBuffer, hideWidgets);
@@ -143,6 +141,29 @@ void UIPanel::addCheckbox(bool *checked, String styleName)
 	UI::putCheckbox(checked, checkboxBounds, checkboxStyle, false, renderBuffer, hideWidgets);
 
 	completeWidget(checkboxSize);
+}
+
+template <typename T>
+void UIPanel::addDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*getDisplayName)(T *data), String styleName)
+{
+	DEBUG_FUNCTION();
+
+	prepareForWidgets();
+
+	UIDropDownListStyle *widgetStyle = findStyle<UIDropDownListStyle>(styleName, &style->dropDownListStyle);
+
+	String selectedOptionText = getDisplayName(&(*listOptions)[*currentSelection]);
+
+	Rect2I space = getCurrentLayoutPosition();
+	V2I widgetOrigin = alignWithinRectangle(space, widgetAlignment);
+
+	bool fillWidth = ((widgetAlignment & ALIGN_H) == ALIGN_EXPAND_H);
+	V2I widgetSize = UI::calculateDropDownListSize(selectedOptionText, widgetStyle, space.w, fillWidth);
+	Rect2I widgetBounds = irectAligned(widgetOrigin, widgetSize, widgetAlignment);
+
+	UI::putDropDownList(listOptions, currentSelection, getDisplayName, widgetBounds, widgetStyle, renderBuffer, hideWidgets);
+
+	completeWidget(widgetSize);
 }
 
 void UIPanel::addSprite(Sprite *sprite, s32 width, s32 height)

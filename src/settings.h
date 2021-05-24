@@ -13,6 +13,7 @@ struct SettingEnumData
 	String id;
 	String displayName;
 };
+String getEnumDisplayName(SettingEnumData *data);
 
 struct SettingDef
 {
@@ -103,4 +104,5 @@ void setSettingData(SettingsState *state, SettingDef *def, T value, s32 index = 
 
 String getUserDataPath();
 String getUserSettingsPath();
+// Essentially a "serialiser". Writes strings for use in the conf file; not for human consumption!
 String settingToString(SettingsState *state, SettingDef *def);

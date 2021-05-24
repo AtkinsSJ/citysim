@@ -20,6 +20,13 @@ Notes for searching:
 
 BUG: we can click through the "Data overlay" button
 
+BUG: Styles do not properly fall back to a default! (AKA, AssetRefs need thinking about.)
+- When a style is not provided in the .theme file, we end up with a zeroed-out AssetRef struct for it.
+- That then crashes when it reaches checkStyleMatchesType() from findStyle(), because the type is '0'!
+- I'm not sure where in the chain we want to change it. Maybe we always assign the type when loading the theme file. Maybe we check for a null name in findStyle() and return the default without looking up the name. I don't know, and this is a tangent, so I'll deal with it later.
+	- Handling null names in getAsset() might be enough actually!
+- Worth checking that our default-fallback system works at all, because at this point I'm not sure!
+
 UI Widgets:
 - Radio buttons
 	- A group backed by an array
@@ -32,6 +39,9 @@ UI Widgets:
 	- I guess these are equivalent to our "menu buttons" but with special styling
 - Tabs!
 	- Basically just radio buttons with fancy styling
+
+Switch to a multiple-compilation-units build?
+- Might make our includes easier? Does it resolve circular dependencies? I guess maybe it doesn't.
 
 Keyboard shortcuts for buttons
 - Don't do this inside the button logic, where it doesn't belong; instead, have a function to call to see if a keyboard shortcut has been pressed. We have a basic system already for debug shortcuts, but will want a nicer system. Probably give different shortcut actions names, like ACTION_CANCEL, and then the user sets a shortcut for that, and you'll do something like:
