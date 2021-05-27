@@ -607,6 +607,7 @@ void UI::putDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*
 		s32 panelMaxHeight = round_s32(renderer->uiCamera.size.y) - panelTop;
 		Rect2I panelBounds = irectXYWH(bounds.x, panelTop, bounds.w, panelMaxHeight);
 		UIPanel panel = UIPanel(panelBounds, findStyle<UIPanelStyle>(&style->panelStyle), 0, uiState.openDropDownListRenderBuffer);
+		panel.enableVerticalScrolling(&uiState.openDropDownListScrollbar, true);
 		for (s32 optionIndex = 0; optionIndex < listOptions->count; optionIndex++)
 		{
 			if (panel.addTextButton(getDisplayName(listOptions->get(optionIndex)), buttonIsActive(optionIndex == *currentSelection)))
@@ -637,6 +638,7 @@ void UI::openDropDownList(void *pointer)
 		uiState.openDropDownListRenderBuffer = getTemporaryRenderBuffer("DropDownList"_s);
 	}
 	clearRenderBuffer(uiState.openDropDownListRenderBuffer);
+	initScrollbar(&uiState.openDropDownListScrollbar, false);
 }
 
 void UI::closeDropDownList()

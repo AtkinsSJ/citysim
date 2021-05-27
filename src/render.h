@@ -309,7 +309,7 @@ void drawSingleRect(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, V4 color00,
 void drawSingleRect(RenderBuffer *buffer, Rect2I bounds, s8 shaderID, V4 color00, V4 color01, V4 color10, V4 color11);
 
 // For when you want something to appear NOW in the render-order, but you don't know its details until later
-DrawRectPlaceholder appendDrawRectPlaceholder(RenderBuffer *buffer, s8 shaderID, bool hasTexture = false);
+DrawRectPlaceholder appendDrawRectPlaceholder(RenderBuffer *buffer, s8 shaderID, bool hasTexture);
 void fillDrawRectPlaceholder(DrawRectPlaceholder *placeholder, Rect2 bounds, V4 color);
 void fillDrawRectPlaceholder(DrawRectPlaceholder *placeholder, Rect2I bounds, V4 color);
 void fillDrawRectPlaceholder(DrawRectPlaceholder *placeholder, Rect2 bounds, V4 color00, V4 color01, V4 color10, V4 color11);

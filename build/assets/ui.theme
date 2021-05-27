@@ -51,7 +51,7 @@ panelStyle dropDown
 margin                   2
 contentPadding           4
 widgetAlignment    TOP EXPAND_H
-background        color 128 128 255 255
+background        color 0 0 255 255
 buttonStyle       dropDownItem
 scrollbarStyle    default
 
@@ -61,8 +61,8 @@ textAlignment LEFT V_CENTRE
 
 :Button dropDownItem
 font small
-textColor 0 0 0 255
-padding                2
+textColor 255 0 0 255
+padding                4
 textAlignment          LEFT V_CENTRE
 background             color 255 255 255 255
 hoverBackground        color 192 192 255 255

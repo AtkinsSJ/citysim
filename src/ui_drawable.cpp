@@ -11,12 +11,12 @@ void UIDrawable::preparePlaceholder(RenderBuffer *buffer)
 
 		case Drawable_Color:
 		{
-			rectPlaceholder = appendDrawRectPlaceholder(buffer, renderer->shaderIds.untextured);
+			rectPlaceholder = appendDrawRectPlaceholder(buffer, renderer->shaderIds.untextured, false);
 		} break;
 
 		case Drawable_Gradient:
 		{
-			rectPlaceholder = appendDrawRectPlaceholder(buffer, renderer->shaderIds.untextured);
+			rectPlaceholder = appendDrawRectPlaceholder(buffer, renderer->shaderIds.untextured, false);
 		} break;
 
 		case Drawable_Ninepatch:

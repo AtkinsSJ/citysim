@@ -282,6 +282,8 @@ inline RenderBuffer *getTemporaryRenderBuffer(String name)
 {
 	RenderBuffer *result = getItemFromPool(&renderer->renderBufferPool);
 
+	clearRenderBuffer(result);
+
 	// We only use this for debugging, and it's a leak, so limit it to debug builds
 	if (globalDebugState != null)
 	{
@@ -320,6 +322,7 @@ void transferRenderBufferData(RenderBuffer *buffer, RenderBuffer *targetBuffer)
 
 	buffer->firstChunk = null;
 	buffer->currentChunk = null;
+	clearRenderBuffer(buffer); // Make sure things are reset
 }
 
 inline void appendRenderItemType(RenderBuffer *buffer, RenderItemType type)
