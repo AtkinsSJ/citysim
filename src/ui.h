@@ -90,6 +90,7 @@ namespace UI
 		// DropDownList stuff
 		void *openDropDownList; // We use the pointer to the options array
 		ScrollbarState openDropDownListScrollbar;
+		RenderBuffer *openDropDownListRenderBuffer;
 
 		// Toast stuff
 		Queue<Toast> toasts;
@@ -106,6 +107,7 @@ namespace UI
 
 	void init(MemoryArena *arena);
 	void startFrame();
+	void endFrame();
 
 	// Input
 	bool isMouseInputHandled();

@@ -198,6 +198,18 @@ void UI::startFrame()
 	uiState.mouseInputHandled = false;
 }
 
+void UI::endFrame()
+{
+	drawToast();
+
+	if (uiState.openDropDownListRenderBuffer != null)
+	{
+		// NB: We transfer to the *window* buffer, not the *ui* buffer, because we
+		// want the drop-down to appear in front of any windows.
+		transferRenderBufferData(uiState.openDropDownListRenderBuffer, &renderer->windowBuffer);
+	}
+}
+
 inline bool UI::isMouseInputHandled()
 {
 	return uiState.mouseInputHandled;
@@ -572,11 +584,17 @@ void UI::putDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*
 		{
 			isOpen = false;
 			uiState.openDropDownList = null;
+			returnTemporaryRenderBuffer(uiState.openDropDownListRenderBuffer);
+			uiState.openDropDownListRenderBuffer = null;
 		}
 		else
 		{
 			isOpen = true;
 			uiState.openDropDownList = listOptions;
+			if (uiState.openDropDownListRenderBuffer == null)
+			{
+				uiState.openDropDownListRenderBuffer = getTemporaryRenderBuffer("DropDownList"_s);
+			}
 		}
 	}
 
@@ -586,14 +604,17 @@ void UI::putDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*
 		s32 panelTop = bounds.y + bounds.h;
 		s32 panelMaxHeight = round_s32(renderer->uiCamera.size.y) - panelTop;
 		Rect2I panelBounds = irectXYWH(bounds.x, panelTop, bounds.w, panelMaxHeight);
-		UIPanel panel = UIPanel(panelBounds, findStyle<UIPanelStyle>(&style->panelStyle), 0, renderBuffer);
+		UIPanel panel = UIPanel(panelBounds, findStyle<UIPanelStyle>(&style->panelStyle), 0, uiState.openDropDownListRenderBuffer);
 		for (s32 optionIndex = 0; optionIndex < listOptions->count; optionIndex++)
 		{
 			if (panel.addTextButton(getDisplayName(listOptions->get(optionIndex)), buttonIsActive(optionIndex == *currentSelection)))
 			{
 				*currentSelection = optionIndex;
+
 				isOpen = false;
 				uiState.openDropDownList = null;
+				returnTemporaryRenderBuffer(uiState.openDropDownListRenderBuffer);
+				uiState.openDropDownListRenderBuffer = null;
 			}
 		}
 		panel.end(true);

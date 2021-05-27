@@ -396,7 +396,7 @@ int main(int argc, char *argv[])
 					UI::closeAllWindows();
 				}
 
-				UI::drawToast();
+				UI::endFrame();
 			}
 
 
