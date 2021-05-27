@@ -79,7 +79,7 @@ setting_windowed    Windowed
 
 locale_en English
 locale_es Español
-locale_pl Polski
+locale_pl Polski is super long hooray
 
 title_about          About
 title_delete_save    Delete saved game

@@ -526,13 +526,27 @@ void UI::putCheckbox(bool *checked, Rect2I bounds, UICheckboxStyle *style, bool 
 	}
 }
 
-V2I UI::calculateDropDownListSize(String text, UIDropDownListStyle *style, s32 maxWidth, bool fillWidth)
+template <typename T>
+V2I UI::calculateDropDownListSize(Array<T> *listOptions, String (*getDisplayName)(T *data), UIDropDownListStyle *style, s32 maxWidth, bool fillWidth)
 {
 	if (style == null) style = findStyle<UIDropDownListStyle>("default"_s);
 	UIButtonStyle *buttonStyle = findStyle<UIButtonStyle>(&style->buttonStyle);
 
-	// For now, we'll just piggy-back off the button size calculation, because we're just a button
-	return calculateButtonSize(text, buttonStyle, maxWidth, fillWidth);
+	// I don't have a smarter way to do this, so, we'll just go through every option
+	// and find the maximum width and height.
+	// This feels really wasteful, but maybe it's ok?
+	s32 widest = 0;
+	s32 tallest = 0;
+
+	for (s32 optionIndex = 0; optionIndex < listOptions->count; optionIndex++)
+	{
+		String optionText = getDisplayName(listOptions->get(optionIndex));
+		V2I optionSize = calculateButtonSize(optionText, buttonStyle, maxWidth, fillWidth);
+		widest = max(widest, optionSize.x);
+		tallest = max(tallest, optionSize.y);
+	}
+
+	return v2i(widest, tallest);
 }
 
 template <typename T>

@@ -145,7 +145,8 @@ namespace UI
 	void putCheckbox(bool *checked, Rect2I bounds, UICheckboxStyle *style, bool isDisabled = false, RenderBuffer *renderBuffer = null, bool invisible = false);
 
 	// Drop-down lists
-	V2I calculateDropDownListSize(String text, UIDropDownListStyle *style, s32 maxWidth = 0, bool fillWidth = true);
+	template <typename T>
+	V2I calculateDropDownListSize(Array<T> *listOptions, String (*getDisplayName)(T *data), UIDropDownListStyle *style, s32 maxWidth = 0, bool fillWidth = true);
 	template <typename T>
 	void putDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*getDisplayName)(T *data), Rect2I bounds, UIDropDownListStyle *style, RenderBuffer *renderBuffer = null);
 

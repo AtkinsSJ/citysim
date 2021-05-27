@@ -44,7 +44,7 @@ pressedCheckImage      sprite check
 disabledCheckImage     sprite check 0 0 0 128
 
 :DropDownList default
-buttonStyle default
+buttonStyle dropDownButton
 panelStyle dropDown
 
 :Panel dropDown
@@ -55,11 +55,15 @@ background        color 128 128 255 255
 buttonStyle       dropDownItem
 scrollbarStyle    default
 
+:Button dropDownButton
+extends default
+textAlignment LEFT V_CENTRE
+
 :Button dropDownItem
 font small
 textColor 0 0 0 255
 padding                2
-textAlignment          H_CENTRE V_CENTRE
+textAlignment          LEFT V_CENTRE
 background             color 255 255 255 255
 hoverBackground        color 192 192 255 255
 pressedBackground      color 128 128 255 255
