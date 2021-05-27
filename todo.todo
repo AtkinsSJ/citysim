@@ -48,6 +48,7 @@ UI Widgets:
 	- I guess these are equivalent to our "menu buttons" but with special styling
 	- Scrollbar!
 	- Arrow!
+		-> Add start/end icon support to text buttons
 - Tabs!
 	- Basically just radio buttons with fancy styling
 
