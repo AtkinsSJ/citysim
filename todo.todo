@@ -27,6 +27,8 @@ BUG: Styles do not properly fall back to a default! (AKA, AssetRefs need thinkin
 	- Handling null names in getAsset() might be enough actually!
 - Worth checking that our default-fallback system works at all, because at this point I'm not sure!
 
+'invisible' flag on UI::putX() functions just makes those functions no-ops, so get rid of it and just avoid calling them in that case!
+
 UI Widgets:
 - Radio buttons
 	- A group backed by an array

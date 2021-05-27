@@ -152,7 +152,7 @@ void UIPanel::addDropDownList(Array<T> *listOptions, s32 *currentSelection, Stri
 
 	UIDropDownListStyle *widgetStyle = findStyle<UIDropDownListStyle>(styleName, &style->dropDownListStyle);
 
-	String selectedOptionText = getDisplayName(&(*listOptions)[*currentSelection]);
+	String selectedOptionText = getDisplayName(listOptions->get(*currentSelection));
 
 	Rect2I space = getCurrentLayoutPosition();
 	V2I widgetOrigin = alignWithinRectangle(space, widgetAlignment);
@@ -161,7 +161,10 @@ void UIPanel::addDropDownList(Array<T> *listOptions, s32 *currentSelection, Stri
 	V2I widgetSize = UI::calculateDropDownListSize(selectedOptionText, widgetStyle, space.w, fillWidth);
 	Rect2I widgetBounds = irectAligned(widgetOrigin, widgetSize, widgetAlignment);
 
-	UI::putDropDownList(listOptions, currentSelection, getDisplayName, widgetBounds, widgetStyle, renderBuffer, hideWidgets);
+	if (!hideWidgets)
+	{
+		UI::putDropDownList(listOptions, currentSelection, getDisplayName, widgetBounds, widgetStyle, renderBuffer);
+	}
 
 	completeWidget(widgetSize);
 }

@@ -88,7 +88,7 @@ namespace UI
 		Stack<Rect2I> inputScissorRects;
 
 		// DropDownList stuff
-		void *openDropDownList;
+		void *openDropDownList; // We use the pointer to the options array
 		ScrollbarState openDropDownListScrollbar;
 
 		// Toast stuff
@@ -147,7 +147,7 @@ namespace UI
 	// Drop-down lists
 	V2I calculateDropDownListSize(String text, UIDropDownListStyle *style, s32 maxWidth = 0, bool fillWidth = true);
 	template <typename T>
-	void putDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*getDisplayName)(T *data), Rect2I bounds, UIDropDownListStyle *style, RenderBuffer *renderBuffer = null, bool invisible = false);
+	void putDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*getDisplayName)(T *data), Rect2I bounds, UIDropDownListStyle *style, RenderBuffer *renderBuffer = null);
 
 	// Menus
 	void showMenu(s32 menuID);

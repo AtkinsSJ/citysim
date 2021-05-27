@@ -536,9 +536,54 @@ V2I UI::calculateDropDownListSize(String text, UIDropDownListStyle *style, s32 m
 }
 
 template <typename T>
-void UI::putDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*getDisplayName)(T *data), Rect2I bounds, UIDropDownListStyle *style, RenderBuffer *renderBuffer, bool invisible)
+void UI::putDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*getDisplayName)(T *data), Rect2I bounds, UIDropDownListStyle *style, RenderBuffer *renderBuffer)
 {
+	DEBUG_FUNCTION();
 
+	if (style == null) 			style = findStyle<UIDropDownListStyle>("default"_s);
+	if (renderBuffer == null) 	renderBuffer = &renderer->uiBuffer;
+
+	bool isOpen = (uiState.openDropDownList == listOptions);
+
+	// We always draw the current-selection box,
+	// and then show the panel if needed.
+
+	// Show the selection box
+	String selectionText = getDisplayName(listOptions->get(*currentSelection));
+	bool clicked = putTextButton(selectionText, bounds, findStyle<UIButtonStyle>(&style->buttonStyle), buttonIsActive(isOpen), renderBuffer, false);
+	if (clicked)
+	{
+		// Toggle things
+		if (isOpen)
+		{
+			isOpen = false;
+			uiState.openDropDownList = null;
+		}
+		else
+		{
+			isOpen = true;
+			uiState.openDropDownList = listOptions;
+		}
+	}
+
+	// Show the panel
+	if (isOpen)
+	{
+		s32 panelTop = bounds.y + bounds.h;
+		s32 panelMaxHeight = round_s32(renderer->uiCamera.size.y) - panelTop;
+		Rect2I panelBounds = irectXYWH(bounds.x, panelTop, bounds.w, panelMaxHeight);
+		UIPanel panel = UIPanel(panelBounds, findStyle<UIPanelStyle>(&style->panelStyle), 0, renderBuffer);
+		for (s32 optionIndex = 0; optionIndex < listOptions->count; optionIndex++)
+		{
+			if (panel.addTextButton(getDisplayName(listOptions->get(optionIndex)), buttonIsActive(optionIndex == *currentSelection)))
+			{
+				*currentSelection = optionIndex;
+				isOpen = false;
+				uiState.openDropDownList = null;
+			}
+		}
+		panel.end(true);
+	}
 }
 
 void UI::showMenu(s32 menuID)

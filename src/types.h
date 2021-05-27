@@ -215,6 +215,7 @@ struct Array
 
 	// NB: it's a reference so you can do assignments!
 	T& operator[](s32 index);
+	T* get(s32 index); // Same as [] but easier when we're using an Array*
 	T* first();
 	T* last();
 
