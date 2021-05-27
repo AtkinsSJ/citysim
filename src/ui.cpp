@@ -204,9 +204,17 @@ void UI::endFrame()
 
 	if (uiState.openDropDownListRenderBuffer != null)
 	{
-		// NB: We transfer to the *window* buffer, not the *ui* buffer, because we
-		// want the drop-down to appear in front of any windows.
-		transferRenderBufferData(uiState.openDropDownListRenderBuffer, &renderer->windowBuffer);
+		// If the buffer is empty, we didn't draw the dropdown this frame, so we should mark it as closed
+		if (uiState.openDropDownListRenderBuffer->firstChunk == null)
+		{
+			closeDropDownList();
+		}
+		else
+		{
+			// NB: We transfer to the *window* buffer, not the *ui* buffer, because we
+			// want the drop-down to appear in front of any windows.
+			transferRenderBufferData(uiState.openDropDownListRenderBuffer, &renderer->windowBuffer);
+		}
 	}
 }
 
@@ -569,7 +577,7 @@ void UI::putDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*
 	if (style == null) 			style = findStyle<UIDropDownListStyle>("default"_s);
 	if (renderBuffer == null) 	renderBuffer = &renderer->uiBuffer;
 
-	bool isOpen = (uiState.openDropDownList == listOptions);
+	bool isOpen = isDropDownListOpen(listOptions);
 
 	// We always draw the current-selection box,
 	// and then show the panel if needed.
@@ -583,18 +591,12 @@ void UI::putDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*
 		if (isOpen)
 		{
 			isOpen = false;
-			uiState.openDropDownList = null;
-			returnTemporaryRenderBuffer(uiState.openDropDownListRenderBuffer);
-			uiState.openDropDownListRenderBuffer = null;
+			closeDropDownList();
 		}
 		else
 		{
 			isOpen = true;
-			uiState.openDropDownList = listOptions;
-			if (uiState.openDropDownListRenderBuffer == null)
-			{
-				uiState.openDropDownListRenderBuffer = getTemporaryRenderBuffer("DropDownList"_s);
-			}
+			openDropDownList(listOptions);
 		}
 	}
 
@@ -612,13 +614,41 @@ void UI::putDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*
 				*currentSelection = optionIndex;
 
 				isOpen = false;
-				uiState.openDropDownList = null;
-				returnTemporaryRenderBuffer(uiState.openDropDownListRenderBuffer);
-				uiState.openDropDownListRenderBuffer = null;
+				closeDropDownList();
 			}
 		}
 		panel.end(true);
+
+		// If we clicked somewhere outside of the panel, close it
+		if (isOpen && !clicked
+		 && mouseButtonJustReleased(MouseButton_Left)
+		 && !justClickedOnUI(panel.bounds))
+		{
+			closeDropDownList();
+		}
 	}
+}
+
+void UI::openDropDownList(void *pointer)
+{
+	uiState.openDropDownList = pointer;
+	if (uiState.openDropDownListRenderBuffer == null)
+	{
+		uiState.openDropDownListRenderBuffer = getTemporaryRenderBuffer("DropDownList"_s);
+	}
+	clearRenderBuffer(uiState.openDropDownListRenderBuffer);
+}
+
+void UI::closeDropDownList()
+{
+	uiState.openDropDownList = null;
+	returnTemporaryRenderBuffer(uiState.openDropDownListRenderBuffer);
+	uiState.openDropDownListRenderBuffer = null;
+}
+
+inline bool UI::isDropDownListOpen(void *pointer)
+{
+	return (uiState.openDropDownList == pointer);
 }
 
 void UI::showMenu(s32 menuID)

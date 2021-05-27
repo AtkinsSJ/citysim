@@ -151,6 +151,9 @@ namespace UI
 	V2I calculateDropDownListSize(Array<T> *listOptions, String (*getDisplayName)(T *data), UIDropDownListStyle *style, s32 maxWidth = 0, bool fillWidth = true);
 	template <typename T>
 	void putDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*getDisplayName)(T *data), Rect2I bounds, UIDropDownListStyle *style, RenderBuffer *renderBuffer = null);
+	void openDropDownList(void *pointer);
+	void closeDropDownList();
+	bool isDropDownListOpen(void *pointer);
 
 	// Menus
 	void showMenu(s32 menuID);
