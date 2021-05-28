@@ -25,6 +25,8 @@ SettingsState makeDefaultSettings()
 	result.windowed = true;
 	result.resolution = v2i(1024, 600);
 	result.locale = Locale_en;
+	result.musicVolume = 0.5f;
+	result.soundVolume = 0.5f;
 
 	return result;
 }
@@ -39,9 +41,11 @@ void initSettings()
 
 #define REGISTER_SETTING(settingName, type, count, ...) registerSetting(makeString(#settingName), offsetof(SettingsState, settingName), Type_##type, count, makeString("setting_" #settingName), __VA_ARGS__)
 
-	REGISTER_SETTING(windowed,   bool,   1);
-	REGISTER_SETTING(resolution, s32,    2);
-	REGISTER_SETTING(locale,     enum,   1, &localeData);
+	REGISTER_SETTING(windowed,		bool,		1);
+	REGISTER_SETTING(resolution,	s32,		2);
+	REGISTER_SETTING(locale,		enum,		1, &localeData);
+	REGISTER_SETTING(musicVolume,	percent,	1);
+	REGISTER_SETTING(soundVolume,	percent,	1);
 
 #undef REGISTER_SETTING
 }
@@ -111,6 +115,16 @@ void loadSettingsFile(String name, Blob settingsData)
 
 					} break;
 
+					case Type_percent:
+					{
+						Maybe<f64> value = readFloat(&reader);
+						if (value.isValid)
+						{
+							f32 clampedValue = clamp01((f32)value.value);
+							setSettingData<f32>(&settings->settings, def, clampedValue, i);
+						}
+					} break;
+
 					case Type_s32:
 					{
 						Maybe<s32> value = readInt<s32>(&reader);
@@ -170,15 +184,20 @@ String settingToString(SettingsState *state, SettingDef *def)
 				append(&stb, formatBool(getSettingData<bool>(state, def, i)));
 			} break;
 
-			case Type_s32:
-			{
-				append(&stb, formatInt(getSettingData<s32>(state, def, i)));
-			} break;
-
 			case Type_enum:
 			{
 				s32 enumValueIndex = getSettingData<s32>(state, def, i);
 				append(&stb, (*def->enumData)[enumValueIndex].id);
+			} break;
+
+			case Type_percent:
+			{
+				append(&stb, formatFloat(getSettingData<f32>(state, def, i), 2));
+			} break;
+
+			case Type_s32:
+			{
+				append(&stb, formatInt(getSettingData<s32>(state, def, i)));
 			} break;
 
 			case Type_String:

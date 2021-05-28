@@ -4,6 +4,7 @@ enum Type
 {
 	Type_bool,
 	Type_enum,
+	Type_percent,
 	Type_s32,
 	Type_String,
 };
@@ -156,6 +157,8 @@ struct SettingsState
 	bool windowed;
 	V2I resolution;
 	s32 locale; // Locale
+	f32 musicVolume;
+	f32 soundVolume;
 };
 
 struct Settings
