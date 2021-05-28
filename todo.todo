@@ -31,8 +31,6 @@ BUG: Styles do not properly fall back to a default! (AKA, AssetRefs need thinkin
 - Worth checking that our default-fallback system works at all, because at this point I'm not sure!
 - UI styles generally need better handling of defaults. So far, everything defaults to '0' which casues bad effects ranging from visual garbage to crashes. That's NOT something we want in a system that could be edited by users!
 
-'invisible' flag on UI::putX() functions just makes those functions no-ops, so get rid of it and just avoid calling them in that case!
-
 Toast should draw in the Window RB because it belongs on top of everything
 -> Maybe it and the openDropDownList should both draw to a "on top of UI" buffer?
 

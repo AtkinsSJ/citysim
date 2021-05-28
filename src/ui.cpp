@@ -433,7 +433,7 @@ Rect2I UI::calculateButtonContentBounds(Rect2I bounds, UIButtonStyle *style)
 	return contentBounds;
 }
 
-bool UI::putButton(Rect2I bounds, UIButtonStyle *style, ButtonState state, RenderBuffer *renderBuffer, bool invisible, String tooltip)
+bool UI::putButton(Rect2I bounds, UIButtonStyle *style, ButtonState state, RenderBuffer *renderBuffer, String tooltip)
 {
 	DEBUG_FUNCTION();
 
@@ -442,102 +442,93 @@ bool UI::putButton(Rect2I bounds, UIButtonStyle *style, ButtonState state, Rende
 	
 	bool buttonClicked = false;
 
-	if (!invisible)
+WidgetMouseState mouseState = getWidgetMouseState(bounds);
+
+	UIDrawableStyle *backgroundStyle = &style->background;
+
+	if (state == Button_Disabled)
 	{
-		WidgetMouseState mouseState = getWidgetMouseState(bounds);
-
-		UIDrawableStyle *backgroundStyle = &style->background;
-
-		if (state == Button_Disabled)
+		backgroundStyle = &style->disabledBackground;
+	}
+	else if (mouseState.isHovered)
+	{
+		if (mouseState.isPressed)
 		{
-			backgroundStyle = &style->disabledBackground;
+			backgroundStyle = &style->pressedBackground;
 		}
-		else if (mouseState.isHovered)
-		{
-			if (mouseState.isPressed)
-			{
-				backgroundStyle = &style->pressedBackground;
-			}
-			else
-			{
-				backgroundStyle = &style->hoverBackground;
-			}
-
-			if (tooltip.length)
-			{
-				showTooltip(tooltip);
-			}
-		}
-		else if (state == Button_Active)
+		else
 		{
 			backgroundStyle = &style->hoverBackground;
 		}
 
-		UIDrawable buttonBackground = UIDrawable(backgroundStyle);
-		buttonBackground.draw(renderBuffer, bounds);
-
-		// Icons!
-		if (style->startIcon.type != Drawable_None)
+		if (tooltip.length)
 		{
-			V2I startIconSize = style->startIcon.getSize();
-			V2I startIconOrigin = alignWithinRectangle(bounds, style->startIconAlignment, style->padding);
-			Rect2I startIconBounds = irectAligned(startIconOrigin, startIconSize, style->startIconAlignment);
-
-			UIDrawable(&style->startIcon).draw(renderBuffer, startIconBounds);
+			showTooltip(tooltip);
 		}
-		if (style->endIcon.type != Drawable_None)
-		{
-			V2I endIconSize = style->endIcon.getSize();
-			V2I endIconOrigin = alignWithinRectangle(bounds, style->endIconAlignment, style->padding);
-			Rect2I endIconBounds = irectAligned(endIconOrigin, endIconSize, style->endIconAlignment);
+	}
+	else if (state == Button_Active)
+	{
+		backgroundStyle = &style->hoverBackground;
+	}
 
-			UIDrawable(&style->endIcon).draw(renderBuffer, endIconBounds);
-		}
+	UIDrawable buttonBackground = UIDrawable(backgroundStyle);
+	buttonBackground.draw(renderBuffer, bounds);
 
-		// Respond to click
-		if ((state != Button_Disabled) && justClickedOnUI(bounds))
-		{
-			buttonClicked = true;
-			markMouseInputHandled();
-		}
+	// Icons!
+	if (style->startIcon.type != Drawable_None)
+	{
+		V2I startIconSize = style->startIcon.getSize();
+		V2I startIconOrigin = alignWithinRectangle(bounds, style->startIconAlignment, style->padding);
+		Rect2I startIconBounds = irectAligned(startIconOrigin, startIconSize, style->startIconAlignment);
+
+		UIDrawable(&style->startIcon).draw(renderBuffer, startIconBounds);
+	}
+	if (style->endIcon.type != Drawable_None)
+	{
+		V2I endIconSize = style->endIcon.getSize();
+		V2I endIconOrigin = alignWithinRectangle(bounds, style->endIconAlignment, style->padding);
+		Rect2I endIconBounds = irectAligned(endIconOrigin, endIconSize, style->endIconAlignment);
+
+		UIDrawable(&style->endIcon).draw(renderBuffer, endIconBounds);
+	}
+
+	// Respond to click
+	if ((state != Button_Disabled) && justClickedOnUI(bounds))
+	{
+		buttonClicked = true;
+		markMouseInputHandled();
 	}
 
 	return buttonClicked;
 }
 
-bool UI::putTextButton(String text, Rect2I bounds, UIButtonStyle *style, ButtonState state, RenderBuffer *renderBuffer, bool invisible, String tooltip)
+bool UI::putTextButton(String text, Rect2I bounds, UIButtonStyle *style, ButtonState state, RenderBuffer *renderBuffer, String tooltip)
 {
 	if (renderBuffer == null)
 	{
 		renderBuffer = &renderer->uiBuffer;
 	}
 
-	bool result = putButton(bounds, style, state, renderBuffer, invisible, tooltip);
+	bool result = putButton(bounds, style, state, renderBuffer, tooltip);
 
-	if (!invisible)
-	{
-		Rect2I contentBounds = calculateButtonContentBounds(bounds, style);
+	Rect2I contentBounds = calculateButtonContentBounds(bounds, style);
 
-		u32 textAlignment = style->textAlignment;
-		V2I textOrigin = alignWithinRectangle(contentBounds, textAlignment, 0);
-		drawText(renderBuffer, getFont(&style->font), text, textOrigin, textAlignment, style->textColor);
-	}
+	u32 textAlignment = style->textAlignment;
+	V2I textOrigin = alignWithinRectangle(contentBounds, textAlignment, 0);
+	drawText(renderBuffer, getFont(&style->font), text, textOrigin, textAlignment, style->textColor);
 
 	return result;
 }
 
-bool UI::putImageButton(Sprite *sprite, Rect2I bounds, UIButtonStyle *style, ButtonState state, RenderBuffer *renderBuffer, bool invisible, String tooltip)
+bool UI::putImageButton(Sprite *sprite, Rect2I bounds, UIButtonStyle *style, ButtonState state, RenderBuffer *renderBuffer, String tooltip)
 {
 	if (renderBuffer == null) renderBuffer = &renderer->uiBuffer;
 
-	bool result = putButton(bounds, style, state, renderBuffer, invisible, tooltip);
+	bool result = putButton(bounds, style, state, renderBuffer, tooltip);
 
-	if (!invisible)
-	{
-		Rect2I contentBounds = calculateButtonContentBounds(bounds, style);
-		Rect2 spriteBounds = rect2(contentBounds);
-		drawSingleSprite(renderBuffer, sprite, spriteBounds, renderer->shaderIds.textured, makeWhite());
-	}
+	Rect2I contentBounds = calculateButtonContentBounds(bounds, style);
+	Rect2 spriteBounds = rect2(contentBounds);
+	drawSingleSprite(renderBuffer, sprite, spriteBounds, renderer->shaderIds.textured, makeWhite());
 
 	return result;
 }
@@ -551,53 +542,50 @@ V2I UI::calculateCheckboxSize(UICheckboxStyle *style)
 	return result;
 }
 
-void UI::putCheckbox(bool *checked, Rect2I bounds, UICheckboxStyle *style, bool isDisabled, RenderBuffer *renderBuffer, bool invisible)
+void UI::putCheckbox(bool *checked, Rect2I bounds, UICheckboxStyle *style, bool isDisabled, RenderBuffer *renderBuffer)
 {
 	DEBUG_FUNCTION();
 
 	if (style == null) 			style = findStyle<UICheckboxStyle>("default"_s);
 	if (renderBuffer == null) 	renderBuffer = &renderer->uiBuffer;
 
-	if (!invisible)
+	WidgetMouseState mouseState = getWidgetMouseState(bounds);
+
+	UIDrawableStyle *backgroundStyle = &style->background;
+	UIDrawableStyle *checkStyle = &style->checkImage;
+
+	if (isDisabled)
 	{
-		WidgetMouseState mouseState = getWidgetMouseState(bounds);
-
-		UIDrawableStyle *backgroundStyle = &style->background;
-		UIDrawableStyle *checkStyle = &style->checkImage;
-
-		if (isDisabled)
+		backgroundStyle = &style->disabledBackground;
+		checkStyle = &style->disabledCheckImage;
+	}
+	else if (mouseState.isHovered)
+	{
+		if (mouseState.isPressed)
 		{
-			backgroundStyle = &style->disabledBackground;
-			checkStyle = &style->disabledCheckImage;
+			backgroundStyle = &style->pressedBackground;
+			checkStyle = &style->pressedCheckImage;
 		}
-		else if (mouseState.isHovered)
+		else
 		{
-			if (mouseState.isPressed)
-			{
-				backgroundStyle = &style->pressedBackground;
-				checkStyle = &style->pressedCheckImage;
-			}
-			else
-			{
-				backgroundStyle = &style->hoverBackground;
-				checkStyle = &style->hoverCheckImage;
-			}
+			backgroundStyle = &style->hoverBackground;
+			checkStyle = &style->hoverCheckImage;
 		}
+	}
 
-		if (!isDisabled && justClickedOnUI(bounds))
-		{
-			*checked = !(*checked);
-			markMouseInputHandled();
-		}
+	if (!isDisabled && justClickedOnUI(bounds))
+	{
+		*checked = !(*checked);
+		markMouseInputHandled();
+	}
 
-		// Render it
-		UIDrawable(backgroundStyle).draw(renderBuffer, bounds);
+	// Render it
+	UIDrawable(backgroundStyle).draw(renderBuffer, bounds);
 
-		if (*checked)
-		{
-			Rect2I checkBounds = shrink(bounds, style->padding);
-			UIDrawable(checkStyle).draw(renderBuffer, checkBounds);
-		}
+	if (*checked)
+	{
+		Rect2I checkBounds = shrink(bounds, style->padding);
+		UIDrawable(checkStyle).draw(renderBuffer, checkBounds);
 	}
 }
 
@@ -639,7 +627,7 @@ void UI::putDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*
 
 	// Show the selection box
 	String selectionText = getDisplayName(listOptions->get(*currentSelection));
-	bool clicked = putTextButton(selectionText, bounds, findStyle<UIButtonStyle>(&style->buttonStyle), buttonIsActive(isOpen), renderBuffer, false);
+	bool clicked = putTextButton(selectionText, bounds, findStyle<UIButtonStyle>(&style->buttonStyle), buttonIsActive(isOpen), renderBuffer);
 	if (clicked)
 	{
 		// Toggle things
@@ -742,26 +730,21 @@ inline ScrollbarState *UI::getMenuScrollbar()
 	return &uiState.openMenuScrollbar;
 }
 
-bool UI::putTextInput(TextInput *textInput, UITextInputStyle *style, Rect2I bounds, RenderBuffer *renderBuffer, bool invisible)
+bool UI::putTextInput(TextInput *textInput, UITextInputStyle *style, Rect2I bounds, RenderBuffer *renderBuffer)
 {
 	if (style == null) style = findStyle<UITextInputStyle>("default"_s);
 	if (renderBuffer == null) renderBuffer = &renderer->uiBuffer;
 
-	bool submittedInput = false;
+	bool submittedInput = updateTextInput(textInput);
 
-	if (!invisible)
+	drawTextInput(renderBuffer, textInput, style, bounds);
+
+	// Capture the input focus if we just clicked on this TextInput
+	if (justClickedOnUI(bounds))
 	{
-		submittedInput = updateTextInput(textInput);
-
-		drawTextInput(renderBuffer, textInput, style, bounds);
-
-		// Capture the input focus if we just clicked on this TextInput
-		if (justClickedOnUI(bounds))
-		{
-			markMouseInputHandled();
-			captureInput(textInput);
-			textInput->caretFlashCounter = 0;
-		}
+		markMouseInputHandled();
+		captureInput(textInput);
+		textInput->caretFlashCounter = 0;
 	}
 
 	return submittedInput;

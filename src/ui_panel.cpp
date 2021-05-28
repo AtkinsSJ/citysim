@@ -95,7 +95,12 @@ bool UIPanel::addTextButton(String text, ButtonState state, String styleName)
 	V2I buttonSize = UI::calculateButtonSize(text, buttonStyle, space.w, fillWidth);
 	Rect2I buttonBounds = irectAligned(buttonOrigin, buttonSize, widgetAlignment);
 
-	bool wasClicked = UI::putTextButton(text, buttonBounds, buttonStyle, state, renderBuffer, hideWidgets);
+	bool wasClicked = false;
+
+	if (!hideWidgets)
+	{
+		wasClicked = UI::putTextButton(text, buttonBounds, buttonStyle, state, renderBuffer);
+	}
 
 	completeWidget(buttonBounds.size);
 
@@ -118,7 +123,12 @@ bool UIPanel::addImageButton(Sprite *sprite, ButtonState state, String styleName
 	V2I buttonSize = UI::calculateButtonSize(spriteSize, buttonStyle, space.w, fillWidth);
 	Rect2I buttonBounds = irectAligned(buttonOrigin, buttonSize, widgetAlignment);
 
-	bool wasClicked = UI::putImageButton(sprite, buttonBounds, buttonStyle, state, renderBuffer, hideWidgets);
+	bool wasClicked = false;
+
+	if (!hideWidgets)
+	{
+		wasClicked = UI::putImageButton(sprite, buttonBounds, buttonStyle, state, renderBuffer);
+	}
 
 	completeWidget(buttonBounds.size);
 
@@ -138,7 +148,10 @@ void UIPanel::addCheckbox(bool *checked, String styleName)
 	V2I checkboxSize = UI::calculateCheckboxSize(checkboxStyle);
 	Rect2I checkboxBounds = irectAligned(checkboxOrigin, checkboxSize, widgetAlignment);
 
-	UI::putCheckbox(checked, checkboxBounds, checkboxStyle, false, renderBuffer, hideWidgets);
+	if (!hideWidgets)
+	{
+		UI::putCheckbox(checked, checkboxBounds, checkboxStyle, false, renderBuffer);
+	}
 
 	completeWidget(checkboxSize);
 }
@@ -234,7 +247,12 @@ bool UIPanel::addTextInput(TextInput *textInput, String styleName)
 	V2I textInputSize = UI::calculateTextInputSize(textInput, textInputStyle, space.w, fillWidth);
 	Rect2I textInputBounds = irectAligned(origin, textInputSize, this->widgetAlignment);
 
-	bool result = UI::putTextInput(textInput, textInputStyle, textInputBounds, renderBuffer, hideWidgets);
+	bool result = false;
+	
+	if (!hideWidgets)
+	{
+		result = UI::putTextInput(textInput, textInputStyle, textInputBounds, renderBuffer);
+	}
 	
 	completeWidget(textInputSize);
 

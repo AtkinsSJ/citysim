@@ -139,13 +139,13 @@ namespace UI
 	V2I calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 maxWidth = 0, bool fillWidth = true);
 	V2I calculateButtonSize(V2I contentSize, UIButtonStyle *buttonStyle, s32 maxWidth = 0, bool fillWidth = true);
 	Rect2I calculateButtonContentBounds(Rect2I bounds, UIButtonStyle *style);
-	bool putButton(Rect2I bounds, UIButtonStyle *style, ButtonState state = Button_Normal, RenderBuffer *renderBuffer = null, bool invisible = false, String tooltip = nullString);
-	bool putTextButton(String text, Rect2I bounds, UIButtonStyle *style, ButtonState state = Button_Normal, RenderBuffer *renderBuffer = null, bool invisible = false, String tooltip=nullString);
-	bool putImageButton(Sprite *sprite, Rect2I bounds, UIButtonStyle *style, ButtonState state = Button_Normal, RenderBuffer *renderBuffer = null, bool invisible = false, String tooltip=nullString);
+	bool putButton(Rect2I bounds, UIButtonStyle *style, ButtonState state = Button_Normal, RenderBuffer *renderBuffer = null, String tooltip = nullString);
+	bool putTextButton(String text, Rect2I bounds, UIButtonStyle *style, ButtonState state = Button_Normal, RenderBuffer *renderBuffer = null, String tooltip=nullString);
+	bool putImageButton(Sprite *sprite, Rect2I bounds, UIButtonStyle *style, ButtonState state = Button_Normal, RenderBuffer *renderBuffer = null, String tooltip=nullString);
 
 	// Checkboxes
 	V2I calculateCheckboxSize(UICheckboxStyle *style);
-	void putCheckbox(bool *checked, Rect2I bounds, UICheckboxStyle *style, bool isDisabled = false, RenderBuffer *renderBuffer = null, bool invisible = false);
+	void putCheckbox(bool *checked, Rect2I bounds, UICheckboxStyle *style, bool isDisabled = false, RenderBuffer *renderBuffer = null);
 
 	// Drop-down lists
 	template <typename T>
@@ -164,7 +164,7 @@ namespace UI
 	ScrollbarState *getMenuScrollbar();
 
 	// TextInputs
-	bool putTextInput(TextInput *textInput, UITextInputStyle *style, Rect2I bounds, RenderBuffer *renderBuffer = null, bool invisible = false);
+	bool putTextInput(TextInput *textInput, UITextInputStyle *style, Rect2I bounds, RenderBuffer *renderBuffer = null);
 
 	// Toasts
 	// NB: `message` is copied into the UIState, so it can be a temporary allocation
