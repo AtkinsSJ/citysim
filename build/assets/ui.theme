@@ -23,6 +23,7 @@ pressedBackground      ninepatch btn_white 128 128 255 255
 disabledBackground     ninepatch btn_white 96  96  96 255
 padding                6
 textAlignment          H_CENTRE V_CENTRE
+contentPadding         8
 
 :Button delete
 extends default
@@ -58,6 +59,8 @@ scrollbarStyle    default
 :Button dropDownButton
 extends default
 textAlignment LEFT V_CENTRE
+endIcon sprite dropdown_arrow
+endIconAlignment RIGHT V_CENTRE
 
 :Button dropDownItem
 font small

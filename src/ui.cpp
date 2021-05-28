@@ -344,7 +344,19 @@ Rect2I UI::drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V
 V2I UI::calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 maxWidth, bool fillWidth)
 {
 	s32 doublePadding = (buttonStyle->padding * 2);
-	s32 textMaxWidth = (maxWidth == 0) ? 0 : (maxWidth - doublePadding);
+
+	// If we have icons, take them into account
+	V2I startIconSize = buttonStyle->startIcon.getSize();
+	if (startIconSize.x > 0) startIconSize.x += buttonStyle->contentPadding;
+
+	V2I endIconSize =  buttonStyle->endIcon.getSize();
+	if (endIconSize.x > 0) endIconSize.x += buttonStyle->contentPadding;
+
+	s32 textMaxWidth = 0;
+	if (maxWidth != 0)
+	{
+		textMaxWidth = maxWidth - doublePadding - startIconSize.x - endIconSize.x;
+	}
 
 	V2I result = {};
 	BitmapFont *font = getFont(&buttonStyle->font);
@@ -370,10 +382,10 @@ V2I UI::calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 maxWidt
 		}
 		else
 		{
-			resultWidth = (textSize.x + doublePadding);
+			resultWidth = (textSize.x + startIconSize.x + endIconSize.x + doublePadding);
 		}
 
-		result = v2i(resultWidth, textSize.y + doublePadding);
+		result = v2i(resultWidth, max(textSize.y, startIconSize.y, endIconSize.y) + doublePadding);
 	}
 
 	return result;
@@ -383,6 +395,13 @@ V2I UI::calculateButtonSize(V2I contentSize, UIButtonStyle *buttonStyle, s32 max
 {
 	s32 doublePadding = (buttonStyle->padding * 2);
 
+	// If we have icons, take them into account
+	V2I startIconSize = buttonStyle->startIcon.getSize();
+	if (startIconSize.x > 0) startIconSize.x += buttonStyle->contentPadding;
+
+	V2I endIconSize =  buttonStyle->endIcon.getSize();
+	if (endIconSize.x > 0) endIconSize.x += buttonStyle->contentPadding;
+
 	V2I result = {};
 
 	if (fillWidth && (maxWidth > 0))
@@ -391,10 +410,10 @@ V2I UI::calculateButtonSize(V2I contentSize, UIButtonStyle *buttonStyle, s32 max
 	}
 	else
 	{
-		result.x = (contentSize.x + doublePadding);
+		result.x = (contentSize.x + doublePadding + startIconSize.x + endIconSize.x);
 	}
 
-	result.y = contentSize.y + doublePadding;
+	result.y = max(contentSize.y, startIconSize.y, endIconSize.y) + doublePadding;
 
 	return result;
 }
@@ -442,6 +461,24 @@ bool UI::putButton(Rect2I bounds, UIButtonStyle *style, ButtonState state, Rende
 		UIDrawable buttonBackground = UIDrawable(backgroundStyle);
 		buttonBackground.draw(renderBuffer, bounds);
 
+		// Icons!
+		if (style->startIcon.type != Drawable_None)
+		{
+			V2I startIconSize = style->startIcon.getSize();
+			V2I startIconOrigin = alignWithinRectangle(bounds, style->startIconAlignment, style->padding);
+			Rect2I startIconBounds = irectAligned(startIconOrigin, startIconSize, style->startIconAlignment);
+
+			UIDrawable(&style->startIcon).draw(renderBuffer, startIconBounds);
+		}
+		if (style->endIcon.type != Drawable_None)
+		{
+			V2I endIconSize = style->endIcon.getSize();
+			V2I endIconOrigin = alignWithinRectangle(bounds, style->endIconAlignment, style->padding);
+			Rect2I endIconBounds = irectAligned(endIconOrigin, endIconSize, style->endIconAlignment);
+
+			UIDrawable(&style->endIcon).draw(renderBuffer, endIconBounds);
+		}
+
 		// Respond to click
 		if ((state != Button_Disabled) && justClickedOnUI(bounds))
 		{
@@ -464,8 +501,17 @@ bool UI::putTextButton(String text, Rect2I bounds, UIButtonStyle *style, ButtonS
 
 	if (!invisible)
 	{
+		Rect2I contentBounds = shrink(bounds, style->padding);
+		V2I startIconSize = style->startIcon.getSize();
+		if (startIconSize.x > 0) startIconSize.x += style->contentPadding;
+		V2I endIconSize = style->endIcon.getSize();
+		if (endIconSize.x > 0) endIconSize.x += style->contentPadding;
+
+		contentBounds.x += startIconSize.x;
+		contentBounds.w -= (startIconSize.x + endIconSize.x);
+
 		u32 textAlignment = style->textAlignment;
-		V2I textOrigin = alignWithinRectangle(bounds, textAlignment, style->padding);
+		V2I textOrigin = alignWithinRectangle(contentBounds, textAlignment, 0);
 		drawText(renderBuffer, getFont(&style->font), text, textOrigin, textAlignment, style->textColor);
 	}
 
@@ -607,7 +653,7 @@ void UI::putDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*
 		s32 panelMaxHeight = round_s32(renderer->uiCamera.size.y) - panelTop;
 		Rect2I panelBounds = irectXYWH(bounds.x, panelTop, bounds.w, panelMaxHeight);
 		UIPanel panel = UIPanel(panelBounds, findStyle<UIPanelStyle>(&style->panelStyle), 0, uiState.openDropDownListRenderBuffer);
-		panel.enableVerticalScrolling(&uiState.openDropDownListScrollbar, true);
+		panel.enableVerticalScrolling(&uiState.openDropDownListScrollbar, false);
 		for (s32 optionIndex = 0; optionIndex < listOptions->count; optionIndex++)
 		{
 			if (panel.addTextButton(getDisplayName(listOptions->get(optionIndex)), buttonIsActive(optionIndex == *currentSelection)))

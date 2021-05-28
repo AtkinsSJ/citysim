@@ -79,6 +79,28 @@ Maybe<UIDrawableStyle> readDrawableStyle(LineReader *reader)
 	return result;
 }
 
+inline bool UIDrawableStyle::hasFixedSize()
+{
+	return (type == Drawable_None || type == Drawable_Sprite);
+}
+
+V2I UIDrawableStyle::getSize()
+{
+	V2I result = {};
+
+	switch (type)
+	{
+		case Drawable_Sprite:
+		{
+			Sprite *theSprite = getSprite(&sprite);
+			result.x = theSprite->pixelWidth;
+			result.y = theSprite->pixelHeight;
+		} break;
+	}
+
+	return result;
+}
+
 void initUIStyleProperties()
 {
 	initHashTable(&uiStyleProperties, 0.75f, 256);
@@ -105,10 +127,12 @@ void initUIStyleProperties()
 	PROP(checkImage,               PropType_Drawable,   false,  true, false, false, false, false, false, false, false);
 	PROP(checkboxStyle,            PropType_Style,      false, false, false, false, false,  true, false, false, false);
 	PROP(contentSize,	           PropType_V2I,        false,  true, false, false, false, false, false, false, false);
-	PROP(contentPadding,           PropType_Int,        false, false, false, false, false,  true, false, false, false);
+	PROP(contentPadding,           PropType_Int,         true, false, false, false, false,  true, false, false, false);
 	PROP(disabledBackground,       PropType_Drawable,    true,  true, false, false, false, false, false, false, false);
 	PROP(disabledCheckImage,       PropType_Drawable,   false,  true, false, false, false, false, false, false, false);
 	PROP(dropDownListStyle,        PropType_Style,      false,  true, false, false, false,  true, false, false, false);
+	PROP(endIcon,                  PropType_Drawable,    true, false, false, false, false, false, false, false, false);
+	PROP(endIconAlignment,         PropType_Alignment,   true, false, false, false, false, false, false, false, false);
 	PROP(font,                     PropType_Font,        true, false,  true, false,  true, false, false,  true, false);
 	PROP(hoverBackground,          PropType_Drawable,    true,  true, false, false, false, false, false, false, false);
 	PROP(hoverCheckImage,          PropType_Drawable,   false,  true, false, false, false, false, false, false, false);
@@ -121,6 +145,8 @@ void initUIStyleProperties()
 	PROP(pressedCheckImage,        PropType_Drawable,   false,  true, false, false, false, false, false, false, false);
 	PROP(scrollbarStyle,    	   PropType_Style,      false, false,  true, false, false,  true, false, false, false);
 	PROP(showCaret,                PropType_Bool,       false, false, false, false, false, false, false,  true, false);
+	PROP(startIcon,                PropType_Drawable,    true, false, false, false, false, false, false, false, false);
+	PROP(startIconAlignment,       PropType_Alignment,   true, false, false, false, false, false, false, false, false);
 	PROP(textAlignment,            PropType_Alignment,   true, false, false, false, false, false, false,  true, false);
 	PROP(textColor,                PropType_Color,       true, false, false, false,  true, false, false,  true, false);
 	PROP(textInputStyle,    	   PropType_Style,      false, false,  true, false, false,  true, false, false, false);
@@ -133,6 +159,8 @@ void initUIStyleProperties()
 	PROP(titleFont,                PropType_Font,       false, false, false, false, false, false, false, false,  true);
 	PROP(widgetAlignment,          PropType_Alignment,  false, false, false, false, false,  true, false, false, false);
 	PROP(width,                    PropType_Int,        false, false, false, false, false, false,  true, false, false);
+
+	// PROP(width,                    PropType_Int,        false, false, false, false, false, false, false, false, false);
 
 	#undef PROP
 }
@@ -476,12 +504,20 @@ void loadUITheme(Blob data, Asset *asset)
 						button->textColor = style->textColor;
 						button->textAlignment = style->textAlignment;
 
+						button->padding = style->padding;
+						button->contentPadding = style->contentPadding;
+
+						button->startIcon = style->startIcon;
+						button->startIconAlignment = style->startIconAlignment;
+						button->endIcon = style->endIcon;
+						button->endIconAlignment = style->endIconAlignment;
+
+						ASSERT(button->startIcon.hasFixedSize() && button->endIcon.hasFixedSize());
+
 						button->background = style->background;
 						button->hoverBackground = style->hoverBackground;
 						button->pressedBackground = style->pressedBackground;
 						button->disabledBackground = style->disabledBackground;
-
-						button->padding = style->padding;
 					} break;
 
 					case UIStyle_Checkbox: {
@@ -503,6 +539,11 @@ void loadUITheme(Blob data, Asset *asset)
 						checkbox->hoverCheckImage = style->hoverCheckImage;
 						checkbox->pressedCheckImage = style->pressedCheckImage;
 						checkbox->disabledCheckImage = style->disabledCheckImage;
+
+						// ASSERT(checkbox->checkImage.hasFixedSize()
+						//  && checkbox->hoverCheckImage.hasFixedSize()
+						//  && checkbox->pressedCheckImage.hasFixedSize()
+						//  && checkbox->disabledCheckImage.hasFixedSize());
 					} break;
 
 					case UIStyle_Console: {

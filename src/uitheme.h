@@ -27,6 +27,10 @@ struct UIDrawableStyle
 
 		SpriteRef sprite;
 	};
+
+// METHODS
+	bool hasFixedSize();
+	V2I getSize(); // NB: Returns 0 for sizeless types
 };
 Maybe<UIDrawableStyle> readDrawableStyle(struct LineReader *reader);
 
@@ -52,12 +56,19 @@ struct UIButtonStyle
 	V4 textColor;
 	u32 textAlignment;
 
+	s32 padding;
+	s32 contentPadding; // Between icons and content
+
+	UIDrawableStyle startIcon;
+	u32 startIconAlignment;
+
+	UIDrawableStyle endIcon;
+	u32 endIconAlignment;
+
 	UIDrawableStyle background;
 	UIDrawableStyle hoverBackground;
 	UIDrawableStyle pressedBackground;
 	UIDrawableStyle disabledBackground;
-
-	s32 padding;
 };
 
 struct UICheckboxStyle
@@ -220,7 +231,11 @@ struct UIStyle
 	String scrollbarStyle;
 	String textInputStyle;
 
-	// Alphabetically ordered, which... probably isn't the best. It's certainly ugly.
+	UIDrawableStyle startIcon;
+	u32 startIconAlignment;
+	
+	UIDrawableStyle endIcon;
+	u32 endIconAlignment;
 	
 	bool showCaret;
 	f32 caretFlashCycleDuration;
