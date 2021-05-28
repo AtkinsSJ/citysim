@@ -16,6 +16,7 @@ void registerSetting(String settingName, smm offset, Type type, s32 count, Strin
 	def.data = data;
 
 	settings->defs.put(settingName, def);
+	settings->defsOrder.append(settingName);
 }
 
 SettingsState makeDefaultSettings()
@@ -35,12 +36,15 @@ void initSettings()
 {
 	bootstrapArena(Settings, settings, settingsArena);
 	initHashTable(&settings->defs);
+	initChunkedArray(&settings->defsOrder, &settings->settingsArena, 32);
+	markResetPosition(&settings->settingsArena);
 
 	settings->userDataPath = makeString(SDL_GetPrefPath("Baffled Badger Games", "CitySim"));
 	settings->userSettingsFilename = "settings.cnf"_s;
 
-#define REGISTER_SETTING(settingName, type, count, ...) registerSetting(makeString(#settingName), offsetof(SettingsState, settingName), Type_##type, count, makeString("setting_" #settingName), __VA_ARGS__)
+#define REGISTER_SETTING(settingName, type, count, ...) registerSetting(makeString(#settingName, true), offsetof(SettingsState, settingName), Type_##type, count, makeString("setting_" #settingName), __VA_ARGS__)
 
+	// NB: The settings will appear in this order in the settings window
 	REGISTER_SETTING(windowed,		bool,		1);
 	REGISTER_SETTING(resolution,	s32,		2);
 	REGISTER_SETTING(locale,		enum,		1, &localeData);
@@ -219,13 +223,12 @@ void saveSettings()
 	append(&stb, "# I don't recommend fiddling with this manually, but it should work.\n"_s);
 	append(&stb, "# If the game won't run, try deleting this file, and it should be re-generated with the default settings.\n\n"_s);
 
-	for (auto it = settings->defs.iterate();
+	for (auto it = settings->defsOrder.iterate();
 		it.hasNext();
 		it.next())
 	{
-		auto entry = it.getEntry();
-		String name = entry->key;
-		SettingDef *def = &entry->value;
+		String name = it.getValue();
+		SettingDef *def = settings->defs.find(name).value;
 
 		append(&stb, name);
 		append(&stb, " = "_s);
@@ -273,13 +276,12 @@ void settingsWindowProc(WindowContext *context, void*)
 {
 	UIPanel *ui = &context->windowPanel;
 
-	for (auto it = settings->defs.iterate();
+	for (auto it = settings->defsOrder.iterate();
 		it.hasNext();
 		it.next())
 	{
-		auto entry = it.getEntry();
-		String name = entry->key;
-		SettingDef *def = &entry->value;
+		String name = it.getValue();
+		SettingDef *def = settings->defs.find(name).value;
 
 		ui->startNewLine(ALIGN_LEFT);
 		ui->addText(name);

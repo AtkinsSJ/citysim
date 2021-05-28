@@ -165,6 +165,7 @@ struct Settings
 {
 	MemoryArena settingsArena;
 	HashTable<SettingDef> defs;
+	ChunkedArray<String> defsOrder;
 
 	String userDataPath;
 	String userSettingsFilename;
