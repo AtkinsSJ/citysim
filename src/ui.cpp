@@ -730,7 +730,19 @@ inline ScrollbarState *UI::getMenuScrollbar()
 	return &uiState.openMenuScrollbar;
 }
 
-bool UI::putTextInput(TextInput *textInput, UITextInputStyle *style, Rect2I bounds, RenderBuffer *renderBuffer)
+V2I UI::calculateSliderSize(UISliderStyle *style, s32 maxWidth, bool fillWidth)
+{
+	V2I result = {};
+
+	return result;
+}
+
+void UI::putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Rect2I bounds, UISliderStyle *style, RenderBuffer *renderBuffer)
+{
+
+}
+
+bool UI::putTextInput(TextInput *textInput, Rect2I bounds, UITextInputStyle *style, RenderBuffer *renderBuffer)
 {
 	if (style == null) style = findStyle<UITextInputStyle>("default"_s);
 	if (renderBuffer == null) renderBuffer = &renderer->uiBuffer;

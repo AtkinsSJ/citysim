@@ -302,6 +302,12 @@ void settingsWindowProc(WindowContext *context, void*)
 				ui->addDropDownList(def->enumData, getSettingDataRaw<s32>(&settings->workingState, def), getEnumDisplayName);
 			} break;
 
+			case Type_percent: {
+				ASSERT(def->count == 1);
+
+				ui->addSlider(getSettingDataRaw<f32>(&settings->workingState, def), 0.0f, 1.0f);
+			} break;
+
 			default: {
 				ui->addText(settingToString(&settings->workingState, def));
 			} break;

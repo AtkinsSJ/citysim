@@ -180,6 +180,29 @@ void UIPanel::addDropDownList(Array<T> *listOptions, s32 *currentSelection, Stri
 	completeWidget(widgetSize);
 }
 
+void UIPanel::addSlider(f32 *currentValue, f32 minValue, f32 maxValue, String styleName)
+{
+	DEBUG_FUNCTION();
+
+	prepareForWidgets();
+
+	UISliderStyle *widgetStyle = findStyle<UISliderStyle>(styleName, &style->sliderStyle);
+
+	Rect2I space = getCurrentLayoutPosition();
+	V2I widgetOrigin = alignWithinRectangle(space, widgetAlignment);
+
+	bool fillWidth = ((widgetAlignment & ALIGN_H) == ALIGN_EXPAND_H);
+	V2I widgetSize = UI::calculateSliderSize(widgetStyle, space.w, fillWidth);
+	Rect2I widgetBounds = irectAligned(widgetOrigin, widgetSize, widgetAlignment);
+
+	if (!hideWidgets)
+	{
+		UI::putSlider(currentValue, minValue, maxValue, widgetBounds, widgetStyle, renderBuffer);
+	}
+
+	completeWidget(widgetSize);
+}
+
 void UIPanel::addSprite(Sprite *sprite, s32 width, s32 height)
 {
 	DEBUG_FUNCTION();
@@ -251,7 +274,7 @@ bool UIPanel::addTextInput(TextInput *textInput, String styleName)
 	
 	if (!hideWidgets)
 	{
-		result = UI::putTextInput(textInput, textInputStyle, textInputBounds, renderBuffer);
+		result = UI::putTextInput(textInput, textInputBounds, textInputStyle, renderBuffer);
 	}
 	
 	completeWidget(textInputSize);

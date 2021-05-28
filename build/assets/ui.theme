@@ -111,6 +111,7 @@ checkboxStyle     default
 dropDownListStyle default
 labelStyle        default
 scrollbarStyle    default
+sliderStyle 	  default
 textInputStyle    default
 
 :Panel inset

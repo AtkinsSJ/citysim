@@ -147,6 +147,7 @@ struct UIPanelStyle
 	AssetRef dropDownListStyle;
 	AssetRef labelStyle;
 	AssetRef scrollbarStyle;
+	AssetRef sliderStyle;
 	AssetRef textInputStyle;
 };
 
@@ -239,6 +240,7 @@ struct UIStyle
 	String labelStyle;
 	String panelStyle;
 	String scrollbarStyle;
+	String sliderStyle;
 	String textInputStyle;
 
 	UIDrawableStyle startIcon;

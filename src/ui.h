@@ -58,6 +58,7 @@ struct UIDropDownListStyle;
 struct UIPanel;
 struct UIPanelStyle;
 struct UIScrollbarStyle;
+struct UISliderStyle;
 struct UITextInputStyle;
 struct WindowContext;
 
@@ -163,8 +164,13 @@ namespace UI
 	bool isMenuVisible(s32 menuID);
 	ScrollbarState *getMenuScrollbar();
 
+	// Sliders
+	V2I calculateSliderSize(UISliderStyle *style, s32 maxWidth = 0, bool fillWidth = true);
+	void putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Rect2I bounds, UISliderStyle *style, RenderBuffer *renderBuffer = null);
+	// void putSlider(s32 *currentValue, s32 minValue, s32 maxValue, Rect2I bounds, UISliderStyle *style, RenderBuffer *renderBuffer = null);
+
 	// TextInputs
-	bool putTextInput(TextInput *textInput, UITextInputStyle *style, Rect2I bounds, RenderBuffer *renderBuffer = null);
+	bool putTextInput(TextInput *textInput, Rect2I bounds, UITextInputStyle *style, RenderBuffer *renderBuffer = null);
 
 	// Toasts
 	// NB: `message` is copied into the UIState, so it can be a temporary allocation

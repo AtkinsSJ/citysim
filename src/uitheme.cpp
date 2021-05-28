@@ -135,6 +135,7 @@ void initUIStyleConstants()
 	PROP(pressedCheckImage,			PropType_Drawable);
 	PROP(scrollbarStyle,			PropType_Style);
 	PROP(showCaret,					PropType_Bool);
+	PROP(sliderStyle,				PropType_Style);
 	PROP(startIcon,					PropType_Drawable);
 	PROP(startIconAlignment,		PropType_Alignment);
 	PROP(textAlignment,				PropType_Alignment);
@@ -206,6 +207,7 @@ void initUIStyleConstants()
 		"labelStyle"_s,
 		"margin"_s,
 		"scrollbarStyle"_s,
+		"sliderStyle"_s,
 		"textInputStyle"_s,
 		"widgetAlignment"_s,
 	});
@@ -645,9 +647,10 @@ void loadUITheme(Blob data, Asset *asset)
 
 						panel->buttonStyle 			= getAssetRef(AssetType_ButtonStyle, style->buttonStyle);
 						panel->checkboxStyle 		= getAssetRef(AssetType_CheckboxStyle, style->checkboxStyle);
-						panel->dropDownListStyle	= getAssetRef(AssetType_DropDownListStyle, style->dropDownListStyle);
+						panel->dropDownListStyle 	= getAssetRef(AssetType_DropDownListStyle, style->dropDownListStyle);
 						panel->labelStyle 			= getAssetRef(AssetType_LabelStyle, style->labelStyle);
 						panel->scrollbarStyle 		= getAssetRef(AssetType_ScrollbarStyle, style->scrollbarStyle);
+						panel->sliderStyle 			= getAssetRef(AssetType_SliderStyle, style->sliderStyle);
 						panel->textInputStyle 		= getAssetRef(AssetType_TextInputStyle, style->textInputStyle);
 					} break;
 
