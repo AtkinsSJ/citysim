@@ -42,9 +42,8 @@ UI Widgets:
 - Sliders (eg, volume)
 	- Define a range
 	- Discrete (int) or continuous (float)
-- Dropdown boxes? (eg, locale)
-	- I guess these are equivalent to our "menu buttons" but with special styling
-	- Scrollbar!
+✔ Dropdown boxes? (eg, locale)
+	✔ Scrollbar!
 	✔ Arrow!
 		✔ Add start/end icon support to text buttons
 - Tabs!

@@ -666,7 +666,7 @@ void UI::putDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*
 		// If we clicked somewhere outside of the panel, close it
 		if (isOpen && !clicked
 		 && mouseButtonJustReleased(MouseButton_Left)
-		 && !justClickedOnUI(panel.bounds))
+		 && !contains(panel.bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
 		{
 			closeDropDownList();
 		}
