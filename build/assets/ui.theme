@@ -96,6 +96,11 @@ textColor           0 255   0 255
 font              normal
 textColor         255   0   0 255
 
+:Slider default
+track color 255 0 255 255
+thumb sprite btn_white
+thumbSize 16 16
+
 :Panel default
 margin            8
 contentPadding    4

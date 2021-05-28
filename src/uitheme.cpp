@@ -101,7 +101,7 @@ V2I UIDrawableStyle::getSize()
 	return result;
 }
 
-void initUIStyleProperties()
+void initUIStyleConstants()
 {
 	initHashTable(&uiStyleProperties, 0.75f, 256);
 	#define PROP(name, _type) {\
@@ -238,6 +238,18 @@ void initUIStyleProperties()
 		"titleColor"_s,
 		"titleFont"_s,
 	});
+
+	initHashTable(&uiStyleTypesByName, 0.75f, 256);
+	uiStyleTypesByName.put("Button"_s, UIStyle_Button);
+	uiStyleTypesByName.put("Checkbox"_s, UIStyle_Checkbox);
+	uiStyleTypesByName.put("Console"_s, UIStyle_Console);
+	uiStyleTypesByName.put("DropDownList"_s, UIStyle_DropDownList);
+	uiStyleTypesByName.put("Label"_s, UIStyle_Label);
+	uiStyleTypesByName.put("Panel"_s, UIStyle_Panel);
+	uiStyleTypesByName.put("Scrollbar"_s, UIStyle_Scrollbar);
+	uiStyleTypesByName.put("Slider"_s, UIStyle_Slider);
+	uiStyleTypesByName.put("TextInput"_s, UIStyle_TextInput);
+	uiStyleTypesByName.put("Window"_s, UIStyle_Window);
 }
 
 void assignStyleProperties(UIStyleType type, std::initializer_list<String> properties)
@@ -312,81 +324,24 @@ void loadUITheme(Blob data, Asset *asset)
 					error(&reader, "Invalid font declaration: '{0}'"_s, {getLine(&reader)});
 				}
 			}
-			else if (equals(firstWord, "Button"_s))
-			{
-				String name = intern(&assets->assetStrings, readToken(&reader));
-				target = addStyle(&styles, name, UIStyle_Button);
-				target->name = name;
-				target->type = UIStyle_Button;
-				styleCount[UIStyle_Button]++;
-			}
-			else if (equals(firstWord, "Checkbox"_s))
-			{
-				String name = intern(&assets->assetStrings, readToken(&reader));
-				target = addStyle(&styles, name, UIStyle_Checkbox);
-				target->name = name;
-				target->type = UIStyle_Checkbox;
-				styleCount[UIStyle_Checkbox]++;
-			}
-			else if (equals(firstWord, "Console"_s))
-			{
-				String name = intern(&assets->assetStrings, readToken(&reader));
-				target = addStyle(&styles, name, UIStyle_Console);
-				target->name = name;
-				target->type = UIStyle_Console;
-				styleCount[UIStyle_Console]++;
-			}
-			else if (equals(firstWord, "DropDownList"_s))
-			{
-				String name = intern(&assets->assetStrings, readToken(&reader));
-				target = addStyle(&styles, name, UIStyle_DropDownList);
-				target->name = name;
-				target->type = UIStyle_DropDownList;
-				styleCount[UIStyle_DropDownList]++;
-			}
-			else if (equals(firstWord, "Label"_s))
-			{
-				String name = intern(&assets->assetStrings, readToken(&reader));
-				target = addStyle(&styles, name, UIStyle_Label);
-				target->name = name;
-				target->type = UIStyle_Label;
-				styleCount[UIStyle_Label]++;
-			}
-			else if (equals(firstWord, "Panel"_s))
-			{
-				String name = intern(&assets->assetStrings, readToken(&reader));
-				target = addStyle(&styles, name, UIStyle_Panel);
-				target->name = name;
-				target->type = UIStyle_Panel;
-				styleCount[UIStyle_Panel]++;
-			}
-			else if (equals(firstWord, "Scrollbar"_s))
-			{
-				String name = intern(&assets->assetStrings, readToken(&reader));
-				target = addStyle(&styles, name, UIStyle_Scrollbar);
-				target->name = name;
-				target->type = UIStyle_Scrollbar;
-				styleCount[UIStyle_Scrollbar]++;
-			}
-			else if (equals(firstWord, "TextInput"_s))
-			{
-				String name = intern(&assets->assetStrings, readToken(&reader));
-				target = addStyle(&styles, name, UIStyle_TextInput);
-				target->name = name;
-				target->type = UIStyle_TextInput;
-				styleCount[UIStyle_TextInput]++;
-			}
-			else if (equals(firstWord, "Window"_s))
-			{
-				String name = intern(&assets->assetStrings, readToken(&reader));
-				target = addStyle(&styles, name, UIStyle_Window);
-				target->name = name;
-				target->type = UIStyle_Window;
-				styleCount[UIStyle_Window]++;
-			}
 			else
 			{
-				error(&reader, "Unrecognized command: '{0}'"_s, {firstWord});
+				// Create a new style entry if the name matches a style type
+				Maybe<UIStyleType> foundStyleType = uiStyleTypesByName.findValue(firstWord);
+				if (foundStyleType.isValid)
+				{
+					UIStyleType styleType = foundStyleType.value;
+
+					String name = intern(&assets->assetStrings, readToken(&reader));
+					target = addStyle(&styles, name, styleType);
+					target->name = name;
+					target->type = styleType;
+					styleCount[styleType]++;
+				}
+				else
+				{
+					error(&reader, "Unrecognized command: '{0}'"_s, {firstWord});
+				}
 			}
 		}
 		else
