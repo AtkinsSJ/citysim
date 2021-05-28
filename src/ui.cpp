@@ -418,6 +418,21 @@ V2I UI::calculateButtonSize(V2I contentSize, UIButtonStyle *buttonStyle, s32 max
 	return result;
 }
 
+Rect2I UI::calculateButtonContentBounds(Rect2I bounds, UIButtonStyle *style)
+{
+	Rect2I contentBounds = shrink(bounds, style->padding);
+
+	V2I startIconSize = style->startIcon.getSize();
+	if (startIconSize.x > 0) startIconSize.x += style->contentPadding;
+	V2I endIconSize = style->endIcon.getSize();
+	if (endIconSize.x > 0) endIconSize.x += style->contentPadding;
+
+	contentBounds.x += startIconSize.x;
+	contentBounds.w -= (startIconSize.x + endIconSize.x);
+
+	return contentBounds;
+}
+
 bool UI::putButton(Rect2I bounds, UIButtonStyle *style, ButtonState state, RenderBuffer *renderBuffer, bool invisible, String tooltip)
 {
 	DEBUG_FUNCTION();
@@ -501,14 +516,7 @@ bool UI::putTextButton(String text, Rect2I bounds, UIButtonStyle *style, ButtonS
 
 	if (!invisible)
 	{
-		Rect2I contentBounds = shrink(bounds, style->padding);
-		V2I startIconSize = style->startIcon.getSize();
-		if (startIconSize.x > 0) startIconSize.x += style->contentPadding;
-		V2I endIconSize = style->endIcon.getSize();
-		if (endIconSize.x > 0) endIconSize.x += style->contentPadding;
-
-		contentBounds.x += startIconSize.x;
-		contentBounds.w -= (startIconSize.x + endIconSize.x);
+		Rect2I contentBounds = calculateButtonContentBounds(bounds, style);
 
 		u32 textAlignment = style->textAlignment;
 		V2I textOrigin = alignWithinRectangle(contentBounds, textAlignment, 0);
@@ -526,7 +534,8 @@ bool UI::putImageButton(Sprite *sprite, Rect2I bounds, UIButtonStyle *style, But
 
 	if (!invisible)
 	{
-		Rect2 spriteBounds = rect2(shrink(bounds, style->padding));
+		Rect2I contentBounds = calculateButtonContentBounds(bounds, style);
+		Rect2 spriteBounds = rect2(contentBounds);
 		drawSingleSprite(renderBuffer, sprite, spriteBounds, renderer->shaderIds.textured, makeWhite());
 	}
 
