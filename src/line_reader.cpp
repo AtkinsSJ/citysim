@@ -135,10 +135,12 @@ bool loadNextLine(LineReader *reader)
 		if (reader->skipBlankLines)
 		{
 			result = false;
+			reader->position.atEndOfFile = true;
 		}
 		else if (reader->position.startOfNextLine >= reader->data.size)
 		{
 			result = false;
+			reader->position.atEndOfFile = true;
 		}
 	}
 
@@ -158,13 +160,15 @@ inline String getRemainderOfLine(LineReader *reader)
 void warn(LineReader *reader, String message, std::initializer_list<String> args)
 {
 	String text = myprintf(message, args, false);
-	logWarn("{0}:{1} - {2}"_s, {reader->filename, formatInt(reader->position.currentLineNumber), text});
+	String lineNumber = reader->position.atEndOfFile ? "EOF"_s : formatInt(reader->position.currentLineNumber);
+	logWarn("{0}:{1} - {2}"_s, {reader->filename, lineNumber, text});
 }
 
 void error(LineReader *reader, String message, std::initializer_list<String> args)
 {
 	String text = myprintf(message, args, false);
-	logError("{0}:{1} - {2}"_s, {reader->filename, formatInt(reader->position.currentLineNumber), text});
+	String lineNumber = reader->position.atEndOfFile ? "EOF"_s : formatInt(reader->position.currentLineNumber);
+	logError("{0}:{1} - {2}"_s, {reader->filename, lineNumber, text});
 }
 
 String readToken(LineReader *reader, char splitChar)

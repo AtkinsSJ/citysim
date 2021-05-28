@@ -6,6 +6,7 @@ struct LineReaderPosition
 	smm currentLineNumber;
 	String lineRemainder;
 	smm startOfNextLine;
+	bool atEndOfFile;
 };
 
 struct LineReader

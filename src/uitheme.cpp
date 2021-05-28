@@ -512,12 +512,19 @@ void loadUITheme(Blob data, Asset *asset)
 						button->endIcon = style->endIcon;
 						button->endIconAlignment = style->endIconAlignment;
 
-						ASSERT(button->startIcon.hasFixedSize() && button->endIcon.hasFixedSize());
-
 						button->background = style->background;
 						button->hoverBackground = style->hoverBackground;
 						button->pressedBackground = style->pressedBackground;
 						button->disabledBackground = style->disabledBackground;
+
+						if (!button->startIcon.hasFixedSize())
+						{
+							error(&reader, "Start icon for button '{0}' has no fixed size. Defaulting to 0 x 0"_s, {button->name});
+						}
+						if (!button->endIcon.hasFixedSize())
+						{
+							error(&reader, "End icon for button '{0}' has no fixed size. Defaulting to 0 x 0"_s, {button->name});
+						}
 					} break;
 
 					case UIStyle_Checkbox: {
