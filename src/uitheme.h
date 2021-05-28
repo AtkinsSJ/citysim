@@ -284,6 +284,7 @@ struct UIProperty
 
 HashTable<UIProperty> uiStyleProperties;
 void initUIStyleProperties();
+void assignStyleProperties(UIStyleType type, std::initializer_list<String> properties);
 
 void loadUITheme(Blob data, struct Asset *asset);
 
