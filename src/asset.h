@@ -27,6 +27,7 @@ enum AssetType
 	AssetType_LabelStyle,
 	AssetType_PanelStyle,
 	AssetType_ScrollbarStyle,
+	AssetType_SliderStyle,
 	AssetType_TextInputStyle,
 	AssetType_WindowStyle,
 
@@ -282,6 +283,7 @@ struct Asset
 		UILabelStyle     	labelStyle;
 		UIPanelStyle     	panelStyle;
 		UIScrollbarStyle 	scrollbarStyle;
+		UISliderStyle 		sliderStyle;
 		UITextInputStyle 	textInputStyle;
 		UIWindowStyle    	windowStyle;
 	};

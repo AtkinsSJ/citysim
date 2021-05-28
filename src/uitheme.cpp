@@ -121,46 +121,48 @@ void initUIStyleProperties()
 	}
 
 	//                                                    btn  chkbx   cnsl    DDL  label  panel  scrll  txtin  windw
-	PROP(background,               PropType_Drawable,    true,  true,  true, false, false,  true,  true,  true, false);
-	PROP(buttonStyle,       	   PropType_Style,      false, false, false,  true, false,  true, false, false, false);
-	PROP(caretFlashCycleDuration,  PropType_Float,      false, false, false, false, false, false, false,  true, false);
-	PROP(checkImage,               PropType_Drawable,   false,  true, false, false, false, false, false, false, false);
-	PROP(checkboxStyle,            PropType_Style,      false, false, false, false, false,  true, false, false, false);
-	PROP(contentSize,	           PropType_V2I,        false,  true, false, false, false, false, false, false, false);
-	PROP(contentPadding,           PropType_Int,         true, false, false, false, false,  true, false, false, false);
-	PROP(disabledBackground,       PropType_Drawable,    true,  true, false, false, false, false, false, false, false);
-	PROP(disabledCheckImage,       PropType_Drawable,   false,  true, false, false, false, false, false, false, false);
-	PROP(dropDownListStyle,        PropType_Style,      false,  true, false, false, false,  true, false, false, false);
-	PROP(endIcon,                  PropType_Drawable,    true, false, false, false, false, false, false, false, false);
-	PROP(endIconAlignment,         PropType_Alignment,   true, false, false, false, false, false, false, false, false);
-	PROP(font,                     PropType_Font,        true, false,  true, false,  true, false, false,  true, false);
-	PROP(hoverBackground,          PropType_Drawable,    true,  true, false, false, false, false, false, false, false);
-	PROP(hoverCheckImage,          PropType_Drawable,   false,  true, false, false, false, false, false, false, false);
-	PROP(labelStyle,        	   PropType_Style,      false, false, false, false, false,  true, false, false, false);
-	PROP(margin,                   PropType_Int,        false, false, false, false, false,  true, false, false, false);
-	PROP(offsetFromMouse,          PropType_V2I,        false, false, false, false, false, false, false, false,  true);
-	PROP(padding,                  PropType_Int,         true,  true,  true, false, false, false, false,  true, false);
-	PROP(panelStyle,        	   PropType_Style,      false, false, false,  true, false, false, false, false,  true);
-	PROP(pressedBackground,        PropType_Drawable,    true,  true, false, false, false, false, false, false, false);
-	PROP(pressedCheckImage,        PropType_Drawable,   false,  true, false, false, false, false, false, false, false);
-	PROP(scrollbarStyle,    	   PropType_Style,      false, false,  true, false, false,  true, false, false, false);
-	PROP(showCaret,                PropType_Bool,       false, false, false, false, false, false, false,  true, false);
-	PROP(startIcon,                PropType_Drawable,    true, false, false, false, false, false, false, false, false);
-	PROP(startIconAlignment,       PropType_Alignment,   true, false, false, false, false, false, false, false, false);
-	PROP(textAlignment,            PropType_Alignment,   true, false, false, false, false, false, false,  true, false);
-	PROP(textColor,                PropType_Color,       true, false, false, false,  true, false, false,  true, false);
-	PROP(textInputStyle,    	   PropType_Style,      false, false,  true, false, false,  true, false, false, false);
-	PROP(thumb,                    PropType_Drawable,   false, false, false, false, false, false,  true, false, false);
-	PROP(titleBarButtonHoverColor, PropType_Color,      false, false, false, false, false, false, false, false,  true);
-	PROP(titleBarColor,            PropType_Color,      false, false, false, false, false, false, false, false,  true);
-	PROP(titleBarColorInactive,    PropType_Color,      false, false, false, false, false, false, false, false,  true);
-	PROP(titleBarHeight,           PropType_Int,        false, false, false, false, false, false, false, false,  true);
-	PROP(titleColor,               PropType_Color,      false, false, false, false, false, false, false, false,  true);
-	PROP(titleFont,                PropType_Font,       false, false, false, false, false, false, false, false,  true);
-	PROP(widgetAlignment,          PropType_Alignment,  false, false, false, false, false,  true, false, false, false);
-	PROP(width,                    PropType_Int,        false, false, false, false, false, false,  true, false, false);
+	PROP(background,				PropType_Drawable,	 true,  true,  true, false, false,  true,  true,  true, false);
+	PROP(buttonStyle,				PropType_Style,		false, false, false,  true, false,  true, false, false, false);
+	PROP(caretFlashCycleDuration,	PropType_Float,		false, false, false, false, false, false, false,  true, false);
+	PROP(checkImage,				PropType_Drawable,	false,  true, false, false, false, false, false, false, false);
+	PROP(checkboxStyle,				PropType_Style,		false, false, false, false, false,  true, false, false, false);
+	PROP(contentSize,				PropType_V2I,		false,  true, false, false, false, false, false, false, false);
+	PROP(contentPadding,			PropType_Int,		 true, false, false, false, false,  true, false, false, false);
+	PROP(disabledBackground,		PropType_Drawable,	 true,  true, false, false, false, false, false, false, false);
+	PROP(disabledCheckImage,		PropType_Drawable,	false,  true, false, false, false, false, false, false, false);
+	PROP(dropDownListStyle,			PropType_Style,		false,  true, false, false, false,  true, false, false, false);
+	PROP(endIcon,					PropType_Drawable,	 true, false, false, false, false, false, false, false, false);
+	PROP(endIconAlignment,			PropType_Alignment,	 true, false, false, false, false, false, false, false, false);
+	PROP(font,						PropType_Font,		 true, false,  true, false,  true, false, false,  true, false);
+	PROP(hoverBackground,			PropType_Drawable,	 true,  true, false, false, false, false, false, false, false);
+	PROP(hoverCheckImage,			PropType_Drawable,	false,  true, false, false, false, false, false, false, false);
+	PROP(labelStyle,				PropType_Style,		false, false, false, false, false,  true, false, false, false);
+	PROP(margin,					PropType_Int,		false, false, false, false, false,  true, false, false, false);
+	PROP(offsetFromMouse,			PropType_V2I,		false, false, false, false, false, false, false, false,  true);
+	PROP(padding,					PropType_Int,		 true,  true,  true, false, false, false, false,  true, false);
+	PROP(panelStyle,				PropType_Style,		false, false, false,  true, false, false, false, false,  true);
+	PROP(pressedBackground,			PropType_Drawable,	 true,  true, false, false, false, false, false, false, false);
+	PROP(pressedCheckImage,			PropType_Drawable,	false,  true, false, false, false, false, false, false, false);
+	PROP(scrollbarStyle,			PropType_Style,		false, false,  true, false, false,  true, false, false, false);
+	PROP(showCaret,					PropType_Bool,		false, false, false, false, false, false, false,  true, false);
+	PROP(startIcon,					PropType_Drawable,	 true, false, false, false, false, false, false, false, false);
+	PROP(startIconAlignment,		PropType_Alignment,	 true, false, false, false, false, false, false, false, false);
+	PROP(textAlignment,				PropType_Alignment,	 true, false, false, false, false, false, false,  true, false);
+	PROP(textColor,					PropType_Color,		 true, false, false, false,  true, false, false,  true, false);
+	PROP(textInputStyle,			PropType_Style,		false, false,  true, false, false,  true, false, false, false);
+	PROP(thumb,						PropType_Drawable,	false, false, false, false, false, false,  true, false, false);
+	PROP(titleBarButtonHoverColor,	PropType_Color,		false, false, false, false, false, false, false, false,  true);
+	PROP(titleBarColor,				PropType_Color,		false, false, false, false, false, false, false, false,  true);
+	PROP(titleBarColorInactive,		PropType_Color,		false, false, false, false, false, false, false, false,  true);
+	PROP(titleBarHeight,			PropType_Int,		false, false, false, false, false, false, false, false,  true);
+	PROP(titleColor,				PropType_Color,		false, false, false, false, false, false, false, false,  true);
+	PROP(titleFont,					PropType_Font,		false, false, false, false, false, false, false, false,  true);
+	PROP(widgetAlignment,			PropType_Alignment,	false, false, false, false, false,  true, false, false, false);
+	PROP(width,						PropType_Int,		false, false, false, false, false, false,  true, false, false);
 
-	// PROP(width,                    PropType_Int,        false, false, false, false, false, false, false, false, false);
+	// PROP(track,						PropType_Drawable,	false, false, false, false, false, false, false, false, false);
+	// PROP(thumbSize,					PropType_V2I,		false, false, false, false, false, false, false, false, false);
+	// PROP(width,				PropType_Int,        false, false, false, false, false, false, false, false, false);
 
 	#undef PROP
 }
@@ -624,6 +626,18 @@ void loadUITheme(Blob data, Asset *asset)
 						scrollbar->width = style->width;
 					} break;
 
+					case UIStyle_Slider: {
+						Asset *childAsset = addAsset(AssetType_SliderStyle, style->name, 0);
+						addChildAsset(asset, childAsset);
+
+						UISliderStyle *slider = &childAsset->sliderStyle;
+						slider->name = style->name;
+
+						slider->track = style->track;
+						slider->thumb = style->thumb;
+						slider->thumbSize = style->thumbSize;
+					} break;
+
 					case UIStyle_TextInput: {
 						Asset *childAsset = addAsset(AssetType_TextInputStyle, style->name, 0);
 						addChildAsset(asset, childAsset);
@@ -678,6 +692,7 @@ bool checkStyleMatchesType(AssetRef *reference)
 		case AssetType_LabelStyle: 	 		return (typeid(T*) == typeid(UILabelStyle*));
 		case AssetType_PanelStyle:      	return (typeid(T*) == typeid(UIPanelStyle*));
 		case AssetType_ScrollbarStyle:  	return (typeid(T*) == typeid(UIScrollbarStyle*));
+		case AssetType_SliderStyle:			return (typeid(T*) == typeid(UISliderStyle*));
 		case AssetType_TextInputStyle:  	return (typeid(T*) == typeid(UITextInputStyle*));
 		case AssetType_WindowStyle: 		return (typeid(T*) == typeid(UIWindowStyle*));
 		INVALID_DEFAULT_CASE;
@@ -776,6 +791,18 @@ template <> UIScrollbarStyle *findStyle<UIScrollbarStyle>(String styleName)
 	if (asset != null)
 	{
 		result = (UIScrollbarStyle *)&asset->_localData;
+	}
+
+	return result;
+}
+template <> UISliderStyle *findStyle<UISliderStyle>(String styleName)
+{
+	UISliderStyle *result = null;
+
+	Asset *asset = getAsset(AssetType_SliderStyle, styleName);
+	if (asset != null)
+	{
+		result = (UISliderStyle *)&asset->_localData;
 	}
 
 	return result;

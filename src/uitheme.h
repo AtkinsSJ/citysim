@@ -43,6 +43,7 @@ enum UIStyleType {
 	UIStyle_Label,
 	UIStyle_Panel,
 	UIStyle_Scrollbar,
+	UIStyle_Slider,
 	UIStyle_TextInput,
 	UIStyle_Window,
 	UIStyleTypeCount
@@ -158,6 +159,15 @@ struct UIScrollbarStyle
 	s32 width;
 };
 
+struct UISliderStyle
+{
+	String name;
+	
+	UIDrawableStyle track;
+	UIDrawableStyle thumb;
+	V2I thumbSize;
+};
+
 struct UITextInputStyle
 {
 	String name;
@@ -239,7 +249,10 @@ struct UIStyle
 	
 	bool showCaret;
 	f32 caretFlashCycleDuration;
+
+	UIDrawableStyle track;
 	UIDrawableStyle thumb;
+	V2I thumbSize;
 	
 	V4 overlayColor;
 	V4 outputTextColor[CLS_COUNT];
@@ -289,12 +302,13 @@ inline T* findStyle(String styleName, AssetRef *defaultStyle)
 
 template <typename T>
 T* findStyle(String styleName);
-template <> UIButtonStyle    *findStyle<UIButtonStyle>   (String styleName);
-template <> UICheckboxStyle  *findStyle<UICheckboxStyle> (String styleName);
-template <> UIConsoleStyle   *findStyle<UIConsoleStyle>  (String styleName);
-template <> UIDropDownListStyle   *findStyle<UIDropDownListStyle>  (String styleName);
-template <> UILabelStyle     *findStyle<UILabelStyle>    (String styleName);
-template <> UIPanelStyle     *findStyle<UIPanelStyle>    (String styleName);
-template <> UIScrollbarStyle *findStyle<UIScrollbarStyle>(String styleName);
-template <> UITextInputStyle *findStyle<UITextInputStyle>(String styleName);
-template <> UIWindowStyle    *findStyle<UIWindowStyle>   (String styleName);
+template <> UIButtonStyle		*findStyle<UIButtonStyle>		(String styleName);
+template <> UICheckboxStyle		*findStyle<UICheckboxStyle>		(String styleName);
+template <> UIConsoleStyle		*findStyle<UIConsoleStyle>		(String styleName);
+template <> UIDropDownListStyle *findStyle<UIDropDownListStyle>	(String styleName);
+template <> UILabelStyle		*findStyle<UILabelStyle>		(String styleName);
+template <> UIPanelStyle		*findStyle<UIPanelStyle>		(String styleName);
+template <> UIScrollbarStyle	*findStyle<UIScrollbarStyle>	(String styleName);
+template <> UISliderStyle		*findStyle<UISliderStyle>		(String styleName);
+template <> UITextInputStyle	*findStyle<UITextInputStyle>	(String styleName);
+template <> UIWindowStyle		*findStyle<UIWindowStyle>		(String styleName);
