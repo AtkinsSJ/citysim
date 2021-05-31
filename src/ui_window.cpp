@@ -134,7 +134,7 @@ void UI::updateAndRenderWindows()
 {
 	DEBUG_FUNCTION_T(DCDT_UI);
 
-	V2I mousePos = v2i(renderer->uiCamera.mousePos);
+	// This is weird, the UI camera should always be positioned with 0,0 being the bottom-left I thought?
 	Rect2I validWindowArea = irectCentreSize(v2i(renderer->uiCamera.pos), v2i(renderer->uiCamera.size));
 
 	uiState.isAPauseWindowOpen = false;
@@ -210,16 +210,14 @@ void UI::updateAndRenderWindows()
 			}
 			else
 			{
-				V2I clickStartPos = v2i(getClickStartPos(MouseButton_Left, &renderer->uiCamera));
-				window->area.x = uiState.windowDragWindowStartPos.x + mousePos.x - clickStartPos.x;
-				window->area.y = uiState.windowDragWindowStartPos.y + mousePos.y - clickStartPos.y;
+				window->area.pos = uiState.windowDragWindowStartPos + mousePos - mouseClickStartPos;
 			}
 			
 			UI::markMouseInputHandled();
 		}
 		else if (isTooltip)
 		{
-			window->area.pos = v2i(renderer->uiCamera.mousePos) + windowStyle->offsetFromMouse;
+			window->area.pos = mousePos + windowStyle->offsetFromMouse;
 		}
 
 		// Keep window on screen

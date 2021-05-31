@@ -4,11 +4,8 @@ AppStatus updateAndRenderCredits(f32 /*deltaTime*/)
 {
 	AppStatus result = AppStatus_Credits;
 
-	s32 windowWidth  = round_s32(renderer->uiCamera.size.x);
-	s32 windowHeight = round_s32(renderer->uiCamera.size.y);
-
-	V2I position = v2i(windowWidth / 2, 157);
-	s32 maxLabelWidth = windowWidth - 256;
+	V2I position = v2i(UI::windowSize.x / 2, 157);
+	s32 maxLabelWidth = UI::windowSize.x - 256;
 
 	UILabelStyle *labelStyle = findStyle<UILabelStyle>("title"_s);
 	BitmapFont *font = getFont(&labelStyle->font);
@@ -26,7 +23,7 @@ AppStatus updateAndRenderCredits(f32 /*deltaTime*/)
 	s32 uiBorderPadding = 8;
 	String backText = getText("button_back"_s);
 	V2I backSize = UI::calculateButtonSize(backText, style);
-	Rect2I buttonRect = irectXYWH(uiBorderPadding, windowHeight - uiBorderPadding - backSize.y, backSize.x, backSize.y);
+	Rect2I buttonRect = irectXYWH(uiBorderPadding, UI::windowSize.y - uiBorderPadding - backSize.y, backSize.x, backSize.y);
 	if (UI::putTextButton(getText("button_back"_s), buttonRect, style, Button_Normal))
 	{
 		result = AppStatus_MainMenu;

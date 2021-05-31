@@ -463,8 +463,6 @@ void updateAndRenderGameUI(GameState *gameState)
 	DEBUG_FUNCTION();
 	
 	RenderBuffer *uiBuffer = &renderer->uiBuffer;
-	s32 windowWidth  = round_s32(renderer->uiCamera.size.x);
-	s32 windowHeight = round_s32(renderer->uiCamera.size.y);
 	V2I centre = v2i(renderer->uiCamera.pos);
 	UILabelStyle *labelStyle = findStyle<UILabelStyle>("title"_s);
 	BitmapFont *font = getFont(&labelStyle->font);
@@ -472,10 +470,10 @@ void updateAndRenderGameUI(GameState *gameState)
 
 	const s32 uiPadding = 4; // TODO: Move this somewhere sensible!
 	s32 left = uiPadding;
-	s32 right = windowWidth - uiPadding;
+	s32 right = UI::windowSize.x - uiPadding;
 	s32 toolbarBottom = 64;
 
-	Rect2I uiRect = irectXYWH(0,0, windowWidth, toolbarBottom);
+	Rect2I uiRect = irectXYWH(0,0, UI::windowSize.x, toolbarBottom);
 	UI::addUIRect(uiRect);
 	drawSingleRect(uiBuffer, uiRect, renderer->shaderIds.untextured, color255(0, 0, 0, 128));
 
@@ -545,7 +543,7 @@ void updateAndRenderGameUI(GameState *gameState)
 */
 
 	UI::drawText(uiBuffer, font, myprintf("R: {0}\nC: {1}\nI: {2}"_s, {formatInt(city->zoneLayer.demand[Zone_Residential]), formatInt(city->zoneLayer.demand[Zone_Commercial]), formatInt(city->zoneLayer.demand[Zone_Industrial])}),
-	       v2i(round_s32(windowWidth * 0.75f), uiPadding), ALIGN_RIGHT, labelStyle->textColor);
+	       v2i(round_s32(UI::windowSize.x * 0.75f), uiPadding), ALIGN_RIGHT, labelStyle->textColor);
 
 	UIButtonStyle *buttonStyle = findStyle<UIButtonStyle>("default"_s);
 	UIPanelStyle *popupMenuPanelStyle = findStyle<UIPanelStyle>("popupMenu"_s);
@@ -574,7 +572,7 @@ void updateAndRenderGameUI(GameState *gameState)
 		if (UI::isMenuVisible(Menu_Zone))
 		{
 			s32 popupMenuWidth = 150;
-			s32 popupMenuMaxHeight = windowHeight - (buttonRect.y + buttonRect.h);
+			s32 popupMenuMaxHeight = UI::windowSize.y - (buttonRect.y + buttonRect.h);
 
 			UIPanel menu = UIPanel(irectXYWH(buttonRect.x - popupMenuPanelStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight), popupMenuPanelStyle);
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
@@ -606,7 +604,7 @@ void updateAndRenderGameUI(GameState *gameState)
 			ChunkedArray<BuildingDef *> *constructibleBuildings = getConstructibleBuildings();
 
 			s32 popupMenuWidth = 150;
-			s32 popupMenuMaxHeight = windowHeight - (buttonRect.y + buttonRect.h);
+			s32 popupMenuMaxHeight = UI::windowSize.y - (buttonRect.y + buttonRect.h);
 
 			UIPanel menu = UIPanel(irectXYWH(buttonRect.x - popupMenuPanelStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight), popupMenuPanelStyle);
 
@@ -772,7 +770,7 @@ AppStatus updateAndRenderGame(GameState *gameState, f32 deltaTime)
 	}
 
 	V2I mouseTilePos = v2i(worldCamera->mousePos);
-	bool mouseIsOverUI = UI::isMouseInputHandled() || UI::mouseIsWithinUIRects(uiCamera->mousePos);
+	bool mouseIsOverUI = UI::isMouseInputHandled() || UI::mouseIsWithinUIRects();
 
 	city->demolitionRect = irectNegativeInfinity();
 
@@ -1180,7 +1178,6 @@ void drawDataViewUI(GameState *gameState)
 	DEBUG_FUNCTION();
 	
 	RenderBuffer *uiBuffer = &renderer->uiBuffer;
-	s32 windowHeight = round_s32(renderer->uiCamera.size.y);
 	UILabelStyle *labelStyle = findStyle<UILabelStyle>("title"_s);
 	BitmapFont *font = getFont(&labelStyle->font);
 
@@ -1191,7 +1188,7 @@ void drawDataViewUI(GameState *gameState)
 	// Data-views menu
 	String dataViewButtonText = getText("button_data_views"_s);
 	V2I dataViewButtonSize = UI::calculateButtonSize(dataViewButtonText, buttonStyle);
-	Rect2I dataViewButtonBounds = irectXYWH(uiPadding, windowHeight - uiPadding - dataViewButtonSize.y, dataViewButtonSize.x, dataViewButtonSize.y);
+	Rect2I dataViewButtonBounds = irectXYWH(uiPadding, UI::windowSize.y - uiPadding - dataViewButtonSize.y, dataViewButtonSize.x, dataViewButtonSize.y);
 
 	Rect2I dataViewUIBounds = expand(dataViewButtonBounds, uiPadding);
 	drawSingleRect(uiBuffer, dataViewUIBounds, renderer->shaderIds.untextured, color255(0, 0, 0, 128));
@@ -1217,7 +1214,7 @@ void drawDataViewUI(GameState *gameState)
 			menuContentHeight += buttonSize.y;
 		}
 		s32 popupMenuWidth = buttonMaxWidth + (popupMenuPanelStyle->margin * 2);
-		s32 popupMenuMaxHeight = windowHeight - 128;
+		s32 popupMenuMaxHeight = UI::windowSize.y - 128;
 		s32 estimatedMenuHeight = (DataViewCount * buttonMaxHeight)
 								+ ((DataViewCount - 1) * popupMenuPanelStyle->contentPadding)
 								+ (popupMenuPanelStyle->margin * 2);

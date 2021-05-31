@@ -75,6 +75,16 @@ namespace UI
 {
 	struct UIState
 	{
+
+		// UI elements that react to the mouse should only do so if this is false - and then
+		// they should set it to true. 
+		bool mouseInputHandled;
+		Stack<Rect2I> inputScissorRects;
+
+		// Dragging stuff
+		void *currentDragObject;
+		V2I dragObjectStartPos;
+
 		String tooltipText;
 
 		// TODO: Replace this with better "this input has already been used" code!
@@ -82,15 +92,6 @@ namespace UI
 
 		s32 openMenu;
 		ScrollbarState openMenuScrollbar;
-
-		// Dragging stuff
-		void *currentDragObject;
-		V2I dragObjectStartPos;
-
-		// UI elements that react to the mouse should only do so if this is false - and then
-		// they should set it to true. 
-		bool mouseInputHandled;
-		Stack<Rect2I> inputScissorRects;
 
 		// DropDownList stuff
 		void *openDropDownList; // We use the pointer to the options array
@@ -110,6 +111,12 @@ namespace UI
 	};
 	UIState uiState;
 
+	// Cached input values
+	// These are updated in startFrame()
+	V2I windowSize;
+	V2I mousePos;
+	V2I mouseClickStartPos;
+
 	void init(MemoryArena *arena);
 	void startFrame();
 	void endFrame();
@@ -118,7 +125,7 @@ namespace UI
 	bool isMouseInputHandled();
 	void markMouseInputHandled();
 	bool isMouseInUIBounds(Rect2I bounds);
-	bool isMouseInUIBounds(Rect2I bounds, V2 mousePos);
+	bool isMouseInUIBounds(Rect2I bounds, V2I mousePos);
 	bool justClickedOnUI(Rect2I bounds);
 
 	WidgetMouseState getWidgetMouseState(Rect2I bounds);
@@ -138,7 +145,7 @@ namespace UI
 	// (Rectangle areas which block the mouse from interacting with the game
 	// world. eg, stops you clicking through windows)
 	void addUIRect(Rect2I bounds);
-	bool mouseIsWithinUIRects(V2 mousePos);
+	bool mouseIsWithinUIRects();
 
 	// Text
 	Rect2I drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2I origin, u32 align, V4 color, s32 maxWidth = 0);

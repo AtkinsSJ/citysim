@@ -102,8 +102,7 @@ void updateScrollbar(ScrollbarState *state, s32 contentSize, Rect2I bounds, UISc
 				// Mouse stuff
 				if (mouseButtonPressed(MouseButton_Left))
 				{
-					V2 clickStartPos = getClickStartPos(MouseButton_Left, &renderer->uiCamera);
-					V2I mousePos = v2i(renderer->uiCamera.mousePos);
+					V2I clickStartPos = UI::mouseClickStartPos;
 
 					if (UI::isMouseInUIBounds(bounds, clickStartPos))
 					{
@@ -114,18 +113,18 @@ void updateScrollbar(ScrollbarState *state, s32 contentSize, Rect2I bounds, UISc
 
 							if (state->isHorizontal)
 							{
-								dragDistance = mousePos.x - (s32)clickStartPos.x;
+								dragDistance = UI::mousePos.x - clickStartPos.x;
 							}
 							else
 							{
-								dragDistance = mousePos.y - (s32)clickStartPos.y;
+								dragDistance = UI::mousePos.y - clickStartPos.y;
 							}
 
 							f32 dragPercent = (f32)dragDistance / thumbRange;
 							state->scrollPercent = clamp01(state->thumbDragStartPercent + dragPercent);
 						}
 						// Else, if we clicked on the thumb, begin dragging
-						else if (mouseButtonJustPressed(MouseButton_Left) && UI::isMouseInUIBounds(thumbBounds, clickStartPos))
+						else if (mouseButtonJustPressed(MouseButton_Left) && UI::isMouseInUIBounds(thumbBounds))
 						{
 							state->isDraggingThumb = true;
 							state->thumbDragStartPercent = state->scrollPercent;
@@ -133,6 +132,7 @@ void updateScrollbar(ScrollbarState *state, s32 contentSize, Rect2I bounds, UISc
 						// Else, jump to mouse position
 						else
 						{
+							// TODO: Move to int coordinates, and use the UIState mousePos
 							V2 relativeMousePos = renderer->uiCamera.mousePos - v2(bounds.pos);
 
 							state->scrollPercent = clamp01(( (state->isHorizontal ? relativeMousePos.x : relativeMousePos.y) - 0.5f * thumbSize) / (f32)thumbRange);
@@ -202,6 +202,13 @@ void UI::startFrame()
 	{
 		uiState.currentDragObject = null;
 	}
+
+	windowSize = v2i(renderer->uiCamera.size);
+	mousePos = v2i(renderer->uiCamera.mousePos);
+	if (mouseButtonPressed(MouseButton_Left))
+	{
+		mouseClickStartPos = v2i(getClickStartPos(MouseButton_Left, &renderer->uiCamera));
+	}
 }
 
 void UI::endFrame()
@@ -236,27 +243,26 @@ inline void UI::markMouseInputHandled()
 
 inline bool UI::isMouseInUIBounds(Rect2I bounds)
 {
-	return isMouseInUIBounds(bounds, renderer->uiCamera.mousePos);
+	return isMouseInUIBounds(bounds, mousePos);
 }
 
-inline bool UI::isMouseInUIBounds(Rect2I bounds, V2 mousePos)
+inline bool UI::isMouseInUIBounds(Rect2I bounds, V2I pos)
 {
 	Rect2I clippedBounds = isInputScissorActive() ? intersect(bounds, getInputScissorRect()) : bounds;
 
-	bool result = contains(clippedBounds, mousePos);
+	bool result = contains(clippedBounds, pos);
 
 	return result;
 }
 
 inline bool UI::justClickedOnUI(Rect2I bounds)
 {
-	V2I mousePos = v2i(renderer->uiCamera.mousePos);
 	Rect2I clippedBounds = isInputScissorActive() ? intersect(bounds, getInputScissorRect()) : bounds;
 
 	bool result = !UI::isMouseInputHandled()
 			   && contains(clippedBounds, mousePos)
 			   && mouseButtonJustReleased(MouseButton_Left)
-			   && contains(clippedBounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera));
+			   && contains(clippedBounds, mouseClickStartPos);
 
 	return result;
 }
@@ -272,7 +278,7 @@ WidgetMouseState UI::getWidgetMouseState(Rect2I widgetBounds)
 		// Mouse pressed: must have started and currently be inside the bounds to show anything
 		// Mouse unpressed: show hover if in bounds
 		if (mouseButtonPressed(MouseButton_Left)
-		 && isMouseInUIBounds(widgetBounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
+		 && isMouseInUIBounds(widgetBounds, mouseClickStartPos))
 		{
 			result.isPressed = true;
 		}
@@ -328,7 +334,7 @@ inline void UI::addUIRect(Rect2I bounds)
 	uiState.uiRects.append(bounds);
 }
 
-bool UI::mouseIsWithinUIRects(V2 mousePos)
+bool UI::mouseIsWithinUIRects()
 {
 	bool result = false;
 
@@ -664,7 +670,7 @@ void UI::putDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*
 	if (isOpen)
 	{
 		s32 panelTop = bounds.y + bounds.h;
-		s32 panelMaxHeight = round_s32(renderer->uiCamera.size.y) - panelTop;
+		s32 panelMaxHeight = windowSize.y - panelTop;
 		Rect2I panelBounds = irectXYWH(bounds.x, panelTop, bounds.w, panelMaxHeight);
 		UIPanel panel = UIPanel(panelBounds, findStyle<UIPanelStyle>(&style->panelStyle), 0, uiState.openDropDownListRenderBuffer);
 		panel.enableVerticalScrolling(&uiState.openDropDownListScrollbar, false);
@@ -683,7 +689,7 @@ void UI::putDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*
 		// If we clicked somewhere outside of the panel, close it
 		if (isOpen && !clicked
 		 && mouseButtonJustReleased(MouseButton_Left)
-		 && !contains(panel.bounds, getClickStartPos(MouseButton_Left, &renderer->uiCamera)))
+		 && !contains(panel.bounds, mouseClickStartPos))
 		{
 			closeDropDownList();
 		}
@@ -785,7 +791,7 @@ void UI::putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Rect2I bounds,
 	else if (isDragging(currentValue))
 	{
 		// Move
-		V2I mouseMovement = v2i(renderer->uiCamera.mousePos - getClickStartPos(MouseButton_Left, &renderer->uiCamera));
+		V2I mouseMovement = mousePos - mouseClickStartPos;
 		thumbBounds.x = clamp(uiState.dragObjectStartPos.x + mouseMovement.x, bounds.x, bounds.x + travelX);
 
 		// Apply that to the currentValue
@@ -865,10 +871,10 @@ void UI::drawToast()
 		else
 		{
 			UIPanelStyle *style = findStyle<UIPanelStyle>("toast"_s);
-			V2I origin = v2i(floor_s32(renderer->uiCamera.size.x / 2), floor_s32(renderer->uiCamera.size.y - 8));
+			V2I origin = v2i(windowSize.x / 2, windowSize.y - 8);
 
 			UILabelStyle *labelStyle = findStyle<UILabelStyle>(&style->labelStyle);
-			s32 maxWidth = min(floor_s32(renderer->uiCamera.size.x * 0.8f), 500);
+			s32 maxWidth = min(floor_s32(windowSize.x * 0.8f), 500);
 			V2I textSize = calculateTextSize(getFont(&labelStyle->font), toast->text, maxWidth - (2 * style->margin));
 
 			V2I toastSize = v2i(textSize.x + (2 * style->margin), textSize.y + (2 * style->margin));
