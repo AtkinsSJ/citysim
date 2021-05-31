@@ -117,6 +117,8 @@ namespace UI
 	V2I mousePos;
 	V2I mouseClickStartPos;
 
+// METHODS
+
 	void init(MemoryArena *arena);
 	void startFrame();
 	void endFrame();
@@ -130,8 +132,17 @@ namespace UI
 
 	WidgetMouseState getWidgetMouseState(Rect2I bounds);
 
+	// Dragging!
+	// After calling startDragging() with a start position, you can repeatedly call
+	// getDraggingObjectPos() to find out where the object should be now. You'll have to
+	// clamp the position yourself before using it.
+	// The *object pointer can be anything that uniquely identifies what you want to drag.
+	// (eg, in Sliders, we are using the *currentValue pointer.)
+	// NB: The drag is automatically ended as soon as MouseButton_Left is released, hence
+	// there is no stopDragging() function.
 	bool isDragging(void *object);
 	void startDragging(void *object, V2I objectPos);
+	V2I getDraggingObjectPos();
 
 	// Input Scissor
 	void pushInputScissorRect(Rect2I bounds);

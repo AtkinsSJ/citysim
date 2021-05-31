@@ -298,6 +298,11 @@ void UI::startDragging(void *object, V2I objectPos)
 	uiState.dragObjectStartPos = objectPos;
 }
 
+V2I UI::getDraggingObjectPos()
+{
+	return uiState.dragObjectStartPos + (mousePos - mouseClickStartPos);
+}
+
 inline void UI::pushInputScissorRect(Rect2I bounds)
 {
 	push(&uiState.inputScissorRects, bounds);
@@ -791,8 +796,8 @@ void UI::putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Rect2I bounds,
 	else if (isDragging(currentValue))
 	{
 		// Move
-		V2I mouseMovement = mousePos - mouseClickStartPos;
-		thumbBounds.x = clamp(uiState.dragObjectStartPos.x + mouseMovement.x, bounds.x, bounds.x + travelX);
+		V2I thumbPos = getDraggingObjectPos();
+		thumbBounds.x = clamp(thumbPos.x, bounds.x, bounds.x + travelX);
 
 		// Apply that to the currentValue
 		f32 positionPercent = (f32)(thumbBounds.x - bounds.x) / (f32)travelX;
