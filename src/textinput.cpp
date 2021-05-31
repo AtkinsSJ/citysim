@@ -401,7 +401,7 @@ V2I UI::calculateTextInputSize(TextInput *textInput, UITextInputStyle *style, s3
 
 Rect2I UI::drawTextInput(RenderBuffer *renderBuffer, TextInput *textInput, UITextInputStyle *style, Rect2I bounds)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_UI);
 
 	String text = textInput->toString();
 	BitmapFont *font = getFont(&style->font);

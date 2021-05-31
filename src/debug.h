@@ -82,17 +82,19 @@ enum DebugCodeDataTag
 	DCDT_GameUpdate,
 	DCDT_Input,
 	DCDT_Simulation,
+	DCDT_UI,
 
 	DebugCodeDataTagCount
 };
 V4 debugCodeDataTagColors[DebugCodeDataTagCount] = {
-	color255(255, 255, 255, 255),
-	color255(255,   0, 255, 255),
-	color255(128, 128, 128, 255),
-	color255( 64, 255,  64, 255),
-	color255( 32,  64, 255, 255),
-	color255(255,   0,   0, 255),
-	color255(255,  64,  64, 255),
+	color255(255, 255, 255, 255), // White
+	color255(255,   0, 255, 255), // Magenta
+	color255(128, 128, 128, 255), // Grey
+	color255( 64, 255,  64, 255), // Green
+	color255( 32,  64, 255, 255), // Blue
+	color255(255,   0,   0, 255), // Red
+	color255(255,  64,  64, 255), // Pink
+	color255(255, 128,   0, 255), // Orange
 };
 
 struct DebugCodeData

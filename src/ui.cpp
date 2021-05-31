@@ -61,7 +61,7 @@ Maybe<Rect2I> getScrollbarThumbBounds(ScrollbarState *state, Rect2I scrollbarBou
 
 void updateScrollbar(ScrollbarState *state, s32 contentSize, Rect2I bounds, UIScrollbarStyle *style)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_UI);
 
 	state->contentSize = contentSize;
 
@@ -329,7 +329,7 @@ bool UI::mouseIsWithinUIRects(V2 mousePos)
 
 Rect2I UI::drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2I origin, u32 align, V4 color, s32 maxWidth)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_UI);
 
 	V2I textSize = calculateTextSize(font, text, maxWidth);
 	V2I topLeft  = calculateTextPosition(origin, textSize, align);
@@ -435,7 +435,7 @@ Rect2I UI::calculateButtonContentBounds(Rect2I bounds, UIButtonStyle *style)
 
 bool UI::putButton(Rect2I bounds, UIButtonStyle *style, ButtonState state, RenderBuffer *renderBuffer, String tooltip)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_UI);
 
 	if (style == null) 			style = findStyle<UIButtonStyle>("default"_s);
 	if (renderBuffer == null) 	renderBuffer = &renderer->uiBuffer;
@@ -544,7 +544,7 @@ V2I UI::calculateCheckboxSize(UICheckboxStyle *style)
 
 void UI::putCheckbox(bool *checked, Rect2I bounds, UICheckboxStyle *style, bool isDisabled, RenderBuffer *renderBuffer)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_UI);
 
 	if (style == null) 			style = findStyle<UICheckboxStyle>("default"_s);
 	if (renderBuffer == null) 	renderBuffer = &renderer->uiBuffer;
@@ -615,7 +615,7 @@ V2I UI::calculateDropDownListSize(Array<T> *listOptions, String (*getDisplayName
 template <typename T>
 void UI::putDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*getDisplayName)(T *data), Rect2I bounds, UIDropDownListStyle *style, RenderBuffer *renderBuffer)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_UI);
 
 	if (style == null) 			style = findStyle<UIDropDownListStyle>("default"_s);
 	if (renderBuffer == null) 	renderBuffer = &renderer->uiBuffer;
@@ -739,6 +739,7 @@ V2I UI::calculateSliderSize(UISliderStyle *style, s32 maxWidth, bool fillWidth)
 
 void UI::putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Rect2I bounds, UISliderStyle *style, RenderBuffer *renderBuffer)
 {
+	DEBUG_FUNCTION_T(DCDT_UI);
 
 }
 
@@ -776,7 +777,7 @@ void UI::pushToast(String message)
 
 void UI::drawToast()
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_UI);
 
 	Maybe<Toast*> currentToast = uiState.toasts.peek();
 	if (currentToast.isValid)

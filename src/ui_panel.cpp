@@ -2,7 +2,7 @@
 
 UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, u32 flags, RenderBuffer *renderBuffer)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_UI);
 
 	if (panelStyle == null)
 	{
@@ -82,7 +82,7 @@ void UIPanel::enableVerticalScrolling(ScrollbarState *scrollbarState, bool expan
 
 bool UIPanel::addTextButton(String text, ButtonState state, String styleName)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_UI);
 	
 	prepareForWidgets();
 
@@ -109,7 +109,7 @@ bool UIPanel::addTextButton(String text, ButtonState state, String styleName)
 
 bool UIPanel::addImageButton(Sprite *sprite, ButtonState state, String styleName)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_UI);
 	
 	prepareForWidgets();
 
@@ -137,7 +137,7 @@ bool UIPanel::addImageButton(Sprite *sprite, ButtonState state, String styleName
 
 void UIPanel::addCheckbox(bool *checked, String styleName)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_UI);
 
 	prepareForWidgets();
 
@@ -159,7 +159,7 @@ void UIPanel::addCheckbox(bool *checked, String styleName)
 template <typename T>
 void UIPanel::addDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*getDisplayName)(T *data), String styleName)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_UI);
 
 	prepareForWidgets();
 
@@ -182,7 +182,7 @@ void UIPanel::addDropDownList(Array<T> *listOptions, s32 *currentSelection, Stri
 
 void UIPanel::addSlider(f32 *currentValue, f32 minValue, f32 maxValue, String styleName)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_UI);
 
 	prepareForWidgets();
 
@@ -205,7 +205,7 @@ void UIPanel::addSlider(f32 *currentValue, f32 minValue, f32 maxValue, String st
 
 void UIPanel::addSprite(Sprite *sprite, s32 width, s32 height)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_UI);
 
 	prepareForWidgets();
 
@@ -230,7 +230,7 @@ void UIPanel::addSprite(Sprite *sprite, s32 width, s32 height)
 
 void UIPanel::addText(String text, String styleName)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_UI);
 	
 	prepareForWidgets();
 
@@ -257,7 +257,7 @@ void UIPanel::addText(String text, String styleName)
 
 bool UIPanel::addTextInput(TextInput *textInput, String styleName)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_UI);
 	
 	prepareForWidgets();
 
@@ -284,7 +284,7 @@ bool UIPanel::addTextInput(TextInput *textInput, String styleName)
 
 Rect2I UIPanel::addBlank(s32 width, s32 height)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_UI);
 
 	prepareForWidgets();
 
@@ -304,7 +304,7 @@ void UIPanel::alignWidgets(u32 alignment)
 
 void UIPanel::startNewLine(u32 hAlignment)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_UI);
 
 	s32 lineWidth = (widgetAlignment & ALIGN_RIGHT) ? currentRight : currentLeft;
 	largestLineWidth = max(largestLineWidth, lineWidth);
@@ -335,7 +335,7 @@ void UIPanel::startNewLine(u32 hAlignment)
 
 UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_UI);
 	ASSERT(vAlignment == ALIGN_TOP || vAlignment == ALIGN_BOTTOM);
 	
 	prepareForWidgets();
@@ -389,7 +389,7 @@ UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 
 UIPanel UIPanel::column(s32 width, Alignment hAlignment, String styleName)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_UI);
 	ASSERT(hAlignment == ALIGN_LEFT || hAlignment == ALIGN_RIGHT);
 	
 	prepareForWidgets();
@@ -427,7 +427,7 @@ UIPanel UIPanel::column(s32 width, Alignment hAlignment, String styleName)
 
 void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_UI);
 
 	// Make sure the current line's height is taken into account
 	startNewLine();
@@ -615,7 +615,7 @@ Rect2I UIPanel::getCurrentLayoutPosition()
 
 void UIPanel::completeWidget(V2I widgetSize)
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_UI);
 	
 	bool lineIsFull = false;
 

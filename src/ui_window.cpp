@@ -132,7 +132,7 @@ void UI::closeAllWindows()
 
 void UI::updateAndRenderWindows()
 {
-	DEBUG_FUNCTION();
+	DEBUG_FUNCTION_T(DCDT_UI);
 
 	V2I mousePos = v2i(renderer->uiCamera.mousePos);
 	Rect2I validWindowArea = irectCentreSize(v2i(renderer->uiCamera.pos), v2i(renderer->uiCamera.size));
