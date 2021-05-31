@@ -83,6 +83,10 @@ namespace UI
 		s32 openMenu;
 		ScrollbarState openMenuScrollbar;
 
+		// Dragging stuff
+		void *currentDragObject;
+		V2I dragObjectStartPos;
+
 		// UI elements that react to the mouse should only do so if this is false - and then
 		// they should set it to true. 
 		bool mouseInputHandled;
@@ -118,6 +122,9 @@ namespace UI
 	bool justClickedOnUI(Rect2I bounds);
 
 	WidgetMouseState getWidgetMouseState(Rect2I bounds);
+
+	bool isDragging(void *object);
+	void startDragging(void *object, V2I objectPos);
 
 	// Input Scissor
 	void pushInputScissorRect(Rect2I bounds);
@@ -166,7 +173,7 @@ namespace UI
 
 	// Sliders
 	V2I calculateSliderSize(UISliderStyle *style, s32 maxWidth = 0, bool fillWidth = true);
-	void putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Rect2I bounds, UISliderStyle *style, RenderBuffer *renderBuffer = null);
+	void putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Rect2I bounds, UISliderStyle *style, bool isDisabled = false, RenderBuffer *renderBuffer = null);
 	// void putSlider(s32 *currentValue, s32 minValue, s32 maxValue, Rect2I bounds, UISliderStyle *style, RenderBuffer *renderBuffer = null);
 
 	// TextInputs

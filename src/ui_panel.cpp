@@ -197,7 +197,7 @@ void UIPanel::addSlider(f32 *currentValue, f32 minValue, f32 maxValue, String st
 
 	if (!hideWidgets)
 	{
-		UI::putSlider(currentValue, minValue, maxValue, widgetBounds, widgetStyle, renderBuffer);
+		UI::putSlider(currentValue, minValue, maxValue, widgetBounds, widgetStyle, false, renderBuffer);
 	}
 
 	completeWidget(widgetSize);

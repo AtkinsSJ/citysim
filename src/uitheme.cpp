@@ -142,6 +142,9 @@ void initUIStyleConstants()
 	PROP(textColor,					PropType_Color);
 	PROP(textInputStyle,			PropType_Style);
 	PROP(thumb,						PropType_Drawable);
+	PROP(thumbDisabled,				PropType_Drawable);
+	PROP(thumbHover,				PropType_Drawable);
+	PROP(thumbPressed,				PropType_Drawable);
 	PROP(titleBarButtonHoverColor,	PropType_Color);
 	PROP(titleBarColor,				PropType_Color);
 	PROP(titleBarColorInactive,		PropType_Color);
@@ -219,6 +222,9 @@ void initUIStyleConstants()
 	assignStyleProperties(UIStyle_Slider, {
 		"track"_s,
 		"thumb"_s,
+		"thumbDisabled"_s,
+		"thumbHover"_s,
+		"thumbPressed"_s,
 		"thumbSize"_s,
 	});
 	assignStyleProperties(UIStyle_TextInput, {
@@ -675,6 +681,9 @@ void loadUITheme(Blob data, Asset *asset)
 
 						slider->track = style->track;
 						slider->thumb = style->thumb;
+						slider->thumbDisabled = style->thumbDisabled;
+						slider->thumbHover = style->thumbHover;
+						slider->thumbPressed = style->thumbPressed;
 						slider->thumbSize = style->thumbSize;
 					} break;
 

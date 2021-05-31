@@ -196,6 +196,12 @@ void UI::startFrame()
 {
 	uiState.uiRects.clear();
 	uiState.mouseInputHandled = false;
+
+	// Clear the drag if the mouse button isn't pressed
+	if (!mouseButtonPressed(MouseButton_Left))
+	{
+		uiState.currentDragObject = null;
+	}
 }
 
 void UI::endFrame()
@@ -273,6 +279,17 @@ WidgetMouseState UI::getWidgetMouseState(Rect2I widgetBounds)
 	}
 
 	return result;
+}
+
+inline bool UI::isDragging(void *object)
+{
+	return (object == uiState.currentDragObject);
+}
+
+void UI::startDragging(void *object, V2I objectPos)
+{
+	uiState.currentDragObject = object;
+	uiState.dragObjectStartPos = objectPos;
 }
 
 inline void UI::pushInputScissorRect(Rect2I bounds)
@@ -442,7 +459,7 @@ bool UI::putButton(Rect2I bounds, UIButtonStyle *style, ButtonState state, Rende
 	
 	bool buttonClicked = false;
 
-WidgetMouseState mouseState = getWidgetMouseState(bounds);
+	WidgetMouseState mouseState = getWidgetMouseState(bounds);
 
 	UIDrawableStyle *backgroundStyle = &style->background;
 
@@ -732,15 +749,70 @@ inline ScrollbarState *UI::getMenuScrollbar()
 
 V2I UI::calculateSliderSize(UISliderStyle *style, s32 maxWidth, bool fillWidth)
 {
-	V2I result = {};
+	if (style == null) 			style = findStyle<UISliderStyle>("default"_s);
+
+	// I think we always fill width? I don't know how to establish our width otherwise!
+	V2I result = v2i(maxWidth, style->thumbSize.y);
 
 	return result;
 }
 
-void UI::putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Rect2I bounds, UISliderStyle *style, RenderBuffer *renderBuffer)
+void UI::putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Rect2I bounds, UISliderStyle *style, bool isDisabled, RenderBuffer *renderBuffer)
 {
 	DEBUG_FUNCTION_T(DCDT_UI);
+	ASSERT(maxValue > minValue);
 
+	if (style == null) 			style = findStyle<UISliderStyle>("default"_s);
+	if (renderBuffer == null) 	renderBuffer = &renderer->uiBuffer;
+
+	// Value ranges
+	*currentValue = clamp(*currentValue, minValue, maxValue);
+	f32 valueRange = maxValue - minValue;
+	f32 currentPercent = (*currentValue - minValue) / valueRange;
+
+	// Calculate where the thumb is initially
+	s32 travelX = (bounds.w - style->thumbSize.x); // Space available for the thumb to move in
+	s32 thumbX = bounds.x + round_s32((f32)travelX * currentPercent);
+	s32 thumbY = bounds.y + ((bounds.h - style->thumbSize.y) / 2);
+	Rect2I thumbBounds = irectXYWH(thumbX, thumbY, style->thumbSize.x, style->thumbSize.y);
+
+	// Interact with mouse
+	UIDrawableStyle *thumbStyle = &style->thumb;
+	if (isDisabled)
+	{
+		thumbStyle = &style->thumbDisabled;
+	}
+	else if (isDragging(currentValue))
+	{
+		// Move
+		V2I mouseMovement = v2i(renderer->uiCamera.mousePos - getClickStartPos(MouseButton_Left, &renderer->uiCamera));
+		thumbBounds.x = clamp(uiState.dragObjectStartPos.x + mouseMovement.x, bounds.x, bounds.x + travelX);
+
+		// Apply that to the currentValue
+		f32 positionPercent = (f32)(thumbBounds.x - bounds.x) / (f32)travelX;
+		*currentValue = minValue + (positionPercent * valueRange);
+
+		thumbStyle = &style->thumbPressed;
+	}
+	else if (isMouseInUIBounds(thumbBounds))
+	{
+		if (mouseButtonJustPressed(MouseButton_Left))
+		{
+			// Start drag
+			startDragging(currentValue, thumbBounds.pos);
+
+			thumbStyle = &style->thumbPressed;
+		}
+		else
+		{
+			// Hovering thumb
+			thumbStyle = &style->thumbHover;
+		}
+	}
+
+	// Draw things
+	UIDrawable(&style->track).draw(renderBuffer, bounds);
+	UIDrawable(thumbStyle).draw(renderBuffer, thumbBounds);
 }
 
 bool UI::putTextInput(TextInput *textInput, Rect2I bounds, UITextInputStyle *style, RenderBuffer *renderBuffer)

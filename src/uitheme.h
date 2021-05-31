@@ -165,7 +165,11 @@ struct UISliderStyle
 	String name;
 	
 	UIDrawableStyle track;
+
 	UIDrawableStyle thumb;
+	UIDrawableStyle thumbHover;
+	UIDrawableStyle thumbPressed;
+	UIDrawableStyle thumbDisabled;
 	V2I thumbSize;
 };
 
@@ -254,6 +258,9 @@ struct UIStyle
 
 	UIDrawableStyle track;
 	UIDrawableStyle thumb;
+	UIDrawableStyle thumbHover;
+	UIDrawableStyle thumbPressed;
+	UIDrawableStyle thumbDisabled;
 	V2I thumbSize;
 	
 	V4 overlayColor;
