@@ -326,7 +326,7 @@ int main(int argc, char *argv[])
 			
 			if (globalConsole)
 			{
-				updateConsole(globalConsole);
+				updateAndRenderConsole(globalConsole);
 			}
 
 			if (haveAssetFilesChanged())
@@ -397,12 +397,6 @@ int main(int argc, char *argv[])
 				}
 
 				UI::endFrame();
-			}
-
-
-			if (globalConsole)
-			{
-				renderConsole(globalConsole);
 			}
 
 			// Update camera matrices here

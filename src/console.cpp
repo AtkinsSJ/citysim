@@ -32,7 +32,7 @@ void initConsole(MemoryArena *debugArena, f32 openHeight, f32 maximisedHeight, f
 	consoleWriteLine("GREETINGS PROFESSOR FALKEN.\nWOULD YOU LIKE TO PLAY A GAME?"_s);
 }
 
-void updateConsole(Console *console)
+void updateAndRenderConsole(Console *console)
 {
 	bool scrollToBottom = false;
 
@@ -192,10 +192,31 @@ void updateConsole(Console *console)
 		}
 	}
 
+	// Display the console
 	if (console->currentHeight > 0)
 	{
+		RenderBuffer *renderBuffer = &renderer->debugBuffer;
+		s32 actualConsoleHeight = floor_s32(console->currentHeight * (f32)UI::windowSize.y);
+		s32 screenWidth = inputState->windowWidth;
+
 		UIConsoleStyle *consoleStyle = findStyle<UIConsoleStyle>(&console->style);
 		UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&consoleStyle->scrollbarStyle);
+		UITextInputStyle *textInputStyle = findStyle<UITextInputStyle>(&consoleStyle->textInputStyle);
+
+		// Text input
+		V2I textInputSize = UI::calculateTextInputSize(&console->input, textInputStyle, screenWidth);
+		V2I textInputPos  = v2i(0, actualConsoleHeight - textInputSize.y);
+		Rect2I textInputBounds = irectPosSize(textInputPos, textInputSize);
+		UI::drawTextInput(renderBuffer, &console->input, textInputStyle, textInputBounds);
+
+		// Output area
+		V2I textPos = v2i(consoleStyle->padding, textInputBounds.y);
+		s32 textMaxWidth = screenWidth - (2*consoleStyle->padding);
+		s32 heightOfOutputArea = textPos.y;
+		Rect2I consoleBackRect = irectXYWH(0,0,screenWidth, heightOfOutputArea);
+		UIDrawable(&consoleStyle->background).draw(renderBuffer, consoleBackRect);
+		
+		// Scrollbar
 		Rect2I scrollbarBounds = getConsoleScrollbarBounds(console);
 		if (hasPositiveArea(scrollbarBounds))
 		{
@@ -207,62 +228,32 @@ void updateConsole(Console *console)
 			}
 
 			console->scrollbar.mouseWheelStepSize = 3 * fontLineHeight;
+
 			updateScrollbar(&console->scrollbar, contentHeight, scrollbarBounds, scrollbarStyle);
+			drawScrollbar(renderBuffer, &console->scrollbar, scrollbarBounds, scrollbarStyle);
 		}
-	}
-}
 
-void renderConsole(Console *console)
-{
-	RenderBuffer *renderBuffer = &renderer->debugBuffer;
+		textPos.y -= consoleStyle->padding;
 
-	s32 actualConsoleHeight = floor_s32(console->currentHeight * renderer->uiCamera.size.y);
-
-	s32 screenWidth = inputState->windowWidth;
-
-	UIConsoleStyle   *consoleStyle   = findStyle<UIConsoleStyle>(&console->style);
-	UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&consoleStyle->scrollbarStyle);
-	UITextInputStyle *textInputStyle = findStyle<UITextInputStyle>(&consoleStyle->textInputStyle);
-
-	V2I textInputSize = UI::calculateTextInputSize(&console->input, textInputStyle, screenWidth);
-	V2I textInputPos  = v2i(0, actualConsoleHeight - textInputSize.y);
-	Rect2I textInputBounds = irectPosSize(textInputPos, textInputSize);
-	UI::drawTextInput(renderBuffer, &console->input, textInputStyle, textInputBounds);
-
-	V2I textPos = v2i(consoleStyle->padding, textInputBounds.y);
-	s32 textMaxWidth = screenWidth - (2*consoleStyle->padding);
-
-	s32 heightOfOutputArea = textPos.y;
-
-	Rect2I consoleBackRect = irectXYWH(0,0,screenWidth, heightOfOutputArea);
-	UIDrawable(&consoleStyle->background).draw(renderBuffer, consoleBackRect);
-
-	Rect2I scrollbarBounds = getConsoleScrollbarBounds(console);
-	if (hasPositiveArea(scrollbarBounds))
-	{
-		drawScrollbar(renderBuffer, &console->scrollbar, scrollbarBounds, scrollbarStyle);
-	}
-
-	textPos.y -= consoleStyle->padding;
-
-	// print output lines
-	BitmapFont *consoleFont = getFont(&consoleStyle->font);
-	s32 scrollLinePos = clamp(floor_s32(console->scrollbar.scrollPercent * console->outputLines.count), 0, console->outputLines.count - 1);
-	s32 outputLinesAlign = ALIGN_LEFT | ALIGN_BOTTOM;
-	for (auto it = console->outputLines.iterate(scrollLinePos, false, true);
-		it.hasNext();
-		it.next())
-	{
-		ConsoleOutputLine *line = it.get();
-		V4 outputTextColor = consoleStyle->outputTextColor[line->style];
-
-		Rect2I resultRect = UI::drawText(renderBuffer, consoleFont, line->text, textPos, outputLinesAlign, outputTextColor, textMaxWidth);
-		textPos.y -= resultRect.h;
-
-		// If we've gone off the screen, stop!
-		if ((textPos.y < 0) || (textPos.y > renderer->uiCamera.size.y))
+		// print output lines
+		BitmapFont *consoleFont = getFont(&consoleStyle->font);
+		s32 scrollLinePos = clamp(floor_s32(console->scrollbar.scrollPercent * console->outputLines.count), 0, console->outputLines.count - 1);
+		s32 outputLinesAlign = ALIGN_LEFT | ALIGN_BOTTOM;
+		for (auto it = console->outputLines.iterate(scrollLinePos, false, true);
+			it.hasNext();
+			it.next())
 		{
-			break;
+			ConsoleOutputLine *line = it.get();
+			V4 outputTextColor = consoleStyle->outputTextColor[line->style];
+
+			Rect2I resultRect = UI::drawText(renderBuffer, consoleFont, line->text, textPos, outputLinesAlign, outputTextColor, textMaxWidth);
+			textPos.y -= resultRect.h;
+
+			// If we've gone off the screen, stop!
+			if ((textPos.y < 0) || (textPos.y > UI::windowSize.y))
+			{
+				break;
+			}
 		}
 	}
 }

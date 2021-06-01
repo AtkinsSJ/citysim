@@ -56,8 +56,7 @@ Console *globalConsole;
 const s32 consoleLineLength = 255;
 
 void initConsole(MemoryArena *debugArena, f32 openHeight, f32 maximisedHeight, f32 openSpeed);
-void updateConsole(Console *console);
-void renderConsole(Console *console);
+void updateAndRenderConsole(Console *console);
 
 void initCommands(Console *console); // Implementation in commands.cpp
 void loadConsoleKeyboardShortcuts(Console *console, Blob data, String filename);
