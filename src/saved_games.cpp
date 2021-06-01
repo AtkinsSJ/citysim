@@ -161,6 +161,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 		}
 		else
 		{
+			// for (s32 duplicates = 0; duplicates < 5; duplicates++)
 			for (auto it = catalogue->savedGames.iterate(); it.hasNext(); it.next())
 			{
 				SavedGameInfo *savedGame = it.get();

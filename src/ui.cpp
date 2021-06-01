@@ -643,9 +643,16 @@ Maybe<Rect2I> UI::getScrollbarThumbBounds(ScrollbarState *state, Rect2I scrollba
 	return result;
 }
 
-void UI::updateScrollbar(ScrollbarState *state, s32 contentSize, Rect2I bounds, UIScrollbarStyle *style)
+void UI::putScrollbar(ScrollbarState *state, s32 contentSize, Rect2I bounds, UIScrollbarStyle *style, bool isDisabled, RenderBuffer *renderBuffer)
 {
 	DEBUG_FUNCTION_T(DCDT_UI);
+
+	ASSERT(hasPositiveArea(bounds));
+
+	if (style == null) 			style = findStyle<UIScrollbarStyle>("default"_s);
+	if (renderBuffer == null) 	renderBuffer = &renderer->uiBuffer;
+
+	UIDrawable(&style->background).draw(renderBuffer, bounds);
 
 	state->contentSize = contentSize;
 
@@ -656,11 +663,6 @@ void UI::updateScrollbar(ScrollbarState *state, s32 contentSize, Rect2I bounds, 
 	}
 	else
 	{
-		if (style == null)
-		{
-			style = findStyle<UIScrollbarStyle>("default"_s);
-		}
-
 		if (!isMouseInputHandled())
 		{
 			Maybe<Rect2I> thumb = getScrollbarThumbBounds(state, bounds, style);
@@ -684,68 +686,67 @@ void UI::updateScrollbar(ScrollbarState *state, s32 contentSize, Rect2I bounds, 
 				}
 
 				// Mouse stuff
-				if (mouseButtonPressed(MouseButton_Left))
+				UIDrawableStyle *thumbStyle = &style->thumb;
+				if (isDisabled)
 				{
-					V2I clickStartPos = mouseClickStartPos;
+					// thumbStyle = &style->thumbDisabled;
+				}
+				else if (isDragging(state))
+				{
+					// Move
+					V2I thumbPos = getDraggingObjectPos();
 
-					if (isMouseInUIBounds(bounds, clickStartPos))
+					// @Copypasta We duplicate this code below, because there are two states where we need to set
+					// the new thumb position. It's really awkward but I don't know how to pull the logic out.
+					if (state->isHorizontal)
 					{
-						// If we are dragging the thumb, move it
-						if (state->isDraggingThumb)
-						{
-							s32 dragDistance = 0;
+						thumbBounds.x = clamp(thumbPos.x, bounds.x, bounds.x + thumbRange);
+						state->scrollPercent = clamp01((f32)(thumbBounds.x - bounds.x) / (f32)thumbRange);
+					}
+					else
+					{
+						thumbBounds.y = clamp(thumbPos.y, bounds.y, bounds.y + thumbRange);
+						state->scrollPercent = clamp01((f32)(thumbBounds.y - bounds.y) / (f32)thumbRange);
+					}
+					
+					// thumbStyle = &style->thumbPressed;
+				}
+				else if (isMouseInUIBounds(bounds))
+				{
+					bool inThumbBounds = isMouseInUIBounds(thumbBounds);
 
+					if (mouseButtonJustPressed(MouseButton_Left))
+					{
+						// If we're not on the thumb, jump the thumb to where we are!
+						if (!inThumbBounds)
+						{
 							if (state->isHorizontal)
 							{
-								dragDistance = mousePos.x - clickStartPos.x;
+								thumbBounds.x = clamp(mousePos.x - (thumbBounds.w / 2), bounds.x, bounds.x + thumbRange);
+								state->scrollPercent = clamp01((f32)(thumbBounds.x - bounds.x) / (f32)thumbRange);
 							}
 							else
 							{
-								dragDistance = mousePos.y - clickStartPos.y;
+								thumbBounds.y = clamp(mousePos.y - (thumbBounds.h / 2), bounds.y, bounds.y + thumbRange);
+								state->scrollPercent = clamp01((f32)(thumbBounds.y - bounds.y) / (f32)thumbRange);
 							}
-
-							f32 dragPercent = (f32)dragDistance / thumbRange;
-							state->scrollPercent = clamp01(state->thumbDragStartPercent + dragPercent);
-						}
-						// Else, if we clicked on the thumb, begin dragging
-						else if (mouseButtonJustPressed(MouseButton_Left) && isMouseInUIBounds(thumbBounds))
-						{
-							state->isDraggingThumb = true;
-							state->thumbDragStartPercent = state->scrollPercent;
-						}
-						// Else, jump to mouse position
-						else
-						{
-							// TODO: Move to int coordinates, and use the UIState mousePos
-							V2 relativeMousePos = renderer->uiCamera.mousePos - v2(bounds.pos);
-
-							state->scrollPercent = clamp01(( (state->isHorizontal ? relativeMousePos.x : relativeMousePos.y) - 0.5f * thumbSize) / (f32)thumbRange);
 						}
 
-						markMouseInputHandled();
+						// Start drag
+						startDragging(state, thumbBounds.pos);
+
+						// thumbStyle = &style->thumbPressed;
+					}
+					else if (inThumbBounds)
+					{
+						// Hovering thumb
+						// thumbStyle = &style->thumbHover;
 					}
 				}
-				else
-				{
-					state->isDraggingThumb = false;
-				}
+
+				UIDrawable(thumbStyle).draw(renderBuffer, thumbBounds);
 			}
 		}
-	}
-}
-
-void UI::drawScrollbar(RenderBuffer *uiBuffer, ScrollbarState *state, Rect2I bounds, UIScrollbarStyle *style)
-{
-	ASSERT(hasPositiveArea(bounds));
-
-	UIDrawable background = UIDrawable(&style->background);
-	background.draw(uiBuffer, bounds);
-
-	Maybe<Rect2I> thumbBounds = getScrollbarThumbBounds(state, bounds, style);
-	if (thumbBounds.isValid)
-	{
-		UIDrawable thumb = UIDrawable(&style->thumb);
-		thumb.draw(uiBuffer, thumbBounds.value);
 	}
 }
 
@@ -757,7 +758,6 @@ s32 UI::getScrollbarContentOffset(ScrollbarState *state, s32 scrollbarSize)
 
 	return result;
 }
-
 
 V2I UI::calculateSliderSize(UISliderStyle *style, s32 maxWidth, bool fillWidth)
 {

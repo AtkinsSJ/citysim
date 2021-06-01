@@ -521,9 +521,7 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 
 		if (!hideWidgets)
 		{
-			UI::updateScrollbar(hScrollbar, largestLineWidth + (style->margin * 2), hScrollbarBounds, scrollbarStyle);
-
-			UI::drawScrollbar(renderBuffer, hScrollbar, hScrollbarBounds, scrollbarStyle);
+			UI::putScrollbar(hScrollbar, largestLineWidth + (style->margin * 2), hScrollbarBounds, scrollbarStyle, false, renderBuffer);
 		}
 	}
 
@@ -533,9 +531,7 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 
 		if (!hideWidgets)
 		{
-			UI::updateScrollbar(vScrollbar, contentHeight, vScrollbarBounds, scrollbarStyle);
-
-			UI::drawScrollbar(renderBuffer, vScrollbar, vScrollbarBounds, scrollbarStyle);
+			UI::putScrollbar(vScrollbar, contentHeight, vScrollbarBounds, scrollbarStyle, false, renderBuffer);
 		}
 	}
 

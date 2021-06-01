@@ -229,8 +229,7 @@ void updateAndRenderConsole(Console *console)
 
 			console->scrollbar.mouseWheelStepSize = 3 * fontLineHeight;
 
-			UI::updateScrollbar(&console->scrollbar, contentHeight, scrollbarBounds, scrollbarStyle);
-			UI::drawScrollbar(renderBuffer, &console->scrollbar, scrollbarBounds, scrollbarStyle);
+			UI::putScrollbar(&console->scrollbar, contentHeight, scrollbarBounds, scrollbarStyle, false, renderBuffer);
 		}
 
 		textPos.y -= consoleStyle->padding;
