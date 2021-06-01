@@ -8,3 +8,6 @@
 
 :Sprite check check.png 16x16
 :Sprite dropdown_arrow dropdown_arrow.png 8x8
+
+:Ninepatch slider_track slider_track_9.png 0 1 2 3    0 1 2 3
+:Sprite slider_thumb slider_thumb.png 9x20
