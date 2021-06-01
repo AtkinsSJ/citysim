@@ -64,13 +64,6 @@ struct WindowContext;
 
 typedef void (*WindowProc)(WindowContext*, void*);
 
-void initScrollbar(ScrollbarState *state, bool isHorizontal, s32 mouseWheelStepSize = 64);
-// NB: When the viewport is larger than the content, there's no thumb rect so nothing is returned
-Maybe<Rect2I> getScrollbarThumbBounds(ScrollbarState *state, Rect2I scrollbarBounds, UIScrollbarStyle *style);
-void updateScrollbar(ScrollbarState *state, s32 contentSize, Rect2I bounds, UIScrollbarStyle *style);
-void drawScrollbar(RenderBuffer *uiBuffer, ScrollbarState *state, Rect2I bounds, UIScrollbarStyle *style);
-s32 getScrollbarContentOffset(ScrollbarState *state, s32 scrollbarSize);
-
 namespace UI
 {
 	struct UIState
@@ -188,6 +181,14 @@ namespace UI
 	void toggleMenuVisible(s32 menuID);
 	bool isMenuVisible(s32 menuID);
 	ScrollbarState *getMenuScrollbar();
+
+	// Scrollbars
+	void initScrollbar(ScrollbarState *state, bool isHorizontal, s32 mouseWheelStepSize = 64);
+	// NB: When the viewport is larger than the content, there's no thumb rect so nothing is returned
+	Maybe<Rect2I> getScrollbarThumbBounds(ScrollbarState *state, Rect2I scrollbarBounds, UIScrollbarStyle *style);
+	void updateScrollbar(ScrollbarState *state, s32 contentSize, Rect2I bounds, UIScrollbarStyle *style);
+	void drawScrollbar(RenderBuffer *uiBuffer, ScrollbarState *state, Rect2I bounds, UIScrollbarStyle *style);
+	s32 getScrollbarContentOffset(ScrollbarState *state, s32 scrollbarSize);
 
 	// Sliders
 	V2I calculateSliderSize(UISliderStyle *style, s32 maxWidth = 0, bool fillWidth = true);

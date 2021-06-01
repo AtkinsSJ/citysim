@@ -20,7 +20,7 @@ void initConsole(MemoryArena *debugArena, f32 openHeight, f32 maximisedHeight, f
 	console->inputHistoryCursor = -1;
 
 	initChunkedArray(&console->outputLines, debugArena, 1024);
-	initScrollbar(&console->scrollbar, false);
+	UI::initScrollbar(&console->scrollbar, false);
 
 	initChunkedArray(&console->commandShortcuts, &globalAppState.systemArena, 64);
 
@@ -215,7 +215,7 @@ void updateAndRenderConsole(Console *console)
 		s32 heightOfOutputArea = textPos.y;
 		Rect2I consoleBackRect = irectXYWH(0,0,screenWidth, heightOfOutputArea);
 		UIDrawable(&consoleStyle->background).draw(renderBuffer, consoleBackRect);
-		
+
 		// Scrollbar
 		Rect2I scrollbarBounds = getConsoleScrollbarBounds(console);
 		if (hasPositiveArea(scrollbarBounds))
@@ -229,8 +229,8 @@ void updateAndRenderConsole(Console *console)
 
 			console->scrollbar.mouseWheelStepSize = 3 * fontLineHeight;
 
-			updateScrollbar(&console->scrollbar, contentHeight, scrollbarBounds, scrollbarStyle);
-			drawScrollbar(renderBuffer, &console->scrollbar, scrollbarBounds, scrollbarStyle);
+			UI::updateScrollbar(&console->scrollbar, contentHeight, scrollbarBounds, scrollbarStyle);
+			UI::drawScrollbar(renderBuffer, &console->scrollbar, scrollbarBounds, scrollbarStyle);
 		}
 
 		textPos.y -= consoleStyle->padding;

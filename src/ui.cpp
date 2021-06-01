@@ -4,176 +4,6 @@
 #include "ui_panel.cpp"
 #include "ui_window.cpp"
 
-void initScrollbar(ScrollbarState *state, bool isHorizontal, s32 mouseWheelStepSize)
-{
-	*state = {};
-
-	state->isHorizontal = isHorizontal;
-	state->mouseWheelStepSize = mouseWheelStepSize;
-}
-
-Maybe<Rect2I> getScrollbarThumbBounds(ScrollbarState *state, Rect2I scrollbarBounds, UIScrollbarStyle *style)
-{
-	Maybe<Rect2I> result = makeFailure<Rect2I>();
-
-	// NB: This algorithm for thumb size came from here: https://ux.stackexchange.com/a/85698
-	// (Which is ultimately taken from Microsoft's .NET documentation.)
-	// Anyway, it's simple enough, but distinguishes between the size of visible content, and
-	// the size of the scrollbar's track. For us, for now, those are the same value, but I'm
-	// keeping them as separate variables, which is why viewportSize and trackSize are
-	// the same. If we add scrollbar buttons, that'll reduce the track size.
-	// - Sam, 01/04/2021
-	if (state->isHorizontal)
-	{
-		s32 thumbHeight = style->width;
-		s32 viewportSize = scrollbarBounds.w;
-
-		if (viewportSize < state->contentSize)
-		{
-			s32 trackSize = scrollbarBounds.w;
-			s32 desiredThumbSize = trackSize * viewportSize / (state->contentSize + viewportSize);
-			s32 thumbWidth = clamp(desiredThumbSize, style->width, scrollbarBounds.w);
-
-			s32 thumbPos = round_s32(state->scrollPercent * (scrollbarBounds.w - thumbWidth));
-
-			result = makeSuccess(irectXYWH(scrollbarBounds.x + thumbPos, scrollbarBounds.y, thumbWidth, thumbHeight));
-		}
-	}
-	else
-	{
-		s32 thumbWidth = style->width;
-		s32 viewportSize = scrollbarBounds.h;
-
-		if (viewportSize < state->contentSize)
-		{
-			s32 trackSize = scrollbarBounds.h;
-			s32 desiredThumbSize = trackSize * viewportSize / (state->contentSize + viewportSize);
-			s32 thumbHeight = clamp(desiredThumbSize, style->width, scrollbarBounds.h);
-
-			s32 thumbPos = round_s32(state->scrollPercent * (scrollbarBounds.h - thumbHeight));
-
-			result = makeSuccess(irectXYWH(scrollbarBounds.x, scrollbarBounds.y + thumbPos, thumbWidth, thumbHeight));
-		}
-	}
-
-	return result;
-}
-
-void updateScrollbar(ScrollbarState *state, s32 contentSize, Rect2I bounds, UIScrollbarStyle *style)
-{
-	DEBUG_FUNCTION_T(DCDT_UI);
-
-	state->contentSize = contentSize;
-
-	// If the content is smaller than the scrollbar, then snap it to position 0 and don't allow interaction.
-	if (bounds.h > state->contentSize)
-	{
-		state->scrollPercent = 0.0f;
-	}
-	else
-	{
-		if (style == null)
-		{
-			style = findStyle<UIScrollbarStyle>("default"_s);
-		}
-
-		if (!UI::isMouseInputHandled())
-		{
-			Maybe<Rect2I> thumb = getScrollbarThumbBounds(state, bounds, style);
-			if (thumb.isValid)
-			{
-				s32 overflowSize   = state->contentSize - (state->isHorizontal ? bounds.w : bounds.h);
-				Rect2I thumbBounds = thumb.value;
-				s32 thumbSize      = state->isHorizontal ? thumbBounds.w : thumbBounds.h;
-				s32 gutterSize     = state->isHorizontal ? bounds.w : bounds.h;
-				s32 thumbRange     = gutterSize - thumbSize;
-
-				// Scrollwheel stuff
-				// (It's weird that we're putting this within mouseInputHandled, but eh)
-				s32 mouseWheelDelta = (state->isHorizontal ? inputState->wheelX : -inputState->wheelY);
-				if (mouseWheelDelta != 0)
-				{
-					s32 oldScrollOffset = getScrollbarContentOffset(state, gutterSize);
-					s32 scrollOffset = oldScrollOffset + (state->mouseWheelStepSize * mouseWheelDelta);
-
-					state->scrollPercent = clamp01((f32)scrollOffset / (f32)overflowSize);
-				}
-
-				// Mouse stuff
-				if (mouseButtonPressed(MouseButton_Left))
-				{
-					V2I clickStartPos = UI::mouseClickStartPos;
-
-					if (UI::isMouseInUIBounds(bounds, clickStartPos))
-					{
-						// If we are dragging the thumb, move it
-						if (state->isDraggingThumb)
-						{
-							s32 dragDistance = 0;
-
-							if (state->isHorizontal)
-							{
-								dragDistance = UI::mousePos.x - clickStartPos.x;
-							}
-							else
-							{
-								dragDistance = UI::mousePos.y - clickStartPos.y;
-							}
-
-							f32 dragPercent = (f32)dragDistance / thumbRange;
-							state->scrollPercent = clamp01(state->thumbDragStartPercent + dragPercent);
-						}
-						// Else, if we clicked on the thumb, begin dragging
-						else if (mouseButtonJustPressed(MouseButton_Left) && UI::isMouseInUIBounds(thumbBounds))
-						{
-							state->isDraggingThumb = true;
-							state->thumbDragStartPercent = state->scrollPercent;
-						}
-						// Else, jump to mouse position
-						else
-						{
-							// TODO: Move to int coordinates, and use the UIState mousePos
-							V2 relativeMousePos = renderer->uiCamera.mousePos - v2(bounds.pos);
-
-							state->scrollPercent = clamp01(( (state->isHorizontal ? relativeMousePos.x : relativeMousePos.y) - 0.5f * thumbSize) / (f32)thumbRange);
-						}
-
-						UI::markMouseInputHandled();
-					}
-				}
-				else
-				{
-					state->isDraggingThumb = false;
-				}
-			}
-		}
-	}
-}
-
-void drawScrollbar(RenderBuffer *uiBuffer, ScrollbarState *state, Rect2I bounds, UIScrollbarStyle *style)
-{
-	ASSERT(hasPositiveArea(bounds));
-
-	UIDrawable background = UIDrawable(&style->background);
-	background.draw(uiBuffer, bounds);
-
-	Maybe<Rect2I> thumbBounds = getScrollbarThumbBounds(state, bounds, style);
-	if (thumbBounds.isValid)
-	{
-		UIDrawable thumb = UIDrawable(&style->thumb);
-		thumb.draw(uiBuffer, thumbBounds.value);
-	}
-}
-
-s32 getScrollbarContentOffset(ScrollbarState *state, s32 scrollbarSize)
-{
-	s32 overflowSize = state->contentSize - scrollbarSize;
-
-	s32 result = round_s32(state->scrollPercent * overflowSize);
-
-	return result;
-}
-
 void UI::init(MemoryArena *arena)
 {
 	uiState = {};
@@ -757,6 +587,177 @@ inline ScrollbarState *UI::getMenuScrollbar()
 {
 	return &uiState.openMenuScrollbar;
 }
+
+void UI::initScrollbar(ScrollbarState *state, bool isHorizontal, s32 mouseWheelStepSize)
+{
+	*state = {};
+
+	state->isHorizontal = isHorizontal;
+	state->mouseWheelStepSize = mouseWheelStepSize;
+}
+
+Maybe<Rect2I> UI::getScrollbarThumbBounds(ScrollbarState *state, Rect2I scrollbarBounds, UIScrollbarStyle *style)
+{
+	Maybe<Rect2I> result = makeFailure<Rect2I>();
+
+	// NB: This algorithm for thumb size came from here: https://ux.stackexchange.com/a/85698
+	// (Which is ultimately taken from Microsoft's .NET documentation.)
+	// Anyway, it's simple enough, but distinguishes between the size of visible content, and
+	// the size of the scrollbar's track. For us, for now, those are the same value, but I'm
+	// keeping them as separate variables, which is why viewportSize and trackSize are
+	// the same. If we add scrollbar buttons, that'll reduce the track size.
+	// - Sam, 01/04/2021
+	if (state->isHorizontal)
+	{
+		s32 thumbHeight = style->width;
+		s32 viewportSize = scrollbarBounds.w;
+
+		if (viewportSize < state->contentSize)
+		{
+			s32 trackSize = scrollbarBounds.w;
+			s32 desiredThumbSize = trackSize * viewportSize / (state->contentSize + viewportSize);
+			s32 thumbWidth = clamp(desiredThumbSize, style->width, scrollbarBounds.w);
+
+			s32 thumbPos = round_s32(state->scrollPercent * (scrollbarBounds.w - thumbWidth));
+
+			result = makeSuccess(irectXYWH(scrollbarBounds.x + thumbPos, scrollbarBounds.y, thumbWidth, thumbHeight));
+		}
+	}
+	else
+	{
+		s32 thumbWidth = style->width;
+		s32 viewportSize = scrollbarBounds.h;
+
+		if (viewportSize < state->contentSize)
+		{
+			s32 trackSize = scrollbarBounds.h;
+			s32 desiredThumbSize = trackSize * viewportSize / (state->contentSize + viewportSize);
+			s32 thumbHeight = clamp(desiredThumbSize, style->width, scrollbarBounds.h);
+
+			s32 thumbPos = round_s32(state->scrollPercent * (scrollbarBounds.h - thumbHeight));
+
+			result = makeSuccess(irectXYWH(scrollbarBounds.x, scrollbarBounds.y + thumbPos, thumbWidth, thumbHeight));
+		}
+	}
+
+	return result;
+}
+
+void UI::updateScrollbar(ScrollbarState *state, s32 contentSize, Rect2I bounds, UIScrollbarStyle *style)
+{
+	DEBUG_FUNCTION_T(DCDT_UI);
+
+	state->contentSize = contentSize;
+
+	// If the content is smaller than the scrollbar, then snap it to position 0 and don't allow interaction.
+	if (bounds.h > state->contentSize)
+	{
+		state->scrollPercent = 0.0f;
+	}
+	else
+	{
+		if (style == null)
+		{
+			style = findStyle<UIScrollbarStyle>("default"_s);
+		}
+
+		if (!isMouseInputHandled())
+		{
+			Maybe<Rect2I> thumb = getScrollbarThumbBounds(state, bounds, style);
+			if (thumb.isValid)
+			{
+				s32 overflowSize   = state->contentSize - (state->isHorizontal ? bounds.w : bounds.h);
+				Rect2I thumbBounds = thumb.value;
+				s32 thumbSize      = state->isHorizontal ? thumbBounds.w : thumbBounds.h;
+				s32 gutterSize     = state->isHorizontal ? bounds.w : bounds.h;
+				s32 thumbRange     = gutterSize - thumbSize;
+
+				// Scrollwheel stuff
+				// (It's weird that we're putting this within mouseInputHandled, but eh)
+				s32 mouseWheelDelta = (state->isHorizontal ? inputState->wheelX : -inputState->wheelY);
+				if (mouseWheelDelta != 0)
+				{
+					s32 oldScrollOffset = getScrollbarContentOffset(state, gutterSize);
+					s32 scrollOffset = oldScrollOffset + (state->mouseWheelStepSize * mouseWheelDelta);
+
+					state->scrollPercent = clamp01((f32)scrollOffset / (f32)overflowSize);
+				}
+
+				// Mouse stuff
+				if (mouseButtonPressed(MouseButton_Left))
+				{
+					V2I clickStartPos = mouseClickStartPos;
+
+					if (isMouseInUIBounds(bounds, clickStartPos))
+					{
+						// If we are dragging the thumb, move it
+						if (state->isDraggingThumb)
+						{
+							s32 dragDistance = 0;
+
+							if (state->isHorizontal)
+							{
+								dragDistance = mousePos.x - clickStartPos.x;
+							}
+							else
+							{
+								dragDistance = mousePos.y - clickStartPos.y;
+							}
+
+							f32 dragPercent = (f32)dragDistance / thumbRange;
+							state->scrollPercent = clamp01(state->thumbDragStartPercent + dragPercent);
+						}
+						// Else, if we clicked on the thumb, begin dragging
+						else if (mouseButtonJustPressed(MouseButton_Left) && isMouseInUIBounds(thumbBounds))
+						{
+							state->isDraggingThumb = true;
+							state->thumbDragStartPercent = state->scrollPercent;
+						}
+						// Else, jump to mouse position
+						else
+						{
+							// TODO: Move to int coordinates, and use the UIState mousePos
+							V2 relativeMousePos = renderer->uiCamera.mousePos - v2(bounds.pos);
+
+							state->scrollPercent = clamp01(( (state->isHorizontal ? relativeMousePos.x : relativeMousePos.y) - 0.5f * thumbSize) / (f32)thumbRange);
+						}
+
+						markMouseInputHandled();
+					}
+				}
+				else
+				{
+					state->isDraggingThumb = false;
+				}
+			}
+		}
+	}
+}
+
+void UI::drawScrollbar(RenderBuffer *uiBuffer, ScrollbarState *state, Rect2I bounds, UIScrollbarStyle *style)
+{
+	ASSERT(hasPositiveArea(bounds));
+
+	UIDrawable background = UIDrawable(&style->background);
+	background.draw(uiBuffer, bounds);
+
+	Maybe<Rect2I> thumbBounds = getScrollbarThumbBounds(state, bounds, style);
+	if (thumbBounds.isValid)
+	{
+		UIDrawable thumb = UIDrawable(&style->thumb);
+		thumb.draw(uiBuffer, thumbBounds.value);
+	}
+}
+
+s32 UI::getScrollbarContentOffset(ScrollbarState *state, s32 scrollbarSize)
+{
+	s32 overflowSize = state->contentSize - scrollbarSize;
+
+	s32 result = round_s32(state->scrollPercent * overflowSize);
+
+	return result;
+}
+
 
 V2I UI::calculateSliderSize(UISliderStyle *style, s32 maxWidth, bool fillWidth)
 {

@@ -521,9 +521,9 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 
 		if (!hideWidgets)
 		{
-			updateScrollbar(hScrollbar, largestLineWidth + (style->margin * 2), hScrollbarBounds, scrollbarStyle);
+			UI::updateScrollbar(hScrollbar, largestLineWidth + (style->margin * 2), hScrollbarBounds, scrollbarStyle);
 
-			drawScrollbar(renderBuffer, hScrollbar, hScrollbarBounds, scrollbarStyle);
+			UI::drawScrollbar(renderBuffer, hScrollbar, hScrollbarBounds, scrollbarStyle);
 		}
 	}
 
@@ -533,9 +533,9 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 
 		if (!hideWidgets)
 		{
-			updateScrollbar(vScrollbar, contentHeight, vScrollbarBounds, scrollbarStyle);
+			UI::updateScrollbar(vScrollbar, contentHeight, vScrollbarBounds, scrollbarStyle);
 
-			drawScrollbar(renderBuffer, vScrollbar, vScrollbarBounds, scrollbarStyle);
+			UI::drawScrollbar(renderBuffer, vScrollbar, vScrollbarBounds, scrollbarStyle);
 		}
 	}
 
@@ -588,7 +588,7 @@ Rect2I UIPanel::getCurrentLayoutPosition()
 
 		if (vScrollbar != null)
 		{
-			result.y += (vScrollbar->contentSize - getScrollbarContentOffset(vScrollbar, bounds.h) - bounds.h);
+			result.y += (vScrollbar->contentSize - UI::getScrollbarContentOffset(vScrollbar, bounds.h) - bounds.h);
 		}
 	}
 	else
@@ -597,7 +597,7 @@ Rect2I UIPanel::getCurrentLayoutPosition()
 		
 		if (vScrollbar != null)
 		{
-			result.y -= getScrollbarContentOffset(vScrollbar, bounds.h);
+			result.y -= UI::getScrollbarContentOffset(vScrollbar, bounds.h);
 		}
 	}
 
@@ -605,7 +605,7 @@ Rect2I UIPanel::getCurrentLayoutPosition()
 	if (hScrollbar != null)
 	{
 		result.w = s16Max; // Not s32 because then we'd have overflow issues. s16 should be plenty large enough.
-		result.x = result.x - getScrollbarContentOffset(hScrollbar, bounds.w);
+		result.x = result.x - UI::getScrollbarContentOffset(hScrollbar, bounds.w);
 	}
 
 	ASSERT(result.w > 0);
