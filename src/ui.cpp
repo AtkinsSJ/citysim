@@ -822,7 +822,9 @@ void UI::putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Rect2I bounds,
 	}
 
 	// Draw things
-	UIDrawable(&style->track).draw(renderBuffer, bounds);
+	s32 trackThickness = (style->trackThickness != 0) ? style->trackThickness : bounds.h;
+	Rect2I trackBounds = irectAligned(bounds.x, bounds.y + bounds.h / 2, bounds.w, trackThickness, ALIGN_LEFT | ALIGN_V_CENTRE);
+	UIDrawable(&style->track).draw(renderBuffer, trackBounds);
 	UIDrawable(thumbStyle).draw(renderBuffer, thumbBounds);
 }
 

@@ -165,6 +165,7 @@ struct UISliderStyle
 	String name;
 	
 	UIDrawableStyle track;
+	s32 trackThickness;
 
 	UIDrawableStyle thumb;
 	UIDrawableStyle thumbHover;
@@ -257,6 +258,7 @@ struct UIStyle
 	f32 caretFlashCycleDuration;
 
 	UIDrawableStyle track;
+	s32 trackThickness;
 	UIDrawableStyle thumb;
 	UIDrawableStyle thumbHover;
 	UIDrawableStyle thumbPressed;

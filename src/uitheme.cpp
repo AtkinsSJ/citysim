@@ -149,6 +149,7 @@ void initUIStyleConstants()
 	PROP(titleBarHeight,			PropType_Int);
 	PROP(titleColor,				PropType_Color);
 	PROP(titleFont,					PropType_Font);
+	PROP(trackThickness,			PropType_Int);
 	PROP(widgetAlignment,			PropType_Alignment);
 	PROP(width,						PropType_Int);
 	PROP(track,						PropType_Drawable);
@@ -219,6 +220,7 @@ void initUIStyleConstants()
 	});
 	assignStyleProperties(UIStyle_Slider, {
 		"track"_s,
+		"trackThickness"_s,
 		"thumb"_s,
 		"thumbDisabled"_s,
 		"thumbHover"_s,
@@ -678,6 +680,7 @@ void loadUITheme(Blob data, Asset *asset)
 						slider->name = style->name;
 
 						slider->track = style->track;
+						slider->trackThickness = style->trackThickness;
 						slider->thumb = style->thumb;
 						slider->thumbDisabled = style->thumbDisabled;
 						slider->thumbHover = style->thumbHover;
