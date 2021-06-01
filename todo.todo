@@ -33,9 +33,7 @@ BUG: Styles do not properly fall back to a default! (AKA, AssetRefs need thinkin
 Toast should draw in the Window RB because it belongs on top of everything
 -> Maybe it and the openDropDownList should both draw to a "on top of UI" buffer?
 
-UI Dragging:
-- Rather than the `isDraggingWindow` bool in UIState, we have a void* to whatever it is we are dragging. That might be a window, or it could be a slider's currentValue pointer, or a ScrollbarState. Then we can just track the mouse difference.
-	- Scrollbar needs some adjustment as it current tracks the drag's start %, not the start mouse position.
+Make windows use the standard UI dragging
 
 Sort out style naming
 - We have stuff like 'disabledBackground', which seems like a good idea, except then it is separate alphabetically from related properties 'pressedBackground' and 'hoverBackground'. Instead, they probably want to be named like 'backgroundDisabled'. It's slightly weirder in English, but makes more sense. But means renaming a bunch of stuff, yay.
@@ -46,6 +44,8 @@ Window titles should be set every frame?
 - So, maybe we just set them every frame? Or, we store the asset-name for the title instead of the title. Ideally both!
 
 Enforce that the UI camera goes from 0,0 to w,h
+
+Window size should live in Renderer not InputState
 
 UI Widgets:
 - Radio buttons

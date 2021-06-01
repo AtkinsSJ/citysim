@@ -202,6 +202,7 @@ struct Renderer
 	MemoryArena renderArena;
 	
 	SDL_Window *window;
+	bool isFullscreen;
 
 	Camera worldCamera;
 	Camera uiCamera;

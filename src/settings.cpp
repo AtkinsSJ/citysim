@@ -296,15 +296,11 @@ void settingsWindowProc(WindowContext *context, void*)
 
 			case Type_enum: {
 				ASSERT(def->count == 1);
-				
-				// We want to show a drop-down menu from the SettingEnumData.
-				// We know the currently-selected index.
 				ui->addDropDownList(def->enumData, getSettingDataRaw<s32>(&settings->workingState, def), getEnumDisplayName);
 			} break;
 
 			case Type_percent: {
 				ASSERT(def->count == 1);
-
 				ui->addSlider(getSettingDataRaw<f32>(&settings->workingState, def), 0.0f, 1.0f);
 			} break;
 

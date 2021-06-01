@@ -138,6 +138,16 @@ void resizeWindow(s32 w, s32 h, bool fullscreen)
 	// For now, I'm thinking we use the native resolution, as a fullscreen window.
 	// - Sam, 20/05/2021
 
+
+	// If the requested setup is what we already have, do nothing!
+	// This avoids the window jumping about when you save the settings
+	if ((w == inputState->windowWidth)
+	 && (h == inputState->windowHeight)
+	 && (fullscreen == renderer->isFullscreen))
+	{
+		return;
+	}
+
 	s32 newW = w;
 	s32 newH = h;
 
@@ -188,6 +198,8 @@ void resizeWindow(s32 w, s32 h, bool fullscreen)
 			SDL_SetWindowPosition(renderer->window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 		}
 	}
+
+	renderer->isFullscreen = fullscreen;
 
 	// NB: Because InputState relies on SDL_WINDOWEVENT_RESIZED events,
 	// it simplifies things massively if we generate one ourselves.
