@@ -209,6 +209,9 @@ showCaret         true
 caretFlashCycleDuration 1.0
 
 :Scrollbar console
-background     color 0   0   0   0
-thumb           color 48  48  48 245
-width             12
+background		color   0   0   0   0
+thumb			color  48  48  48 245
+thumbHover		color 128 128 128 245
+thumbPressed	color  96  96  96 245
+thumbDisabled	color  12  12  12 245
+width			12

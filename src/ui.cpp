@@ -689,7 +689,7 @@ void UI::putScrollbar(ScrollbarState *state, s32 contentSize, Rect2I bounds, UIS
 				UIDrawableStyle *thumbStyle = &style->thumb;
 				if (isDisabled)
 				{
-					// thumbStyle = &style->thumbDisabled;
+					thumbStyle = &style->thumbDisabled;
 				}
 				else if (isDragging(state))
 				{
@@ -709,7 +709,7 @@ void UI::putScrollbar(ScrollbarState *state, s32 contentSize, Rect2I bounds, UIS
 						state->scrollPercent = clamp01((f32)(thumbBounds.y - bounds.y) / (f32)thumbRange);
 					}
 					
-					// thumbStyle = &style->thumbPressed;
+					thumbStyle = &style->thumbPressed;
 				}
 				else if (isMouseInUIBounds(bounds))
 				{
@@ -735,12 +735,12 @@ void UI::putScrollbar(ScrollbarState *state, s32 contentSize, Rect2I bounds, UIS
 						// Start drag
 						startDragging(state, thumbBounds.pos);
 
-						// thumbStyle = &style->thumbPressed;
+						thumbStyle = &style->thumbPressed;
 					}
 					else if (inThumbBounds)
 					{
 						// Hovering thumb
-						// thumbStyle = &style->thumbHover;
+						thumbStyle = &style->thumbHover;
 					}
 				}
 

@@ -216,6 +216,9 @@ void initUIStyleConstants()
 	assignStyleProperties(UIStyle_Scrollbar, {
 		"background"_s,
 		"thumb"_s,
+		"thumbDisabled"_s,
+		"thumbHover"_s,
+		"thumbPressed"_s,
 		"width"_s,
 	});
 	assignStyleProperties(UIStyle_Slider, {
@@ -669,6 +672,9 @@ void loadUITheme(Blob data, Asset *asset)
 
 						scrollbar->background = style->background;
 						scrollbar->thumb = style->thumb;
+						scrollbar->thumbDisabled = style->thumbDisabled;
+						scrollbar->thumbHover = style->thumbHover;
+						scrollbar->thumbPressed = style->thumbPressed;
 						scrollbar->width = style->width;
 					} break;
 

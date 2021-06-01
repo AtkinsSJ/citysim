@@ -154,10 +154,15 @@ struct UIPanelStyle
 struct UIScrollbarStyle
 {
 	String name;
+
+	s32 width;
 	
 	UIDrawableStyle background;
+	
 	UIDrawableStyle thumb;
-	s32 width;
+	UIDrawableStyle thumbHover;
+	UIDrawableStyle thumbPressed;
+	UIDrawableStyle thumbDisabled;
 };
 
 struct UISliderStyle
