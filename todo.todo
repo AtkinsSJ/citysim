@@ -21,8 +21,6 @@ Notes for searching:
 Settings window that lets you modify them
 	(Instead of the Settings Screen we have now. A window makes more sense.)
 
-BUG: we can click through the "Data overlay" button
-
 BUG: Styles do not properly fall back to a default! (AKA, AssetRefs need thinking about.)
 - When a style is not provided in the .theme file, we end up with a zeroed-out AssetRef struct for it.
 - That then crashes when it reaches checkStyleMatchesType() from findStyle(), because the type is '0'!
@@ -40,6 +38,11 @@ UI Dragging:
 
 Sort out style naming
 - We have stuff like 'disabledBackground', which seems like a good idea, except then it is separate alphabetically from related properties 'pressedBackground' and 'hoverBackground'. Instead, they probably want to be named like 'backgroundDisabled'. It's slightly weirder in English, but makes more sense. But means renaming a bunch of stuff, yay.
+
+Window titles should be set every frame?
+- We have a bug, where reloading an asset while a window is open often garbles its title
+- I've been feeling for a while that I don't like how window titles are handled
+- So, maybe we just set them every frame? Or, we store the asset-name for the title instead of the title. Ideally both!
 
 UI Widgets:
 - Radio buttons
@@ -144,8 +147,6 @@ Saving and loading!
 - Crashing while loading a save game should NEVER happen. Be super careful with all data we read in. It may well be impossible to prevent it entirely, but this is an area with a lot of opportunities for corrupt data!
 - Also, we want to prevent crashing *after* loading as much as possible. Some kind of validation after loading the file is complete, to make sure the city itself makes sense, would be a good idea. I'm not sure what that would involve really, but catching errors and reporting them is much better than just crashing.
 - LZ77-based compression option. https://en.wikipedia.org/wiki/LZ77_and_LZ78
-
-Window procs should decide the window title instead of showWindow(), it's weird having it there.
 
 Multiple Cities
 - Our eventual goal, the game I actually want to make, is code-named "Cities In Space". It involves having multiple colony-cities (different planets, etc) which trade resources between.

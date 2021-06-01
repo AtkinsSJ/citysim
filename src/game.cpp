@@ -1192,6 +1192,7 @@ void drawDataViewUI(GameState *gameState)
 
 	Rect2I dataViewUIBounds = expand(dataViewButtonBounds, uiPadding);
 	drawSingleRect(uiBuffer, dataViewUIBounds, renderer->shaderIds.untextured, color255(0, 0, 0, 128));
+	UI::addUIRect(dataViewUIBounds);
 
 	if (UI::putTextButton(dataViewButtonText, dataViewButtonBounds, buttonStyle))
 	{
