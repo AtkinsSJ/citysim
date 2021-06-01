@@ -805,16 +805,28 @@ void UI::putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Rect2I bounds,
 
 		thumbStyle = &style->thumbPressed;
 	}
-	else if (isMouseInUIBounds(thumbBounds))
+	else if (isMouseInUIBounds(bounds))
 	{
+		bool inThumbBounds = isMouseInUIBounds(thumbBounds);
+
 		if (mouseButtonJustPressed(MouseButton_Left))
 		{
+			// If we're not on the thumb, jump the thumb to where we are!
+			if (!inThumbBounds)
+			{
+				thumbBounds.x = clamp(mousePos.x - (thumbBounds.w / 2), bounds.x, bounds.x + travelX);
+
+				// Apply that to the currentValue
+				f32 positionPercent = (f32)(thumbBounds.x - bounds.x) / (f32)travelX;
+				*currentValue = minValue + (positionPercent * valueRange);
+			}
+
 			// Start drag
 			startDragging(currentValue, thumbBounds.pos);
 
 			thumbStyle = &style->thumbPressed;
 		}
-		else
+		else if (inThumbBounds)
 		{
 			// Hovering thumb
 			thumbStyle = &style->thumbHover;
