@@ -77,14 +77,14 @@ void initRenderer(MemoryArena *renderArena, SDL_Window *window)
 void handleWindowEvent(SDL_WindowEvent *event)
 {
 	switch (event->event) {
-		case SDL_WINDOWEVENT_RESIZED: {
+		case SDL_WINDOWEVENT_SIZE_CHANGED: {
 			renderer->windowWidth = event->data1;
 			renderer->windowHeight = event->data2;
 
 			renderer->windowResized(renderer->windowWidth, renderer->windowHeight);
 
 			V2 windowSize = v2(renderer->windowWidth, renderer->windowHeight);
-			
+
 			renderer->worldCamera.size = windowSize * renderer->worldCamera.sizeRatio;
 
 			renderer->uiCamera.size = windowSize * renderer->uiCamera.sizeRatio;
@@ -215,15 +215,6 @@ void resizeWindow(s32 w, s32 h, bool fullscreen)
 	}
 
 	renderer->isFullscreen = fullscreen;
-
-	// NB: Because InputState relies on SDL_WINDOWEVENT_RESIZED events,
-	// it simplifies things massively if we generate one ourselves.
-	SDL_Event resizeEvent = {};
-	resizeEvent.type = SDL_WINDOWEVENT;
-	resizeEvent.window.event = SDL_WINDOWEVENT_RESIZED;
-	resizeEvent.window.data1 = newW;
-	resizeEvent.window.data2 = newH;
-	SDL_PushEvent(&resizeEvent);
 }
 
 // Screen -> scene space
