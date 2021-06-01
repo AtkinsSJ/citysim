@@ -284,7 +284,7 @@ void settingsWindowProc(WindowContext *context, void*)
 		SettingDef *def = settings->defs.find(name).value;
 
 		ui->startNewLine(ALIGN_LEFT);
-		ui->addText(name);
+		ui->addText(getText(def->textAssetName));
 		
 		ui->alignWidgets(ALIGN_RIGHT);
 		switch (def->type)

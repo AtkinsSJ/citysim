@@ -76,6 +76,8 @@ date_part_month12   December
 setting_locale      Locale
 setting_resolution  Window resolution
 setting_windowed    Windowed
+setting_musicVolume Music volume
+setting_soundVolume Sound volume
 
 locale_en English
 locale_es Español
