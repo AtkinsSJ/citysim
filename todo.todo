@@ -45,8 +45,6 @@ Window titles should be set every frame?
 
 Enforce that the UI camera goes from 0,0 to w,h
 
-Window size should live in Renderer not InputState
-
 UI Widgets:
 - Radio buttons
 	- A group backed by an array

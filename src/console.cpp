@@ -197,7 +197,7 @@ void updateAndRenderConsole(Console *console)
 	{
 		RenderBuffer *renderBuffer = &renderer->debugBuffer;
 		s32 actualConsoleHeight = floor_s32(console->currentHeight * (f32)UI::windowSize.y);
-		s32 screenWidth = inputState->windowWidth;
+		s32 screenWidth = renderer->windowWidth;
 
 		UIConsoleStyle *consoleStyle = findStyle<UIConsoleStyle>(&console->style);
 		UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&consoleStyle->scrollbarStyle);
@@ -369,9 +369,9 @@ Rect2I getConsoleScrollbarBounds(Console *console)
 	UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&consoleStyle->scrollbarStyle);
 	UITextInputStyle *textInputStyle = findStyle<UITextInputStyle>(&consoleStyle->textInputStyle);
 
-	V2I textInputSize = UI::calculateTextInputSize(&console->input, textInputStyle, inputState->windowWidth);
+	V2I textInputSize = UI::calculateTextInputSize(&console->input, textInputStyle, renderer->windowWidth);
 
-	Rect2I scrollbarBounds = irectXYWH(inputState->windowWidth - scrollbarStyle->width, 0, scrollbarStyle->width, floor_s32(console->currentHeight * inputState->windowHeight) - textInputSize.y);
+	Rect2I scrollbarBounds = irectXYWH(renderer->windowWidth - scrollbarStyle->width, 0, scrollbarStyle->width, floor_s32(console->currentHeight * renderer->windowHeight) - textInputSize.y);
 
 	return scrollbarBounds;
 }

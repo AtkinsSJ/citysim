@@ -63,7 +63,6 @@ void updateInput()
 	inputState->textEnteredLength = 0;
 
 	inputState->receivedQuitSignal = false;
-	inputState->wasWindowResized = false;
 
 	{
 		DEBUG_BLOCK_T("updateInput: Pump", DCDT_Input);
@@ -80,13 +79,7 @@ void updateInput()
 				inputState->receivedQuitSignal = true;
 			} break;
 			case SDL_WINDOWEVENT: {
-				switch (event.window.event) {
-					case SDL_WINDOWEVENT_RESIZED: {
-						inputState->wasWindowResized = true;
-						inputState->windowWidth = event.window.data1;
-						inputState->windowHeight = event.window.data2;
-					} break;
-				}
+				handleWindowEvent(&event.window);
 			} break;
 
 			// MOUSE EVENTS
@@ -142,8 +135,8 @@ void updateInput()
 		}
 	}
 
-	inputState->mousePosNormalised.x = ((inputState->mousePosRaw.x * 2.0f) / inputState->windowWidth) - 1.0f;
-	inputState->mousePosNormalised.y = ((inputState->mousePosRaw.y * -2.0f) + inputState->windowHeight) / inputState->windowHeight;
+	inputState->mousePosNormalised.x = ((inputState->mousePosRaw.x * 2.0f) / renderer->windowWidth) - 1.0f;
+	inputState->mousePosNormalised.y = ((inputState->mousePosRaw.y * -2.0f) + renderer->windowHeight) / renderer->windowHeight;
 
 	for (s32 i = 1; i < MouseButtonCount; i++)
 	{

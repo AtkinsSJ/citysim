@@ -52,9 +52,6 @@ struct InputState
 
 	// Extra
 	bool receivedQuitSignal;
-	bool wasWindowResized;
-	s32 windowWidth;
-	s32 windowHeight;
 
 	HashTable<SDL_Keycode> keyNames;
 

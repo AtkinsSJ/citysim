@@ -268,7 +268,6 @@ int main(int argc, char *argv[])
 
 	InputState input;
 	initInput(&input);
-	SDL_GetWindowSize(window, &input.windowWidth, &input.windowHeight);
 	inputState = &input;
 
 	initAssets();
@@ -287,10 +286,6 @@ int main(int argc, char *argv[])
 
 	Camera *worldCamera = &renderer->worldCamera;
 	Camera *uiCamera = &renderer->uiCamera;
-	V2 windowSize = v2(input.windowWidth, input.windowHeight);
-	const f32 TILE_SIZE = 16.0f;
-	initCamera(worldCamera, windowSize, 1.0f/TILE_SIZE, 10000.0f, -10000.0f);
-	initCamera(uiCamera, windowSize, 1.0f, 10000.0f, -10000.0f, windowSize * 0.5f);
 
 	u32 initFinishedTicks = SDL_GetTicks();
 	logInfo("Game initialised in {0} milliseconds."_s, {formatInt(initFinishedTicks - initStartTicks)});
@@ -340,11 +335,6 @@ int main(int argc, char *argv[])
 			{
 				appState->appStatus = AppStatus_Quit;
 				break;
-			}
-
-			if (input.wasWindowResized)
-			{
-				onWindowResized(input.windowWidth, input.windowHeight);
 			}
 
 			worldCamera->mousePos = unproject(worldCamera, input.mousePosNormalised);

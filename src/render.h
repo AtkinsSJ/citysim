@@ -202,6 +202,8 @@ struct Renderer
 	MemoryArena renderArena;
 	
 	SDL_Window *window;
+	s32 windowWidth;
+	s32 windowHeight;
 	bool isFullscreen;
 
 	Camera worldCamera;
@@ -247,6 +249,7 @@ struct Renderer
 };
 
 void initRenderer(MemoryArena *renderArena, SDL_Window *window);
+void handleWindowEvent(SDL_WindowEvent *event);
 void render();
 void rendererLoadAssets();
 void rendererUnloadAssets();
@@ -356,4 +359,3 @@ void addRing(DrawRingsGroup *group, V2 centre, f32 radius, f32 thickness, V4 col
 void endRingsGroup(DrawRingsGroup *group);
 
 void resizeWindow(s32 w, s32 h, bool fullscreen);
-void onWindowResized(s32 w, s32 h);

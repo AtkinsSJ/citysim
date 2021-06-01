@@ -39,6 +39,7 @@ inline f32 snapZoomLevel(f32 zoom)
 void initRenderer(MemoryArena *renderArena, SDL_Window *window)
 {
 	renderer->window = window;
+	SDL_GetWindowSize(window, &renderer->windowWidth, &renderer->windowHeight);
 
 	renderer->renderBufferChunkSize = KB(64);
 	initPool<RenderBufferChunk>(&renderer->chunkPool, renderArena, &allocateRenderBufferChunk, renderer);
@@ -63,8 +64,33 @@ void initRenderer(MemoryArena *renderArena, SDL_Window *window)
 	renderer->renderBuffers.append(&renderer->windowBuffer);
 	renderer->renderBuffers.append(&renderer->debugBuffer);
 
+	// Init cameras
+	V2 windowSize = v2(renderer->windowWidth, renderer->windowHeight);
+	const f32 TILE_SIZE = 16.0f;
+	initCamera(&renderer->worldCamera, windowSize, 1.0f/TILE_SIZE, 10000.0f, -10000.0f);
+	initCamera(&renderer->uiCamera, windowSize, 1.0f, 10000.0f, -10000.0f, windowSize * 0.5f);
+
 	// Hide cursor until stuff loads
 	setCursorVisible(false);
+}
+
+void handleWindowEvent(SDL_WindowEvent *event)
+{
+	switch (event->event) {
+		case SDL_WINDOWEVENT_RESIZED: {
+			renderer->windowWidth = event->data1;
+			renderer->windowHeight = event->data2;
+
+			renderer->windowResized(renderer->windowWidth, renderer->windowHeight);
+
+			V2 windowSize = v2(renderer->windowWidth, renderer->windowHeight);
+			
+			renderer->worldCamera.size = windowSize * renderer->worldCamera.sizeRatio;
+
+			renderer->uiCamera.size = windowSize * renderer->uiCamera.sizeRatio;
+			renderer->uiCamera.pos = renderer->uiCamera.size * 0.5f;
+		} break;
+	}
 }
 
 void render()
@@ -116,17 +142,6 @@ void freeRenderer()
 	renderer->free();
 }
 
-void onWindowResized(s32 w, s32 h)
-{
-	renderer->windowResized(w, h);
-	V2 windowSize = v2(w, h);
-
-	renderer->worldCamera.size = windowSize * renderer->worldCamera.sizeRatio;
-
-	renderer->uiCamera.size = windowSize * renderer->uiCamera.sizeRatio;
-	renderer->uiCamera.pos = renderer->uiCamera.size * 0.5f;
-}
-
 void resizeWindow(s32 w, s32 h, bool fullscreen)
 {
 	SDL_RestoreWindow(renderer->window);
@@ -141,8 +156,8 @@ void resizeWindow(s32 w, s32 h, bool fullscreen)
 
 	// If the requested setup is what we already have, do nothing!
 	// This avoids the window jumping about when you save the settings
-	if ((w == inputState->windowWidth)
-	 && (h == inputState->windowHeight)
+	if ((w == renderer->windowWidth)
+	 && (h == renderer->windowHeight)
 	 && (fullscreen == renderer->isFullscreen))
 	{
 		return;
@@ -502,10 +517,10 @@ void addBeginScissor(RenderBuffer *buffer, Rect2I bounds)
 	// We have to flip the bounds rectangle vertically because OpenGL has the origin in the bottom-left,
 	// whereas our system uses the top-left!
 
-	bounds.y = inputState->windowHeight - bounds.y - bounds.h;
+	bounds.y = renderer->windowHeight - bounds.y - bounds.h;
 
 	// Crop to window bounds
-	scissor->bounds = intersect(bounds, irectXYWH(0, 0, inputState->windowWidth, inputState->windowHeight));
+	scissor->bounds = intersect(bounds, irectXYWH(0, 0, renderer->windowWidth, renderer->windowHeight));
 
 	ASSERT(scissor->bounds.w >= 0);
 	ASSERT(scissor->bounds.h >= 0);

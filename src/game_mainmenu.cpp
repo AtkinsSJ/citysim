@@ -6,8 +6,8 @@ AppStatus updateAndRenderMainMenu(f32 /*deltaTime*/)
 	
 	AppStatus result = AppStatus_MainMenu;
 
-	V2I position = v2i(inputState->windowWidth / 2, 157);
-	s32 maxLabelWidth = inputState->windowWidth - 256;
+	V2I position = v2i(renderer->windowWidth / 2, 157);
+	s32 maxLabelWidth = renderer->windowWidth - 256;
 
 	UILabelStyle *labelStyle = findStyle<UILabelStyle>("title"_s);
 	BitmapFont *font = getFont(&labelStyle->font);
