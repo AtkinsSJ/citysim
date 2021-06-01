@@ -59,15 +59,13 @@ Maybe<UIDrawableStyle> readDrawableStyle(LineReader *reader)
 	else if (equals(typeName, "sprite"_s))
 	{
 		String spriteName = readToken(reader);
-		Maybe<s32> spriteIndex = readInt<s32>(reader, true);
-		s32 index = spriteIndex.isValid ? spriteIndex.value : 0;
 
 		Maybe<V4> color = readColor(reader, true);
 
 		UIDrawableStyle drawable = {};
 		drawable.type = Drawable_Sprite;
 		drawable.color = color.orDefault(makeWhite());
-		drawable.sprite = getSpriteRef(spriteName, index);
+		drawable.sprite = getSpriteRef(spriteName, 0);
 
 		result = makeSuccess(drawable);
 	}

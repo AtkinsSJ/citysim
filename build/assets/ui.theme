@@ -16,7 +16,7 @@
 :Button default
 font                   small            				# testing eol comment
 textColor                0   0   0 255
-#background             sprite btn_wood 0 255 0 255 255
+#background             sprite btn_wood 255 0 255 255
 background             ninepatch btn_white
 hoverBackground        ninepatch btn_white 192 192 255 255
 pressedBackground      ninepatch btn_white 128 128 255 255
