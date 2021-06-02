@@ -6,6 +6,7 @@ enum Type
 	Type_enum,
 	Type_percent,
 	Type_s32,
+	Type_s32_range,
 	Type_String,
 };
 
@@ -24,8 +25,16 @@ struct SettingDef
 	Type type;
 	s32 count;
 	union {
-		void *data;
+		struct {
+			void *dataA;
+			void *dataB;
+		};
+
 		Array<SettingEnumData> *enumData;
+		struct {
+			s32 min;
+			s32 max;
+		} intRange;
 	};
 };
 
@@ -159,6 +168,7 @@ struct SettingsState
 	s32 locale; // Locale
 	f32 musicVolume;
 	f32 soundVolume;
+	s32 widgetCount;
 };
 
 struct Settings
@@ -202,7 +212,7 @@ void settingsWindowProc(WindowContext*, void*);
 //
 // INTERNAL
 //
-void registerSetting(String settingName, smm offset, Type type, s32 count, String textAssetName, void *data = null);
+void registerSetting(String settingName, smm offset, Type type, s32 count, String textAssetName, void *dataA = null, void *dataB = null);
 SettingsState makeDefaultSettings();
 void loadSettingsFile(String name, Blob settingsData);
 

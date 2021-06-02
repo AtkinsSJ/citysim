@@ -769,7 +769,7 @@ V2I UI::calculateSliderSize(UISliderStyle *style, s32 maxWidth, bool fillWidth)
 	return result;
 }
 
-void UI::putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Rect2I bounds, UISliderStyle *style, bool isDisabled, RenderBuffer *renderBuffer)
+void UI::putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Rect2I bounds, UISliderStyle *style, bool isDisabled, RenderBuffer *renderBuffer, bool snapToWholeNumbers)
 {
 	DEBUG_FUNCTION_T(DCDT_UI);
 	ASSERT(maxValue > minValue);
@@ -834,11 +834,33 @@ void UI::putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Rect2I bounds,
 		}
 	}
 
+	// Snap the thumb (and currentValue) to a position representing an integer value, if that was requested
+	// We do this here, to avoid duplicating this in both thumb-movement paths above. It's a quick enough
+	// calculation that it shouldn't matter that we're doing it every frame regardless of if the value did
+	// change.
+	if (snapToWholeNumbers)
+	{
+		*currentValue = round_f32(*currentValue);
+		currentPercent = (*currentValue - minValue) / valueRange;
+		thumbBounds.x = bounds.x + round_s32((f32)travelX * currentPercent);
+	}
+
 	// Draw things
 	s32 trackThickness = (style->trackThickness != 0) ? style->trackThickness : bounds.h;
 	Rect2I trackBounds = irectAligned(bounds.x, bounds.y + bounds.h / 2, bounds.w, trackThickness, ALIGN_LEFT | ALIGN_V_CENTRE);
 	UIDrawable(&style->track).draw(renderBuffer, trackBounds);
 	UIDrawable(thumbStyle).draw(renderBuffer, thumbBounds);
+}
+
+void UI::putSlider(s32 *currentValue, s32 minValue, s32 maxValue, Rect2I bounds, UISliderStyle *style, bool isDisabled, RenderBuffer *renderBuffer)
+{
+	f32 currentValueF = (f32) *currentValue;
+	f32 minValueF     = (f32)  minValue;
+	f32 maxValueF     = (f32)  maxValue;
+
+	putSlider(&currentValueF, minValueF, maxValueF, bounds, style, isDisabled, renderBuffer, true);
+
+	*currentValue = round_s32(currentValueF);
 }
 
 bool UI::putTextInput(TextInput *textInput, Rect2I bounds, UITextInputStyle *style, RenderBuffer *renderBuffer)

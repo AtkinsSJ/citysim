@@ -5,7 +5,7 @@ String getEnumDisplayName(SettingEnumData *data)
 	return getText(data->displayName);
 }
 
-void registerSetting(String settingName, smm offset, Type type, s32 count, String textAssetName, void *data)
+void registerSetting(String settingName, smm offset, Type type, s32 count, String textAssetName, void *dataA, void *dataB)
 {
 	SettingDef def = {};
 	def.name = settingName;
@@ -13,7 +13,25 @@ void registerSetting(String settingName, smm offset, Type type, s32 count, Strin
 	def.offsetWithinSettingsState = offset;
 	def.type = type;
 	def.count = count;
-	def.data = data;
+
+	switch (type)
+	{
+		case Type_enum: {
+			def.enumData = (Array<SettingEnumData>*) dataA;
+			ASSERT(dataB == null);
+		} break;
+
+		case Type_s32_range: {
+			def.intRange.min = truncate<s32>((s64)dataA);
+			def.intRange.max = truncate<s32>((s64)dataB);
+			ASSERT(dataA < dataB);
+		} break;
+
+		default: {
+			def.dataA = dataA;
+			def.dataB = dataB;
+		} break;
+	}
 
 	settings->defs.put(settingName, def);
 	settings->defsOrder.append(settingName);
@@ -50,6 +68,7 @@ void initSettings()
 	REGISTER_SETTING(locale,		enum,		1, &localeData);
 	REGISTER_SETTING(musicVolume,	percent,	1);
 	REGISTER_SETTING(soundVolume,	percent,	1);
+	REGISTER_SETTING(widgetCount,	s32_range,	1, (void*)5, (void*)15);
 
 #undef REGISTER_SETTING
 }
@@ -138,6 +157,16 @@ void loadSettingsFile(String name, Blob settingsData)
 						}
 					} break;
 
+					case Type_s32_range:
+					{
+						Maybe<s32> value = readInt<s32>(&reader);
+						if (value.isValid)
+						{
+							s32 clampedValue = clamp(value.value, def->intRange.min, def->intRange.max);
+							setSettingData<s32>(&settings->settings, def, clampedValue, i);
+						}
+					} break;
+
 					case Type_String:
 					{
 						String value = pushString(&settings->settingsArena, readToken(&reader));
@@ -200,6 +229,7 @@ String settingToString(SettingsState *state, SettingDef *def)
 			} break;
 
 			case Type_s32:
+			case Type_s32_range:
 			{
 				append(&stb, formatInt(getSettingData<s32>(state, def, i)));
 			} break;
@@ -302,6 +332,11 @@ void settingsWindowProc(WindowContext *context, void*)
 			case Type_percent: {
 				ASSERT(def->count == 1);
 				ui->addSlider(getSettingDataRaw<f32>(&settings->workingState, def), 0.0f, 1.0f);
+			} break;
+
+			case Type_s32_range: {
+				ASSERT(def->count == 1);
+				ui->addSlider(getSettingDataRaw<s32>(&settings->workingState, def), def->intRange.min, def->intRange.max);
 			} break;
 
 			default: {

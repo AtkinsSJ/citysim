@@ -20,6 +20,11 @@ Notes for searching:
 
 Settings window that lets you modify them
 	(Instead of the Settings Screen we have now. A window makes more sense.)
+- Line things up nicely. At the moment our music and sound volume sliders are different sizes because they just fill the available space, which looks bad and is bad UX too.
+- Text displays of slider values
+
+Replace the multidimensional settings stuff with a V2I for the screen resolution setting
+- The multidim stuff just makes it complicated, and we don't even support multidim in the majority of cases!
 
 BUG: Styles do not properly fall back to a default! (AKA, AssetRefs need thinking about.)
 - When a style is not provided in the .theme file, we end up with a zeroed-out AssetRef struct for it.

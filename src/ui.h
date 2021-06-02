@@ -188,8 +188,8 @@ namespace UI
 
 	// Sliders
 	V2I calculateSliderSize(UISliderStyle *style, s32 maxWidth = 0, bool fillWidth = true);
-	void putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Rect2I bounds, UISliderStyle *style, bool isDisabled = false, RenderBuffer *renderBuffer = null);
-	// void putSlider(s32 *currentValue, s32 minValue, s32 maxValue, Rect2I bounds, UISliderStyle *style, RenderBuffer *renderBuffer = null);
+	void putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Rect2I bounds, UISliderStyle *style, bool isDisabled = false, RenderBuffer *renderBuffer = null, bool snapToWholeNumbers = false);
+	void putSlider(s32 *currentValue, s32 minValue, s32 maxValue, Rect2I bounds, UISliderStyle *style, bool isDisabled = false, RenderBuffer *renderBuffer = null);
 
 	// TextInputs
 	bool putTextInput(TextInput *textInput, Rect2I bounds, UITextInputStyle *style, RenderBuffer *renderBuffer = null);

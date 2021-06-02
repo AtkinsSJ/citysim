@@ -180,7 +180,8 @@ void UIPanel::addDropDownList(Array<T> *listOptions, s32 *currentSelection, Stri
 	completeWidget(widgetSize);
 }
 
-void UIPanel::addSlider(f32 *currentValue, f32 minValue, f32 maxValue, String styleName)
+template <typename T>
+void UIPanel::addSlider(T *currentValue, T minValue, T maxValue, String styleName)
 {
 	DEBUG_FUNCTION_T(DCDT_UI);
 
