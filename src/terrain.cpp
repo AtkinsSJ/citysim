@@ -528,7 +528,7 @@ void showTerrainWindow()
 
 void modifyTerrainWindowProc(UI::WindowContext *context, void *)
 {
-	UIPanel *ui = &context->windowPanel;
+	UI::Panel *ui = &context->windowPanel;
 	GameState *gameState = globalAppState.gameState;
 	bool terrainToolIsActive = (gameState->actionMode == ActionMode_SetTerrain);
 

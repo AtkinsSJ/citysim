@@ -16,7 +16,6 @@ struct RenderBuffer;
 struct BitmapFont;
 struct Sprite;
 struct TextInput;
-struct UIPanel;
 
 namespace UI
 {
@@ -31,6 +30,7 @@ namespace UI
 	struct SliderStyle;
 	struct TextInputStyle;
 
+	struct Panel;
 	struct Window;
 	struct WindowContext;
 

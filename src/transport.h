@@ -29,7 +29,7 @@ bool doesTileHaveTransport(City *city, s32 x, s32 y, TransportType type);
 bool doesTileHaveTransport(City *city, s32 x, s32 y, Flags_TransportType types);
 s32 getDistanceToTransport(City *city, s32 x, s32 y, TransportType type);
 
-void debugInspectTransport(UIPanel *panel, City *city, s32 x, s32 y);
+void debugInspectTransport(UI::Panel *panel, City *city, s32 x, s32 y);
 
 void saveTransportLayer(TransportLayer *layer, struct BinaryFileWriter *writer);
 bool loadTransportLayer(TransportLayer *layer, City *city, struct BinaryFileReader *reader);

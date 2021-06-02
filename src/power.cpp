@@ -804,7 +804,7 @@ void notifyBuildingDemolished(PowerLayer *layer, BuildingDef *def, Building *bui
 	}
 }
 
-void debugInspectPower(UIPanel *panel, City *city, s32 x, s32 y)
+void debugInspectPower(UI::Panel *panel, City *city, s32 x, s32 y)
 {
 	panel->addText("*** POWER INFO ***"_s);
 

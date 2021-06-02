@@ -128,7 +128,7 @@ inline s32 getDistanceToTransport(City *city, s32 x, s32 y, TransportType type)
 	return city->transportLayer.tileTransportDistance[type].get(x, y);
 }
 
-void debugInspectTransport(UIPanel *panel, City *city, s32 x, s32 y)
+void debugInspectTransport(UI::Panel *panel, City *city, s32 x, s32 y)
 {
 	panel->addText("*** TRANSPORT INFO ***"_s);
 

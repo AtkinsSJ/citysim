@@ -30,7 +30,7 @@ namespace UI
 		bool hideWidgets;
 		RenderBuffer *renderBuffer;
 
-		UIPanel windowPanel;
+		Panel windowPanel;
 
 		// Results
 		bool closeRequested = false;

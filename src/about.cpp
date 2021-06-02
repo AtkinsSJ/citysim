@@ -2,9 +2,9 @@
 
 void aboutWindowProc(UI::WindowContext *context, void * /*userData*/)
 {
-	UIPanel *ui = &context->windowPanel;
+	UI::Panel *ui = &context->windowPanel;
 
-	UIPanel leftColumn = ui->column(64, ALIGN_LEFT, "plain"_s);
+	UI::Panel leftColumn = ui->column(64, ALIGN_LEFT, "plain"_s);
 	leftColumn.alignWidgets(ALIGN_H_CENTRE);
 	leftColumn.addSprite(getSprite("b_hospital"_s));
 	leftColumn.end();

@@ -335,7 +335,7 @@ void inspectTileWindowProc(UI::WindowContext *context, void *userData)
 {
 	DEBUG_FUNCTION();
 
-	UIPanel *ui = &context->windowPanel;
+	UI::Panel *ui = &context->windowPanel;
 	ui->alignWidgets(ALIGN_EXPAND_H);
 
 	GameState *gameState = (GameState *) userData;
@@ -419,7 +419,7 @@ void inspectTileWindowProc(UI::WindowContext *context, void *userData)
 void pauseMenuWindowProc(UI::WindowContext *context, void * /*userData*/)
 {
 	DEBUG_FUNCTION();
-	UIPanel *ui = &context->windowPanel;
+	UI::Panel *ui = &context->windowPanel;
 	ui->alignWidgets(ALIGN_EXPAND_H);
 
 	if (ui->addTextButton(getText("button_resume"_s)))
@@ -574,7 +574,7 @@ void updateAndRenderGameUI(GameState *gameState)
 			s32 popupMenuWidth = 150;
 			s32 popupMenuMaxHeight = UI::windowSize.y - (buttonRect.y + buttonRect.h);
 
-			UIPanel menu = UIPanel(irectXYWH(buttonRect.x - popupMenuPanelStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight), popupMenuPanelStyle);
+			UI::Panel menu = UI::Panel(irectXYWH(buttonRect.x - popupMenuPanelStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight), popupMenuPanelStyle);
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
 				if (menu.addTextButton(getText(getZoneDef(zoneIndex).textAssetName),
@@ -606,7 +606,7 @@ void updateAndRenderGameUI(GameState *gameState)
 			s32 popupMenuWidth = 150;
 			s32 popupMenuMaxHeight = UI::windowSize.y - (buttonRect.y + buttonRect.h);
 
-			UIPanel menu = UIPanel(irectXYWH(buttonRect.x - popupMenuPanelStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight), popupMenuPanelStyle);
+			UI::Panel menu = UI::Panel(irectXYWH(buttonRect.x - popupMenuPanelStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight), popupMenuPanelStyle);
 
 			for (auto it = constructibleBuildings->iterate();
 				it.hasNext();
@@ -665,7 +665,7 @@ void costTooltipWindowProc(UI::WindowContext *context, void *userData)
 	s32 buildCost = truncate32((smm)userData);
 	City *city = &globalAppState.gameState->city;
 
-	UIPanel *ui = &context->windowPanel;
+	UI::Panel *ui = &context->windowPanel;
 
 	String style = canAfford(city, buildCost)
 				? "cost-affordable"_s
@@ -683,7 +683,7 @@ void showCostTooltip(s32 buildCost)
 void debugToolsWindowProc(UI::WindowContext *context, void *userData)
 {
 	GameState *gameState = (GameState *)userData;
-	UIPanel *ui = &context->windowPanel;
+	UI::Panel *ui = &context->windowPanel;
 	ui->alignWidgets(ALIGN_EXPAND_H);
 
 	if (ui->addTextButton("Inspect fire info"_s, buttonIsActive(gameState->inspectTileDebugFlags & DebugInspect_Fire)))
@@ -1220,7 +1220,7 @@ void drawDataViewUI(GameState *gameState)
 								+ ((DataViewCount - 1) * popupMenuPanelStyle->contentPadding)
 								+ (popupMenuPanelStyle->margin * 2);
 
-		UIPanel menu = UIPanel(irectAligned(dataViewButtonBounds.x - popupMenuPanelStyle->margin, dataViewButtonBounds.y, popupMenuWidth, popupMenuMaxHeight, ALIGN_BOTTOM | ALIGN_LEFT), popupMenuPanelStyle, Panel_LayoutBottomToTop);
+		UI::Panel menu = UI::Panel(irectAligned(dataViewButtonBounds.x - popupMenuPanelStyle->margin, dataViewButtonBounds.y, popupMenuWidth, popupMenuMaxHeight, ALIGN_BOTTOM | ALIGN_LEFT), popupMenuPanelStyle, UI::PanelFlags::LayoutBottomToTop);
 
 		// Enable scrolling if there's too many items to fit
 		if (estimatedMenuHeight > popupMenuMaxHeight)
@@ -1253,7 +1253,7 @@ void drawDataViewUI(GameState *gameState)
 
 		s32 paletteBlockSize = font->lineHeight;
 
-		UIPanel ui = UIPanel(irectAligned(uiPos.x, uiPos.y, 240, 1000, ALIGN_BOTTOM | ALIGN_LEFT), null, Panel_LayoutBottomToTop);
+		UI::Panel ui = UI::Panel(irectAligned(uiPos.x, uiPos.y, 240, 1000, ALIGN_BOTTOM | ALIGN_LEFT), null, UI::PanelFlags::LayoutBottomToTop);
 		{
 			// We're working from bottom to top, so we start at the end.
 
@@ -1278,9 +1278,9 @@ void drawDataViewUI(GameState *gameState)
 			{
 				// Arbitrarily going to make the height 4x the width
 				s32 gradientHeight = paletteBlockSize * 4;
-				UIPanel gradientPanel = ui.row(gradientHeight, ALIGN_BOTTOM, "plain"_s);
+				UI::Panel gradientPanel = ui.row(gradientHeight, ALIGN_BOTTOM, "plain"_s);
 
-				UIPanel gradientColumn = gradientPanel.column(paletteBlockSize, ALIGN_LEFT, "plain"_s);
+				UI::Panel gradientColumn = gradientPanel.column(paletteBlockSize, ALIGN_LEFT, "plain"_s);
 				{
 					Rect2I gradientBounds = gradientColumn.addBlank(paletteBlockSize, gradientHeight);
 

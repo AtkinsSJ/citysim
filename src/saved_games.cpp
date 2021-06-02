@@ -141,16 +141,16 @@ void saveGameWindowOnClose(UI::WindowContext * /*context*/, void * /*userData*/)
 
 void savedGamesWindowProc(UI::WindowContext *context, void *userData)
 {
-	UIPanel *ui = &context->windowPanel;
+	UI::Panel *ui = &context->windowPanel;
 	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
 	bool isSaveWindow = userData != null;
 
 	SavedGameInfo *selectedSavedGame = null;
 	bool justClickedSavedGame = false;
 
-	UIPanel bottomBar = ui->row(26, ALIGN_BOTTOM, "plain"_s);
+	UI::Panel bottomBar = ui->row(26, ALIGN_BOTTOM, "plain"_s);
 
-	UIPanel savesList = ui->column(320, ALIGN_LEFT, "inset"_s);
+	UI::Panel savesList = ui->column(320, ALIGN_LEFT, "inset"_s);
 	{
 		savesList.enableVerticalScrolling(&catalogue->savedGamesListScrollbar);
 		savesList.alignWidgets(ALIGN_EXPAND_H);
@@ -282,7 +282,7 @@ void savedGamesWindowProc(UI::WindowContext *context, void *userData)
 
 void confirmOverwriteSaveWindowProc(UI::WindowContext *context, void * /*userData*/)
 {
-	UIPanel *ui = &context->windowPanel;
+	UI::Panel *ui = &context->windowPanel;
 
 	String inputName = trim(savedGamesCatalogue.saveGameName.toString());
 
@@ -303,7 +303,7 @@ void confirmOverwriteSaveWindowProc(UI::WindowContext *context, void * /*userDat
 
 void confirmDeleteSaveWindowProc(UI::WindowContext *context, void * /*userData*/)
 {
-	UIPanel *ui = &context->windowPanel;
+	UI::Panel *ui = &context->windowPanel;
 
 	SavedGameInfo *savedGame = savedGamesCatalogue.savedGames.get(savedGamesCatalogue.selectedSavedGameIndex);
 

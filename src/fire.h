@@ -61,7 +61,7 @@ u8 getFireRiskAt(City *city, s32 x, s32 y);
 u8 getFireProtectionAt(City *city, s32 x, s32 y);
 f32 getFireProtectionPercentAt(City *city, s32 x, s32 y);
 
-void debugInspectFire(UIPanel *panel, City *city, s32 x, s32 y);
+void debugInspectFire(UI::Panel *panel, City *city, s32 x, s32 y);
 
 void saveFireLayer(FireLayer *layer, struct BinaryFileWriter *writer);
 bool loadFireLayer(FireLayer *layer, City *city, struct BinaryFileReader *reader);

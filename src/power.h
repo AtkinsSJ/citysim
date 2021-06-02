@@ -70,7 +70,7 @@ u8 calculatePowerOverlayForTile(City *city, s32 x, s32 y);
 void notifyNewBuilding(PowerLayer *layer, BuildingDef *def, Building *building);
 void notifyBuildingDemolished(PowerLayer *layer, BuildingDef *def, Building *building);
 
-void debugInspectPower(UIPanel *panel, City *city, s32 x, s32 y);
+void debugInspectPower(UI::Panel *panel, City *city, s32 x, s32 y);
 
 // Private-but-actually-still-accessible API
 PowerNetwork *newPowerNetwork(PowerLayer *layer);

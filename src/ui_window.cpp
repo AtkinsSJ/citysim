@@ -16,8 +16,8 @@ namespace UI
 		  	  			(window->area.h - ((window->flags & WindowFlags::Headless) ? 0 : windowStyle->titleBarHeight))
 		  	  ),
 		  	  findStyle<PanelStyle>(&windowStyle->panelStyle), 
-		      ((window->flags & WindowFlags::Tooltip) ? Panel_AllowClickThrough : 0)
-		       | (hideWidgets ? Panel_HideWidgets : 0),
+		      ((window->flags & WindowFlags::Tooltip) ? PanelFlags::AllowClickThrough : 0)
+		       | (hideWidgets ? PanelFlags::HideWidgets : 0),
 		       renderBuffer
 		  )
 	{}

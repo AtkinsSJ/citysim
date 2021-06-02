@@ -509,7 +509,7 @@ namespace UI
 			s32 panelTop = bounds.y + bounds.h;
 			s32 panelMaxHeight = windowSize.y - panelTop;
 			Rect2I panelBounds = irectXYWH(bounds.x, panelTop, bounds.w, panelMaxHeight);
-			UIPanel panel = UIPanel(panelBounds, findStyle<PanelStyle>(&style->panelStyle), 0, uiState.openDropDownListRenderBuffer);
+			Panel panel = Panel(panelBounds, findStyle<PanelStyle>(&style->panelStyle), 0, uiState.openDropDownListRenderBuffer);
 			panel.enableVerticalScrolling(&uiState.openDropDownListScrollbar, false);
 			for (s32 optionIndex = 0; optionIndex < listOptions->count; optionIndex++)
 			{
@@ -1015,7 +1015,7 @@ namespace UI
 				}
 				Rect2I toastBounds = irectAligned(origin, toastSize, ALIGN_BOTTOM | ALIGN_H_CENTRE);
 
-				UIPanel panel = UIPanel(toastBounds, style);
+				Panel panel = Panel(toastBounds, style);
 				panel.addText(toast->text);
 				panel.end();
 			}
@@ -1034,9 +1034,9 @@ namespace UI
 		showWindow(nullString, 300, 100, v2i(0,0), styleName, WindowFlags::AutomaticHeight | WindowFlags::ShrinkWidth | WindowFlags::Unique | WindowFlags::Tooltip | WindowFlags::Headless, tooltipProc, userData);
 	}
 
-	void basicTooltipWindowProc(UI::WindowContext *context, void * /*userData*/)
+	void basicTooltipWindowProc(WindowContext *context, void * /*userData*/)
 	{
-		UIPanel *ui = &context->windowPanel;
+		Panel *ui = &context->windowPanel;
 		ui->addText(uiState.tooltipText);
 	}
 }

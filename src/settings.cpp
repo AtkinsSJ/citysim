@@ -304,7 +304,7 @@ void showSettingsWindow()
 
 void settingsWindowProc(UI::WindowContext *context, void*)
 {
-	UIPanel *ui = &context->windowPanel;
+	UI::Panel *ui = &context->windowPanel;
 
 	for (auto it = settings->defsOrder.iterate();
 		it.hasNext();

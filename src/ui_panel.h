@@ -10,8 +10,8 @@
 // This means that you can't alternate between adding widgets to two different ones, as 
 // they'll both use the scissor of whichever Panel had its first child added last. eg this:
 //
-//    UIPanel a = UIPanel(...);
-//    UIPanel b = UIPanel(...);
+//    UI::Panel a = UI::Panel(...);
+//    UI::Panel b = UI::Panel(...);
 //    a.addText("First"_s);
 //    b.addText("Second"_s);
 //    a.addText("Third"_s);
@@ -23,89 +23,95 @@
 // - Sam, 04/02/2021
 //
 
-enum UIPanelFlags
+namespace UI
 {
-	Panel_LayoutBottomToTop = 1 << 0,
-	Panel_AllowClickThrough	= 1 << 1,
-	Panel_HideWidgets		= 1 << 2, // Widgets are not updated or rendered, just laid out
-};
+	namespace PanelFlags
+	{
+		enum
+		{
+			LayoutBottomToTop 	= 1 << 0,
+			AllowClickThrough 	= 1 << 1,
+			HideWidgets			= 1 << 2, // Widgets are not updated or rendered, just laid out
+		};
+	}
 
-struct UIPanel
-{
-	UIPanel(Rect2I bounds, UI::PanelStyle *style = null, u32 flags = 0, RenderBuffer *renderBuffer = &renderer->uiBuffer);
-	UIPanel(Rect2I bounds, String styleName, u32 flags = 0, RenderBuffer *renderBuffer = &renderer->uiBuffer)
-		: UIPanel(bounds, findStyle<UI::PanelStyle>(styleName), flags, renderBuffer) {}
+	struct Panel
+	{
+		Panel(Rect2I bounds, PanelStyle *style = null, u32 flags = 0, RenderBuffer *renderBuffer = &renderer->uiBuffer);
+		Panel(Rect2I bounds, String styleName, u32 flags = 0, RenderBuffer *renderBuffer = &renderer->uiBuffer)
+			: Panel(bounds, findStyle<PanelStyle>(styleName), flags, renderBuffer) {}
 
-	// Configuration functions, which should be called before adding any widgets
-	void enableHorizontalScrolling(UI::ScrollbarState *hScrollbar);
-	void enableVerticalScrolling(UI::ScrollbarState *vScrollbar, bool expandWidth=false);
+		// Configuration functions, which should be called before adding any widgets
+		void enableHorizontalScrolling(ScrollbarState *hScrollbar);
+		void enableVerticalScrolling(ScrollbarState *vScrollbar, bool expandWidth=false);
 
-	// Add stuff to the panel
-	bool addTextButton(String text, ButtonState state = Button_Normal, String styleName = nullString);
-	bool addImageButton(Sprite *sprite, ButtonState state = Button_Normal, String styleName = nullString);
-	void addCheckbox(bool *checked, String styleName = nullString);
-	template <typename T>
-	void addDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*getDisplayName)(T *data), String styleName = nullString);
-	template <typename T>
-	void addSlider(T *currentValue, T minValue, T maxValue, String styleName = nullString);
-	void addSprite(Sprite *sprite, s32 width = -1, s32 height = -1);
-	void addText(String text, String styleName = nullString);
-	bool addTextInput(TextInput *textInput, String styleName = nullString);
-	// Add a blank rectangle as if it were a widget. (So, leaving padding between
-	// it and other widgets.) The bounds are returned so you can draw your own
-	// contents.
-	Rect2I addBlank(s32 width, s32 height = 0);
+		// Add stuff to the panel
+		bool addTextButton(String text, ButtonState state = Button_Normal, String styleName = nullString);
+		bool addImageButton(Sprite *sprite, ButtonState state = Button_Normal, String styleName = nullString);
+		void addCheckbox(bool *checked, String styleName = nullString);
+		template <typename T>
+		void addDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*getDisplayName)(T *data), String styleName = nullString);
+		template <typename T>
+		void addSlider(T *currentValue, T minValue, T maxValue, String styleName = nullString);
+		void addSprite(Sprite *sprite, s32 width = -1, s32 height = -1);
+		void addText(String text, String styleName = nullString);
+		bool addTextInput(TextInput *textInput, String styleName = nullString);
+		// Add a blank rectangle as if it were a widget. (So, leaving padding between
+		// it and other widgets.) The bounds are returned so you can draw your own
+		// contents.
+		Rect2I addBlank(s32 width, s32 height = 0);
 
-	// Layout options
-	void alignWidgets(u32 alignment);
-	void startNewLine(u32 hAlignment = 0);
+		// Layout options
+		void alignWidgets(u32 alignment);
+		void startNewLine(u32 hAlignment = 0);
 
-	// Slice the remaining content area in two, with one part being the new UIPanel,
-	// and the rest becoming the existing panel's content area.
-	UIPanel row(s32 height, Alignment vAlignment, String styleName = nullString);
-	UIPanel column(s32 width, Alignment hAlignment, String styleName = nullString);
+		// Slice the remaining content area in two, with one part being the new Panel,
+		// and the rest becoming the existing panel's content area.
+		Panel row(s32 height, Alignment vAlignment, String styleName = nullString);
+		Panel column(s32 width, Alignment hAlignment, String styleName = nullString);
 
-	void end(bool shinkToContentHeight = false, bool shrinkToContentWidth = false);
+		void end(bool shinkToContentHeight = false, bool shrinkToContentWidth = false);
 
-	// "Private"
-	void prepareForWidgets();
-	Rect2I getCurrentLayoutPosition();
-	void completeWidget(V2I widgetSize);
-	UI::PanelStyle *getPanelStyle(String styleName);
+		// "Private"
+		void prepareForWidgets();
+		Rect2I getCurrentLayoutPosition();
+		void completeWidget(V2I widgetSize);
+		PanelStyle *getPanelStyle(String styleName);
 
-	// Call after modifying the contentArea. Updates the positions fields to match.
-	void updateLayoutPosition();
+		// Call after modifying the contentArea. Updates the positions fields to match.
+		void updateLayoutPosition();
 
-	// Flags, and bool versions for easier access
-	u32 flags;
-	bool allowClickThrough;
-	bool hideWidgets; // Widgets are not updated or rendered, just laid out
-	bool layoutBottomToTop;
+		// Flags, and bool versions for easier access
+		u32 flags;
+		bool allowClickThrough;
+		bool hideWidgets; // Widgets are not updated or rendered, just laid out
+		bool layoutBottomToTop;
 
 
-	bool hasAddedWidgets;
+		bool hasAddedWidgets;
 
-	RenderBuffer *renderBuffer;
+		RenderBuffer *renderBuffer;
 
-	Rect2I bounds;
-	Rect2I contentArea;
-	u32 widgetAlignment;
+		Rect2I bounds;
+		Rect2I contentArea;
+		u32 widgetAlignment;
 
-	UI::ScrollbarState *hScrollbar;
-	Rect2I hScrollbarBounds;
-	UI::ScrollbarState *vScrollbar;
-	Rect2I vScrollbarBounds;
+		ScrollbarState *hScrollbar;
+		Rect2I hScrollbarBounds;
+		ScrollbarState *vScrollbar;
+		Rect2I vScrollbarBounds;
 
-	// Relative to contentArea
-	s32 currentLeft;
-	s32 currentRight;
-	s32 currentTop;
-	s32 currentBottom;
-	
-	s32 largestItemWidth;
-	s32 largestItemHeightOnLine;
-	s32 largestLineWidth;
+		// Relative to contentArea
+		s32 currentLeft;
+		s32 currentRight;
+		s32 currentTop;
+		s32 currentBottom;
+		
+		s32 largestItemWidth;
+		s32 largestItemHeightOnLine;
+		s32 largestLineWidth;
 
-	UI::PanelStyle *style;
-	UI::Drawable background;
-};
+		PanelStyle *style;
+		Drawable background;
+	};
+}
