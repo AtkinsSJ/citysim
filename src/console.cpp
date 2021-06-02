@@ -20,7 +20,7 @@ void initConsole(MemoryArena *debugArena, f32 openHeight, f32 maximisedHeight, f
 	console->inputHistoryCursor = -1;
 
 	initChunkedArray(&console->outputLines, debugArena, 1024);
-	UI::initScrollbar(&console->scrollbar, false);
+	UI::initScrollbar(&console->scrollbar, Orientation::Vertical);
 
 	initChunkedArray(&console->commandShortcuts, &globalAppState.systemArena, 64);
 

@@ -17,9 +17,9 @@ void UI::init(MemoryArena *arena)
 	initSet(&uiState.windowsToClose, arena);
 	initSet(&uiState.windowsToMakeActive, arena);
 
-	initScrollbar(&uiState.openMenuScrollbar, false);
+	initScrollbar(&uiState.openMenuScrollbar, Orientation::Vertical);
 
-	initScrollbar(&uiState.openDropDownListScrollbar, false);
+	initScrollbar(&uiState.openDropDownListScrollbar, Orientation::Vertical);
 }
 
 void UI::startFrame()
@@ -539,7 +539,7 @@ void UI::openDropDownList(void *pointer)
 		uiState.openDropDownListRenderBuffer = getTemporaryRenderBuffer("DropDownList"_s);
 	}
 	clearRenderBuffer(uiState.openDropDownListRenderBuffer);
-	initScrollbar(&uiState.openDropDownListScrollbar, false);
+	initScrollbar(&uiState.openDropDownListScrollbar, Orientation::Vertical);
 }
 
 void UI::closeDropDownList()
@@ -588,11 +588,11 @@ inline ScrollbarState *UI::getMenuScrollbar()
 	return &uiState.openMenuScrollbar;
 }
 
-void UI::initScrollbar(ScrollbarState *state, bool isHorizontal, s32 mouseWheelStepSize)
+void UI::initScrollbar(ScrollbarState *state, Orientation orientation, s32 mouseWheelStepSize)
 {
 	*state = {};
 
-	state->isHorizontal = isHorizontal;
+	state->orientation = orientation;
 	state->mouseWheelStepSize = mouseWheelStepSize;
 }
 
@@ -607,7 +607,7 @@ Maybe<Rect2I> UI::getScrollbarThumbBounds(ScrollbarState *state, Rect2I scrollba
 	// keeping them as separate variables, which is why viewportSize and trackSize are
 	// the same. If we add scrollbar buttons, that'll reduce the track size.
 	// - Sam, 01/04/2021
-	if (state->isHorizontal)
+	if (state->orientation == Orientation::Horizontal)
 	{
 		s32 thumbHeight = style->width;
 		s32 viewportSize = scrollbarBounds.w;
@@ -625,6 +625,8 @@ Maybe<Rect2I> UI::getScrollbarThumbBounds(ScrollbarState *state, Rect2I scrollba
 	}
 	else
 	{
+		ASSERT(state->orientation == Orientation::Vertical);
+
 		s32 thumbWidth = style->width;
 		s32 viewportSize = scrollbarBounds.h;
 
@@ -665,18 +667,21 @@ void UI::putScrollbar(ScrollbarState *state, s32 contentSize, Rect2I bounds, UIS
 	{
 		if (!isMouseInputHandled())
 		{
+			bool isHorizontal = (state->orientation == Orientation::Horizontal);
+			ASSERT(isHorizontal || (state->orientation == Orientation::Vertical));
+
 			Maybe<Rect2I> thumb = getScrollbarThumbBounds(state, bounds, style);
 			if (thumb.isValid)
 			{
-				s32 overflowSize   = state->contentSize - (state->isHorizontal ? bounds.w : bounds.h);
+				s32 overflowSize   = state->contentSize - (isHorizontal ? bounds.w : bounds.h);
 				Rect2I thumbBounds = thumb.value;
-				s32 thumbSize      = state->isHorizontal ? thumbBounds.w : thumbBounds.h;
-				s32 gutterSize     = state->isHorizontal ? bounds.w : bounds.h;
+				s32 thumbSize      = isHorizontal ? thumbBounds.w : thumbBounds.h;
+				s32 gutterSize     = isHorizontal ? bounds.w : bounds.h;
 				s32 thumbRange     = gutterSize - thumbSize;
 
 				// Scrollwheel stuff
 				// (It's weird that we're putting this within mouseInputHandled, but eh)
-				s32 mouseWheelDelta = (state->isHorizontal ? inputState->wheelX : -inputState->wheelY);
+				s32 mouseWheelDelta = (isHorizontal ? inputState->wheelX : -inputState->wheelY);
 				if (mouseWheelDelta != 0)
 				{
 					s32 oldScrollOffset = getScrollbarContentOffset(state, gutterSize);
@@ -698,7 +703,7 @@ void UI::putScrollbar(ScrollbarState *state, s32 contentSize, Rect2I bounds, UIS
 
 					// @Copypasta We duplicate this code below, because there are two states where we need to set
 					// the new thumb position. It's really awkward but I don't know how to pull the logic out.
-					if (state->isHorizontal)
+					if (isHorizontal)
 					{
 						thumbBounds.x = clamp(thumbPos.x, bounds.x, bounds.x + thumbRange);
 						state->scrollPercent = clamp01((f32)(thumbBounds.x - bounds.x) / (f32)thumbRange);
@@ -720,7 +725,7 @@ void UI::putScrollbar(ScrollbarState *state, s32 contentSize, Rect2I bounds, UIS
 						// If we're not on the thumb, jump the thumb to where we are!
 						if (!inThumbBounds)
 						{
-							if (state->isHorizontal)
+							if (isHorizontal)
 							{
 								thumbBounds.x = clamp(mousePos.x - (thumbBounds.w / 2), bounds.x, bounds.x + thumbRange);
 								state->scrollPercent = clamp01((f32)(thumbBounds.x - bounds.x) / (f32)thumbRange);

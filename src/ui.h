@@ -16,7 +16,7 @@ struct Toast
 
 struct ScrollbarState
 {
-	bool isHorizontal;
+	Orientation orientation;
 	s32 contentSize;
 	f32 scrollPercent;
 
@@ -180,7 +180,7 @@ namespace UI
 	ScrollbarState *getMenuScrollbar();
 
 	// Scrollbars
-	void initScrollbar(ScrollbarState *state, bool isHorizontal, s32 mouseWheelStepSize = 64);
+	void initScrollbar(ScrollbarState *state, Orientation orientation, s32 mouseWheelStepSize = 64);
 	// NB: When the viewport is larger than the content, there's no thumb rect so nothing is returned
 	Maybe<Rect2I> getScrollbarThumbBounds(ScrollbarState *state, Rect2I scrollbarBounds, UIScrollbarStyle *style);
 	void putScrollbar(ScrollbarState *state, s32 contentSize, Rect2I bounds, UIScrollbarStyle *style = null, bool isDisabled = false, RenderBuffer *renderBuffer = null);

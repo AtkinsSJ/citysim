@@ -20,7 +20,7 @@ void initSavedGamesCatalogue()
 	catalogue->selectedSavedGameIndex = -1;
 	catalogue->saveGameName = UI::newTextInput(&catalogue->savedGamesArena, 64, "\\/:*?\"'`<>|[]()^#%&!@+={}~."_s);
 
-	UI::initScrollbar(&catalogue->savedGamesListScrollbar, false);
+	UI::initScrollbar(&catalogue->savedGamesListScrollbar, Orientation::Vertical);
 
 	// Initial saved-games scan
 	readSavedGamesInfo(catalogue);
