@@ -193,12 +193,12 @@ void UIPanel::addSlider(T *currentValue, T minValue, T maxValue, String styleNam
 	V2I widgetOrigin = alignWithinRectangle(space, widgetAlignment);
 
 	bool fillWidth = ((widgetAlignment & ALIGN_H) == ALIGN_EXPAND_H);
-	V2I widgetSize = UI::calculateSliderSize(widgetStyle, space.w, fillWidth);
+	V2I widgetSize = UI::calculateSliderSize(Orientation::Horizontal, widgetStyle, space.size, fillWidth);
 	Rect2I widgetBounds = irectAligned(widgetOrigin, widgetSize, widgetAlignment);
 
 	if (!hideWidgets)
 	{
-		UI::putSlider(currentValue, minValue, maxValue, widgetBounds, widgetStyle, false, renderBuffer);
+		UI::putSlider(currentValue, minValue, maxValue, Orientation::Horizontal, widgetBounds, widgetStyle, false, renderBuffer);
 	}
 
 	completeWidget(widgetSize);

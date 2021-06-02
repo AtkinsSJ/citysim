@@ -85,6 +85,21 @@ AppStatus updateAndRenderMainMenu(f32 /*deltaTime*/)
 	{
 		result = AppStatus_Quit;
 	}
-	
+
+// Slider test
+	/*
+	static f32 sliderValueF = 50.0f;
+	V2I sliderSize = UI::calculateSliderSize(Orientation::Vertical, null);
+	UI::putSlider(&sliderValueF, 0.0f, 100.0f, Orientation::Vertical, irectPosSize(v2i(100, 100), sliderSize));
+
+	UI::drawText(&renderer->uiBuffer, font, formatFloat(sliderValueF, 3),
+			v2i(100, 80), ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth);
+
+	static s32 sliderValue = 5;
+	UI::putSlider(&sliderValue, 0, 20, Orientation::Vertical, irectPosSize(v2i(100, 350), sliderSize));
+
+	UI::drawText(&renderer->uiBuffer, font, formatInt(sliderValue),
+			v2i(100, 330), ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth);
+	*/
 	return result;
 }

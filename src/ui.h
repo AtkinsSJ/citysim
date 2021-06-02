@@ -187,9 +187,10 @@ namespace UI
 	s32 getScrollbarContentOffset(ScrollbarState *state, s32 scrollbarSize);
 
 	// Sliders
-	V2I calculateSliderSize(UISliderStyle *style, s32 maxWidth = 0, bool fillWidth = true);
-	void putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Rect2I bounds, UISliderStyle *style, bool isDisabled = false, RenderBuffer *renderBuffer = null, bool snapToWholeNumbers = false);
-	void putSlider(s32 *currentValue, s32 minValue, s32 maxValue, Rect2I bounds, UISliderStyle *style, bool isDisabled = false, RenderBuffer *renderBuffer = null);
+	// NB: fillSpace only applies to the "length" of the slider, not its "thickness"
+	V2I calculateSliderSize(Orientation orientation, UISliderStyle *style = null, V2I availableSpace = {}, bool fillSpace = false);
+	void putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Orientation orientation, Rect2I bounds, UISliderStyle *style = null, bool isDisabled = false, RenderBuffer *renderBuffer = null, bool snapToWholeNumbers = false);
+	void putSlider(s32 *currentValue, s32 minValue, s32 maxValue, Orientation orientation, Rect2I bounds, UISliderStyle *style = null, bool isDisabled = false, RenderBuffer *renderBuffer = null);
 
 	// TextInputs
 	bool putTextInput(TextInput *textInput, Rect2I bounds, UITextInputStyle *style, RenderBuffer *renderBuffer = null);

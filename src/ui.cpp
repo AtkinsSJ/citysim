@@ -759,17 +759,30 @@ s32 UI::getScrollbarContentOffset(ScrollbarState *state, s32 scrollbarSize)
 	return result;
 }
 
-V2I UI::calculateSliderSize(UISliderStyle *style, s32 maxWidth, bool fillWidth)
+V2I UI::calculateSliderSize(Orientation orientation, UISliderStyle *style, V2I availableSpace, bool fillSpace)
 {
 	if (style == null) 			style = findStyle<UISliderStyle>("default"_s);
 
-	// I think we always fill width? I don't know how to establish our width otherwise!
-	V2I result = v2i(maxWidth, style->thumbSize.y);
+	V2I result = {};
+
+	// This is really arbitrary, but sliders don't have an inherent length, so they need something!
+	s32 standardSize = 200;
+
+	if (orientation == Orientation::Horizontal)
+	{
+		result = v2i(fillSpace ? availableSpace.x : standardSize, style->thumbSize.y);
+	}
+	else
+	{
+		ASSERT(orientation == Orientation::Vertical);
+
+		result = v2i(style->thumbSize.x, fillSpace ? availableSpace.y : standardSize);
+	}
 
 	return result;
 }
 
-void UI::putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Rect2I bounds, UISliderStyle *style, bool isDisabled, RenderBuffer *renderBuffer, bool snapToWholeNumbers)
+void UI::putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Orientation orientation, Rect2I bounds, UISliderStyle *style, bool isDisabled, RenderBuffer *renderBuffer, bool snapToWholeNumbers)
 {
 	DEBUG_FUNCTION_T(DCDT_UI);
 	ASSERT(maxValue > minValue);
@@ -783,10 +796,23 @@ void UI::putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Rect2I bounds,
 	f32 currentPercent = (*currentValue - minValue) / valueRange;
 
 	// Calculate where the thumb is initially
-	s32 travelX = (bounds.w - style->thumbSize.x); // Space available for the thumb to move in
-	s32 thumbX = bounds.x + round_s32((f32)travelX * currentPercent);
-	s32 thumbY = bounds.y + ((bounds.h - style->thumbSize.y) / 2);
-	Rect2I thumbBounds = irectXYWH(thumbX, thumbY, style->thumbSize.x, style->thumbSize.y);
+	s32 travel; // Space available for the thumb to move in
+	V2I thumbPos;
+	if (orientation == Orientation::Horizontal)
+	{
+		travel = (bounds.w - style->thumbSize.x);
+		thumbPos.x = bounds.x + round_s32((f32)travel * currentPercent);
+		thumbPos.y = bounds.y + ((bounds.h - style->thumbSize.y) / 2);
+	}
+	else
+	{
+		ASSERT(orientation == Orientation::Vertical);
+
+		travel = (bounds.h - style->thumbSize.y);
+		thumbPos.x = bounds.x + ((bounds.w - style->thumbSize.x) / 2);
+		thumbPos.y = bounds.y + bounds.h - style->thumbSize.y - round_s32((f32)travel * currentPercent);
+	}
+	Rect2I thumbBounds = irectPosSize(thumbPos, style->thumbSize);
 
 	// Interact with mouse
 	UIDrawableStyle *thumbStyle = &style->thumb;
@@ -797,11 +823,22 @@ void UI::putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Rect2I bounds,
 	else if (isDragging(currentValue))
 	{
 		// Move
-		V2I thumbPos = getDraggingObjectPos();
-		thumbBounds.x = clamp(thumbPos.x, bounds.x, bounds.x + travelX);
+		V2I draggedPos = getDraggingObjectPos();
+		f32 positionPercent;
+		if (orientation == Orientation::Horizontal)
+		{
+			thumbBounds.x = clamp(draggedPos.x, bounds.x, bounds.x + travel);
+			positionPercent = (f32)(thumbBounds.x - bounds.x) / (f32)travel;
+		}
+		else
+		{
+			ASSERT(orientation == Orientation::Vertical);
+
+			thumbBounds.y = clamp(draggedPos.y, bounds.y, bounds.y + travel);
+			positionPercent = 1.0f - (f32)(thumbBounds.y - bounds.y) / (f32)travel;
+		}
 
 		// Apply that to the currentValue
-		f32 positionPercent = (f32)(thumbBounds.x - bounds.x) / (f32)travelX;
 		*currentValue = minValue + (positionPercent * valueRange);
 
 		thumbStyle = &style->thumbPressed;
@@ -815,10 +852,22 @@ void UI::putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Rect2I bounds,
 			// If we're not on the thumb, jump the thumb to where we are!
 			if (!inThumbBounds)
 			{
-				thumbBounds.x = clamp(mousePos.x - (thumbBounds.w / 2), bounds.x, bounds.x + travelX);
+
+				f32 positionPercent;
+				if (orientation == Orientation::Horizontal)
+				{
+					thumbBounds.x = clamp(mousePos.x - (thumbBounds.w / 2), bounds.x, bounds.x + travel);
+					positionPercent = (f32)(thumbBounds.x - bounds.x) / (f32)travel;
+				}
+				else
+				{
+					ASSERT(orientation == Orientation::Vertical);
+
+					thumbBounds.y = clamp(mousePos.y - (thumbBounds.h / 2), bounds.y, bounds.y + travel);
+					positionPercent = 1.0f - (f32)(thumbBounds.y - bounds.y) / (f32)travel;
+				}
 
 				// Apply that to the currentValue
-				f32 positionPercent = (f32)(thumbBounds.x - bounds.x) / (f32)travelX;
 				*currentValue = minValue + (positionPercent * valueRange);
 			}
 
@@ -842,23 +891,45 @@ void UI::putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Rect2I bounds,
 	{
 		*currentValue = round_f32(*currentValue);
 		currentPercent = (*currentValue - minValue) / valueRange;
-		thumbBounds.x = bounds.x + round_s32((f32)travelX * currentPercent);
+
+		if (orientation == Orientation::Horizontal)
+		{
+			thumbBounds.x = bounds.x + round_s32((f32)travel * currentPercent);
+		}
+		else
+		{
+			ASSERT(orientation == Orientation::Vertical);
+
+			thumbBounds.y = bounds.y + bounds.h - thumbBounds.h - round_s32((f32)travel * currentPercent);
+		}
 	}
 
 	// Draw things
-	s32 trackThickness = (style->trackThickness != 0) ? style->trackThickness : bounds.h;
-	Rect2I trackBounds = irectAligned(bounds.x, bounds.y + bounds.h / 2, bounds.w, trackThickness, ALIGN_LEFT | ALIGN_V_CENTRE);
+	Rect2I trackBounds;
+	if (orientation == Orientation::Horizontal)
+	{
+		s32 trackThickness = (style->trackThickness != 0) ? style->trackThickness : bounds.h;
+		trackBounds = irectAligned(bounds.x, bounds.y + bounds.h / 2, bounds.w, trackThickness, ALIGN_LEFT | ALIGN_V_CENTRE);
+	}
+	else
+	{
+		ASSERT(orientation == Orientation::Vertical);
+
+		s32 trackThickness = (style->trackThickness != 0) ? style->trackThickness : bounds.w;
+		trackBounds = irectAligned(bounds.x + bounds.w / 2, bounds.y, trackThickness, bounds.h, ALIGN_TOP | ALIGN_H_CENTRE);
+	}
+
 	UIDrawable(&style->track).draw(renderBuffer, trackBounds);
 	UIDrawable(thumbStyle).draw(renderBuffer, thumbBounds);
 }
 
-void UI::putSlider(s32 *currentValue, s32 minValue, s32 maxValue, Rect2I bounds, UISliderStyle *style, bool isDisabled, RenderBuffer *renderBuffer)
+void UI::putSlider(s32 *currentValue, s32 minValue, s32 maxValue, Orientation orientation, Rect2I bounds, UISliderStyle *style, bool isDisabled, RenderBuffer *renderBuffer)
 {
 	f32 currentValueF = (f32) *currentValue;
 	f32 minValueF     = (f32)  minValue;
 	f32 maxValueF     = (f32)  maxValue;
 
-	putSlider(&currentValueF, minValueF, maxValueF, bounds, style, isDisabled, renderBuffer, true);
+	putSlider(&currentValueF, minValueF, maxValueF, orientation, bounds, style, isDisabled, renderBuffer, true);
 
 	*currentValue = round_s32(currentValueF);
 }
