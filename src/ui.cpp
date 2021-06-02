@@ -306,17 +306,17 @@ bool UI::putButton(Rect2I bounds, UIButtonStyle *style, ButtonState state, Rende
 
 	if (state == Button_Disabled)
 	{
-		backgroundStyle = &style->disabledBackground;
+		backgroundStyle = &style->backgroundDisabled;
 	}
 	else if (mouseState.isHovered)
 	{
 		if (mouseState.isPressed)
 		{
-			backgroundStyle = &style->pressedBackground;
+			backgroundStyle = &style->backgroundPressed;
 		}
 		else
 		{
-			backgroundStyle = &style->hoverBackground;
+			backgroundStyle = &style->backgroundHover;
 		}
 
 		if (tooltip.length)
@@ -326,7 +326,7 @@ bool UI::putButton(Rect2I bounds, UIButtonStyle *style, ButtonState state, Rende
 	}
 	else if (state == Button_Active)
 	{
-		backgroundStyle = &style->hoverBackground;
+		backgroundStyle = &style->backgroundHover;
 	}
 
 	UIDrawable buttonBackground = UIDrawable(backgroundStyle);
@@ -410,24 +410,24 @@ void UI::putCheckbox(bool *checked, Rect2I bounds, UICheckboxStyle *style, bool 
 	WidgetMouseState mouseState = getWidgetMouseState(bounds);
 
 	UIDrawableStyle *backgroundStyle = &style->background;
-	UIDrawableStyle *checkStyle = &style->checkImage;
+	UIDrawableStyle *checkStyle = &style->check;
 
 	if (isDisabled)
 	{
-		backgroundStyle = &style->disabledBackground;
-		checkStyle = &style->disabledCheckImage;
+		backgroundStyle = &style->backgroundDisabled;
+		checkStyle = &style->checkDisabled;
 	}
 	else if (mouseState.isHovered)
 	{
 		if (mouseState.isPressed)
 		{
-			backgroundStyle = &style->pressedBackground;
-			checkStyle = &style->pressedCheckImage;
+			backgroundStyle = &style->backgroundPressed;
+			checkStyle = &style->checkPressed;
 		}
 		else
 		{
-			backgroundStyle = &style->hoverBackground;
-			checkStyle = &style->hoverCheckImage;
+			backgroundStyle = &style->backgroundHover;
+			checkStyle = &style->checkHover;
 		}
 	}
 

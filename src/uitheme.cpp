@@ -110,27 +110,27 @@ void initUIStyleConstants()
 	}
 
 	PROP(background,				PropType_Drawable);
+	PROP(backgroundDisabled,		PropType_Drawable);
+	PROP(backgroundHover,			PropType_Drawable);
+	PROP(backgroundPressed,			PropType_Drawable);
 	PROP(buttonStyle,				PropType_Style);
 	PROP(caretFlashCycleDuration,	PropType_Float);
-	PROP(checkImage,				PropType_Drawable);
+	PROP(check,						PropType_Drawable);
+	PROP(checkDisabled,				PropType_Drawable);
+	PROP(checkHover,				PropType_Drawable);
+	PROP(checkPressed,				PropType_Drawable);
 	PROP(checkboxStyle,				PropType_Style);
 	PROP(contentSize,				PropType_V2I);
 	PROP(contentPadding,			PropType_Int);
-	PROP(disabledBackground,		PropType_Drawable);
-	PROP(disabledCheckImage,		PropType_Drawable);
 	PROP(dropDownListStyle,			PropType_Style);
 	PROP(endIcon,					PropType_Drawable);
 	PROP(endIconAlignment,			PropType_Alignment);
 	PROP(font,						PropType_Font);
-	PROP(hoverBackground,			PropType_Drawable);
-	PROP(hoverCheckImage,			PropType_Drawable);
 	PROP(labelStyle,				PropType_Style);
 	PROP(margin,					PropType_Int);
 	PROP(offsetFromMouse,			PropType_V2I);
 	PROP(padding,					PropType_Int);
 	PROP(panelStyle,				PropType_Style);
-	PROP(pressedBackground,			PropType_Drawable);
-	PROP(pressedCheckImage,			PropType_Drawable);
 	PROP(scrollbarStyle,			PropType_Style);
 	PROP(showCaret,					PropType_Bool);
 	PROP(sliderStyle,				PropType_Style);
@@ -159,14 +159,14 @@ void initUIStyleConstants()
 
 	assignStyleProperties(UIStyle_Button, {
 		"background"_s,
+		"backgroundDisabled"_s,
+		"backgroundHover"_s,
+		"backgroundPressed"_s,
 		"contentPadding"_s,
-		"disabledBackground"_s,
 		"endIcon"_s,
 		"endIconAlignment"_s,
 		"font"_s,
-		"hoverBackground"_s,
 		"padding"_s,
-		"pressedBackground"_s,
 		"startIcon"_s,
 		"startIconAlignment"_s,
 		"textAlignment"_s,
@@ -174,16 +174,16 @@ void initUIStyleConstants()
 	});	
 	assignStyleProperties(UIStyle_Checkbox, {
 		"background"_s,
-		"checkImage"_s,
+		"backgroundDisabled"_s,
+		"backgroundHover"_s,
+		"backgroundPressed"_s,
+		"check"_s,
+		"checkDisabled"_s,
+		"checkHover"_s,
 		"contentSize"_s,
-		"disabledBackground"_s,
-		"disabledCheckImage"_s,
+		"checkPressed"_s,
 		"dropDownListStyle"_s,
-		"hoverBackground"_s,
-		"hoverCheckImage"_s,
 		"padding"_s,
-		"pressedBackground"_s,
-		"pressedCheckImage"_s,
 	});
 	assignStyleProperties(UIStyle_Console, {
 		"background"_s,
@@ -563,9 +563,9 @@ void loadUITheme(Blob data, Asset *asset)
 						button->endIconAlignment = style->endIconAlignment;
 
 						button->background = style->background;
-						button->hoverBackground = style->hoverBackground;
-						button->pressedBackground = style->pressedBackground;
-						button->disabledBackground = style->disabledBackground;
+						button->backgroundHover = style->backgroundHover;
+						button->backgroundPressed = style->backgroundPressed;
+						button->backgroundDisabled = style->backgroundDisabled;
 
 						if (!button->startIcon.hasFixedSize())
 						{
@@ -587,20 +587,20 @@ void loadUITheme(Blob data, Asset *asset)
 						checkbox->padding = style->padding;
 
 						checkbox->background = style->background;
-						checkbox->hoverBackground = style->hoverBackground;
-						checkbox->pressedBackground = style->pressedBackground;
-						checkbox->disabledBackground = style->disabledBackground;
+						checkbox->backgroundHover = style->backgroundHover;
+						checkbox->backgroundPressed = style->backgroundPressed;
+						checkbox->backgroundDisabled = style->backgroundDisabled;
 
 						checkbox->contentSize = style->contentSize;
-						checkbox->checkImage = style->checkImage;
-						checkbox->hoverCheckImage = style->hoverCheckImage;
-						checkbox->pressedCheckImage = style->pressedCheckImage;
-						checkbox->disabledCheckImage = style->disabledCheckImage;
+						checkbox->check = style->check;
+						checkbox->checkHover = style->checkHover;
+						checkbox->checkPressed = style->checkPressed;
+						checkbox->checkDisabled = style->checkDisabled;
 
-						// ASSERT(checkbox->checkImage.hasFixedSize()
-						//  && checkbox->hoverCheckImage.hasFixedSize()
-						//  && checkbox->pressedCheckImage.hasFixedSize()
-						//  && checkbox->disabledCheckImage.hasFixedSize());
+						// ASSERT(checkbox->check.hasFixedSize()
+						//  && checkbox->checkHover.hasFixedSize()
+						//  && checkbox->checkPressed.hasFixedSize()
+						//  && checkbox->checkDisabled.hasFixedSize());
 					} break;
 
 					case UIStyle_Console: {

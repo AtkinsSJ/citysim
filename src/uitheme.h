@@ -67,9 +67,9 @@ struct UIButtonStyle
 	u32 endIconAlignment;
 
 	UIDrawableStyle background;
-	UIDrawableStyle hoverBackground;
-	UIDrawableStyle pressedBackground;
-	UIDrawableStyle disabledBackground;
+	UIDrawableStyle backgroundHover;
+	UIDrawableStyle backgroundPressed;
+	UIDrawableStyle backgroundDisabled;
 };
 
 struct UICheckboxStyle
@@ -79,15 +79,15 @@ struct UICheckboxStyle
 	s32 padding;
 
 	UIDrawableStyle background;
-	UIDrawableStyle hoverBackground;
-	UIDrawableStyle pressedBackground;
-	UIDrawableStyle disabledBackground;
+	UIDrawableStyle backgroundHover;
+	UIDrawableStyle backgroundPressed;
+	UIDrawableStyle backgroundDisabled;
 
 	V2I contentSize;
-	UIDrawableStyle checkImage;
-	UIDrawableStyle hoverCheckImage;
-	UIDrawableStyle pressedCheckImage;
-	UIDrawableStyle disabledCheckImage;
+	UIDrawableStyle check;
+	UIDrawableStyle checkHover;
+	UIDrawableStyle checkPressed;
+	UIDrawableStyle checkDisabled;
 };
 
 enum ConsoleLineStyleID
@@ -240,9 +240,9 @@ struct UIStyle
 	u32 widgetAlignment;
 
 	UIDrawableStyle background;
-	UIDrawableStyle disabledBackground;
-	UIDrawableStyle hoverBackground;
-	UIDrawableStyle pressedBackground;
+	UIDrawableStyle backgroundDisabled;
+	UIDrawableStyle backgroundHover;
+	UIDrawableStyle backgroundPressed;
 
 	String buttonStyle;
 	String checkboxStyle;
@@ -285,10 +285,10 @@ struct UIStyle
 	AssetRef titleFont;
 
 	// Checkbox specific
-	UIDrawableStyle checkImage;
-	UIDrawableStyle hoverCheckImage;
-	UIDrawableStyle pressedCheckImage;
-	UIDrawableStyle disabledCheckImage;
+	UIDrawableStyle check;
+	UIDrawableStyle checkHover;
+	UIDrawableStyle checkPressed;
+	UIDrawableStyle checkDisabled;
 };
 
 struct UIProperty

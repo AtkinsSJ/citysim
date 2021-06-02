@@ -47,9 +47,6 @@ Toast should draw in the Window RB because it belongs on top of everything
 
 Make windows use the standard UI dragging
 
-Sort out style naming
-- We have stuff like 'disabledBackground', which seems like a good idea, except then it is separate alphabetically from related properties 'pressedBackground' and 'hoverBackground'. Instead, they probably want to be named like 'backgroundDisabled'. It's slightly weirder in English, but makes more sense. But means renaming a bunch of stuff, yay.
-
 Window titles should be set every frame?
 - We have a bug, where reloading an asset while a window is open often garbles its title
 - I've been feeling for a while that I don't like how window titles are handled
