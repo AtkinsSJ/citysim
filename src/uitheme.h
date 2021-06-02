@@ -92,11 +92,12 @@ struct UICheckboxStyle
 
 enum ConsoleLineStyleID
 {
+	// Must match the order in UIConsoleStyle!
 	CLS_Default,
 	CLS_InputEcho,
+	CLS_Error,
 	CLS_Success,
 	CLS_Warning,
-	CLS_Error,
 
 	CLS_COUNT
 };
@@ -106,7 +107,18 @@ struct UIConsoleStyle
 	String name;
 	
 	AssetRef font;
-	V4 outputTextColor[CLS_COUNT];
+	union {
+		V4 outputTextColors[CLS_COUNT];
+
+		struct {
+			// Must match the order in ConsoleLineStyleID!
+			V4 outputTextColor;
+			V4 outputTextColorInputEcho;
+			V4 outputTextColorError;
+			V4 outputTextColorSuccess;
+			V4 outputTextColorWarning;
+		};
+	};
 
 	UIDrawableStyle background;
 	s32 padding;
@@ -271,7 +283,6 @@ struct UIStyle
 	V2I thumbSize;
 	
 	V4 overlayColor;
-	V4 outputTextColor[CLS_COUNT];
 
 	AssetRef font;
 	u32 textAlignment;
@@ -289,6 +300,13 @@ struct UIStyle
 	UIDrawableStyle checkHover;
 	UIDrawableStyle checkPressed;
 	UIDrawableStyle checkDisabled;
+
+	// Console
+	V4 outputTextColor;
+	V4 outputTextColorInputEcho;
+	V4 outputTextColorError;
+	V4 outputTextColorSuccess;
+	V4 outputTextColorWarning;
 };
 
 struct UIProperty

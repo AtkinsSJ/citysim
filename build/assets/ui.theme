@@ -189,11 +189,11 @@ labelStyle               small
 
 :Console default
 font                 debug
-outputTextColor default 192 192 192 255
-outputTextColor echo    128 128 128 255
-outputTextColor error   255 128 128 255
-outputTextColor warning 255 255 128 255
-outputTextColor success 128 255 128 255
+outputTextColor 			192 192 192 255
+outputTextColorInputEcho	128 128 128 255
+outputTextColorError		255 128 128 255
+outputTextColorSuccess		128 255 128 255
+outputTextColorWarning		255 255 128 255
 background        color 0   0   0 245
 padding 8
 scrollbarStyle console

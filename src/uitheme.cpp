@@ -129,6 +129,11 @@ void initUIStyleConstants()
 	PROP(labelStyle,				PropType_Style);
 	PROP(margin,					PropType_Int);
 	PROP(offsetFromMouse,			PropType_V2I);
+	PROP(outputTextColor,			PropType_Color);
+	PROP(outputTextColorInputEcho,	PropType_Color);
+	PROP(outputTextColorError,		PropType_Color);
+	PROP(outputTextColorWarning,	PropType_Color);
+	PROP(outputTextColorSuccess,	PropType_Color);
 	PROP(padding,					PropType_Int);
 	PROP(panelStyle,				PropType_Style);
 	PROP(scrollbarStyle,			PropType_Style);
@@ -188,6 +193,11 @@ void initUIStyleConstants()
 	assignStyleProperties(UIStyle_Console, {
 		"background"_s,
 		"font"_s,
+		"outputTextColor"_s,
+		"outputTextColorInputEcho"_s,
+		"outputTextColorError"_s,
+		"outputTextColorSuccess"_s,
+		"outputTextColorWarning"_s,
 		"padding"_s,
 		"scrollbarStyle"_s,
 		"textInputStyle"_s,
@@ -381,39 +391,6 @@ void loadUITheme(Blob data, Asset *asset)
 						String name = target->name;
 						*target = *parent;
 						target->name = name;
-					}
-				}
-			}
-			else if (equals(firstWord, "outputTextColor"_s))
-			{
-				String category = readToken(&reader);
-				Maybe<V4> color = readColor(&reader);
-
-				if (color.isValid)
-				{
-					if (equals(category, "default"_s))
-					{
-						target->outputTextColor[CLS_Default] = color.value;
-					}
-					else if (equals(category, "echo"_s))
-					{
-						target->outputTextColor[CLS_InputEcho] = color.value;
-					}
-					else if (equals(category, "success"_s))
-					{
-						target->outputTextColor[CLS_Success] = color.value;
-					}
-					else if (equals(category, "warning"_s))
-					{
-						target->outputTextColor[CLS_Warning] = color.value;
-					}
-					else if (equals(category, "error"_s))
-					{
-						target->outputTextColor[CLS_Error] = color.value;
-					}
-					else
-					{
-						warn(&reader, "Unrecognized output text category '{0}'"_s, {category});
 					}
 				}
 			}
@@ -611,7 +588,12 @@ void loadUITheme(Blob data, Asset *asset)
 						console->name = style->name;
 
 						console->font = style->font;
-						copyMemory(style->outputTextColor, console->outputTextColor, CLS_COUNT);
+
+						console->outputTextColor 			= style->outputTextColor;
+						console->outputTextColorInputEcho 	= style->outputTextColorInputEcho;
+						console->outputTextColorError 		= style->outputTextColorError;
+						console->outputTextColorWarning 	= style->outputTextColorWarning;
+						console->outputTextColorSuccess 	= style->outputTextColorSuccess;
 
 						console->background = style->background;
 						console->padding = style->padding;
