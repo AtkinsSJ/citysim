@@ -1,6 +1,6 @@
 #pragma once
 
-void aboutWindowProc(WindowContext *context, void * /*userData*/)
+void aboutWindowProc(UI::WindowContext *context, void * /*userData*/)
 {
 	UIPanel *ui = &context->windowPanel;
 
@@ -24,5 +24,5 @@ void aboutWindowProc(WindowContext *context, void * /*userData*/)
 
 void showAboutWindow()
 {
-	UI::showWindow(getText("title_about"_s), 300, 200, v2i(0,0), "default"_s, WinFlag_Unique|WinFlag_Modal|WinFlag_AutomaticHeight, aboutWindowProc);
+	UI::showWindow(getText("title_about"_s), 300, 200, v2i(0,0), "default"_s, WindowFlags::Unique|WindowFlags::Modal|WindowFlags::AutomaticHeight, aboutWindowProc);
 }

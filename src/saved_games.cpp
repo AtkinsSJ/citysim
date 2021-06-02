@@ -104,7 +104,7 @@ void showLoadGameWindow()
 	catalogue->selectedSavedGameName = nullString;
 	catalogue->selectedSavedGameIndex = -1;
 
-	UI::showWindow(getText("title_load_game"_s), 780, 580, {}, "default"_s, WinFlag_Unique|WinFlag_Modal, savedGamesWindowProc);
+	UI::showWindow(getText("title_load_game"_s), 780, 580, {}, "default"_s, WindowFlags::Unique|WindowFlags::Modal, savedGamesWindowProc);
 }
 
 void showSaveGameWindow()
@@ -130,16 +130,16 @@ void showSaveGameWindow()
 		catalogue->selectedSavedGameIndex = -1;
 	}
 
-	UI::showWindow(getText("title_save_game"_s), 780, 580, {}, "default"_s, WinFlag_Unique|WinFlag_Modal, savedGamesWindowProc, (void*)true, saveGameWindowOnClose);
+	UI::showWindow(getText("title_save_game"_s), 780, 580, {}, "default"_s, WindowFlags::Unique|WindowFlags::Modal, savedGamesWindowProc, (void*)true, saveGameWindowOnClose);
 }
 
-void saveGameWindowOnClose(WindowContext * /*context*/, void * /*userData*/)
+void saveGameWindowOnClose(UI::WindowContext * /*context*/, void * /*userData*/)
 {
 	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
 	releaseInput(&catalogue->saveGameName);
 }
 
-void savedGamesWindowProc(WindowContext *context, void *userData)
+void savedGamesWindowProc(UI::WindowContext *context, void *userData)
 {
 	UIPanel *ui = &context->windowPanel;
 	SavedGamesCatalogue *catalogue = &savedGamesCatalogue;
@@ -189,7 +189,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 		ui->alignWidgets(ALIGN_RIGHT);
 		if (ui->addImageButton(getSprite("icon_delete"_s), Button_Normal, "delete"_s))
 		{
-			UI::showWindow(getText("title_delete_save"_s), 300, 300, v2i(0,0), "default"_s, WinFlag_AutomaticHeight | WinFlag_Modal | WinFlag_Unique, confirmDeleteSaveWindowProc);
+			UI::showWindow(getText("title_delete_save"_s), 300, 300, v2i(0,0), "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Modal | WindowFlags::Unique, confirmDeleteSaveWindowProc);
 		}
 
 		ui->alignWidgets(ALIGN_EXPAND_H);
@@ -252,7 +252,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 				{
 					if (showOverwriteWarning)
 					{
-						UI::showWindow(getText("title_overwrite_save"_s), 300, 300, v2i(0,0), "default"_s, WinFlag_AutomaticHeight | WinFlag_Modal | WinFlag_Unique, confirmOverwriteSaveWindowProc);
+						UI::showWindow(getText("title_overwrite_save"_s), 300, 300, v2i(0,0), "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Modal | WindowFlags::Unique, confirmOverwriteSaveWindowProc);
 					}
 					else if (saveGame(inputName))
 					{
@@ -280,7 +280,7 @@ void savedGamesWindowProc(WindowContext *context, void *userData)
 	bottomBar.end();
 }
 
-void confirmOverwriteSaveWindowProc(WindowContext *context, void * /*userData*/)
+void confirmOverwriteSaveWindowProc(UI::WindowContext *context, void * /*userData*/)
 {
 	UIPanel *ui = &context->windowPanel;
 
@@ -301,7 +301,7 @@ void confirmOverwriteSaveWindowProc(WindowContext *context, void * /*userData*/)
 	}
 }
 
-void confirmDeleteSaveWindowProc(WindowContext *context, void * /*userData*/)
+void confirmDeleteSaveWindowProc(UI::WindowContext *context, void * /*userData*/)
 {
 	UIPanel *ui = &context->windowPanel;
 

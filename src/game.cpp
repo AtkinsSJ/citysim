@@ -331,7 +331,7 @@ DragResult updateDragState(DragState *dragState, Rect2I cityBounds, V2I mouseTil
 	return result;
 }
 
-void inspectTileWindowProc(WindowContext *context, void *userData)
+void inspectTileWindowProc(UI::WindowContext *context, void *userData)
 {
 	DEBUG_FUNCTION();
 
@@ -416,7 +416,7 @@ void inspectTileWindowProc(WindowContext *context, void *userData)
 	drawSingleRect(&renderer->worldOverlayBuffer, rectXYWHi(tilePos.x, tilePos.y, 1, 1), renderer->shaderIds.untextured, tileHighlightColor);
 }
 
-void pauseMenuWindowProc(WindowContext *context, void * /*userData*/)
+void pauseMenuWindowProc(UI::WindowContext *context, void * /*userData*/)
 {
 	DEBUG_FUNCTION();
 	UIPanel *ui = &context->windowPanel;
@@ -556,7 +556,7 @@ void updateAndRenderGameUI(GameState *gameState)
 		if (UI::putTextButton(menuButtonText, buttonRect, buttonStyle))
 		{
 			UI::showWindow(getText("title_menu"_s), 200, 200, v2i(0,0), "default"_s,
-					   WinFlag_Unique | WinFlag_Modal | WinFlag_AutomaticHeight | WinFlag_Pause,
+					   WindowFlags::Unique | WindowFlags::Modal | WindowFlags::AutomaticHeight | WindowFlags::Pause,
 					   pauseMenuWindowProc);
 		}
 		buttonRect.x += buttonRect.w + uiPadding;
@@ -660,7 +660,7 @@ void updateAndRenderGameUI(GameState *gameState)
 	drawDataViewUI(gameState);
 }
 
-void costTooltipWindowProc(WindowContext *context, void *userData)
+void costTooltipWindowProc(UI::WindowContext *context, void *userData)
 {
 	s32 buildCost = truncate32((smm)userData);
 	City *city = &globalAppState.gameState->city;
@@ -680,7 +680,7 @@ void showCostTooltip(s32 buildCost)
 	UI::showTooltip(costTooltipWindowProc, (void*)(smm)buildCost);
 }
 
-void debugToolsWindowProc(WindowContext *context, void *userData)
+void debugToolsWindowProc(UI::WindowContext *context, void *userData)
 {
 	GameState *gameState = (GameState *)userData;
 	UIPanel *ui = &context->windowPanel;
@@ -987,7 +987,7 @@ AppStatus updateAndRenderGame(GameState *gameState, f32 deltaTime)
 					{
 						gameState->inspectedTilePosition = mouseTilePos;
 						V2I windowPos = v2i(renderer->uiCamera.mousePos) + v2i(16, 16);
-						UI::showWindow("Inspect tile"_s, 250, 200, windowPos, "default"_s, WinFlag_AutomaticHeight | WinFlag_Unique, inspectTileWindowProc, gameState);
+						UI::showWindow("Inspect tile"_s, 250, 200, windowPos, "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Unique, inspectTileWindowProc, gameState);
 					}
 				}
 			} break;

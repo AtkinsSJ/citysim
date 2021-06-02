@@ -163,7 +163,7 @@ void setHighlightedBuildings(DataViewUI *dataViewUI, ChunkedArray<BuildingRef> *
 void setTileOverlay(DataViewUI *dataViewUI, u8 **tileData, String paletteName);
 void setTileOverlayCallback(DataViewUI *dataViewUI, u8 (*calculateTileValue)(City *city, s32 x, s32 y), String paletteName);
 
-void inspectTileWindowProc(WindowContext *context, void *userData);
-void pauseMenuWindowProc(WindowContext *context, void *userData);
-void costTooltipWindowProc(WindowContext *context, void *userData);
-void debugToolsWindowProc(WindowContext *context, void *userData);
+void inspectTileWindowProc(UI::WindowContext *context, void *userData);
+void pauseMenuWindowProc(UI::WindowContext *context, void *userData);
+void costTooltipWindowProc(UI::WindowContext *context, void *userData);
+void debugToolsWindowProc(UI::WindowContext *context, void *userData);

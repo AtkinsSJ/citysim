@@ -16,10 +16,7 @@ struct RenderBuffer;
 struct BitmapFont;
 struct Sprite;
 struct TextInput;
-struct Window;
-
 struct UIPanel;
-struct WindowContext;
 
 namespace UI
 {
@@ -33,6 +30,9 @@ namespace UI
 	struct ScrollbarStyle;
 	struct SliderStyle;
 	struct TextInputStyle;
+
+	struct Window;
+	struct WindowContext;
 
 	struct ScrollbarState
 	{
@@ -56,7 +56,7 @@ namespace UI
 		char _chars[MAX_TOAST_LENGTH];
 	};
 
-	typedef void (*WindowProc)(WindowContext*, void*);
+	typedef void (*WindowProc)(UI::WindowContext*, void*);
 
 	struct UIState
 	{
@@ -92,7 +92,7 @@ namespace UI
 		Set<s32> windowsToMakeActive;
 		bool isDraggingWindow;
 		V2I windowDragWindowStartPos;
-		bool isAPauseWindowOpen; // Do any open windows have the WinFlag_Pause flag?
+		bool isAPauseWindowOpen; // Do any open windows have the WindowFlags::Pause flag?
 	};
 	UIState uiState;
 
@@ -203,5 +203,5 @@ namespace UI
 	// Tooltip
 	void showTooltip(String text);
 	void showTooltip(WindowProc tooltipProc, void *userData = null);
-	void basicTooltipWindowProc(WindowContext *context, void *userData);
+	void basicTooltipWindowProc(UI::WindowContext *context, void *userData);
 }

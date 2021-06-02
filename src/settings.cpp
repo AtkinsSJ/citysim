@@ -299,10 +299,10 @@ void showSettingsWindow()
 {
 	settings->workingState = settings->settings;
 
-	UI::showWindow(getText("title_settings"_s), 480, 200, v2i(0,0), "default"_s, WinFlag_Unique|WinFlag_AutomaticHeight|WinFlag_Modal, settingsWindowProc);
+	UI::showWindow(getText("title_settings"_s), 480, 200, v2i(0,0), "default"_s, WindowFlags::Unique|WindowFlags::AutomaticHeight|WindowFlags::Modal, settingsWindowProc);
 }
 
-void settingsWindowProc(WindowContext *context, void*)
+void settingsWindowProc(UI::WindowContext *context, void*)
 {
 	UIPanel *ui = &context->windowPanel;
 

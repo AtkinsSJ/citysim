@@ -55,7 +55,7 @@ void showSaveGameWindow();
 void showLoadGameWindow();
 
 // Internal
-void savedGamesWindowProc(WindowContext *context, void *userData);
-void confirmOverwriteSaveWindowProc(WindowContext *context, void *userData);
-void confirmDeleteSaveWindowProc(WindowContext *context, void *userData);
-void saveGameWindowOnClose(WindowContext *context, void *userData);
+void savedGamesWindowProc(UI::WindowContext *context, void *userData);
+void confirmOverwriteSaveWindowProc(UI::WindowContext *context, void *userData);
+void confirmDeleteSaveWindowProc(UI::WindowContext *context, void *userData);
+void saveGameWindowOnClose(UI::WindowContext *context, void *userData);

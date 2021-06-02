@@ -1031,10 +1031,10 @@ namespace UI
 	void showTooltip(WindowProc tooltipProc, void *userData)
 	{
 		static String styleName = "tooltip"_s;
-		showWindow(nullString, 300, 100, v2i(0,0), styleName, WinFlag_AutomaticHeight | WinFlag_ShrinkWidth | WinFlag_Unique | WinFlag_Tooltip | WinFlag_Headless, tooltipProc, userData);
+		showWindow(nullString, 300, 100, v2i(0,0), styleName, WindowFlags::AutomaticHeight | WindowFlags::ShrinkWidth | WindowFlags::Unique | WindowFlags::Tooltip | WindowFlags::Headless, tooltipProc, userData);
 	}
 
-	void basicTooltipWindowProc(WindowContext *context, void * /*userData*/)
+	void basicTooltipWindowProc(UI::WindowContext *context, void * /*userData*/)
 	{
 		UIPanel *ui = &context->windowPanel;
 		ui->addText(uiState.tooltipText);

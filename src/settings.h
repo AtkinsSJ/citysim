@@ -207,7 +207,7 @@ String getLocale();
 
 // Menu
 void showSettingsWindow();
-void settingsWindowProc(WindowContext*, void*);
+void settingsWindowProc(UI::WindowContext*, void*);
 
 //
 // INTERNAL

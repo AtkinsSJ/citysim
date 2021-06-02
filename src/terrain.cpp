@@ -523,10 +523,10 @@ void remapTerrainTypes(City *city)
 
 void showTerrainWindow()
 {
-	UI::showWindow(getText("title_terrain"_s), 300, 200, v2i(0,0), "default"_s, WinFlag_Unique|WinFlag_AutomaticHeight, modifyTerrainWindowProc);
+	UI::showWindow(getText("title_terrain"_s), 300, 200, v2i(0,0), "default"_s, WindowFlags::Unique|WindowFlags::AutomaticHeight, modifyTerrainWindowProc);
 }
 
-void modifyTerrainWindowProc(WindowContext *context, void *)
+void modifyTerrainWindowProc(UI::WindowContext *context, void *)
 {
 	UIPanel *ui = &context->windowPanel;
 	GameState *gameState = globalAppState.gameState;

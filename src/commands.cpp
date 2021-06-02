@@ -23,7 +23,7 @@ ConsoleCommand(debug_tools)
 	// @Hack: This sets the position to outside the camera, and then relies on it automatically snapping back into bounds
 	V2I windowPos = v2i(renderer->uiCamera.pos + renderer->uiCamera.size);
 
-	UI::showWindow("Debug Tools"_s, 250, 200, windowPos, "default"_s, WinFlag_AutomaticHeight | WinFlag_Unique, debugToolsWindowProc, gameState);
+	UI::showWindow("Debug Tools"_s, 250, 200, windowPos, "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Unique, debugToolsWindowProc, gameState);
 }
 
 ConsoleCommand(exit)
