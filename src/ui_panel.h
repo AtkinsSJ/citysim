@@ -37,8 +37,8 @@ struct UIPanel
 		: UIPanel(bounds, findStyle<UI::PanelStyle>(styleName), flags, renderBuffer) {}
 
 	// Configuration functions, which should be called before adding any widgets
-	void enableHorizontalScrolling(ScrollbarState *hScrollbar);
-	void enableVerticalScrolling(ScrollbarState *vScrollbar, bool expandWidth=false);
+	void enableHorizontalScrolling(UI::ScrollbarState *hScrollbar);
+	void enableVerticalScrolling(UI::ScrollbarState *vScrollbar, bool expandWidth=false);
 
 	// Add stuff to the panel
 	bool addTextButton(String text, ButtonState state = Button_Normal, String styleName = nullString);
@@ -91,9 +91,9 @@ struct UIPanel
 	Rect2I contentArea;
 	u32 widgetAlignment;
 
-	ScrollbarState *hScrollbar;
+	UI::ScrollbarState *hScrollbar;
 	Rect2I hScrollbarBounds;
-	ScrollbarState *vScrollbar;
+	UI::ScrollbarState *vScrollbar;
 	Rect2I vScrollbarBounds;
 
 	// Relative to contentArea

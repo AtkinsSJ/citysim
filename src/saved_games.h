@@ -38,7 +38,7 @@ struct SavedGamesCatalogue
 	s32 selectedSavedGameIndex;
 	TextInput saveGameName;
 
-	ScrollbarState savedGamesListScrollbar;
+	UI::ScrollbarState savedGamesListScrollbar;
 };
 
 SavedGamesCatalogue savedGamesCatalogue;

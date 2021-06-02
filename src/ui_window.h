@@ -39,9 +39,9 @@ struct Window
 	Rect2I area;
 	String styleName;
 
-	WindowProc windowProc;
+	UI::WindowProc windowProc;
 	void *userData;
-	WindowProc onClose;
+	UI::WindowProc onClose;
 
 	// Only used temporarily within updateAndRenderWindows()!
 	// In user code, use WindowContext::renderBuffer instead

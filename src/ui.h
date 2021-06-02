@@ -1,28 +1,6 @@
 #pragma once
 // ui.h
 
-const f32 TOAST_APPEAR_TIME    = 0.2f;
-const f32 TOAST_DISPLAY_TIME   = 2.0f;
-const f32 TOAST_DISAPPEAR_TIME = 0.2f;
-const s32 MAX_TOAST_LENGTH = 1024;
-struct Toast
-{
-	f32 duration;
-	f32 time; // In seconds, from 0 to duration
-
-	String text;
-	char _chars[MAX_TOAST_LENGTH];
-};
-
-struct ScrollbarState
-{
-	Orientation orientation;
-	s32 contentSize;
-	f32 scrollPercent;
-
-	s32 mouseWheelStepSize;
-};
-
 enum ButtonState
 {
 	Button_Normal,
@@ -34,12 +12,6 @@ inline ButtonState buttonIsActive(bool isActive)
 	return isActive ? Button_Active : Button_Normal;
 }
 
-struct WidgetMouseState
-{
-	bool isHovered;
-	bool isPressed;
-};
-
 struct RenderBuffer;
 struct BitmapFont;
 struct Sprite;
@@ -48,8 +20,6 @@ struct Window;
 
 struct UIPanel;
 struct WindowContext;
-
-typedef void (*WindowProc)(WindowContext*, void*);
 
 namespace UI
 {
@@ -63,6 +33,30 @@ namespace UI
 	struct ScrollbarStyle;
 	struct SliderStyle;
 	struct TextInputStyle;
+
+	struct ScrollbarState
+	{
+		Orientation orientation;
+		s32 contentSize;
+		f32 scrollPercent;
+
+		s32 mouseWheelStepSize;
+	};
+
+	const f32 TOAST_APPEAR_TIME    = 0.2f;
+	const f32 TOAST_DISPLAY_TIME   = 2.0f;
+	const f32 TOAST_DISAPPEAR_TIME = 0.2f;
+	const s32 MAX_TOAST_LENGTH = 1024;
+	struct Toast
+	{
+		f32 duration;
+		f32 time; // In seconds, from 0 to duration
+
+		String text;
+		char _chars[MAX_TOAST_LENGTH];
+	};
+
+	typedef void (*WindowProc)(WindowContext*, void*);
 
 	struct UIState
 	{
@@ -121,6 +115,11 @@ namespace UI
 	bool isMouseInUIBounds(Rect2I bounds, V2I mousePos);
 	bool justClickedOnUI(Rect2I bounds);
 
+	struct WidgetMouseState
+	{
+		bool isHovered;
+		bool isPressed;
+	};
 	WidgetMouseState getWidgetMouseState(Rect2I bounds);
 
 	// Dragging!

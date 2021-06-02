@@ -46,7 +46,7 @@ UIPanel::UIPanel(Rect2I bounds, UI::PanelStyle *panelStyle, u32 flags, RenderBuf
 	this->background = UI::Drawable(&this->style->background);
 }
 
-void UIPanel::enableHorizontalScrolling(ScrollbarState *scrollbarState)
+void UIPanel::enableHorizontalScrolling(UI::ScrollbarState *scrollbarState)
 {
 	UI::ScrollbarStyle *scrollbarStyle = findStyle<UI::ScrollbarStyle>(&style->scrollbarStyle);
 	ASSERT(scrollbarStyle != null);
@@ -58,7 +58,7 @@ void UIPanel::enableHorizontalScrolling(ScrollbarState *scrollbarState)
 	updateLayoutPosition();
 }
 
-void UIPanel::enableVerticalScrolling(ScrollbarState *scrollbarState, bool expandWidth)
+void UIPanel::enableVerticalScrolling(UI::ScrollbarState *scrollbarState, bool expandWidth)
 {
 	UI::ScrollbarStyle *scrollbarStyle = findStyle<UI::ScrollbarStyle>(&style->scrollbarStyle);
 	ASSERT(scrollbarStyle != null);

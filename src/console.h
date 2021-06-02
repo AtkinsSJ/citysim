@@ -46,7 +46,7 @@ struct Console
 	s32 inputHistoryCursor;
 
 	ChunkedArray<ConsoleOutputLine> outputLines;
-	ScrollbarState scrollbar;
+	UI::ScrollbarState scrollbar;
 
 	HashTable<Command> commands;
 	ChunkedArray<CommandShortcut> commandShortcuts;
