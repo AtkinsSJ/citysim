@@ -15,7 +15,6 @@ inline ButtonState buttonIsActive(bool isActive)
 struct RenderBuffer;
 struct BitmapFont;
 struct Sprite;
-struct TextInput;
 
 namespace UI
 {
@@ -30,6 +29,7 @@ namespace UI
 	struct SliderStyle;
 	struct TextInputStyle;
 
+	struct TextInput;
 	struct Panel;
 	struct Window;
 	struct WindowContext;

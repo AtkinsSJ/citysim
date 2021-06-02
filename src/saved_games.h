@@ -36,7 +36,7 @@ struct SavedGamesCatalogue
 	// Fields used by the save/load windows
 	String selectedSavedGameName; // (shortName)
 	s32 selectedSavedGameIndex;
-	TextInput saveGameName;
+	UI::TextInput saveGameName;
 
 	UI::ScrollbarState savedGamesListScrollbar;
 };

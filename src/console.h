@@ -41,7 +41,7 @@ struct Console
 	f32 maximisedHeight; // % of screen height
 	f32 openSpeed; // % per second
 
-	TextInput input;
+	UI::TextInput input;
 	ChunkedArray<String> inputHistory;
 	s32 inputHistoryCursor;
 

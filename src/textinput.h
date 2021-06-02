@@ -1,6 +1,6 @@
 #pragma once
 
-struct TextInput
+namespace UI
 {
 	struct TextInputPos
 	{
@@ -8,47 +8,48 @@ struct TextInput
 		s32 glyphPos;
 	};
 
-	char *buffer;
+	struct TextInput
+	{
 
-	s32 byteLength;
-	s32 glyphLength;
+		char *buffer;
 
-	s32 maxByteLength;
+		s32 byteLength;
+		s32 glyphLength;
 
-	TextInputPos caret;
-	f32 caretFlashCounter;
+		s32 maxByteLength;
 
-	String characterBlacklist;
+		TextInputPos caret;
+		f32 caretFlashCounter;
 
-// Methods
-	bool isEmpty();
+		String characterBlacklist;
 
-	String getLastWord();
-	String toString();
+	// Methods
+		bool isEmpty();
 
-	void moveCaretLeft(s32 count);
-	void moveCaretRight(s32 count);
-	void moveCaretLeftWholeWord();
-	void moveCaretRightWholeWord();
+		String getLastWord();
+		String toString();
 
-	void append(char *source, s32 length);
-	void append(String source);
-	void insert(String source);
-	void insert(char c);
+		void moveCaretLeft(s32 count);
+		void moveCaretRight(s32 count);
+		void moveCaretLeftWholeWord();
+		void moveCaretRightWholeWord();
 
-	void clear();
-	void backspaceChars(s32 count);
-	void deleteChars(s32 count);
-	void backspaceWholeWord();
-	void deleteWholeWord();
+		void append(char *source, s32 length);
+		void append(String source);
+		void insert(String source);
+		void insert(char c);
 
-// Internal
-	TextInputPos findStartOfWordLeft();
-	TextInputPos findStartOfWordRight();
-};
+		void clear();
+		void backspaceChars(s32 count);
+		void deleteChars(s32 count);
+		void backspaceWholeWord();
+		void deleteWholeWord();
 
-namespace UI
-{
+	// Internal
+		TextInputPos findStartOfWordLeft();
+		TextInputPos findStartOfWordRight();
+	};
+
 	TextInput newTextInput(MemoryArena *arena, s32 length, String characterBlacklist = "`"_s);
 	// Returns true if pressed RETURN
 	bool updateTextInput(TextInput *textInput);
