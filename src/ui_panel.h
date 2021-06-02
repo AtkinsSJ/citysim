@@ -32,9 +32,9 @@ enum UIPanelFlags
 
 struct UIPanel
 {
-	UIPanel(Rect2I bounds, UIPanelStyle *style = null, u32 flags = 0, RenderBuffer *renderBuffer = &renderer->uiBuffer);
+	UIPanel(Rect2I bounds, UI::PanelStyle *style = null, u32 flags = 0, RenderBuffer *renderBuffer = &renderer->uiBuffer);
 	UIPanel(Rect2I bounds, String styleName, u32 flags = 0, RenderBuffer *renderBuffer = &renderer->uiBuffer)
-		: UIPanel(bounds, findStyle<UIPanelStyle>(styleName), flags, renderBuffer) {}
+		: UIPanel(bounds, findStyle<UI::PanelStyle>(styleName), flags, renderBuffer) {}
 
 	// Configuration functions, which should be called before adding any widgets
 	void enableHorizontalScrolling(ScrollbarState *hScrollbar);
@@ -71,7 +71,7 @@ struct UIPanel
 	void prepareForWidgets();
 	Rect2I getCurrentLayoutPosition();
 	void completeWidget(V2I widgetSize);
-	UIPanelStyle *getPanelStyle(String styleName);
+	UI::PanelStyle *getPanelStyle(String styleName);
 
 	// Call after modifying the contentArea. Updates the positions fields to match.
 	void updateLayoutPosition();
@@ -106,6 +106,6 @@ struct UIPanel
 	s32 largestItemHeightOnLine;
 	s32 largestLineWidth;
 
-	UIPanelStyle *style;
-	UIDrawable background;
+	UI::PanelStyle *style;
+	UI::Drawable background;
 };

@@ -7,7 +7,7 @@ AppStatus updateAndRenderCredits(f32 /*deltaTime*/)
 	V2I position = v2i(UI::windowSize.x / 2, 157);
 	s32 maxLabelWidth = UI::windowSize.x - 256;
 
-	UILabelStyle *labelStyle = findStyle<UILabelStyle>("title"_s);
+	UI::LabelStyle *labelStyle = findStyle<UI::LabelStyle>("title"_s);
 	BitmapFont *font = getFont(&labelStyle->font);
 
 	Asset *creditsText = getAsset(AssetType_Misc, "credits.txt"_s);
@@ -19,7 +19,7 @@ AppStatus updateAndRenderCredits(f32 /*deltaTime*/)
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 	}
 
-	UIButtonStyle *style = findStyle<UIButtonStyle>("default"_s);
+	UI::ButtonStyle *style = findStyle<UI::ButtonStyle>("default"_s);
 	s32 uiBorderPadding = 8;
 	String backText = getText("button_back"_s);
 	V2I backSize = UI::calculateButtonSize(backText, style);

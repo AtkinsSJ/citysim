@@ -9,7 +9,7 @@ AppStatus updateAndRenderMainMenu(f32 /*deltaTime*/)
 	V2I position = v2i(renderer->windowWidth / 2, 157);
 	s32 maxLabelWidth = renderer->windowWidth - 256;
 
-	UILabelStyle *labelStyle = findStyle<UILabelStyle>("title"_s);
+	UI::LabelStyle *labelStyle = findStyle<UI::LabelStyle>("title"_s);
 	BitmapFont *font = getFont(&labelStyle->font);
 
 	position.y += (UI::drawText(&renderer->uiBuffer, font, getText("game_title"_s),
@@ -18,7 +18,7 @@ AppStatus updateAndRenderMainMenu(f32 /*deltaTime*/)
 	position.y += (UI::drawText(&renderer->uiBuffer, font, getText("game_subtitle"_s),
 			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
 
-	UIButtonStyle *style = findStyle<UIButtonStyle>("default"_s);
+	UI::ButtonStyle *style = findStyle<UI::ButtonStyle>("default"_s);
 
 	s32 buttonPadding = 8;
 

@@ -46,23 +46,24 @@ struct Sprite;
 struct TextInput;
 struct Window;
 
-// Annoyingly, we have to predeclare all the style types. Yay for C++
-// (I tried rearranging our includes, it got messy fast.)
-// I guess the alternative is switching to an individual-files build. Might be a good idea.
-struct UIButtonStyle;
-struct UICheckboxStyle;
-struct UIDropDownListStyle;
 struct UIPanel;
-struct UIPanelStyle;
-struct UIScrollbarStyle;
-struct UISliderStyle;
-struct UITextInputStyle;
 struct WindowContext;
 
 typedef void (*WindowProc)(WindowContext*, void*);
 
 namespace UI
 {
+	// Annoyingly, we have to predeclare all the style types. Yay for C++
+	// (I tried rearranging our includes, it got messy fast.)
+	// I guess the alternative is switching to an individual-files build. Might be a good idea.
+	struct ButtonStyle;
+	struct CheckboxStyle;
+	struct DropDownListStyle;
+	struct PanelStyle;
+	struct ScrollbarStyle;
+	struct SliderStyle;
+	struct TextInputStyle;
+
 	struct UIState
 	{
 
@@ -152,22 +153,22 @@ namespace UI
 	Rect2I drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2I origin, u32 align, V4 color, s32 maxWidth = 0);
 
 	// Buttons
-	V2I calculateButtonSize(String text, UIButtonStyle *buttonStyle, s32 maxWidth = 0, bool fillWidth = true);
-	V2I calculateButtonSize(V2I contentSize, UIButtonStyle *buttonStyle, s32 maxWidth = 0, bool fillWidth = true);
-	Rect2I calculateButtonContentBounds(Rect2I bounds, UIButtonStyle *style);
-	bool putButton(Rect2I bounds, UIButtonStyle *style, ButtonState state = Button_Normal, RenderBuffer *renderBuffer = null, String tooltip = nullString);
-	bool putTextButton(String text, Rect2I bounds, UIButtonStyle *style, ButtonState state = Button_Normal, RenderBuffer *renderBuffer = null, String tooltip=nullString);
-	bool putImageButton(Sprite *sprite, Rect2I bounds, UIButtonStyle *style, ButtonState state = Button_Normal, RenderBuffer *renderBuffer = null, String tooltip=nullString);
+	V2I calculateButtonSize(String text, ButtonStyle *buttonStyle, s32 maxWidth = 0, bool fillWidth = true);
+	V2I calculateButtonSize(V2I contentSize, ButtonStyle *buttonStyle, s32 maxWidth = 0, bool fillWidth = true);
+	Rect2I calculateButtonContentBounds(Rect2I bounds, ButtonStyle *style);
+	bool putButton(Rect2I bounds, ButtonStyle *style, ButtonState state = Button_Normal, RenderBuffer *renderBuffer = null, String tooltip = nullString);
+	bool putTextButton(String text, Rect2I bounds, ButtonStyle *style, ButtonState state = Button_Normal, RenderBuffer *renderBuffer = null, String tooltip=nullString);
+	bool putImageButton(Sprite *sprite, Rect2I bounds, ButtonStyle *style, ButtonState state = Button_Normal, RenderBuffer *renderBuffer = null, String tooltip=nullString);
 
 	// Checkboxes
-	V2I calculateCheckboxSize(UICheckboxStyle *style);
-	void putCheckbox(bool *checked, Rect2I bounds, UICheckboxStyle *style, bool isDisabled = false, RenderBuffer *renderBuffer = null);
+	V2I calculateCheckboxSize(CheckboxStyle *style);
+	void putCheckbox(bool *checked, Rect2I bounds, CheckboxStyle *style, bool isDisabled = false, RenderBuffer *renderBuffer = null);
 
 	// Drop-down lists
 	template <typename T>
-	V2I calculateDropDownListSize(Array<T> *listOptions, String (*getDisplayName)(T *data), UIDropDownListStyle *style, s32 maxWidth = 0, bool fillWidth = true);
+	V2I calculateDropDownListSize(Array<T> *listOptions, String (*getDisplayName)(T *data), DropDownListStyle *style, s32 maxWidth = 0, bool fillWidth = true);
 	template <typename T>
-	void putDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*getDisplayName)(T *data), Rect2I bounds, UIDropDownListStyle *style, RenderBuffer *renderBuffer = null);
+	void putDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*getDisplayName)(T *data), Rect2I bounds, DropDownListStyle *style, RenderBuffer *renderBuffer = null);
 	void openDropDownList(void *pointer);
 	void closeDropDownList();
 	bool isDropDownListOpen(void *pointer);
@@ -182,18 +183,18 @@ namespace UI
 	// Scrollbars
 	void initScrollbar(ScrollbarState *state, Orientation orientation, s32 mouseWheelStepSize = 64);
 	// NB: When the viewport is larger than the content, there's no thumb rect so nothing is returned
-	Maybe<Rect2I> getScrollbarThumbBounds(ScrollbarState *state, Rect2I scrollbarBounds, UIScrollbarStyle *style);
-	void putScrollbar(ScrollbarState *state, s32 contentSize, Rect2I bounds, UIScrollbarStyle *style = null, bool isDisabled = false, RenderBuffer *renderBuffer = null);
+	Maybe<Rect2I> getScrollbarThumbBounds(ScrollbarState *state, Rect2I scrollbarBounds, ScrollbarStyle *style);
+	void putScrollbar(ScrollbarState *state, s32 contentSize, Rect2I bounds, ScrollbarStyle *style = null, bool isDisabled = false, RenderBuffer *renderBuffer = null);
 	s32 getScrollbarContentOffset(ScrollbarState *state, s32 scrollbarSize);
 
 	// Sliders
 	// NB: fillSpace only applies to the "length" of the slider, not its "thickness"
-	V2I calculateSliderSize(Orientation orientation, UISliderStyle *style = null, V2I availableSpace = {}, bool fillSpace = false);
-	void putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Orientation orientation, Rect2I bounds, UISliderStyle *style = null, bool isDisabled = false, RenderBuffer *renderBuffer = null, bool snapToWholeNumbers = false);
-	void putSlider(s32 *currentValue, s32 minValue, s32 maxValue, Orientation orientation, Rect2I bounds, UISliderStyle *style = null, bool isDisabled = false, RenderBuffer *renderBuffer = null);
+	V2I calculateSliderSize(Orientation orientation, SliderStyle *style = null, V2I availableSpace = {}, bool fillSpace = false);
+	void putSlider(f32 *currentValue, f32 minValue, f32 maxValue, Orientation orientation, Rect2I bounds, SliderStyle *style = null, bool isDisabled = false, RenderBuffer *renderBuffer = null, bool snapToWholeNumbers = false);
+	void putSlider(s32 *currentValue, s32 minValue, s32 maxValue, Orientation orientation, Rect2I bounds, SliderStyle *style = null, bool isDisabled = false, RenderBuffer *renderBuffer = null);
 
 	// TextInputs
-	bool putTextInput(TextInput *textInput, Rect2I bounds, UITextInputStyle *style, RenderBuffer *renderBuffer = null);
+	bool putTextInput(TextInput *textInput, Rect2I bounds, TextInputStyle *style, RenderBuffer *renderBuffer = null);
 
 	// Toasts
 	// NB: `message` is copied into the UIState, so it can be a temporary allocation

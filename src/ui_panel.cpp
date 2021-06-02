@@ -1,12 +1,12 @@
 #pragma once
 
-UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, u32 flags, RenderBuffer *renderBuffer)
+UIPanel::UIPanel(Rect2I bounds, UI::PanelStyle *panelStyle, u32 flags, RenderBuffer *renderBuffer)
 {
 	DEBUG_FUNCTION_T(DCDT_UI);
 
 	if (panelStyle == null)
 	{
-		this->style = findStyle<UIPanelStyle>("default"_s);
+		this->style = findStyle<UI::PanelStyle>("default"_s);
 	}
 	else
 	{
@@ -43,12 +43,12 @@ UIPanel::UIPanel(Rect2I bounds, UIPanelStyle *panelStyle, u32 flags, RenderBuffe
 	this->largestItemHeightOnLine = 0;
 	this->largestLineWidth = 0;
 
-	this->background = UIDrawable(&this->style->background);
+	this->background = UI::Drawable(&this->style->background);
 }
 
 void UIPanel::enableHorizontalScrolling(ScrollbarState *scrollbarState)
 {
-	UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&style->scrollbarStyle);
+	UI::ScrollbarStyle *scrollbarStyle = findStyle<UI::ScrollbarStyle>(&style->scrollbarStyle);
 	ASSERT(scrollbarStyle != null);
 
 	this->hScrollbar = scrollbarState;
@@ -60,7 +60,7 @@ void UIPanel::enableHorizontalScrolling(ScrollbarState *scrollbarState)
 
 void UIPanel::enableVerticalScrolling(ScrollbarState *scrollbarState, bool expandWidth)
 {
-	UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&style->scrollbarStyle);
+	UI::ScrollbarStyle *scrollbarStyle = findStyle<UI::ScrollbarStyle>(&style->scrollbarStyle);
 	ASSERT(scrollbarStyle != null);
 
 	this->vScrollbar = scrollbarState;
@@ -86,7 +86,7 @@ bool UIPanel::addTextButton(String text, ButtonState state, String styleName)
 	
 	prepareForWidgets();
 
-	UIButtonStyle *buttonStyle = findStyle<UIButtonStyle>(styleName, &this->style->buttonStyle);
+	UI::ButtonStyle *buttonStyle = findStyle<UI::ButtonStyle>(styleName, &this->style->buttonStyle);
 
 	Rect2I space = getCurrentLayoutPosition();
 	V2I buttonOrigin = alignWithinRectangle(space, widgetAlignment);
@@ -113,7 +113,7 @@ bool UIPanel::addImageButton(Sprite *sprite, ButtonState state, String styleName
 	
 	prepareForWidgets();
 
-	UIButtonStyle *buttonStyle = findStyle<UIButtonStyle>(styleName, &this->style->buttonStyle);
+	UI::ButtonStyle *buttonStyle = findStyle<UI::ButtonStyle>(styleName, &this->style->buttonStyle);
 
 	Rect2I space = getCurrentLayoutPosition();
 	V2I buttonOrigin = alignWithinRectangle(space, widgetAlignment);
@@ -141,7 +141,7 @@ void UIPanel::addCheckbox(bool *checked, String styleName)
 
 	prepareForWidgets();
 
-	UICheckboxStyle *checkboxStyle = findStyle<UICheckboxStyle>(styleName, &style->checkboxStyle);
+	UI::CheckboxStyle *checkboxStyle = findStyle<UI::CheckboxStyle>(styleName, &style->checkboxStyle);
 
 	Rect2I space = getCurrentLayoutPosition();
 	V2I checkboxOrigin = alignWithinRectangle(space, widgetAlignment);
@@ -163,7 +163,7 @@ void UIPanel::addDropDownList(Array<T> *listOptions, s32 *currentSelection, Stri
 
 	prepareForWidgets();
 
-	UIDropDownListStyle *widgetStyle = findStyle<UIDropDownListStyle>(styleName, &style->dropDownListStyle);
+	UI::DropDownListStyle *widgetStyle = findStyle<UI::DropDownListStyle>(styleName, &style->dropDownListStyle);
 
 	Rect2I space = getCurrentLayoutPosition();
 	V2I widgetOrigin = alignWithinRectangle(space, widgetAlignment);
@@ -187,7 +187,7 @@ void UIPanel::addSlider(T *currentValue, T minValue, T maxValue, String styleNam
 
 	prepareForWidgets();
 
-	UISliderStyle *widgetStyle = findStyle<UISliderStyle>(styleName, &style->sliderStyle);
+	UI::SliderStyle *widgetStyle = findStyle<UI::SliderStyle>(styleName, &style->sliderStyle);
 
 	Rect2I space = getCurrentLayoutPosition();
 	V2I widgetOrigin = alignWithinRectangle(space, widgetAlignment);
@@ -235,7 +235,7 @@ void UIPanel::addText(String text, String styleName)
 	
 	prepareForWidgets();
 
-	UILabelStyle *labelStyle = findStyle<UILabelStyle>(styleName, &this->style->labelStyle);
+	UI::LabelStyle *labelStyle = findStyle<UI::LabelStyle>(styleName, &this->style->labelStyle);
 
 	Rect2I space = getCurrentLayoutPosition();
 	V2I origin = alignWithinRectangle(space, this->widgetAlignment);
@@ -262,7 +262,7 @@ bool UIPanel::addTextInput(TextInput *textInput, String styleName)
 	
 	prepareForWidgets();
 
-	UITextInputStyle *textInputStyle = findStyle<UITextInputStyle>(styleName, &this->style->textInputStyle);
+	UI::TextInputStyle *textInputStyle = findStyle<UI::TextInputStyle>(styleName, &this->style->textInputStyle);
 
 	Rect2I space = getCurrentLayoutPosition();
 	V2I origin = alignWithinRectangle(space, this->widgetAlignment);
@@ -343,7 +343,7 @@ UIPanel UIPanel::row(s32 height, Alignment vAlignment, String styleName)
 
 	startNewLine();
 
-	UIPanelStyle *rowStyle = getPanelStyle(styleName);
+	UI::PanelStyle *rowStyle = getPanelStyle(styleName);
 
 	if (vAlignment == ALIGN_TOP)
 	{
@@ -397,7 +397,7 @@ UIPanel UIPanel::column(s32 width, Alignment hAlignment, String styleName)
 
 	startNewLine();
 
-	UIPanelStyle *columnStyle = getPanelStyle(styleName);
+	UI::PanelStyle *columnStyle = getPanelStyle(styleName);
 
 	if (hAlignment == ALIGN_LEFT)
 	{
@@ -518,7 +518,7 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 	// Handle scrollbars
 	if (hScrollbar)
 	{
-		UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&style->scrollbarStyle);
+		UI::ScrollbarStyle *scrollbarStyle = findStyle<UI::ScrollbarStyle>(&style->scrollbarStyle);
 
 		if (!hideWidgets)
 		{
@@ -528,7 +528,7 @@ void UIPanel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 
 	if (vScrollbar)
 	{
-		UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&style->scrollbarStyle);
+		UI::ScrollbarStyle *scrollbarStyle = findStyle<UI::ScrollbarStyle>(&style->scrollbarStyle);
 
 		if (!hideWidgets)
 		{
@@ -658,10 +658,10 @@ void UIPanel::completeWidget(V2I widgetSize)
 	}
 }
 
-inline UIPanelStyle *UIPanel::getPanelStyle(String styleName)
+inline UI::PanelStyle *UIPanel::getPanelStyle(String styleName)
 {
-	UIPanelStyle *result = null;
-	if (!isEmpty(styleName)) result = findStyle<UIPanelStyle>(styleName);
+	UI::PanelStyle *result = null;
+	if (!isEmpty(styleName)) result = findStyle<UI::PanelStyle>(styleName);
 	if (result == null)      result = this->style;
 
 	return result;

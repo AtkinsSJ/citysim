@@ -199,9 +199,9 @@ void updateAndRenderConsole(Console *console)
 		s32 actualConsoleHeight = floor_s32(console->currentHeight * (f32)UI::windowSize.y);
 		s32 screenWidth = renderer->windowWidth;
 
-		UIConsoleStyle *consoleStyle = findStyle<UIConsoleStyle>(&console->style);
-		UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&consoleStyle->scrollbarStyle);
-		UITextInputStyle *textInputStyle = findStyle<UITextInputStyle>(&consoleStyle->textInputStyle);
+		UI::ConsoleStyle *consoleStyle = findStyle<UI::ConsoleStyle>(&console->style);
+		UI::ScrollbarStyle *scrollbarStyle = findStyle<UI::ScrollbarStyle>(&consoleStyle->scrollbarStyle);
+		UI::TextInputStyle *textInputStyle = findStyle<UI::TextInputStyle>(&consoleStyle->textInputStyle);
 
 		// Text input
 		V2I textInputSize = UI::calculateTextInputSize(&console->input, textInputStyle, screenWidth);
@@ -214,7 +214,7 @@ void updateAndRenderConsole(Console *console)
 		s32 textMaxWidth = screenWidth - (2*consoleStyle->padding);
 		s32 heightOfOutputArea = textPos.y;
 		Rect2I consoleBackRect = irectXYWH(0,0,screenWidth, heightOfOutputArea);
-		UIDrawable(&consoleStyle->background).draw(renderBuffer, consoleBackRect);
+		UI::Drawable(&consoleStyle->background).draw(renderBuffer, consoleBackRect);
 
 		// Scrollbar
 		Rect2I scrollbarBounds = getConsoleScrollbarBounds(console);
@@ -365,9 +365,9 @@ void consoleWriteLine(String text, ConsoleLineStyleID style)
 
 Rect2I getConsoleScrollbarBounds(Console *console)
 {
-	UIConsoleStyle   *consoleStyle   = findStyle<UIConsoleStyle>  (&console->style);
-	UIScrollbarStyle *scrollbarStyle = findStyle<UIScrollbarStyle>(&consoleStyle->scrollbarStyle);
-	UITextInputStyle *textInputStyle = findStyle<UITextInputStyle>(&consoleStyle->textInputStyle);
+	UI::ConsoleStyle   *consoleStyle   = findStyle<UI::ConsoleStyle>  (&console->style);
+	UI::ScrollbarStyle *scrollbarStyle = findStyle<UI::ScrollbarStyle>(&consoleStyle->scrollbarStyle);
+	UI::TextInputStyle *textInputStyle = findStyle<UI::TextInputStyle>(&consoleStyle->textInputStyle);
 
 	V2I textInputSize = UI::calculateTextInputSize(&console->input, textInputStyle, renderer->windowWidth);
 

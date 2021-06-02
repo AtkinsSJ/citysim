@@ -62,7 +62,7 @@ void initCommands(Console *console); // Implementation in commands.cpp
 void loadConsoleKeyboardShortcuts(Console *console, Blob data, String filename);
 void consoleHandleCommand(Console *console, String commandInput);
 
-void consoleWriteLine(String text, ConsoleLineStyleID style=CLS_Default);
+void consoleWriteLine(String text, ConsoleLineStyleID style = CLS_Default);
 
 // Private
 Rect2I getConsoleScrollbarBounds(Console *console);

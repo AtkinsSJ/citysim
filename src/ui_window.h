@@ -6,10 +6,10 @@
 // AKA, I messed up.
 struct WindowContext
 {
-	WindowContext(struct Window *window, struct UIWindowStyle *windowStyle, bool hideWidgets, RenderBuffer *renderBuffer);
+	WindowContext(struct Window *window, struct UI::WindowStyle *windowStyle, bool hideWidgets, RenderBuffer *renderBuffer);
 
 	Window *window;
-	UIWindowStyle *windowStyle;
+	UI::WindowStyle *windowStyle;
 
 	bool hideWidgets;
 	RenderBuffer *renderBuffer;

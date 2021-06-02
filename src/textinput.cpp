@@ -58,7 +58,6 @@ void TextInput::moveCaretRightWholeWord()
 	caret = findStartOfWordRight();
 }
 
-
 void TextInput::append(char *source, s32 length)
 {
 	s32 bytesToCopy = length;
@@ -254,185 +253,189 @@ TextInput::TextInputPos TextInput::findStartOfWordRight()
 	return result;
 }
 
-// Returns true if pressed RETURN
-bool UI::updateTextInput(TextInput *textInput)
+namespace UI
 {
-	bool pressedReturn = false;
 
-	if (hasCapturedInput(textInput))
+	// Returns true if pressed RETURN
+	bool updateTextInput(TextInput *textInput)
 	{
-		if (keyJustPressed(SDLK_BACKSPACE, KeyMod_Ctrl))
-		{
-			textInput->backspaceWholeWord();
-			textInput->caretFlashCounter = 0;
-		}
-		else if (keyJustPressed(SDLK_BACKSPACE))
-		{
-			textInput->backspaceChars(1);
-			textInput->caretFlashCounter = 0;
-		}
+		bool pressedReturn = false;
 
-		if (keyJustPressed(SDLK_DELETE, KeyMod_Ctrl))
+		if (hasCapturedInput(textInput))
 		{
-			textInput->deleteWholeWord();
-			textInput->caretFlashCounter = 0;
-		}
-		else if (keyJustPressed(SDLK_DELETE))
-		{
-			textInput->deleteChars(1);
-			textInput->caretFlashCounter = 0;
-		}
-
-		if (keyJustPressed(SDLK_RETURN))
-		{
-			pressedReturn = true;
-			textInput->caretFlashCounter = 0;
-		}
-
-		if (keyJustPressed(SDLK_LEFT))
-		{
-			if (modifierKeyIsPressed(KeyMod_Ctrl))
+			if (keyJustPressed(SDLK_BACKSPACE, KeyMod_Ctrl))
 			{
-				textInput->moveCaretLeftWholeWord();
+				textInput->backspaceWholeWord();
+				textInput->caretFlashCounter = 0;
 			}
-			else
+			else if (keyJustPressed(SDLK_BACKSPACE))
 			{
-				textInput->moveCaretLeft(1);
+				textInput->backspaceChars(1);
+				textInput->caretFlashCounter = 0;
 			}
-			textInput->caretFlashCounter = 0;
-		}
-		else if (keyJustPressed(SDLK_RIGHT))
-		{
-			if (modifierKeyIsPressed(KeyMod_Ctrl))
+
+			if (keyJustPressed(SDLK_DELETE, KeyMod_Ctrl))
 			{
-				textInput->moveCaretRightWholeWord();
+				textInput->deleteWholeWord();
+				textInput->caretFlashCounter = 0;
 			}
-			else
+			else if (keyJustPressed(SDLK_DELETE))
 			{
-				textInput->moveCaretRight(1);
+				textInput->deleteChars(1);
+				textInput->caretFlashCounter = 0;
 			}
-			textInput->caretFlashCounter = 0;
-		}
 
-		if (keyJustPressed(SDLK_HOME))
-		{
-			textInput->caret.bytePos = 0;
-			textInput->caret.glyphPos = 0;
-			textInput->caretFlashCounter = 0;
-		}
-
-		if (keyJustPressed(SDLK_END))
-		{
-			textInput->caret.bytePos = textInput->byteLength;
-			textInput->caret.glyphPos = textInput->glyphLength;
-			textInput->caretFlashCounter = 0;
-		}
-
-		if (wasTextEntered())
-		{
-			// Filter the input to remove any blacklisted characters
-			String enteredText = getEnteredText();
-			for (s32 charIndex=0; charIndex < enteredText.length; charIndex++)
+			if (keyJustPressed(SDLK_RETURN))
 			{
-				char c = enteredText[charIndex];
-				if (!contains(textInput->characterBlacklist, c))
+				pressedReturn = true;
+				textInput->caretFlashCounter = 0;
+			}
+
+			if (keyJustPressed(SDLK_LEFT))
+			{
+				if (modifierKeyIsPressed(KeyMod_Ctrl))
 				{
-					textInput->insert(c);
+					textInput->moveCaretLeftWholeWord();
 				}
-			}
-
-			textInput->caretFlashCounter = 0;
-		}
-
-		if (keyJustPressed(SDLK_v, KeyMod_Ctrl))
-		{
-			// Filter the input to remove any blacklisted characters
-			String enteredText = getClipboardText();
-			for (s32 charIndex=0; charIndex < enteredText.length; charIndex++)
-			{
-				char c = enteredText[charIndex];
-				if (!contains(textInput->characterBlacklist, c))
+				else
 				{
-					textInput->insert(c);
+					textInput->moveCaretLeft(1);
 				}
+				textInput->caretFlashCounter = 0;
 			}
-			
-			textInput->caretFlashCounter = 0;
+			else if (keyJustPressed(SDLK_RIGHT))
+			{
+				if (modifierKeyIsPressed(KeyMod_Ctrl))
+				{
+					textInput->moveCaretRightWholeWord();
+				}
+				else
+				{
+					textInput->moveCaretRight(1);
+				}
+				textInput->caretFlashCounter = 0;
+			}
+
+			if (keyJustPressed(SDLK_HOME))
+			{
+				textInput->caret.bytePos = 0;
+				textInput->caret.glyphPos = 0;
+				textInput->caretFlashCounter = 0;
+			}
+
+			if (keyJustPressed(SDLK_END))
+			{
+				textInput->caret.bytePos = textInput->byteLength;
+				textInput->caret.glyphPos = textInput->glyphLength;
+				textInput->caretFlashCounter = 0;
+			}
+
+			if (wasTextEntered())
+			{
+				// Filter the input to remove any blacklisted characters
+				String enteredText = getEnteredText();
+				for (s32 charIndex=0; charIndex < enteredText.length; charIndex++)
+				{
+					char c = enteredText[charIndex];
+					if (!contains(textInput->characterBlacklist, c))
+					{
+						textInput->insert(c);
+					}
+				}
+
+				textInput->caretFlashCounter = 0;
+			}
+
+			if (keyJustPressed(SDLK_v, KeyMod_Ctrl))
+			{
+				// Filter the input to remove any blacklisted characters
+				String enteredText = getClipboardText();
+				for (s32 charIndex=0; charIndex < enteredText.length; charIndex++)
+				{
+					char c = enteredText[charIndex];
+					if (!contains(textInput->characterBlacklist, c))
+					{
+						textInput->insert(c);
+					}
+				}
+				
+				textInput->caretFlashCounter = 0;
+			}
 		}
+
+		return pressedReturn;
 	}
 
-	return pressedReturn;
-}
-
-TextInput UI::newTextInput(MemoryArena *arena, s32 length, String characterBlacklist)
-{
-	TextInput b = {};
-	b.buffer = allocateMultiple<char>(arena, length + 1);
-	b.maxByteLength = length;
-	b.characterBlacklist = characterBlacklist;
-
-	return b;
-}
-
-V2I UI::calculateTextInputSize(TextInput *textInput, UITextInputStyle *style, s32 maxWidth, bool fillWidth)
-{
-	s32 doublePadding = (style->padding * 2);
-	s32 textMaxWidth = (maxWidth == 0) ? 0 : (maxWidth - doublePadding);
-
-	BitmapFont *font = getFont(&style->font);
-	String text = textInput->toString();
-	V2I textSize = calculateTextSize(font, text, textMaxWidth);
-
-	s32 resultWidth = 0;
-
-	if (fillWidth && (maxWidth > 0))
+	TextInput newTextInput(MemoryArena *arena, s32 length, String characterBlacklist)
 	{
-		resultWidth = maxWidth;
-	}
-	else
-	{
-		resultWidth = (textSize.x + doublePadding);
+		TextInput b = {};
+		b.buffer = allocateMultiple<char>(arena, length + 1);
+		b.maxByteLength = length;
+		b.characterBlacklist = characterBlacklist;
+
+		return b;
 	}
 
-	V2I result = v2i(resultWidth, textSize.y + doublePadding);
-
-	return result;
-}
-
-Rect2I UI::drawTextInput(RenderBuffer *renderBuffer, TextInput *textInput, UITextInputStyle *style, Rect2I bounds)
-{
-	DEBUG_FUNCTION_T(DCDT_UI);
-
-	String text = textInput->toString();
-	BitmapFont *font = getFont(&style->font);
-
-	UIDrawable(&style->background).draw(renderBuffer, bounds);
-
-	bool showCaret = style->showCaret
-					 && hasCapturedInput(textInput)
-					 && (textInput->caretFlashCounter < (style->caretFlashCycleDuration * 0.5f));
-
-	Rect2I textBounds = shrink(bounds, style->padding);
-	DrawTextResult drawTextResult = {};
-	drawText(renderBuffer, font, text, textBounds, style->textAlignment, style->textColor, renderer->shaderIds.text, textInput->caret.glyphPos, &drawTextResult);
-
-	textInput->caretFlashCounter = (f32) fmod(textInput->caretFlashCounter + globalAppState.deltaTime, style->caretFlashCycleDuration);
-
-	if (showCaret)
+	V2I calculateTextInputSize(TextInput *textInput, TextInputStyle *style, s32 maxWidth, bool fillWidth)
 	{
-		Rect2 caretRect = rectXYWHi(textBounds.x, textBounds.y, 2, font->lineHeight);
+		s32 doublePadding = (style->padding * 2);
+		s32 textMaxWidth = (maxWidth == 0) ? 0 : (maxWidth - doublePadding);
 
-		if (textInput->caret.glyphPos != 0 && drawTextResult.isValid)
+		BitmapFont *font = getFont(&style->font);
+		String text = textInput->toString();
+		V2I textSize = calculateTextSize(font, text, textMaxWidth);
+
+		s32 resultWidth = 0;
+
+		if (fillWidth && (maxWidth > 0))
 		{
-			// Draw it to the right of the glyph
-			caretRect.pos = v2(drawTextResult.caretPosition);
+			resultWidth = maxWidth;
+		}
+		else
+		{
+			resultWidth = (textSize.x + doublePadding);
 		}
 
-		// Shifted 1px left for better legibility of text
-		caretRect.x -= 1.0f;
+		V2I result = v2i(resultWidth, textSize.y + doublePadding);
 
-		drawSingleRect(renderBuffer, caretRect, renderer->shaderIds.untextured, style->textColor);
+		return result;
 	}
 
-	return bounds;
+	Rect2I drawTextInput(RenderBuffer *renderBuffer, TextInput *textInput, TextInputStyle *style, Rect2I bounds)
+	{
+		DEBUG_FUNCTION_T(DCDT_UI);
+
+		String text = textInput->toString();
+		BitmapFont *font = getFont(&style->font);
+
+		Drawable(&style->background).draw(renderBuffer, bounds);
+
+		bool showCaret = style->showCaret
+						 && hasCapturedInput(textInput)
+						 && (textInput->caretFlashCounter < (style->caretFlashCycleDuration * 0.5f));
+
+		Rect2I textBounds = shrink(bounds, style->padding);
+		DrawTextResult drawTextResult = {};
+		drawText(renderBuffer, font, text, textBounds, style->textAlignment, style->textColor, renderer->shaderIds.text, textInput->caret.glyphPos, &drawTextResult);
+
+		textInput->caretFlashCounter = (f32) fmod(textInput->caretFlashCounter + globalAppState.deltaTime, style->caretFlashCycleDuration);
+
+		if (showCaret)
+		{
+			Rect2 caretRect = rectXYWHi(textBounds.x, textBounds.y, 2, font->lineHeight);
+
+			if (textInput->caret.glyphPos != 0 && drawTextResult.isValid)
+			{
+				// Draw it to the right of the glyph
+				caretRect.pos = v2(drawTextResult.caretPosition);
+			}
+
+			// Shifted 1px left for better legibility of text
+			caretRect.x -= 1.0f;
+
+			drawSingleRect(renderBuffer, caretRect, renderer->shaderIds.untextured, style->textColor);
+		}
+
+		return bounds;
+	}
 }

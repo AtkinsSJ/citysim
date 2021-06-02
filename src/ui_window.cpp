@@ -1,6 +1,6 @@
 #pragma once
 
-WindowContext::WindowContext(Window *window, UIWindowStyle *windowStyle, bool hideWidgets, RenderBuffer *renderBuffer)
+WindowContext::WindowContext(Window *window, UI::WindowStyle *windowStyle, bool hideWidgets, RenderBuffer *renderBuffer)
 	: window(window),
 	  windowStyle(windowStyle),
 	  hideWidgets(hideWidgets),
@@ -13,7 +13,7 @@ WindowContext::WindowContext(Window *window, UIWindowStyle *windowStyle, bool hi
 	  	  		(window->flags & WinFlag_AutomaticHeight) ? 10000 : 
 	  	  			(window->area.h - ((window->flags & WinFlag_Headless) ? 0 : windowStyle->titleBarHeight))
 	  	  ),
-	  	  findStyle<UIPanelStyle>(&windowStyle->panelStyle), 
+	  	  findStyle<UI::PanelStyle>(&windowStyle->panelStyle), 
 	      ((window->flags & WinFlag_Tooltip) ? Panel_AllowClickThrough : 0)
 	       | (hideWidgets ? Panel_HideWidgets : 0),
 	       renderBuffer
@@ -164,7 +164,7 @@ void UI::updateAndRenderWindows()
 		bool shrinkWidth  = (window->flags & WinFlag_ShrinkWidth) != 0;
 		bool shrinkHeight = (window->flags & WinFlag_AutomaticHeight) != 0;
 
-		UIWindowStyle *windowStyle = findStyle<UIWindowStyle>(window->styleName);
+		UI::WindowStyle *windowStyle = findStyle<UI::WindowStyle>(window->styleName);
 
 		s32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
 

@@ -43,7 +43,7 @@ void initAssets()
 		initSet<String>(&assets->missingAssetNames[assetType], &assets->assetArena, compareStrings);
 	}
 
-	initUIStyleConstants();
+	UI::initStyleConstants();
 
 	initTerrainCatalogue();
 	initBuildingCatalogue();

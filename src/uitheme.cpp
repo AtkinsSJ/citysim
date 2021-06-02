@@ -1,308 +1,299 @@
 #pragma once
 
-Maybe<UIDrawableStyle> readDrawableStyle(LineReader *reader)
+namespace UI
 {
-	String typeName = readToken(reader);
-	Maybe<UIDrawableStyle> result = makeFailure<UIDrawableStyle>();
-
-	if (equals(typeName, "none"_s))
+	Maybe<DrawableStyle> readDrawableStyle(LineReader *reader)
 	{
-		UIDrawableStyle drawable = {};
-		drawable.type = Drawable_None;
+		String typeName = readToken(reader);
+		Maybe<DrawableStyle> result = makeFailure<DrawableStyle>();
 
-		result = makeSuccess(drawable);
-	}
-	else if (equals(typeName, "color"_s))
-	{
-		Maybe<V4> color = readColor(reader);
-		if (color.isValid)
+		if (equals(typeName, "none"_s))
 		{
-			UIDrawableStyle drawable = {};
-			drawable.type = Drawable_Color;
-			drawable.color = color.value;
+			DrawableStyle drawable = {};
+			drawable.type = Drawable_None;
 
 			result = makeSuccess(drawable);
 		}
-	}
-	else if (equals(typeName, "gradient"_s))
-	{
-		Maybe<V4> color00 = readColor(reader);
-		Maybe<V4> color01 = readColor(reader);
-		Maybe<V4> color10 = readColor(reader);
-		Maybe<V4> color11 = readColor(reader);
-
-		if (color00.isValid && color01.isValid && color10.isValid && color11.isValid)
+		else if (equals(typeName, "color"_s))
 		{
-			UIDrawableStyle drawable = {};
-			drawable.type = Drawable_Gradient;
-			drawable.gradient.color00 = color00.value;
-			drawable.gradient.color01 = color01.value;
-			drawable.gradient.color10 = color10.value;
-			drawable.gradient.color11 = color11.value;
+			Maybe<V4> color = readColor(reader);
+			if (color.isValid)
+			{
+				DrawableStyle drawable = {};
+				drawable.type = Drawable_Color;
+				drawable.color = color.value;
+
+				result = makeSuccess(drawable);
+			}
+		}
+		else if (equals(typeName, "gradient"_s))
+		{
+			Maybe<V4> color00 = readColor(reader);
+			Maybe<V4> color01 = readColor(reader);
+			Maybe<V4> color10 = readColor(reader);
+			Maybe<V4> color11 = readColor(reader);
+
+			if (color00.isValid && color01.isValid && color10.isValid && color11.isValid)
+			{
+				DrawableStyle drawable = {};
+				drawable.type = Drawable_Gradient;
+				drawable.gradient.color00 = color00.value;
+				drawable.gradient.color01 = color01.value;
+				drawable.gradient.color10 = color10.value;
+				drawable.gradient.color11 = color11.value;
+
+				result = makeSuccess(drawable);
+			}
+		}
+		else if (equals(typeName, "ninepatch"_s))
+		{
+			String ninepatchName = readToken(reader);
+
+			Maybe<V4> color = readColor(reader, true);
+			
+			DrawableStyle drawable = {};
+			drawable.type = Drawable_Ninepatch;
+			drawable.color = color.orDefault(makeWhite());
+			drawable.ninepatch = getAssetRef(AssetType_Ninepatch, ninepatchName);
 
 			result = makeSuccess(drawable);
 		}
-	}
-	else if (equals(typeName, "ninepatch"_s))
-	{
-		String ninepatchName = readToken(reader);
-
-		Maybe<V4> color = readColor(reader, true);
-		
-		UIDrawableStyle drawable = {};
-		drawable.type = Drawable_Ninepatch;
-		drawable.color = color.orDefault(makeWhite());
-		drawable.ninepatch = getAssetRef(AssetType_Ninepatch, ninepatchName);
-
-		result = makeSuccess(drawable);
-	}
-	else if (equals(typeName, "sprite"_s))
-	{
-		String spriteName = readToken(reader);
-
-		Maybe<V4> color = readColor(reader, true);
-
-		UIDrawableStyle drawable = {};
-		drawable.type = Drawable_Sprite;
-		drawable.color = color.orDefault(makeWhite());
-		drawable.sprite = getSpriteRef(spriteName, 0);
-
-		result = makeSuccess(drawable);
-	}
-	else
-	{
-		error(reader, "Unrecognised background type '{0}'"_s, {typeName});
-	}
-
-	return result;
-}
-
-inline bool UIDrawableStyle::hasFixedSize()
-{
-	return (type == Drawable_None || type == Drawable_Sprite);
-}
-
-V2I UIDrawableStyle::getSize()
-{
-	V2I result = {};
-
-	switch (type)
-	{
-		case Drawable_Sprite:
+		else if (equals(typeName, "sprite"_s))
 		{
-			Sprite *theSprite = getSprite(&sprite);
-			result.x = theSprite->pixelWidth;
-			result.y = theSprite->pixelHeight;
-		} break;
+			String spriteName = readToken(reader);
+
+			Maybe<V4> color = readColor(reader, true);
+
+			DrawableStyle drawable = {};
+			drawable.type = Drawable_Sprite;
+			drawable.color = color.orDefault(makeWhite());
+			drawable.sprite = getSpriteRef(spriteName, 0);
+
+			result = makeSuccess(drawable);
+		}
+		else
+		{
+			error(reader, "Unrecognised background type '{0}'"_s, {typeName});
+		}
+
+		return result;
 	}
 
-	return result;
-}
-
-void initUIStyleConstants()
-{
-	initHashTable(&uiStyleProperties, 0.75f, 256);
-	#define PROP(name, _type) {\
-		UIProperty property = {}; \
-		property.type = _type; \
-		property.offsetInStyleStruct = offsetof(UIStyle, name); \
-		uiStyleProperties.put(makeString(#name), property); \
-	}
-
-	PROP(background,				PropType_Drawable);
-	PROP(backgroundDisabled,		PropType_Drawable);
-	PROP(backgroundHover,			PropType_Drawable);
-	PROP(backgroundPressed,			PropType_Drawable);
-	PROP(buttonStyle,				PropType_Style);
-	PROP(caretFlashCycleDuration,	PropType_Float);
-	PROP(check,						PropType_Drawable);
-	PROP(checkDisabled,				PropType_Drawable);
-	PROP(checkHover,				PropType_Drawable);
-	PROP(checkPressed,				PropType_Drawable);
-	PROP(checkboxStyle,				PropType_Style);
-	PROP(contentSize,				PropType_V2I);
-	PROP(contentPadding,			PropType_Int);
-	PROP(dropDownListStyle,			PropType_Style);
-	PROP(endIcon,					PropType_Drawable);
-	PROP(endIconAlignment,			PropType_Alignment);
-	PROP(font,						PropType_Font);
-	PROP(labelStyle,				PropType_Style);
-	PROP(margin,					PropType_Int);
-	PROP(offsetFromMouse,			PropType_V2I);
-	PROP(outputTextColor,			PropType_Color);
-	PROP(outputTextColorInputEcho,	PropType_Color);
-	PROP(outputTextColorError,		PropType_Color);
-	PROP(outputTextColorWarning,	PropType_Color);
-	PROP(outputTextColorSuccess,	PropType_Color);
-	PROP(padding,					PropType_Int);
-	PROP(panelStyle,				PropType_Style);
-	PROP(scrollbarStyle,			PropType_Style);
-	PROP(showCaret,					PropType_Bool);
-	PROP(sliderStyle,				PropType_Style);
-	PROP(startIcon,					PropType_Drawable);
-	PROP(startIconAlignment,		PropType_Alignment);
-	PROP(textAlignment,				PropType_Alignment);
-	PROP(textColor,					PropType_Color);
-	PROP(textInputStyle,			PropType_Style);
-	PROP(thumb,						PropType_Drawable);
-	PROP(thumbDisabled,				PropType_Drawable);
-	PROP(thumbHover,				PropType_Drawable);
-	PROP(thumbPressed,				PropType_Drawable);
-	PROP(titleBarButtonHoverColor,	PropType_Color);
-	PROP(titleBarColor,				PropType_Color);
-	PROP(titleBarColorInactive,		PropType_Color);
-	PROP(titleBarHeight,			PropType_Int);
-	PROP(titleColor,				PropType_Color);
-	PROP(titleFont,					PropType_Font);
-	PROP(trackThickness,			PropType_Int);
-	PROP(widgetAlignment,			PropType_Alignment);
-	PROP(width,						PropType_Int);
-	PROP(track,						PropType_Drawable);
-	PROP(thumbSize,					PropType_V2I);
-
-	#undef PROP
-
-	assignStyleProperties(UIStyle_Button, {
-		"background"_s,
-		"backgroundDisabled"_s,
-		"backgroundHover"_s,
-		"backgroundPressed"_s,
-		"contentPadding"_s,
-		"endIcon"_s,
-		"endIconAlignment"_s,
-		"font"_s,
-		"padding"_s,
-		"startIcon"_s,
-		"startIconAlignment"_s,
-		"textAlignment"_s,
-		"textColor"_s,
-	});	
-	assignStyleProperties(UIStyle_Checkbox, {
-		"background"_s,
-		"backgroundDisabled"_s,
-		"backgroundHover"_s,
-		"backgroundPressed"_s,
-		"check"_s,
-		"checkDisabled"_s,
-		"checkHover"_s,
-		"contentSize"_s,
-		"checkPressed"_s,
-		"dropDownListStyle"_s,
-		"padding"_s,
-	});
-	assignStyleProperties(UIStyle_Console, {
-		"background"_s,
-		"font"_s,
-		"outputTextColor"_s,
-		"outputTextColorInputEcho"_s,
-		"outputTextColorError"_s,
-		"outputTextColorSuccess"_s,
-		"outputTextColorWarning"_s,
-		"padding"_s,
-		"scrollbarStyle"_s,
-		"textInputStyle"_s,
-	});
-	assignStyleProperties(UIStyle_DropDownList, {
-		"buttonStyle"_s,
-		"panelStyle"_s,
-	});
-	assignStyleProperties(UIStyle_Label, {
-		"font"_s,
-		"textColor"_s,
-	});
-	assignStyleProperties(UIStyle_Panel, {
-		"background"_s,
-		"buttonStyle"_s,
-		"checkboxStyle"_s,
-		"contentPadding"_s,
-		"dropDownListStyle"_s,
-		"labelStyle"_s,
-		"margin"_s,
-		"scrollbarStyle"_s,
-		"sliderStyle"_s,
-		"textInputStyle"_s,
-		"widgetAlignment"_s,
-	});
-	assignStyleProperties(UIStyle_Scrollbar, {
-		"background"_s,
-		"thumb"_s,
-		"thumbDisabled"_s,
-		"thumbHover"_s,
-		"thumbPressed"_s,
-		"width"_s,
-	});
-	assignStyleProperties(UIStyle_Slider, {
-		"track"_s,
-		"trackThickness"_s,
-		"thumb"_s,
-		"thumbDisabled"_s,
-		"thumbHover"_s,
-		"thumbPressed"_s,
-		"thumbSize"_s,
-	});
-	assignStyleProperties(UIStyle_TextInput, {
-		"background"_s,
-		"caretFlashCycleDuration"_s,
-		"font"_s,
-		"padding"_s,
-		"showCaret"_s,
-		"textAlignment"_s,
-		"textColor"_s,
-	});
-	assignStyleProperties(UIStyle_Window, {
-		"offsetFromMouse"_s,
-		"panelStyle"_s,
-		"titleBarButtonHoverColor"_s,
-		"titleBarColor"_s,
-		"titleBarColorInactive"_s,
-		"titleBarHeight"_s,
-		"titleColor"_s,
-		"titleFont"_s,
-	});
-
-	initHashTable(&uiStyleTypesByName, 0.75f, 256);
-	uiStyleTypesByName.put("Button"_s, UIStyle_Button);
-	uiStyleTypesByName.put("Checkbox"_s, UIStyle_Checkbox);
-	uiStyleTypesByName.put("Console"_s, UIStyle_Console);
-	uiStyleTypesByName.put("DropDownList"_s, UIStyle_DropDownList);
-	uiStyleTypesByName.put("Label"_s, UIStyle_Label);
-	uiStyleTypesByName.put("Panel"_s, UIStyle_Panel);
-	uiStyleTypesByName.put("Scrollbar"_s, UIStyle_Scrollbar);
-	uiStyleTypesByName.put("Slider"_s, UIStyle_Slider);
-	uiStyleTypesByName.put("TextInput"_s, UIStyle_TextInput);
-	uiStyleTypesByName.put("Window"_s, UIStyle_Window);
-}
-
-void assignStyleProperties(UIStyleType type, std::initializer_list<String> properties)
-{
-	for (String *propName = (String*)properties.begin(); propName < properties.end(); propName++)
+	inline bool DrawableStyle::hasFixedSize()
 	{
-		UIProperty *property = uiStyleProperties.find(*propName).orDefault(null);
-		property->existsInStyle[type] = true;
+		return (type == Drawable_None || type == Drawable_Sprite);
 	}
-}
 
-struct UIStylePack
-{
-	UIStyle styleByType[UIStyleTypeCount];
-};
-UIStyle *addStyle(HashTable<UIStylePack> *styles, String name, UIStyleType type)
-{
-	UIStylePack *pack = styles->findOrAdd(name);
-	UIStyle *result = pack->styleByType + type;
-	*result = UIStyle();
+	V2I DrawableStyle::getSize()
+	{
+		V2I result = {};
 
-	result->name = name;
-	result->type = type;
+		switch (type)
+		{
+			case Drawable_Sprite:
+			{
+				Sprite *theSprite = getSprite(&sprite);
+				result.x = theSprite->pixelWidth;
+				result.y = theSprite->pixelHeight;
+			} break;
+		}
 
-	return result;
+		return result;
+	}
+
+	void initStyleConstants()
+	{
+		initHashTable(&styleProperties, 0.75f, 256);
+		#define PROP(name, _type) {\
+			Property property = {}; \
+			property.type = _type; \
+			property.offsetInStyleStruct = offsetof(Style, name); \
+			styleProperties.put(makeString(#name), property); \
+		}
+
+		PROP(background,				PropType_Drawable);
+		PROP(backgroundDisabled,		PropType_Drawable);
+		PROP(backgroundHover,			PropType_Drawable);
+		PROP(backgroundPressed,			PropType_Drawable);
+		PROP(buttonStyle,				PropType_Style);
+		PROP(caretFlashCycleDuration,	PropType_Float);
+		PROP(check,						PropType_Drawable);
+		PROP(checkDisabled,				PropType_Drawable);
+		PROP(checkHover,				PropType_Drawable);
+		PROP(checkPressed,				PropType_Drawable);
+		PROP(checkboxStyle,				PropType_Style);
+		PROP(contentSize,				PropType_V2I);
+		PROP(contentPadding,			PropType_Int);
+		PROP(dropDownListStyle,			PropType_Style);
+		PROP(endIcon,					PropType_Drawable);
+		PROP(endIconAlignment,			PropType_Alignment);
+		PROP(font,						PropType_Font);
+		PROP(labelStyle,				PropType_Style);
+		PROP(margin,					PropType_Int);
+		PROP(offsetFromMouse,			PropType_V2I);
+		PROP(outputTextColor,			PropType_Color);
+		PROP(outputTextColorInputEcho,	PropType_Color);
+		PROP(outputTextColorError,		PropType_Color);
+		PROP(outputTextColorWarning,	PropType_Color);
+		PROP(outputTextColorSuccess,	PropType_Color);
+		PROP(padding,					PropType_Int);
+		PROP(panelStyle,				PropType_Style);
+		PROP(scrollbarStyle,			PropType_Style);
+		PROP(showCaret,					PropType_Bool);
+		PROP(sliderStyle,				PropType_Style);
+		PROP(startIcon,					PropType_Drawable);
+		PROP(startIconAlignment,		PropType_Alignment);
+		PROP(textAlignment,				PropType_Alignment);
+		PROP(textColor,					PropType_Color);
+		PROP(textInputStyle,			PropType_Style);
+		PROP(thumb,						PropType_Drawable);
+		PROP(thumbDisabled,				PropType_Drawable);
+		PROP(thumbHover,				PropType_Drawable);
+		PROP(thumbPressed,				PropType_Drawable);
+		PROP(titleBarButtonHoverColor,	PropType_Color);
+		PROP(titleBarColor,				PropType_Color);
+		PROP(titleBarColorInactive,		PropType_Color);
+		PROP(titleBarHeight,			PropType_Int);
+		PROP(titleColor,				PropType_Color);
+		PROP(titleFont,					PropType_Font);
+		PROP(trackThickness,			PropType_Int);
+		PROP(widgetAlignment,			PropType_Alignment);
+		PROP(width,						PropType_Int);
+		PROP(track,						PropType_Drawable);
+		PROP(thumbSize,					PropType_V2I);
+
+		#undef PROP
+
+		assignStyleProperties(Style_Button, {
+			"background"_s,
+			"backgroundDisabled"_s,
+			"backgroundHover"_s,
+			"backgroundPressed"_s,
+			"contentPadding"_s,
+			"endIcon"_s,
+			"endIconAlignment"_s,
+			"font"_s,
+			"padding"_s,
+			"startIcon"_s,
+			"startIconAlignment"_s,
+			"textAlignment"_s,
+			"textColor"_s,
+		});	
+		assignStyleProperties(Style_Checkbox, {
+			"background"_s,
+			"backgroundDisabled"_s,
+			"backgroundHover"_s,
+			"backgroundPressed"_s,
+			"check"_s,
+			"checkDisabled"_s,
+			"checkHover"_s,
+			"contentSize"_s,
+			"checkPressed"_s,
+			"dropDownListStyle"_s,
+			"padding"_s,
+		});
+		assignStyleProperties(Style_Console, {
+			"background"_s,
+			"font"_s,
+			"outputTextColor"_s,
+			"outputTextColorInputEcho"_s,
+			"outputTextColorError"_s,
+			"outputTextColorSuccess"_s,
+			"outputTextColorWarning"_s,
+			"padding"_s,
+			"scrollbarStyle"_s,
+			"textInputStyle"_s,
+		});
+		assignStyleProperties(Style_DropDownList, {
+			"buttonStyle"_s,
+			"panelStyle"_s,
+		});
+		assignStyleProperties(Style_Label, {
+			"font"_s,
+			"textColor"_s,
+		});
+		assignStyleProperties(Style_Panel, {
+			"background"_s,
+			"buttonStyle"_s,
+			"checkboxStyle"_s,
+			"contentPadding"_s,
+			"dropDownListStyle"_s,
+			"labelStyle"_s,
+			"margin"_s,
+			"scrollbarStyle"_s,
+			"sliderStyle"_s,
+			"textInputStyle"_s,
+			"widgetAlignment"_s,
+		});
+		assignStyleProperties(Style_Scrollbar, {
+			"background"_s,
+			"thumb"_s,
+			"thumbDisabled"_s,
+			"thumbHover"_s,
+			"thumbPressed"_s,
+			"width"_s,
+		});
+		assignStyleProperties(Style_Slider, {
+			"track"_s,
+			"trackThickness"_s,
+			"thumb"_s,
+			"thumbDisabled"_s,
+			"thumbHover"_s,
+			"thumbPressed"_s,
+			"thumbSize"_s,
+		});
+		assignStyleProperties(Style_TextInput, {
+			"background"_s,
+			"caretFlashCycleDuration"_s,
+			"font"_s,
+			"padding"_s,
+			"showCaret"_s,
+			"textAlignment"_s,
+			"textColor"_s,
+		});
+		assignStyleProperties(Style_Window, {
+			"offsetFromMouse"_s,
+			"panelStyle"_s,
+			"titleBarButtonHoverColor"_s,
+			"titleBarColor"_s,
+			"titleBarColorInactive"_s,
+			"titleBarHeight"_s,
+			"titleColor"_s,
+			"titleFont"_s,
+		});
+
+		initHashTable(&styleTypesByName, 0.75f, 256);
+		styleTypesByName.put("Button"_s, 		Style_Button);
+		styleTypesByName.put("Checkbox"_s,		Style_Checkbox);
+		styleTypesByName.put("Console"_s, 		Style_Console);
+		styleTypesByName.put("DropDownList"_s, 	Style_DropDownList);
+		styleTypesByName.put("Label"_s, 		Style_Label);
+		styleTypesByName.put("Panel"_s, 		Style_Panel);
+		styleTypesByName.put("Scrollbar"_s, 	Style_Scrollbar);
+		styleTypesByName.put("Slider"_s, 		Style_Slider);
+		styleTypesByName.put("TextInput"_s, 	Style_TextInput);
+		styleTypesByName.put("Window"_s, 		Style_Window);
+	}
+
+	void assignStyleProperties(StyleType type, std::initializer_list<String> properties)
+	{
+		for (String *propName = (String*)properties.begin(); propName < properties.end(); propName++)
+		{
+			Property *property = styleProperties.find(*propName).orDefault(null);
+			property->existsInStyle[type] = true;
+		}
+	}
 }
 
 void loadUITheme(Blob data, Asset *asset)
 {
 	LineReader reader = readLines(asset->shortName, data);
 
-	HashTable<UIStylePack> styles;
+	struct StylePack
+	{
+		UI::Style styleByType[UI::StyleTypeCount];
+	};
+	HashTable<StylePack> styles;
 	initHashTable(&styles);
 
 	HashTable<String> fontNamesToAssetNames;
@@ -313,10 +304,10 @@ void loadUITheme(Blob data, Asset *asset)
 		freeHashTable(&fontNamesToAssetNames);
 	};
 
-	s32 styleCount[UIStyleTypeCount] = {};
+	s32 styleCount[UI::StyleTypeCount] = {};
 
 	String currentSection = nullString;
-	UIStyle *target = null;
+	UI::Style *target = null;
 
 	while (loadNextLine(&reader))
 	{
@@ -348,15 +339,19 @@ void loadUITheme(Blob data, Asset *asset)
 			else
 			{
 				// Create a new style entry if the name matches a style type
-				Maybe<UIStyleType> foundStyleType = uiStyleTypesByName.findValue(firstWord);
+				Maybe<UI::StyleType> foundStyleType = UI::styleTypesByName.findValue(firstWord);
 				if (foundStyleType.isValid)
 				{
-					UIStyleType styleType = foundStyleType.value;
+					UI::StyleType styleType = foundStyleType.value;
 
 					String name = intern(&assets->assetStrings, readToken(&reader));
-					target = addStyle(&styles, name, styleType);
+
+					StylePack *pack = styles.findOrAdd(name);
+					target = &pack->styleByType[(s32)styleType];
+					*target = {};
 					target->name = name;
 					target->type = styleType;
+					
 					styleCount[styleType]++;
 				}
 				else
@@ -373,14 +368,14 @@ void loadUITheme(Blob data, Asset *asset)
 			{
 				// Clones an existing style
 				String parentStyle = readToken(&reader);
-				Maybe<UIStylePack *> parentPack = styles.find(parentStyle);
+				Maybe<StylePack *> parentPack = styles.find(parentStyle);
 				if (!parentPack.isValid)
 				{
 					error(&reader, "Unable to find style named '{0}'"_s, {parentStyle});
 				}
 				else
 				{
-					UIStyle *parent = parentPack.value->styleByType + target->type;
+					UI::Style *parent = parentPack.value->styleByType + target->type;
 					// For undefined styles, the parent struct will be all nulls, so the type will not match
 					if (parent->type != target->type)
 					{
@@ -397,14 +392,14 @@ void loadUITheme(Blob data, Asset *asset)
 			else
 			{
 				// Check our properties map for a match
-				UIProperty *property = uiStyleProperties.find(firstWord).orDefault(null);
+				UI::Property *property = UI::styleProperties.find(firstWord).orDefault(null);
 				if (property)
 				{
 					if (property->existsInStyle[target->type])
 					{
 						switch (property->type)
 						{
-							case PropType_Alignment: {
+							case UI::PropType_Alignment: {
 								Maybe<u32> value = readAlignment(&reader);
 								if (value.isValid)
 								{
@@ -412,7 +407,7 @@ void loadUITheme(Blob data, Asset *asset)
 								}
 							} break;
 
-							case PropType_Bool: {
+							case UI::PropType_Bool: {
 								Maybe<bool> value = readBool(&reader);
 								if (value.isValid)
 								{
@@ -420,7 +415,7 @@ void loadUITheme(Blob data, Asset *asset)
 								}
 							} break;
 
-							case PropType_Color: {
+							case UI::PropType_Color: {
 								Maybe<V4> value = readColor(&reader);
 								if (value.isValid)
 								{
@@ -428,15 +423,15 @@ void loadUITheme(Blob data, Asset *asset)
 								}
 							} break;
 
-							case PropType_Drawable: {
-								Maybe<UIDrawableStyle> value = readDrawableStyle(&reader);
+							case UI::PropType_Drawable: {
+								Maybe<UI::DrawableStyle> value = UI::readDrawableStyle(&reader);
 								if (value.isValid)
 								{
-									*((UIDrawableStyle*)((u8*)(target) + property->offsetInStyleStruct)) = value.value;
+									*((UI::DrawableStyle*)((u8*)(target) + property->offsetInStyleStruct)) = value.value;
 								}
 							} break;
 
-							case PropType_Float: {
+							case UI::PropType_Float: {
 								Maybe<f64> value = readFloat(&reader);
 								if (value.isValid)
 								{
@@ -444,7 +439,7 @@ void loadUITheme(Blob data, Asset *asset)
 								}
 							} break;
 
-							case PropType_Font: {
+							case UI::PropType_Font: {
 								String value = intern(&assets->assetStrings, readToken(&reader));
 								AssetRef *fontRef = ((AssetRef*)((u8*)(target) + property->offsetInStyleStruct));
 								*fontRef = {};
@@ -459,7 +454,7 @@ void loadUITheme(Blob data, Asset *asset)
 								}
 							} break;
 
-							case PropType_Int: {
+							case UI::PropType_Int: {
 								Maybe<s32> value = readInt<s32>(&reader);
 								if (value.isValid)
 								{
@@ -467,14 +462,14 @@ void loadUITheme(Blob data, Asset *asset)
 								}
 							} break;
 
-							case PropType_Style: // NB: Style names are just Strings now
-							case PropType_String: {
+							case UI::PropType_Style: // NB: Style names are just Strings now
+							case UI::PropType_String: {
 								String value = intern(&assets->assetStrings, readToken(&reader));
 								// Strings are read directly, so we don't need an if(valid) check
 								*((String*)((u8*)(target) + property->offsetInStyleStruct)) = value;
 							} break;
 
-							case PropType_V2I: {
+							case UI::PropType_V2I: {
 								Maybe<s32> offsetX = readInt<s32>(&reader);
 								Maybe<s32> offsetY = readInt<s32>(&reader);
 								if (offsetX.isValid && offsetY.isValid)
@@ -503,7 +498,7 @@ void loadUITheme(Blob data, Asset *asset)
 	// Actually write out the styles into the UITheme
 
 	s32 totalStyleCount = 0;
-	for (s32 i=0; i < UIStyleTypeCount; i++)
+	for (s32 i=0; i < UI::StyleTypeCount; i++)
 	{
 		totalStyleCount += styleCount[i];
 	}
@@ -511,20 +506,20 @@ void loadUITheme(Blob data, Asset *asset)
 
 	for (auto it = styles.iterate(); it.hasNext(); it.next())
 	{
-		UIStylePack *stylePack = it.get();
-		for (s32 sectionType = 1; sectionType < UIStyleTypeCount; sectionType++)
+		StylePack *stylePack = it.get();
+		for (s32 sectionType = 1; sectionType < UI::StyleTypeCount; sectionType++)
 		{
-			UIStyle *style = stylePack->styleByType + sectionType;
+			UI::Style *style = stylePack->styleByType + sectionType;
 			// For undefined styles, the parent struct will be all nulls, so the type will not match
 			if (style->type == sectionType)
 			{
 				switch (style->type)
 				{
-					case UIStyle_Button: {
+					case UI::Style_Button: {
 						Asset *childAsset = addAsset(AssetType_ButtonStyle, style->name, 0);
 						addChildAsset(asset, childAsset);
 
-						UIButtonStyle *button = &childAsset->buttonStyle;
+						UI::ButtonStyle *button = &childAsset->buttonStyle;
 						button->name = style->name;
 
 						button->font = style->font;
@@ -554,11 +549,11 @@ void loadUITheme(Blob data, Asset *asset)
 						}
 					} break;
 
-					case UIStyle_Checkbox: {
+					case UI::Style_Checkbox: {
 						Asset *childAsset = addAsset(AssetType_CheckboxStyle, style->name, 0);
 						addChildAsset(asset, childAsset);
 
-						UICheckboxStyle *checkbox = &childAsset->checkboxStyle;
+						UI::CheckboxStyle *checkbox = &childAsset->checkboxStyle;
 						checkbox->name = style->name;
 
 						checkbox->padding = style->padding;
@@ -580,11 +575,11 @@ void loadUITheme(Blob data, Asset *asset)
 						//  && checkbox->checkDisabled.hasFixedSize());
 					} break;
 
-					case UIStyle_Console: {
+					case UI::Style_Console: {
 						Asset *childAsset = addAsset(AssetType_ConsoleStyle, style->name, 0);
 						addChildAsset(asset, childAsset);
 
-						UIConsoleStyle *console = &childAsset->consoleStyle;
+						UI::ConsoleStyle *console = &childAsset->consoleStyle;
 						console->name = style->name;
 
 						console->font = style->font;
@@ -602,33 +597,33 @@ void loadUITheme(Blob data, Asset *asset)
 						console->textInputStyle = getAssetRef(AssetType_TextInputStyle, style->textInputStyle);
 					} break;
 
-					case UIStyle_DropDownList: {
+					case UI::Style_DropDownList: {
 						Asset *childAsset = addAsset(AssetType_DropDownListStyle, style->name, 0);
 						addChildAsset(asset, childAsset);
 
-						UIDropDownListStyle *ddl = &childAsset->dropDownListStyle;
+						UI::DropDownListStyle *ddl = &childAsset->dropDownListStyle;
 						ddl->name = style->name;
 
 						ddl->buttonStyle = getAssetRef(AssetType_ButtonStyle, style->buttonStyle);
 						ddl->panelStyle = getAssetRef(AssetType_PanelStyle, style->panelStyle);
 					} break;
 
-					case UIStyle_Label: {
+					case UI::Style_Label: {
 						Asset *childAsset = addAsset(AssetType_LabelStyle, style->name, 0);
 						addChildAsset(asset, childAsset);
 
-						UILabelStyle *label = &childAsset->labelStyle;
+						UI::LabelStyle *label = &childAsset->labelStyle;
 						label->name = style->name;
 
 						label->font = style->font;
 						label->textColor = style->textColor;
 					} break;
 
-					case UIStyle_Panel: {
+					case UI::Style_Panel: {
 						Asset *childAsset = addAsset(AssetType_PanelStyle, style->name, 0);
 						addChildAsset(asset, childAsset);
 
-						UIPanelStyle *panel = &childAsset->panelStyle;
+						UI::PanelStyle *panel = &childAsset->panelStyle;
 						panel->name = style->name;
 
 						panel->margin = style->margin;
@@ -645,11 +640,11 @@ void loadUITheme(Blob data, Asset *asset)
 						panel->textInputStyle 		= getAssetRef(AssetType_TextInputStyle, style->textInputStyle);
 					} break;
 
-					case UIStyle_Scrollbar: {
+					case UI::Style_Scrollbar: {
 						Asset *childAsset = addAsset(AssetType_ScrollbarStyle, style->name, 0);
 						addChildAsset(asset, childAsset);
 
-						UIScrollbarStyle *scrollbar = &childAsset->scrollbarStyle;
+						UI::ScrollbarStyle *scrollbar = &childAsset->scrollbarStyle;
 						scrollbar->name = style->name;
 
 						scrollbar->background = style->background;
@@ -660,11 +655,11 @@ void loadUITheme(Blob data, Asset *asset)
 						scrollbar->width = style->width;
 					} break;
 
-					case UIStyle_Slider: {
+					case UI::Style_Slider: {
 						Asset *childAsset = addAsset(AssetType_SliderStyle, style->name, 0);
 						addChildAsset(asset, childAsset);
 
-						UISliderStyle *slider = &childAsset->sliderStyle;
+						UI::SliderStyle *slider = &childAsset->sliderStyle;
 						slider->name = style->name;
 
 						slider->track = style->track;
@@ -676,11 +671,11 @@ void loadUITheme(Blob data, Asset *asset)
 						slider->thumbSize = style->thumbSize;
 					} break;
 
-					case UIStyle_TextInput: {
+					case UI::Style_TextInput: {
 						Asset *childAsset = addAsset(AssetType_TextInputStyle, style->name, 0);
 						addChildAsset(asset, childAsset);
 
-						UITextInputStyle *textInput = &childAsset->textInputStyle;
+						UI::TextInputStyle *textInput = &childAsset->textInputStyle;
 						textInput->name = style->name;
 
 						textInput->font = style->font;
@@ -694,11 +689,11 @@ void loadUITheme(Blob data, Asset *asset)
 						textInput->caretFlashCycleDuration = style->caretFlashCycleDuration;
 					} break;
 
-					case UIStyle_Window: {
+					case UI::Style_Window: {
 						Asset *childAsset = addAsset(AssetType_WindowStyle, style->name, 0);
 						addChildAsset(asset, childAsset);
 
-						UIWindowStyle *window = &childAsset->windowStyle;
+						UI::WindowStyle *window = &childAsset->windowStyle;
 						window->name = style->name;
 
 						window->titleBarHeight = style->titleBarHeight;
@@ -723,16 +718,16 @@ bool checkStyleMatchesType(AssetRef *reference)
 {
 	switch (reference->type)
 	{
-		case AssetType_ButtonStyle: 		return (typeid(T*) == typeid(UIButtonStyle*));
-		case AssetType_CheckboxStyle: 		return (typeid(T*) == typeid(UICheckboxStyle*));
-		case AssetType_ConsoleStyle: 		return (typeid(T*) == typeid(UIConsoleStyle*));
-		case AssetType_DropDownListStyle: 	return (typeid(T*) == typeid(UIDropDownListStyle*));
-		case AssetType_LabelStyle: 	 		return (typeid(T*) == typeid(UILabelStyle*));
-		case AssetType_PanelStyle:      	return (typeid(T*) == typeid(UIPanelStyle*));
-		case AssetType_ScrollbarStyle:  	return (typeid(T*) == typeid(UIScrollbarStyle*));
-		case AssetType_SliderStyle:			return (typeid(T*) == typeid(UISliderStyle*));
-		case AssetType_TextInputStyle:  	return (typeid(T*) == typeid(UITextInputStyle*));
-		case AssetType_WindowStyle: 		return (typeid(T*) == typeid(UIWindowStyle*));
+		case AssetType_ButtonStyle: 		return (typeid(T*) == typeid(UI::ButtonStyle*));
+		case AssetType_CheckboxStyle: 		return (typeid(T*) == typeid(UI::CheckboxStyle*));
+		case AssetType_ConsoleStyle: 		return (typeid(T*) == typeid(UI::ConsoleStyle*));
+		case AssetType_DropDownListStyle: 	return (typeid(T*) == typeid(UI::DropDownListStyle*));
+		case AssetType_LabelStyle: 	 		return (typeid(T*) == typeid(UI::LabelStyle*));
+		case AssetType_PanelStyle:      	return (typeid(T*) == typeid(UI::PanelStyle*));
+		case AssetType_ScrollbarStyle:  	return (typeid(T*) == typeid(UI::ScrollbarStyle*));
+		case AssetType_SliderStyle:			return (typeid(T*) == typeid(UI::SliderStyle*));
+		case AssetType_TextInputStyle:  	return (typeid(T*) == typeid(UI::TextInputStyle*));
+		case AssetType_WindowStyle: 		return (typeid(T*) == typeid(UI::WindowStyle*));
 		INVALID_DEFAULT_CASE;
 	}
 
@@ -749,122 +744,122 @@ inline T* findStyle(AssetRef *ref)
 	return (T*) &asset->_localData;
 }
 
-template <> UIButtonStyle *findStyle<UIButtonStyle>(String styleName)
+template <> UI::ButtonStyle *findStyle<UI::ButtonStyle>(String styleName)
 {
-	UIButtonStyle *result = null;
+	UI::ButtonStyle *result = null;
 
 	Asset *asset = getAsset(AssetType_ButtonStyle, styleName);
 	if (asset != null)
 	{
-		result = (UIButtonStyle *)&asset->_localData;
+		result = (UI::ButtonStyle *)&asset->_localData;
 	}
 
 	return result;
 }
-template <> UICheckboxStyle *findStyle<UICheckboxStyle>(String styleName)
+template <> UI::CheckboxStyle *findStyle<UI::CheckboxStyle>(String styleName)
 {
-	UICheckboxStyle *result = null;
+	UI::CheckboxStyle *result = null;
 
 	Asset *asset = getAsset(AssetType_CheckboxStyle, styleName);
 	if (asset != null)
 	{
-		result = (UICheckboxStyle *)&asset->_localData;
+		result = (UI::CheckboxStyle *)&asset->_localData;
 	}
 
 	return result;
 }
-template <> UIConsoleStyle *findStyle<UIConsoleStyle>(String styleName)
+template <> UI::ConsoleStyle *findStyle<UI::ConsoleStyle>(String styleName)
 {
-	UIConsoleStyle *result = null;
+	UI::ConsoleStyle *result = null;
 
 	Asset *asset = getAsset(AssetType_ConsoleStyle, styleName);
 	if (asset != null)
 	{
-		result = (UIConsoleStyle *)&asset->_localData;
+		result = (UI::ConsoleStyle *)&asset->_localData;
 	}
 
 	return result;
 }
-template <> UIDropDownListStyle *findStyle<UIDropDownListStyle>(String styleName)
+template <> UI::DropDownListStyle *findStyle<UI::DropDownListStyle>(String styleName)
 {
-	UIDropDownListStyle *result = null;
+	UI::DropDownListStyle *result = null;
 
 	Asset *asset = getAsset(AssetType_DropDownListStyle, styleName);
 	if (asset != null)
 	{
-		result = (UIDropDownListStyle *)&asset->_localData;
+		result = (UI::DropDownListStyle *)&asset->_localData;
 	}
 
 	return result;
 }
-template <> UILabelStyle *findStyle<UILabelStyle>(String styleName)
+template <> UI::LabelStyle *findStyle<UI::LabelStyle>(String styleName)
 {
-	UILabelStyle *result = null;
+	UI::LabelStyle *result = null;
 
 	Asset *asset = getAsset(AssetType_LabelStyle, styleName);
 	if (asset != null)
 	{
-		result = (UILabelStyle *)&asset->_localData;
+		result = (UI::LabelStyle *)&asset->_localData;
 	}
 
 	return result;
 }
-template <> UIPanelStyle *findStyle<UIPanelStyle>(String styleName)
+template <> UI::PanelStyle *findStyle<UI::PanelStyle>(String styleName)
 {
-	UIPanelStyle *result = null;
+	UI::PanelStyle *result = null;
 
 	Asset *asset = getAsset(AssetType_PanelStyle, styleName);
 	if (asset != null)
 	{
-		result = (UIPanelStyle *)&asset->_localData;
+		result = (UI::PanelStyle *)&asset->_localData;
 	}
 
 	return result;
 }
-template <> UIScrollbarStyle *findStyle<UIScrollbarStyle>(String styleName)
+template <> UI::ScrollbarStyle *findStyle<UI::ScrollbarStyle>(String styleName)
 {
-	UIScrollbarStyle *result = null;
+	UI::ScrollbarStyle *result = null;
 
 	Asset *asset = getAsset(AssetType_ScrollbarStyle, styleName);
 	if (asset != null)
 	{
-		result = (UIScrollbarStyle *)&asset->_localData;
+		result = (UI::ScrollbarStyle *)&asset->_localData;
 	}
 
 	return result;
 }
-template <> UISliderStyle *findStyle<UISliderStyle>(String styleName)
+template <> UI::SliderStyle *findStyle<UI::SliderStyle>(String styleName)
 {
-	UISliderStyle *result = null;
+	UI::SliderStyle *result = null;
 
 	Asset *asset = getAsset(AssetType_SliderStyle, styleName);
 	if (asset != null)
 	{
-		result = (UISliderStyle *)&asset->_localData;
+		result = (UI::SliderStyle *)&asset->_localData;
 	}
 
 	return result;
 }
-template <> UITextInputStyle *findStyle<UITextInputStyle>(String styleName)
+template <> UI::TextInputStyle *findStyle<UI::TextInputStyle>(String styleName)
 {
-	UITextInputStyle *result = null;
+	UI::TextInputStyle *result = null;
 
 	Asset *asset = getAsset(AssetType_TextInputStyle, styleName);
 	if (asset != null)
 	{
-		result = (UITextInputStyle *)&asset->_localData;
+		result = (UI::TextInputStyle *)&asset->_localData;
 	}
 
 	return result;
 }
-template <> UIWindowStyle *findStyle<UIWindowStyle>(String styleName)
+template <> UI::WindowStyle *findStyle<UI::WindowStyle>(String styleName)
 {
-	UIWindowStyle *result = null;
+	UI::WindowStyle *result = null;
 
 	Asset *asset = getAsset(AssetType_WindowStyle, styleName);
 	if (asset != null)
 	{
-		result = (UIWindowStyle *)&asset->_localData;
+		result = (UI::WindowStyle *)&asset->_localData;
 	}
 
 	return result;

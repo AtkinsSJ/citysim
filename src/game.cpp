@@ -464,7 +464,7 @@ void updateAndRenderGameUI(GameState *gameState)
 	
 	RenderBuffer *uiBuffer = &renderer->uiBuffer;
 	V2I centre = v2i(renderer->uiCamera.pos);
-	UILabelStyle *labelStyle = findStyle<UILabelStyle>("title"_s);
+	UI::LabelStyle *labelStyle = findStyle<UI::LabelStyle>("title"_s);
 	BitmapFont *font = getFont(&labelStyle->font);
 	City *city = &gameState->city;
 
@@ -491,7 +491,7 @@ void updateAndRenderGameUI(GameState *gameState)
 		// We're sizing the clock area based on the speed control buttons.
 		// The >>> button is the largest, so they're all set to that size.
 		// For the total area, we just add their widths and padding together.
-		UIButtonStyle *buttonStyle = findStyle<UIButtonStyle>("default"_s);
+		UI::ButtonStyle *buttonStyle = findStyle<UI::ButtonStyle>("default"_s);
 		V2I speedButtonSize = UI::calculateButtonSize(">>>"_s, buttonStyle);
 		s32 clockWidth = (speedButtonSize.x * 4) + (uiPadding * 3);
 
@@ -545,8 +545,8 @@ void updateAndRenderGameUI(GameState *gameState)
 	UI::drawText(uiBuffer, font, myprintf("R: {0}\nC: {1}\nI: {2}"_s, {formatInt(city->zoneLayer.demand[Zone_Residential]), formatInt(city->zoneLayer.demand[Zone_Commercial]), formatInt(city->zoneLayer.demand[Zone_Industrial])}),
 	       v2i(round_s32(UI::windowSize.x * 0.75f), uiPadding), ALIGN_RIGHT, labelStyle->textColor);
 
-	UIButtonStyle *buttonStyle = findStyle<UIButtonStyle>("default"_s);
-	UIPanelStyle *popupMenuPanelStyle = findStyle<UIPanelStyle>("popupMenu"_s);
+	UI::ButtonStyle *buttonStyle = findStyle<UI::ButtonStyle>("default"_s);
+	UI::PanelStyle *popupMenuPanelStyle = findStyle<UI::PanelStyle>("popupMenu"_s);
 	// Build UI
 	{
 		// The, um, "MENU" menu. Hmmm.
@@ -1178,12 +1178,12 @@ void drawDataViewUI(GameState *gameState)
 	DEBUG_FUNCTION();
 	
 	RenderBuffer *uiBuffer = &renderer->uiBuffer;
-	UILabelStyle *labelStyle = findStyle<UILabelStyle>("title"_s);
+	UI::LabelStyle *labelStyle = findStyle<UI::LabelStyle>("title"_s);
 	BitmapFont *font = getFont(&labelStyle->font);
 
 	const s32 uiPadding = 4; // TODO: Move this somewhere sensible!
-	UIButtonStyle *buttonStyle = findStyle<UIButtonStyle>("default"_s);
-	UIPanelStyle *popupMenuPanelStyle = findStyle<UIPanelStyle>("popupMenu"_s);
+	UI::ButtonStyle *buttonStyle = findStyle<UI::ButtonStyle>("default"_s);
+	UI::PanelStyle *popupMenuPanelStyle = findStyle<UI::PanelStyle>("popupMenu"_s);
 
 	// Data-views menu
 	String dataViewButtonText = getText("button_data_views"_s);
@@ -1202,7 +1202,7 @@ void drawDataViewUI(GameState *gameState)
 	if (UI::isMenuVisible(Menu_DataViews))
 	{
 		// Measure the menu contents
-		UIButtonStyle *popupButtonStyle = findStyle<UIButtonStyle>(&popupMenuPanelStyle->buttonStyle);
+		UI::ButtonStyle *popupButtonStyle = findStyle<UI::ButtonStyle>(&popupMenuPanelStyle->buttonStyle);
 		s32 buttonMaxWidth = 0;
 		s32 buttonMaxHeight = 0;
 		s32 menuContentHeight = (DataViewCount - 1) * popupMenuPanelStyle->contentPadding;

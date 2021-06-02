@@ -276,15 +276,15 @@ struct Asset
 
 		Texture texture;
 
-		UIButtonStyle    	buttonStyle;
-		UICheckboxStyle  	checkboxStyle;
-		UIConsoleStyle   	consoleStyle;
-		UIDropDownListStyle	dropDownListStyle;
-		UILabelStyle     	labelStyle;
-		UIPanelStyle     	panelStyle;
-		UIScrollbarStyle 	scrollbarStyle;
-		UISliderStyle 		sliderStyle;
-		UITextInputStyle 	textInputStyle;
-		UIWindowStyle    	windowStyle;
+		UI::ButtonStyle    		buttonStyle;
+		UI::CheckboxStyle  		checkboxStyle;
+		UI::ConsoleStyle   		consoleStyle;
+		UI::DropDownListStyle	dropDownListStyle;
+		UI::LabelStyle     		labelStyle;
+		UI::PanelStyle     		panelStyle;
+		UI::ScrollbarStyle 		scrollbarStyle;
+		UI::SliderStyle 		sliderStyle;
+		UI::TextInputStyle 		textInputStyle;
+		UI::WindowStyle    		windowStyle;
 	};
 };

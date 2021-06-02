@@ -1,98 +1,9 @@
 #pragma once
 
-enum UIDrawableType
-{
-	Drawable_None,
-	Drawable_Color,
-	Drawable_Gradient,
-	Drawable_Ninepatch,
-	Drawable_Sprite,
-};
-
-struct UIDrawableStyle
-{
-	UIDrawableType type;
-	V4 color;
-
-	union
-	{
-		struct {
-			V4 color00;
-			V4 color01;
-			V4 color10;
-			V4 color11;
-		} gradient;
-
-		AssetRef ninepatch;
-
-		SpriteRef sprite;
-	};
-
-// METHODS
-	bool hasFixedSize();
-	V2I getSize(); // NB: Returns 0 for sizeless types
-};
-Maybe<UIDrawableStyle> readDrawableStyle(struct LineReader *reader);
-
-enum UIStyleType {
-	UIStyle_None = 0,
-	UIStyle_Button = 1,
-	UIStyle_Checkbox,
-	UIStyle_Console,
-	UIStyle_DropDownList,
-	UIStyle_Label,
-	UIStyle_Panel,
-	UIStyle_Scrollbar,
-	UIStyle_Slider,
-	UIStyle_TextInput,
-	UIStyle_Window,
-	UIStyleTypeCount
-};
-
-struct UIButtonStyle
-{
-	String name;
-
-	AssetRef font;
-	V4 textColor;
-	u32 textAlignment;
-
-	s32 padding;
-	s32 contentPadding; // Between icons and content
-
-	UIDrawableStyle startIcon;
-	u32 startIconAlignment;
-
-	UIDrawableStyle endIcon;
-	u32 endIconAlignment;
-
-	UIDrawableStyle background;
-	UIDrawableStyle backgroundHover;
-	UIDrawableStyle backgroundPressed;
-	UIDrawableStyle backgroundDisabled;
-};
-
-struct UICheckboxStyle
-{
-	String name;
-
-	s32 padding;
-
-	UIDrawableStyle background;
-	UIDrawableStyle backgroundHover;
-	UIDrawableStyle backgroundPressed;
-	UIDrawableStyle backgroundDisabled;
-
-	V2I contentSize;
-	UIDrawableStyle check;
-	UIDrawableStyle checkHover;
-	UIDrawableStyle checkPressed;
-	UIDrawableStyle checkDisabled;
-};
-
+// TODO: make this an enum class? For the nicer namespacing
 enum ConsoleLineStyleID
 {
-	// Must match the order in UIConsoleStyle!
+	// Must match the order in ConsoleStyle!
 	CLS_Default,
 	CLS_InputEcho,
 	CLS_Error,
@@ -102,224 +13,319 @@ enum ConsoleLineStyleID
 	CLS_COUNT
 };
 
-struct UIConsoleStyle
-{
-	String name;
-	
-	AssetRef font;
-	union {
-		V4 outputTextColors[CLS_COUNT];
+struct LineReader;
 
-		struct {
-			// Must match the order in ConsoleLineStyleID!
-			V4 outputTextColor;
-			V4 outputTextColorInputEcho;
-			V4 outputTextColorError;
-			V4 outputTextColorSuccess;
-			V4 outputTextColorWarning;
-		};
+namespace UI
+{
+	enum DrawableType
+	{
+		Drawable_None,
+		Drawable_Color,
+		Drawable_Gradient,
+		Drawable_Ninepatch,
+		Drawable_Sprite,
 	};
 
-	UIDrawableStyle background;
-	s32 padding;
+	struct DrawableStyle
+	{
+		DrawableType type;
+		V4 color;
 
-	AssetRef scrollbarStyle;
-	AssetRef textInputStyle;
-};
+		union
+		{
+			struct {
+				V4 color00;
+				V4 color01;
+				V4 color10;
+				V4 color11;
+			} gradient;
 
-struct UIDropDownListStyle
-{
-	String name;
+			AssetRef ninepatch;
 
-	// For now, we'll just piggy-back off of other styles:
-	AssetRef buttonStyle; // For the normal state
-	AssetRef panelStyle;  // For the drop-down state
-};
+			SpriteRef sprite;
+		};
 
-struct UILabelStyle
-{
-	String name;
-	
-	AssetRef font;
-	V4 textColor;
-};
+	// METHODS
+		bool hasFixedSize();
+		V2I getSize(); // NB: Returns 0 for sizeless types
+	};
+	Maybe<DrawableStyle> readDrawableStyle(LineReader *reader);
 
-struct UIPanelStyle
-{
-	String name;
-	
-	s32 margin;
-	s32 contentPadding;
-	u32 widgetAlignment;
-	
-	UIDrawableStyle background;
+	enum StyleType {
+		Style_None = 0,
+		Style_Button = 1,
+		Style_Checkbox,
+		Style_Console,
+		Style_DropDownList,
+		Style_Label,
+		Style_Panel,
+		Style_Scrollbar,
+		Style_Slider,
+		Style_TextInput,
+		Style_Window,
+		StyleTypeCount
+	};
 
-	AssetRef buttonStyle;
-	AssetRef checkboxStyle;
-	AssetRef dropDownListStyle;
-	AssetRef labelStyle;
-	AssetRef scrollbarStyle;
-	AssetRef sliderStyle;
-	AssetRef textInputStyle;
-};
+	struct ButtonStyle
+	{
+		String name;
 
-struct UIScrollbarStyle
-{
-	String name;
+		AssetRef font;
+		V4 textColor;
+		u32 textAlignment;
 
-	s32 width;
-	
-	UIDrawableStyle background;
-	
-	UIDrawableStyle thumb;
-	UIDrawableStyle thumbHover;
-	UIDrawableStyle thumbPressed;
-	UIDrawableStyle thumbDisabled;
-};
+		s32 padding;
+		s32 contentPadding; // Between icons and content
 
-struct UISliderStyle
-{
-	String name;
-	
-	UIDrawableStyle track;
-	s32 trackThickness;
+		DrawableStyle startIcon;
+		u32 startIconAlignment;
 
-	UIDrawableStyle thumb;
-	UIDrawableStyle thumbHover;
-	UIDrawableStyle thumbPressed;
-	UIDrawableStyle thumbDisabled;
-	V2I thumbSize;
-};
+		DrawableStyle endIcon;
+		u32 endIconAlignment;
 
-struct UITextInputStyle
-{
-	String name;
-	
-	AssetRef font;
-	V4 textColor;
-	u32 textAlignment;
+		DrawableStyle background;
+		DrawableStyle backgroundHover;
+		DrawableStyle backgroundPressed;
+		DrawableStyle backgroundDisabled;
+	};
 
-	UIDrawableStyle background;
-	s32 padding;
-	
-	bool showCaret;
-	f32 caretFlashCycleDuration;
-};
+	struct CheckboxStyle
+	{
+		String name;
 
-struct UIWindowStyle
-{
-	String name;
-	
-	s32 titleBarHeight;
-	V4 titleBarColor;
-	V4 titleBarColorInactive;
-	AssetRef titleFont;
-	V4 titleColor;
-	V4 titleBarButtonHoverColor;
+		s32 padding;
 
-	V2I offsetFromMouse;
+		DrawableStyle background;
+		DrawableStyle backgroundHover;
+		DrawableStyle backgroundPressed;
+		DrawableStyle backgroundDisabled;
 
-	AssetRef panelStyle;
-};
+		V2I contentSize;
+		DrawableStyle check;
+		DrawableStyle checkHover;
+		DrawableStyle checkPressed;
+		DrawableStyle checkDisabled;
+	};
 
-enum PropType
-{
-	PropType_Alignment,
-	PropType_Bool,
-	PropType_Color,
-	PropType_Drawable,
-	PropType_Float,
-	PropType_Font,
-	PropType_Int,
-	PropType_String,
-	PropType_Style,
-	PropType_V2I,
-	PropTypeCount
-};
+	struct ConsoleStyle
+	{
+		String name;
+		
+		AssetRef font;
+		union {
+			V4 outputTextColors[CLS_COUNT];
 
-struct UIStyle
-{
-	UIStyleType type;
-	String name;
+			struct {
+				// Must match the order in ConsoleLineStyleID!
+				V4 outputTextColor;
+				V4 outputTextColorInputEcho;
+				V4 outputTextColorError;
+				V4 outputTextColorSuccess;
+				V4 outputTextColorWarning;
+			};
+		};
 
-	// PROPERTIES
-	s32 padding;
-	s32 contentPadding;
-	V2I contentSize;
-	s32 margin;
-	V2I offsetFromMouse;
-	s32 width;
-	u32 widgetAlignment;
+		DrawableStyle background;
+		s32 padding;
 
-	UIDrawableStyle background;
-	UIDrawableStyle backgroundDisabled;
-	UIDrawableStyle backgroundHover;
-	UIDrawableStyle backgroundPressed;
+		AssetRef scrollbarStyle;
+		AssetRef textInputStyle;
+	};
 
-	String buttonStyle;
-	String checkboxStyle;
-	String dropDownListStyle;
-	String labelStyle;
-	String panelStyle;
-	String scrollbarStyle;
-	String sliderStyle;
-	String textInputStyle;
+	struct DropDownListStyle
+	{
+		String name;
 
-	UIDrawableStyle startIcon;
-	u32 startIconAlignment;
-	
-	UIDrawableStyle endIcon;
-	u32 endIconAlignment;
-	
-	bool showCaret;
-	f32 caretFlashCycleDuration;
+		// For now, we'll just piggy-back off of other styles:
+		AssetRef buttonStyle; // For the normal state
+		AssetRef panelStyle;  // For the drop-down state
+	};
 
-	UIDrawableStyle track;
-	s32 trackThickness;
-	UIDrawableStyle thumb;
-	UIDrawableStyle thumbHover;
-	UIDrawableStyle thumbPressed;
-	UIDrawableStyle thumbDisabled;
-	V2I thumbSize;
-	
-	V4 overlayColor;
+	struct LabelStyle
+	{
+		String name;
+		
+		AssetRef font;
+		V4 textColor;
+	};
 
-	AssetRef font;
-	u32 textAlignment;
-	V4 textColor;
-	
-	V4 titleBarButtonHoverColor;
-	V4 titleBarColor;
-	V4 titleBarColorInactive;
-	s32 titleBarHeight;
-	V4 titleColor;
-	AssetRef titleFont;
+	struct PanelStyle
+	{
+		String name;
+		
+		s32 margin;
+		s32 contentPadding;
+		u32 widgetAlignment;
+		
+		DrawableStyle background;
 
-	// Checkbox specific
-	UIDrawableStyle check;
-	UIDrawableStyle checkHover;
-	UIDrawableStyle checkPressed;
-	UIDrawableStyle checkDisabled;
+		AssetRef buttonStyle;
+		AssetRef checkboxStyle;
+		AssetRef dropDownListStyle;
+		AssetRef labelStyle;
+		AssetRef scrollbarStyle;
+		AssetRef sliderStyle;
+		AssetRef textInputStyle;
+	};
 
-	// Console
-	V4 outputTextColor;
-	V4 outputTextColorInputEcho;
-	V4 outputTextColorError;
-	V4 outputTextColorSuccess;
-	V4 outputTextColorWarning;
-};
+	struct ScrollbarStyle
+	{
+		String name;
 
-struct UIProperty
-{
-	PropType type;
-	smm offsetInStyleStruct;
-	bool existsInStyle[UIStyleTypeCount];
-};
+		s32 width;
+		
+		DrawableStyle background;
+		
+		DrawableStyle thumb;
+		DrawableStyle thumbHover;
+		DrawableStyle thumbPressed;
+		DrawableStyle thumbDisabled;
+	};
 
-HashTable<UIProperty> uiStyleProperties;
-HashTable<UIStyleType> uiStyleTypesByName;
-void initUIStyleConstants();
-void assignStyleProperties(UIStyleType type, std::initializer_list<String> properties);
+	struct SliderStyle
+	{
+		String name;
+		
+		DrawableStyle track;
+		s32 trackThickness;
+
+		DrawableStyle thumb;
+		DrawableStyle thumbHover;
+		DrawableStyle thumbPressed;
+		DrawableStyle thumbDisabled;
+		V2I thumbSize;
+	};
+
+	struct TextInputStyle
+	{
+		String name;
+		
+		AssetRef font;
+		V4 textColor;
+		u32 textAlignment;
+
+		DrawableStyle background;
+		s32 padding;
+		
+		bool showCaret;
+		f32 caretFlashCycleDuration;
+	};
+
+	struct WindowStyle
+	{
+		String name;
+		
+		s32 titleBarHeight;
+		V4 titleBarColor;
+		V4 titleBarColorInactive;
+		AssetRef titleFont;
+		V4 titleColor;
+		V4 titleBarButtonHoverColor;
+
+		V2I offsetFromMouse;
+
+		AssetRef panelStyle;
+	};
+
+	enum PropType
+	{
+		PropType_Alignment,
+		PropType_Bool,
+		PropType_Color,
+		PropType_Drawable,
+		PropType_Float,
+		PropType_Font,
+		PropType_Int,
+		PropType_String,
+		PropType_Style,
+		PropType_V2I,
+		PropTypeCount
+	};
+
+	struct Style
+	{
+		StyleType type;
+		String name;
+
+		// PROPERTIES
+		s32 padding;
+		s32 contentPadding;
+		V2I contentSize;
+		s32 margin;
+		V2I offsetFromMouse;
+		s32 width;
+		u32 widgetAlignment;
+
+		DrawableStyle background;
+		DrawableStyle backgroundDisabled;
+		DrawableStyle backgroundHover;
+		DrawableStyle backgroundPressed;
+
+		String buttonStyle;
+		String checkboxStyle;
+		String dropDownListStyle;
+		String labelStyle;
+		String panelStyle;
+		String scrollbarStyle;
+		String sliderStyle;
+		String textInputStyle;
+
+		DrawableStyle startIcon;
+		u32 startIconAlignment;
+		
+		DrawableStyle endIcon;
+		u32 endIconAlignment;
+		
+		bool showCaret;
+		f32 caretFlashCycleDuration;
+
+		DrawableStyle track;
+		s32 trackThickness;
+		DrawableStyle thumb;
+		DrawableStyle thumbHover;
+		DrawableStyle thumbPressed;
+		DrawableStyle thumbDisabled;
+		V2I thumbSize;
+		
+		V4 overlayColor;
+
+		AssetRef font;
+		u32 textAlignment;
+		V4 textColor;
+		
+		V4 titleBarButtonHoverColor;
+		V4 titleBarColor;
+		V4 titleBarColorInactive;
+		s32 titleBarHeight;
+		V4 titleColor;
+		AssetRef titleFont;
+
+		// Checkbox specific
+		DrawableStyle check;
+		DrawableStyle checkHover;
+		DrawableStyle checkPressed;
+		DrawableStyle checkDisabled;
+
+		// Console
+		V4 outputTextColor;
+		V4 outputTextColorInputEcho;
+		V4 outputTextColorError;
+		V4 outputTextColorSuccess;
+		V4 outputTextColorWarning;
+	};
+
+	struct Property
+	{
+		PropType type;
+		smm offsetInStyleStruct;
+		bool existsInStyle[StyleTypeCount];
+	};
+
+	HashTable<Property> styleProperties;
+	HashTable<StyleType> styleTypesByName;
+	void initStyleConstants();
+	void assignStyleProperties(StyleType type, std::initializer_list<String> properties);
+}
 
 void loadUITheme(Blob data, struct Asset *asset);
 
@@ -338,13 +344,13 @@ inline T* findStyle(String styleName, AssetRef *defaultStyle)
 
 template <typename T>
 T* findStyle(String styleName);
-template <> UIButtonStyle		*findStyle<UIButtonStyle>		(String styleName);
-template <> UICheckboxStyle		*findStyle<UICheckboxStyle>		(String styleName);
-template <> UIConsoleStyle		*findStyle<UIConsoleStyle>		(String styleName);
-template <> UIDropDownListStyle *findStyle<UIDropDownListStyle>	(String styleName);
-template <> UILabelStyle		*findStyle<UILabelStyle>		(String styleName);
-template <> UIPanelStyle		*findStyle<UIPanelStyle>		(String styleName);
-template <> UIScrollbarStyle	*findStyle<UIScrollbarStyle>	(String styleName);
-template <> UISliderStyle		*findStyle<UISliderStyle>		(String styleName);
-template <> UITextInputStyle	*findStyle<UITextInputStyle>	(String styleName);
-template <> UIWindowStyle		*findStyle<UIWindowStyle>		(String styleName);
+template <> UI::ButtonStyle		*findStyle<UI::ButtonStyle>		(String styleName);
+template <> UI::CheckboxStyle		*findStyle<UI::CheckboxStyle>		(String styleName);
+template <> UI::ConsoleStyle		*findStyle<UI::ConsoleStyle>		(String styleName);
+template <> UI::DropDownListStyle *findStyle<UI::DropDownListStyle>	(String styleName);
+template <> UI::LabelStyle		*findStyle<UI::LabelStyle>		(String styleName);
+template <> UI::PanelStyle		*findStyle<UI::PanelStyle>		(String styleName);
+template <> UI::ScrollbarStyle	*findStyle<UI::ScrollbarStyle>	(String styleName);
+template <> UI::SliderStyle		*findStyle<UI::SliderStyle>		(String styleName);
+template <> UI::TextInputStyle	*findStyle<UI::TextInputStyle>	(String styleName);
+template <> UI::WindowStyle		*findStyle<UI::WindowStyle>		(String styleName);

@@ -52,6 +52,6 @@ namespace UI
 	TextInput newTextInput(MemoryArena *arena, s32 length, String characterBlacklist = "`"_s);
 	// Returns true if pressed RETURN
 	bool updateTextInput(TextInput *textInput);
-	V2I calculateTextInputSize(TextInput *textInput, struct UITextInputStyle *style, s32 maxWidth = 0, bool fillWidth = true);
-	Rect2I drawTextInput(struct RenderBuffer *renderBuffer, TextInput *textInput, struct UITextInputStyle *style, Rect2I bounds);
+	V2I calculateTextInputSize(TextInput *textInput, struct UI::TextInputStyle *style, s32 maxWidth = 0, bool fillWidth = true);
+	Rect2I drawTextInput(struct RenderBuffer *renderBuffer, TextInput *textInput, struct UI::TextInputStyle *style, Rect2I bounds);
 }
