@@ -73,6 +73,7 @@ A lot of stuff is hard-coded in the renderer now... probably we don't want setsh
 
 Switch to a multiple-compilation-units build?
 - Might make our includes easier? Does it resolve circular dependencies? I guess maybe it doesn't.
+- Actually, I think we'd have to move all template implementations into the header files for that to work? I'm not sure.
 
 Keyboard shortcuts for buttons
 - Don't do this inside the button logic, where it doesn't belong; instead, have a function to call to see if a keyboard shortcut has been pressed. We have a basic system already for debug shortcuts, but will want a nicer system. Probably give different shortcut actions names, like ACTION_CANCEL, and then the user sets a shortcut for that, and you'll do something like:

@@ -370,6 +370,19 @@ void settingsWindowProc(UI::WindowContext *context, void*)
 template <typename T>
 T *getSettingDataRaw(SettingsState *state, SettingDef *def)
 {
+	// Make sure the requested type it the right one
+	switch (def->type)
+	{
+		case SettingType::Bool: 		ASSERT(typeid(T*) == typeid(bool*));	break;
+		case SettingType::Enum: 		ASSERT(typeid(T*) == typeid(s32*));		break;
+		case SettingType::Percent: 		ASSERT(typeid(T*) == typeid(f32*));		break;
+		case SettingType::S32: 			ASSERT(typeid(T*) == typeid(s32*));		break;
+		case SettingType::S32_Range: 	ASSERT(typeid(T*) == typeid(s32*));		break;
+		case SettingType::String: 		ASSERT(typeid(T*) == typeid(String*));	break;
+		case SettingType::V2I: 			ASSERT(typeid(T*) == typeid(V2I*));		break;
+		INVALID_DEFAULT_CASE;
+	}
+
 	T *firstItem = (T*)((u8*)(state) + def->offsetWithinSettingsState);
 	return firstItem;
 }
