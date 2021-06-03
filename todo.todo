@@ -29,9 +29,6 @@ Settings window that lets you modify them
 	-> I've sort of fixed this by making sliders have an inherent length, used if fillWidth is false
 - Text displays of slider values
 
-Replace the multidimensional settings stuff with a V2I for the screen resolution setting
-- The multidim stuff just makes it complicated, and we don't even support multidim in the majority of cases!
-
 BUG: Styles do not properly fall back to a default! (AKA, AssetRefs need thinking about.)
 - When a style is not provided in the .theme file, we end up with a zeroed-out AssetRef struct for it.
 - That then crashes when it reaches checkStyleMatchesType() from findStyle(), because the type is '0'!

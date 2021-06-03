@@ -1,13 +1,14 @@
 #pragma once
 
-enum Type
+enum class SettingType
 {
-	Type_bool,
-	Type_enum,
-	Type_percent,
-	Type_s32,
-	Type_s32_range,
-	Type_String,
+	Bool,
+	Enum,
+	Percent,
+	S32,
+	S32_Range,
+	String,
+	V2I,
 };
 
 struct SettingEnumData
@@ -22,8 +23,7 @@ struct SettingDef
 	String name;
 	String textAssetName;
 	smm offsetWithinSettingsState;
-	Type type;
-	s32 count;
+	SettingType type;
 	union {
 		struct {
 			void *dataA;
@@ -212,17 +212,17 @@ void settingsWindowProc(UI::WindowContext*, void*);
 //
 // INTERNAL
 //
-void registerSetting(String settingName, smm offset, Type type, s32 count, String textAssetName, void *dataA = null, void *dataB = null);
+void registerSetting(String settingName, smm offset, SettingType type, String textAssetName, void *dataA = null, void *dataB = null);
 SettingsState makeDefaultSettings();
 void loadSettingsFile(String name, Blob settingsData);
 
 // Grab a setting. index is for multi-value settings, to specify the array index
 template <typename T>
-T *getSettingDataRaw(SettingsState *state, SettingDef *def, s32 index = 0);
+T *getSettingDataRaw(SettingsState *state, SettingDef *def);
 template <typename T>
-T getSettingData(SettingsState *state, SettingDef *def, s32 index = 0);
+T getSettingData(SettingsState *state, SettingDef *def);
 template <typename T>
-void setSettingData(SettingsState *state, SettingDef *def, T value, s32 index = 0);
+void setSettingData(SettingsState *state, SettingDef *def, T value);
 
 String getUserDataPath();
 String getUserSettingsPath();

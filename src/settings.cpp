@@ -5,23 +5,22 @@ String getEnumDisplayName(SettingEnumData *data)
 	return getText(data->displayName);
 }
 
-void registerSetting(String settingName, smm offset, Type type, s32 count, String textAssetName, void *dataA, void *dataB)
+void registerSetting(String settingName, smm offset, SettingType type, String textAssetName, void *dataA, void *dataB)
 {
 	SettingDef def = {};
 	def.name = settingName;
 	def.textAssetName = textAssetName;
 	def.offsetWithinSettingsState = offset;
 	def.type = type;
-	def.count = count;
 
 	switch (type)
 	{
-		case Type_enum: {
+		case SettingType::Enum: {
 			def.enumData = (Array<SettingEnumData>*) dataA;
 			ASSERT(dataB == null);
 		} break;
 
-		case Type_s32_range: {
+		case SettingType::S32_Range: {
 			def.intRange.min = truncate<s32>((s64)dataA);
 			def.intRange.max = truncate<s32>((s64)dataB);
 			ASSERT(dataA < dataB);
@@ -60,15 +59,15 @@ void initSettings()
 	settings->userDataPath = makeString(SDL_GetPrefPath("Baffled Badger Games", "CitySim"));
 	settings->userSettingsFilename = "settings.cnf"_s;
 
-#define REGISTER_SETTING(settingName, type, count, ...) registerSetting(makeString(#settingName, true), offsetof(SettingsState, settingName), Type_##type, count, makeString("setting_" #settingName), __VA_ARGS__)
+#define REGISTER_SETTING(settingName, type, ...) registerSetting(makeString(#settingName, true), offsetof(SettingsState, settingName), type, makeString("setting_" #settingName), __VA_ARGS__)
 
 	// NB: The settings will appear in this order in the settings window
-	REGISTER_SETTING(windowed,		bool,		1);
-	REGISTER_SETTING(resolution,	s32,		2);
-	REGISTER_SETTING(locale,		enum,		1, &localeData);
-	REGISTER_SETTING(musicVolume,	percent,	1);
-	REGISTER_SETTING(soundVolume,	percent,	1);
-	REGISTER_SETTING(widgetCount,	s32_range,	1, (void*)5, (void*)15);
+	REGISTER_SETTING(windowed,		SettingType::Bool);
+	REGISTER_SETTING(resolution,	SettingType::V2I);
+	REGISTER_SETTING(locale,		SettingType::Enum, &localeData);
+	REGISTER_SETTING(musicVolume,	SettingType::Percent);
+	REGISTER_SETTING(soundVolume,	SettingType::Percent);
+	REGISTER_SETTING(widgetCount,	SettingType::S32_Range, (void*)5, (void*)15);
 
 #undef REGISTER_SETTING
 }
@@ -101,80 +100,86 @@ void loadSettingsFile(String name, Blob settingsData)
 		{
 			SettingDef *def = maybeDef.value;
 
-			for (s32 i=0; i < def->count; i++)
+			switch (def->type)
 			{
-				switch (def->type)
+				case SettingType::Bool:
 				{
-					case Type_bool:
+					Maybe<bool> value = readBool(&reader);
+					if (value.isValid)
 					{
-						Maybe<bool> value = readBool(&reader);
-						if (value.isValid)
-						{
-							setSettingData<bool>(&settings->settings, def, value.value, i);
-						}
-					} break;
+						setSettingData<bool>(&settings->settings, def, value.value);
+					}
+				} break;
 
-					case Type_enum:
+				case SettingType::Enum:
+				{
+					String token = readToken(&reader);
+					// Look it up in the enum data
+					Array<SettingEnumData> enumData = *def->enumData;
+					bool foundValue = false;
+					for (s32 enumValueIndex = 0; enumValueIndex < enumData.count; enumValueIndex++)
 					{
-						String token = readToken(&reader);
-						// Look it up in the enum data
-						Array<SettingEnumData> enumData = *def->enumData;
-						bool foundValue = false;
-						for (s32 enumValueIndex = 0; enumValueIndex < enumData.count; enumValueIndex++)
+						if (equals(enumData[enumValueIndex].id, token))
 						{
-							if (equals(enumData[enumValueIndex].id, token))
-							{
-								setSettingData<s32>(&settings->settings, def, enumValueIndex, i);
+							setSettingData<s32>(&settings->settings, def, enumValueIndex);
 
-								foundValue = true;
-								break;
-							}
+							foundValue = true;
+							break;
 						}
+					}
 
-						if (!foundValue)
-						{
-							error(&reader, "Couldn't find '{0}' in the list of valid values for setting '{1}'."_s, {token, def->name});
-						}
-
-					} break;
-
-					case Type_percent:
+					if (!foundValue)
 					{
-						Maybe<f64> value = readFloat(&reader);
-						if (value.isValid)
-						{
-							f32 clampedValue = clamp01((f32)value.value);
-							setSettingData<f32>(&settings->settings, def, clampedValue, i);
-						}
-					} break;
+						error(&reader, "Couldn't find '{0}' in the list of valid values for setting '{1}'."_s, {token, def->name});
+					}
 
-					case Type_s32:
+				} break;
+
+				case SettingType::Percent:
+				{
+					Maybe<f64> value = readFloat(&reader);
+					if (value.isValid)
 					{
-						Maybe<s32> value = readInt<s32>(&reader);
-						if (value.isValid)
-						{
-							setSettingData<s32>(&settings->settings, def, value.value, i);
-						}
-					} break;
+						f32 clampedValue = clamp01((f32)value.value);
+						setSettingData<f32>(&settings->settings, def, clampedValue);
+					}
+				} break;
 
-					case Type_s32_range:
+				case SettingType::S32:
+				{
+					Maybe<s32> value = readInt<s32>(&reader);
+					if (value.isValid)
 					{
-						Maybe<s32> value = readInt<s32>(&reader);
-						if (value.isValid)
-						{
-							s32 clampedValue = clamp(value.value, def->intRange.min, def->intRange.max);
-							setSettingData<s32>(&settings->settings, def, clampedValue, i);
-						}
-					} break;
+						setSettingData<s32>(&settings->settings, def, value.value);
+					}
+				} break;
 
-					case Type_String:
+				case SettingType::S32_Range:
+				{
+					Maybe<s32> value = readInt<s32>(&reader);
+					if (value.isValid)
 					{
-						String value = pushString(&settings->settingsArena, readToken(&reader));
-						setSettingData<String>(&settings->settings, def, value, i);
-					} break;
+						s32 clampedValue = clamp(value.value, def->intRange.min, def->intRange.max);
+						setSettingData<s32>(&settings->settings, def, clampedValue);
+					}
+				} break;
 
-					default: ASSERT(false); //Unhandled setting type!
-				}
+				case SettingType::String:
+				{
+					String value = pushString(&settings->settingsArena, readToken(&reader));
+					setSettingData<String>(&settings->settings, def, value);
+				} break;
+
+				case SettingType::V2I:
+				{
+					Maybe<V2I> value = readV2I(&reader);
+					if (value.isValid)
+					{
+						setSettingData<V2I>(&settings->settings, def, value.value);
+					}
+				} break;
+
+				default: ASSERT(false); //Unhandled setting type!
 			}
 		}
 	}
@@ -206,41 +211,44 @@ String settingToString(SettingsState *state, SettingDef *def)
 {
 	StringBuilder stb = newStringBuilder(256);
 
-	for (s32 i=0; i < def->count; i++)
+	switch (def->type)
 	{
-		if (i > 0) append(&stb, ' ');
-
-		switch (def->type)
+		case SettingType::Bool:
 		{
-			case Type_bool:
-			{
-				append(&stb, formatBool(getSettingData<bool>(state, def, i)));
-			} break;
+			append(&stb, formatBool(getSettingData<bool>(state, def)));
+		} break;
 
-			case Type_enum:
-			{
-				s32 enumValueIndex = getSettingData<s32>(state, def, i);
-				append(&stb, (*def->enumData)[enumValueIndex].id);
-			} break;
+		case SettingType::Enum:
+		{
+			s32 enumValueIndex = getSettingData<s32>(state, def);
+			append(&stb, (*def->enumData)[enumValueIndex].id);
+		} break;
 
-			case Type_percent:
-			{
-				append(&stb, formatFloat(getSettingData<f32>(state, def, i), 2));
-			} break;
+		case SettingType::Percent:
+		{
+			append(&stb, formatFloat(getSettingData<f32>(state, def), 2));
+		} break;
 
-			case Type_s32:
-			case Type_s32_range:
-			{
-				append(&stb, formatInt(getSettingData<s32>(state, def, i)));
-			} break;
+		case SettingType::S32:
+		case SettingType::S32_Range:
+		{
+			append(&stb, formatInt(getSettingData<s32>(state, def)));
+		} break;
 
-			case Type_String:
-			{
-				append(&stb, getSettingData<String>(state, def, i));
-			} break;
+		case SettingType::String:
+		{
+			append(&stb, getSettingData<String>(state, def));
+		} break;
 
-			default: ASSERT(false); //Unhandled setting type!
-		}
+		case SettingType::V2I:
+		{
+			V2I value = getSettingData<V2I>(state, def);
+			append(&stb, formatInt(value.x));
+			append(&stb, 'x');
+			append(&stb, formatInt(value.y));
+		} break;
+
+		default: ASSERT(false); //Unhandled setting type!
 	}
 
 	return getString(&stb);
@@ -319,23 +327,19 @@ void settingsWindowProc(UI::WindowContext *context, void*)
 		ui->alignWidgets(ALIGN_RIGHT);
 		switch (def->type)
 		{
-			case Type_bool: {
-				ASSERT(def->count == 1);
+			case SettingType::Bool: {
 				ui->addCheckbox(getSettingDataRaw<bool>(&settings->workingState, def));
 			} break;
 
-			case Type_enum: {
-				ASSERT(def->count == 1);
+			case SettingType::Enum: {
 				ui->addDropDownList(def->enumData, getSettingDataRaw<s32>(&settings->workingState, def), getEnumDisplayName);
 			} break;
 
-			case Type_percent: {
-				ASSERT(def->count == 1);
+			case SettingType::Percent: {
 				ui->addSlider(getSettingDataRaw<f32>(&settings->workingState, def), 0.0f, 1.0f);
 			} break;
 
-			case Type_s32_range: {
-				ASSERT(def->count == 1);
+			case SettingType::S32_Range: {
 				ui->addSlider(getSettingDataRaw<s32>(&settings->workingState, def), def->intRange.min, def->intRange.max);
 			} break;
 
@@ -364,20 +368,20 @@ void settingsWindowProc(UI::WindowContext *context, void*)
 }
 
 template <typename T>
-T *getSettingDataRaw(SettingsState *state, SettingDef *def, s32 index)
+T *getSettingDataRaw(SettingsState *state, SettingDef *def)
 {
 	T *firstItem = (T*)((u8*)(state) + def->offsetWithinSettingsState);
-	return firstItem + index;
+	return firstItem;
 }
 
 template <typename T>
-inline T getSettingData(SettingsState *state, SettingDef *def, s32 index)
+inline T getSettingData(SettingsState *state, SettingDef *def)
 {
-	return *getSettingDataRaw<T>(state, def, index);
+	return *getSettingDataRaw<T>(state, def);
 }
 
 template <typename T>
-inline void setSettingData(SettingsState *state, SettingDef *def, T value, s32 index)
+inline void setSettingData(SettingsState *state, SettingDef *def, T value)
 {
-	*getSettingDataRaw<T>(state, def, index) = value;
+	*getSettingDataRaw<T>(state, def) = value;
 }
