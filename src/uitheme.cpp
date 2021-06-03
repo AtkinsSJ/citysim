@@ -129,7 +129,6 @@ namespace UI
 		PROP(endIconAlignment,			Alignment);
 		PROP(font,						Font);
 		PROP(labelStyle,				Style);
-		PROP(margin,					Int);
 		PROP(offsetFromMouse,			V2I);
 		PROP(outputTextColor,			Color);
 		PROP(outputTextColorInputEcho,	Color);
@@ -219,7 +218,7 @@ namespace UI
 			"contentPadding"_s,
 			"dropDownListStyle"_s,
 			"labelStyle"_s,
-			"margin"_s,
+			"padding"_s,
 			"scrollbarStyle"_s,
 			"sliderStyle"_s,
 			"textInputStyle"_s,
@@ -641,7 +640,7 @@ void loadUITheme(Blob data, Asset *asset)
 						UI::PanelStyle *panel = &childAsset->panelStyle;
 						panel->name = style->name;
 
-						panel->margin = style->margin;
+						panel->padding = style->padding;
 						panel->contentPadding = style->contentPadding;
 						panel->widgetAlignment = style->widgetAlignment;
 						panel->background = style->background;

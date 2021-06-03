@@ -24,7 +24,7 @@ namespace UI
 		this->renderBuffer = renderBuffer;
 		
 		this->bounds = bounds;
-		this->contentArea = shrink(bounds, this->style->margin);
+		this->contentArea = shrink(bounds, this->style->padding);
 		this->layoutBottomToTop = (flags & PanelFlags::LayoutBottomToTop) != 0;
 
 		// Default to left-aligned
@@ -442,7 +442,7 @@ namespace UI
 		}
 
 		s32 contentHeight = (layoutBottomToTop ? (contentArea.h - currentBottom)
-										 : (currentTop + style->margin));
+										 : (currentTop + style->padding.bottom));
 
 		bool boundsChanged = false;
 
@@ -471,18 +471,19 @@ namespace UI
 
 		if (shrinkToContentHeight)
 		{
+			s32 totalVPadding = style->padding.top + style->padding.bottom;
 			if (layoutBottomToTop)
 			{
-				contentHeight = (contentArea.h - currentBottom) + style->contentPadding + (2 *style->margin);
-				s32 newHeight = clamp(contentHeight, (2 *style->margin), bounds.h);
+				contentHeight = (contentArea.h - currentBottom) + style->contentPadding + totalVPadding;
+				s32 newHeight = clamp(contentHeight, totalVPadding, bounds.h);
 				bounds.y += (bounds.h - newHeight);
 				bounds.h = newHeight;
 				boundsChanged = true;
 			}
 			else
 			{
-				contentHeight = currentTop - style->contentPadding + (2 *style->margin);
-				bounds.h = clamp(contentHeight, (2 *style->margin), bounds.h);
+				contentHeight = currentTop - style->contentPadding + totalVPadding;
+				bounds.h = clamp(contentHeight, totalVPadding, bounds.h);
 				boundsChanged = true;
 			}
 
@@ -524,7 +525,7 @@ namespace UI
 
 			if (!hideWidgets)
 			{
-				putScrollbar(hScrollbar, largestLineWidth + (style->margin * 2), hScrollbarBounds, scrollbarStyle, false, renderBuffer);
+				putScrollbar(hScrollbar, largestLineWidth + style->padding.left + style->padding.right, hScrollbarBounds, scrollbarStyle, false, renderBuffer);
 			}
 		}
 

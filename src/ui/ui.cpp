@@ -993,9 +993,12 @@ namespace UI
 
 				LabelStyle *labelStyle = findStyle<LabelStyle>(&style->labelStyle);
 				s32 maxWidth = min(floor_s32(windowSize.x * 0.8f), 500);
-				V2I textSize = calculateTextSize(getFont(&labelStyle->font), toast->text, maxWidth - (2 * style->margin));
+				V2I textSize = calculateTextSize(getFont(&labelStyle->font), toast->text, maxWidth - (style->padding.left + style->padding.right));
 
-				V2I toastSize = v2i(textSize.x + (2 * style->margin), textSize.y + (2 * style->margin));
+				V2I toastSize = v2i(
+					textSize.x + (style->padding.left + style->padding.right),
+					textSize.y + (style->padding.top + style->padding.bottom)
+				);
 
 				f32 animationDistance = toastSize.y + 16.0f;
 

@@ -574,7 +574,7 @@ void updateAndRenderGameUI(GameState *gameState)
 			s32 popupMenuWidth = 150;
 			s32 popupMenuMaxHeight = UI::windowSize.y - (buttonRect.y + buttonRect.h);
 
-			UI::Panel menu = UI::Panel(irectXYWH(buttonRect.x - popupMenuPanelStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight), popupMenuPanelStyle);
+			UI::Panel menu = UI::Panel(irectXYWH(buttonRect.x - popupMenuPanelStyle->padding.left, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight), popupMenuPanelStyle);
 			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
 			{
 				if (menu.addTextButton(getText(getZoneDef(zoneIndex).textAssetName),
@@ -606,7 +606,7 @@ void updateAndRenderGameUI(GameState *gameState)
 			s32 popupMenuWidth = 150;
 			s32 popupMenuMaxHeight = UI::windowSize.y - (buttonRect.y + buttonRect.h);
 
-			UI::Panel menu = UI::Panel(irectXYWH(buttonRect.x - popupMenuPanelStyle->margin, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight), popupMenuPanelStyle);
+			UI::Panel menu = UI::Panel(irectXYWH(buttonRect.x - popupMenuPanelStyle->padding.left, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight), popupMenuPanelStyle);
 
 			for (auto it = constructibleBuildings->iterate();
 				it.hasNext();
@@ -1214,13 +1214,13 @@ void drawDataViewUI(GameState *gameState)
 			buttonMaxHeight = max(buttonMaxHeight, buttonSize.y);
 			menuContentHeight += buttonSize.y;
 		}
-		s32 popupMenuWidth = buttonMaxWidth + (popupMenuPanelStyle->margin * 2);
+		s32 popupMenuWidth = buttonMaxWidth + popupMenuPanelStyle->padding.left + popupMenuPanelStyle->padding.right;
 		s32 popupMenuMaxHeight = UI::windowSize.y - 128;
 		s32 estimatedMenuHeight = (DataViewCount * buttonMaxHeight)
 								+ ((DataViewCount - 1) * popupMenuPanelStyle->contentPadding)
-								+ (popupMenuPanelStyle->margin * 2);
+								+ (popupMenuPanelStyle->padding.top + popupMenuPanelStyle->padding.bottom);
 
-		UI::Panel menu = UI::Panel(irectAligned(dataViewButtonBounds.x - popupMenuPanelStyle->margin, dataViewButtonBounds.y, popupMenuWidth, popupMenuMaxHeight, ALIGN_BOTTOM | ALIGN_LEFT), popupMenuPanelStyle, UI::PanelFlags::LayoutBottomToTop);
+		UI::Panel menu = UI::Panel(irectAligned(dataViewButtonBounds.x - popupMenuPanelStyle->padding.left, dataViewButtonBounds.y, popupMenuWidth, popupMenuMaxHeight, ALIGN_BOTTOM | ALIGN_LEFT), popupMenuPanelStyle, UI::PanelFlags::LayoutBottomToTop);
 
 		// Enable scrolling if there's too many items to fit
 		if (estimatedMenuHeight > popupMenuMaxHeight)

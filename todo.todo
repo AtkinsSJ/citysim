@@ -65,8 +65,8 @@ UI Widgets:
 		✔ Add start/end icon support to text buttons
 - Tabs!
 	- Basically just radio buttons with fancy styling
-- Extend 'padding' into its own type
-	- So we can define different padding values for each side, more easily. Something like how CSS does it.
+✔ Extend 'padding' into its own type
+	✔ So we can define different padding values for each side, more easily. Something like how CSS does it.
 
 A lot of stuff is hard-coded in the renderer now... probably we don't want setshader/settexture to be unique things after all? Rather, a drawRects or drawGrids etc call will do its own texture/shader setup. Maybe don't pass the shaderID in at all, but we'll see... I might want to vary the shader per draw call sometimes. Well, eg, text and pixel art are the same except a different shader! So yeah that's still necessary.
 	- Related, we keep having tricky bugs from the RB's currentTexture or currentShader being wrong, or left over from a previous frame, or other stuff which results in really confusing and hard to track-down bugs. We wouldn't have those issues if each render call had that stuff baked in to it.

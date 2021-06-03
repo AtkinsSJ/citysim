@@ -153,7 +153,7 @@ namespace UI
 	{
 		String name;
 		
-		s32 margin;
+		Padding padding;
 		s32 contentPadding;
 		u32 widgetAlignment;
 		
@@ -259,7 +259,6 @@ namespace UI
 		Padding padding;
 		s32 contentPadding;
 		V2I contentSize;
-		s32 margin;
 		V2I offsetFromMouse;
 		s32 width;
 		u32 widgetAlignment;

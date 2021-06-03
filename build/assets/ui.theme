@@ -21,7 +21,7 @@ background             ninepatch btn_white
 backgroundHover        ninepatch btn_white 192 192 255 255
 backgroundPressed      ninepatch btn_white 128 128 255 255
 backgroundDisabled     ninepatch btn_white 96  96  96 255
-padding                4 20 10 8
+padding                6 12
 textAlignment          H_CENTRE V_CENTRE
 contentPadding         8
 
@@ -49,7 +49,7 @@ buttonStyle dropDownButton
 panelStyle dropDown
 
 :Panel dropDown
-margin                   2
+padding                  2
 contentPadding           4
 widgetAlignment    TOP EXPAND_H
 background        color 0 0 255 255
@@ -106,7 +106,7 @@ thumbDisabled	sprite slider_thumb 96  96  96 255
 thumbSize       9 20
 
 :Panel default
-margin            8
+padding            8
 contentPadding    4
 widgetAlignment    TOP LEFT
 background        color 128 128 128 255
@@ -120,16 +120,16 @@ textInputStyle    default
 
 :Panel inset
 extends default
-margin            4
+padding            4
 background        color  96  96  96 255
 
 :Panel plain
 extends default
-margin 0
+padding 0
 background        none
 
 :Panel popupMenu
-margin            8
+padding            8
 contentPadding    4
 widgetAlignment    TOP EXPAND_H
 background        color 128 128 128 255
@@ -139,11 +139,11 @@ scrollbarStyle    default
 :Panel toast
 labelStyle        default
 background        color 128 128 128 255
-margin            8
+padding            8
 contentPadding    4
 
 :Panel window
-margin                   12
+padding              12
 contentPadding           4
 widgetAlignment    TOP LEFT
 background        color 128 128 128 255
@@ -184,7 +184,7 @@ panelStyle               tooltip
 
 :Panel tooltip
 background        color  96  96  96 128
-margin                   8
+padding                   8
 labelStyle               small
 
 :Console default
