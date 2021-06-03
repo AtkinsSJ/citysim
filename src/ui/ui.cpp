@@ -1,9 +1,5 @@
 // ui.cpp
 
-#include "ui_drawable.cpp"
-#include "ui_panel.cpp"
-#include "ui_window.cpp"
-
 namespace UI
 {
 	void init(MemoryArena *arena)

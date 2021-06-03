@@ -344,13 +344,13 @@ inline T* findStyle(String styleName, AssetRef *defaultStyle)
 
 template <typename T>
 T* findStyle(String styleName);
-template <> UI::ButtonStyle		*findStyle<UI::ButtonStyle>		(String styleName);
+template <> UI::ButtonStyle			*findStyle<UI::ButtonStyle>			(String styleName);
 template <> UI::CheckboxStyle		*findStyle<UI::CheckboxStyle>		(String styleName);
 template <> UI::ConsoleStyle		*findStyle<UI::ConsoleStyle>		(String styleName);
-template <> UI::DropDownListStyle *findStyle<UI::DropDownListStyle>	(String styleName);
-template <> UI::LabelStyle		*findStyle<UI::LabelStyle>		(String styleName);
-template <> UI::PanelStyle		*findStyle<UI::PanelStyle>		(String styleName);
-template <> UI::ScrollbarStyle	*findStyle<UI::ScrollbarStyle>	(String styleName);
-template <> UI::SliderStyle		*findStyle<UI::SliderStyle>		(String styleName);
-template <> UI::TextInputStyle	*findStyle<UI::TextInputStyle>	(String styleName);
-template <> UI::WindowStyle		*findStyle<UI::WindowStyle>		(String styleName);
+template <> UI::DropDownListStyle 	*findStyle<UI::DropDownListStyle>	(String styleName);
+template <> UI::LabelStyle			*findStyle<UI::LabelStyle>			(String styleName);
+template <> UI::PanelStyle			*findStyle<UI::PanelStyle>			(String styleName);
+template <> UI::ScrollbarStyle		*findStyle<UI::ScrollbarStyle>		(String styleName);
+template <> UI::SliderStyle			*findStyle<UI::SliderStyle>			(String styleName);
+template <> UI::TextInputStyle		*findStyle<UI::TextInputStyle>		(String styleName);
+template <> UI::WindowStyle			*findStyle<UI::WindowStyle>			(String styleName);

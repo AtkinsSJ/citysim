@@ -56,7 +56,7 @@ namespace UI
 		char _chars[MAX_TOAST_LENGTH];
 	};
 
-	typedef void (*WindowProc)(UI::WindowContext*, void*);
+	typedef void (*WindowProc)(WindowContext*, void*);
 
 	struct UIState
 	{
@@ -203,5 +203,5 @@ namespace UI
 	// Tooltip
 	void showTooltip(String text);
 	void showTooltip(WindowProc tooltipProc, void *userData = null);
-	void basicTooltipWindowProc(UI::WindowContext *context, void *userData);
+	void basicTooltipWindowProc(WindowContext *context, void *userData);
 }
