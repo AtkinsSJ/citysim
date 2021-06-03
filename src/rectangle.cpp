@@ -377,14 +377,14 @@ inline Rect2I shrink(Rect2I rect, s32 radius)
 	}
 }
 
-inline Rect2I shrink(Rect2I rect, s32 top, s32 right, s32 bottom, s32 left)
+inline Rect2I shrink(Rect2I rect, Padding padding)
 {
-	s32 dWidth = left + right;
-	s32 dHeight = top + bottom;
+	s32 dWidth = padding.left + padding.right;
+	s32 dHeight = padding.top + padding.bottom;
 
 	Rect2I result = irectXYWH(
-		rect.x + left,
-		rect.y + top,
+		rect.x + padding.left,
+		rect.y + padding.top,
 		rect.w - dWidth,
 		rect.h - dHeight
 	);
@@ -491,26 +491,26 @@ inline Rect2I centreWithin(Rect2I outer, Rect2I inner)
 	return result;
 }
 
-inline V2I alignWithinRectangle(Rect2I bounds, u32 alignment, s32 padding)
+inline V2I alignWithinRectangle(Rect2I bounds, u32 alignment, Padding padding)
 {
 	V2I result;
 
 	switch (alignment & ALIGN_H)
 	{
-		case ALIGN_H_CENTRE:  result.x = bounds.x + (bounds.w / 2);      break;
-		case ALIGN_RIGHT:     result.x = bounds.x + bounds.w - padding;  break;
+		case ALIGN_H_CENTRE:  result.x = bounds.x + (bounds.w / 2);				break;
+		case ALIGN_RIGHT:     result.x = bounds.x + bounds.w - padding.right;	break;
 		case ALIGN_LEFT:      // Left is default
 		case ALIGN_EXPAND_H:  // Meaningless here so default to left
-		default:              result.x = bounds.x + padding;             break;
+		default:              result.x = bounds.x + padding.left;				break;
 	}
 
 	switch (alignment & ALIGN_V)
 	{
-		case ALIGN_V_CENTRE:  result.y = bounds.y + (bounds.h / 2);      break;
-		case ALIGN_BOTTOM:    result.y = bounds.y + bounds.h - padding;  break;
+		case ALIGN_V_CENTRE:  result.y = bounds.y + (bounds.h / 2);				break;
+		case ALIGN_BOTTOM:    result.y = bounds.y + bounds.h - padding.bottom;	break;
 		case ALIGN_TOP:       // Top is default
 		case ALIGN_EXPAND_V:  // Meaningless here so default to top
-		default:              result.y = bounds.y + padding;             break;
+		default:              result.y = bounds.y + padding.top;				break;
 	}
 
 	return result;

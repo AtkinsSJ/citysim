@@ -43,17 +43,19 @@ String getRemainderOfLine(LineReader *reader);
 // How many times does the given property appear in the current :Command block?
 s32 countPropertyOccurrences(LineReader *reader, String propertyName);
 
-String readToken(LineReader *reader, char splitChar=0);
-String peekToken(LineReader *reader, char splitChar=0);
+String readToken(LineReader *reader, char splitChar = 0);
+String peekToken(LineReader *reader, char splitChar = 0);
+s32 countRemainingTokens(LineReader *reader, char splitChar = 0);
 
 template<typename T>
-Maybe<T>    readInt  (LineReader *reader, bool isOptional=false, char splitChar=0);
-Maybe<f64>  readFloat(LineReader *reader, bool isOptional=false, char splitChar=0);
-Maybe<bool> readBool (LineReader *reader, bool isOptional=false, char splitChar=0);
+Maybe<T>    readInt  (LineReader *reader, bool isOptional = false, char splitChar = 0);
+Maybe<f64>  readFloat(LineReader *reader, bool isOptional = false, char splitChar = 0);
+Maybe<bool> readBool (LineReader *reader, bool isOptional = false, char splitChar = 0);
 
-Maybe<V4> readColor(LineReader *reader, bool isOptional=false);
 Maybe<u32> readAlignment(LineReader *reader);
+Maybe<V4> readColor(LineReader *reader, bool isOptional = false);
 Maybe<struct EffectRadius> readEffectRadius(LineReader *reader);
+Maybe<Padding> readPadding(LineReader *reader);
 Maybe<V2I> readV2I(LineReader *reader);
 
 void warn(LineReader *reader, String message, std::initializer_list<String> args = {});

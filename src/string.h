@@ -64,8 +64,8 @@ bool isEmpty(String s);
 Maybe<s32> findIndexOfChar(String input, char c, bool searchFromEnd, s32 startIndex=-1);
 bool contains(String input, char c);
 
-// TODO: Add "splitchar" support to countTokens() as well
-s32 countTokens(String input);
+bool isSplitChar(char input, char splitChar);
+s32 countTokens(String input, char splitChar = 0);
 // If splitChar is provided, the token ends before that, and it is skipped.
 // Otherwise, we stop at the first whitespace character, determined by isWhitespace()
 String nextToken(String input, String *remainder, char splitChar = 0);

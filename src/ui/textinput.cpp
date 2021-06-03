@@ -377,8 +377,7 @@ namespace UI
 
 	V2I calculateTextInputSize(TextInput *textInput, TextInputStyle *style, s32 maxWidth, bool fillWidth)
 	{
-		s32 doublePadding = (style->padding * 2);
-		s32 textMaxWidth = (maxWidth == 0) ? 0 : (maxWidth - doublePadding);
+		s32 textMaxWidth = (maxWidth == 0) ? 0 : (maxWidth - (style->padding.left + style->padding.right));
 
 		BitmapFont *font = getFont(&style->font);
 		String text = textInput->toString();
@@ -392,10 +391,10 @@ namespace UI
 		}
 		else
 		{
-			resultWidth = (textSize.x + doublePadding);
+			resultWidth = (textSize.x + style->padding.left + style->padding.right);
 		}
 
-		V2I result = v2i(resultWidth, textSize.y + doublePadding);
+		V2I result = v2i(resultWidth, textSize.y + style->padding.top + style->padding.bottom);
 
 		return result;
 	}

@@ -210,8 +210,8 @@ void updateAndRenderConsole(Console *console)
 		UI::drawTextInput(renderBuffer, &console->input, textInputStyle, textInputBounds);
 
 		// Output area
-		V2I textPos = v2i(consoleStyle->padding, textInputBounds.y);
-		s32 textMaxWidth = screenWidth - (2*consoleStyle->padding);
+		V2I textPos = v2i(consoleStyle->padding.left, textInputBounds.y);
+		s32 textMaxWidth = screenWidth - (consoleStyle->padding.left + consoleStyle->padding.right);
 		s32 heightOfOutputArea = textPos.y;
 		Rect2I consoleBackRect = irectXYWH(0,0,screenWidth, heightOfOutputArea);
 		UI::Drawable(&consoleStyle->background).draw(renderBuffer, consoleBackRect);
@@ -232,7 +232,7 @@ void updateAndRenderConsole(Console *console)
 			UI::putScrollbar(&console->scrollbar, contentHeight, scrollbarBounds, scrollbarStyle, false, renderBuffer);
 		}
 
-		textPos.y -= consoleStyle->padding;
+		textPos.y -= consoleStyle->padding.bottom;
 
 		// print output lines
 		BitmapFont *consoleFont = getFont(&consoleStyle->font);

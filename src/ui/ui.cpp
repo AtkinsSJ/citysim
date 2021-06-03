@@ -197,25 +197,23 @@ namespace UI
 		return bounds;
 	}
 
-	V2I calculateButtonSize(String text, ButtonStyle *buttonStyle, s32 maxWidth, bool fillWidth)
+	V2I calculateButtonSize(String text, ButtonStyle *style, s32 maxWidth, bool fillWidth)
 	{
-		s32 doublePadding = (buttonStyle->padding * 2);
-
 		// If we have icons, take them into account
-		V2I startIconSize = buttonStyle->startIcon.getSize();
-		if (startIconSize.x > 0) startIconSize.x += buttonStyle->contentPadding;
+		V2I startIconSize = style->startIcon.getSize();
+		if (startIconSize.x > 0) startIconSize.x += style->contentPadding;
 
-		V2I endIconSize =  buttonStyle->endIcon.getSize();
-		if (endIconSize.x > 0) endIconSize.x += buttonStyle->contentPadding;
+		V2I endIconSize =  style->endIcon.getSize();
+		if (endIconSize.x > 0) endIconSize.x += style->contentPadding;
 
 		s32 textMaxWidth = 0;
 		if (maxWidth != 0)
 		{
-			textMaxWidth = maxWidth - doublePadding - startIconSize.x - endIconSize.x;
+			textMaxWidth = maxWidth - (style->padding.left + style->padding.right) - startIconSize.x - endIconSize.x;
 		}
 
 		V2I result = {};
-		BitmapFont *font = getFont(&buttonStyle->font);
+		BitmapFont *font = getFont(&style->font);
 
 		if (textMaxWidth < 0)
 		{
@@ -238,25 +236,23 @@ namespace UI
 			}
 			else
 			{
-				resultWidth = (textSize.x + startIconSize.x + endIconSize.x + doublePadding);
+				resultWidth = (textSize.x + startIconSize.x + endIconSize.x + style->padding.left + style->padding.right);
 			}
 
-			result = v2i(resultWidth, max(textSize.y, startIconSize.y, endIconSize.y) + doublePadding);
+			result = v2i(resultWidth, max(textSize.y, startIconSize.y, endIconSize.y) + (style->padding.top + style->padding.bottom));
 		}
 
 		return result;
 	}
 
-	V2I calculateButtonSize(V2I contentSize, ButtonStyle *buttonStyle, s32 maxWidth, bool fillWidth)
+	V2I calculateButtonSize(V2I contentSize, ButtonStyle *style, s32 maxWidth, bool fillWidth)
 	{
-		s32 doublePadding = (buttonStyle->padding * 2);
-
 		// If we have icons, take them into account
-		V2I startIconSize = buttonStyle->startIcon.getSize();
-		if (startIconSize.x > 0) startIconSize.x += buttonStyle->contentPadding;
+		V2I startIconSize = style->startIcon.getSize();
+		if (startIconSize.x > 0) startIconSize.x += style->contentPadding;
 
-		V2I endIconSize =  buttonStyle->endIcon.getSize();
-		if (endIconSize.x > 0) endIconSize.x += buttonStyle->contentPadding;
+		V2I endIconSize =  style->endIcon.getSize();
+		if (endIconSize.x > 0) endIconSize.x += style->contentPadding;
 
 		V2I result = {};
 
@@ -266,10 +262,10 @@ namespace UI
 		}
 		else
 		{
-			result.x = (contentSize.x + doublePadding + startIconSize.x + endIconSize.x);
+			result.x = (contentSize.x + style->padding.left + style->padding.right + startIconSize.x + endIconSize.x);
 		}
 
-		result.y = max(contentSize.y, startIconSize.y, endIconSize.y) + doublePadding;
+		result.y = max(contentSize.y, startIconSize.y, endIconSize.y) + (style->padding.top + style->padding.bottom);
 
 		return result;
 	}
@@ -279,12 +275,17 @@ namespace UI
 		Rect2I contentBounds = shrink(bounds, style->padding);
 
 		V2I startIconSize = style->startIcon.getSize();
-		if (startIconSize.x > 0) startIconSize.x += style->contentPadding;
-		V2I endIconSize = style->endIcon.getSize();
-		if (endIconSize.x > 0) endIconSize.x += style->contentPadding;
+		if (startIconSize.x > 0)
+		{
+			contentBounds.x += startIconSize.x + style->contentPadding;
+			contentBounds.w -= startIconSize.x + style->contentPadding;
+		}
 
-		contentBounds.x += startIconSize.x;
-		contentBounds.w -= (startIconSize.x + endIconSize.x);
+		V2I endIconSize = style->endIcon.getSize();
+		if (endIconSize.x > 0)
+		{
+			contentBounds.w -= endIconSize.x + style->contentPadding;
+		}
 
 		return contentBounds;
 	}
@@ -370,7 +371,7 @@ namespace UI
 		Rect2I contentBounds = calculateButtonContentBounds(bounds, style);
 
 		u32 textAlignment = style->textAlignment;
-		V2I textOrigin = alignWithinRectangle(contentBounds, textAlignment, 0);
+		V2I textOrigin = alignWithinRectangle(contentBounds, textAlignment);
 		drawText(renderBuffer, getFont(&style->font), text, textOrigin, textAlignment, style->textColor);
 
 		return result;
@@ -391,9 +392,10 @@ namespace UI
 
 	V2I calculateCheckboxSize(CheckboxStyle *style)
 	{
-		s32 doublePadding = (style->padding * 2);
-		
-		V2I result = v2i(style->contentSize.x + doublePadding, style->contentSize.y + doublePadding);
+		V2I result = v2i(
+			style->contentSize.x + style->padding.left + style->padding.right,
+			style->contentSize.y + style->padding.top + style->padding.bottom
+		);
 
 		return result;
 	}

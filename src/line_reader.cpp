@@ -185,6 +185,11 @@ String peekToken(LineReader *reader, char splitChar)
 	return token;
 }
 
+s32 countRemainingTokens(LineReader *reader, char splitChar)
+{
+	return countTokens(reader->position.lineRemainder, splitChar);
+}
+
 template<typename T>
 Maybe<T> readInt(LineReader *reader, bool isOptional, char splitChar)
 {
@@ -268,38 +273,6 @@ Maybe<bool> readBool(LineReader *reader, bool isOptional, char splitChar)
 		if (!result.isValid)
 		{
 			error(reader, "Couldn't parse '{0}' as a boolean."_s, {token});
-		}
-	}
-
-	return result;
-}
-
-Maybe<V4> readColor(LineReader *reader, bool isOptional)
-{
-	// TODO: Right now this only handles a sequence of 3 or 4 0-255 values for RGB(A).
-	// We might want to handle other color definitions eventually which are more friendly, eg 0-1 fractions.
-
-	String allArguments = getRemainderOfLine(reader);
-
-	Maybe<V4> result = makeFailure<V4>();
-
-	if (! (isOptional && isEmpty(allArguments)) )
-	{
-		Maybe<u8> r = readInt<u8>(reader);
-		Maybe<u8> g = readInt<u8>(reader);
-		Maybe<u8> b = readInt<u8>(reader);
-
-		if (r.isValid && g.isValid && b.isValid)
-		{
-			// NB: We default to fully opaque if no alpha is provided
-			Maybe<u8> a = readInt<u8>(reader, true);
-
-			result = makeSuccess(color255(r.value, g.value, b.value, a.orDefault(255)));
-		}
-		else
-		{
-			error(reader, "Couldn't parse '{0}' as a color. Expected 3 or 4 integers from 0 to 255, for R G B and optional A."_s, {allArguments});
-			result = makeFailure<V4>();
 		}
 	}
 
@@ -398,22 +371,33 @@ Maybe<u32> readAlignment(LineReader *reader)
 	return makeSuccess(alignment);
 }
 
-Maybe<V2I> readV2I(LineReader *reader)
+Maybe<V4> readColor(LineReader *reader, bool isOptional)
 {
-	Maybe<V2I> result = makeFailure<V2I>();
+	// TODO: Right now this only handles a sequence of 3 or 4 0-255 values for RGB(A).
+	// We might want to handle other color definitions eventually which are more friendly, eg 0-1 fractions.
 
-	String token = peekToken(reader);
+	String allArguments = getRemainderOfLine(reader);
 
-	Maybe<s32> x = readInt<s32>(reader, false, 'x');
-	Maybe<s32> y = readInt<s32>(reader);
+	Maybe<V4> result = makeFailure<V4>();
 
-	if (x.isValid && y.isValid)
+	if (! (isOptional && isEmpty(allArguments)) )
 	{
-		result = makeSuccess<V2I>(v2i(x.value, y.value));
-	}
-	else
-	{
-		error(reader, "Couldn't parse '{0}' as a V2I, expected 2 integers with an 'x' between, eg '8x12'"_s, {token});
+		Maybe<u8> r = readInt<u8>(reader);
+		Maybe<u8> g = readInt<u8>(reader);
+		Maybe<u8> b = readInt<u8>(reader);
+
+		if (r.isValid && g.isValid && b.isValid)
+		{
+			// NB: We default to fully opaque if no alpha is provided
+			Maybe<u8> a = readInt<u8>(reader, true);
+
+			result = makeSuccess(color255(r.value, g.value, b.value, a.orDefault(255)));
+		}
+		else
+		{
+			error(reader, "Couldn't parse '{0}' as a color. Expected 3 or 4 integers from 0 to 255, for R G B and optional A."_s, {allArguments});
+			result = makeFailure<V4>();
+		}
 	}
 
 	return result;
@@ -442,4 +426,105 @@ Maybe<EffectRadius> readEffectRadius(LineReader *reader)
 
 		return makeFailure<EffectRadius>();
 	}
+}
+
+Maybe<Padding> readPadding(LineReader *reader)
+{
+	// Padding definitions may be 1, 2, 3 or 4 values, as CSS does it:
+	//   All
+	//   Vertical Horizontal
+	//   Top Horizontal Bottom
+	//   Top Right Bottom Left
+	// So, clockwise from the top, with sensible fallbacks
+
+	Maybe<Padding> result = makeFailure<Padding>();
+
+	s32 valueCount = countRemainingTokens(reader);
+	switch (valueCount)
+	{
+		case 1: {
+			Maybe<s32> value = readInt<s32>(reader);
+			if (value.isValid)
+			{
+				Padding padding = {};
+				padding.top 	= value.value;
+				padding.right 	= value.value;
+				padding.bottom 	= value.value;
+				padding.left 	= value.value;
+
+				result = makeSuccess(padding);
+			}
+		} break;
+
+		case 2: {
+			Maybe<s32> vValue = readInt<s32>(reader);
+			Maybe<s32> hValue = readInt<s32>(reader);
+			if (vValue.isValid && hValue.isValid)
+			{
+				Padding padding = {};
+				padding.top 	= vValue.value;
+				padding.right 	= hValue.value;
+				padding.bottom 	= vValue.value;
+				padding.left 	= hValue.value;
+
+				result = makeSuccess(padding);
+			}
+		} break;
+
+		case 3: {
+			Maybe<s32> topValue = readInt<s32>(reader);
+			Maybe<s32> hValue = readInt<s32>(reader);
+			Maybe<s32> bottomValue = readInt<s32>(reader);
+			if (topValue.isValid && hValue.isValid && bottomValue.isValid)
+			{
+				Padding padding = {};
+				padding.top 	= topValue.value;
+				padding.right 	= hValue.value;
+				padding.bottom 	= bottomValue.value;
+				padding.left 	= hValue.value;
+
+				result = makeSuccess(padding);
+			}
+		} break;
+
+		case 4: {
+			Maybe<s32> topValue = readInt<s32>(reader);
+			Maybe<s32> rightValue = readInt<s32>(reader);
+			Maybe<s32> bottomValue = readInt<s32>(reader);
+			Maybe<s32> leftValue = readInt<s32>(reader);
+			if (topValue.isValid && rightValue.isValid && bottomValue.isValid && leftValue.isValid)
+			{
+				Padding padding = {};
+				padding.top 	= topValue.value;
+				padding.right 	= rightValue.value;
+				padding.bottom 	= bottomValue.value;
+				padding.left 	= leftValue.value;
+
+				result = makeSuccess(padding);
+			}
+		} break;
+	}
+
+	return result;
+}
+
+Maybe<V2I> readV2I(LineReader *reader)
+{
+	Maybe<V2I> result = makeFailure<V2I>();
+
+	String token = peekToken(reader);
+
+	Maybe<s32> x = readInt<s32>(reader, false, 'x');
+	Maybe<s32> y = readInt<s32>(reader);
+
+	if (x.isValid && y.isValid)
+	{
+		result = makeSuccess<V2I>(v2i(x.value, y.value));
+	}
+	else
+	{
+		error(reader, "Couldn't parse '{0}' as a V2I, expected 2 integers with an 'x' between, eg '8x12'"_s, {token});
+	}
+
+	return result;
 }

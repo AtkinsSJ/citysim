@@ -138,6 +138,14 @@ enum class Orientation
 	Vertical
 };
 
+struct Padding
+{
+	s32 top;
+	s32 bottom;
+	s32 left;
+	s32 right;
+};
+
 template<typename T>
 struct Maybe
 {

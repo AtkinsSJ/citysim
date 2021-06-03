@@ -74,7 +74,7 @@ namespace UI
 		V4 textColor;
 		u32 textAlignment;
 
-		s32 padding;
+		Padding padding;
 		s32 contentPadding; // Between icons and content
 
 		DrawableStyle startIcon;
@@ -93,7 +93,7 @@ namespace UI
 	{
 		String name;
 
-		s32 padding;
+		Padding padding;
 
 		DrawableStyle background;
 		DrawableStyle backgroundHover;
@@ -126,7 +126,7 @@ namespace UI
 		};
 
 		DrawableStyle background;
-		s32 padding;
+		Padding padding;
 
 		AssetRef scrollbarStyle;
 		AssetRef textInputStyle;
@@ -205,7 +205,7 @@ namespace UI
 		u32 textAlignment;
 
 		DrawableStyle background;
-		s32 padding;
+		Padding padding;
 		
 		bool showCaret;
 		f32 caretFlashCycleDuration;
@@ -227,19 +227,27 @@ namespace UI
 		AssetRef panelStyle;
 	};
 
-	enum PropType
+	enum class PropType
 	{
-		PropType_Alignment,
-		PropType_Bool,
-		PropType_Color,
-		PropType_Drawable,
-		PropType_Float,
-		PropType_Font,
-		PropType_Int,
-		PropType_String,
-		PropType_Style,
-		PropType_V2I,
+		Alignment,
+		Bool,
+		Color,
+		Drawable,
+		Float,
+		Font,
+		Int,
+		Padding,
+		String,
+		Style,
+		V2I,
 		PropTypeCount
+	};
+
+	struct Property
+	{
+		PropType type;
+		smm offsetInStyleStruct;
+		bool existsInStyle[StyleTypeCount];
 	};
 
 	struct Style
@@ -248,7 +256,7 @@ namespace UI
 		String name;
 
 		// PROPERTIES
-		s32 padding;
+		Padding padding;
 		s32 contentPadding;
 		V2I contentSize;
 		s32 margin;
@@ -314,17 +322,13 @@ namespace UI
 		V4 outputTextColorWarning;
 	};
 
-	struct Property
-	{
-		PropType type;
-		smm offsetInStyleStruct;
-		bool existsInStyle[StyleTypeCount];
-	};
-
 	HashTable<Property> styleProperties;
 	HashTable<StyleType> styleTypesByName;
 	void initStyleConstants();
 	void assignStyleProperties(StyleType type, std::initializer_list<String> properties);
+
+	template <typename T>
+	void setPropertyValue(Style *style, Property *property, T value);
 }
 
 void loadUITheme(Blob data, struct Asset *asset);

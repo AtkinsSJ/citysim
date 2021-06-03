@@ -106,61 +106,61 @@ namespace UI
 		initHashTable(&styleProperties, 0.75f, 256);
 		#define PROP(name, _type) {\
 			Property property = {}; \
-			property.type = _type; \
+			property.type = PropType::_type; \
 			property.offsetInStyleStruct = offsetof(Style, name); \
 			styleProperties.put(makeString(#name), property); \
 		}
 
-		PROP(background,				PropType_Drawable);
-		PROP(backgroundDisabled,		PropType_Drawable);
-		PROP(backgroundHover,			PropType_Drawable);
-		PROP(backgroundPressed,			PropType_Drawable);
-		PROP(buttonStyle,				PropType_Style);
-		PROP(caretFlashCycleDuration,	PropType_Float);
-		PROP(check,						PropType_Drawable);
-		PROP(checkDisabled,				PropType_Drawable);
-		PROP(checkHover,				PropType_Drawable);
-		PROP(checkPressed,				PropType_Drawable);
-		PROP(checkboxStyle,				PropType_Style);
-		PROP(contentSize,				PropType_V2I);
-		PROP(contentPadding,			PropType_Int);
-		PROP(dropDownListStyle,			PropType_Style);
-		PROP(endIcon,					PropType_Drawable);
-		PROP(endIconAlignment,			PropType_Alignment);
-		PROP(font,						PropType_Font);
-		PROP(labelStyle,				PropType_Style);
-		PROP(margin,					PropType_Int);
-		PROP(offsetFromMouse,			PropType_V2I);
-		PROP(outputTextColor,			PropType_Color);
-		PROP(outputTextColorInputEcho,	PropType_Color);
-		PROP(outputTextColorError,		PropType_Color);
-		PROP(outputTextColorWarning,	PropType_Color);
-		PROP(outputTextColorSuccess,	PropType_Color);
-		PROP(padding,					PropType_Int);
-		PROP(panelStyle,				PropType_Style);
-		PROP(scrollbarStyle,			PropType_Style);
-		PROP(showCaret,					PropType_Bool);
-		PROP(sliderStyle,				PropType_Style);
-		PROP(startIcon,					PropType_Drawable);
-		PROP(startIconAlignment,		PropType_Alignment);
-		PROP(textAlignment,				PropType_Alignment);
-		PROP(textColor,					PropType_Color);
-		PROP(textInputStyle,			PropType_Style);
-		PROP(thumb,						PropType_Drawable);
-		PROP(thumbDisabled,				PropType_Drawable);
-		PROP(thumbHover,				PropType_Drawable);
-		PROP(thumbPressed,				PropType_Drawable);
-		PROP(titleBarButtonHoverColor,	PropType_Color);
-		PROP(titleBarColor,				PropType_Color);
-		PROP(titleBarColorInactive,		PropType_Color);
-		PROP(titleBarHeight,			PropType_Int);
-		PROP(titleColor,				PropType_Color);
-		PROP(titleFont,					PropType_Font);
-		PROP(trackThickness,			PropType_Int);
-		PROP(widgetAlignment,			PropType_Alignment);
-		PROP(width,						PropType_Int);
-		PROP(track,						PropType_Drawable);
-		PROP(thumbSize,					PropType_V2I);
+		PROP(background,				Drawable);
+		PROP(backgroundDisabled,		Drawable);
+		PROP(backgroundHover,			Drawable);
+		PROP(backgroundPressed,			Drawable);
+		PROP(buttonStyle,				Style);
+		PROP(caretFlashCycleDuration,	Float);
+		PROP(check,						Drawable);
+		PROP(checkDisabled,				Drawable);
+		PROP(checkHover,				Drawable);
+		PROP(checkPressed,				Drawable);
+		PROP(checkboxStyle,				Style);
+		PROP(contentSize,				V2I);
+		PROP(contentPadding,			Int);
+		PROP(dropDownListStyle,			Style);
+		PROP(endIcon,					Drawable);
+		PROP(endIconAlignment,			Alignment);
+		PROP(font,						Font);
+		PROP(labelStyle,				Style);
+		PROP(margin,					Int);
+		PROP(offsetFromMouse,			V2I);
+		PROP(outputTextColor,			Color);
+		PROP(outputTextColorInputEcho,	Color);
+		PROP(outputTextColorError,		Color);
+		PROP(outputTextColorWarning,	Color);
+		PROP(outputTextColorSuccess,	Color);
+		PROP(padding,					Padding);
+		PROP(panelStyle,				Style);
+		PROP(scrollbarStyle,			Style);
+		PROP(showCaret,					Bool);
+		PROP(sliderStyle,				Style);
+		PROP(startIcon,					Drawable);
+		PROP(startIconAlignment,		Alignment);
+		PROP(textAlignment,				Alignment);
+		PROP(textColor,					Color);
+		PROP(textInputStyle,			Style);
+		PROP(thumb,						Drawable);
+		PROP(thumbDisabled,				Drawable);
+		PROP(thumbHover,				Drawable);
+		PROP(thumbPressed,				Drawable);
+		PROP(titleBarButtonHoverColor,	Color);
+		PROP(titleBarColor,				Color);
+		PROP(titleBarColorInactive,		Color);
+		PROP(titleBarHeight,			Int);
+		PROP(titleColor,				Color);
+		PROP(titleFont,					Font);
+		PROP(trackThickness,			Int);
+		PROP(widgetAlignment,			Alignment);
+		PROP(width,						Int);
+		PROP(track,						Drawable);
+		PROP(thumbSize,					V2I);
 
 		#undef PROP
 
@@ -283,6 +283,13 @@ namespace UI
 			property->existsInStyle[type] = true;
 		}
 	}
+
+
+	template <typename T>
+	void setPropertyValue(Style *style, Property *property, T value)
+	{
+		*((T*)((u8*)(style) + property->offsetInStyleStruct)) = value;
+	}
 }
 
 void loadUITheme(Blob data, Asset *asset)
@@ -399,47 +406,47 @@ void loadUITheme(Blob data, Asset *asset)
 					{
 						switch (property->type)
 						{
-							case UI::PropType_Alignment: {
+							case UI::PropType::Alignment: {
 								Maybe<u32> value = readAlignment(&reader);
 								if (value.isValid)
 								{
-									*((u32*)((u8*)(target) + property->offsetInStyleStruct)) = value.value;
+									UI::setPropertyValue<u32>(target, property, value.value);
 								}
 							} break;
 
-							case UI::PropType_Bool: {
+							case UI::PropType::Bool: {
 								Maybe<bool> value = readBool(&reader);
 								if (value.isValid)
 								{
-									*((bool*)((u8*)(target) + property->offsetInStyleStruct)) = value.value;
+									UI::setPropertyValue<bool>(target, property, value.value);
 								}
 							} break;
 
-							case UI::PropType_Color: {
+							case UI::PropType::Color: {
 								Maybe<V4> value = readColor(&reader);
 								if (value.isValid)
 								{
-									*((V4*)((u8*)(target) + property->offsetInStyleStruct)) = value.value;
+									UI::setPropertyValue<V4>(target, property, value.value);
 								}
 							} break;
 
-							case UI::PropType_Drawable: {
+							case UI::PropType::Drawable: {
 								Maybe<UI::DrawableStyle> value = UI::readDrawableStyle(&reader);
 								if (value.isValid)
 								{
-									*((UI::DrawableStyle*)((u8*)(target) + property->offsetInStyleStruct)) = value.value;
+									UI::setPropertyValue<UI::DrawableStyle>(target, property, value.value);
 								}
 							} break;
 
-							case UI::PropType_Float: {
+							case UI::PropType::Float: {
 								Maybe<f64> value = readFloat(&reader);
 								if (value.isValid)
 								{
-									*((f32*)((u8*)(target) + property->offsetInStyleStruct)) = (f32)(value.value);
+									UI::setPropertyValue<f32>(target, property, (f32)value.value);
 								}
 							} break;
 
-							case UI::PropType_Font: {
+							case UI::PropType::Font: {
 								String value = intern(&assets->assetStrings, readToken(&reader));
 								AssetRef *fontRef = ((AssetRef*)((u8*)(target) + property->offsetInStyleStruct));
 								*fontRef = {};
@@ -454,28 +461,36 @@ void loadUITheme(Blob data, Asset *asset)
 								}
 							} break;
 
-							case UI::PropType_Int: {
+							case UI::PropType::Int: {
 								Maybe<s32> value = readInt<s32>(&reader);
 								if (value.isValid)
 								{
-									*((s32*)((u8*)(target) + property->offsetInStyleStruct)) = value.value;
+									UI::setPropertyValue<s32>(target, property, value.value);
 								}
 							} break;
 
-							case UI::PropType_Style: // NB: Style names are just Strings now
-							case UI::PropType_String: {
-								String value = intern(&assets->assetStrings, readToken(&reader));
-								// Strings are read directly, so we don't need an if(valid) check
-								*((String*)((u8*)(target) + property->offsetInStyleStruct)) = value;
+							case UI::PropType::Padding: {
+								Maybe<Padding> value = readPadding(&reader);
+								if (value.isValid)
+								{
+									UI::setPropertyValue<Padding>(target, property, value.value);
+								}
 							} break;
 
-							case UI::PropType_V2I: {
+							case UI::PropType::Style: // NB: Style names are just Strings now
+							case UI::PropType::String: {
+								String value = intern(&assets->assetStrings, readToken(&reader));
+								// Strings are read directly, so we don't need an if(valid) check
+								UI::setPropertyValue<String>(target, property, value);
+							} break;
+
+							case UI::PropType::V2I: {
 								Maybe<s32> offsetX = readInt<s32>(&reader);
 								Maybe<s32> offsetY = readInt<s32>(&reader);
 								if (offsetX.isValid && offsetY.isValid)
 								{
 									V2I vector = v2i(offsetX.value, offsetY.value);
-									*((V2I*)((u8*)(target) + property->offsetInStyleStruct)) = vector;
+									UI::setPropertyValue<V2I>(target, property, vector);
 								}
 							} break;
 

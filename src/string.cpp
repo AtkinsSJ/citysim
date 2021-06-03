@@ -409,16 +409,26 @@ bool contains(String input, char c)
 	return findIndexOfChar(input, c, false).isValid;
 }
 
-s32 countTokens(String input)
+bool isSplitChar(char input, char splitChar)
 {
-	
+	if (splitChar == 0)
+	{
+		return isWhitespace(input);
+	}
+	else
+	{
+		return input == splitChar;
+	}
+}
+
+s32 countTokens(String input, char splitChar)
+{
 	s32 result = 0;
 
 	s32 position = 0;
-
 	while (position < input.length)
 	{
-		while ((position <= input.length) && isWhitespace(input.chars[position]))
+		while ((position <= input.length) && isSplitChar(input.chars[position], splitChar))
 		{
 			position++;
 		}
@@ -428,7 +438,7 @@ s32 countTokens(String input)
 			result++;
 			
 			// length
-			while ((position < input.length) && !isWhitespace(input.chars[position]))
+			while ((position < input.length) && !isSplitChar(input.chars[position], splitChar))
 			{
 				position++;
 			}
@@ -446,24 +456,13 @@ String nextToken(String input, String *remainder, char splitChar)
 	String firstWord = input;
 	firstWord.length = 0;
 
-	if (splitChar == 0)
+	while (!isSplitChar(firstWord.chars[firstWord.length], splitChar)
+		&& (firstWord.length < input.length))
 	{
-		while (!isWhitespace(firstWord.chars[firstWord.length], true)
-			&& (firstWord.length < input.length))
-		{
-			++firstWord.length;
-		}
+		++firstWord.length;
 	}
-	else
-	{
-		while (firstWord.chars[firstWord.length] != splitChar
-			&& (firstWord.length < input.length))
-		{
-			++firstWord.length;
-		}
 
-		firstWord = trim(firstWord);
-	}
+	firstWord = trimEnd(firstWord);
 
 	if (remainder)
 	{

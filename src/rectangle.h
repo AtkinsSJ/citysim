@@ -91,7 +91,7 @@ Rect2I expand(Rect2I rect, s32 top, s32 right, s32 bottom, s32 left);
 // (This means shrinking a 0-size rectangle asymmetrically will move the
 // rectangle around. Which isn't useful so I don't know why I'm documenting it.)
 Rect2I shrink(Rect2I rect, s32 radius);
-Rect2I shrink(Rect2I rect, s32 top, s32 right, s32 bottom, s32 left);
+Rect2I shrink(Rect2I rect, Padding padding);
 Rect2I intersect(Rect2I a, Rect2I b);
 // Takes the intersection of inner and outer, and then converts it to being relative to outer.
 // (Originally used to take a world-space rectangle and put it into a cropped, sector-space one.)
@@ -103,4 +103,4 @@ s32 areaOf(Rect2I rect); // Always positive, even if the rect has negative dimen
 bool hasPositiveArea(Rect2I rect);
 
 Rect2I centreWithin(Rect2I outer, Rect2I inner);
-V2I alignWithinRectangle(Rect2I bounds, u32 alignment, s32 padding=0);
+V2I alignWithinRectangle(Rect2I bounds, u32 alignment, Padding padding = {});
