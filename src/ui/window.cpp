@@ -202,7 +202,7 @@ namespace UI
 			if (isModal)
 			{
 				// Modal windows can't be moved, they just auto-centre
-				window->area = centreWithin(validWindowArea, window->area);
+				window->area = centreWithin(validWindowArea, window->area.size);
 			}
 			else if (isActive && uiState.isDraggingWindow)
 			{

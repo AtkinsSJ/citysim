@@ -51,6 +51,7 @@ namespace UI
 		void addCheckbox(bool *checked, String styleName = nullString);
 		template <typename T>
 		void addDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*getDisplayName)(T *data), String styleName = nullString);
+		void addRadioButton(s32 *currentValue, s32 myValue, String styleName = nullString);
 		template <typename T>
 		void addSlider(T *currentValue, T minValue, T maxValue, String styleName = nullString);
 		void addSprite(Sprite *sprite, s32 width = -1, s32 height = -1);

@@ -65,6 +65,7 @@ UI Widgets:
 		✔ Add start/end icon support to text buttons
 - Tabs!
 	- Basically just radio buttons with fancy styling
+- A proper UI::putLabel() method
 ✔ Extend 'padding' into its own type
 	✔ So we can define different padding values for each side, more easily. Something like how CSS does it.
 

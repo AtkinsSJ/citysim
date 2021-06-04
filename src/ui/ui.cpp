@@ -588,6 +588,62 @@ namespace UI
 		return &uiState.openMenuScrollbar;
 	}
 
+	V2I calculateRadioButtonSize(RadioButtonStyle *style)
+	{
+		if (style == null) 			style = getStyle<RadioButtonStyle>("default"_s);
+
+		V2I result = style->size;
+
+		return result;
+	}
+	
+	void putRadioButton(s32 *selectedValue, s32 value, Rect2I bounds, RadioButtonStyle *style, bool isDisabled, RenderBuffer *renderBuffer)
+	{
+		DEBUG_FUNCTION_T(DCDT_UI);
+
+		if (style == null) 			style = getStyle<RadioButtonStyle>("default"_s);
+		if (renderBuffer == null) 	renderBuffer = &renderer->uiBuffer;
+
+		WidgetMouseState mouseState = getWidgetMouseState(bounds);
+
+		DrawableStyle *backgroundStyle = &style->background;
+		DrawableStyle *dotStyle = &style->dot;
+
+		if (isDisabled)
+		{
+			backgroundStyle = &style->backgroundDisabled;
+			dotStyle = &style->dotDisabled;
+		}
+		else if (mouseState.isHovered)
+		{
+			if (mouseState.isPressed)
+			{
+				backgroundStyle = &style->backgroundPressed;
+				dotStyle = &style->dotPressed;
+			}
+			else
+			{
+				backgroundStyle = &style->backgroundHover;
+				dotStyle = &style->dotHover;
+			}
+		}
+
+		if (!isDisabled && justClickedOnUI(bounds))
+		{
+			*selectedValue = value;
+			markMouseInputHandled();
+		}
+
+		// Render it
+		Drawable(backgroundStyle).draw(renderBuffer, bounds);
+
+		if (*selectedValue == value)
+		{
+			Rect2I dotBounds = centreWithin(bounds, style->dotSize);
+			Drawable(dotStyle).draw(renderBuffer, dotBounds);
+		}
+	}
+
 	void initScrollbar(ScrollbarState *state, Orientation orientation, s32 mouseWheelStepSize)
 	{
 		*state = {};

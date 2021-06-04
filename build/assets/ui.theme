@@ -99,14 +99,14 @@ textColor         255   0   0 255
 :RadioButton default
 size				16 16
 background			sprite radiobtn_back
-backgroundHover		sprite radiobtn_back
-backgroundPressed	sprite radiobtn_back
-backgroundDisabled	sprite radiobtn_back
+backgroundHover		sprite radiobtn_back 192 192 255 255
+backgroundPressed	sprite radiobtn_back 128 128 255 255
+backgroundDisabled	sprite radiobtn_back 96  96  96 255
 dotSize				6 6
 dot					sprite radiobtn_dot
-dotHover			sprite radiobtn_dot
-dotPressed			sprite radiobtn_dot
-dotDisabled			sprite radiobtn_dot
+dotHover			sprite radiobtn_dot 192 192 255 255
+dotPressed			sprite radiobtn_dot 128 128 255 255
+dotDisabled			sprite radiobtn_dot 96  96  96 255
 
 :Slider default
 track 			ninepatch slider_track

@@ -955,6 +955,7 @@ bool checkStyleMatchesType(AssetRef *reference)
 		case AssetType_DropDownListStyle: 	return (typeid(T*) == typeid(UI::DropDownListStyle*));
 		case AssetType_LabelStyle: 	 		return (typeid(T*) == typeid(UI::LabelStyle*));
 		case AssetType_PanelStyle:      	return (typeid(T*) == typeid(UI::PanelStyle*));
+		case AssetType_RadioButtonStyle:  	return (typeid(T*) == typeid(UI::RadioButtonStyle*));
 		case AssetType_ScrollbarStyle:  	return (typeid(T*) == typeid(UI::ScrollbarStyle*));
 		case AssetType_SliderStyle:			return (typeid(T*) == typeid(UI::SliderStyle*));
 		case AssetType_TextInputStyle:  	return (typeid(T*) == typeid(UI::TextInputStyle*));
@@ -998,6 +999,7 @@ T* getStyle(String styleName)
 	else if (typeid(T) == typeid(UI::DropDownListStyle)) 	styleType = AssetType_DropDownListStyle;
 	else if (typeid(T) == typeid(UI::LabelStyle)) 			styleType = AssetType_LabelStyle;
 	else if (typeid(T) == typeid(UI::PanelStyle)) 			styleType = AssetType_PanelStyle;
+	else if (typeid(T) == typeid(UI::RadioButtonStyle)) 	styleType = AssetType_RadioButtonStyle;
 	else if (typeid(T) == typeid(UI::ScrollbarStyle)) 		styleType = AssetType_ScrollbarStyle;
 	else if (typeid(T) == typeid(UI::SliderStyle)) 			styleType = AssetType_SliderStyle;
 	else if (typeid(T) == typeid(UI::TextInputStyle)) 		styleType = AssetType_TextInputStyle;

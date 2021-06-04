@@ -102,5 +102,5 @@ V2 centreOf(Rect2I rect);
 s32 areaOf(Rect2I rect); // Always positive, even if the rect has negative dimensions
 bool hasPositiveArea(Rect2I rect);
 
-Rect2I centreWithin(Rect2I outer, Rect2I inner);
+Rect2I centreWithin(Rect2I outer, V2I innerSize);
 V2I alignWithinRectangle(Rect2I bounds, u32 alignment, Padding padding = {});

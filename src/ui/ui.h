@@ -25,6 +25,7 @@ namespace UI
 	struct CheckboxStyle;
 	struct DropDownListStyle;
 	struct PanelStyle;
+	struct RadioButtonStyle;
 	struct ScrollbarStyle;
 	struct SliderStyle;
 	struct TextInputStyle;
@@ -152,22 +153,22 @@ namespace UI
 	Rect2I drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2I origin, u32 align, V4 color, s32 maxWidth = 0);
 
 	// Buttons
-	V2I calculateButtonSize(String text, ButtonStyle *buttonStyle, s32 maxWidth = 0, bool fillWidth = true);
-	V2I calculateButtonSize(V2I contentSize, ButtonStyle *buttonStyle, s32 maxWidth = 0, bool fillWidth = true);
-	Rect2I calculateButtonContentBounds(Rect2I bounds, ButtonStyle *style);
-	bool putButton(Rect2I bounds, ButtonStyle *style, ButtonState state = Button_Normal, RenderBuffer *renderBuffer = null, String tooltip = nullString);
-	bool putTextButton(String text, Rect2I bounds, ButtonStyle *style, ButtonState state = Button_Normal, RenderBuffer *renderBuffer = null, String tooltip=nullString);
-	bool putImageButton(Sprite *sprite, Rect2I bounds, ButtonStyle *style, ButtonState state = Button_Normal, RenderBuffer *renderBuffer = null, String tooltip=nullString);
+	V2I calculateButtonSize(String text, ButtonStyle *style = null, s32 maxWidth = 0, bool fillWidth = true);
+	V2I calculateButtonSize(V2I contentSize, ButtonStyle *style = null, s32 maxWidth = 0, bool fillWidth = true);
+	Rect2I calculateButtonContentBounds(Rect2I bounds, ButtonStyle *style = null);
+	bool putButton(Rect2I bounds, ButtonStyle *style = null, ButtonState state = Button_Normal, RenderBuffer *renderBuffer = null, String tooltip = nullString);
+	bool putTextButton(String text, Rect2I bounds, ButtonStyle *style = null, ButtonState state = Button_Normal, RenderBuffer *renderBuffer = null, String tooltip=nullString);
+	bool putImageButton(Sprite *sprite, Rect2I bounds, ButtonStyle *style = null, ButtonState state = Button_Normal, RenderBuffer *renderBuffer = null, String tooltip=nullString);
 
 	// Checkboxes
-	V2I calculateCheckboxSize(CheckboxStyle *style);
-	void putCheckbox(bool *checked, Rect2I bounds, CheckboxStyle *style, bool isDisabled = false, RenderBuffer *renderBuffer = null);
+	V2I calculateCheckboxSize(CheckboxStyle *style = null);
+	void putCheckbox(bool *checked, Rect2I bounds, CheckboxStyle *style = null, bool isDisabled = false, RenderBuffer *renderBuffer = null);
 
 	// Drop-down lists
 	template <typename T>
-	V2I calculateDropDownListSize(Array<T> *listOptions, String (*getDisplayName)(T *data), DropDownListStyle *style, s32 maxWidth = 0, bool fillWidth = true);
+	V2I calculateDropDownListSize(Array<T> *listOptions, String (*getDisplayName)(T *data), DropDownListStyle *style = null, s32 maxWidth = 0, bool fillWidth = true);
 	template <typename T>
-	void putDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*getDisplayName)(T *data), Rect2I bounds, DropDownListStyle *style, RenderBuffer *renderBuffer = null);
+	void putDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*getDisplayName)(T *data), Rect2I bounds, DropDownListStyle *style = null, RenderBuffer *renderBuffer = null);
 	void openDropDownList(void *pointer);
 	void closeDropDownList();
 	bool isDropDownListOpen(void *pointer);
@@ -178,6 +179,10 @@ namespace UI
 	void toggleMenuVisible(s32 menuID);
 	bool isMenuVisible(s32 menuID);
 	ScrollbarState *getMenuScrollbar();
+
+	// Radio Buttons
+	V2I calculateRadioButtonSize(RadioButtonStyle *style = null);
+	void putRadioButton(s32 *selectedValue, s32 value, Rect2I bounds, RadioButtonStyle *style = null, bool isDisabled = false, RenderBuffer *renderBuffer = null);
 
 	// Scrollbars
 	void initScrollbar(ScrollbarState *state, Orientation orientation, s32 mouseWheelStepSize = 64);
@@ -193,7 +198,7 @@ namespace UI
 	void putSlider(s32 *currentValue, s32 minValue, s32 maxValue, Orientation orientation, Rect2I bounds, SliderStyle *style = null, bool isDisabled = false, RenderBuffer *renderBuffer = null);
 
 	// TextInputs
-	bool putTextInput(TextInput *textInput, Rect2I bounds, TextInputStyle *style, RenderBuffer *renderBuffer = null);
+	bool putTextInput(TextInput *textInput, Rect2I bounds, TextInputStyle *style = null, RenderBuffer *renderBuffer = null);
 
 	// Toasts
 	// NB: `message` is copied into the UIState, so it can be a temporary allocation

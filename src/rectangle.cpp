@@ -481,12 +481,14 @@ inline bool hasPositiveArea(Rect2I rect)
 	return (rect.w > 0 && rect.h > 0);
 }
 
-inline Rect2I centreWithin(Rect2I outer, Rect2I inner)
+inline Rect2I centreWithin(Rect2I outer, V2I innerSize)
 {
-	Rect2I result = inner;
-
-	result.x = outer.x - ((result.w - outer.w) / 2);
-	result.y = outer.y - ((result.h - outer.h) / 2);
+	Rect2I result = irectXYWH(
+		outer.x - ((innerSize.x - outer.w) / 2),
+		outer.y - ((innerSize.y - outer.h) / 2),
+		innerSize.x,
+		innerSize.y
+	);
 
 	return result;
 }
