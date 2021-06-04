@@ -279,78 +279,78 @@ namespace UI
 		String name;
 
 		// PROPERTIES
-		Padding padding;
-		s32 contentPadding;
-		V2I offsetFromMouse;
-		s32 width;
-		u32 widgetAlignment;
-		V2I size;
+		Maybe<Padding> padding;
+		Maybe<s32> contentPadding;
+		Maybe<V2I> offsetFromMouse;
+		Maybe<s32> width;
+		Maybe<u32> widgetAlignment;
+		Maybe<V2I> size;
 
-		DrawableStyle background;
-		DrawableStyle backgroundDisabled;
-		DrawableStyle backgroundHover;
-		DrawableStyle backgroundPressed;
+		Maybe<DrawableStyle> background;
+		Maybe<DrawableStyle> backgroundDisabled;
+		Maybe<DrawableStyle> backgroundHover;
+		Maybe<DrawableStyle> backgroundPressed;
 
-		String buttonStyle;
-		String checkboxStyle;
-		String dropDownListStyle;
-		String labelStyle;
-		String panelStyle;
-		String radioButtonStyle;
-		String scrollbarStyle;
-		String sliderStyle;
-		String textInputStyle;
+		Maybe<String> buttonStyle;
+		Maybe<String> checkboxStyle;
+		Maybe<String> dropDownListStyle;
+		Maybe<String> labelStyle;
+		Maybe<String> panelStyle;
+		Maybe<String> radioButtonStyle;
+		Maybe<String> scrollbarStyle;
+		Maybe<String> sliderStyle;
+		Maybe<String> textInputStyle;
 
-		DrawableStyle startIcon;
-		u32 startIconAlignment;
+		Maybe<DrawableStyle> startIcon;
+		Maybe<u32> startIconAlignment;
 		
-		DrawableStyle endIcon;
-		u32 endIconAlignment;
+		Maybe<DrawableStyle> endIcon;
+		Maybe<u32> endIconAlignment;
 		
-		bool showCaret;
-		f32 caretFlashCycleDuration;
+		Maybe<bool> showCaret;
+		Maybe<f32> caretFlashCycleDuration;
 
-		DrawableStyle track;
-		s32 trackThickness;
-		DrawableStyle thumb;
-		DrawableStyle thumbHover;
-		DrawableStyle thumbPressed;
-		DrawableStyle thumbDisabled;
-		V2I thumbSize;
+		Maybe<DrawableStyle> track;
+		Maybe<s32> trackThickness;
+		Maybe<DrawableStyle> thumb;
+		Maybe<DrawableStyle> thumbHover;
+		Maybe<DrawableStyle> thumbPressed;
+		Maybe<DrawableStyle> thumbDisabled;
+		Maybe<V2I> thumbSize;
 		
-		V4 overlayColor;
+		Maybe<V4> overlayColor;
 
-		AssetRef font;
-		u32 textAlignment;
-		V4 textColor;
+		Maybe<AssetRef> font;
+		Maybe<u32> textAlignment;
+		Maybe<V4> textColor;
 		
-		V4 titleBarButtonHoverColor;
-		V4 titleBarColor;
-		V4 titleBarColorInactive;
-		s32 titleBarHeight;
-		V4 titleColor;
-		AssetRef titleFont;
+		Maybe<V4> titleBarButtonHoverColor;
+		Maybe<V4> titleBarColor;
+		Maybe<V4> titleBarColorInactive;
+		Maybe<s32> titleBarHeight;
+		Maybe<V4> titleColor;
+		Maybe<AssetRef> titleFont;
 
 		// Checkbox specific
-		V2I checkSize;
-		DrawableStyle check;
-		DrawableStyle checkHover;
-		DrawableStyle checkPressed;
-		DrawableStyle checkDisabled;
+		Maybe<V2I> checkSize;
+		Maybe<DrawableStyle> check;
+		Maybe<DrawableStyle> checkHover;
+		Maybe<DrawableStyle> checkPressed;
+		Maybe<DrawableStyle> checkDisabled;
 
 		// Console
-		V4 outputTextColor;
-		V4 outputTextColorInputEcho;
-		V4 outputTextColorError;
-		V4 outputTextColorSuccess;
-		V4 outputTextColorWarning;
+		Maybe<V4> outputTextColor;
+		Maybe<V4> outputTextColorInputEcho;
+		Maybe<V4> outputTextColorError;
+		Maybe<V4> outputTextColorSuccess;
+		Maybe<V4> outputTextColorWarning;
 
 		// Radio button
-		V2I dotSize;
-		DrawableStyle dot;
-		DrawableStyle dotHover;
-		DrawableStyle dotPressed;
-		DrawableStyle dotDisabled;
+		Maybe<V2I> dotSize;
+		Maybe<DrawableStyle> dot;
+		Maybe<DrawableStyle> dotHover;
+		Maybe<DrawableStyle> dotPressed;
+		Maybe<DrawableStyle> dotDisabled;
 	};
 
 	HashTable<Property> styleProperties;

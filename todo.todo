@@ -35,8 +35,8 @@ BUG: Styles do not properly fall back to a default! (AKA, AssetRefs need thinkin
 - I'm not sure where in the chain we want to change it. Maybe we always assign the type when loading the theme file. Maybe we check for a null name in findStyle() and return the default without looking up the name. I don't know, and this is a tangent, so I'll deal with it later.
 	- Handling null names in getAsset() might be enough actually!
 - Worth checking that our default-fallback system works at all, because at this point I'm not sure!
-- UI styles generally need better handling of defaults. So far, everything defaults to '0' which casues bad effects ranging from visual garbage to crashes. That's NOT something we want in a system that could be edited by users!
-	- Some things want to fallback to another property's value. eg, 'thumbPressed' should default to 'thumb'
+✔ UI styles generally need better handling of defaults. So far, everything defaults to '0' which casues bad effects ranging from visual garbage to crashes. That's NOT something we want in a system that could be edited by users!
+	✔ Some things want to fallback to another property's value. eg, 'thumbPressed' should default to 'thumb'
 
 Toast should draw in the Window RB because it belongs on top of everything
 -> Maybe it and the openDropDownList should both draw to a "on top of UI" buffer?

@@ -54,7 +54,6 @@ contentPadding           4
 widgetAlignment    TOP EXPAND_H
 background        color 0 0 255 255
 buttonStyle       dropDownItem
-scrollbarStyle    default
 
 :Button dropDownButton
 extends default
@@ -87,9 +86,9 @@ textColor         255 192 192 255
 :Label small
 font              small
 textColor         255 255 255 255
-padding 4 8 12 16
-textAlignment H_CENTRE TOP
-background             ninepatch btn_white 24 24 24 255
+#padding 4 8 12 16
+#textAlignment H_CENTRE TOP
+#background             ninepatch btn_white 24 24 24 255
 #background color 255 0 255 255
 
 :Label cost-affordable
@@ -126,14 +125,6 @@ padding            8
 contentPadding    4
 widgetAlignment    TOP LEFT
 background        color 128 128 128 255
-buttonStyle       default
-checkboxStyle     default
-dropDownListStyle default
-labelStyle        default
-radioButtonStyle  default
-scrollbarStyle    default
-sliderStyle 	  default
-textInputStyle    default
 
 :Panel inset
 extends default
@@ -150,11 +141,8 @@ padding            8
 contentPadding    4
 widgetAlignment    TOP EXPAND_H
 background        color 128 128 128 255
-buttonStyle       default
-scrollbarStyle    default
 
 :Panel toast
-labelStyle        default
 background        color 128 128 128 255
 padding            8
 contentPadding    4
@@ -164,14 +152,7 @@ padding              12
 contentPadding           4
 widgetAlignment    TOP LEFT
 background        color 128 128 128 255
-buttonStyle       default
-checkboxStyle     default
-dropDownListStyle default # Remove me for a crash on the settings window
 labelStyle        small
-radioButtonStyle  default
-scrollbarStyle    default
-sliderStyle 	  default
-textInputStyle    default
 
 :Scrollbar default
 background       color 0 128 0 255

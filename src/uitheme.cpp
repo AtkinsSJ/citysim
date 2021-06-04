@@ -311,7 +311,8 @@ namespace UI
 	template <typename T>
 	void setPropertyValue(Style *style, Property *property, T value)
 	{
-		*((T*)((u8*)(style) + property->offsetInStyleStruct)) = value;
+		Maybe<T> newValue = makeSuccess(value);
+		*((Maybe<T>*)((u8*)(style) + property->offsetInStyleStruct)) = newValue;
 	}
 }
 
@@ -471,12 +472,11 @@ void loadUITheme(Blob data, Asset *asset)
 
 							case UI::PropType::Font: {
 								String value = intern(&assets->assetStrings, readToken(&reader));
-								AssetRef *fontRef = ((AssetRef*)((u8*)(target) + property->offsetInStyleStruct));
-								*fontRef = {};
 								Maybe<String> fontFilename = fontNamesToAssetNames.findValue(value);
 								if (fontFilename.isValid)
 								{
-									*fontRef = getAssetRef(AssetType_BitmapFont, fontFilename.value);
+									AssetRef fontRef = getAssetRef(AssetType_BitmapFont, fontFilename.value);
+									UI::setPropertyValue<AssetRef>(target, property, fontRef);
 								}
 								else
 								{
@@ -542,6 +542,12 @@ void loadUITheme(Blob data, Asset *asset)
 	}
 	allocateChildren(asset, totalStyleCount);
 
+	// Some default values to use
+	V4 transparent = color255(0, 0, 0, 0);
+	V4 white = makeWhite();
+	AssetRef defaultFont = getAssetRef(AssetType_BitmapFont, nullString);
+	String defaultStyleName = "default"_h;
+
 	for (auto it = styles.iterate(); it.hasNext(); it.next())
 	{
 		StylePack *stylePack = it.get();
@@ -560,22 +566,22 @@ void loadUITheme(Blob data, Asset *asset)
 						UI::ButtonStyle *button = &childAsset->buttonStyle;
 						button->name = style->name;
 
-						button->font = style->font;
-						button->textColor = style->textColor;
-						button->textAlignment = style->textAlignment;
+						button->font = style->font.orDefault(defaultFont);
+						button->textColor = style->textColor.orDefault(white);
+						button->textAlignment = style->textAlignment.orDefault(ALIGN_TOP | ALIGN_LEFT);
 
-						button->padding = style->padding;
-						button->contentPadding = style->contentPadding;
+						button->padding = style->padding.value;
+						button->contentPadding = style->contentPadding.value;
 
-						button->startIcon = style->startIcon;
-						button->startIconAlignment = style->startIconAlignment;
-						button->endIcon = style->endIcon;
-						button->endIconAlignment = style->endIconAlignment;
+						button->startIcon = style->startIcon.value;
+						button->startIconAlignment = style->startIconAlignment.orDefault(ALIGN_TOP | ALIGN_LEFT);
+						button->endIcon = style->endIcon.value;
+						button->endIconAlignment = style->endIconAlignment.orDefault(ALIGN_TOP | ALIGN_RIGHT);
 
-						button->background = style->background;
-						button->backgroundHover = style->backgroundHover;
-						button->backgroundPressed = style->backgroundPressed;
-						button->backgroundDisabled = style->backgroundDisabled;
+						button->background 			= style->background.value;
+						button->backgroundHover 	= style->backgroundHover.orDefault(button->background);
+						button->backgroundPressed 	= style->backgroundPressed.orDefault(button->background);
+						button->backgroundDisabled 	= style->backgroundDisabled.orDefault(button->background);
 
 						if (!button->startIcon.hasFixedSize())
 						{
@@ -594,23 +600,31 @@ void loadUITheme(Blob data, Asset *asset)
 						UI::CheckboxStyle *checkbox = &childAsset->checkboxStyle;
 						checkbox->name = style->name;
 
-						checkbox->padding = style->padding;
+						checkbox->padding = style->padding.value;
 
-						checkbox->background = style->background;
-						checkbox->backgroundHover = style->backgroundHover;
-						checkbox->backgroundPressed = style->backgroundPressed;
-						checkbox->backgroundDisabled = style->backgroundDisabled;
+						checkbox->background = style->background.value;
+						checkbox->backgroundHover = style->backgroundHover.orDefault(checkbox->background);
+						checkbox->backgroundPressed = style->backgroundPressed.orDefault(checkbox->background);
+						checkbox->backgroundDisabled = style->backgroundDisabled.orDefault(checkbox->background);
 
-						checkbox->checkSize = style->checkSize;
-						checkbox->check = style->check;
-						checkbox->checkHover = style->checkHover;
-						checkbox->checkPressed = style->checkPressed;
-						checkbox->checkDisabled = style->checkDisabled;
+						checkbox->check = style->check.value;
+						checkbox->checkHover = style->checkHover.orDefault(checkbox->check);
+						checkbox->checkPressed = style->checkPressed.orDefault(checkbox->check);
+						checkbox->checkDisabled = style->checkDisabled.orDefault(checkbox->check);
 
-						// ASSERT(checkbox->check.hasFixedSize()
-						//  && checkbox->checkHover.hasFixedSize()
-						//  && checkbox->checkPressed.hasFixedSize()
-						//  && checkbox->checkDisabled.hasFixedSize());
+						// Default checkSize to the check image's size if it has one
+						if (style->checkSize.isValid)
+						{
+							checkbox->checkSize = style->checkSize.value;
+						}
+						else if (checkbox->check.hasFixedSize())
+						{
+							checkbox->checkSize = checkbox->check.getSize();
+						}
+						else
+						{
+							error(&reader, "Check for checkbox '{0}' has no fixed size, and no checkSize was provided. Defaulting to 0 x 0"_s, {checkbox->name});
+						}
 					} break;
 
 					case UI::Style_Console: {
@@ -620,19 +634,19 @@ void loadUITheme(Blob data, Asset *asset)
 						UI::ConsoleStyle *console = &childAsset->consoleStyle;
 						console->name = style->name;
 
-						console->font = style->font;
+						console->font = style->font.orDefault(defaultFont);
 
-						console->outputTextColor 			= style->outputTextColor;
-						console->outputTextColorInputEcho 	= style->outputTextColorInputEcho;
-						console->outputTextColorError 		= style->outputTextColorError;
-						console->outputTextColorWarning 	= style->outputTextColorWarning;
-						console->outputTextColorSuccess 	= style->outputTextColorSuccess;
+						console->outputTextColor 			= style->outputTextColor.orDefault(white);
+						console->outputTextColorInputEcho 	= style->outputTextColorInputEcho.orDefault(white);
+						console->outputTextColorError 		= style->outputTextColorError.orDefault(white);
+						console->outputTextColorWarning 	= style->outputTextColorWarning.orDefault(white);
+						console->outputTextColorSuccess 	= style->outputTextColorSuccess.orDefault(white);
 
-						console->background = style->background;
-						console->padding = style->padding;
+						console->background = style->background.value;
+						console->padding = style->padding.value;
 
-						console->scrollbarStyle = getAssetRef(AssetType_ScrollbarStyle, style->scrollbarStyle);
-						console->textInputStyle = getAssetRef(AssetType_TextInputStyle, style->textInputStyle);
+						console->scrollbarStyle = getAssetRef(AssetType_ScrollbarStyle, style->scrollbarStyle.orDefault(defaultStyleName));
+						console->textInputStyle = getAssetRef(AssetType_TextInputStyle, style->textInputStyle.orDefault(defaultStyleName));
 					} break;
 
 					case UI::Style_DropDownList: {
@@ -642,8 +656,8 @@ void loadUITheme(Blob data, Asset *asset)
 						UI::DropDownListStyle *ddl = &childAsset->dropDownListStyle;
 						ddl->name = style->name;
 
-						ddl->buttonStyle = getAssetRef(AssetType_ButtonStyle, style->buttonStyle);
-						ddl->panelStyle = getAssetRef(AssetType_PanelStyle, style->panelStyle);
+						ddl->buttonStyle = getAssetRef(AssetType_ButtonStyle, style->buttonStyle.orDefault(defaultStyleName));
+						ddl->panelStyle = getAssetRef(AssetType_PanelStyle, style->panelStyle.orDefault(defaultStyleName));
 					} break;
 
 					case UI::Style_Label: {
@@ -653,11 +667,11 @@ void loadUITheme(Blob data, Asset *asset)
 						UI::LabelStyle *label = &childAsset->labelStyle;
 						label->name = style->name;
 
-						label->padding = style->padding;
-						label->background = style->background;
-						label->font = style->font;
-						label->textColor = style->textColor;
-						label->textAlignment = style->textAlignment;
+						label->padding = style->padding.value;
+						label->background = style->background.value;
+						label->font = style->font.orDefault(defaultFont);
+						label->textColor = style->textColor.orDefault(white);
+						label->textAlignment = style->textAlignment.orDefault(ALIGN_TOP | ALIGN_LEFT);
 					} break;
 
 					case UI::Style_Panel: {
@@ -667,19 +681,19 @@ void loadUITheme(Blob data, Asset *asset)
 						UI::PanelStyle *panel = &childAsset->panelStyle;
 						panel->name = style->name;
 
-						panel->padding = style->padding;
-						panel->contentPadding = style->contentPadding;
-						panel->widgetAlignment = style->widgetAlignment;
-						panel->background = style->background;
+						panel->padding = style->padding.value;
+						panel->contentPadding = style->contentPadding.value;
+						panel->widgetAlignment = style->widgetAlignment.orDefault(ALIGN_TOP | ALIGN_EXPAND_H);
+						panel->background = style->background.value;
 
-						panel->buttonStyle 			= getAssetRef(AssetType_ButtonStyle, style->buttonStyle);
-						panel->checkboxStyle 		= getAssetRef(AssetType_CheckboxStyle, style->checkboxStyle);
-						panel->dropDownListStyle 	= getAssetRef(AssetType_DropDownListStyle, style->dropDownListStyle);
-						panel->labelStyle 			= getAssetRef(AssetType_LabelStyle, style->labelStyle);
-						panel->radioButtonStyle		= getAssetRef(AssetType_RadioButtonStyle, style->radioButtonStyle);
-						panel->scrollbarStyle 		= getAssetRef(AssetType_ScrollbarStyle, style->scrollbarStyle);
-						panel->sliderStyle 			= getAssetRef(AssetType_SliderStyle, style->sliderStyle);
-						panel->textInputStyle 		= getAssetRef(AssetType_TextInputStyle, style->textInputStyle);
+						panel->buttonStyle 			= getAssetRef(AssetType_ButtonStyle, style->buttonStyle.orDefault(defaultStyleName));
+						panel->checkboxStyle 		= getAssetRef(AssetType_CheckboxStyle, style->checkboxStyle.orDefault(defaultStyleName));
+						panel->dropDownListStyle 	= getAssetRef(AssetType_DropDownListStyle, style->dropDownListStyle.orDefault(defaultStyleName));
+						panel->labelStyle 			= getAssetRef(AssetType_LabelStyle, style->labelStyle.orDefault(defaultStyleName));
+						panel->radioButtonStyle		= getAssetRef(AssetType_RadioButtonStyle, style->radioButtonStyle.orDefault(defaultStyleName));
+						panel->scrollbarStyle 		= getAssetRef(AssetType_ScrollbarStyle, style->scrollbarStyle.orDefault(defaultStyleName));
+						panel->sliderStyle 			= getAssetRef(AssetType_SliderStyle, style->sliderStyle.orDefault(defaultStyleName));
+						panel->textInputStyle 		= getAssetRef(AssetType_TextInputStyle, style->textInputStyle.orDefault(defaultStyleName));
 					} break;
 
 					case UI::Style_RadioButton: {
@@ -689,17 +703,17 @@ void loadUITheme(Blob data, Asset *asset)
 						UI::RadioButtonStyle *radioButton = &childAsset->radioButtonStyle;
 						radioButton->name = style->name;
 
-						radioButton->size = style->size;
-						radioButton->background = style->background;
-						radioButton->backgroundDisabled = style->backgroundDisabled;
-						radioButton->backgroundHover = style->backgroundHover;
-						radioButton->backgroundPressed = style->backgroundPressed;
+						radioButton->size = style->size.value;
+						radioButton->background = style->background.value;
+						radioButton->backgroundDisabled = style->backgroundDisabled.orDefault(radioButton->background);
+						radioButton->backgroundHover = style->backgroundHover.orDefault(radioButton->background);
+						radioButton->backgroundPressed = style->backgroundPressed.orDefault(radioButton->background);
 
-						radioButton->dotSize = style->dotSize;
-						radioButton->dot = style->dot;
-						radioButton->dotDisabled = style->dotDisabled;
-						radioButton->dotHover = style->dotHover;
-						radioButton->dotPressed = style->dotPressed;
+						radioButton->dotSize = style->dotSize.value;
+						radioButton->dot = style->dot.value;
+						radioButton->dotDisabled = style->dotDisabled.orDefault(radioButton->dot);
+						radioButton->dotHover = style->dotHover.orDefault(radioButton->dot);
+						radioButton->dotPressed = style->dotPressed.orDefault(radioButton->dot);
 					} break;
 
 					case UI::Style_Scrollbar: {
@@ -709,12 +723,12 @@ void loadUITheme(Blob data, Asset *asset)
 						UI::ScrollbarStyle *scrollbar = &childAsset->scrollbarStyle;
 						scrollbar->name = style->name;
 
-						scrollbar->background = style->background;
-						scrollbar->thumb = style->thumb;
-						scrollbar->thumbDisabled = style->thumbDisabled;
-						scrollbar->thumbHover = style->thumbHover;
-						scrollbar->thumbPressed = style->thumbPressed;
-						scrollbar->width = style->width;
+						scrollbar->background = style->background.value;
+						scrollbar->thumb = style->thumb.value;
+						scrollbar->thumbDisabled = style->thumbDisabled.orDefault(scrollbar->thumb);
+						scrollbar->thumbHover = style->thumbHover.orDefault(scrollbar->thumb);
+						scrollbar->thumbPressed = style->thumbPressed.orDefault(scrollbar->thumb);
+						scrollbar->width = style->width.orDefault(8);
 					} break;
 
 					case UI::Style_Slider: {
@@ -724,13 +738,13 @@ void loadUITheme(Blob data, Asset *asset)
 						UI::SliderStyle *slider = &childAsset->sliderStyle;
 						slider->name = style->name;
 
-						slider->track = style->track;
-						slider->trackThickness = style->trackThickness;
-						slider->thumb = style->thumb;
-						slider->thumbDisabled = style->thumbDisabled;
-						slider->thumbHover = style->thumbHover;
-						slider->thumbPressed = style->thumbPressed;
-						slider->thumbSize = style->thumbSize;
+						slider->track = style->track.value;
+						slider->trackThickness = style->trackThickness.orDefault(3);
+						slider->thumb = style->thumb.value;
+						slider->thumbDisabled = style->thumbDisabled.orDefault(slider->thumb);
+						slider->thumbHover = style->thumbHover.orDefault(slider->thumb);
+						slider->thumbPressed = style->thumbPressed.orDefault(slider->thumb);
+						slider->thumbSize = style->thumbSize.orDefault(v2i(8,8));
 					} break;
 
 					case UI::Style_TextInput: {
@@ -740,15 +754,15 @@ void loadUITheme(Blob data, Asset *asset)
 						UI::TextInputStyle *textInput = &childAsset->textInputStyle;
 						textInput->name = style->name;
 
-						textInput->font = style->font;
-						textInput->textColor = style->textColor;
-						textInput->textAlignment = style->textAlignment;
+						textInput->font = style->font.orDefault(defaultFont);
+						textInput->textColor = style->textColor.orDefault(white);
+						textInput->textAlignment = style->textAlignment.orDefault(ALIGN_TOP | ALIGN_LEFT);
 
-						textInput->background = style->background;
-						textInput->padding = style->padding;
+						textInput->background = style->background.value;
+						textInput->padding = style->padding.value;
 				
-						textInput->showCaret = style->showCaret;
-						textInput->caretFlashCycleDuration = style->caretFlashCycleDuration;
+						textInput->showCaret = style->showCaret.orDefault(true);
+						textInput->caretFlashCycleDuration = style->caretFlashCycleDuration.orDefault(1.0f);
 					} break;
 
 					case UI::Style_Window: {
@@ -758,16 +772,16 @@ void loadUITheme(Blob data, Asset *asset)
 						UI::WindowStyle *window = &childAsset->windowStyle;
 						window->name = style->name;
 
-						window->titleBarHeight = style->titleBarHeight;
-						window->titleBarColor = style->titleBarColor;
-						window->titleBarColorInactive = style->titleBarColorInactive;
-						window->titleFont = style->titleFont;
-						window->titleColor = style->titleColor;
-						window->titleBarButtonHoverColor = style->titleBarButtonHoverColor;
+						window->titleBarHeight = style->titleBarHeight.orDefault(16);
+						window->titleBarColor = style->titleBarColor.orDefault(color255(128, 128, 128, 255));
+						window->titleBarColorInactive = style->titleBarColorInactive.orDefault(window->titleBarColor);
+						window->titleFont = style->titleFont.orDefault(defaultFont);
+						window->titleColor = style->titleColor.orDefault(white);
+						window->titleBarButtonHoverColor = style->titleBarButtonHoverColor.orDefault(transparent);
 
-						window->offsetFromMouse = style->offsetFromMouse;
+						window->offsetFromMouse = style->offsetFromMouse.value;
 
-						window->panelStyle = getAssetRef(AssetType_PanelStyle, style->panelStyle);
+						window->panelStyle = getAssetRef(AssetType_PanelStyle, style->panelStyle.orDefault(defaultStyleName));
 					} break;
 				}
 			}
