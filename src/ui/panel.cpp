@@ -214,12 +214,28 @@ namespace UI
 		LabelStyle       *labelStyle       = getStyle<LabelStyle>(labelStyleName, &style->labelStyle);
 
 		Rect2I space = getCurrentLayoutPosition();
-		V2I radioButtonOrigin = alignWithinRectangle(space, widgetAlignment);
 		V2I radioButtonSize = calculateRadioButtonSize(radioButtonStyle);
-		V2I widgetSize = v2i(space.w, 0);
+		s32 textWidth = space.w - (radioButtonSize.x - style->contentPadding);
 
-		Rect2I radioButtonBounds = irectAligned(radioButtonOrigin, radioButtonSize, widgetAlignment);
-		s32 textWidth = space.w - (radioButtonBounds.w - style->contentPadding);
+		// Calculate the overall size
+		// This means we have to loop through everything twice, but what can you do
+		V2I widgetSize = v2i(0, 0);
+		for (s32 optionIndex = 0; optionIndex < listOptions->count; optionIndex++)
+		{
+			String optionText = getDisplayName(listOptions->get(optionIndex));
+			V2I labelSize = calculateLabelSize(optionText, labelStyle, textWidth, false);
+
+			widgetSize.x = max(widgetSize.x, radioButtonSize.x + style->contentPadding + labelSize.x);
+
+			if (optionIndex > 0) widgetSize.y += style->contentPadding;
+			widgetSize.y += max(labelSize.y, radioButtonSize.y);
+		}
+
+		// We're piggy-backing off addBlank() to do our layout positioning
+		// That means we don't call completeWidget(), as addBlank() already does it
+		Rect2I buttonGroupBounds = addBlank(widgetSize.x, widgetSize.y);
+		V2I radioButtonOrigin = alignWithinRectangle(buttonGroupBounds, ALIGN_TOP | ALIGN_LEFT);
+		Rect2I radioButtonBounds = irectAligned(radioButtonOrigin, radioButtonSize, ALIGN_TOP | ALIGN_LEFT);
 
 		for (s32 optionIndex = 0; optionIndex < listOptions->count; optionIndex++)
 		{
@@ -246,8 +262,6 @@ namespace UI
 
 			widgetSize.y += labelBounds.h + style->contentPadding;
 		}
-
-		completeWidget(widgetSize);
 	}
 
 	template <typename T>
