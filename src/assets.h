@@ -95,17 +95,6 @@ template <typename T>
 T* getStyle(String styleName, AssetRef *defaultStyle);
 template <typename T>
 T* getStyle(String styleName);
-template <> UI::ButtonStyle			*getStyle<UI::ButtonStyle>			(String styleName);
-template <> UI::CheckboxStyle		*getStyle<UI::CheckboxStyle>		(String styleName);
-template <> UI::ConsoleStyle		*getStyle<UI::ConsoleStyle>			(String styleName);
-template <> UI::DropDownListStyle 	*getStyle<UI::DropDownListStyle>	(String styleName);
-template <> UI::LabelStyle			*getStyle<UI::LabelStyle>			(String styleName);
-template <> UI::PanelStyle			*getStyle<UI::PanelStyle>			(String styleName);
-template <> UI::RadioButtonStyle	*getStyle<UI::RadioButtonStyle>		(String styleName);
-template <> UI::ScrollbarStyle		*getStyle<UI::ScrollbarStyle>		(String styleName);
-template <> UI::SliderStyle			*getStyle<UI::SliderStyle>			(String styleName);
-template <> UI::TextInputStyle		*getStyle<UI::TextInputStyle>		(String styleName);
-template <> UI::WindowStyle			*getStyle<UI::WindowStyle>			(String styleName);
 
 //
 // Internal

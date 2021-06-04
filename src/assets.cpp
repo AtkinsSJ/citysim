@@ -985,122 +985,29 @@ inline T* getStyle(String styleName, AssetRef *defaultStyle)
 	return result;
 }
 
-template <> UI::ButtonStyle *getStyle<UI::ButtonStyle>(String styleName)
+template <typename T>
+T* getStyle(String styleName)
 {
-	UI::ButtonStyle *result = null;
+	T *result = null;
 
-	Asset *asset = getAsset(AssetType_ButtonStyle, styleName);
+	AssetType styleType = AssetType_Unknown;
+	
+	if 		(typeid(T) == typeid(UI::ButtonStyle)) 			styleType = AssetType_ButtonStyle;
+	else if (typeid(T) == typeid(UI::CheckboxStyle)) 		styleType = AssetType_CheckboxStyle;
+	else if (typeid(T) == typeid(UI::ConsoleStyle)) 		styleType = AssetType_ConsoleStyle;
+	else if (typeid(T) == typeid(UI::DropDownListStyle)) 	styleType = AssetType_DropDownListStyle;
+	else if (typeid(T) == typeid(UI::LabelStyle)) 			styleType = AssetType_LabelStyle;
+	else if (typeid(T) == typeid(UI::PanelStyle)) 			styleType = AssetType_PanelStyle;
+	else if (typeid(T) == typeid(UI::ScrollbarStyle)) 		styleType = AssetType_ScrollbarStyle;
+	else if (typeid(T) == typeid(UI::SliderStyle)) 			styleType = AssetType_SliderStyle;
+	else if (typeid(T) == typeid(UI::TextInputStyle)) 		styleType = AssetType_TextInputStyle;
+	else if (typeid(T) == typeid(UI::WindowStyle)) 			styleType = AssetType_WindowStyle;
+	else ASSERT(false);
+
+	Asset *asset = getAsset(styleType, styleName);
 	if (asset != null)
 	{
-		result = (UI::ButtonStyle *)&asset->_localData;
-	}
-
-	return result;
-}
-template <> UI::CheckboxStyle *getStyle<UI::CheckboxStyle>(String styleName)
-{
-	UI::CheckboxStyle *result = null;
-
-	Asset *asset = getAsset(AssetType_CheckboxStyle, styleName);
-	if (asset != null)
-	{
-		result = (UI::CheckboxStyle *)&asset->_localData;
-	}
-
-	return result;
-}
-template <> UI::ConsoleStyle *getStyle<UI::ConsoleStyle>(String styleName)
-{
-	UI::ConsoleStyle *result = null;
-
-	Asset *asset = getAsset(AssetType_ConsoleStyle, styleName);
-	if (asset != null)
-	{
-		result = (UI::ConsoleStyle *)&asset->_localData;
-	}
-
-	return result;
-}
-template <> UI::DropDownListStyle *getStyle<UI::DropDownListStyle>(String styleName)
-{
-	UI::DropDownListStyle *result = null;
-
-	Asset *asset = getAsset(AssetType_DropDownListStyle, styleName);
-	if (asset != null)
-	{
-		result = (UI::DropDownListStyle *)&asset->_localData;
-	}
-
-	return result;
-}
-template <> UI::LabelStyle *getStyle<UI::LabelStyle>(String styleName)
-{
-	UI::LabelStyle *result = null;
-
-	Asset *asset = getAsset(AssetType_LabelStyle, styleName);
-	if (asset != null)
-	{
-		result = (UI::LabelStyle *)&asset->_localData;
-	}
-
-	return result;
-}
-template <> UI::PanelStyle *getStyle<UI::PanelStyle>(String styleName)
-{
-	UI::PanelStyle *result = null;
-
-	Asset *asset = getAsset(AssetType_PanelStyle, styleName);
-	if (asset != null)
-	{
-		result = (UI::PanelStyle *)&asset->_localData;
-	}
-
-	return result;
-}
-template <> UI::ScrollbarStyle *getStyle<UI::ScrollbarStyle>(String styleName)
-{
-	UI::ScrollbarStyle *result = null;
-
-	Asset *asset = getAsset(AssetType_ScrollbarStyle, styleName);
-	if (asset != null)
-	{
-		result = (UI::ScrollbarStyle *)&asset->_localData;
-	}
-
-	return result;
-}
-template <> UI::SliderStyle *getStyle<UI::SliderStyle>(String styleName)
-{
-	UI::SliderStyle *result = null;
-
-	Asset *asset = getAsset(AssetType_SliderStyle, styleName);
-	if (asset != null)
-	{
-		result = (UI::SliderStyle *)&asset->_localData;
-	}
-
-	return result;
-}
-template <> UI::TextInputStyle *getStyle<UI::TextInputStyle>(String styleName)
-{
-	UI::TextInputStyle *result = null;
-
-	Asset *asset = getAsset(AssetType_TextInputStyle, styleName);
-	if (asset != null)
-	{
-		result = (UI::TextInputStyle *)&asset->_localData;
-	}
-
-	return result;
-}
-template <> UI::WindowStyle *getStyle<UI::WindowStyle>(String styleName)
-{
-	UI::WindowStyle *result = null;
-
-	Asset *asset = getAsset(AssetType_WindowStyle, styleName);
-	if (asset != null)
-	{
-		result = (UI::WindowStyle *)&asset->_localData;
+		result = (T*) &asset->_localData;
 	}
 
 	return result;
