@@ -15,7 +15,7 @@ namespace UI
 		  	  		(window->flags & WindowFlags::AutomaticHeight) ? 10000 : 
 		  	  			(window->area.h - ((window->flags & WindowFlags::Headless) ? 0 : windowStyle->titleBarHeight))
 		  	  ),
-		  	  findStyle<PanelStyle>(&windowStyle->panelStyle), 
+		  	  getStyle<PanelStyle>(&windowStyle->panelStyle), 
 		      ((window->flags & WindowFlags::Tooltip) ? PanelFlags::AllowClickThrough : 0)
 		       | (hideWidgets ? PanelFlags::HideWidgets : 0),
 		       renderBuffer
@@ -166,7 +166,7 @@ namespace UI
 			bool shrinkWidth  = (window->flags & WindowFlags::ShrinkWidth) != 0;
 			bool shrinkHeight = (window->flags & WindowFlags::AutomaticHeight) != 0;
 
-			WindowStyle *windowStyle = findStyle<WindowStyle>(window->styleName);
+			WindowStyle *windowStyle = getStyle<WindowStyle>(window->styleName);
 
 			s32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
 

@@ -11,3 +11,6 @@
 
 :Ninepatch slider_track slider_track_9.png 0 1 2 3    0 1 2 3
 :Sprite slider_thumb slider_thumb.png 9x20
+
+:Sprite radiobtn_back radiobtn_back.png 16x16
+:Sprite radiobtn_dot  radiobtn_dot.png  6x6

@@ -26,6 +26,7 @@ enum AssetType
 	AssetType_DropDownListStyle,
 	AssetType_LabelStyle,
 	AssetType_PanelStyle,
+	AssetType_RadioButtonStyle,
 	AssetType_ScrollbarStyle,
 	AssetType_SliderStyle,
 	AssetType_TextInputStyle,
@@ -59,7 +60,9 @@ String assetTypeNames[AssetTypeCount] = {
 	"DropDownListStyle"_s,
 	"LabelStyle"_s,
 	"PanelStyle"_s,
+	"RadioButtonStyle"_s,
 	"ScrollbarStyle"_s,
+	"SliderStyle"_s,
 	"TextInputStyle"_s,
 	"WindowStyle"_s,
 };
@@ -282,6 +285,7 @@ struct Asset
 		UI::DropDownListStyle	dropDownListStyle;
 		UI::LabelStyle     		labelStyle;
 		UI::PanelStyle     		panelStyle;
+		UI::RadioButtonStyle	radioButtonStyle;
 		UI::ScrollbarStyle 		scrollbarStyle;
 		UI::SliderStyle 		sliderStyle;
 		UI::TextInputStyle 		textInputStyle;

@@ -122,7 +122,12 @@ namespace UI
 		PROP(checkHover,				Drawable);
 		PROP(checkPressed,				Drawable);
 		PROP(checkboxStyle,				Style);
-		PROP(contentSize,				V2I);
+		PROP(checkSize,					V2I);
+		PROP(dot,						Drawable);
+		PROP(dotDisabled,				Drawable);
+		PROP(dotHover,					Drawable);
+		PROP(dotPressed,				Drawable);
+		PROP(dotSize,					V2I);
 		PROP(contentPadding,			Int);
 		PROP(dropDownListStyle,			Style);
 		PROP(endIcon,					Drawable);
@@ -137,8 +142,10 @@ namespace UI
 		PROP(outputTextColorSuccess,	Color);
 		PROP(padding,					Padding);
 		PROP(panelStyle,				Style);
+		PROP(radioButtonStyle,			Style);
 		PROP(scrollbarStyle,			Style);
 		PROP(showCaret,					Bool);
+		PROP(size,						V2I);
 		PROP(sliderStyle,				Style);
 		PROP(startIcon,					Drawable);
 		PROP(startIconAlignment,		Alignment);
@@ -177,7 +184,7 @@ namespace UI
 			"startIconAlignment"_s,
 			"textAlignment"_s,
 			"textColor"_s,
-		});	
+		});
 		assignStyleProperties(Style_Checkbox, {
 			"background"_s,
 			"backgroundDisabled"_s,
@@ -186,7 +193,7 @@ namespace UI
 			"check"_s,
 			"checkDisabled"_s,
 			"checkHover"_s,
-			"contentSize"_s,
+			"checkSize"_s,
 			"checkPressed"_s,
 			"dropDownListStyle"_s,
 			"padding"_s,
@@ -219,10 +226,23 @@ namespace UI
 			"dropDownListStyle"_s,
 			"labelStyle"_s,
 			"padding"_s,
+			"radioButtonStyle"_s,
 			"scrollbarStyle"_s,
 			"sliderStyle"_s,
 			"textInputStyle"_s,
 			"widgetAlignment"_s,
+		});
+		assignStyleProperties(Style_RadioButton, {
+			"background"_s,
+			"backgroundDisabled"_s,
+			"backgroundHover"_s,
+			"backgroundPressed"_s,
+			"dot"_s,
+			"dotDisabled"_s,
+			"dotHover"_s,
+			"dotPressed"_s,
+			"dotSize"_s,
+			"size"_s,
 		});
 		assignStyleProperties(Style_Scrollbar, {
 			"background"_s,
@@ -268,6 +288,7 @@ namespace UI
 		styleTypesByName.put("DropDownList"_s, 	Style_DropDownList);
 		styleTypesByName.put("Label"_s, 		Style_Label);
 		styleTypesByName.put("Panel"_s, 		Style_Panel);
+		styleTypesByName.put("RadioButton"_s, 	Style_RadioButton);
 		styleTypesByName.put("Scrollbar"_s, 	Style_Scrollbar);
 		styleTypesByName.put("Slider"_s, 		Style_Slider);
 		styleTypesByName.put("TextInput"_s, 	Style_TextInput);
@@ -577,7 +598,7 @@ void loadUITheme(Blob data, Asset *asset)
 						checkbox->backgroundPressed = style->backgroundPressed;
 						checkbox->backgroundDisabled = style->backgroundDisabled;
 
-						checkbox->contentSize = style->contentSize;
+						checkbox->checkSize = style->checkSize;
 						checkbox->check = style->check;
 						checkbox->checkHover = style->checkHover;
 						checkbox->checkPressed = style->checkPressed;
@@ -654,6 +675,26 @@ void loadUITheme(Blob data, Asset *asset)
 						panel->textInputStyle 		= getAssetRef(AssetType_TextInputStyle, style->textInputStyle);
 					} break;
 
+					case UI::Style_RadioButton: {
+						Asset *childAsset = addAsset(AssetType_RadioButtonStyle, style->name, 0);
+						addChildAsset(asset, childAsset);
+
+						UI::RadioButtonStyle *radioButton = &childAsset->radioButtonStyle;
+						radioButton->name = style->name;
+
+						radioButton->size = style->size;
+						radioButton->background = style->background;
+						radioButton->backgroundDisabled = style->backgroundDisabled;
+						radioButton->backgroundHover = style->backgroundHover;
+						radioButton->backgroundPressed = style->backgroundPressed;
+
+						radioButton->dotSize = style->dotSize;
+						radioButton->dot = style->dot;
+						radioButton->dotDisabled = style->dotDisabled;
+						radioButton->dotHover = style->dotHover;
+						radioButton->dotPressed = style->dotPressed;
+					} break;
+
 					case UI::Style_Scrollbar: {
 						Asset *childAsset = addAsset(AssetType_ScrollbarStyle, style->name, 0);
 						addChildAsset(asset, childAsset);
@@ -725,156 +766,4 @@ void loadUITheme(Blob data, Asset *asset)
 			}
 		}
 	}
-}
-
-template <typename T>
-bool checkStyleMatchesType(AssetRef *reference)
-{
-	switch (reference->type)
-	{
-		case AssetType_ButtonStyle: 		return (typeid(T*) == typeid(UI::ButtonStyle*));
-		case AssetType_CheckboxStyle: 		return (typeid(T*) == typeid(UI::CheckboxStyle*));
-		case AssetType_ConsoleStyle: 		return (typeid(T*) == typeid(UI::ConsoleStyle*));
-		case AssetType_DropDownListStyle: 	return (typeid(T*) == typeid(UI::DropDownListStyle*));
-		case AssetType_LabelStyle: 	 		return (typeid(T*) == typeid(UI::LabelStyle*));
-		case AssetType_PanelStyle:      	return (typeid(T*) == typeid(UI::PanelStyle*));
-		case AssetType_ScrollbarStyle:  	return (typeid(T*) == typeid(UI::ScrollbarStyle*));
-		case AssetType_SliderStyle:			return (typeid(T*) == typeid(UI::SliderStyle*));
-		case AssetType_TextInputStyle:  	return (typeid(T*) == typeid(UI::TextInputStyle*));
-		case AssetType_WindowStyle: 		return (typeid(T*) == typeid(UI::WindowStyle*));
-		INVALID_DEFAULT_CASE;
-	}
-
-	return false;
-}
-
-template <typename T>
-inline T* findStyle(AssetRef *ref)
-{
-	ASSERT(checkStyleMatchesType<T>(ref));
-
-	Asset *asset = getAsset(ref);
-
-	return (T*) &asset->_localData;
-}
-
-template <> UI::ButtonStyle *findStyle<UI::ButtonStyle>(String styleName)
-{
-	UI::ButtonStyle *result = null;
-
-	Asset *asset = getAsset(AssetType_ButtonStyle, styleName);
-	if (asset != null)
-	{
-		result = (UI::ButtonStyle *)&asset->_localData;
-	}
-
-	return result;
-}
-template <> UI::CheckboxStyle *findStyle<UI::CheckboxStyle>(String styleName)
-{
-	UI::CheckboxStyle *result = null;
-
-	Asset *asset = getAsset(AssetType_CheckboxStyle, styleName);
-	if (asset != null)
-	{
-		result = (UI::CheckboxStyle *)&asset->_localData;
-	}
-
-	return result;
-}
-template <> UI::ConsoleStyle *findStyle<UI::ConsoleStyle>(String styleName)
-{
-	UI::ConsoleStyle *result = null;
-
-	Asset *asset = getAsset(AssetType_ConsoleStyle, styleName);
-	if (asset != null)
-	{
-		result = (UI::ConsoleStyle *)&asset->_localData;
-	}
-
-	return result;
-}
-template <> UI::DropDownListStyle *findStyle<UI::DropDownListStyle>(String styleName)
-{
-	UI::DropDownListStyle *result = null;
-
-	Asset *asset = getAsset(AssetType_DropDownListStyle, styleName);
-	if (asset != null)
-	{
-		result = (UI::DropDownListStyle *)&asset->_localData;
-	}
-
-	return result;
-}
-template <> UI::LabelStyle *findStyle<UI::LabelStyle>(String styleName)
-{
-	UI::LabelStyle *result = null;
-
-	Asset *asset = getAsset(AssetType_LabelStyle, styleName);
-	if (asset != null)
-	{
-		result = (UI::LabelStyle *)&asset->_localData;
-	}
-
-	return result;
-}
-template <> UI::PanelStyle *findStyle<UI::PanelStyle>(String styleName)
-{
-	UI::PanelStyle *result = null;
-
-	Asset *asset = getAsset(AssetType_PanelStyle, styleName);
-	if (asset != null)
-	{
-		result = (UI::PanelStyle *)&asset->_localData;
-	}
-
-	return result;
-}
-template <> UI::ScrollbarStyle *findStyle<UI::ScrollbarStyle>(String styleName)
-{
-	UI::ScrollbarStyle *result = null;
-
-	Asset *asset = getAsset(AssetType_ScrollbarStyle, styleName);
-	if (asset != null)
-	{
-		result = (UI::ScrollbarStyle *)&asset->_localData;
-	}
-
-	return result;
-}
-template <> UI::SliderStyle *findStyle<UI::SliderStyle>(String styleName)
-{
-	UI::SliderStyle *result = null;
-
-	Asset *asset = getAsset(AssetType_SliderStyle, styleName);
-	if (asset != null)
-	{
-		result = (UI::SliderStyle *)&asset->_localData;
-	}
-
-	return result;
-}
-template <> UI::TextInputStyle *findStyle<UI::TextInputStyle>(String styleName)
-{
-	UI::TextInputStyle *result = null;
-
-	Asset *asset = getAsset(AssetType_TextInputStyle, styleName);
-	if (asset != null)
-	{
-		result = (UI::TextInputStyle *)&asset->_localData;
-	}
-
-	return result;
-}
-template <> UI::WindowStyle *findStyle<UI::WindowStyle>(String styleName)
-{
-	UI::WindowStyle *result = null;
-
-	Asset *asset = getAsset(AssetType_WindowStyle, styleName);
-	if (asset != null)
-	{
-		result = (UI::WindowStyle *)&asset->_localData;
-	}
-
-	return result;
 }

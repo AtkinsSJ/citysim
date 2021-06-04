@@ -944,6 +944,168 @@ inline String getText(String name, std::initializer_list<String> args)
 	return myprintf(format, args);
 }
 
+template <typename T>
+bool checkStyleMatchesType(AssetRef *reference)
+{
+	switch (reference->type)
+	{
+		case AssetType_ButtonStyle: 		return (typeid(T*) == typeid(UI::ButtonStyle*));
+		case AssetType_CheckboxStyle: 		return (typeid(T*) == typeid(UI::CheckboxStyle*));
+		case AssetType_ConsoleStyle: 		return (typeid(T*) == typeid(UI::ConsoleStyle*));
+		case AssetType_DropDownListStyle: 	return (typeid(T*) == typeid(UI::DropDownListStyle*));
+		case AssetType_LabelStyle: 	 		return (typeid(T*) == typeid(UI::LabelStyle*));
+		case AssetType_PanelStyle:      	return (typeid(T*) == typeid(UI::PanelStyle*));
+		case AssetType_ScrollbarStyle:  	return (typeid(T*) == typeid(UI::ScrollbarStyle*));
+		case AssetType_SliderStyle:			return (typeid(T*) == typeid(UI::SliderStyle*));
+		case AssetType_TextInputStyle:  	return (typeid(T*) == typeid(UI::TextInputStyle*));
+		case AssetType_WindowStyle: 		return (typeid(T*) == typeid(UI::WindowStyle*));
+		INVALID_DEFAULT_CASE;
+	}
+
+	return false;
+}
+
+template <typename T>
+inline T* getStyle(AssetRef *ref)
+{
+	ASSERT(checkStyleMatchesType<T>(ref));
+
+	Asset *asset = getAsset(ref);
+
+	return (T*) &asset->_localData;
+}
+
+template <typename T>
+inline T* getStyle(String styleName, AssetRef *defaultStyle)
+{
+	T *result = null;
+	if (!isEmpty(styleName)) result = getStyle<T>(styleName);
+	if (result == null)      result = getStyle<T>(defaultStyle);
+
+	return result;
+}
+
+template <> UI::ButtonStyle *getStyle<UI::ButtonStyle>(String styleName)
+{
+	UI::ButtonStyle *result = null;
+
+	Asset *asset = getAsset(AssetType_ButtonStyle, styleName);
+	if (asset != null)
+	{
+		result = (UI::ButtonStyle *)&asset->_localData;
+	}
+
+	return result;
+}
+template <> UI::CheckboxStyle *getStyle<UI::CheckboxStyle>(String styleName)
+{
+	UI::CheckboxStyle *result = null;
+
+	Asset *asset = getAsset(AssetType_CheckboxStyle, styleName);
+	if (asset != null)
+	{
+		result = (UI::CheckboxStyle *)&asset->_localData;
+	}
+
+	return result;
+}
+template <> UI::ConsoleStyle *getStyle<UI::ConsoleStyle>(String styleName)
+{
+	UI::ConsoleStyle *result = null;
+
+	Asset *asset = getAsset(AssetType_ConsoleStyle, styleName);
+	if (asset != null)
+	{
+		result = (UI::ConsoleStyle *)&asset->_localData;
+	}
+
+	return result;
+}
+template <> UI::DropDownListStyle *getStyle<UI::DropDownListStyle>(String styleName)
+{
+	UI::DropDownListStyle *result = null;
+
+	Asset *asset = getAsset(AssetType_DropDownListStyle, styleName);
+	if (asset != null)
+	{
+		result = (UI::DropDownListStyle *)&asset->_localData;
+	}
+
+	return result;
+}
+template <> UI::LabelStyle *getStyle<UI::LabelStyle>(String styleName)
+{
+	UI::LabelStyle *result = null;
+
+	Asset *asset = getAsset(AssetType_LabelStyle, styleName);
+	if (asset != null)
+	{
+		result = (UI::LabelStyle *)&asset->_localData;
+	}
+
+	return result;
+}
+template <> UI::PanelStyle *getStyle<UI::PanelStyle>(String styleName)
+{
+	UI::PanelStyle *result = null;
+
+	Asset *asset = getAsset(AssetType_PanelStyle, styleName);
+	if (asset != null)
+	{
+		result = (UI::PanelStyle *)&asset->_localData;
+	}
+
+	return result;
+}
+template <> UI::ScrollbarStyle *getStyle<UI::ScrollbarStyle>(String styleName)
+{
+	UI::ScrollbarStyle *result = null;
+
+	Asset *asset = getAsset(AssetType_ScrollbarStyle, styleName);
+	if (asset != null)
+	{
+		result = (UI::ScrollbarStyle *)&asset->_localData;
+	}
+
+	return result;
+}
+template <> UI::SliderStyle *getStyle<UI::SliderStyle>(String styleName)
+{
+	UI::SliderStyle *result = null;
+
+	Asset *asset = getAsset(AssetType_SliderStyle, styleName);
+	if (asset != null)
+	{
+		result = (UI::SliderStyle *)&asset->_localData;
+	}
+
+	return result;
+}
+template <> UI::TextInputStyle *getStyle<UI::TextInputStyle>(String styleName)
+{
+	UI::TextInputStyle *result = null;
+
+	Asset *asset = getAsset(AssetType_TextInputStyle, styleName);
+	if (asset != null)
+	{
+		result = (UI::TextInputStyle *)&asset->_localData;
+	}
+
+	return result;
+}
+template <> UI::WindowStyle *getStyle<UI::WindowStyle>(String styleName)
+{
+	UI::WindowStyle *result = null;
+
+	Asset *asset = getAsset(AssetType_WindowStyle, styleName);
+	if (asset != null)
+	{
+		result = (UI::WindowStyle *)&asset->_localData;
+	}
+
+	return result;
+}
+
 String getAssetPath(AssetType type, String shortName)
 {
 	String result = shortName;

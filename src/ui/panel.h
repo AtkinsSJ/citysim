@@ -39,7 +39,7 @@ namespace UI
 	{
 		Panel(Rect2I bounds, PanelStyle *style = null, u32 flags = 0, RenderBuffer *renderBuffer = &renderer->uiBuffer);
 		Panel(Rect2I bounds, String styleName, u32 flags = 0, RenderBuffer *renderBuffer = &renderer->uiBuffer)
-			: Panel(bounds, findStyle<PanelStyle>(styleName), flags, renderBuffer) {}
+			: Panel(bounds, getStyle<PanelStyle>(styleName), flags, renderBuffer) {}
 
 		// Configuration functions, which should be called before adding any widgets
 		void enableHorizontalScrolling(ScrollbarState *hScrollbar);

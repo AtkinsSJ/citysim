@@ -59,6 +59,7 @@ namespace UI
 		Style_DropDownList,
 		Style_Label,
 		Style_Panel,
+		Style_RadioButton,
 		Style_Scrollbar,
 		Style_Slider,
 		Style_TextInput,
@@ -100,7 +101,7 @@ namespace UI
 		DrawableStyle backgroundPressed;
 		DrawableStyle backgroundDisabled;
 
-		V2I contentSize;
+		V2I checkSize;
 		DrawableStyle check;
 		DrawableStyle checkHover;
 		DrawableStyle checkPressed;
@@ -163,9 +164,27 @@ namespace UI
 		AssetRef checkboxStyle;
 		AssetRef dropDownListStyle;
 		AssetRef labelStyle;
+		AssetRef radioButtonStyle;
 		AssetRef scrollbarStyle;
 		AssetRef sliderStyle;
 		AssetRef textInputStyle;
+	};
+
+	struct RadioButtonStyle
+	{
+		String name;
+
+		V2I size;
+		DrawableStyle background;
+		DrawableStyle backgroundHover;
+		DrawableStyle backgroundPressed;
+		DrawableStyle backgroundDisabled;
+
+		V2I dotSize;
+		DrawableStyle dot;
+		DrawableStyle dotHover;
+		DrawableStyle dotPressed;
+		DrawableStyle dotDisabled;
 	};
 
 	struct ScrollbarStyle
@@ -258,10 +277,10 @@ namespace UI
 		// PROPERTIES
 		Padding padding;
 		s32 contentPadding;
-		V2I contentSize;
 		V2I offsetFromMouse;
 		s32 width;
 		u32 widgetAlignment;
+		V2I size;
 
 		DrawableStyle background;
 		DrawableStyle backgroundDisabled;
@@ -273,6 +292,7 @@ namespace UI
 		String dropDownListStyle;
 		String labelStyle;
 		String panelStyle;
+		String radioButtonStyle;
 		String scrollbarStyle;
 		String sliderStyle;
 		String textInputStyle;
@@ -308,6 +328,7 @@ namespace UI
 		AssetRef titleFont;
 
 		// Checkbox specific
+		V2I checkSize;
 		DrawableStyle check;
 		DrawableStyle checkHover;
 		DrawableStyle checkPressed;
@@ -319,6 +340,13 @@ namespace UI
 		V4 outputTextColorError;
 		V4 outputTextColorSuccess;
 		V4 outputTextColorWarning;
+
+		// Radio button
+		V2I dotSize;
+		DrawableStyle dot;
+		DrawableStyle dotHover;
+		DrawableStyle dotPressed;
+		DrawableStyle dotDisabled;
 	};
 
 	HashTable<Property> styleProperties;
@@ -331,29 +359,3 @@ namespace UI
 }
 
 void loadUITheme(Blob data, struct Asset *asset);
-
-template <typename T>
-T* findStyle(AssetRef *reference);
-
-template <typename T>
-inline T* findStyle(String styleName, AssetRef *defaultStyle)
-{
-	T *result = null;
-	if (!isEmpty(styleName)) result = findStyle<T>(styleName);
-	if (result == null)      result = findStyle<T>(defaultStyle);
-
-	return result;
-}
-
-template <typename T>
-T* findStyle(String styleName);
-template <> UI::ButtonStyle			*findStyle<UI::ButtonStyle>			(String styleName);
-template <> UI::CheckboxStyle		*findStyle<UI::CheckboxStyle>		(String styleName);
-template <> UI::ConsoleStyle		*findStyle<UI::ConsoleStyle>		(String styleName);
-template <> UI::DropDownListStyle 	*findStyle<UI::DropDownListStyle>	(String styleName);
-template <> UI::LabelStyle			*findStyle<UI::LabelStyle>			(String styleName);
-template <> UI::PanelStyle			*findStyle<UI::PanelStyle>			(String styleName);
-template <> UI::ScrollbarStyle		*findStyle<UI::ScrollbarStyle>		(String styleName);
-template <> UI::SliderStyle			*findStyle<UI::SliderStyle>			(String styleName);
-template <> UI::TextInputStyle		*findStyle<UI::TextInputStyle>		(String styleName);
-template <> UI::WindowStyle			*findStyle<UI::WindowStyle>			(String styleName);

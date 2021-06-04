@@ -8,7 +8,7 @@ namespace UI
 
 		if (panelStyle == null)
 		{
-			this->style = findStyle<PanelStyle>("default"_s);
+			this->style = getStyle<PanelStyle>("default"_s);
 		}
 		else
 		{
@@ -50,7 +50,7 @@ namespace UI
 
 	void Panel::enableHorizontalScrolling(ScrollbarState *scrollbarState)
 	{
-		ScrollbarStyle *scrollbarStyle = findStyle<ScrollbarStyle>(&style->scrollbarStyle);
+		ScrollbarStyle *scrollbarStyle = getStyle<ScrollbarStyle>(&style->scrollbarStyle);
 		ASSERT(scrollbarStyle != null);
 
 		this->hScrollbar = scrollbarState;
@@ -62,7 +62,7 @@ namespace UI
 
 	void Panel::enableVerticalScrolling(ScrollbarState *scrollbarState, bool expandWidth)
 	{
-		ScrollbarStyle *scrollbarStyle = findStyle<ScrollbarStyle>(&style->scrollbarStyle);
+		ScrollbarStyle *scrollbarStyle = getStyle<ScrollbarStyle>(&style->scrollbarStyle);
 		ASSERT(scrollbarStyle != null);
 
 		this->vScrollbar = scrollbarState;
@@ -88,7 +88,7 @@ namespace UI
 		
 		prepareForWidgets();
 
-		ButtonStyle *buttonStyle = findStyle<ButtonStyle>(styleName, &this->style->buttonStyle);
+		ButtonStyle *buttonStyle = getStyle<ButtonStyle>(styleName, &this->style->buttonStyle);
 
 		Rect2I space = getCurrentLayoutPosition();
 		V2I buttonOrigin = alignWithinRectangle(space, widgetAlignment);
@@ -115,7 +115,7 @@ namespace UI
 		
 		prepareForWidgets();
 
-		ButtonStyle *buttonStyle = findStyle<ButtonStyle>(styleName, &this->style->buttonStyle);
+		ButtonStyle *buttonStyle = getStyle<ButtonStyle>(styleName, &this->style->buttonStyle);
 
 		Rect2I space = getCurrentLayoutPosition();
 		V2I buttonOrigin = alignWithinRectangle(space, widgetAlignment);
@@ -143,7 +143,7 @@ namespace UI
 
 		prepareForWidgets();
 
-		CheckboxStyle *checkboxStyle = findStyle<CheckboxStyle>(styleName, &style->checkboxStyle);
+		CheckboxStyle *checkboxStyle = getStyle<CheckboxStyle>(styleName, &style->checkboxStyle);
 
 		Rect2I space = getCurrentLayoutPosition();
 		V2I checkboxOrigin = alignWithinRectangle(space, widgetAlignment);
@@ -165,7 +165,7 @@ namespace UI
 
 		prepareForWidgets();
 
-		DropDownListStyle *widgetStyle = findStyle<DropDownListStyle>(styleName, &style->dropDownListStyle);
+		DropDownListStyle *widgetStyle = getStyle<DropDownListStyle>(styleName, &style->dropDownListStyle);
 
 		Rect2I space = getCurrentLayoutPosition();
 		V2I widgetOrigin = alignWithinRectangle(space, widgetAlignment);
@@ -189,7 +189,7 @@ namespace UI
 
 		prepareForWidgets();
 
-		SliderStyle *widgetStyle = findStyle<SliderStyle>(styleName, &style->sliderStyle);
+		SliderStyle *widgetStyle = getStyle<SliderStyle>(styleName, &style->sliderStyle);
 
 		Rect2I space = getCurrentLayoutPosition();
 		V2I widgetOrigin = alignWithinRectangle(space, widgetAlignment);
@@ -237,7 +237,7 @@ namespace UI
 		
 		prepareForWidgets();
 
-		LabelStyle *labelStyle = findStyle<LabelStyle>(styleName, &this->style->labelStyle);
+		LabelStyle *labelStyle = getStyle<LabelStyle>(styleName, &this->style->labelStyle);
 
 		Rect2I space = getCurrentLayoutPosition();
 		V2I origin = alignWithinRectangle(space, this->widgetAlignment);
@@ -264,7 +264,7 @@ namespace UI
 		
 		prepareForWidgets();
 
-		TextInputStyle *textInputStyle = findStyle<TextInputStyle>(styleName, &this->style->textInputStyle);
+		TextInputStyle *textInputStyle = getStyle<TextInputStyle>(styleName, &this->style->textInputStyle);
 
 		Rect2I space = getCurrentLayoutPosition();
 		V2I origin = alignWithinRectangle(space, this->widgetAlignment);
@@ -521,7 +521,7 @@ namespace UI
 		// Handle scrollbars
 		if (hScrollbar)
 		{
-			ScrollbarStyle *scrollbarStyle = findStyle<ScrollbarStyle>(&style->scrollbarStyle);
+			ScrollbarStyle *scrollbarStyle = getStyle<ScrollbarStyle>(&style->scrollbarStyle);
 
 			if (!hideWidgets)
 			{
@@ -531,7 +531,7 @@ namespace UI
 
 		if (vScrollbar)
 		{
-			ScrollbarStyle *scrollbarStyle = findStyle<ScrollbarStyle>(&style->scrollbarStyle);
+			ScrollbarStyle *scrollbarStyle = getStyle<ScrollbarStyle>(&style->scrollbarStyle);
 
 			if (!hideWidgets)
 			{
@@ -664,7 +664,7 @@ namespace UI
 	inline PanelStyle *Panel::getPanelStyle(String styleName)
 	{
 		PanelStyle *result = null;
-		if (!isEmpty(styleName)) result = findStyle<PanelStyle>(styleName);
+		if (!isEmpty(styleName)) result = getStyle<PanelStyle>(styleName);
 		if (result == null)      result = this->style;
 
 		return result;

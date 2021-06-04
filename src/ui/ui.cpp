@@ -294,7 +294,7 @@ namespace UI
 	{
 		DEBUG_FUNCTION_T(DCDT_UI);
 
-		if (style == null) 			style = findStyle<ButtonStyle>("default"_s);
+		if (style == null) 			style = getStyle<ButtonStyle>("default"_s);
 		if (renderBuffer == null) 	renderBuffer = &renderer->uiBuffer;
 		
 		bool buttonClicked = false;
@@ -393,8 +393,8 @@ namespace UI
 	V2I calculateCheckboxSize(CheckboxStyle *style)
 	{
 		V2I result = v2i(
-			style->contentSize.x + style->padding.left + style->padding.right,
-			style->contentSize.y + style->padding.top + style->padding.bottom
+			style->checkSize.x + style->padding.left + style->padding.right,
+			style->checkSize.y + style->padding.top + style->padding.bottom
 		);
 
 		return result;
@@ -404,7 +404,7 @@ namespace UI
 	{
 		DEBUG_FUNCTION_T(DCDT_UI);
 
-		if (style == null) 			style = findStyle<CheckboxStyle>("default"_s);
+		if (style == null) 			style = getStyle<CheckboxStyle>("default"_s);
 		if (renderBuffer == null) 	renderBuffer = &renderer->uiBuffer;
 
 		WidgetMouseState mouseState = getWidgetMouseState(bounds);
@@ -450,8 +450,8 @@ namespace UI
 	template <typename T>
 	V2I calculateDropDownListSize(Array<T> *listOptions, String (*getDisplayName)(T *data), DropDownListStyle *style, s32 maxWidth, bool fillWidth)
 	{
-		if (style == null) style = findStyle<DropDownListStyle>("default"_s);
-		ButtonStyle *buttonStyle = findStyle<ButtonStyle>(&style->buttonStyle);
+		if (style == null) style = getStyle<DropDownListStyle>("default"_s);
+		ButtonStyle *buttonStyle = getStyle<ButtonStyle>(&style->buttonStyle);
 
 		// I don't have a smarter way to do this, so, we'll just go through every option
 		// and find the maximum width and height.
@@ -475,7 +475,7 @@ namespace UI
 	{
 		DEBUG_FUNCTION_T(DCDT_UI);
 
-		if (style == null) 			style = findStyle<DropDownListStyle>("default"_s);
+		if (style == null) 			style = getStyle<DropDownListStyle>("default"_s);
 		if (renderBuffer == null) 	renderBuffer = &renderer->uiBuffer;
 
 		bool isOpen = isDropDownListOpen(listOptions);
@@ -485,7 +485,7 @@ namespace UI
 
 		// Show the selection box
 		String selectionText = getDisplayName(listOptions->get(*currentSelection));
-		bool clicked = putTextButton(selectionText, bounds, findStyle<ButtonStyle>(&style->buttonStyle), buttonIsActive(isOpen), renderBuffer);
+		bool clicked = putTextButton(selectionText, bounds, getStyle<ButtonStyle>(&style->buttonStyle), buttonIsActive(isOpen), renderBuffer);
 		if (clicked)
 		{
 			// Toggle things
@@ -507,7 +507,7 @@ namespace UI
 			s32 panelTop = bounds.y + bounds.h;
 			s32 panelMaxHeight = windowSize.y - panelTop;
 			Rect2I panelBounds = irectXYWH(bounds.x, panelTop, bounds.w, panelMaxHeight);
-			Panel panel = Panel(panelBounds, findStyle<PanelStyle>(&style->panelStyle), 0, uiState.openDropDownListRenderBuffer);
+			Panel panel = Panel(panelBounds, getStyle<PanelStyle>(&style->panelStyle), 0, uiState.openDropDownListRenderBuffer);
 			panel.enableVerticalScrolling(&uiState.openDropDownListScrollbar, false);
 			for (s32 optionIndex = 0; optionIndex < listOptions->count; optionIndex++)
 			{
@@ -651,7 +651,7 @@ namespace UI
 
 		ASSERT(hasPositiveArea(bounds));
 
-		if (style == null) 			style = findStyle<ScrollbarStyle>("default"_s);
+		if (style == null) 			style = getStyle<ScrollbarStyle>("default"_s);
 		if (renderBuffer == null) 	renderBuffer = &renderer->uiBuffer;
 
 		Drawable(&style->background).draw(renderBuffer, bounds);
@@ -766,7 +766,7 @@ namespace UI
 
 	V2I calculateSliderSize(Orientation orientation, SliderStyle *style, V2I availableSpace, bool fillSpace)
 	{
-		if (style == null) 			style = findStyle<SliderStyle>("default"_s);
+		if (style == null) 			style = getStyle<SliderStyle>("default"_s);
 
 		V2I result = {};
 
@@ -792,7 +792,7 @@ namespace UI
 		DEBUG_FUNCTION_T(DCDT_UI);
 		ASSERT(maxValue > minValue);
 
-		if (style == null) 			style = findStyle<SliderStyle>("default"_s);
+		if (style == null) 			style = getStyle<SliderStyle>("default"_s);
 		if (renderBuffer == null) 	renderBuffer = &renderer->uiBuffer;
 
 		// Value ranges
@@ -941,7 +941,7 @@ namespace UI
 
 	bool putTextInput(TextInput *textInput, Rect2I bounds, TextInputStyle *style, RenderBuffer *renderBuffer)
 	{
-		if (style == null) style = findStyle<TextInputStyle>("default"_s);
+		if (style == null) style = getStyle<TextInputStyle>("default"_s);
 		if (renderBuffer == null) renderBuffer = &renderer->uiBuffer;
 
 		bool submittedInput = updateTextInput(textInput);
@@ -988,10 +988,10 @@ namespace UI
 			}
 			else
 			{
-				PanelStyle *style = findStyle<PanelStyle>("toast"_s);
+				PanelStyle *style = getStyle<PanelStyle>("toast"_s);
 				V2I origin = v2i(windowSize.x / 2, windowSize.y - 8);
 
-				LabelStyle *labelStyle = findStyle<LabelStyle>(&style->labelStyle);
+				LabelStyle *labelStyle = getStyle<LabelStyle>(&style->labelStyle);
 				s32 maxWidth = min(floor_s32(windowSize.x * 0.8f), 500);
 				V2I textSize = calculateTextSize(getFont(&labelStyle->font), toast->text, maxWidth - (style->padding.left + style->padding.right));
 

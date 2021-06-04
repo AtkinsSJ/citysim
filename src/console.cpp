@@ -199,9 +199,9 @@ void updateAndRenderConsole(Console *console)
 		s32 actualConsoleHeight = floor_s32(console->currentHeight * (f32)UI::windowSize.y);
 		s32 screenWidth = renderer->windowWidth;
 
-		UI::ConsoleStyle *consoleStyle = findStyle<UI::ConsoleStyle>(&console->style);
-		UI::ScrollbarStyle *scrollbarStyle = findStyle<UI::ScrollbarStyle>(&consoleStyle->scrollbarStyle);
-		UI::TextInputStyle *textInputStyle = findStyle<UI::TextInputStyle>(&consoleStyle->textInputStyle);
+		UI::ConsoleStyle *consoleStyle = getStyle<UI::ConsoleStyle>(&console->style);
+		UI::ScrollbarStyle *scrollbarStyle = getStyle<UI::ScrollbarStyle>(&consoleStyle->scrollbarStyle);
+		UI::TextInputStyle *textInputStyle = getStyle<UI::TextInputStyle>(&consoleStyle->textInputStyle);
 
 		// Text input
 		V2I textInputSize = UI::calculateTextInputSize(&console->input, textInputStyle, screenWidth);
@@ -365,9 +365,9 @@ void consoleWriteLine(String text, ConsoleLineStyleID style)
 
 Rect2I getConsoleScrollbarBounds(Console *console)
 {
-	UI::ConsoleStyle   *consoleStyle   = findStyle<UI::ConsoleStyle>  (&console->style);
-	UI::ScrollbarStyle *scrollbarStyle = findStyle<UI::ScrollbarStyle>(&consoleStyle->scrollbarStyle);
-	UI::TextInputStyle *textInputStyle = findStyle<UI::TextInputStyle>(&consoleStyle->textInputStyle);
+	UI::ConsoleStyle   *consoleStyle   = getStyle<UI::ConsoleStyle>  (&console->style);
+	UI::ScrollbarStyle *scrollbarStyle = getStyle<UI::ScrollbarStyle>(&consoleStyle->scrollbarStyle);
+	UI::TextInputStyle *textInputStyle = getStyle<UI::TextInputStyle>(&consoleStyle->textInputStyle);
 
 	V2I textInputSize = UI::calculateTextInputSize(&console->input, textInputStyle, renderer->windowWidth);
 
