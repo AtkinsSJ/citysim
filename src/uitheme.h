@@ -145,9 +145,13 @@ namespace UI
 	struct LabelStyle
 	{
 		String name;
+
+		Padding padding;
+		DrawableStyle background;
 		
 		AssetRef font;
 		V4 textColor;
+		u32 textAlignment;
 	};
 
 	struct PanelStyle

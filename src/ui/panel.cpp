@@ -215,7 +215,8 @@ namespace UI
 
 		Rect2I space = getCurrentLayoutPosition();
 		V2I radioButtonSize = calculateRadioButtonSize(radioButtonStyle);
-		s32 textWidth = space.w - (radioButtonSize.x - style->contentPadding);
+		s32 textWidth = space.w - (radioButtonSize.x + style->contentPadding);
+		bool fillWidth = ((widgetAlignment & ALIGN_H) == ALIGN_EXPAND_H);
 
 		// Calculate the overall size
 		// This means we have to loop through everything twice, but what can you do
@@ -223,7 +224,7 @@ namespace UI
 		for (s32 optionIndex = 0; optionIndex < listOptions->count; optionIndex++)
 		{
 			String optionText = getDisplayName(listOptions->get(optionIndex));
-			V2I labelSize = calculateLabelSize(optionText, labelStyle, textWidth, false);
+			V2I labelSize = calculateLabelSize(optionText, labelStyle, textWidth, fillWidth);
 
 			widgetSize.x = max(widgetSize.x, radioButtonSize.x + style->contentPadding + labelSize.x);
 
@@ -231,11 +232,14 @@ namespace UI
 			widgetSize.y += max(labelSize.y, radioButtonSize.y);
 		}
 
+		ASSERT(widgetSize.x <= space.w);
+
 		// We're piggy-backing off addBlank() to do our layout positioning
 		// That means we don't call completeWidget(), as addBlank() already does it
 		Rect2I buttonGroupBounds = addBlank(widgetSize.x, widgetSize.y);
 		V2I radioButtonOrigin = alignWithinRectangle(buttonGroupBounds, ALIGN_TOP | ALIGN_LEFT);
 		Rect2I radioButtonBounds = irectAligned(radioButtonOrigin, radioButtonSize, ALIGN_TOP | ALIGN_LEFT);
+		textWidth = widgetSize.x - (radioButtonSize.x + style->contentPadding);
 
 		for (s32 optionIndex = 0; optionIndex < listOptions->count; optionIndex++)
 		{
@@ -245,7 +249,7 @@ namespace UI
 			}
 
 			String optionText = getDisplayName(listOptions->get(optionIndex));
-			V2I labelSize = calculateLabelSize(optionText, labelStyle, textWidth, true);
+			V2I labelSize = calculateLabelSize(optionText, labelStyle, textWidth, fillWidth);
 			Rect2I labelBounds = irectXYWH(
 				radioButtonBounds.x + radioButtonBounds.w + style->contentPadding,
 				radioButtonBounds.y,
@@ -379,7 +383,11 @@ namespace UI
 
 		completeWidget(size);
 
-		return irectAligned(origin, size, widgetAlignment);
+		Rect2I result = irectAligned(origin, size, widgetAlignment);
+
+		// drawSingleRect(renderBuffer != null ? renderBuffer : &renderer->uiBuffer, result, renderer->shaderIds.untextured, color255(0, 255, 0, 255));
+
+		return result;
 	}
 
 	void Panel::alignWidgets(u32 alignment)

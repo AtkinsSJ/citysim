@@ -558,16 +558,20 @@ namespace UI
 	{
 		if (style == null) 			style = getStyle<LabelStyle>("default"_s);
 
-		s32 maxTextWidth = maxWidth; // TODO: Handle padding!
+		s32 maxTextWidth = maxWidth - (style->padding.left + style->padding.right);
 
-		V2I result = calculateTextSize(getFont(&style->font), text, maxTextWidth);
+		V2I textSize = calculateTextSize(getFont(&style->font), text, maxTextWidth);
+
+		// Add padding
+		V2I result = v2i(
+			textSize.x + style->padding.left + style->padding.right,
+			textSize.y + style->padding.top + style->padding.bottom
+		);
 
 		if (fillWidth)
 		{
 			result.x = maxWidth;
 		}
-
-		// TODO: Add padding
 
 		return result;
 	}
@@ -579,11 +583,11 @@ namespace UI
 		if (style == null) 			style = getStyle<LabelStyle>("default"_s);
 		if (renderBuffer == null) 	renderBuffer = &renderer->uiBuffer;
 
-		// TODO: Padding, background etc
+		Rect2I textBounds = shrink(bounds, style->padding);
 
-		Rect2I textBounds = bounds;
+		Drawable(&style->background).draw(renderBuffer, bounds);
 
-		drawText(renderBuffer, getFont(&style->font), text, textBounds, ALIGN_TOP | ALIGN_LEFT, style->textColor, renderer->shaderIds.text);
+		drawText(renderBuffer, getFont(&style->font), text, textBounds, style->textAlignment, style->textColor, renderer->shaderIds.text);
 	}
 
 	void showMenu(s32 menuID)

@@ -379,14 +379,11 @@ inline Rect2I shrink(Rect2I rect, s32 radius)
 
 inline Rect2I shrink(Rect2I rect, Padding padding)
 {
-	s32 dWidth = padding.left + padding.right;
-	s32 dHeight = padding.top + padding.bottom;
-
 	Rect2I result = irectXYWH(
 		rect.x + padding.left,
 		rect.y + padding.top,
-		rect.w - dWidth,
-		rect.h - dHeight
+		rect.w - (padding.left + padding.right),
+		rect.h - (padding.top + padding.bottom)
 	);
 
 	// NB: We do this calculation differently from the simpler shrink(rect, radius), because

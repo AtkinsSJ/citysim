@@ -66,7 +66,8 @@ UI Widgets:
 - Tabs!
 	- Basically just radio buttons with fancy styling
 - A proper UI::putLabel() method
-	- Add padding, alignment and background to labels
+	✔ Add padding, alignment and background to labels
+	- Use putLabel in Panel::addText (rename to addLabel too)
 ✔ Extend 'padding' into its own type
 	✔ So we can define different padding values for each side, more easily. Something like how CSS does it.
 

@@ -215,8 +215,11 @@ namespace UI
 			"panelStyle"_s,
 		});
 		assignStyleProperties(Style_Label, {
+			"background"_s,
 			"font"_s,
+			"padding"_s,
 			"textColor"_s,
+			"textAlignment"_s,
 		});
 		assignStyleProperties(Style_Panel, {
 			"background"_s,
@@ -650,8 +653,11 @@ void loadUITheme(Blob data, Asset *asset)
 						UI::LabelStyle *label = &childAsset->labelStyle;
 						label->name = style->name;
 
+						label->padding = style->padding;
+						label->background = style->background;
 						label->font = style->font;
 						label->textColor = style->textColor;
+						label->textAlignment = style->textAlignment;
 					} break;
 
 					case UI::Style_Panel: {
