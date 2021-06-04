@@ -8,15 +8,16 @@ AppStatus updateAndRenderCredits(f32 /*deltaTime*/)
 	s32 maxLabelWidth = UI::windowSize.x - 256;
 
 	UI::LabelStyle *labelStyle = getStyle<UI::LabelStyle>("title"_s);
-	BitmapFont *font = getFont(&labelStyle->font);
 
 	Asset *creditsText = getAsset(AssetType_Misc, "credits.txt"_s);
 	LineReader reader = readLines(creditsText->shortName, creditsText->data, 0);
 	while (loadNextLine(&reader))
 	{
 		String line = getLine(&reader);
-		position.y += (UI::drawText(&renderer->uiBuffer, font, line,
-			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
+		V2I labelSize = UI::calculateLabelSize(line, labelStyle, maxLabelWidth);
+		Rect2I labelBounds = irectAligned(position, labelSize, labelStyle->textAlignment);
+		UI::putLabel(line, labelBounds, labelStyle);
+		position.y += labelBounds.h;
 	}
 
 	UI::ButtonStyle *style = getStyle<UI::ButtonStyle>("default"_s);

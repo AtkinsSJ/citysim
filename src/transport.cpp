@@ -130,12 +130,12 @@ inline s32 getDistanceToTransport(City *city, s32 x, s32 y, TransportType type)
 
 void debugInspectTransport(UI::Panel *panel, City *city, s32 x, s32 y)
 {
-	panel->addText("*** TRANSPORT INFO ***"_s);
+	panel->addLabel("*** TRANSPORT INFO ***"_s);
 
 	// Transport
 	for (s32 transportType = 0; transportType < TransportTypeCount; transportType++)
 	{
-		panel->addText(myprintf("Distance to transport #{0}: {1}"_s, {formatInt(transportType), formatInt(getDistanceToTransport(city, x, y, (TransportType)transportType))}));
+		panel->addLabel(myprintf("Distance to transport #{0}: {1}"_s, {formatInt(transportType), formatInt(getDistanceToTransport(city, x, y, (TransportType)transportType))}));
 	}
 }
 

@@ -6,21 +6,10 @@ AppStatus updateAndRenderMainMenu(f32 /*deltaTime*/)
 	
 	AppStatus result = AppStatus_MainMenu;
 
-	V2I position = v2i(renderer->windowWidth / 2, 157);
-	s32 maxLabelWidth = renderer->windowWidth - 256;
+	UI::Panel panel = UI::Panel(irectXYWH(0, renderer->windowHeight / 4, renderer->windowWidth, renderer->windowHeight), "mainMenu"_s);
 
-	UI::LabelStyle *labelStyle = getStyle<UI::LabelStyle>("title"_s);
-	BitmapFont *font = getFont(&labelStyle->font);
-
-	position.y += (UI::drawText(&renderer->uiBuffer, font, getText("game_title"_s),
-			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
-
-	position.y += (UI::drawText(&renderer->uiBuffer, font, getText("game_subtitle"_s),
-			position, ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth)).h;
-
-	UI::ButtonStyle *style = getStyle<UI::ButtonStyle>("default"_s);
-
-	s32 buttonPadding = 8;
+	panel.addLabel(getText("game_title"_s));
+	panel.addLabel(getText("game_subtitle"_s));
 
 	String newGameText  = getText("button_new_game"_s);
 	String loadText     = getText("button_load"_s);
@@ -28,6 +17,11 @@ AppStatus updateAndRenderMainMenu(f32 /*deltaTime*/)
 	String settingsText = getText("button_settings"_s);
 	String aboutText    = getText("button_about"_s);
 	String exitText     = getText("button_exit"_s);
+
+	// TODO: Some way of telling the panel to make these buttons all the same size.
+	// Maybe we just create a child panel set to ALIGN_EXPAND_H its widgets?
+	/*
+	UI::ButtonStyle *style = getStyle<UI::ButtonStyle>(&panel.style->buttonStyle);
 
 	V2I newGameSize  = UI::calculateButtonSize(newGameText,  style);
 	V2I loadSize     = UI::calculateButtonSize(loadText,     style);
@@ -52,39 +46,35 @@ AppStatus updateAndRenderMainMenu(f32 /*deltaTime*/)
 		aboutSize.y,
 		exitSize.y
 	);
-
-	Rect2I buttonRect = irectXYWH(position.x - (buttonWidth/2), position.y + buttonPadding, buttonWidth, buttonHeight);
-	if (UI::putTextButton(newGameText, buttonRect, style))
+	*/
+	if (panel.addTextButton(newGameText))
 	{
 		beginNewGame();
 
 		result = AppStatus_Game;
 	}
-	buttonRect.y += buttonHeight + buttonPadding;
-	if (UI::putTextButton(loadText, buttonRect, style))
+	if (panel.addTextButton(loadText))
 	{
 		showLoadGameWindow();
 	}
-	buttonRect.y += buttonHeight + buttonPadding;
-	if (UI::putTextButton(creditsText, buttonRect, style))
+	if (panel.addTextButton(creditsText))
 	{
 		result = AppStatus_Credits;
 	}
-	buttonRect.y += buttonHeight + buttonPadding;
-	if (UI::putTextButton(settingsText, buttonRect, style))
+	if (panel.addTextButton(settingsText))
 	{
 		showSettingsWindow();
 	}
-	buttonRect.y += buttonHeight + buttonPadding;
-	if (UI::putTextButton(aboutText, buttonRect, style))
+	if (panel.addTextButton(aboutText))
 	{
 		showAboutWindow();
 	}
-	buttonRect.y += buttonHeight + buttonPadding;
-	if (UI::putTextButton(exitText, buttonRect, style))
+	if (panel.addTextButton(exitText))
 	{
 		result = AppStatus_Quit;
 	}
+
+	panel.end(true);
 
 // Slider test
 	/*

@@ -286,9 +286,9 @@ void debugInspectFire(UI::Panel *panel, City *city, s32 x, s32 y)
 {
 	FireLayer *layer = &city->fireLayer;
 
-	panel->addText("*** FIRE INFO ***"_s);
+	panel->addLabel("*** FIRE INFO ***"_s);
 
-	panel->addText(myprintf("There are {0} fire protection buildings and {1} active fires in the city."_s, {
+	panel->addLabel(myprintf("There are {0} fire protection buildings and {1} active fires in the city."_s, {
 		formatInt(layer->fireProtectionBuildings.count),
 		formatInt(layer->activeFireCount)
 	}));
@@ -296,17 +296,17 @@ void debugInspectFire(UI::Panel *panel, City *city, s32 x, s32 y)
 	Building *buildingAtPos = getBuildingAt(city, x, y);
 	f32 buildingFireRisk = 100.0f * ((buildingAtPos == null) ? 0.0f : getBuildingDef(buildingAtPos)->fireRisk);
 
-	panel->addText(myprintf("Fire risk: {0}, from:\n- Building: {1}%\n- Nearby fires: {2}"_s, {
+	panel->addLabel(myprintf("Fire risk: {0}, from:\n- Building: {1}%\n- Nearby fires: {2}"_s, {
 		formatInt(getFireRiskAt(city, x, y)),
 		formatFloat(buildingFireRisk, 1),
 		formatInt(layer->tileFireProximityEffect.get(x, y)),
 	}));
 
-	panel->addText(myprintf("Fire protection: {0}%"_s, {
+	panel->addLabel(myprintf("Fire protection: {0}%"_s, {
 		formatFloat(getFireProtectionPercentAt(city, x, y) * 100.0f, 0)
 	}));
 
-	panel->addText(myprintf("Resulting chance of fire: {0}%"_s, {
+	panel->addLabel(myprintf("Resulting chance of fire: {0}%"_s, {
 		formatFloat(layer->tileOverallFireRisk.get(x, y) / 2.55f, 1)
 	}));
 }

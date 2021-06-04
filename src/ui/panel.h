@@ -12,9 +12,9 @@
 //
 //    UI::Panel a = UI::Panel(...);
 //    UI::Panel b = UI::Panel(...);
-//    a.addText("First"_s);
-//    b.addText("Second"_s);
-//    a.addText("Third"_s);
+//    a.addLabel("First"_s);
+//    b.addLabel("Second"_s);
+//    a.addLabel("Third"_s);
 //
 // will not work, as "Third" will be clipped to the boundaries of b, not a! But as long as
 // you avoid code like that, it's fine - adding all the 'a' widgets, then all of 'b', or
@@ -61,7 +61,7 @@ namespace UI
 		void addSlider(T *currentValue, T minValue, T maxValue, String styleName = nullString);
 
 		void addSprite(Sprite *sprite, s32 width = -1, s32 height = -1);
-		void addText(String text, String styleName = nullString);
+		void addLabel(String text, String styleName = nullString);
 		bool addTextInput(TextInput *textInput, String styleName = nullString);
 		// Add a blank rectangle as if it were a widget. (So, leaving padding between
 		// it and other widgets.) The bounds are returned so you can draw your own

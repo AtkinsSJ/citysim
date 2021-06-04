@@ -322,7 +322,7 @@ void settingsWindowProc(UI::WindowContext *context, void*)
 		SettingDef *def = settings->defs.find(name).value;
 
 		ui->startNewLine(ALIGN_LEFT);
-		ui->addText(getText(def->textAssetName));
+		ui->addLabel(getText(def->textAssetName));
 		
 		ui->alignWidgets(ALIGN_RIGHT);
 		switch (def->type)
@@ -345,7 +345,7 @@ void settingsWindowProc(UI::WindowContext *context, void*)
 			} break;
 
 			default: {
-				ui->addText(settingToString(&settings->workingState, def));
+				ui->addLabel(settingToString(&settings->workingState, def));
 			} break;
 		}
 	}

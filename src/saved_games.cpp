@@ -157,7 +157,7 @@ void savedGamesWindowProc(UI::WindowContext *context, void *userData)
 
 		if (catalogue->savedGames.isEmpty())
 		{
-			savesList.addText(getText("msg_no_saved_games"_s));
+			savesList.addLabel(getText("msg_no_saved_games"_s));
 		}
 		else
 		{
@@ -193,16 +193,16 @@ void savedGamesWindowProc(UI::WindowContext *context, void *userData)
 		}
 
 		ui->alignWidgets(ALIGN_EXPAND_H);
-		ui->addText(selectedSavedGame->shortName);
-		ui->addText(myprintf("Saved {0}"_s, {formatDateTime(selectedSavedGame->saveTime, DateTime_LongDateTime)}));
-		ui->addText(selectedSavedGame->cityName);
-		ui->addText(myprintf("Mayor {0}"_s, {selectedSavedGame->playerName}));
-		ui->addText(myprintf("£{0}"_s, {formatInt(selectedSavedGame->funds)}));
-		ui->addText(myprintf("{0} population"_s, {formatInt(selectedSavedGame->population)}));
+		ui->addLabel(selectedSavedGame->shortName);
+		ui->addLabel(myprintf("Saved {0}"_s, {formatDateTime(selectedSavedGame->saveTime, DateTime_LongDateTime)}));
+		ui->addLabel(selectedSavedGame->cityName);
+		ui->addLabel(myprintf("Mayor {0}"_s, {selectedSavedGame->playerName}));
+		ui->addLabel(myprintf("£{0}"_s, {formatInt(selectedSavedGame->funds)}));
+		ui->addLabel(myprintf("{0} population"_s, {formatInt(selectedSavedGame->population)}));
 
 		if (selectedSavedGame->problems & BFP_VersionTooNew)
 		{
-			ui->addText(getText("msg_load_version_too_new"_s));
+			ui->addLabel(getText("msg_load_version_too_new"_s));
 		}
 	}
 
@@ -217,7 +217,7 @@ void savedGamesWindowProc(UI::WindowContext *context, void *userData)
 				context->closeRequested = true;
 			}
 
-			bottomBar.addText("Save game name:"_s);
+			bottomBar.addLabel("Save game name:"_s);
 
 			bottomBar.alignWidgets(ALIGN_RIGHT);
 			bool pressedSave = bottomBar.addTextButton(getText("button_save"_s), catalogue->saveGameName.isEmpty() ? Button_Disabled : Button_Normal);
@@ -286,7 +286,7 @@ void confirmOverwriteSaveWindowProc(UI::WindowContext *context, void * /*userDat
 
 	String inputName = trim(savedGamesCatalogue.saveGameName.toString());
 
-	ui->addText(getText("msg_save_overwrite_confirm"_s, {inputName}));
+	ui->addLabel(getText("msg_save_overwrite_confirm"_s, {inputName}));
 	ui->startNewLine(ALIGN_RIGHT);
 
 	if (ui->addTextButton(getText("button_overwrite"_s), Button_Normal, "delete"_s))
@@ -307,7 +307,7 @@ void confirmDeleteSaveWindowProc(UI::WindowContext *context, void * /*userData*/
 
 	SavedGameInfo *savedGame = savedGamesCatalogue.savedGames.get(savedGamesCatalogue.selectedSavedGameIndex);
 
-	ui->addText(getText("msg_delete_save_confirm"_s, {savedGame->shortName}));
+	ui->addLabel(getText("msg_delete_save_confirm"_s, {savedGame->shortName}));
 	ui->startNewLine(ALIGN_RIGHT);
 
 	if (ui->addTextButton(getText("button_delete"_s), Button_Normal, "delete"_s))

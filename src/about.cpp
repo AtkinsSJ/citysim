@@ -9,10 +9,10 @@ void aboutWindowProc(UI::WindowContext *context, void * /*userData*/)
 	leftColumn.addSprite(getSprite("b_hospital"_s));
 	leftColumn.end();
 
-	ui->addText(getText("game_title"_s), "title"_s);
+	ui->addLabel(getText("game_title"_s), "title"_s);
 
 	ui->startNewLine(ALIGN_RIGHT);
-	ui->addText(getText("game_copyright"_s));
+	ui->addLabel(getText("game_copyright"_s));
 
 	ui->startNewLine(ALIGN_EXPAND_H);
 

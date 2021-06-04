@@ -1109,7 +1109,7 @@ namespace UI
 				Rect2I toastBounds = irectAligned(origin, toastSize, ALIGN_BOTTOM | ALIGN_H_CENTRE);
 
 				Panel panel = Panel(toastBounds, style);
-				panel.addText(toast->text);
+				panel.addLabel(toast->text);
 				panel.end();
 			}
 		}
@@ -1130,6 +1130,6 @@ namespace UI
 	void basicTooltipWindowProc(WindowContext *context, void * /*userData*/)
 	{
 		Panel *ui = &context->windowPanel;
-		ui->addText(uiState.tooltipText);
+		ui->addLabel(uiState.tooltipText);
 	}
 }

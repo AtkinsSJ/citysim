@@ -317,7 +317,7 @@ namespace UI
 		completeWidget(size);
 	}
 
-	void Panel::addText(String text, String styleName)
+	void Panel::addLabel(String text, String styleName)
 	{
 		DEBUG_FUNCTION_T(DCDT_UI);
 		

@@ -346,15 +346,15 @@ void inspectTileWindowProc(UI::WindowContext *context, void *userData)
 
 	// CitySector
 	CitySector *sector = getSectorAtTilePos(&city->sectors, tilePos.x, tilePos.y);
-	ui->addText(myprintf("CitySector: x={0} y={1} w={2} h={3}"_s, {formatInt(sector->bounds.x), formatInt(sector->bounds.y), formatInt(sector->bounds.w), formatInt(sector->bounds.h)}));
+	ui->addLabel(myprintf("CitySector: x={0} y={1} w={2} h={3}"_s, {formatInt(sector->bounds.x), formatInt(sector->bounds.y), formatInt(sector->bounds.w), formatInt(sector->bounds.h)}));
 
 	// Terrain
 	TerrainDef *terrain = getTerrainAt(city, tilePos.x, tilePos.y);
-	ui->addText(myprintf("Terrain: {0}, {1} tiles from water"_s, {getText(terrain->textAssetName), formatInt(getDistanceToWaterAt(city, tilePos.x, tilePos.y))}));
+	ui->addLabel(myprintf("Terrain: {0}, {1} tiles from water"_s, {getText(terrain->textAssetName), formatInt(getDistanceToWaterAt(city, tilePos.x, tilePos.y))}));
 
 	// Zone
 	ZoneType zone = getZoneAt(city, tilePos.x, tilePos.y);
-	ui->addText(myprintf("Zone: {0}"_s, {zone ? getText(getZoneDef(zone).textAssetName) : "None"_s}));
+	ui->addLabel(myprintf("Zone: {0}"_s, {zone ? getText(getZoneDef(zone).textAssetName) : "None"_s}));
 
 	// Building
 	Building *building = getBuildingAt(city, tilePos.x, tilePos.y);
@@ -362,29 +362,29 @@ void inspectTileWindowProc(UI::WindowContext *context, void *userData)
 	{
 		s32 buildingIndex = city->tileBuildingIndex.get(tilePos.x, tilePos.y);
 		BuildingDef *def = getBuildingDef(building->typeID);
-		ui->addText(myprintf("Building: {0} (ID {1}, array index {2})"_s, {getText(def->textAssetName), formatInt(building->id), formatInt(buildingIndex)}));
-		ui->addText(myprintf("Constructed: {0}"_s, {formatDateTime(dateTimeFromTimestamp(building->creationDate), DateTime_ShortDate)}));
-		ui->addText(myprintf("Variant: {0}"_s, {formatInt(building->variantIndex)}));
-		ui->addText(myprintf("- Residents: {0} / {1}"_s, {formatInt(building->currentResidents), formatInt(def->residents)}));
-		ui->addText(myprintf("- Jobs: {0} / {1}"_s, {formatInt(building->currentJobs), formatInt(def->jobs)}));
-		ui->addText(myprintf("- Power: {0}"_s, {formatInt(def->power)}));
+		ui->addLabel(myprintf("Building: {0} (ID {1}, array index {2})"_s, {getText(def->textAssetName), formatInt(building->id), formatInt(buildingIndex)}));
+		ui->addLabel(myprintf("Constructed: {0}"_s, {formatDateTime(dateTimeFromTimestamp(building->creationDate), DateTime_ShortDate)}));
+		ui->addLabel(myprintf("Variant: {0}"_s, {formatInt(building->variantIndex)}));
+		ui->addLabel(myprintf("- Residents: {0} / {1}"_s, {formatInt(building->currentResidents), formatInt(def->residents)}));
+		ui->addLabel(myprintf("- Jobs: {0} / {1}"_s, {formatInt(building->currentJobs), formatInt(def->jobs)}));
+		ui->addLabel(myprintf("- Power: {0}"_s, {formatInt(def->power)}));
 
 		// Problems
 		for (s32 problemIndex = 0; problemIndex < BuildingProblemCount; problemIndex++)
 		{
 			if (hasProblem(building, (BuildingProblemType) problemIndex))
 			{
-				ui->addText(myprintf("- PROBLEM: {0}"_s, {getText(buildingProblemNames[problemIndex])}));
+				ui->addLabel(myprintf("- PROBLEM: {0}"_s, {getText(buildingProblemNames[problemIndex])}));
 			}
 		}
 	}
 	else
 	{
-		ui->addText("Building: None"_s);
+		ui->addLabel("Building: None"_s);
 	}
 
 	// Land value
-	ui->addText(myprintf("Land value: {0}%"_s, {formatFloat(getLandValuePercentAt(city, tilePos.x, tilePos.y) * 100.0f, 0)}));
+	ui->addLabel(myprintf("Land value: {0}%"_s, {formatFloat(getLandValuePercentAt(city, tilePos.x, tilePos.y) * 100.0f, 0)}));
 
 	// Debug info
 	if (!isEmpty(&gameState->inspectTileDebugFlags))
@@ -672,7 +672,7 @@ void costTooltipWindowProc(UI::WindowContext *context, void *userData)
 				: "cost-unaffordable"_s;
 
 	String text = myprintf("£{0}"_s, {formatInt(buildCost)});
-	ui->addText(text, style);
+	ui->addLabel(text, style);
 }
 
 void showCostTooltip(s32 buildCost)
@@ -1268,7 +1268,7 @@ void drawDataViewUI(GameState *gameState)
 					Rect2I paletteBlockBounds = ui.addBlank(paletteBlockSize, paletteBlockSize);
 					drawSingleRect(uiBuffer, paletteBlockBounds, renderer->shaderIds.untextured, asOpaque((*fixedPalette)[fixedColorIndex]));
 
-					ui.addText(getText(dataView->fixedColorNames[fixedColorIndex]));
+					ui.addLabel(getText(dataView->fixedColorNames[fixedColorIndex]));
 					ui.startNewLine();
 				}
 			}
@@ -1292,7 +1292,7 @@ void drawDataViewUI(GameState *gameState)
 				}
 				gradientColumn.end();
 
-				gradientPanel.addText(getText("data_view_minimum"_s));
+				gradientPanel.addLabel(getText("data_view_minimum"_s));
 
 				// @Hack! We read some internal Panel fields to manually move the "max" label up
 				s32 spaceHeight = (gradientHeight - (2 * gradientPanel.largestItemHeightOnLine) - (2 * gradientPanel.style->contentPadding));
@@ -1300,14 +1300,14 @@ void drawDataViewUI(GameState *gameState)
 				gradientPanel.addBlank(1, spaceHeight);
 				gradientPanel.startNewLine();
 
-				gradientPanel.addText(getText("data_view_maximum"_s));
+				gradientPanel.addLabel(getText("data_view_maximum"_s));
 				
 				gradientPanel.end();
 			}
 
 			// Title and close button
 			// TODO: Probably want to make this a Window that can't be moved?
-			ui.addText(getText(dataView->title), "title"_s);
+			ui.addLabel(getText(dataView->title), "title"_s);
 
 			ui.alignWidgets(ALIGN_RIGHT);
 			if (ui.addTextButton("X"_s))

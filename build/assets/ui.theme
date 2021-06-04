@@ -74,6 +74,9 @@ backgroundDisabled     color 96  96  96 255
 :Label title
 font              normal
 textColor         255 255  64 255
+textAlignment     H_CENTRE TOP
+#background color 32 32 255 255
+padding 2
 
 :Label default
 font              normal
@@ -153,6 +156,10 @@ contentPadding           4
 widgetAlignment    TOP LEFT
 background        color 128 128 128 255
 labelStyle        small
+
+:Panel mainMenu
+contentPadding 4
+widgetAlignment H_CENTRE TOP
 
 :Scrollbar default
 background       color 0 128 0 255
