@@ -332,7 +332,9 @@ void settingsWindowProc(UI::WindowContext *context, void*)
 			} break;
 
 			case SettingType::Enum: {
-				ui->addDropDownList(def->enumData, getSettingDataRaw<s32>(&settings->workingState, def), getEnumDisplayName);
+				// ui->addDropDownList(def->enumData, getSettingDataRaw<s32>(&settings->workingState, def), getEnumDisplayName);
+				ui->alignWidgets(ALIGN_LEFT);
+				ui->addRadioButtonGroup(def->enumData, getSettingDataRaw<s32>(&settings->workingState, def), getEnumDisplayName);
 			} break;
 
 			case SettingType::Percent: {

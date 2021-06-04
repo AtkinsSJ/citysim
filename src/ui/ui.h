@@ -24,6 +24,7 @@ namespace UI
 	struct ButtonStyle;
 	struct CheckboxStyle;
 	struct DropDownListStyle;
+	struct LabelStyle;
 	struct PanelStyle;
 	struct RadioButtonStyle;
 	struct ScrollbarStyle;
@@ -150,6 +151,7 @@ namespace UI
 	bool mouseIsWithinUIRects();
 
 	// Text
+	// @Deprecated
 	Rect2I drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2I origin, u32 align, V4 color, s32 maxWidth = 0);
 
 	// Buttons
@@ -172,6 +174,10 @@ namespace UI
 	void openDropDownList(void *pointer);
 	void closeDropDownList();
 	bool isDropDownListOpen(void *pointer);
+
+	// Labels
+	V2I calculateLabelSize(String text, LabelStyle *style = null, s32 maxWidth = 0, bool fillWidth = true);
+	void putLabel(String text, Rect2I bounds, LabelStyle *style = null, RenderBuffer *renderBuffer = null);
 
 	// Menus
 	void showMenu(s32 menuID);

@@ -554,6 +554,38 @@ namespace UI
 		return (uiState.openDropDownList == pointer);
 	}
 
+	V2I calculateLabelSize(String text, LabelStyle *style, s32 maxWidth, bool fillWidth)
+	{
+		if (style == null) 			style = getStyle<LabelStyle>("default"_s);
+
+		s32 maxTextWidth = maxWidth; // TODO: Handle padding!
+
+		V2I result = calculateTextSize(getFont(&style->font), text, maxTextWidth);
+
+		if (fillWidth)
+		{
+			result.x = maxWidth;
+		}
+
+		// TODO: Add padding
+
+		return result;
+	}
+
+	void putLabel(String text, Rect2I bounds, LabelStyle *style, RenderBuffer *renderBuffer)
+	{
+		DEBUG_FUNCTION_T(DCDT_UI);
+
+		if (style == null) 			style = getStyle<LabelStyle>("default"_s);
+		if (renderBuffer == null) 	renderBuffer = &renderer->uiBuffer;
+
+		// TODO: Padding, background etc
+
+		Rect2I textBounds = bounds;
+
+		drawText(renderBuffer, getFont(&style->font), text, textBounds, ALIGN_TOP | ALIGN_LEFT, style->textColor, renderer->shaderIds.text);
+	}
+
 	void showMenu(s32 menuID)
 	{
 		// NB: Do all menu-state-initialisation here!

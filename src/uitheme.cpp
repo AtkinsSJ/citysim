@@ -670,6 +670,7 @@ void loadUITheme(Blob data, Asset *asset)
 						panel->checkboxStyle 		= getAssetRef(AssetType_CheckboxStyle, style->checkboxStyle);
 						panel->dropDownListStyle 	= getAssetRef(AssetType_DropDownListStyle, style->dropDownListStyle);
 						panel->labelStyle 			= getAssetRef(AssetType_LabelStyle, style->labelStyle);
+						panel->radioButtonStyle		= getAssetRef(AssetType_RadioButtonStyle, style->radioButtonStyle);
 						panel->scrollbarStyle 		= getAssetRef(AssetType_ScrollbarStyle, style->scrollbarStyle);
 						panel->sliderStyle 			= getAssetRef(AssetType_SliderStyle, style->sliderStyle);
 						panel->textInputStyle 		= getAssetRef(AssetType_TextInputStyle, style->textInputStyle);

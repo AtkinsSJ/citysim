@@ -182,6 +182,74 @@ namespace UI
 		completeWidget(widgetSize);
 	}
 
+	void Panel::addRadioButton(s32 *currentValue, s32 myValue, String styleName)
+	{
+		DEBUG_FUNCTION_T(DCDT_UI);
+
+		prepareForWidgets();
+
+		RadioButtonStyle *radioButtonStyle = getStyle<RadioButtonStyle>(styleName, &style->radioButtonStyle);
+
+		Rect2I space = getCurrentLayoutPosition();
+		V2I radioButtonOrigin = alignWithinRectangle(space, widgetAlignment);
+		V2I radioButtonSize = calculateRadioButtonSize(radioButtonStyle);
+		Rect2I radioButtonBounds = irectAligned(radioButtonOrigin, radioButtonSize, widgetAlignment);
+
+		if (!hideWidgets)
+		{
+			putRadioButton(currentValue, myValue, radioButtonBounds, radioButtonStyle, false, renderBuffer);
+		}
+
+		completeWidget(radioButtonSize);
+	}
+
+	template <typename T>
+	void Panel::addRadioButtonGroup(Array<T> *listOptions, s32 *currentSelection, String (*getDisplayName)(T *data), String styleName, String labelStyleName)
+	{
+		DEBUG_FUNCTION_T(DCDT_UI);
+
+		prepareForWidgets();
+
+		RadioButtonStyle *radioButtonStyle = getStyle<RadioButtonStyle>(styleName, &style->radioButtonStyle);
+		LabelStyle       *labelStyle       = getStyle<LabelStyle>(labelStyleName, &style->labelStyle);
+
+		Rect2I space = getCurrentLayoutPosition();
+		V2I radioButtonOrigin = alignWithinRectangle(space, widgetAlignment);
+		V2I radioButtonSize = calculateRadioButtonSize(radioButtonStyle);
+		V2I widgetSize = v2i(space.w, 0);
+
+		Rect2I radioButtonBounds = irectAligned(radioButtonOrigin, radioButtonSize, widgetAlignment);
+		s32 textWidth = space.w - (radioButtonBounds.w - style->contentPadding);
+
+		for (s32 optionIndex = 0; optionIndex < listOptions->count; optionIndex++)
+		{
+			if (!hideWidgets)
+			{
+				putRadioButton(currentSelection, optionIndex, radioButtonBounds, radioButtonStyle, false, renderBuffer);
+			}
+
+			String optionText = getDisplayName(listOptions->get(optionIndex));
+			V2I labelSize = calculateLabelSize(optionText, labelStyle, textWidth, true);
+			Rect2I labelBounds = irectXYWH(
+				radioButtonBounds.x + radioButtonBounds.w + style->contentPadding,
+				radioButtonBounds.y,
+				labelSize.x,
+				labelSize.y
+			);
+
+			if (!hideWidgets)
+			{
+				putLabel(optionText, labelBounds, labelStyle, renderBuffer);
+			}
+
+			radioButtonBounds.y = labelBounds.y + labelBounds.h + style->contentPadding;
+
+			widgetSize.y += labelBounds.h + style->contentPadding;
+		}
+
+		completeWidget(widgetSize);
+	}
+
 	template <typename T>
 	void Panel::addSlider(T *currentValue, T minValue, T maxValue, String styleName)
 	{

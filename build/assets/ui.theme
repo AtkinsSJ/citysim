@@ -126,6 +126,7 @@ buttonStyle       default
 checkboxStyle     default
 dropDownListStyle default
 labelStyle        default
+radioButtonStyle  default
 scrollbarStyle    default
 sliderStyle 	  default
 textInputStyle    default
@@ -163,6 +164,7 @@ buttonStyle       default
 checkboxStyle     default
 dropDownListStyle default # Remove me for a crash on the settings window
 labelStyle        small
+radioButtonStyle  default
 scrollbarStyle    default
 sliderStyle 	  default
 textInputStyle    default
