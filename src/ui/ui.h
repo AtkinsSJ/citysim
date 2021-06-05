@@ -150,10 +150,6 @@ namespace UI
 	void addUIRect(Rect2I bounds);
 	bool mouseIsWithinUIRects();
 
-	// Text
-	[[deprecated]]
-	Rect2I drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2I origin, u32 align, V4 color, s32 maxWidth = 0);
-
 	// Buttons
 	V2I calculateButtonSize(String text, ButtonStyle *style = null, s32 maxWidth = 0, bool fillWidth = true);
 	V2I calculateButtonSize(V2I contentSize, ButtonStyle *style = null, s32 maxWidth = 0, bool fillWidth = true);

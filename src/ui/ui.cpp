@@ -183,20 +183,6 @@ namespace UI
 		return result;
 	}
 
-	Rect2I drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2I origin, u32 align, V4 color, s32 maxWidth)
-	{
-		DEBUG_FUNCTION_T(DCDT_UI);
-
-		V2I textSize = calculateTextSize(font, text, maxWidth);
-		V2I topLeft  = calculateTextPosition(origin, textSize, align);
-
-		Rect2I bounds = irectPosSize(topLeft, textSize);
-
-		drawText(renderBuffer, font, text, bounds, align, color, renderer->shaderIds.text);
-
-		return bounds;
-	}
-
 	V2I calculateButtonSize(String text, ButtonStyle *style, s32 maxWidth, bool fillWidth)
 	{
 		// If we have icons, take them into account
@@ -370,9 +356,7 @@ namespace UI
 
 		Rect2I contentBounds = calculateButtonContentBounds(bounds, style);
 
-		u32 textAlignment = style->textAlignment;
-		V2I textOrigin = alignWithinRectangle(contentBounds, textAlignment);
-		drawText(renderBuffer, getFont(&style->font), text, textOrigin, textAlignment, style->textColor);
+		drawText(renderBuffer, getFont(&style->font), text, contentBounds, style->textAlignment, style->textColor, renderer->shaderIds.text);
 
 		return result;
 	}

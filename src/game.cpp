@@ -471,20 +471,22 @@ void updateAndRenderGameUI(GameState *gameState)
 	const s32 uiPadding = 4; // TODO: Move this somewhere sensible!
 	s32 left = uiPadding;
 	s32 right = UI::windowSize.x - uiPadding;
-	s32 toolbarBottom = 64;
+	s32 rowHeight = 30;
+	s32 toolbarHeight = uiPadding * 2 + rowHeight * 2;
+	s32 width3 = (UI::windowSize.x - (uiPadding * 2)) / 3;
 
-	Rect2I uiRect = irectXYWH(0,0, UI::windowSize.x, toolbarBottom);
+	Rect2I uiRect = irectXYWH(0,0, UI::windowSize.x, toolbarHeight);
 	UI::addUIRect(uiRect);
 	drawSingleRect(uiBuffer, uiRect, renderer->shaderIds.untextured, color255(0, 0, 0, 128));
 
-	UI::drawText(uiBuffer, font, city->name,
-	       v2i(left, uiPadding), ALIGN_LEFT, labelStyle->textColor);
+	UI::putLabel(city->name, irectXYWH(left, uiPadding, width3, rowHeight), labelStyle);
 
-	UI::drawText(uiBuffer, font, myprintf("£{0} (-£{1}/month)"_s, {formatInt(city->funds), formatInt(city->monthlyExpenditure)}), v2i(centre.x, uiPadding), ALIGN_H_CENTRE, labelStyle->textColor);
+	UI::putLabel(myprintf("£{0} (-£{1}/month)"_s, {formatInt(city->funds), formatInt(city->monthlyExpenditure)}), irectXYWH(width3, uiPadding, width3, rowHeight), labelStyle);
 
-	UI::drawText(uiBuffer, font, myprintf("Pop: {0}, Jobs: {1}"_s, {formatInt(getTotalResidents(city)), formatInt(getTotalJobs(city))}), v2i(centre.x, uiPadding+30), ALIGN_H_CENTRE, labelStyle->textColor);
+	UI::putLabel(myprintf("Pop: {0}, Jobs: {1}"_s, {formatInt(getTotalResidents(city)), formatInt(getTotalJobs(city))}), irectXYWH(width3, uiPadding + rowHeight, width3, rowHeight), labelStyle);
 
 	// Game clock
+	Rect2I clockBounds = {};
 	{
 		GameClock *clock = &gameState->gameClock;
 
@@ -494,6 +496,7 @@ void updateAndRenderGameUI(GameState *gameState)
 		UI::ButtonStyle *buttonStyle = getStyle<UI::ButtonStyle>("default"_s);
 		V2I speedButtonSize = UI::calculateButtonSize(">>>"_s, buttonStyle);
 		s32 clockWidth = (speedButtonSize.x * 4) + (uiPadding * 3);
+		clockBounds = irectXYWH(right - clockWidth, uiPadding, clockWidth, toolbarHeight);
 
 		String dateString = formatDateTime(clock->cosmeticDate, DateTime_ShortDate);
 		V2I dateStringSize = calculateTextSize(font, dateString, clockWidth);
@@ -505,10 +508,10 @@ void updateAndRenderGameUI(GameState *gameState)
 		dateProgressRect.w = round_s32(dateProgressRect.w * clock->timeWithinDay);
 		drawSingleRect(uiBuffer, dateProgressRect, renderer->shaderIds.untextured, color255(64, 255, 64, 128));
 
-		UI::drawText(uiBuffer, font, dateString, alignWithinRectangle(dateRect, ALIGN_TOP | ALIGN_H_CENTRE), ALIGN_TOP | ALIGN_H_CENTRE, labelStyle->textColor, clockWidth);
+		UI::putLabel(dateString, dateRect, labelStyle);
 
 		// Speed control buttons
-		Rect2I speedButtonRect = irectXYWH(right - speedButtonSize.x, toolbarBottom - (uiPadding + speedButtonSize.y), speedButtonSize.x, speedButtonSize.y);
+		Rect2I speedButtonRect = irectXYWH(right - speedButtonSize.x, toolbarHeight - (uiPadding + speedButtonSize.y), speedButtonSize.x, speedButtonSize.y);
 
 		if (UI::putTextButton(">>>"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->speed == Speed_Fast)))
 		{
@@ -538,12 +541,12 @@ void updateAndRenderGameUI(GameState *gameState)
 	}
 
 /*
-	UI::drawText(uiBuffer, font, myprintf("Power: {0}/{1}"_s, {formatInt(city->powerLayer.cachedCombinedConsumption), formatInt(city->powerLayer.cachedCombinedProduction)}),
-	       v2i(right, uiPadding), ALIGN_RIGHT, labelStyle->textColor);
+	UI::putLabel(myprintf("Power: {0}/{1}"_s, {formatInt(city->powerLayer.cachedCombinedConsumption), formatInt(city->powerLayer.cachedCombinedProduction)}),
+	       irectXYWH(right - width3, uiPadding, width3, rowHeight), labelStyle);
 */
 
-	UI::drawText(uiBuffer, font, myprintf("R: {0}\nC: {1}\nI: {2}"_s, {formatInt(city->zoneLayer.demand[Zone_Residential]), formatInt(city->zoneLayer.demand[Zone_Commercial]), formatInt(city->zoneLayer.demand[Zone_Industrial])}),
-	       v2i(round_s32(UI::windowSize.x * 0.75f), uiPadding), ALIGN_RIGHT, labelStyle->textColor);
+	UI::putLabel(myprintf("R: {0}\nC: {1}\nI: {2}"_s, {formatInt(city->zoneLayer.demand[Zone_Residential]), formatInt(city->zoneLayer.demand[Zone_Commercial]), formatInt(city->zoneLayer.demand[Zone_Industrial])}),
+		irectXYWH(clockBounds.x - 100, uiPadding, 100, toolbarHeight), labelStyle);
 
 	UI::ButtonStyle *buttonStyle = getStyle<UI::ButtonStyle>("default"_s);
 	UI::PanelStyle *popupMenuPanelStyle = getStyle<UI::PanelStyle>("popupMenu"_s);
@@ -552,7 +555,7 @@ void updateAndRenderGameUI(GameState *gameState)
 		// The, um, "MENU" menu. Hmmm.
 		String menuButtonText = getText("button_menu"_s);
 		V2I buttonSize = UI::calculateButtonSize(menuButtonText, buttonStyle);
-		Rect2I buttonRect = irectXYWH(uiPadding, toolbarBottom - (buttonSize.y + uiPadding), buttonSize.x, buttonSize.y);
+		Rect2I buttonRect = irectXYWH(uiPadding, toolbarHeight - (buttonSize.y + uiPadding), buttonSize.x, buttonSize.y);
 		if (UI::putTextButton(menuButtonText, buttonRect, buttonStyle))
 		{
 			UI::showWindow(getText("title_menu"_s), 200, 200, v2i(0,0), "default"_s,
