@@ -99,6 +99,7 @@ Rect2I intersectRelative(Rect2I outer, Rect2I inner);
 Rect2I unionOf(Rect2I a, Rect2I b);
 
 V2 centreOf(Rect2I rect);
+V2I centreOfI(Rect2I rect);
 s32 areaOf(Rect2I rect); // Always positive, even if the rect has negative dimensions
 bool hasPositiveArea(Rect2I rect);
 

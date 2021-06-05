@@ -42,6 +42,7 @@ Toast should draw in the Window RB because it belongs on top of everything
 -> Maybe it and the openDropDownList should both draw to a "on top of UI" buffer?
 
 Make windows use the standard UI dragging
+- While we're at it, make them draw the title bar and X button as a proper label and button
 
 Window titles should be set every frame?
 - We have a bug, where reloading an asset while a window is open often garbles its title

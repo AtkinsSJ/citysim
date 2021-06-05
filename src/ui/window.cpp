@@ -298,14 +298,19 @@ namespace UI
 				BitmapFont *titleFont = getFont(&windowStyle->titleFont);
 
 				drawSingleRect(window->renderBuffer, barArea, renderer->shaderIds.untextured, barColor);
-				drawText(window->renderBuffer, titleFont, window->title, barArea.pos + v2i(8, barArea.h / 2), ALIGN_V_CENTRE | ALIGN_LEFT, windowStyle->titleColor);
+				V2I titleSize = calculateTextSize(titleFont, window->title, barArea.w);
+				Rect2I titleBounds = irectAligned(barArea.pos + v2i(0, barArea.h / 2), titleSize, ALIGN_V_CENTRE | ALIGN_LEFT);
+				drawText(window->renderBuffer, titleFont, window->title, titleBounds, ALIGN_V_CENTRE | ALIGN_LEFT, windowStyle->titleColor, renderer->shaderIds.text);
 
+				// TODO: Replace this with an actual Button?
 				if (hoveringOverCloseButton
 				 && (!isMouseInputHandled() || windowIndex == 0))
 				{
 					drawSingleRect(window->renderBuffer, closeButtonRect, renderer->shaderIds.untextured, closeButtonColorHover);
 				}
-				drawText(window->renderBuffer, titleFont, closeButtonString, v2i(centreOf(closeButtonRect)), ALIGN_CENTRE, windowStyle->titleColor);
+				V2I closeTextSize = calculateTextSize(titleFont, closeButtonString);
+				Rect2I closeTextBounds = irectAligned(centreOfI(closeButtonRect), closeTextSize, ALIGN_CENTRE);
+				drawText(window->renderBuffer, titleFont, closeButtonString, closeTextBounds, ALIGN_CENTRE, windowStyle->titleColor, renderer->shaderIds.text);
 
 				if ((!isMouseInputHandled() || windowIndex == 0)
 					 && contains(wholeWindowArea, mousePos)

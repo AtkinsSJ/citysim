@@ -176,6 +176,14 @@ inline V2 centreOf(Rect2 rect)
 	);
 }
 
+inline V2I centreOfI(Rect2I rect)
+{
+	return v2i(
+		round_s32(rect.x + rect.w / 2.0f),
+		round_s32(rect.y + rect.h / 2.0f)
+	);
+}
+
 inline f32 areaOf(Rect2 rect)
 {
 	return abs_f32(rect.w * rect.h);
