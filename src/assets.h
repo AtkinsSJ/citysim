@@ -76,7 +76,7 @@ BitmapFont *getFont(AssetRef *fontRef);
 Array<V4> *getPalette(String name);
 Shader *getShader(String shaderName);
 Sprite *getSprite(String name, s32 offset = 0);
-// @Deprecated
+[[deprecated]]
 Sprite *getSprite(SpriteGroup *group, s32 offset);
 SpriteGroup *getSpriteGroup(String name);
 

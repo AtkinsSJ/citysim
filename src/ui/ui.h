@@ -151,7 +151,7 @@ namespace UI
 	bool mouseIsWithinUIRects();
 
 	// Text
-	// @Deprecated
+	[[deprecated]]
 	Rect2I drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, V2I origin, u32 align, V4 color, s32 maxWidth = 0);
 
 	// Buttons
