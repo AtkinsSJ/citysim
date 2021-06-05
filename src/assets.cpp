@@ -803,11 +803,6 @@ Sprite *getSprite(String name, s32 offset)
 	return result;
 }
 
-inline Sprite *getSprite(SpriteGroup *group, s32 offset)
-{
-	return group->sprites + (offset % group->count);
-}
-
 SpriteRef getSpriteRef(String groupName, s32 spriteIndex)
 {
 	SpriteRef result = {};
