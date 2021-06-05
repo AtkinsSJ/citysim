@@ -207,6 +207,7 @@ namespace UI
 			"outputTextColorSuccess"_s,
 			"outputTextColorWarning"_s,
 			"padding"_s,
+			"contentPadding"_s,
 			"scrollbarStyle"_s,
 			"textInputStyle"_s,
 		});
@@ -644,6 +645,7 @@ void loadUITheme(Blob data, Asset *asset)
 
 						console->background = style->background.value;
 						console->padding = style->padding.value;
+						console->contentPadding = style->contentPadding.value;
 
 						console->scrollbarStyle = getAssetRef(AssetType_ScrollbarStyle, style->scrollbarStyle.orDefault(defaultStyleName));
 						console->textInputStyle = getAssetRef(AssetType_TextInputStyle, style->textInputStyle.orDefault(defaultStyleName));

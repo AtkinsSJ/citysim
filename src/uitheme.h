@@ -128,6 +128,7 @@ namespace UI
 
 		DrawableStyle background;
 		Padding padding;
+		s32 contentPadding;
 
 		AssetRef scrollbarStyle;
 		AssetRef textInputStyle;

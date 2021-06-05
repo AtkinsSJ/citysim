@@ -245,8 +245,10 @@ void updateAndRenderConsole(Console *console)
 			ConsoleOutputLine *line = it.get();
 			V4 outputTextColor = consoleStyle->outputTextColors[line->style];
 
-			Rect2I resultRect = UI::drawText(renderBuffer, consoleFont, line->text, textPos, outputLinesAlign, outputTextColor, textMaxWidth);
-			textPos.y -= resultRect.h;
+			V2I textSize = calculateTextSize(consoleFont, line->text, textMaxWidth);
+			Rect2I textBounds = irectAligned(textPos, textSize, outputLinesAlign);
+			drawText(renderBuffer, consoleFont, line->text, textBounds, outputLinesAlign, outputTextColor, renderer->shaderIds.text);
+			textPos.y -= (textSize.y + consoleStyle->contentPadding);
 
 			// If we've gone off the screen, stop!
 			if ((textPos.y < 0) || (textPos.y > UI::windowSize.y))

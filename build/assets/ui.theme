@@ -202,6 +202,7 @@ outputTextColorSuccess		128 255 128 255
 outputTextColorWarning		255 255 128 255
 background        color 0   0   0 245
 padding 8
+contentPadding 1
 scrollbarStyle console
 textInputStyle console
 
