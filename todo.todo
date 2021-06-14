@@ -18,11 +18,6 @@ Notes for searching:
 
 ------------------------------------------------
 
-Styles with fallback
-- Use Maybe<> for all fields in UIStyle, so we know if they were specified or not
-- Possibly put the fallback relationships in the property definition? But I'm not sure we can do that with C++'s limited metaprogramming. I got stuck trying to do something similar a while ago, which is why we ended up with UIStyle in the first place!
-- I keep wondering about automating the 'UIStyle -> individual style struct' code too, but that runs into similar issues.
-
 Settings window that lets you modify them
 	(Instead of the Settings Screen we have now. A window makes more sense.)
 - Line things up nicely. At the moment our music and sound volume sliders are different sizes because they just fill the available space, which looks bad and is bad UX too.

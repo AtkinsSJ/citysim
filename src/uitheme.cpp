@@ -638,10 +638,10 @@ void loadUITheme(Blob data, Asset *asset)
 						console->font = style->font.orDefault(defaultFont);
 
 						console->outputTextColor 			= style->outputTextColor.orDefault(white);
-						console->outputTextColorInputEcho 	= style->outputTextColorInputEcho.orDefault(white);
-						console->outputTextColorError 		= style->outputTextColorError.orDefault(white);
-						console->outputTextColorWarning 	= style->outputTextColorWarning.orDefault(white);
-						console->outputTextColorSuccess 	= style->outputTextColorSuccess.orDefault(white);
+						console->outputTextColorInputEcho 	= style->outputTextColorInputEcho.orDefault(console->outputTextColor);
+						console->outputTextColorError 		= style->outputTextColorError.orDefault(console->outputTextColor);
+						console->outputTextColorWarning 	= style->outputTextColorWarning.orDefault(console->outputTextColor);
+						console->outputTextColorSuccess 	= style->outputTextColorSuccess.orDefault(console->outputTextColor);
 
 						console->background = style->background.value;
 						console->padding = style->padding.value;
