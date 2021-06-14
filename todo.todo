@@ -18,8 +18,6 @@ Notes for searching:
 
 ------------------------------------------------
 
-BUG: Tooltips crash now, because they are created with zero width
-
 Styles with fallback
 - Use Maybe<> for all fields in UIStyle, so we know if they were specified or not
 - Possibly put the fallback relationships in the property definition? But I'm not sure we can do that with C++'s limited metaprogramming. I got stuck trying to do something similar a while ago, which is why we ended up with UIStyle in the first place!
@@ -76,6 +74,9 @@ UI Widgets:
 - Make TextInput more conventional
 	- updateTextInput() and drawTextInput() shouldn't need to exist as their own thing any more.
 	- The main obstacle is that the console does some fancy stuff with keyboard shortcuts for the text input, so that might take some teasing out to get working.
+
+Gracefully handle Panel widgets not fitting in a line's remaining space (inline-block)
+- Right now, we end up calculating a negative or 0 content-width, and then asserting. What we want is something like CSS's inline-block, where we move the widget onto the next line.
 
 A lot of stuff is hard-coded in the renderer now... probably we don't want setshader/settexture to be unique things after all? Rather, a drawRects or drawGrids etc call will do its own texture/shader setup. Maybe don't pass the shaderID in at all, but we'll see... I might want to vary the shader per draw call sometimes. Well, eg, text and pixel art are the same except a different shader! So yeah that's still necessary.
 	- Related, we keep having tricky bugs from the RB's currentTexture or currentShader being wrong, or left over from a previous frame, or other stuff which results in really confusing and hard to track-down bugs. We wouldn't have those issues if each render call had that stuff baked in to it.

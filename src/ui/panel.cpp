@@ -709,10 +709,14 @@ namespace UI
 		
 		bool lineIsFull = false;
 
+		s32 lineWidth = 0;
+
 		switch (widgetAlignment & ALIGN_H)
 		{
 			case ALIGN_LEFT: {
 				currentLeft += widgetSize.x + style->contentPadding;
+				lineWidth = currentLeft;
+
 				// Check for a full line
 				// NB: We might want to do something smarter when there's only a small remainder.
 				// Though, for now we'll just be smart about not intentionally wrapping a line.
@@ -724,6 +728,8 @@ namespace UI
 
 			case ALIGN_RIGHT: {
 				currentRight -= widgetSize.x + style->contentPadding;
+				lineWidth = currentRight;
+
 				// Check for a full line
 				// NB: We might want to do something smarter when there's only a small remainder.
 				// Though, for now we'll just be smart about not intentionally wrapping a line.
@@ -736,11 +742,14 @@ namespace UI
 			case ALIGN_H_CENTRE:
 			case ALIGN_EXPAND_H:
 			default: {
+				lineWidth = widgetSize.x;
+
 				// Just start a new line
 				lineIsFull = true;
 			} break;
 		}
 
+		largestLineWidth        = max(largestLineWidth,        lineWidth);
 		largestItemWidth        = max(largestItemWidth,        widgetSize.x);
 		largestItemHeightOnLine = max(largestItemHeightOnLine, widgetSize.y);
 
