@@ -140,15 +140,6 @@ void updateAndRenderConsole(Console *console)
 						String completion = makeString(completeCommand.chars + wordToComplete.length, completeCommand.length - wordToComplete.length);
 						console->input.insert(completion);
 					}
-
-					if (completeCommand.isEmpty())
-					{
-						logDebug("Word to complete: `{0}`, but no matches found"_s, {wordToComplete});
-					}
-					else
-					{
-						logDebug("Word to complete: `{0}`, completed to: `{1}`"_s, {wordToComplete, completeCommand});
-					}
 				}
 			}
 			// Command history
