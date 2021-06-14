@@ -81,7 +81,7 @@ setting_soundVolume Sound volume
 
 locale_en English
 locale_es Español
-locale_pl Polski is super long hooray! In fact, it's so long that it wraps onto multiple lines. Isn't that amazing?
+locale_pl Polski
 
 title_about          About
 title_delete_save    Delete saved game

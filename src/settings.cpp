@@ -337,11 +337,16 @@ void settingsWindowProc(UI::WindowContext *context, void*)
 			} break;
 
 			case SettingType::Percent: {
-				ui->addSlider(getSettingDataRaw<f32>(&settings->workingState, def), 0.0f, 1.0f);
+				f32 *percent = getSettingDataRaw<f32>(&settings->workingState, def);
+				s32 intPercent = round_s32(*percent * 100.0f);
+				ui->addLabel(myprintf("{0}%"_s, {formatInt(intPercent)}));
+				ui->addSlider(percent, 0.0f, 1.0f);
 			} break;
 
 			case SettingType::S32_Range: {
-				ui->addSlider(getSettingDataRaw<s32>(&settings->workingState, def), def->intRange.min, def->intRange.max);
+				s32 *intValue = getSettingDataRaw<s32>(&settings->workingState, def);
+				ui->addLabel(formatInt(*intValue));
+				ui->addSlider(intValue, def->intRange.min, def->intRange.max);
 			} break;
 
 			default: {
