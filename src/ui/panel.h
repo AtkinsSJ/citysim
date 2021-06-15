@@ -82,6 +82,8 @@ namespace UI
 		// "Private"
 		void prepareForWidgets();
 		Rect2I getCurrentLayoutPosition();
+		template <typename Func>
+		Rect2I calculateWidgetBounds(Func calculateSize);
 		void completeWidget(V2I widgetSize);
 		PanelStyle *getPanelStyle(String styleName);
 

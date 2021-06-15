@@ -88,23 +88,20 @@ namespace UI
 		
 		prepareForWidgets();
 
-		ButtonStyle *buttonStyle = getStyle<ButtonStyle>(styleName, &this->style->buttonStyle);
+		ButtonStyle *widgetStyle = getStyle<ButtonStyle>(styleName, &this->style->buttonStyle);
 
-		Rect2I space = getCurrentLayoutPosition();
-		V2I buttonOrigin = alignWithinRectangle(space, widgetAlignment);
-
-		bool fillWidth = ((widgetAlignment & ALIGN_H) == ALIGN_EXPAND_H);
-		V2I buttonSize = calculateButtonSize(text, buttonStyle, space.w, fillWidth);
-		Rect2I buttonBounds = irectAligned(buttonOrigin, buttonSize, widgetAlignment);
+		Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
+			return calculateButtonSize(text, widgetStyle, space.w, fillWidth);
+		});
 
 		bool wasClicked = false;
 
 		if (!hideWidgets)
 		{
-			wasClicked = putTextButton(text, buttonBounds, buttonStyle, state, renderBuffer);
+			wasClicked = putTextButton(text, widgetBounds, widgetStyle, state, renderBuffer);
 		}
 
-		completeWidget(buttonBounds.size);
+		completeWidget(widgetBounds.size);
 
 		return wasClicked;
 	}
@@ -115,24 +112,21 @@ namespace UI
 		
 		prepareForWidgets();
 
-		ButtonStyle *buttonStyle = getStyle<ButtonStyle>(styleName, &this->style->buttonStyle);
-
-		Rect2I space = getCurrentLayoutPosition();
-		V2I buttonOrigin = alignWithinRectangle(space, widgetAlignment);
-
-		bool fillWidth = ((widgetAlignment & ALIGN_H) == ALIGN_EXPAND_H);
+		ButtonStyle *widgetStyle = getStyle<ButtonStyle>(styleName, &this->style->buttonStyle);
 		V2I spriteSize = v2i(sprite->pixelWidth, sprite->pixelHeight);
-		V2I buttonSize = calculateButtonSize(spriteSize, buttonStyle, space.w, fillWidth);
-		Rect2I buttonBounds = irectAligned(buttonOrigin, buttonSize, widgetAlignment);
+
+		Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
+			return calculateButtonSize(spriteSize, widgetStyle, space.w, fillWidth);
+		});
 
 		bool wasClicked = false;
 
 		if (!hideWidgets)
 		{
-			wasClicked = putImageButton(sprite, buttonBounds, buttonStyle, state, renderBuffer);
+			wasClicked = putImageButton(sprite, widgetBounds, widgetStyle, state, renderBuffer);
 		}
 
-		completeWidget(buttonBounds.size);
+		completeWidget(widgetBounds.size);
 
 		return wasClicked;
 	}
@@ -143,19 +137,18 @@ namespace UI
 
 		prepareForWidgets();
 
-		CheckboxStyle *checkboxStyle = getStyle<CheckboxStyle>(styleName, &style->checkboxStyle);
+		CheckboxStyle *widgetStyle = getStyle<CheckboxStyle>(styleName, &style->checkboxStyle);
 
-		Rect2I space = getCurrentLayoutPosition();
-		V2I checkboxOrigin = alignWithinRectangle(space, widgetAlignment);
-		V2I checkboxSize = calculateCheckboxSize(checkboxStyle);
-		Rect2I checkboxBounds = irectAligned(checkboxOrigin, checkboxSize, widgetAlignment);
+		Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I, bool) {
+			return calculateCheckboxSize(widgetStyle);
+		});
 
 		if (!hideWidgets)
 		{
-			putCheckbox(checked, checkboxBounds, checkboxStyle, false, renderBuffer);
+			putCheckbox(checked, widgetBounds, widgetStyle, false, renderBuffer);
 		}
 
-		completeWidget(checkboxSize);
+		completeWidget(widgetBounds.size);
 	}
 
 	template <typename T>
@@ -167,19 +160,16 @@ namespace UI
 
 		DropDownListStyle *widgetStyle = getStyle<DropDownListStyle>(styleName, &style->dropDownListStyle);
 
-		Rect2I space = getCurrentLayoutPosition();
-		V2I widgetOrigin = alignWithinRectangle(space, widgetAlignment);
-
-		bool fillWidth = ((widgetAlignment & ALIGN_H) == ALIGN_EXPAND_H);
-		V2I widgetSize = calculateDropDownListSize(listOptions, getDisplayName, widgetStyle, space.w, fillWidth);
-		Rect2I widgetBounds = irectAligned(widgetOrigin, widgetSize, widgetAlignment);
+		Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
+			return calculateDropDownListSize(listOptions, getDisplayName, widgetStyle, space.w, fillWidth);
+		});
 
 		if (!hideWidgets)
 		{
 			putDropDownList(listOptions, currentSelection, getDisplayName, widgetBounds, widgetStyle, renderBuffer);
 		}
 
-		completeWidget(widgetSize);
+		completeWidget(widgetBounds.size);
 	}
 
 	void Panel::addRadioButton(s32 *currentValue, s32 myValue, String styleName)
@@ -188,19 +178,18 @@ namespace UI
 
 		prepareForWidgets();
 
-		RadioButtonStyle *radioButtonStyle = getStyle<RadioButtonStyle>(styleName, &style->radioButtonStyle);
+		RadioButtonStyle *widgetStyle = getStyle<RadioButtonStyle>(styleName, &style->radioButtonStyle);
 
-		Rect2I space = getCurrentLayoutPosition();
-		V2I radioButtonOrigin = alignWithinRectangle(space, widgetAlignment);
-		V2I radioButtonSize = calculateRadioButtonSize(radioButtonStyle);
-		Rect2I radioButtonBounds = irectAligned(radioButtonOrigin, radioButtonSize, widgetAlignment);
+		Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I, bool) {
+			return calculateRadioButtonSize(widgetStyle);
+		});
 
 		if (!hideWidgets)
 		{
-			putRadioButton(currentValue, myValue, radioButtonBounds, radioButtonStyle, false, renderBuffer);
+			putRadioButton(currentValue, myValue, widgetBounds, widgetStyle, false, renderBuffer);
 		}
 
-		completeWidget(radioButtonSize);
+		completeWidget(widgetBounds.size);
 	}
 
 	template <typename T>
@@ -277,19 +266,16 @@ namespace UI
 
 		SliderStyle *widgetStyle = getStyle<SliderStyle>(styleName, &style->sliderStyle);
 
-		Rect2I space = getCurrentLayoutPosition();
-		V2I widgetOrigin = alignWithinRectangle(space, widgetAlignment);
-
-		bool fillWidth = ((widgetAlignment & ALIGN_H) == ALIGN_EXPAND_H);
-		V2I widgetSize = calculateSliderSize(Orientation::Horizontal, widgetStyle, space.size, fillWidth);
-		Rect2I widgetBounds = irectAligned(widgetOrigin, widgetSize, widgetAlignment);
+		Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
+			return calculateSliderSize(Orientation::Horizontal, widgetStyle, space.size, fillWidth);
+		});
 
 		if (!hideWidgets)
 		{
 			putSlider(currentValue, minValue, maxValue, Orientation::Horizontal, widgetBounds, widgetStyle, false, renderBuffer);
 		}
 
-		completeWidget(widgetSize);
+		completeWidget(widgetBounds.size);
 	}
 
 	void Panel::addSprite(Sprite *sprite, s32 width, s32 height)
@@ -298,23 +284,26 @@ namespace UI
 
 		prepareForWidgets();
 
-		Rect2I layoutPosition = getCurrentLayoutPosition();
-		V2I origin = alignWithinRectangle(layoutPosition, widgetAlignment);
 		V2I size = v2i(width, height);
-
 		if (sprite != null)
 		{
 			if (size.x == -1) size.x = sprite->pixelWidth;
 			if (size.y == -1) size.y = sprite->pixelHeight;
+		}
 
+		Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I, bool) {
+			return size;
+		});
+
+		if (sprite != null)
+		{
 			if (!hideWidgets)
 			{
-				Rect2I spriteBounds = irectAligned(origin, size, widgetAlignment);
-				drawSingleSprite(renderBuffer, sprite, rect2(spriteBounds), renderer->shaderIds.pixelArt, makeWhite());
+				drawSingleSprite(renderBuffer, sprite, rect2(widgetBounds), renderer->shaderIds.pixelArt, makeWhite());
 			}
 		}
 
-		completeWidget(size);
+		completeWidget(widgetBounds.size);
 	}
 
 	void Panel::addLabel(String text, String styleName)
@@ -323,19 +312,18 @@ namespace UI
 		
 		prepareForWidgets();
 
-		LabelStyle *labelStyle = getStyle<LabelStyle>(styleName, &this->style->labelStyle);
+		LabelStyle *widgetStyle = getStyle<LabelStyle>(styleName, &this->style->labelStyle);
 
-		Rect2I space = getCurrentLayoutPosition();
-		V2I widgetOrigin = alignWithinRectangle(space, this->widgetAlignment);
+		Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
+			return calculateLabelSize(text, widgetStyle, space.w, fillWidth);
+		});
 
-		bool fillWidth = ((widgetAlignment & ALIGN_H) == ALIGN_EXPAND_H);
-		V2I widgetSize = UI::calculateLabelSize(text, labelStyle, space.w, fillWidth);
-		Rect2I widgetBounds = irectAligned(widgetOrigin, widgetSize, widgetAlignment);
 		if (!hideWidgets)
 		{
-			UI::putLabel(text, widgetBounds, labelStyle, renderBuffer);
+			putLabel(text, widgetBounds, widgetStyle, renderBuffer);
 		}
-		completeWidget(widgetSize);
+
+		completeWidget(widgetBounds.size);
 	}
 
 	bool Panel::addTextInput(TextInput *textInput, String styleName)
@@ -344,23 +332,20 @@ namespace UI
 		
 		prepareForWidgets();
 
-		TextInputStyle *textInputStyle = getStyle<TextInputStyle>(styleName, &this->style->textInputStyle);
+		TextInputStyle *widgetStyle = getStyle<TextInputStyle>(styleName, &this->style->textInputStyle);
 
-		Rect2I space = getCurrentLayoutPosition();
-		V2I origin = alignWithinRectangle(space, this->widgetAlignment);
-
-		bool fillWidth = ((this->widgetAlignment & ALIGN_H) == ALIGN_EXPAND_H);
-		V2I textInputSize = calculateTextInputSize(textInput, textInputStyle, space.w, fillWidth);
-		Rect2I textInputBounds = irectAligned(origin, textInputSize, this->widgetAlignment);
+		Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
+			return calculateTextInputSize(textInput, widgetStyle, space.w, fillWidth);
+		});
 
 		bool result = false;
 		
 		if (!hideWidgets)
 		{
-			result = putTextInput(textInput, textInputBounds, textInputStyle, renderBuffer);
+			result = putTextInput(textInput, widgetBounds, widgetStyle, renderBuffer);
 		}
 		
-		completeWidget(textInputSize);
+		completeWidget(widgetBounds.size);
 
 		return result;
 	}
@@ -371,17 +356,15 @@ namespace UI
 
 		prepareForWidgets();
 
-		Rect2I layoutPosition = getCurrentLayoutPosition();
-		V2I origin = alignWithinRectangle(layoutPosition, widgetAlignment);
-		V2I size = v2i(width, height);
+		Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I, bool) {
+			return v2i(width, height);
+		});
 
-		completeWidget(size);
+		completeWidget(widgetBounds.size);
 
-		Rect2I result = irectAligned(origin, size, widgetAlignment);
+		// drawSingleRect(renderBuffer != null ? renderBuffer : &renderer->uiBuffer, widgetBounds, renderer->shaderIds.untextured, color255(0, 255, 0, 255));
 
-		// drawSingleRect(renderBuffer != null ? renderBuffer : &renderer->uiBuffer, result, renderer->shaderIds.untextured, color255(0, 255, 0, 255));
-
-		return result;
+		return widgetBounds;
 	}
 
 	void Panel::alignWidgets(u32 alignment)
@@ -695,6 +678,20 @@ namespace UI
 		ASSERT(result.w > 0);
 
 		return result;
+	}
+	
+	template <typename Func>
+	Rect2I Panel::calculateWidgetBounds(Func calculateSize)
+	{
+		Rect2I space = getCurrentLayoutPosition();
+		bool fillWidth = ((widgetAlignment & ALIGN_H) == ALIGN_EXPAND_H);
+		
+		V2I widgetSize = calculateSize(space, fillWidth);
+
+		V2I widgetOrigin = alignWithinRectangle(space, widgetAlignment);
+		Rect2I widgetBounds = irectAligned(widgetOrigin, widgetSize, widgetAlignment);
+
+		return widgetBounds;
 	}
 
 	void Panel::completeWidget(V2I widgetSize)
