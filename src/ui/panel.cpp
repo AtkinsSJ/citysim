@@ -326,22 +326,16 @@ namespace UI
 		LabelStyle *labelStyle = getStyle<LabelStyle>(styleName, &this->style->labelStyle);
 
 		Rect2I space = getCurrentLayoutPosition();
-		V2I origin = alignWithinRectangle(space, this->widgetAlignment);
+		V2I widgetOrigin = alignWithinRectangle(space, this->widgetAlignment);
 
-		BitmapFont *font = getFont(&labelStyle->font);
-		if (font)
+		bool fillWidth = ((widgetAlignment & ALIGN_H) == ALIGN_EXPAND_H);
+		V2I widgetSize = UI::calculateLabelSize(text, labelStyle, space.w, fillWidth);
+		Rect2I widgetBounds = irectAligned(widgetOrigin, widgetSize, widgetAlignment);
+		if (!hideWidgets)
 		{
-			V2I textSize = calculateTextSize(font, text, space.w);
-			V2I topLeft = calculateTextPosition(origin, textSize, this->widgetAlignment);
-			Rect2I textBounds = irectPosSize(topLeft, textSize);
-
-			if (!hideWidgets)
-			{
-				drawText(renderBuffer, font, text, textBounds, this->widgetAlignment, labelStyle->textColor, renderer->shaderIds.text);
-			}
-
-			completeWidget(textSize);
+			UI::putLabel(text, widgetBounds, labelStyle, renderBuffer);
 		}
+		completeWidget(widgetSize);
 	}
 
 	bool Panel::addTextInput(TextInput *textInput, String styleName)

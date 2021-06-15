@@ -76,36 +76,5 @@ AppStatus updateAndRenderMainMenu(f32 /*deltaTime*/)
 
 	panel.end(true);
 
-// Slider test
-	/*
-	static f32 sliderValueF = 50.0f;
-	V2I sliderSize = UI::calculateSliderSize(Orientation::Vertical, null);
-	UI::putSlider(&sliderValueF, 0.0f, 100.0f, Orientation::Vertical, irectPosSize(v2i(100, 100), sliderSize));
-
-	UI::drawText(&renderer->uiBuffer, font, formatFloat(sliderValueF, 3),
-			v2i(100, 80), ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth);
-
-	static s32 sliderValue = 5;
-	UI::putSlider(&sliderValue, 0, 20, Orientation::Vertical, irectPosSize(v2i(100, 350), sliderSize));
-
-	UI::drawText(&renderer->uiBuffer, font, formatInt(sliderValue),
-			v2i(100, 330), ALIGN_H_CENTRE | ALIGN_TOP, labelStyle->textColor, maxLabelWidth);
-	*/
-
-// RadioButton test
-	/*
-	static s32 radioButtonValue = 0;
-	V2I radioButtonSize = UI::calculateRadioButtonSize();
-	Rect2I radioButtonBounds = irectXYWH(100, 100, radioButtonSize.x, radioButtonSize.y);
-	UI::putRadioButton(&radioButtonValue, 0, radioButtonBounds);
-	radioButtonBounds.y += (radioButtonSize.y * 2);
-	UI::putRadioButton(&radioButtonValue, 1, radioButtonBounds);
-	radioButtonBounds.y += (radioButtonSize.y * 2);
-	UI::putRadioButton(&radioButtonValue, 2, radioButtonBounds);
-	radioButtonBounds.y += (radioButtonSize.y * 2);
-	UI::drawText(&renderer->uiBuffer, font, formatInt(radioButtonValue),
-			radioButtonBounds.pos, ALIGN_LEFT | ALIGN_TOP, labelStyle->textColor, maxLabelWidth);
-	*/
-
 	return result;
 }
