@@ -566,6 +566,8 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
 
 	StringBuilder stb = newStringBuilder(format.length * 4);
 
+	s32 positionalIndex = 0;
+
 	for (s32 i=0; i<format.length; i++)
 	{
 		if (format.chars[i] == '{')
@@ -581,12 +583,26 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
 				i++;
 			}
 
-			String indexString = makeString(format.chars + startOfNumber, (i - startOfNumber));
-			Maybe<s64> parsedIndex = asInt(indexString);
-			if ((parsedIndex.isValid)
-			 && (parsedIndex.value >= 0 && parsedIndex.value < (s64)args.size()))
+			s32 indexLength = i - startOfNumber;
+
+			// Use the current position, if no index was provided
+			s32 index = positionalIndex;
+
+			if (indexLength > 0)
 			{
-				String arg = args.begin()[parsedIndex.value];
+				// Positional 
+				String indexString = makeString(format.chars + startOfNumber, indexLength);
+				Maybe<s64> parsedIndex = asInt(indexString);
+
+				if (parsedIndex.isValid)
+				{
+					index = (s32) parsedIndex.value;
+				}
+			}
+
+			if ((index >= 0) && (index < args.size()))
+			{
+				String arg = args.begin()[index];
 
 				if (isNullTerminated(arg)) arg.length--;
 
@@ -595,10 +611,10 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
 			else
 			{
 				// If the index is invalid, show some kind of error. For now, we'll just insert the {n} as given.
-				append(&stb, '{');
-				append(&stb, indexString);
-				append(&stb, '}');
+				append(&stb, format.chars + startOfNumber - 1, indexLength + 2);
 			}
+
+			positionalIndex++;
 		}
 		else
 		{

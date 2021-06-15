@@ -32,9 +32,6 @@ BUG: Styles do not properly fall back to a default! (AKA, AssetRefs need thinkin
 ✔ UI styles generally need better handling of defaults. So far, everything defaults to '0' which casues bad effects ranging from visual garbage to crashes. That's NOT something we want in a system that could be edited by users!
 	✔ Some things want to fallback to another property's value. eg, 'thumbPressed' should default to 'thumb'
 
-myprintf()
-- Treat {} without a number as the n'th argument, like Serenity (or printf's %)
-
 Toast should draw in the Window RB because it belongs on top of everything
 -> Maybe it and the openDropDownList should both draw to a "on top of UI" buffer?
 
