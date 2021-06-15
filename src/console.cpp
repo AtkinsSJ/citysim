@@ -24,10 +24,9 @@ void initConsole(MemoryArena *debugArena, f32 openHeight, f32 maximisedHeight, f
 
 	initChunkedArray(&console->commandShortcuts, &globalAppState.systemArena, 64);
 
+	globalConsole = console;
 	initCommands(console);
 	consoleWriteLine(myprintf("Loaded {0} commands. Type 'help' to list them."_s, {formatInt(console->commands.count)}), CLS_Default);
-
-	globalConsole = console;
 
 	consoleWriteLine("GREETINGS PROFESSOR FALKEN.\nWOULD YOU LIKE TO PLAY A GAME?"_s);
 }
