@@ -84,6 +84,7 @@ locale_es Español
 locale_pl Polski
 
 title_about          About
+title_debug_tools    Debug Tools
 title_delete_save    Delete saved game
 title_inspect        Inspecting {0}, {1}
 title_load_game      Load a game

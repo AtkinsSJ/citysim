@@ -342,7 +342,6 @@ void inspectTileWindowProc(UI::WindowContext *context, void *userData)
 	City *city = &gameState->city;
 
 	V2I tilePos = gameState->inspectedTilePosition;
-	context->window->title = getText("title_inspect"_s, {formatInt(tilePos.x), formatInt(tilePos.y)});
 
 	// CitySector
 	CitySector *sector = getSectorAtTilePos(&city->sectors, tilePos.x, tilePos.y);
@@ -558,7 +557,7 @@ void updateAndRenderGameUI(GameState *gameState)
 		Rect2I buttonRect = irectXYWH(uiPadding, toolbarHeight - (buttonSize.y + uiPadding), buttonSize.x, buttonSize.y);
 		if (UI::putTextButton(menuButtonText, buttonRect, buttonStyle))
 		{
-			UI::showWindow(getText("title_menu"_s), 200, 200, v2i(0,0), "default"_s,
+			UI::showWindow(UI::WindowTitle::fromTextAsset("title_menu"_s), 200, 200, v2i(0,0), "default"_s,
 					   WindowFlags::Unique | WindowFlags::Modal | WindowFlags::AutomaticHeight | WindowFlags::Pause,
 					   pauseMenuWindowProc);
 		}
@@ -990,7 +989,10 @@ AppStatus updateAndRenderGame(GameState *gameState, f32 deltaTime)
 					{
 						gameState->inspectedTilePosition = mouseTilePos;
 						V2I windowPos = v2i(renderer->uiCamera.mousePos) + v2i(16, 16);
-						UI::showWindow("Inspect tile"_s, 250, 200, windowPos, "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Unique, inspectTileWindowProc, gameState);
+						UI::showWindow(UI::WindowTitle::fromLambda([]() {
+								V2I tilePos = globalAppState.gameState->inspectedTilePosition;
+								return getText("title_inspect"_s, {formatInt(tilePos.x), formatInt(tilePos.y)});
+							}), 250, 200, windowPos, "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Unique, inspectTileWindowProc, gameState);
 					}
 				}
 			} break;

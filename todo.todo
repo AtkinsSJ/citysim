@@ -38,11 +38,6 @@ Toast should draw in the Window RB because it belongs on top of everything
 Make windows use the standard UI dragging
 - While we're at it, make them draw the title bar and X button as a proper label and button
 
-Window titles should be set every frame?
-- We have a bug, where reloading an asset while a window is open often garbles its title
-- I've been feeling for a while that I don't like how window titles are handled
-- So, maybe we just set them every frame? Or, we store the asset-name for the title instead of the title. Ideally both!
-
 Enforce that the UI camera goes from 0,0 to w,h
 
 UI Widgets:

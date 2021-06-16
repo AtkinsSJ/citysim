@@ -22,14 +22,55 @@ namespace UI
 		  )
 	{}
 
+	WindowTitle WindowTitle::none()
+	{
+		WindowTitle result = {};
+		result.type = Type::None;
+
+		return result;
+	}
+
+	WindowTitle WindowTitle::fromTextAsset(String assetID)
+	{
+		WindowTitle result = {};
+		result.type = Type::TextAsset;
+		result.assetID = assetID;
+
+		return result;
+	}
+
+	WindowTitle WindowTitle::fromLambda(String (*lambda)())
+	{
+		WindowTitle result = {};
+		result.type = Type::Calculated;
+		result.calculateTitle = lambda;
+
+		return result;
+	}
+
+	String WindowTitle::getString()
+	{
+		String result = nullString;
+
+		switch (type)
+		{
+			case Type::None:       result = nullString;       break;;
+			case Type::TextAsset:  result = getText(assetID); break;
+			case Type::Calculated: result = calculateTitle(); break;
+			INVALID_DEFAULT_CASE;
+		}
+
+		return result;
+	}
+
 	/**
 	 * Creates an (in-game) window in the centre of the screen, and puts it in front of all other windows.
 	 */
-	void showWindow(String title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void *userData, WindowProc onClose)
+	void showWindow(UI::WindowTitle title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void *userData, WindowProc onClose)
 	{
 		if (windowProc == null)
 		{
-			logError("showWindow() called with a null WindowProc. That doesn't make sense? Title: {0}"_s, {title});
+			logError("showWindow() called with a null WindowProc. That doesn't make sense? Title: {0}"_s, {title.getString()});
 			return;
 		}
 
@@ -44,7 +85,7 @@ namespace UI
 		newWindow.userData = userData;
 		newWindow.onClose = onClose;
 
-		newWindow.renderBuffer = getTemporaryRenderBuffer(newWindow.title);
+		newWindow.renderBuffer = getTemporaryRenderBuffer(newWindow.title.getString());
 
 		bool createdWindowAlready = false;
 
@@ -296,11 +337,12 @@ namespace UI
 				V4 closeButtonColorHover = windowStyle->titleBarButtonHoverColor;
 
 				BitmapFont *titleFont = getFont(&windowStyle->titleFont);
+				String titleString = window->title.getString();
 
 				drawSingleRect(window->renderBuffer, barArea, renderer->shaderIds.untextured, barColor);
-				V2I titleSize = calculateTextSize(titleFont, window->title, barArea.w);
+				V2I titleSize = calculateTextSize(titleFont, titleString, barArea.w);
 				Rect2I titleBounds = irectAligned(barArea.pos + v2i(0, barArea.h / 2), titleSize, ALIGN_V_CENTRE | ALIGN_LEFT);
-				drawText(window->renderBuffer, titleFont, window->title, titleBounds, ALIGN_V_CENTRE | ALIGN_LEFT, windowStyle->titleColor, renderer->shaderIds.text);
+				drawText(window->renderBuffer, titleFont, titleString, titleBounds, ALIGN_V_CENTRE | ALIGN_LEFT, windowStyle->titleColor, renderer->shaderIds.text);
 
 				// TODO: Replace this with an actual Button?
 				if (hoveringOverCloseButton

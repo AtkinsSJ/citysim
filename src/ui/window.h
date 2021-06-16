@@ -36,9 +36,30 @@ namespace UI
 		bool closeRequested = false;
 	};
 
+	struct WindowTitle
+	{
+		static WindowTitle none();
+		static WindowTitle fromTextAsset(String assetID);
+		static WindowTitle fromLambda(String (*lambda)());
+
+		enum class Type
+		{
+			None,
+			TextAsset,
+			Calculated,
+		};
+		Type type;
+		union {
+			String assetID;
+			String (*calculateTitle)();
+		};
+
+		String getString();
+	};
+
 	struct Window
 	{
-		String title;
+		WindowTitle title;
 		u32 flags;
 
 		Rect2I area;
@@ -60,7 +81,7 @@ namespace UI
 	// As it is, the user code has to know way too much about the window. We end
 	// up creating showXWindow() functions to wrap the showWindow call for each
 	// window type.
-	void showWindow(String title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void *userData = null, WindowProc onClose = null);
+	void showWindow(UI::WindowTitle title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void *userData = null, WindowProc onClose = null);
 
 	bool hasPauseWindowOpen();
 	bool isWindowOpen(WindowProc windowProc);
