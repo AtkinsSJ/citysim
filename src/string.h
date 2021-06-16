@@ -37,11 +37,11 @@ inline String operator"" _h(const char *chars, size_t length)
 	return makeString((char*)chars, (s32)length, true);
 }
 
-void copyString(char *src, s32 srcLength, String *dest);
+void copyString(char const* src, s32 srcLength, String *dest);
 void copyString(String src, String *dest);
 
 String pushString(MemoryArena *arena, s32 length);
-String pushString(MemoryArena *arena, char *src);
+String pushString(MemoryArena *arena, char const* src);
 String pushString(MemoryArena *arena, String src);
 
 u32 hashString(String *s);
@@ -88,7 +88,7 @@ String formatFloat(f64 value, s32 decimalPlaces);
 inline String formatFloat(f32 value, s32 decimalPlaces) {return formatFloat((f64)value, decimalPlaces);}
 
 String formatString(String value, s32 length=-1, bool alignLeft = true, char paddingChar = ' ');
-inline String formatString(char *value, s32 length=-1, bool alignLeft = true, char paddingChar = ' ')
+inline String formatString(char const* value, s32 length=-1, bool alignLeft = true, char paddingChar = ' ')
 {
 	return formatString(makeString(value), length, alignLeft, paddingChar);
 }

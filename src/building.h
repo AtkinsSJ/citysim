@@ -48,6 +48,8 @@ struct BuildingVariant
 	String spriteName;
 };
 
+enum ZoneType : u8;
+
 struct BuildingDef
 {
 	String name;
@@ -78,7 +80,7 @@ struct BuildingDef
 	s32 intersectionPart1TypeID;
 	s32 intersectionPart2TypeID;
 
-	enum ZoneType growsInZone;
+	ZoneType growsInZone;
 
 	s32 demolishCost;
 

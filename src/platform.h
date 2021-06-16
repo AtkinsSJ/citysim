@@ -12,7 +12,7 @@
 // Open the given URL in the user's default browser.
 // NB: No check is done to ensure the URL is safe to use in a console command!
 // Only use this for URLs we know for sure are OK.
-void openUrlUnsafe(char* url);
+void openUrlUnsafe(char const* url);
 
 u64 getCurrentUnixTimestamp();
 DateTime platform_getLocalTimeFromTimestamp(u64 unixTimestamp);

@@ -2,15 +2,15 @@
 
 struct City;
 
-enum ZoneType
+enum ZoneType : u8
 {
-	Zone_None,
+	Zone_None = 0,
 
 	Zone_Residential,
 	Zone_Commercial,
 	Zone_Industrial,
 
-	ZoneCount,
+	ZoneTypeCount,
 	FirstZoneType = Zone_Residential
 };
 
@@ -46,25 +46,25 @@ struct ZoneSector
 	Rect2I bounds;
 	u32 zoneSectorFlags;
 
-	f32 averageDesirability[ZoneCount];
+	f32 averageDesirability[ZoneTypeCount];
 };
 
 struct ZoneLayer
 {
 	Array2<u8> tileZone;
-	Array2<u8> tileDesirability[ZoneCount];
+	Array2<u8> tileDesirability[ZoneTypeCount];
 
 	SectorGrid<ZoneSector> sectors;
 
-	BitArray sectorsWithZones[ZoneCount];
-	BitArray sectorsWithEmptyZones[ZoneCount];
+	BitArray sectorsWithZones[ZoneTypeCount];
+	BitArray sectorsWithEmptyZones[ZoneTypeCount];
 
-	Array<s32> mostDesirableSectors[ZoneCount];
+	Array<s32> mostDesirableSectors[ZoneTypeCount];
 
-	s32 population[ZoneCount]; // NB: Zone_None is used for jobs provided by non-zone, city buildings
+	s32 population[ZoneTypeCount]; // NB: Zone_None is used for jobs provided by non-zone, city buildings
 
 	// Calculated every so often
-	s32 demand[ZoneCount];
+	s32 demand[ZoneTypeCount];
 };
 
 struct CanZoneQuery
@@ -80,7 +80,7 @@ void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena);
 void updateZoneLayer(City *city, ZoneLayer *layer);
 void calculateDemand(City *city, ZoneLayer *layer);
 
-ZoneDef getZoneDef(s32 type);
+ZoneDef getZoneDef(s32 zoneType);
 
 CanZoneQuery *queryCanZoneTiles(City *city, ZoneType zoneType, Rect2I bounds);
 bool canZoneTile(CanZoneQuery *query, s32 x, s32 y);

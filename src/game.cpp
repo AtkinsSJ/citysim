@@ -577,7 +577,7 @@ void updateAndRenderGameUI(GameState *gameState)
 			s32 popupMenuMaxHeight = UI::windowSize.y - (buttonRect.y + buttonRect.h);
 
 			UI::Panel menu = UI::Panel(irectXYWH(buttonRect.x - popupMenuPanelStyle->padding.left, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight), popupMenuPanelStyle);
-			for (s32 zoneIndex=0; zoneIndex < ZoneCount; zoneIndex++)
+			for (s32 zoneIndex=0; zoneIndex < ZoneTypeCount; zoneIndex++)
 			{
 				if (menu.addTextButton(getText(getZoneDef(zoneIndex).textAssetName),
 					buttonIsActive((gameState->actionMode == ActionMode_Zone) && (gameState->selectedZoneID == zoneIndex))))

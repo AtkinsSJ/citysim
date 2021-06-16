@@ -39,8 +39,8 @@ inline bool checkEntityMatchesType(Entity *entity)
 	// so here's a little function to check that.
 	switch (entity->type)
 	{
-		case EntityType_Building: return (typeid(T*) == typeid(Building*));
-		case EntityType_Fire: 	  return (typeid(T*) == typeid(Fire*));
+		case EntityType_Building: return (typeid(T) == typeid(struct Building));
+		case EntityType_Fire: 	  return (typeid(T) == typeid(struct Fire));
 		INVALID_DEFAULT_CASE;
 	}
 

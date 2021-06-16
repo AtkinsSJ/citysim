@@ -8,7 +8,7 @@ void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena)
 	s32 sectorCount = getSectorCount(&zoneLayer->sectors);
 
 	// NB: Element 0 is empty because tracking spots with no zone is not useful
-	for (s32 zoneType = FirstZoneType; zoneType < ZoneCount; zoneType++)
+	for (s32 zoneType = FirstZoneType; zoneType < ZoneTypeCount; zoneType++)
 	{
 		initBitArray(&zoneLayer->sectorsWithZones[zoneType],      gameArena, sectorCount);
 		initBitArray(&zoneLayer->sectorsWithEmptyZones[zoneType], gameArena, sectorCount);
@@ -33,7 +33,7 @@ void initZoneLayer(ZoneLayer *zoneLayer, City *city, MemoryArena *gameArena)
 
 inline ZoneDef getZoneDef(s32 zoneType)
 {
-	ASSERT(zoneType >= 0 && zoneType < ZoneCount);
+	ASSERT(zoneType >= 0 && zoneType < ZoneTypeCount);
 	return zoneDefs[zoneType];
 }
 
@@ -214,7 +214,7 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 		{
 			DEBUG_BLOCK_T("updateZoneLayer: zone contents", DCDT_Simulation);
 
-			for (s32 zoneType = FirstZoneType; zoneType < ZoneCount; zoneType++)
+			for (s32 zoneType = FirstZoneType; zoneType < ZoneTypeCount; zoneType++)
 			{
 				layer->sectorsWithZones     [zoneType].unsetBit(sectorIndex);
 				layer->sectorsWithEmptyZones[zoneType].unsetBit(sectorIndex);
@@ -362,7 +362,7 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 	}
 
 	// Sort the mostDesirableSectors array
-	for (s32 zoneType = FirstZoneType; zoneType < ZoneCount; zoneType++)
+	for (s32 zoneType = FirstZoneType; zoneType < ZoneTypeCount; zoneType++)
 	{
 		layer->mostDesirableSectors[zoneType].sort([&](s32 sectorIndexA, s32 sectorIndexB){
 			return layer->sectors[sectorIndexA].averageDesirability[zoneType] > layer->sectors[sectorIndexB].averageDesirability[zoneType];
@@ -441,7 +441,7 @@ void growSomeZoneBuildings(City *city)
 	ZoneLayer *layer = &city->zoneLayer;
 	Random *random = &globalAppState.gameState->gameRandom;
 
-	for (ZoneType zoneType = FirstZoneType; zoneType < ZoneCount; zoneType = (ZoneType)(zoneType + 1))
+	for (ZoneType zoneType = FirstZoneType; zoneType < ZoneTypeCount; zoneType = (ZoneType)(zoneType + 1))
 	{
 		if (layer->demand[zoneType] > 0)
 		{

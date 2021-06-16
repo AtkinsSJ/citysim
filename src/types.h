@@ -152,9 +152,9 @@ struct Maybe
 	bool isValid;
 	T value;
 
-	inline T orDefault(T default)
+	inline T orDefault(T defaultValue)
 	{
-		return isValid ? value : default;
+		return isValid ? value : defaultValue;
 	}
 };
 

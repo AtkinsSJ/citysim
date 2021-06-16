@@ -978,7 +978,7 @@ void updateBuilding(City *city, Building *building)
 
 	// Distance to road
 	// TODO: Replace with access to any transport types, instead of just road? Not sure what we want with that.
-	if ((def->flags & Building_RequiresTransportConnection) || (def->growsInZone))
+	if ((def->flags & Building_RequiresTransportConnection) || (def->growsInZone != Zone_None))
 	{
 		s32 distanceToRoad = s32Max;
 		// TODO: @Speed: We only actually need to check the boundary tiles, because they're guaranteed to be less than
@@ -993,7 +993,7 @@ void updateBuilding(City *city, Building *building)
 			}
 		}
 
-		if (def->growsInZone)
+		if (def->growsInZone != Zone_None)
 		{
 			// Zoned buildings inherit their zone's max distance to road.
 			if (distanceToRoad > getZoneDef(def->growsInZone).maximumDistanceToRoad)

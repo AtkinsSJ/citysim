@@ -248,7 +248,7 @@ bool compileShader(GL_ShaderProgram *glShader, String shaderName, Shader *shader
 	return result;
 }
 
-void loadShaderAttrib(GL_ShaderProgram *glShader, char *attribName, int *attribLocation)
+void loadShaderAttrib(GL_ShaderProgram *glShader, char const* attribName, int *attribLocation)
 {
 	DEBUG_FUNCTION_T(DCDT_Renderer);
 	
@@ -259,7 +259,7 @@ void loadShaderAttrib(GL_ShaderProgram *glShader, char *attribName, int *attribL
 	}
 }
 
-void loadShaderUniform(GL_ShaderProgram *glShader, char *uniformName, int *uniformLocation)
+void loadShaderUniform(GL_ShaderProgram *glShader, char const* uniformName, int *uniformLocation)
 {
 	DEBUG_FUNCTION_T(DCDT_Renderer);
 	

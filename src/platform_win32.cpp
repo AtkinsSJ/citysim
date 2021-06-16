@@ -2,7 +2,7 @@
 
 // platform_win32.cpp
 
-void openUrlUnsafe(char* url) {
+void openUrlUnsafe(char const* url) {
 	ShellExecute(null, "open", url, null, null, SW_SHOWNORMAL);
 }
 

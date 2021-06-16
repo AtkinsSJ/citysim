@@ -21,7 +21,7 @@ enum FileAccessMode
 	FileAccess_Write
 };
 
-char *fileAccessModeStrings[] = {
+char const* fileAccessModeStrings[] = {
 	"rb",
 	"wb"
 };

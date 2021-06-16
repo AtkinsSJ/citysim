@@ -2,7 +2,7 @@
 
 // platform_linux.cpp
 
-void openUrlUnsafe(char* url) {
+void openUrlUnsafe(char const* url) {
 	char buffer[1024];
 	ASSERT(strlen(url) < ArrayCount(buffer) - 16); //URL is too long!
 	snprintf(buffer, sizeof(buffer), "xdg-open '%s'", url);

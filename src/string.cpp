@@ -36,7 +36,7 @@ inline char & String::operator[](s32 index)
 	return this->chars[index];
 }
 
-void copyString(char *src, s32 srcLength, String *dest)
+void copyString(char const* src, s32 srcLength, String *dest)
 {
 	s32 copyLength = min(srcLength, dest->length);
 	copyMemory(src, dest->chars, copyLength);
@@ -57,7 +57,7 @@ inline String pushString(MemoryArena *arena, s32 length)
 	return s;
 }
 
-inline String pushString(MemoryArena *arena, char *src)
+inline String pushString(MemoryArena *arena, char const* src)
 {
 	s32 len = truncate32(strlen(src));
 
