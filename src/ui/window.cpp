@@ -75,6 +75,7 @@ namespace UI
 		}
 
 		Window newWindow = {};
+		newWindow.id = uiState.nextWindowID++;
 		newWindow.title = title;
 		newWindow.flags = flags;
 		newWindow.styleName = styleName;
@@ -245,18 +246,9 @@ namespace UI
 				// Modal windows can't be moved, they just auto-centre
 				window->area = centreWithin(validWindowArea, window->area.size);
 			}
-			else if (isActive && uiState.isDraggingWindow)
+			else if (isDragging((void*)window->id))
 			{
-				if (mouseButtonJustReleased(MouseButton_Left))
-				{
-					uiState.isDraggingWindow = false;
-				}
-				else
-				{
-					window->area.pos = uiState.windowDragWindowStartPos + mousePos - mouseClickStartPos;
-				}
-				
-				markMouseInputHandled();
+				window->area.pos = getDraggingObjectPos();
 			}
 			else if (isTooltip)
 			{
@@ -368,8 +360,14 @@ namespace UI
 						if (!isModal && contains(barArea, mousePos))
 						{
 							// If we're inside the title bar, start dragging!
-							uiState.isDraggingWindow = true;
-							uiState.windowDragWindowStartPos = window->area.pos;
+
+							// @Hack: We're pretending the window ID is a pointer, which does work, but could conflict
+							// with anything else that uses an ID instead of a pointer! (Or, I suppose, with real
+							// pointers if they're in low memory or we spawn a ridiculous number of windows.)
+							//
+							// The solution would be to either allocate windows individually, or store their order in
+							// an array that's separate abd just uses pointers.
+							startDragging((void*)window->id, window->area.pos);
 						}
 
 						// Make this the active window!

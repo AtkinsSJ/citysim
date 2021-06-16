@@ -35,7 +35,7 @@ BUG: Styles do not properly fall back to a default! (AKA, AssetRefs need thinkin
 Toast should draw in the Window RB because it belongs on top of everything
 -> Maybe it and the openDropDownList should both draw to a "on top of UI" buffer?
 
-Make windows use the standard UI dragging
+✔ Make windows use the standard UI dragging
 - While we're at it, make them draw the title bar and X button as a proper label and button
 
 Enforce that the UI camera goes from 0,0 to w,h

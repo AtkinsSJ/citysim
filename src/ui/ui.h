@@ -89,11 +89,10 @@ namespace UI
 		Queue<Toast> toasts;
 
 		// Window stuff
+		s32 nextWindowID;
 		ChunkedArray<Window> openWindows; // Order: index 0 is the top, then each one is below the previous
 		Set<s32> windowsToClose;
 		Set<s32> windowsToMakeActive;
-		bool isDraggingWindow;
-		V2I windowDragWindowStartPos;
 		bool isAPauseWindowOpen; // Do any open windows have the WindowFlags::Pause flag?
 	};
 	UIState uiState;

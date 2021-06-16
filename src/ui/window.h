@@ -59,6 +59,8 @@ namespace UI
 
 	struct Window
 	{
+		s64 id;
+
 		WindowTitle title;
 		u32 flags;
 
