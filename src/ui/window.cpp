@@ -24,27 +24,27 @@ namespace UI
 
 	WindowTitle WindowTitle::none()
 	{
-		WindowTitle result = {};
-		result.type = Type::None;
-
+		WindowTitle result = {
+			.type = Type::None,
+		};
 		return result;
 	}
 
 	WindowTitle WindowTitle::fromTextAsset(String assetID)
 	{
-		WindowTitle result = {};
-		result.type = Type::TextAsset;
-		result.assetID = assetID;
-
+		WindowTitle result = {
+			.type = Type::TextAsset,
+			.assetID = assetID,
+		};
 		return result;
 	}
 
 	WindowTitle WindowTitle::fromLambda(String (*lambda)())
 	{
-		WindowTitle result = {};
-		result.type = Type::Calculated;
-		result.calculateTitle = lambda;
-
+		WindowTitle result = {
+			.type = Type::Calculated,
+			.calculateTitle = lambda,
+		};
 		return result;
 	}
 
@@ -74,19 +74,17 @@ namespace UI
 			return;
 		}
 
-		Window newWindow = {};
-		newWindow.id = uiState.nextWindowID++;
-		newWindow.title = title;
-		newWindow.flags = flags;
-		newWindow.styleName = styleName;
-
-		newWindow.area = irectPosSize(position, v2i(width, height));
-		
-		newWindow.windowProc = windowProc;
-		newWindow.userData = userData;
-		newWindow.onClose = onClose;
-
-		newWindow.renderBuffer = getTemporaryRenderBuffer(newWindow.title.getString());
+		Window newWindow = {
+			.id = uiState.nextWindowID++,
+			.title = title,
+			.flags = flags,
+			.area = irectPosSize(position, v2i(width, height)),
+			.styleName = styleName,
+			.windowProc = windowProc,
+			.userData = userData,
+			.onClose = onClose,
+			.renderBuffer = getTemporaryRenderBuffer(newWindow.title.getString()),
+		};
 
 		bool createdWindowAlready = false;
 
