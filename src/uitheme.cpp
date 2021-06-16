@@ -160,8 +160,7 @@ namespace UI
 		PROP(titleBarColor,				Color);
 		PROP(titleBarColorInactive,		Color);
 		PROP(titleBarHeight,			Int);
-		PROP(titleColor,				Color);
-		PROP(titleFont,					Font);
+		PROP(titleLabelStyle,			Style);
 		PROP(trackThickness,			Int);
 		PROP(widgetAlignment,			Alignment);
 		PROP(width,						Int);
@@ -281,8 +280,7 @@ namespace UI
 			"titleBarColor"_s,
 			"titleBarColorInactive"_s,
 			"titleBarHeight"_s,
-			"titleColor"_s,
-			"titleFont"_s,
+			"titleLabelStyle"_s,
 		});
 
 		initHashTable(&styleTypesByName, 0.75f, 256);
@@ -777,9 +775,9 @@ void loadUITheme(Blob data, Asset *asset)
 						window->titleBarHeight = style->titleBarHeight.orDefault(16);
 						window->titleBarColor = style->titleBarColor.orDefault(color255(128, 128, 128, 255));
 						window->titleBarColorInactive = style->titleBarColorInactive.orDefault(window->titleBarColor);
-						window->titleFont = style->titleFont.orDefault(defaultFont);
-						window->titleColor = style->titleColor.orDefault(white);
 						window->titleBarButtonHoverColor = style->titleBarButtonHoverColor.orDefault(transparent);
+
+						window->titleLabelStyle = getAssetRef(AssetType_LabelStyle, style->titleLabelStyle.orDefault(defaultStyleName));
 
 						window->offsetFromMouse = style->offsetFromMouse.value;
 

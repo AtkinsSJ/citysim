@@ -105,3 +105,4 @@ bool hasPositiveArea(Rect2I rect);
 
 Rect2I centreWithin(Rect2I outer, V2I innerSize);
 V2I alignWithinRectangle(Rect2I bounds, u32 alignment, Padding padding = {});
+Rect2I alignWithinRectangle(Rect2I bounds, V2I size, u32 alignment, Padding padding = {});

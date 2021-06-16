@@ -328,15 +328,16 @@ namespace UI
 				String closeButtonString = "X"_s;
 				V4 closeButtonColorHover = windowStyle->titleBarButtonHoverColor;
 
-				BitmapFont *titleFont = getFont(&windowStyle->titleFont);
+				drawSingleRect(window->renderBuffer, barArea, renderer->shaderIds.untextured, barColor);
 				String titleString = window->title.getString();
 
-				drawSingleRect(window->renderBuffer, barArea, renderer->shaderIds.untextured, barColor);
-				V2I titleSize = calculateTextSize(titleFont, titleString, barArea.w);
-				Rect2I titleBounds = irectAligned(barArea.pos + v2i(0, barArea.h / 2), titleSize, ALIGN_V_CENTRE | ALIGN_LEFT);
-				drawText(window->renderBuffer, titleFont, titleString, titleBounds, ALIGN_V_CENTRE | ALIGN_LEFT, windowStyle->titleColor, renderer->shaderIds.text);
+				LabelStyle *titleStyle = getStyle<LabelStyle>(&windowStyle->titleLabelStyle);
+				// TODO: Take close-button size into account
+				V2I titleSize = calculateLabelSize(titleString, titleStyle, barArea.w, false);
+				putLabel(titleString, alignWithinRectangle(barArea, titleSize, titleStyle->textAlignment), titleStyle, window->renderBuffer);
 
 				// TODO: Replace this with an actual Button?
+				auto titleFont = getFont(&titleStyle->font);
 				if (hoveringOverCloseButton
 				 && (!isMouseInputHandled() || windowIndex == 0))
 				{
@@ -344,7 +345,7 @@ namespace UI
 				}
 				V2I closeTextSize = calculateTextSize(titleFont, closeButtonString);
 				Rect2I closeTextBounds = irectAligned(centreOfI(closeButtonRect), closeTextSize, ALIGN_CENTRE);
-				drawText(window->renderBuffer, titleFont, closeButtonString, closeTextBounds, ALIGN_CENTRE, windowStyle->titleColor, renderer->shaderIds.text);
+				drawText(window->renderBuffer, titleFont, closeButtonString, closeTextBounds, ALIGN_CENTRE, titleStyle->textColor, renderer->shaderIds.text);
 
 				if ((!isMouseInputHandled() || windowIndex == 0)
 					 && contains(wholeWindowArea, mousePos)

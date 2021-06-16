@@ -239,11 +239,10 @@ namespace UI
 	{
 		String name;
 		
+		AssetRef titleLabelStyle;
 		s32 titleBarHeight;
 		V4 titleBarColor;
 		V4 titleBarColorInactive;
-		AssetRef titleFont;
-		V4 titleColor;
 		V4 titleBarButtonHoverColor;
 
 		V2I offsetFromMouse;
@@ -325,12 +324,12 @@ namespace UI
 		Maybe<u32> textAlignment;
 		Maybe<V4> textColor;
 		
+		// Window
+		Maybe<String> titleLabelStyle;
 		Maybe<V4> titleBarButtonHoverColor;
 		Maybe<V4> titleBarColor;
 		Maybe<V4> titleBarColorInactive;
 		Maybe<s32> titleBarHeight;
-		Maybe<V4> titleColor;
-		Maybe<AssetRef> titleFont;
 
 		// Checkbox specific
 		Maybe<V2I> checkSize;

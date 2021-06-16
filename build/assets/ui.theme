@@ -175,9 +175,15 @@ padding           6
 showCaret         true
 caretFlashCycleDuration 1.0
 
+:Label windowTitle
+padding 2 8
+font normal
+textColor 255 255 255 255
+textAlignment V_CENTRE LEFT
+background none
+
 :Window default
-titleFont                normal
-titleColor               255 255 255 255
+titleLabelStyle          windowTitle
 titleBarHeight           32
 titleBarColor             96 196  96 255
 titleBarColorInactive     96 128  96 255

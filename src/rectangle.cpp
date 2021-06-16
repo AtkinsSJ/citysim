@@ -522,3 +522,9 @@ inline V2I alignWithinRectangle(Rect2I bounds, u32 alignment, Padding padding)
 
 	return result;
 }
+
+Rect2I alignWithinRectangle(Rect2I bounds, V2I size, u32 alignment, Padding padding)
+{
+	V2I origin = alignWithinRectangle(bounds, alignment, padding);
+	return irectAligned(origin, size, alignment);
+}
