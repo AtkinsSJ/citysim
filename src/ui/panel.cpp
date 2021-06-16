@@ -172,6 +172,26 @@ namespace UI
 		completeWidget(widgetBounds.size);
 	}
 
+	void Panel::addLabel(String text, String styleName)
+	{
+		DEBUG_FUNCTION_T(DCDT_UI);
+		
+		prepareForWidgets();
+
+		LabelStyle *widgetStyle = getStyle<LabelStyle>(styleName, &this->style->labelStyle);
+
+		Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
+			return calculateLabelSize(text, widgetStyle, space.w, fillWidth);
+		});
+
+		if (!hideWidgets)
+		{
+			putLabel(text, widgetBounds, widgetStyle, renderBuffer);
+		}
+
+		completeWidget(widgetBounds.size);
+	}
+
 	void Panel::addRadioButton(s32 *currentValue, s32 myValue, String styleName)
 	{
 		DEBUG_FUNCTION_T(DCDT_UI);
@@ -201,34 +221,34 @@ namespace UI
 
 		RadioButtonStyle *radioButtonStyle = getStyle<RadioButtonStyle>(styleName, &style->radioButtonStyle);
 		LabelStyle       *labelStyle       = getStyle<LabelStyle>(labelStyleName, &style->labelStyle);
-
-		Rect2I space = getCurrentLayoutPosition();
+		
 		V2I radioButtonSize = calculateRadioButtonSize(radioButtonStyle);
-		s32 textWidth = space.w - (radioButtonSize.x + style->contentPadding);
-		bool fillWidth = ((widgetAlignment & ALIGN_H) == ALIGN_EXPAND_H);
 
-		// Calculate the overall size
-		// This means we have to loop through everything twice, but what can you do
-		V2I widgetSize = v2i(0, 0);
-		for (s32 optionIndex = 0; optionIndex < listOptions->count; optionIndex++)
-		{
-			String optionText = getDisplayName(listOptions->get(optionIndex));
-			V2I labelSize = calculateLabelSize(optionText, labelStyle, textWidth, fillWidth);
+		Rect2I buttonGroupBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
+			s32 textWidth = space.w - (radioButtonSize.x + style->contentPadding);
 
-			widgetSize.x = max(widgetSize.x, radioButtonSize.x + style->contentPadding + labelSize.x);
+			// Calculate the overall size
+			// This means addRadioButtonGroup() has to loop through everything twice, but what can you do
+			V2I widgetSize = v2i(0, 0);
+			for (s32 optionIndex = 0; optionIndex < listOptions->count; optionIndex++)
+			{
+				String optionText = getDisplayName(listOptions->get(optionIndex));
+				V2I labelSize = calculateLabelSize(optionText, labelStyle, textWidth, fillWidth);
 
-			if (optionIndex > 0) widgetSize.y += style->contentPadding;
-			widgetSize.y += max(labelSize.y, radioButtonSize.y);
-		}
+				widgetSize.x = max(widgetSize.x, radioButtonSize.x + style->contentPadding + labelSize.x);
 
-		ASSERT(widgetSize.x <= space.w);
+				if (optionIndex > 0) widgetSize.y += style->contentPadding;
+				widgetSize.y += max(labelSize.y, radioButtonSize.y);
+			}
 
-		// We're piggy-backing off addBlank() to do our layout positioning
-		// That means we don't call completeWidget(), as addBlank() already does it
-		Rect2I buttonGroupBounds = addBlank(widgetSize.x, widgetSize.y);
+			ASSERT(widgetSize.x <= space.w);
+			return widgetSize;
+		});
+
 		V2I radioButtonOrigin = alignWithinRectangle(buttonGroupBounds, ALIGN_TOP | ALIGN_LEFT);
 		Rect2I radioButtonBounds = irectAligned(radioButtonOrigin, radioButtonSize, ALIGN_TOP | ALIGN_LEFT);
-		textWidth = widgetSize.x - (radioButtonSize.x + style->contentPadding);
+		s32 textWidth = buttonGroupBounds.w - (radioButtonSize.x + style->contentPadding);
+		bool fillWidth = ((widgetAlignment & ALIGN_H) == ALIGN_EXPAND_H);
 
 		for (s32 optionIndex = 0; optionIndex < listOptions->count; optionIndex++)
 		{
@@ -252,9 +272,9 @@ namespace UI
 			}
 
 			radioButtonBounds.y = labelBounds.y + labelBounds.h + style->contentPadding;
-
-			widgetSize.y += labelBounds.h + style->contentPadding;
 		}
+
+		completeWidget(buttonGroupBounds.size);
 	}
 
 	template <typename T>
@@ -291,9 +311,7 @@ namespace UI
 			if (size.y == -1) size.y = sprite->pixelHeight;
 		}
 
-		Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I, bool) {
-			return size;
-		});
+		Rect2I widgetBounds = calculateWidgetBounds(size);
 
 		if (sprite != null)
 		{
@@ -301,26 +319,6 @@ namespace UI
 			{
 				drawSingleSprite(renderBuffer, sprite, rect2(widgetBounds), renderer->shaderIds.pixelArt, makeWhite());
 			}
-		}
-
-		completeWidget(widgetBounds.size);
-	}
-
-	void Panel::addLabel(String text, String styleName)
-	{
-		DEBUG_FUNCTION_T(DCDT_UI);
-		
-		prepareForWidgets();
-
-		LabelStyle *widgetStyle = getStyle<LabelStyle>(styleName, &this->style->labelStyle);
-
-		Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
-			return calculateLabelSize(text, widgetStyle, space.w, fillWidth);
-		});
-
-		if (!hideWidgets)
-		{
-			putLabel(text, widgetBounds, widgetStyle, renderBuffer);
 		}
 
 		completeWidget(widgetBounds.size);
@@ -356,13 +354,9 @@ namespace UI
 
 		prepareForWidgets();
 
-		Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I, bool) {
-			return v2i(width, height);
-		});
+		Rect2I widgetBounds = calculateWidgetBounds(v2i(width, height));
 
 		completeWidget(widgetBounds.size);
-
-		// drawSingleRect(renderBuffer != null ? renderBuffer : &renderer->uiBuffer, widgetBounds, renderer->shaderIds.untextured, color255(0, 255, 0, 255));
 
 		return widgetBounds;
 	}
@@ -641,49 +635,43 @@ namespace UI
 			hasAddedWidgets = true;
 		}
 	}
-
-	Rect2I Panel::getCurrentLayoutPosition()
+	
+	template <typename Func>
+	Rect2I Panel::calculateWidgetBounds(Func calculateSize)
 	{
-		Rect2I result = {};
+		// Calculate the available space
+		Rect2I space = {};
 
-		result.x = contentArea.x + currentLeft;
-		result.w = currentRight - currentLeft;
+		space.x = contentArea.x + currentLeft;
+		space.w = currentRight - currentLeft;
 
 		if (layoutBottomToTop)
 		{
-			result.y = contentArea.y + currentBottom;
+			space.y = contentArea.y + currentBottom;
 
 			if (vScrollbar != null)
 			{
-				result.y += (vScrollbar->contentSize - getScrollbarContentOffset(vScrollbar, bounds.h) - bounds.h);
+				space.y += (vScrollbar->contentSize - getScrollbarContentOffset(vScrollbar, bounds.h) - bounds.h);
 			}
 		}
 		else
 		{
-			result.y = contentArea.y + currentTop;
+			space.y = contentArea.y + currentTop;
 			
 			if (vScrollbar != null)
 			{
-				result.y -= getScrollbarContentOffset(vScrollbar, bounds.h);
+				space.y -= getScrollbarContentOffset(vScrollbar, bounds.h);
 			}
 		}
 
 		// Adjust if we're in a scrolling area
 		if (hScrollbar != null)
 		{
-			result.w = s16Max; // Not s32 because then we'd have overflow issues. s16 should be plenty large enough.
-			result.x = result.x - getScrollbarContentOffset(hScrollbar, bounds.w);
+			space.w = s16Max; // Not s32 because then we'd have overflow issues. s16 should be plenty large enough.
+			space.x = space.x - getScrollbarContentOffset(hScrollbar, bounds.w);
 		}
+		ASSERT(space.w > 0);
 
-		ASSERT(result.w > 0);
-
-		return result;
-	}
-	
-	template <typename Func>
-	Rect2I Panel::calculateWidgetBounds(Func calculateSize)
-	{
-		Rect2I space = getCurrentLayoutPosition();
 		bool fillWidth = ((widgetAlignment & ALIGN_H) == ALIGN_EXPAND_H);
 		
 		V2I widgetSize = calculateSize(space, fillWidth);
@@ -692,6 +680,11 @@ namespace UI
 		Rect2I widgetBounds = irectAligned(widgetOrigin, widgetSize, widgetAlignment);
 
 		return widgetBounds;
+	}
+
+	Rect2I Panel::calculateWidgetBounds(V2I size)
+	{
+		return calculateWidgetBounds([&](Rect2I, bool) { return size; });
 	}
 
 	void Panel::completeWidget(V2I widgetSize)

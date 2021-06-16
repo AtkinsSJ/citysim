@@ -89,7 +89,7 @@ textColor         255 192 192 255
 :Label small
 font              small
 textColor         255 255 255 255
-#padding 4 8 12 16
+padding 2
 #textAlignment H_CENTRE TOP
 #background             ninepatch btn_white 24 24 24 255
 #background color 255 0 255 255

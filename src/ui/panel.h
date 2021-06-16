@@ -48,10 +48,13 @@ namespace UI
 		// Add stuff to the panel
 		bool addTextButton(String text, ButtonState state = Button_Normal, String styleName = nullString);
 		bool addImageButton(Sprite *sprite, ButtonState state = Button_Normal, String styleName = nullString);
+
 		void addCheckbox(bool *checked, String styleName = nullString);
 
 		template <typename T>
 		void addDropDownList(Array<T> *listOptions, s32 *currentSelection, String (*getDisplayName)(T *data), String styleName = nullString);
+
+		void addLabel(String text, String styleName = nullString);
 
 		void addRadioButton(s32 *currentValue, s32 myValue, String styleName = nullString);
 		template <typename T>
@@ -61,8 +64,9 @@ namespace UI
 		void addSlider(T *currentValue, T minValue, T maxValue, String styleName = nullString);
 
 		void addSprite(Sprite *sprite, s32 width = -1, s32 height = -1);
-		void addLabel(String text, String styleName = nullString);
+
 		bool addTextInput(TextInput *textInput, String styleName = nullString);
+
 		// Add a blank rectangle as if it were a widget. (So, leaving padding between
 		// it and other widgets.) The bounds are returned so you can draw your own
 		// contents.
@@ -81,9 +85,9 @@ namespace UI
 
 		// "Private"
 		void prepareForWidgets();
-		Rect2I getCurrentLayoutPosition();
 		template <typename Func>
 		Rect2I calculateWidgetBounds(Func calculateSize);
+		Rect2I calculateWidgetBounds(V2I size);
 		void completeWidget(V2I widgetSize);
 		PanelStyle *getPanelStyle(String styleName);
 

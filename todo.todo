@@ -18,9 +18,6 @@ Notes for searching:
 
 ------------------------------------------------
 
-Use Panel::calculateWidgetBounds() in addRadioButtonGroup()
-- It's a bit complicated so I left it out of the first pass.
-
 Settings window that lets you modify them
 	(Instead of the Settings Screen we have now. A window makes more sense.)
 - Line things up nicely. At the moment our music and sound volume sliders are different sizes because they just fill the available space, which looks bad and is bad UX too.
