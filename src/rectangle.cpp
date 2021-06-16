@@ -194,31 +194,6 @@ inline bool hasPositiveArea(Rect2 rect)
 	return (rect.w > 0 && rect.h > 0);
 }
 
-inline V2 alignWithinRectangle(Rect2 bounds, u32 alignment, f32 padding)
-{
-	V2 result;
-
-	switch (alignment & ALIGN_H)
-	{
-		case ALIGN_H_CENTRE:  result.x = bounds.x + bounds.w / 2.0f;     break;
-		case ALIGN_RIGHT:     result.x = bounds.x + bounds.w - padding;  break;
-		case ALIGN_LEFT:      // Left is default
-		case ALIGN_EXPAND_H:  // Meaningless here so default to left
-		default:              result.x = bounds.x + padding;             break;
-	}
-
-	switch (alignment & ALIGN_V)
-	{
-		case ALIGN_V_CENTRE:  result.y = bounds.y + bounds.h / 2.0f;     break;
-		case ALIGN_BOTTOM:    result.y = bounds.y + bounds.h - padding;  break;
-		case ALIGN_TOP:       // Top is default
-		case ALIGN_EXPAND_V:  // Meaningless here so default to top
-		default:              result.y = bounds.y + padding;             break;
-	}
-
-	return result;
-}
-
 /**********************************************
 	Rect2I
  **********************************************/
@@ -498,33 +473,27 @@ inline Rect2I centreWithin(Rect2I outer, V2I innerSize)
 	return result;
 }
 
-inline V2I alignWithinRectangle(Rect2I bounds, u32 alignment, Padding padding)
+Rect2I alignWithinRectangle(Rect2I bounds, V2I size, u32 alignment, Padding padding)
 {
-	V2I result;
+	V2I origin;
 
 	switch (alignment & ALIGN_H)
 	{
-		case ALIGN_H_CENTRE:  result.x = bounds.x + (bounds.w / 2);				break;
-		case ALIGN_RIGHT:     result.x = bounds.x + bounds.w - padding.right;	break;
+		case ALIGN_H_CENTRE:  origin.x = bounds.x + (bounds.w / 2);				break;
+		case ALIGN_RIGHT:     origin.x = bounds.x + bounds.w - padding.right;	break;
 		case ALIGN_LEFT:      // Left is default
 		case ALIGN_EXPAND_H:  // Meaningless here so default to left
-		default:              result.x = bounds.x + padding.left;				break;
+		default:              origin.x = bounds.x + padding.left;				break;
 	}
 
 	switch (alignment & ALIGN_V)
 	{
-		case ALIGN_V_CENTRE:  result.y = bounds.y + (bounds.h / 2);				break;
-		case ALIGN_BOTTOM:    result.y = bounds.y + bounds.h - padding.bottom;	break;
+		case ALIGN_V_CENTRE:  origin.y = bounds.y + (bounds.h / 2);				break;
+		case ALIGN_BOTTOM:    origin.y = bounds.y + bounds.h - padding.bottom;	break;
 		case ALIGN_TOP:       // Top is default
 		case ALIGN_EXPAND_V:  // Meaningless here so default to top
-		default:              result.y = bounds.y + padding.top;				break;
+		default:              origin.y = bounds.y + padding.top;				break;
 	}
 
-	return result;
-}
-
-Rect2I alignWithinRectangle(Rect2I bounds, V2I size, u32 alignment, Padding padding)
-{
-	V2I origin = alignWithinRectangle(bounds, alignment, padding);
 	return irectAligned(origin, size, alignment);
 }

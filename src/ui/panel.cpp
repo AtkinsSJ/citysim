@@ -245,8 +245,7 @@ namespace UI
 			return widgetSize;
 		});
 
-		V2I radioButtonOrigin = alignWithinRectangle(buttonGroupBounds, ALIGN_TOP | ALIGN_LEFT);
-		Rect2I radioButtonBounds = irectAligned(radioButtonOrigin, radioButtonSize, ALIGN_TOP | ALIGN_LEFT);
+		Rect2I radioButtonBounds = alignWithinRectangle(buttonGroupBounds, radioButtonSize, ALIGN_TOP | ALIGN_LEFT);
 		s32 textWidth = buttonGroupBounds.w - (radioButtonSize.x + style->contentPadding);
 		bool fillWidth = ((widgetAlignment & ALIGN_H) == ALIGN_EXPAND_H);
 
@@ -676,8 +675,7 @@ namespace UI
 		
 		V2I widgetSize = calculateSize(space, fillWidth);
 
-		V2I widgetOrigin = alignWithinRectangle(space, widgetAlignment);
-		Rect2I widgetBounds = irectAligned(widgetOrigin, widgetSize, widgetAlignment);
+		Rect2I widgetBounds = alignWithinRectangle(space, widgetSize, widgetAlignment);
 
 		return widgetBounds;
 	}

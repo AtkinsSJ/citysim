@@ -44,8 +44,6 @@ V2 centreOf(Rect2 rect);
 f32 areaOf(Rect2 rect); // Always positive, even if the rect has negative dimensions
 bool hasPositiveArea(Rect2 rect);
 
-V2 alignWithinRectangle(Rect2 bounds, u32 alignment, f32 padding=0);
-
 struct Rect2I
 {
 	union
@@ -104,5 +102,4 @@ s32 areaOf(Rect2I rect); // Always positive, even if the rect has negative dimen
 bool hasPositiveArea(Rect2I rect);
 
 Rect2I centreWithin(Rect2I outer, V2I innerSize);
-V2I alignWithinRectangle(Rect2I bounds, u32 alignment, Padding padding = {});
 Rect2I alignWithinRectangle(Rect2I bounds, V2I size, u32 alignment, Padding padding = {});

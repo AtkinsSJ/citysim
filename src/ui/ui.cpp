@@ -321,16 +321,14 @@ namespace UI
 		if (style->startIcon.type != Drawable_None)
 		{
 			V2I startIconSize = style->startIcon.getSize();
-			V2I startIconOrigin = alignWithinRectangle(bounds, style->startIconAlignment, style->padding);
-			Rect2I startIconBounds = irectAligned(startIconOrigin, startIconSize, style->startIconAlignment);
+			Rect2I startIconBounds = alignWithinRectangle(bounds, startIconSize, style->startIconAlignment, style->padding);
 
 			Drawable(&style->startIcon).draw(renderBuffer, startIconBounds);
 		}
 		if (style->endIcon.type != Drawable_None)
 		{
 			V2I endIconSize = style->endIcon.getSize();
-			V2I endIconOrigin = alignWithinRectangle(bounds, style->endIconAlignment, style->padding);
-			Rect2I endIconBounds = irectAligned(endIconOrigin, endIconSize, style->endIconAlignment);
+			Rect2I endIconBounds = alignWithinRectangle(bounds, endIconSize, style->endIconAlignment, style->padding);
 
 			Drawable(&style->endIcon).draw(renderBuffer, endIconBounds);
 		}
