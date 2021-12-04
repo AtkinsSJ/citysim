@@ -13,13 +13,8 @@
 #endif
 
 
-#ifdef __linux__
-#	include <SDL2/SDL.h>
-#	include <SDL2/SDL_image.h>
-#else // Windows
-#	include <SDL.h>
-#	include <SDL_image.h>
-#endif
+#include <SDL.h>
+#include <SDL_image.h>
 
 enum AppStatus
 {
