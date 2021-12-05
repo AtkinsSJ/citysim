@@ -58,7 +58,9 @@ struct MemoryArena
 #define bootstrapArena(containerType, containerName, arenaVarName, ...)               \
 {                                                                                     \
 	MemoryArena bootstrap;                                                            \
-	bool bootstrapSucceeded = initMemoryArena(&bootstrap, #arenaVarName##_s, sizeof(containerType), __VA_ARGS__);     \
+	/* Hack: Detect if the block-size was provided, and default to MB(1) */           \
+	smm minimumBlockSize =  (__VA_ARGS__ - 0) > 0 ? __VA_ARGS__ : MB(1);              \
+	bool bootstrapSucceeded = initMemoryArena(&bootstrap, #arenaVarName##_s, sizeof(containerType), minimumBlockSize);     \
 	ASSERT(bootstrapSucceeded);                                                       \
 	containerName = allocateStruct<containerType>(&bootstrap);                        \
 	containerName->arenaVarName = bootstrap;                                          \

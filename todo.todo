@@ -18,6 +18,23 @@ Notes for searching:
 
 ------------------------------------------------
 
+Compiling on Linux!
+- Get things to build
+- Implement platform_linux stuff
+
+OSS?
+- Remove unlicensed assets, which we're not using anyway
+- Add a README
+- Add licenses to all files
+- GitHub sponsors info
+
+Set-up a non-unity build
+
+
+
+
+------------------------------------------------
+
 Settings window that lets you modify them
 	(Instead of the Settings Screen we have now. A window makes more sense.)
 - Line things up nicely. At the moment our music and sound volume sliders are different sizes because they just fill the available space, which looks bad and is bad UX too.

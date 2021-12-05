@@ -34,10 +34,14 @@ struct DirectoryListingHandle
 
 	union
 	{
+#ifdef __linux__
+		int unused;
+#else
 		struct
 		{
 			HANDLE hFile;
 		} windows;
+#endif
 	};
 };
 
@@ -63,10 +67,14 @@ struct DirectoryChangeWatchingHandle
 
 	union
 	{
+#ifdef __linux__
+		int unused;
+#else
 		struct
 		{
 			HANDLE handle;
 		} windows;
+#endif
 	};
 };
 

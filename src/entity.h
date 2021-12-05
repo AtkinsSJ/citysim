@@ -35,6 +35,10 @@ inline T* getEntityData(Entity *entity)
 template <typename T>
 inline bool checkEntityMatchesType(Entity *entity)
 {
+	// TODO: Re-enable this. We currently can't call it because the structs (Building, Fire) aren't included yet.
+	return true;
+
+/*
 	// I'm expecting typos where the EntityType and data pointer provided or requested don't match,
 	// so here's a little function to check that.
 	switch (entity->type)
@@ -45,4 +49,5 @@ inline bool checkEntityMatchesType(Entity *entity)
 	}
 
 	return false;
+*/
 }
