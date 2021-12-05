@@ -144,7 +144,6 @@ struct V3
 		struct
 		{
 			V2 xy;
-			f32 z;
 		};
 	};
 };
@@ -208,17 +207,6 @@ struct V4
 	{
 		struct
 		{
-			V3 xyz;
-			f32 w;
-		};
-		struct
-		{
-			V2 xy;
-			f32 z;
-			f32 w;
-		};
-		struct
-		{
 			f32 x;
 			f32 y;
 			f32 z;
@@ -230,6 +218,14 @@ struct V4
 			f32 g;
 			f32 b;
 			f32 a;
+		};
+		struct
+		{
+			V3 xyz;
+		};
+		struct
+		{
+			V2 xy;
 		};
 	};
 };
