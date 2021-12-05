@@ -12,9 +12,13 @@
 	#define SDL_ASSERT_LEVEL 1
 #endif
 
-
-#include <SDL.h>
-#include <SDL_image.h>
+#ifdef __linux__
+#      include <SDL2/SDL.h>
+#      include <SDL2/SDL_image.h>
+#else // Windows
+#      include <SDL.h>
+#      include <SDL_image.h>
+#endif
 
 enum AppStatus
 {
