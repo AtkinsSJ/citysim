@@ -532,6 +532,8 @@ void unloadAsset(Asset *asset)
 				asset->texture.surface = null;
 			}
 		} break;
+
+		default: break;
 	}
 
 	if (!asset->children.isEmpty())

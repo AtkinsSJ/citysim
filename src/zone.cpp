@@ -249,6 +249,8 @@ void updateZoneLayer(City *city, ZoneLayer *layer)
 							sector->zoneSectorFlags |= ZoneSector_HasIndZones;
 							if (!isFilled) sector->zoneSectorFlags |= ZoneSector_HasEmptyIndZones;
 						} break;
+
+						INVALID_DEFAULT_CASE;
 					}
 				}
 			}

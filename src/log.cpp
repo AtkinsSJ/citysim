@@ -59,6 +59,10 @@ void customLogOutputFunction(void *userdata, int category, SDL_LogPriority prior
 		case SDL_LOG_PRIORITY_CRITICAL:
 			style = CLS_Error;
 			break;
+
+		default:
+			style = CLS_Default;
+			break;
 	}
 
 	consoleWriteLine(makeString(message), style);

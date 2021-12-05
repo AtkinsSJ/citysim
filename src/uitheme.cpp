@@ -96,6 +96,8 @@ namespace UI
 				result.x = theSprite->pixelWidth;
 				result.y = theSprite->pixelHeight;
 			} break;
+
+			default: break;
 		}
 
 		return result;
@@ -783,6 +785,8 @@ void loadUITheme(Blob data, Asset *asset)
 
 						window->panelStyle = getAssetRef(AssetType_PanelStyle, style->panelStyle.orDefault(defaultStyleName));
 					} break;
+
+					INVALID_DEFAULT_CASE;
 				}
 			}
 		}

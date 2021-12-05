@@ -83,6 +83,8 @@ void _assignBuildingCategories(BuildingCatalogue *catalogue, BuildingDef *def)
 			catalogue->iGrowableBuildings.append(def);
 			catalogue->maxIBuildingDim = max(catalogue->maxIBuildingDim, max(def->width, def->height));
 		} break;
+
+		INVALID_DEFAULT_CASE;
 	}
 
 	if (def->isIntersection)

@@ -83,7 +83,7 @@ namespace UI
 			.windowProc = windowProc,
 			.userData = userData,
 			.onClose = onClose,
-			.renderBuffer = getTemporaryRenderBuffer(newWindow.title.getString()),
+			.renderBuffer = getTemporaryRenderBuffer(title.getString()),
 		};
 
 		bool createdWindowAlready = false;

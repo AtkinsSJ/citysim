@@ -12,7 +12,7 @@ void initSectorGrid(SectorGrid<Sector> *grid, MemoryArena *arena, s32 cityWidth,
 	grid->nextSectorUpdateIndex = 0;
 	grid->sectorsToUpdatePerTick = sectorsToUpdatePerTick;
 
-	grid->sectors = allocateArray<Sector>(arena, grid->sectorsX * grid->sectorsY, TRUE);
+	grid->sectors = allocateArray<Sector>(arena, grid->sectorsX * grid->sectorsY, true);
 
 	s32 remainderWidth  = cityWidth  % sectorSize;
 	s32 remainderHeight = cityHeight % sectorSize;

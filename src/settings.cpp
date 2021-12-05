@@ -59,14 +59,14 @@ void initSettings()
 	settings->userDataPath = makeString(SDL_GetPrefPath("Baffled Badger Games", "CitySim"));
 	settings->userSettingsFilename = "settings.cnf"_s;
 
-#define REGISTER_SETTING(settingName, type, ...) registerSetting(makeString(#settingName, true), offsetof(SettingsState, settingName), type, makeString("setting_" #settingName), __VA_ARGS__)
+#define REGISTER_SETTING(settingName, type, dataA, dataB) registerSetting(makeString(#settingName, true), offsetof(SettingsState, settingName), type, makeString("setting_" #settingName), dataA, dataB)
 
 	// NB: The settings will appear in this order in the settings window
-	REGISTER_SETTING(windowed,		SettingType::Bool);
-	REGISTER_SETTING(resolution,	SettingType::V2I);
-	REGISTER_SETTING(locale,		SettingType::Enum, &localeData);
-	REGISTER_SETTING(musicVolume,	SettingType::Percent);
-	REGISTER_SETTING(soundVolume,	SettingType::Percent);
+	REGISTER_SETTING(windowed,		SettingType::Bool, null, null);
+	REGISTER_SETTING(resolution,	SettingType::V2I, null, null);
+	REGISTER_SETTING(locale,		SettingType::Enum, &localeData, null);
+	REGISTER_SETTING(musicVolume,	SettingType::Percent, null, null);
+	REGISTER_SETTING(soundVolume,	SettingType::Percent, null, null);
 	REGISTER_SETTING(widgetCount,	SettingType::S32_Range, (void*)5, (void*)15);
 
 #undef REGISTER_SETTING

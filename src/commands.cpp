@@ -282,17 +282,17 @@ void initCommands(Console *console)
 	console->commands = allocateFixedSizeHashTable<Command>(&globalAppState.systemArena, commandCapacity);
 
 	// NB: a max-arguments value of -1 means "no maximum"
-#define AddCommand(name, ...) console->commands.put(#name##_h, Command(#name##_h, &cmd_##name, __VA_ARGS__))
-	AddCommand(help);
-	AddCommand(debug_tools);
-	AddCommand(exit);
+#define AddCommand(name, minArgs, maxArgs) console->commands.put(#name##_h, Command(#name##_h, &cmd_##name, minArgs, maxArgs))
+	AddCommand(help, 0, 0);
+	AddCommand(debug_tools, 0, 0);
+	AddCommand(exit, 0, 0);
 	AddCommand(funds, 1, 1);
-	AddCommand(generate);
+	AddCommand(generate, 0, 0);
 	AddCommand(hello, 0, 1);
-	AddCommand(map_info);
-	AddCommand(mark_all_dirty);
-	AddCommand(reload_assets);
-	AddCommand(reload_settings);
+	AddCommand(map_info, 0, 0);
+	AddCommand(mark_all_dirty, 0, 0);
+	AddCommand(reload_assets, 0, 0);
+	AddCommand(reload_settings, 0, 0);
 	AddCommand(show_layer, 0, 1);
 	AddCommand(speed, 0, 1);
 	AddCommand(toast, 1, -1);

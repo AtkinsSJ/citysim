@@ -869,8 +869,12 @@ AppStatus updateAndRenderGame(GameState *gameState, f32 deltaTime)
 									drawSingleRect(&renderer->worldOverlayBuffer, dragResult.dragRect, renderer->shaderIds.untextured, color255(255, 64, 64, 128));
 								}
 							} break;
+
+							default: break;
 						}
 					} break;
+
+					INVALID_DEFAULT_CASE;
 				}
 			} break;
 
@@ -908,6 +912,9 @@ AppStatus updateAndRenderGame(GameState *gameState, f32 deltaTime)
 							drawSingleRect(&renderer->worldOverlayBuffer, dragResult.dragRect, renderer->shaderIds.untextured, color255(255, 64, 64, 128));
 						}
 					} break;
+
+
+					default: break;
 				}
 			} break;
 
@@ -946,6 +953,9 @@ AppStatus updateAndRenderGame(GameState *gameState, f32 deltaTime)
 							drawSingleRect(&renderer->worldOverlayBuffer, dragResult.dragRect, renderer->shaderIds.untextured, color255(255, 64, 64, 128));
 						}
 					} break;
+
+
+					default: break;
 				}
 			} break;
 
@@ -996,6 +1006,8 @@ AppStatus updateAndRenderGame(GameState *gameState, f32 deltaTime)
 					}
 				}
 			} break;
+
+			INVALID_DEFAULT_CASE;
 		}
 	}
 
