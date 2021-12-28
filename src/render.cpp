@@ -522,8 +522,7 @@ void addBeginScissor(RenderBuffer *buffer, Rect2I bounds)
 void addEndScissor(RenderBuffer *buffer)
 {
 	ASSERT(buffer->scissorCount > 0);
-	RenderItem_EndScissor *scissor = appendRenderItem<RenderItem_EndScissor>(buffer, RenderItemType_EndScissor);
-	scissor = scissor; // Unused
+	[[maybe_unused]] RenderItem_EndScissor *scissor = appendRenderItem<RenderItem_EndScissor>(buffer, RenderItemType_EndScissor);
 	buffer->scissorCount--;
 }
 

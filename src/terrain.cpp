@@ -128,7 +128,6 @@ void loadTerrainDefs(Blob data, Asset *asset)
 			firstWord.chars++;
 			firstWord.length--;
 
-			String defType = firstWord;
 			if (equals(firstWord, "Terrain"_s))
 			{
 				String name = readToken(&reader);

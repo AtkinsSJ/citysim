@@ -629,8 +629,7 @@ void GL_render(Array<RenderBuffer *> buffers)
 				case RenderItemType_EndScissor:
 				{
 					DEBUG_BLOCK_T("render: RenderItemType_EndScissor", DCDT_Renderer);
-					RenderItem_EndScissor *header = readRenderItem<RenderItem_EndScissor>(renderBufferChunk, &pos);
-					header = header; // Unused
+					[[maybe_unused]] RenderItem_EndScissor *header = readRenderItem<RenderItem_EndScissor>(renderBufferChunk, &pos);
 
 					// NB: We MUST flush here, otherwise we could render some things after the scissor is removed!
 					// (This bug took me nearly half an hour to figure out.)

@@ -41,10 +41,8 @@ inline void logCritical(String format, std::initializer_list<String> args)
 static SDL_LogOutputFunction defaultLogger;
 static void *defaultLoggerUserData;
 
-void customLogOutputFunction(void *userdata, int category, SDL_LogPriority priority, const char *message)
+void customLogOutputFunction(void * /*userdata*/, int category, SDL_LogPriority priority, const char *message)
 {
-	userdata = userdata; // To shut up the "unreferenced formal parameter" compiler warning.
-	 
 	defaultLogger(defaultLoggerUserData, category, priority, message);
 
 	ConsoleLineStyleID style = CLS_Default;

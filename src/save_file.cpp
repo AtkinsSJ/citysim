@@ -103,8 +103,6 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 	// This doesn't actually loop, we're just using a `while` so we can break out of it
 	while (reader.isValidFile)
 	{
-		s32 cityTileCount = 0;
-
 		// META
 		bool readMeta = reader.startSection(SAV_META_ID, SAV_META_VERSION);
 		if (readMeta)
@@ -114,7 +112,6 @@ bool loadSaveFile(FileHandle *file, GameState *gameState)
 			String cityName = reader.readString(meta->cityName);
 			String playerName = reader.readString(meta->playerName);
 			initCity(&gameState->gameArena, city, meta->cityWidth, meta->cityHeight, cityName, playerName, meta->funds);
-			cityTileCount = city->bounds.w * city->bounds.h;
 
 			// Clock
 			initGameClock(&gameState->gameClock, meta->currentDate, meta->timeWithinDay);

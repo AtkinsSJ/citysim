@@ -254,9 +254,6 @@ void placeBuilding(City *city, BuildingDef *def, s32 left, s32 top, bool markAre
 
 	Rect2I footprint = irectXYWH(left, top, def->width, def->height);
 
-	bool needToRecalcTransport = !isEmpty(&def->transportTypes);
-	bool needToRecalcPower = (def->flags & Building_CarriesPower);
-
 	Building *building = getBuildingAt(city, left, top);
 	if (building != null)
 	{
@@ -269,9 +266,6 @@ void placeBuilding(City *city, BuildingDef *def, s32 left, s32 top, bool markAre
 
 		building->typeID = intersectionDef.value->typeID;
 		def = intersectionDef.value; // I really don't like this but I don't want to rewrite this entire function right now!
-
-		needToRecalcTransport = (oldDef->transportTypes != def->transportTypes);
-		needToRecalcPower = ((oldDef->flags & Building_CarriesPower) != (def->flags & Building_CarriesPower));
 
 		city->zoneLayer.population[oldDef->growsInZone] -= building->currentResidents + building->currentJobs;
 	}

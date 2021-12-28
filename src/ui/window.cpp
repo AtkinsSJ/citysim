@@ -315,7 +315,6 @@ namespace UI
 			Rect2I wholeWindowArea = window->area;
 			Rect2I barArea = irectXYWH(wholeWindowArea.x, wholeWindowArea.y, wholeWindowArea.w, barHeight);
 			Rect2I closeButtonRect = irectXYWH(wholeWindowArea.x + wholeWindowArea.w - barHeight, wholeWindowArea.y, barHeight, barHeight);
-			Rect2I contentArea = getWindowContentArea(window->area, barHeight, 0);
 
 			if (hasTitleBar)
 			{

@@ -462,7 +462,6 @@ void updateAndRenderGameUI(GameState *gameState)
 	DEBUG_FUNCTION();
 	
 	RenderBuffer *uiBuffer = &renderer->uiBuffer;
-	V2I centre = v2i(renderer->uiCamera.pos);
 	UI::LabelStyle *labelStyle = getStyle<UI::LabelStyle>("title"_s);
 	BitmapFont *font = getFont(&labelStyle->font);
 	City *city = &gameState->city;
@@ -1222,14 +1221,12 @@ void drawDataViewUI(GameState *gameState)
 		UI::ButtonStyle *popupButtonStyle = getStyle<UI::ButtonStyle>(&popupMenuPanelStyle->buttonStyle);
 		s32 buttonMaxWidth = 0;
 		s32 buttonMaxHeight = 0;
-		s32 menuContentHeight = (DataViewCount - 1) * popupMenuPanelStyle->contentPadding;
 		for (DataView dataViewID = DataView_None; dataViewID < DataViewCount; dataViewID = (DataView)(dataViewID + 1))
 		{
 			String buttonText = getText(gameState->dataViewUI[dataViewID].title);
 			V2I buttonSize = UI::calculateButtonSize(buttonText, popupButtonStyle);
 			buttonMaxWidth = max(buttonMaxWidth, buttonSize.x);
 			buttonMaxHeight = max(buttonMaxHeight, buttonSize.y);
-			menuContentHeight += buttonSize.y;
 		}
 		s32 popupMenuWidth = buttonMaxWidth + popupMenuPanelStyle->padding.left + popupMenuPanelStyle->padding.right;
 		s32 popupMenuMaxHeight = UI::windowSize.y - 128;
