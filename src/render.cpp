@@ -187,7 +187,7 @@ void resizeWindow(s32 w, s32 h, bool fullscreen)
 	else
 	{
 		// Window!
-		SDL_SetWindowSize(renderer->window, w, h);
+		SDL_SetWindowSize(renderer->window, newW, newH);
 		SDL_SetWindowFullscreen(renderer->window, 0);
 
 		// Centre it
