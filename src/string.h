@@ -27,12 +27,12 @@ String makeString(const char *chars, bool hash=false);
 String stringFromBlob(struct Blob blob, bool hash=false);
 String repeatChar(char c, s32 length);
 
-inline String operator"" _s(const char *chars, size_t length)
+inline String operator""_s(const char *chars, size_t length)
 {
 	return makeString((char*)chars, (s32)length);
 }
 
-inline String operator"" _h(const char *chars, size_t length)
+inline String operator""_h(const char *chars, size_t length)
 {
 	return makeString((char*)chars, (s32)length, true);
 }

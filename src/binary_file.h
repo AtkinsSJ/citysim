@@ -44,7 +44,7 @@
 const u8 BINARY_FILE_FORMAT_VERSION = 1;
 
 typedef u32 FileIdentifier;
-inline FileIdentifier operator"" _id(const char *chars, size_t length)
+inline FileIdentifier operator""_id(const char *chars, size_t length)
 {
 	ASSERT(length == 4);
 	return *((u32*)chars);
