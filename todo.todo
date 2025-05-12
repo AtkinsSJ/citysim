@@ -241,9 +241,14 @@ Zones:
 	- Need to figure out how this will work, as there are a bunch of options.
 		- SC3K approach is to distinguish between building lots and filler lots, and then fill an area with lots that are a % of each. Then, there are also specific rules for developing a house and surrounding garden, or farms, or other larger-scale blocks.
 		- SC4 approach is to have zones parcelled up, and find lots that match the parcels. I don't like this much, it's more content-heavy. But when developing, it then seems to find a rectangle of similar parcels and fill them all with variations of the same building.
+		- Wave function collapse!
 	- I'm currently favouring a more 3K-like approach... Define puzzle-pieces, which are combined together to visually form a building and its surroundings. The rules for putting them together are also defined in data.
 		-> In fact, we could even have them all be recognised as a single lot, so the player isn't exposed to the fact that it's made of pieces.
 - Make the "how many buildings to grow at once" number variable based on the city population for that zone type, so that a larger city can grow more at once? Ehhh maybe that's a bad idea... a larger city theoretically should be growing more dense buildings, and growing a large patch of dense things could be really unstable, demand-wise.
+
+- Parks
+	- Make this zoned? Or at least zone-like. Drag an area, the game automatically fills it with different park buildings, using wave function collapse.
+	- Maybe some are manually placable too, and the WFC regenerates around them. eg, place a fountain and it makes sure the paths connect.
 
 - Statistics
 	- Jobs
