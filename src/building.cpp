@@ -84,7 +84,13 @@ void _assignBuildingCategories(BuildingCatalogue *catalogue, BuildingDef *def)
 			catalogue->maxIBuildingDim = max(catalogue->maxIBuildingDim, max(def->width, def->height));
 		} break;
 
-		INVALID_DEFAULT_CASE;
+		case Zone_None:
+			break;
+
+		default: {
+			logDebug("Building {} has invalid growsInZone value ({})"_s, {def->name, formatInt(def->growsInZone)});
+			ASSERT(false);
+		} break;
 	}
 
 	if (def->isIntersection)
