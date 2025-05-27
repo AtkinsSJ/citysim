@@ -9,7 +9,7 @@
 #include "Panel.h"
 #include "../util/String.h"
 #include "TextInput.h"
-#include "ui.h"
+#include "UI.h"
 
 namespace UI {
 
