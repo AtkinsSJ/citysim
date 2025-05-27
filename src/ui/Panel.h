@@ -1,4 +1,12 @@
+/*
+ * Copyright (c) 2021-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
 #pragma once
+
+#include "../util/Rectangle.h"
+#include "Forward.h"
 
 // Going to try out using a more OOP style.
 // I didn't like putting "window_" at the start of all the Window-UI functions, or

@@ -1,4 +1,15 @@
+/*
+ * Copyright (c) 2021-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include "Panel.h"
+#include "../util/String.h"
+#include "textinput.h"
+#include "ui.h"
 
 namespace UI {
 

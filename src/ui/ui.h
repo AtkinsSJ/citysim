@@ -1,6 +1,8 @@
 #pragma once
 // ui.h
 
+#include "Forward.h"
+
 enum ButtonState {
     Button_Normal,
     Button_Disabled,
@@ -20,20 +22,6 @@ namespace UI {
 // Annoyingly, we have to predeclare all the style types. Yay for C++
 // (I tried rearranging our includes, it got messy fast.)
 // I guess the alternative is switching to an individual-files build. Might be a good idea.
-struct ButtonStyle;
-struct CheckboxStyle;
-struct DropDownListStyle;
-struct LabelStyle;
-struct PanelStyle;
-struct RadioButtonStyle;
-struct ScrollbarStyle;
-struct SliderStyle;
-struct TextInputStyle;
-
-struct TextInput;
-struct Panel;
-struct Window;
-struct WindowContext;
 
 struct ScrollbarState {
     Orientation orientation;
