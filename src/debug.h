@@ -1,5 +1,8 @@
 #pragma once
 
+#include "linked_list.h"
+#include "util/HashTable.h"
+
 #if BUILD_DEBUG
 
 #    define DEBUG_BLOCK_T(name, tag)                                                                                    \
