@@ -1,4 +1,12 @@
-#pragma once
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "Rectangle.h"
+#include "../types.h"
+#include "Maths.h"
 
 /**********************************************
     Rect2

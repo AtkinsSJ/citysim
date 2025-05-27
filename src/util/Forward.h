@@ -15,6 +15,7 @@ struct BitArray;
 struct BitArrayIterator;
 struct Matrix4;
 struct MemoryArena;
+struct Padding;
 struct Random;
 struct Rect2;
 struct Rect2I;
