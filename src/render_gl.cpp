@@ -81,7 +81,7 @@ bool GL_initializeRenderer(SDL_Window *window)
 			glGenBuffers(1, &gl->VBO);
 			glBindBuffer(GL_ARRAY_BUFFER, gl->VBO);
 			GLint vBufferSizeNeeded = RENDER_BATCH_VERTEX_COUNT * sizeof(gl->vertices[0]);
-			glBufferData(GL_ARRAY_BUFFER, vBufferSizeNeeded, null, GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, vBufferSizeNeeded, null, GL_DYNAMIC_DRAW);
 
 			//
 			// NB: This is a (slightly crazy) optimization, relying on us always passing vertices as quads.
@@ -111,7 +111,7 @@ bool GL_initializeRenderer(SDL_Window *window)
 			glGenBuffers(1, &gl->IBO);
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl->IBO);
 			GLint iBufferSizeNeeded = RENDER_BATCH_INDEX_COUNT * sizeof(gl->indices[0]);
-			glBufferData(GL_ELEMENT_ARRAY_BUFFER, iBufferSizeNeeded, gl->indices, GL_STATIC_DRAW);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, iBufferSizeNeeded, gl->indices, GL_DYNAMIC_DRAW);
 
 			gl->vertexCount = 0;
 			gl->indexCount = 0;
