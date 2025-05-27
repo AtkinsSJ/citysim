@@ -45,6 +45,7 @@ struct Settings* settings;
 #include "util/Memory.h"
 #include "util/Random.h"
 #include "util/Indexed.h"
+#include "util/Maybe.h"
 #include "util/Pool.h"
 #include "util/ChunkedArray.h"
 #include "util/Queue.h"

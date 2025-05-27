@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Basic.h"
+#include "Maybe.h"
 #include <initializer_list>
 #include <typeinfo>
 
