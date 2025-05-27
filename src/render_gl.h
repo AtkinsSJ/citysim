@@ -1,11 +1,11 @@
 #pragma once
 
 #ifdef __linux__
-#    include <gl/glew.h> // TODO: Check this
+#    include <GL/glew.h>
 #    include <SDL2/SDL_opengl.h>
 #else // Windows
-#    include <gl/glew.h>
 #    include <SDL_opengl.h>
+#    include <gl/glew.h>
 #endif
 
 // render_gl.h

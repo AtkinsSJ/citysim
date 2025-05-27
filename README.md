@@ -2,19 +2,20 @@
 
 A city simulation game I've tinkered with on-and-off since 2015.
 
-## Windows
+## Building
 
-On Windows, run `./build.bat` and hopefully it works! Then run it with `./build/citysim.exe`.
+The build uses CMake. I don't know a lot about CMake, so these instructions may be lacking.
 
-## Linux
+Set up the CMake build using something like this:
 
-On Linux, run `./build.sh`, after installing the required libraries:
-- SDL2
-- SDL2_image
-- GLEW
+```shell
+cmake -DCMAKE_BUILD_TYPE=Debug -G Ninja -B ./build/debug
+```
 
-You'll also need Clang, until I make it use your preferred C++ compiler.
+Then compile like this:
+```shell
+cd ./build/debug
+ninja
+```
 
-Eventually I'll use a proper build system, maybe...
-
-Then run it with `./build/citysim`.
+And the resulting executable will be `./build/debug/CitySim`.
