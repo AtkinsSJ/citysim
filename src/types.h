@@ -22,10 +22,6 @@ inline bool equals(T a, T b)
     return isMemoryEqual<T>(&a, &b);
 }
 
-#include <typeinfo>
-template<typename T>
-String typeNameOf();
-
 enum Alignment {
     ALIGN_LEFT = 1,
     ALIGN_H_CENTRE = 2,

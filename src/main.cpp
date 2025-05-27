@@ -33,12 +33,13 @@ struct InputState* inputState;
 struct Renderer* renderer;
 struct Settings* settings;
 
+// clang-format off
 #include "log.h"
 #include "types.h"
 #include "maths.h"
 #include "vector.h"
 #include "rectangle.h"
-#include "string.h"
+#include "util/String.h"
 #include "memory.h"
 #include "random.h"
 #include "pool.h"
@@ -164,7 +165,6 @@ AppState globalAppState;
 #include "settings.cpp"
 #include "splat.cpp"
 #include "stack.cpp"
-#include "string.cpp"
 #include "string_table.cpp"
 #include "stringbuilder.cpp"
 #include "terrain.cpp"
@@ -184,10 +184,12 @@ AppState globalAppState;
 #include "zone.cpp"
 
 #include "render_gl.cpp"
+// clang-format on
 
 // Below, these are proper independent implementation files that should be separate TUs.
 // FIXME: Multiple translation units!!!
 #include "util/Matrix4.cpp"
+#include "util/String.cpp"
 
 #ifdef __linux__
 #    include "platform_linux.cpp"

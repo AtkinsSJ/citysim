@@ -1,4 +1,14 @@
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include "Basic.h"
+#include <initializer_list>
+#include <typeinfo>
 
 //
 // NB: Strings are UTF-8. The length is measured in bytes, not in glyphs.
@@ -95,3 +105,9 @@ inline String formatString(char const* value, s32 length = -1, bool alignLeft = 
 String formatBool(bool value);
 
 String myprintf(String format, std::initializer_list<String> args, bool zeroTerminate = false);
+
+template<typename T>
+inline String typeNameOf()
+{
+    return makeString(typeid(T).name());
+}

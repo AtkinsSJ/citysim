@@ -1,11 +1,5 @@
 #pragma once
 
-template<typename T>
-inline String typeNameOf()
-{
-    return makeString(typeid(T).name());
-}
-
 /**********************************************
     Array
  **********************************************/

@@ -13,6 +13,7 @@ using std::move, std::forward;
 struct Matrix4;
 struct Rect2;
 struct Rect2I;
+struct String;
 struct V2;
 struct V2I;
 struct V3;

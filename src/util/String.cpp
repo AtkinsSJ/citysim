@@ -1,4 +1,10 @@
-#pragma once
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "String.h"
 #include <stdio.h> // For snprintf
 
 inline String makeString(char* chars, s32 length, bool hash)
