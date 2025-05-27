@@ -1,28 +1,14 @@
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
 
-#include <stdlib.h> // For calloc
-#include <string.h> // For memset
-
-#define KB(x) ((x) * 1024)
-#define MB(x) (KB(x) * 1024)
-#define GB(x) (MB(x) * 1024)
-
-#define ArrayCount(a) (sizeof(a) / sizeof(a[0]))
-#define ArrayCountS(a) ((int)(ArrayCount(a)))
-
-struct Blob {
-    smm size;
-    u8* memory;
-};
-inline Blob makeBlob(smm size, u8* memory)
-{
-    Blob result = {};
-
-    result.size = size;
-    result.memory = memory;
-
-    return result;
-}
+#include "Assert.h"
+#include "Basic.h"
+#include "String.h"
 
 // NB: MemoryBlock is positioned just before its memory pointer.
 // So when deallocating, we can just free(block)!
@@ -101,52 +87,85 @@ void markResetPosition(MemoryArena* arena);
 void resetMemoryArena(MemoryArena* arena);
 void freeMemoryArena(MemoryArena* arena);
 
-// Allocates directly from the OS, not from an arena
-u8* allocateRaw(smm size);
-void deallocateRaw(void* memory);
-
 void* allocate(MemoryArena* arena, smm size);
 Blob allocateBlob(MemoryArena* arena, smm size);
 
 template<typename T>
-T* allocateStruct(MemoryArena* arena);
-
-template<typename T>
-T* allocateMultiple(MemoryArena* arena, smm count);
-
-template<typename T>
-Array<T> allocateArray(MemoryArena* arena, s32 count, bool markAsFull = false);
-
-template<typename T>
-Array2<T> allocateArray2(MemoryArena* arena, s32 w, s32 h);
-
-template<typename T>
-void copyMemory(T const* source, T* dest, smm length);
-
-template<typename T>
-void fillMemory(T* memory, T value, smm length);
-
-template<>
-inline void fillMemory<s8>(s8* memory, s8 value, smm length)
+T* allocateStruct(MemoryArena* arena)
 {
-    memset(memory, value, length);
-}
-
-template<>
-inline void fillMemory<u8>(u8* memory, u8 value, smm length)
-{
-    memset(memory, value, length);
+    return (T*)allocate(arena, sizeof(T));
 }
 
 template<typename T>
-bool isMemoryEqual(T* a, T* b, smm length = 1);
+T* allocateMultiple(MemoryArena* arena, smm count)
+{
+    // Negative allocations are obviously incorrect, so we assert them.
+    // However, count=0 sometimes is used, eg when interning an empty string that's used
+    // as a hashtable key. To avoid needlessly complicating user code, we just return null
+    // here when you try to allocate 0 things. The end result is the same - you're not going
+    // to use the memory if you've got 0 things allocated anyway!
+    // - Sam, 28/03/2020
+    ASSERT(count >= 0);
+    T* result = nullptr;
+
+    if (count > 0) {
+        result = (T*)allocate(arena, sizeof(T) * count);
+    }
+
+    return result;
+}
+
+template<typename T>
+Array<T> allocateArray(MemoryArena* arena, s32 count, bool markAsFull = false)
+{
+    Array<T> result;
+
+    if (count == 0) {
+        result = makeEmptyArray<T>();
+    } else {
+        ASSERT(count > 0);
+        result = makeArray<T>(count, allocateMultiple<T>(arena, count), markAsFull ? count : 0);
+    }
+
+    return result;
+}
+
+template<typename T>
+Array2<T> allocateArray2(MemoryArena* arena, s32 w, s32 h)
+{
+    ASSERT(w > 0 && h > 0);
+    return makeArray2<T>(w, h, allocateMultiple<T>(arena, w * h));
+}
 
 //
 // Tools for 2D arrays
 //
 
 template<typename T>
-T* copyRegion(T* sourceArray, s32 sourceArrayWidth, s32 sourceArrayHeight, Rect2I region, MemoryArena* arena);
+T* copyRegion(T* sourceArray, s32 sourceArrayWidth, s32 sourceArrayHeight, Rect2I region, MemoryArena* arena)
+{
+    ASSERT(contains(irectXYWH(0, 0, sourceArrayWidth, sourceArrayHeight), region));
+
+    T* result = allocateMultiple<T>(arena, areaOf(region));
+
+    T* pos = result;
+
+    for (s32 y = region.y; y < region.y + region.h; y++) {
+        // Copy whole rows at a time
+        copyMemory(sourceArray + (y * sourceArrayWidth) + region.x, pos, region.w);
+        pos += region.w;
+    }
+
+    return result;
+}
 
 template<typename T>
-void setRegion(T* array, s32 arrayWidth, s32 arrayHeight, Rect2I region, T value);
+void setRegion(T* array, s32 arrayWidth, s32 arrayHeight, Rect2I region, T value)
+{
+    ASSERT(contains(irectXYWH(0, 0, arrayWidth, arrayHeight), region));
+
+    for (s32 y = region.y; y < region.y + region.h; y++) {
+        // Set whole rows at a time
+        fillMemory<T>(array + (y * arrayWidth) + region.x, value, region.w);
+    }
+}

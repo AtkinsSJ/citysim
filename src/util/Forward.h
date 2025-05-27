@@ -13,6 +13,7 @@ using std::move, std::forward;
 
 struct BitArray;
 struct BitArrayIterator;
+struct Blob;
 struct Matrix4;
 struct MemoryArena;
 struct Padding;

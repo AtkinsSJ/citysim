@@ -7,8 +7,8 @@
 #pragma once
 
 #include "../debug.h"
-#include "../memory.h"
 #include "Basic.h"
+#include "Memory.h"
 
 /**
  * Variation on Array where we allocate the data in chunks, which are linked-listed together.
