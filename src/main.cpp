@@ -77,7 +77,7 @@ struct Settings* settings;
 #include "assets.h"
 #include "line_reader.h"
 #include "render.h"
-#include "ui/drawable.h"
+#include "ui/Drawable.h"
 #include "ui/Panel.h"
 #include "ui/TextInput.h"
 #include "ui/Window.h"
@@ -159,7 +159,6 @@ AppState globalAppState;
 #include "transport.cpp"
 #include "types.cpp"
 #include "ui/ui.cpp"
-#include "ui/drawable.cpp"
 #include "uitheme.cpp"
 #include "unicode.cpp"
 #include "write_buffer.cpp"
@@ -170,6 +169,7 @@ AppState globalAppState;
 
 // Below, these are proper independent implementation files that should be separate TUs.
 // FIXME: Multiple translation units!!!
+#include "ui/Drawable.cpp"
 #include "ui/Panel.cpp"
 #include "ui/TextInput.cpp"
 #include "ui/Window.cpp"
