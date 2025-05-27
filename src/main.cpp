@@ -52,7 +52,7 @@ struct Settings* settings;
 #include "util/OccupancyArray.h"
 #include "util/LinkedList.h"
 #include "splat.h"
-#include "time.h"
+#include "util/Time.h"
 #include "unicode.h"
 #include "stringbuilder.h"
 #include "util/HashTable.h"
@@ -155,7 +155,6 @@ AppState globalAppState;
 #include "stringbuilder.cpp"
 #include "terrain.cpp"
 #include "tile_utils.cpp"
-#include "time.cpp"
 #include "transport.cpp"
 #include "types.cpp"
 #include "ui/ui.cpp"
@@ -181,6 +180,7 @@ AppState globalAppState;
 #include "util/Random.cpp"
 #include "util/Rectangle.cpp"
 #include "util/String.cpp"
+#include "util/Time.cpp"
 #include "util/Vector.cpp"
 
 #ifdef __linux__
