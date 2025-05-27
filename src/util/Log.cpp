@@ -1,4 +1,11 @@
-#pragma once
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "Log.h"
+#include "String.h"
 
 void log(SDL_LogPriority priority, String format, std::initializer_list<String> args)
 {

@@ -34,7 +34,7 @@ struct Renderer* renderer;
 struct Settings* settings;
 
 // clang-format off
-#include "log.h"
+#include "util/Log.h"
 #include "types.h"
 #include "util/Maths.h"
 #include "util/Vector.h"
@@ -142,7 +142,6 @@ AppState globalAppState;
 #include "land_value.cpp"
 #include "line_reader.cpp"
 #include "util/LinkedList.h"
-#include "log.cpp"
 #include "memory.cpp"
 #include "pathing.cpp"
 #include "pollution.cpp"
@@ -180,6 +179,7 @@ AppState globalAppState;
 // FIXME: Multiple translation units!!!
 #include "util/BitArray.cpp"
 #include "util/Interpolate.cpp"
+#include "util/Log.cpp"
 #include "util/Maths.cpp"
 #include "util/Matrix4.cpp"
 #include "util/Random.cpp"
