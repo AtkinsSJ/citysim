@@ -1,12 +1,6 @@
 #pragma once
 
 template<typename T>
-inline bool equals(T a, T b)
-{
-    return isMemoryEqual<T>(&a, &b);
-}
-
-template<typename T>
 inline String typeNameOf()
 {
     return makeString(typeid(T).name());

@@ -17,7 +17,10 @@
 #include "util/Basic.h"
 
 template<typename T>
-bool equals(T a, T b);
+inline bool equals(T a, T b)
+{
+    return isMemoryEqual<T>(&a, &b);
+}
 
 #include <typeinfo>
 template<typename T>
