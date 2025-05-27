@@ -62,8 +62,6 @@ struct Settings* settings;
 #include "ui/ui.h"
 #include "debug.h"
 #include "util/Endian.h"
-#define STB_PERLIN_IMPLEMENTATION
-#include "stb_perlin.h"
 #include "platform.h"
 #include "file.h"
 #include "write_buffer.h"
