@@ -2,360 +2,336 @@
 
 // General rendering code.
 
-const f32 SECONDS_PER_FRAME = 1.0f / 60.0f;
+f32 const SECONDS_PER_FRAME = 1.0f / 60.0f;
 
-struct Camera
-{
-	V2 pos; // Centre of camera, in camera units
+struct Camera {
+    V2 pos; // Centre of camera, in camera units
 #if SNAP_CAMERA_TO_WHOLE_PIXELS
-	V2 realPos; // If we've rounded the pos to eg whole pixels, then this is the unrounded value.
+    V2 realPos; // If we've rounded the pos to eg whole pixels, then this is the unrounded value.
 #endif
-	V2 size; // Size of camera, in camera units
-	f32 sizeRatio; // Size of window is multiplied by this to produce the camera's size
-	f32 zoom; // 1 = normal, 2 = things appear twice their size, etc.
-	Matrix4 projectionMatrix;
+    V2 size;       // Size of camera, in camera units
+    f32 sizeRatio; // Size of window is multiplied by this to produce the camera's size
+    f32 zoom;      // 1 = normal, 2 = things appear twice their size, etc.
+    Matrix4 projectionMatrix;
 
-	// NB: We don't use depth anywhere any more, but these do get used in generating the
-	// projection matrix. - Sam, 26/07/2019
-	f32 nearClippingPlane;
-	f32 farClippingPlane;
+    // NB: We don't use depth anywhere any more, but these do get used in generating the
+    // projection matrix. - Sam, 26/07/2019
+    f32 nearClippingPlane;
+    f32 farClippingPlane;
 
-	V2 mousePos;
+    V2 mousePos;
 };
 
-enum RenderItemType
-{
-	RenderItemType_NextMemoryChunk,
+enum RenderItemType {
+    RenderItemType_NextMemoryChunk,
 
-	RenderItemType_SetCamera,
-	RenderItemType_SetPalette,
-	RenderItemType_SetShader,
-	RenderItemType_SetTexture,
+    RenderItemType_SetCamera,
+    RenderItemType_SetPalette,
+    RenderItemType_SetShader,
+    RenderItemType_SetTexture,
 
-	RenderItemType_Clear,
+    RenderItemType_Clear,
 
-	RenderItemType_BeginScissor,
-	RenderItemType_EndScissor,
+    RenderItemType_BeginScissor,
+    RenderItemType_EndScissor,
 
-	RenderItemType_DrawSingleRect,
-	RenderItemType_DrawRects,
-	RenderItemType_DrawRings,
+    RenderItemType_DrawSingleRect,
+    RenderItemType_DrawRects,
+    RenderItemType_DrawRings,
 };
 
-struct RenderItem_SetCamera
-{
-	Camera *camera;
+struct RenderItem_SetCamera {
+    Camera* camera;
 };
 
-struct RenderItem_SetPalette
-{
-	s32 paletteSize;
-	// Palette as a series of V4s follows this struct
+struct RenderItem_SetPalette {
+    s32 paletteSize;
+    // Palette as a series of V4s follows this struct
 };
 
-struct RenderItem_SetShader
-{
-	s8 shaderID;
+struct RenderItem_SetShader {
+    s8 shaderID;
 };
 
-struct RenderItem_SetTexture
-{
-	Asset *texture;
+struct RenderItem_SetTexture {
+    Asset* texture;
 
-	// These are only set for "raw" textures, AKA ones that have the data inline.
-	// The pixel data follows directly after this struct
-	s32 width;
-	s32 height;
-	u8 bytesPerPixel;
+    // These are only set for "raw" textures, AKA ones that have the data inline.
+    // The pixel data follows directly after this struct
+    s32 width;
+    s32 height;
+    u8 bytesPerPixel;
 };
 
-struct RenderItem_Clear
-{
-	V4 clearColor;
+struct RenderItem_Clear {
+    V4 clearColor;
 };
 
-struct RenderItem_BeginScissor
-{
-	Rect2I bounds;
+struct RenderItem_BeginScissor {
+    Rect2I bounds;
 };
-struct RenderItem_EndScissor
-{
+struct RenderItem_EndScissor {
 };
 
-struct RenderItem_DrawSingleRect
-{
-	Rect2 bounds;
-	V4 color00;
-	V4 color01;
-	V4 color10;
-	V4 color11;
-	Rect2 uv; // in (0 to 1) space
+struct RenderItem_DrawSingleRect {
+    Rect2 bounds;
+    V4 color00;
+    V4 color01;
+    V4 color10;
+    V4 color11;
+    Rect2 uv; // in (0 to 1) space
 };
 
-struct DrawRectPlaceholder
-{
-	RenderItem_SetTexture *setTexture;
-	RenderItem_DrawSingleRect *drawRect;
+struct DrawRectPlaceholder {
+    RenderItem_SetTexture* setTexture;
+    RenderItem_DrawSingleRect* drawRect;
 };
 
-const u8 maxRenderItemsPerGroup = u8Max;
-struct RenderItem_DrawRects
-{
-	u8 count;
+u8 const maxRenderItemsPerGroup = u8Max;
+struct RenderItem_DrawRects {
+    u8 count;
 };
-struct RenderItem_DrawRects_Item
-{
-	Rect2 bounds;
-	V4 color;
-	Rect2 uv;
+struct RenderItem_DrawRects_Item {
+    Rect2 bounds;
+    V4 color;
+    Rect2 uv;
 };
 
-struct DrawRectsSubGroup
-{
-	RenderItem_DrawRects *header;
-	RenderItem_DrawRects_Item *first;
-	s32 maxCount;
+struct DrawRectsSubGroup {
+    RenderItem_DrawRects* header;
+    RenderItem_DrawRects_Item* first;
+    s32 maxCount;
 
-	DrawRectsSubGroup *prev;
-	DrawRectsSubGroup *next;
+    DrawRectsSubGroup* prev;
+    DrawRectsSubGroup* next;
 };
 
 // Think of this like a "handle". It has data inside but you shouldn't touch it from user code!
-struct DrawRectsGroup
-{
-	RenderBuffer *buffer;
+struct DrawRectsGroup {
+    RenderBuffer* buffer;
 
-	DrawRectsSubGroup firstSubGroup;
-	DrawRectsSubGroup *currentSubGroup;
+    DrawRectsSubGroup firstSubGroup;
+    DrawRectsSubGroup* currentSubGroup;
 
-	s32 count;
-	s32 maxCount;
+    s32 count;
+    s32 maxCount;
 
-	Asset *texture;
+    Asset* texture;
 };
 
-struct RenderItem_DrawRings
-{
-	u8 count;
+struct RenderItem_DrawRings {
+    u8 count;
 };
-struct RenderItem_DrawRings_Item
-{
-	V2 centre;
-	f32 radius;
-	f32 thickness;
-	V4 color;
+struct RenderItem_DrawRings_Item {
+    V2 centre;
+    f32 radius;
+    f32 thickness;
+    V4 color;
 };
 
-struct DrawRingsSubGroup
-{
-	RenderItem_DrawRings *header;
-	RenderItem_DrawRings_Item *first;
-	s32 maxCount;
+struct DrawRingsSubGroup {
+    RenderItem_DrawRings* header;
+    RenderItem_DrawRings_Item* first;
+    s32 maxCount;
 
-	DrawRingsSubGroup *prev;
-	DrawRingsSubGroup *next;
+    DrawRingsSubGroup* prev;
+    DrawRingsSubGroup* next;
 };
 
 // Think of this like a "handle". It has data inside but you shouldn't touch it from user code!
-struct DrawRingsGroup
-{
-	RenderBuffer *buffer;
+struct DrawRingsGroup {
+    RenderBuffer* buffer;
 
-	DrawRingsSubGroup firstSubGroup;
-	DrawRingsSubGroup *currentSubGroup;
+    DrawRingsSubGroup firstSubGroup;
+    DrawRingsSubGroup* currentSubGroup;
 
-	s32 count;
-	s32 maxCount;
+    s32 count;
+    s32 maxCount;
 };
 
-struct RenderBufferChunk : PoolItem
-{
-	smm size;
-	smm used;
-	u8 *memory;
+struct RenderBufferChunk : PoolItem {
+    smm size;
+    smm used;
+    u8* memory;
 
-	// TODO: @Size: Could potentially re-use the pointers from the PoolItem, if we wanted.
-	RenderBufferChunk *prevChunk;
-	RenderBufferChunk *nextChunk;
+    // TODO: @Size: Could potentially re-use the pointers from the PoolItem, if we wanted.
+    RenderBufferChunk* prevChunk;
+    RenderBufferChunk* nextChunk;
 };
 
-struct RenderBuffer : PoolItem
-{
-	String name;
-	
-	RenderBufferChunk *firstChunk;
-	RenderBufferChunk *currentChunk;
-	Pool<RenderBufferChunk> *chunkPool;
+struct RenderBuffer : PoolItem {
+    String name;
 
-	// Transient stuff
-	Camera *currentCamera;
-	bool hasRangeReserved;
-	smm reservedRangeSize;
-	s32 scissorCount;
+    RenderBufferChunk* firstChunk;
+    RenderBufferChunk* currentChunk;
+    Pool<RenderBufferChunk>* chunkPool;
 
-	s8 currentShader;
-	Asset *currentTexture;
+    // Transient stuff
+    Camera* currentCamera;
+    bool hasRangeReserved;
+    smm reservedRangeSize;
+    s32 scissorCount;
+
+    s8 currentShader;
+    Asset* currentTexture;
 };
 
-struct Renderer
-{
-	MemoryArena renderArena;
-	
-	SDL_Window *window;
-	s32 windowWidth;
-	s32 windowHeight;
-	bool isFullscreen;
+struct Renderer {
+    MemoryArena renderArena;
 
-	Camera worldCamera;
-	Camera uiCamera;
+    SDL_Window* window;
+    s32 windowWidth;
+    s32 windowHeight;
+    bool isFullscreen;
 
-	// Cursor stuff
-	String currentCursorName;
-	bool cursorIsVisible;
-	SDL_Cursor *systemWaitCursor;
+    Camera worldCamera;
+    Camera uiCamera;
 
-	Pool<RenderBuffer> renderBufferPool;
-	Array<RenderBuffer *> renderBuffers;
-	RenderBuffer worldBuffer;
-	RenderBuffer worldOverlayBuffer;
-	RenderBuffer uiBuffer;
-	RenderBuffer windowBuffer;
-	RenderBuffer debugBuffer;
+    // Cursor stuff
+    String currentCursorName;
+    bool cursorIsVisible;
+    SDL_Cursor* systemWaitCursor;
 
-	smm renderBufferChunkSize;
-	Pool<RenderBufferChunk> chunkPool;
+    Pool<RenderBuffer> renderBufferPool;
+    Array<RenderBuffer*> renderBuffers;
+    RenderBuffer worldBuffer;
+    RenderBuffer worldOverlayBuffer;
+    RenderBuffer uiBuffer;
+    RenderBuffer windowBuffer;
+    RenderBuffer debugBuffer;
 
-	// Not convinced this is the best way of doing it, but it's better than what we had before!
-	// Really, we do want to have this stuff in code, because it's accessed a LOT and we don't
-	// want to be doing a million hashtable lookups all the time. It does feel like a hack, but
-	// practicality is more important than perfection!
-	// - Sam, 23/07/2019
-	struct
-	{
-		s8 paletted;
-		s8 pixelArt;
-		s8 text;
-		s8 textured;
-		s8 untextured;
-	} shaderIds;
+    smm renderBufferChunkSize;
+    Pool<RenderBufferChunk> chunkPool;
 
-	// Don't access these directly!
-	void *platformRenderer;
-	void (*windowResized)(s32, s32);
-	void (*render)(Array<RenderBuffer *>);
-	void (*loadAssets)();
-	void (*unloadAssets)();
-	void (*free)();
+    // Not convinced this is the best way of doing it, but it's better than what we had before!
+    // Really, we do want to have this stuff in code, because it's accessed a LOT and we don't
+    // want to be doing a million hashtable lookups all the time. It does feel like a hack, but
+    // practicality is more important than perfection!
+    // - Sam, 23/07/2019
+    struct
+    {
+        s8 paletted;
+        s8 pixelArt;
+        s8 text;
+        s8 textured;
+        s8 untextured;
+    } shaderIds;
+
+    // Don't access these directly!
+    void* platformRenderer;
+    void (*windowResized)(s32, s32);
+    void (*render)(Array<RenderBuffer*>);
+    void (*loadAssets)();
+    void (*unloadAssets)();
+    void (*free)();
 };
 
-void initRenderer(MemoryArena *renderArena, SDL_Window *window);
-void handleWindowEvent(SDL_WindowEvent *event);
+void initRenderer(MemoryArena* renderArena, SDL_Window* window);
+void handleWindowEvent(SDL_WindowEvent* event);
 void render();
 void rendererLoadAssets();
 void rendererUnloadAssets();
 void freeRenderer();
 
-void initRenderBuffer(MemoryArena *arena, RenderBuffer *buffer, String name, Pool<RenderBufferChunk> *chunkPool);
-RenderBufferChunk *allocateRenderBufferChunk(MemoryArena *arena, void *userData);
-void clearRenderBuffer(RenderBuffer *buffer);
+void initRenderBuffer(MemoryArena* arena, RenderBuffer* buffer, String name, Pool<RenderBufferChunk>* chunkPool);
+RenderBufferChunk* allocateRenderBufferChunk(MemoryArena* arena, void* userData);
+void clearRenderBuffer(RenderBuffer* buffer);
 
-RenderBuffer *getTemporaryRenderBuffer(String name);
-void transferRenderBufferData(RenderBuffer *buffer, RenderBuffer *targetBuffer);
-void returnTemporaryRenderBuffer(RenderBuffer *buffer);
+RenderBuffer* getTemporaryRenderBuffer(String name);
+void transferRenderBufferData(RenderBuffer* buffer, RenderBuffer* targetBuffer);
+void returnTemporaryRenderBuffer(RenderBuffer* buffer);
 
-void initCamera(Camera *camera, V2 size, f32 sizeRatio, f32 nearClippingPlane, f32 farClippingPlane, V2 position = v2(0,0));
-void updateCameraMatrix(Camera *camera);
-V2 unproject(Camera *camera, V2 screenPos);
-void setCameraPos(Camera *camera, V2 position, f32 zoom);
+void initCamera(Camera* camera, V2 size, f32 sizeRatio, f32 nearClippingPlane, f32 farClippingPlane, V2 position = v2(0, 0));
+void updateCameraMatrix(Camera* camera);
+V2 unproject(Camera* camera, V2 screenPos);
+void setCameraPos(Camera* camera, V2 position, f32 zoom);
 // rounding the zoom so it doesn't gradually drift due to float imprecision
 f32 snapZoomLevel(f32 zoom);
 
 void setCursor(String cursorName);
 void setCursorVisible(bool visible);
 
-void appendRenderItemType(RenderBuffer *buffer, RenderItemType type);
+void appendRenderItemType(RenderBuffer* buffer, RenderItemType type);
 
-u8* appendRenderItemInternal(RenderBuffer *buffer, RenderItemType type, smm size, smm reservedSize);
-
-template<typename T>
-T *appendRenderItem(RenderBuffer *buffer, RenderItemType type);
+u8* appendRenderItemInternal(RenderBuffer* buffer, RenderItemType type, smm size, smm reservedSize);
 
 template<typename T>
-struct RenderItemAndData
-{
-	T *item;
-	u8 *data;
+T* appendRenderItem(RenderBuffer* buffer, RenderItemType type);
+
+template<typename T>
+struct RenderItemAndData {
+    T* item;
+    u8* data;
 };
 template<typename T>
-RenderItemAndData<T> appendRenderItem(RenderBuffer *buffer, RenderItemType type, smm dataSize);
+RenderItemAndData<T> appendRenderItem(RenderBuffer* buffer, RenderItemType type, smm dataSize);
 
 template<typename T>
-T *readRenderItem(RenderBufferChunk *renderBufferChunk, smm *pos);
+T* readRenderItem(RenderBufferChunk* renderBufferChunk, smm* pos);
 template<typename T>
-T *readRenderData(RenderBufferChunk *renderBufferChunk, smm *pos, s32 count);
+T* readRenderData(RenderBufferChunk* renderBufferChunk, smm* pos, s32 count);
 
-void addSetCamera(RenderBuffer *buffer, Camera *camera);
-void addSetShader(RenderBuffer *buffer, s8 shaderID);
-void addSetTexture(RenderBuffer *buffer, Asset *texture);
-void addSetTextureRaw(RenderBuffer *buffer, s32 width, s32 height, u8 bytesPerPixel, u8 *pixels);
+void addSetCamera(RenderBuffer* buffer, Camera* camera);
+void addSetShader(RenderBuffer* buffer, s8 shaderID);
+void addSetTexture(RenderBuffer* buffer, Asset* texture);
+void addSetTextureRaw(RenderBuffer* buffer, s32 width, s32 height, u8 bytesPerPixel, u8* pixels);
 
-void addClear(RenderBuffer *buffer, V4 clearColor = {});
+void addClear(RenderBuffer* buffer, V4 clearColor = {});
 
 // Scissors are a stack, so you can nest them. Note that nested scissors don't crop to each other!
 // NB: bounds rectangle is in window pixels, with the origin at the top-left
-void addBeginScissor(RenderBuffer *buffer, Rect2I bounds);
-void addEndScissor(RenderBuffer *buffer);
+void addBeginScissor(RenderBuffer* buffer, Rect2I bounds);
+void addEndScissor(RenderBuffer* buffer);
 
-void drawSingleSprite(RenderBuffer *buffer, Sprite *sprite, Rect2 bounds, s8 shaderID, V4 color);
-void drawSingleRect(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, V4 color);
-void drawSingleRect(RenderBuffer *buffer, Rect2I bounds, s8 shaderID, V4 color);
-void drawSingleRect(RenderBuffer *buffer, Rect2 bounds, s8 shaderID, V4 color00, V4 color01, V4 color10, V4 color11);
-void drawSingleRect(RenderBuffer *buffer, Rect2I bounds, s8 shaderID, V4 color00, V4 color01, V4 color10, V4 color11);
+void drawSingleSprite(RenderBuffer* buffer, Sprite* sprite, Rect2 bounds, s8 shaderID, V4 color);
+void drawSingleRect(RenderBuffer* buffer, Rect2 bounds, s8 shaderID, V4 color);
+void drawSingleRect(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, V4 color);
+void drawSingleRect(RenderBuffer* buffer, Rect2 bounds, s8 shaderID, V4 color00, V4 color01, V4 color10, V4 color11);
+void drawSingleRect(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, V4 color00, V4 color01, V4 color10, V4 color11);
 
 // For when you want something to appear NOW in the render-order, but you don't know its details until later
-DrawRectPlaceholder appendDrawRectPlaceholder(RenderBuffer *buffer, s8 shaderID, bool hasTexture);
-void fillDrawRectPlaceholder(DrawRectPlaceholder *placeholder, Rect2 bounds, V4 color);
-void fillDrawRectPlaceholder(DrawRectPlaceholder *placeholder, Rect2I bounds, V4 color);
-void fillDrawRectPlaceholder(DrawRectPlaceholder *placeholder, Rect2 bounds, V4 color00, V4 color01, V4 color10, V4 color11);
-void fillDrawRectPlaceholder(DrawRectPlaceholder *placeholder, Rect2I bounds, V4 color00, V4 color01, V4 color10, V4 color11);
-void fillDrawRectPlaceholder(DrawRectPlaceholder *placeholder, Rect2 bounds, Sprite *sprite, V4 color);
+DrawRectPlaceholder appendDrawRectPlaceholder(RenderBuffer* buffer, s8 shaderID, bool hasTexture);
+void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2 bounds, V4 color);
+void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2I bounds, V4 color);
+void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2 bounds, V4 color00, V4 color01, V4 color10, V4 color11);
+void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2I bounds, V4 color00, V4 color01, V4 color10, V4 color11);
+void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2 bounds, Sprite* sprite, V4 color);
 
-struct DrawNinepatchPlaceholder
-{
-	RenderItem_DrawRects_Item *firstRect;
+struct DrawNinepatchPlaceholder {
+    RenderItem_DrawRects_Item* firstRect;
 };
-void drawNinepatch(RenderBuffer *buffer, Rect2I bounds, s8 shaderID, Ninepatch *ninepatch, V4 color = makeWhite());
-DrawNinepatchPlaceholder appendDrawNinepatchPlaceholder(RenderBuffer *buffer, Asset *texture, s8 shaderID);
-void fillDrawNinepatchPlaceholder(DrawNinepatchPlaceholder *placeholder, Rect2I bounds, Ninepatch *ninepatch, V4 color = makeWhite());
+void drawNinepatch(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, Ninepatch* ninepatch, V4 color = makeWhite());
+DrawNinepatchPlaceholder appendDrawNinepatchPlaceholder(RenderBuffer* buffer, Asset* texture, s8 shaderID);
+void fillDrawNinepatchPlaceholder(DrawNinepatchPlaceholder* placeholder, Rect2I bounds, Ninepatch* ninepatch, V4 color = makeWhite());
 
 // NB: The Rects drawn must all have the same Texture!
-DrawRectsGroup *beginRectsGroupInternal(RenderBuffer *buffer, Asset *texture, s8 shaderID, s32 maxCount);
+DrawRectsGroup* beginRectsGroupInternal(RenderBuffer* buffer, Asset* texture, s8 shaderID, s32 maxCount);
 // TODO: Have the shaderID default to a sensible value for these like beginRectsGroupForText
-DrawRectsGroup *beginRectsGroupTextured(RenderBuffer *buffer, Asset *texture, s8 shaderID, s32 maxCount);
-DrawRectsGroup *beginRectsGroupUntextured(RenderBuffer *buffer, s8 shaderID, s32 maxCount);
+DrawRectsGroup* beginRectsGroupTextured(RenderBuffer* buffer, Asset* texture, s8 shaderID, s32 maxCount);
+DrawRectsGroup* beginRectsGroupUntextured(RenderBuffer* buffer, s8 shaderID, s32 maxCount);
 // TODO: Have the shaderID be last and default to the standard text shader, so I don't have to always pass it
-DrawRectsGroup *beginRectsGroupForText(RenderBuffer *buffer, BitmapFont *font, s8 shaderID, s32 maxCount);
+DrawRectsGroup* beginRectsGroupForText(RenderBuffer* buffer, BitmapFont* font, s8 shaderID, s32 maxCount);
 
 // Makes space for `count` rects, and returns a pointer to the first one, so you can modify them later.
 // Guarantees that they're contiguous, but that means that there must be room for `count` items in the
 // group's current sub-group.
 // Basically, call this before adding anything, with count <= 255, and you'll be fine.
-RenderItem_DrawRects_Item *reserve(DrawRectsGroup *group, s32 count);
-void addRectInternal(DrawRectsGroup *group, Rect2 bounds, V4 color, Rect2 uv);
-void addGlyphRect(DrawRectsGroup *state, BitmapFontGlyph *glyph, V2 position, V4 color);
-void addSpriteRect(DrawRectsGroup *state, Sprite *sprite, Rect2 bounds, V4 color);
-void addUntexturedRect(DrawRectsGroup *group, Rect2 bounds, V4 color);
-void offsetRange(DrawRectsGroup *state, s32 startIndex, s32 endIndexInclusive, f32 offsetX, f32 offsetY);
-void endRectsGroup(DrawRectsGroup *group);
+RenderItem_DrawRects_Item* reserve(DrawRectsGroup* group, s32 count);
+void addRectInternal(DrawRectsGroup* group, Rect2 bounds, V4 color, Rect2 uv);
+void addGlyphRect(DrawRectsGroup* state, BitmapFontGlyph* glyph, V2 position, V4 color);
+void addSpriteRect(DrawRectsGroup* state, Sprite* sprite, Rect2 bounds, V4 color);
+void addUntexturedRect(DrawRectsGroup* group, Rect2 bounds, V4 color);
+void offsetRange(DrawRectsGroup* state, s32 startIndex, s32 endIndexInclusive, f32 offsetX, f32 offsetY);
+void endRectsGroup(DrawRectsGroup* group);
 
-DrawRectsSubGroup beginRectsSubGroup(DrawRectsGroup *group);
-void endCurrentSubGroup(DrawRectsGroup *group);
+DrawRectsSubGroup beginRectsSubGroup(DrawRectsGroup* group);
+void endCurrentSubGroup(DrawRectsGroup* group);
 
-void drawGrid(RenderBuffer *buffer, Rect2 bounds, s32 gridW, s32 gridH, u8 *grid, u16 paletteSize, V4 *palette);
+void drawGrid(RenderBuffer* buffer, Rect2 bounds, s32 gridW, s32 gridH, u8* grid, u16 paletteSize, V4* palette);
 
-DrawRingsGroup *beginRingsGroup(RenderBuffer *buffer, s32 maxCount);
-DrawRingsSubGroup beginRingsSubGroup(DrawRingsGroup *group);
-void addRing(DrawRingsGroup *group, V2 centre, f32 radius, f32 thickness, V4 color);
-void endRingsGroup(DrawRingsGroup *group);
+DrawRingsGroup* beginRingsGroup(RenderBuffer* buffer, s32 maxCount);
+DrawRingsSubGroup beginRingsSubGroup(DrawRingsGroup* group);
+void addRing(DrawRingsGroup* group, V2 centre, f32 radius, f32 thickness, V4 color);
+void endRingsGroup(DrawRingsGroup* group);
 
 void resizeWindow(s32 w, s32 h, bool fullscreen);

@@ -1,38 +1,37 @@
+#include <initializer_list>
 #include <inttypes.h>
 #include <math.h>
-#include <initializer_list>
-#include <time.h> // For seeding RNGs
 #include <stdlib.h> // For qsort()
+#include <time.h>   // For seeding RNGs
 
 #if BUILD_DEBUG
-	// 3 is the max level.
-	// https://wiki.libsdl.org/CategoryAssertions
-	#define SDL_ASSERT_LEVEL 3
+// 3 is the max level.
+// https://wiki.libsdl.org/CategoryAssertions
+#    define SDL_ASSERT_LEVEL 3
 #else
-	#define SDL_ASSERT_LEVEL 1
+#    define SDL_ASSERT_LEVEL 1
 #endif
 
 #ifdef __linux__
-#      include <SDL2/SDL.h>
-#      include <SDL2/SDL_image.h>
+#    include <SDL2/SDL.h>
+#    include <SDL2/SDL_image.h>
 #else // Windows
-#      include <SDL.h>
-#      include <SDL_image.h>
+#    include <SDL.h>
+#    include <SDL_image.h>
 #endif
 
-enum AppStatus
-{
-	AppStatus_MainMenu,
-	AppStatus_Game,
-	AppStatus_Credits,
-	AppStatus_Quit,
+enum AppStatus {
+    AppStatus_MainMenu,
+    AppStatus_Game,
+    AppStatus_Credits,
+    AppStatus_Quit,
 };
 
-struct MemoryArena  *tempArena;
-struct Assets       *assets;
-struct InputState   *inputState;
-struct Renderer     *renderer;
-struct Settings     *settings;
+struct MemoryArena* tempArena;
+struct Assets* assets;
+struct InputState* inputState;
+struct Renderer* renderer;
+struct Settings* settings;
 
 #include "log.h"
 #include "types.h"
@@ -187,257 +186,235 @@ AppState globalAppState;
 #include "render_gl.cpp"
 
 #ifdef __linux__
-#include "platform_linux.cpp"
+#    include "platform_linux.cpp"
 #else // Windows
-#include "platform_win32.cpp"
+#    include "platform_win32.cpp"
 #endif
 
-SDL_Window *initSDL(WindowSettings windowSettings, const char *windowTitle)
+SDL_Window* initSDL(WindowSettings windowSettings, const char* windowTitle)
 {
-	SDL_Window *window = null;
+    SDL_Window* window = null;
 
-	if (SDL_Init(SDL_INIT_VIDEO) < 0)
-	{
-		logCritical("SDL could not be initialised! :(\n {0}"_s, {makeString(SDL_GetError())});
-	}
-	else
-	{
-		// SDL_image
-		u8 imgFlags = IMG_INIT_PNG;
-		if (!(IMG_Init(imgFlags) & imgFlags))
-		{
-			logCritical("SDL_image could not be initialised! :(\n {0}"_s, {makeString(IMG_GetError())});
-		}
-		else
-		{
-			// Window
-			u32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
-			if (!windowSettings.isWindowed)
-			{
-				windowFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-			}
-			window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowSettings.width, windowSettings.height, windowFlags);
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        logCritical("SDL could not be initialised! :(\n {0}"_s, { makeString(SDL_GetError()) });
+    } else {
+        // SDL_image
+        u8 imgFlags = IMG_INIT_PNG;
+        if (!(IMG_Init(imgFlags) & imgFlags)) {
+            logCritical("SDL_image could not be initialised! :(\n {0}"_s, { makeString(IMG_GetError()) });
+        } else {
+            // Window
+            u32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
+            if (!windowSettings.isWindowed) {
+                windowFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+            }
+            window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowSettings.width, windowSettings.height, windowFlags);
 
-			if (!window)
-			{
-				logCritical("Window could not be created! :(\n {0}"_s, {makeString(SDL_GetError())});
-			}
-			else
-			{
-				SDL_SetWindowMinimumSize(window, 800, 600);
-			}
-		}
-	}
+            if (!window) {
+                logCritical("Window could not be created! :(\n {0}"_s, { makeString(SDL_GetError()) });
+            } else {
+                SDL_SetWindowMinimumSize(window, 800, 600);
+            }
+        }
+    }
 
-	return window;
+    return window;
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
-	// SDL requires these params, and the compiler keeps complaining they're unused, so a hack! Yay!
-	if (argc && argv) {}
+    // SDL requires these params, and the compiler keeps complaining they're unused, so a hack! Yay!
+    if (argc && argv) { }
 
-	// INIT
-	u32 initStartTicks = SDL_GetTicks();
+    // INIT
+    u32 initStartTicks = SDL_GetTicks();
 
-	globalAppState = {};
-	AppState *appState = &globalAppState;
-	globalAppState.rawDeltaTime = SECONDS_PER_FRAME;
-	globalAppState.speedMultiplier = 1.0f;
-	globalAppState.deltaTime = globalAppState.rawDeltaTime * globalAppState.speedMultiplier;
+    globalAppState = {};
+    AppState* appState = &globalAppState;
+    globalAppState.rawDeltaTime = SECONDS_PER_FRAME;
+    globalAppState.speedMultiplier = 1.0f;
+    globalAppState.deltaTime = globalAppState.rawDeltaTime * globalAppState.speedMultiplier;
 
-	initMemoryArena(&globalAppState.systemArena, "System"_s, MB(1));
+    initMemoryArena(&globalAppState.systemArena, "System"_s, MB(1));
 
-	MemoryArena globalFrameTempArena;
-	initMemoryArena(&globalFrameTempArena, "Temp"_s, MB(4));
-	tempArena = &globalFrameTempArena;
+    MemoryArena globalFrameTempArena;
+    initMemoryArena(&globalFrameTempArena, "Temp"_s, MB(4));
+    tempArena = &globalFrameTempArena;
 
 #if BUILD_DEBUG
-	debugInit();
-	globalDebugState->showDebugData = false;
-	
-	initConsole(&globalDebugState->debugArena, 0.2f, 0.9f, 6.0f);
-	SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
-	enableCustomLogger();
+    debugInit();
+    globalDebugState->showDebugData = false;
+
+    initConsole(&globalDebugState->debugArena, 0.2f, 0.9f, 6.0f);
+    SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
+    enableCustomLogger();
 #endif
 
-	initRandom(&globalAppState.cosmeticRandom, Random_MT, (s32)time(null));
+    initRandom(&globalAppState.cosmeticRandom, Random_MT, (s32)time(null));
 
-	initSettings();
-	loadSettings();
+    initSettings();
+    loadSettings();
 
-	SDL_Window *window = initSDL(getWindowSettings(), "Some kind of city builder");
+    SDL_Window* window = initSDL(getWindowSettings(), "Some kind of city builder");
 
-	InputState input;
-	initInput(&input);
-	inputState = &input;
+    InputState input;
+    initInput(&input);
+    inputState = &input;
 
-	initAssets();
-	addAssets();
-	loadAssets();
+    initAssets();
+    addAssets();
+    loadAssets();
 
-	bool initialised = GL_initializeRenderer(window);
-	ASSERT(initialised); //Failed to initialize renderer.
-	rendererLoadAssets();
-	setCursor("default"_s);
-	setCursorVisible(true);
+    bool initialised = GL_initializeRenderer(window);
+    ASSERT(initialised); // Failed to initialize renderer.
+    rendererLoadAssets();
+    setCursor("default"_s);
+    setCursorVisible(true);
 
-	UI::init(&appState->systemArena);
+    UI::init(&appState->systemArena);
 
-	initSavedGamesCatalogue();
+    initSavedGamesCatalogue();
 
-	Camera *worldCamera = &renderer->worldCamera;
-	Camera *uiCamera = &renderer->uiCamera;
+    Camera* worldCamera = &renderer->worldCamera;
+    Camera* uiCamera = &renderer->uiCamera;
 
-	u32 initFinishedTicks = SDL_GetTicks();
-	logInfo("Game initialised in {0} milliseconds."_s, {formatInt(initFinishedTicks - initStartTicks)});
+    u32 initFinishedTicks = SDL_GetTicks();
+    logInfo("Game initialised in {0} milliseconds."_s, { formatInt(initFinishedTicks - initStartTicks) });
 
-
-	// TEST STUFF
+    // TEST STUFF
 #if 1
-	BinaryFileWriter test = startWritingFile(SAV_FILE_ID, BINARY_FILE_FORMAT_VERSION, tempArena);
-	test.addTOCEntry("TEST"_id);
-	struct TestSection
-	{
-		leU32 a;
-		leU32 b;
-		FileBlob data;
-	};
-	test.startSection<TestSection>("TEST"_id, 1);
-	TestSection ts = {};
-	ts.a = 123456789;
-	ts.b = 987654321;
-	String testBlob = "12212233313334444122155555122122188888888"_s;
-	ts.data = test.appendBlob(testBlob.length, (u8*)testBlob.chars, Blob_RLE_S8);
-	test.endSection(&ts);
+    BinaryFileWriter test = startWritingFile(SAV_FILE_ID, BINARY_FILE_FORMAT_VERSION, tempArena);
+    test.addTOCEntry("TEST"_id);
+    struct TestSection {
+        leU32 a;
+        leU32 b;
+        FileBlob data;
+    };
+    test.startSection<TestSection>("TEST"_id, 1);
+    TestSection ts = {};
+    ts.a = 123456789;
+    ts.b = 987654321;
+    String testBlob = "12212233313334444122155555122122188888888"_s;
+    ts.data = test.appendBlob(testBlob.length, (u8*)testBlob.chars, Blob_RLE_S8);
+    test.endSection(&ts);
 #endif
 
-	// GAME LOOP
-	u64 frameStartTime = SDL_GetPerformanceCounter();
-	while (appState->appStatus != AppStatus_Quit)
-	{
-		{
-			DEBUG_BLOCK("Game loop");
+    // GAME LOOP
+    u64 frameStartTime = SDL_GetPerformanceCounter();
+    while (appState->appStatus != AppStatus_Quit) {
+        {
+            DEBUG_BLOCK("Game loop");
 
-			updateInput();
-			
-			if (globalConsole)
-			{
-				updateAndRenderConsole(globalConsole);
-			}
+            updateInput();
 
-			if (haveAssetFilesChanged())
-			{
-				reloadAssets();
-			}
+            if (globalConsole) {
+                updateAndRenderConsole(globalConsole);
+            }
 
-			updateSavedGamesCatalogue();
+            if (haveAssetFilesChanged()) {
+                reloadAssets();
+            }
 
-			if (input.receivedQuitSignal)
-			{
-				appState->appStatus = AppStatus_Quit;
-				break;
-			}
+            updateSavedGamesCatalogue();
 
-			worldCamera->mousePos = unproject(worldCamera, input.mousePosNormalised);
-			uiCamera->mousePos = unproject(uiCamera, input.mousePosNormalised);
+            if (input.receivedQuitSignal) {
+                appState->appStatus = AppStatus_Quit;
+                break;
+            }
 
-			addSetCamera(&renderer->worldBuffer, worldCamera);
-			addClear(&renderer->worldBuffer);
-			addSetCamera(&renderer->uiBuffer, uiCamera);
+            worldCamera->mousePos = unproject(worldCamera, input.mousePosNormalised);
+            uiCamera->mousePos = unproject(uiCamera, input.mousePosNormalised);
 
-			{
-				UI::startFrame();
-				
-				UI::updateAndRenderWindows();
-				
-				AppStatus newAppStatus = appState->appStatus;
+            addSetCamera(&renderer->worldBuffer, worldCamera);
+            addClear(&renderer->worldBuffer);
+            addSetCamera(&renderer->uiBuffer, uiCamera);
 
-				switch (appState->appStatus)
-				{
-					case AppStatus_MainMenu:
-					{
-						newAppStatus = updateAndRenderMainMenu(globalAppState.deltaTime);
-					} break;
+            {
+                UI::startFrame();
 
-					case AppStatus_Credits:
-					{
-						newAppStatus = updateAndRenderCredits(globalAppState.deltaTime);
-					} break;
+                UI::updateAndRenderWindows();
 
-					case AppStatus_Game:
-					{
-						newAppStatus = updateAndRenderGame(appState->gameState, globalAppState.deltaTime);
-					} break;
+                AppStatus newAppStatus = appState->appStatus;
 
-					case AppStatus_Quit: break;
-					
-					INVALID_DEFAULT_CASE;
-				}
+                switch (appState->appStatus) {
+                case AppStatus_MainMenu: {
+                    newAppStatus = updateAndRenderMainMenu(globalAppState.deltaTime);
+                } break;
 
-				if (newAppStatus != appState->appStatus)
-				{
-					// Clean-up for previous state
-					if (appState->appStatus == AppStatus_Game)
-					{
-						freeGameState(appState->gameState);
-						appState->gameState = null;
-					}
+                case AppStatus_Credits: {
+                    newAppStatus = updateAndRenderCredits(globalAppState.deltaTime);
+                } break;
 
-					appState->appStatus = newAppStatus;
-					UI::closeAllWindows();
-				}
+                case AppStatus_Game: {
+                    newAppStatus = updateAndRenderGame(appState->gameState, globalAppState.deltaTime);
+                } break;
 
-				UI::endFrame();
-			}
+                case AppStatus_Quit:
+                    break;
 
-			// Update camera matrices here
-			updateCameraMatrix(worldCamera);
-			updateCameraMatrix(uiCamera);
+                    INVALID_DEFAULT_CASE;
+                }
 
-			// Debug stuff
-			if (globalDebugState)
-			{
-				DEBUG_ASSETS();
+                if (newAppStatus != appState->appStatus) {
+                    // Clean-up for previous state
+                    if (appState->appStatus == AppStatus_Game) {
+                        freeGameState(appState->gameState);
+                        appState->gameState = null;
+                    }
 
-				// TODO: Maybe automatically register arenas with the debug system?
-				// Though, the debug system uses an arena itself, so that could be a bit infinitely-recursive.
-				DEBUG_ARENA(&appState->systemArena, "System");
-				DEBUG_ARENA(tempArena, "Global Temp Arena");
-				DEBUG_ARENA(&renderer->renderArena, "Renderer");
-				DEBUG_ARENA(appState->gameState ? &appState->gameState->gameArena : null, "GameState");
-				DEBUG_ARENA(&settings->settingsArena, "Settings");
-				DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
+                    appState->appStatus = newAppStatus;
+                    UI::closeAllWindows();
+                }
 
-				updateAndRenderDebugData(globalDebugState);
-			}
+                UI::endFrame();
+            }
 
-			// Actually draw things!
-			render();
+            // Update camera matrices here
+            updateCameraMatrix(worldCamera);
+            updateCameraMatrix(uiCamera);
 
-			resetMemoryArena(tempArena);
-		}
+            // Debug stuff
+            if (globalDebugState) {
+                DEBUG_ASSETS();
 
-		// FRAMERATE MONITORING AND CAPPING
-		{
-			DEBUG_BLOCK("SDL_GL_SwapWindow");
-			SDL_GL_SwapWindow(renderer->window);
-			
-			u64 now = SDL_GetPerformanceCounter();
-			f32 deltaTime = (f32)(((f64)(now - frameStartTime)) / ((f64)(SDL_GetPerformanceFrequency())));
-			globalAppState.setDeltaTimeFromLastFrame(deltaTime);
-			frameStartTime = now;
-		}
+                // TODO: Maybe automatically register arenas with the debug system?
+                // Though, the debug system uses an arena itself, so that could be a bit infinitely-recursive.
+                DEBUG_ARENA(&appState->systemArena, "System");
+                DEBUG_ARENA(tempArena, "Global Temp Arena");
+                DEBUG_ARENA(&renderer->renderArena, "Renderer");
+                DEBUG_ARENA(appState->gameState ? &appState->gameState->gameArena : null, "GameState");
+                DEBUG_ARENA(&settings->settingsArena, "Settings");
+                DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
 
-		assets->assetReloadHasJustHappened = false;
-	}
+                updateAndRenderDebugData(globalDebugState);
+            }
 
-	// CLEAN UP
-	freeRenderer();
+            // Actually draw things!
+            render();
 
-	SDL_DestroyWindow(window);
-	IMG_Quit();
-	SDL_Quit();
+            resetMemoryArena(tempArena);
+        }
 
-	return 0;
+        // FRAMERATE MONITORING AND CAPPING
+        {
+            DEBUG_BLOCK("SDL_GL_SwapWindow");
+            SDL_GL_SwapWindow(renderer->window);
+
+            u64 now = SDL_GetPerformanceCounter();
+            f32 deltaTime = (f32)(((f64)(now - frameStartTime)) / ((f64)(SDL_GetPerformanceFrequency())));
+            globalAppState.setDeltaTimeFromLastFrame(deltaTime);
+            frameStartTime = now;
+        }
+
+        assets->assetReloadHasJustHappened = false;
+    }
+
+    // CLEAN UP
+    freeRenderer();
+
+    SDL_DestroyWindow(window);
+    IMG_Quit();
+    SDL_Quit();
+
+    return 0;
 }

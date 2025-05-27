@@ -2,7 +2,7 @@
 
 /**
  * General-purpose object pool.
- * 
+ *
  * Saves memory allocations/deallocations by keeping a list of items that are not currently in use,
  * that can be taken from it when needed, and then returned to it later. It's mostly useful for when
  * there are multiple users of the items, and the number each of them needs varies a lot.
@@ -19,80 +19,75 @@
  * - Sam, 26/07/2019
  */
 
-struct PoolItem
-{
-	PoolItem *prevPoolItem;
-	PoolItem *nextPoolItem;
+struct PoolItem {
+    PoolItem* prevPoolItem;
+    PoolItem* nextPoolItem;
 };
 
 template<typename T>
-struct Pool
-{
-	MemoryArena *memoryArena;
-	T *(*allocateItem)(MemoryArena *arena, void *userData);
-	void *userData; // Passed to allocateItem()
+struct Pool {
+    MemoryArena* memoryArena;
+    T* (*allocateItem)(MemoryArena* arena, void* userData);
+    void* userData; // Passed to allocateItem()
 
-	smm pooledItemCount; // How many items reside in the pool
-	smm totalItemCount;  // How many items this pool has created, total
+    smm pooledItemCount; // How many items reside in the pool
+    smm totalItemCount;  // How many items this pool has created, total
 
-	T *firstItem;
+    T* firstItem;
 };
 
 template<typename T>
-void initPool(Pool<T> *pool, MemoryArena *arena, T *(*allocateItem)(MemoryArena *arena, void *userData), void *userData=null)
+void initPool(Pool<T>* pool, MemoryArena* arena, T* (*allocateItem)(MemoryArena* arena, void* userData), void* userData = null)
 {
-	*pool = {};
-	pool->memoryArena = arena;
-	pool->allocateItem = allocateItem;
-	pool->userData = userData;
-	pool->firstItem = null;
-	pool->pooledItemCount = 0;
-	pool->totalItemCount = 0;
+    *pool = {};
+    pool->memoryArena = arena;
+    pool->allocateItem = allocateItem;
+    pool->userData = userData;
+    pool->firstItem = null;
+    pool->pooledItemCount = 0;
+    pool->totalItemCount = 0;
 }
 
 template<typename T>
-T *getItemFromPool(Pool<T> *pool)
+T* getItemFromPool(Pool<T>* pool)
 {
-	T *result = null;
+    T* result = null;
 
-	if (pool->firstItem != null)
-	{
-		result = pool->firstItem;
-		pool->firstItem = (T*)result->nextPoolItem;
-		if (pool->firstItem != null)
-		{
-			pool->firstItem->prevPoolItem = null;
-		}
+    if (pool->firstItem != null) {
+        result = pool->firstItem;
+        pool->firstItem = (T*)result->nextPoolItem;
+        if (pool->firstItem != null) {
+            pool->firstItem->prevPoolItem = null;
+        }
 
-		pool->pooledItemCount--;
-	}
-	else
-	{
-		result = pool->allocateItem(pool->memoryArena, pool->userData);
-		pool->totalItemCount++;
-	}
+        pool->pooledItemCount--;
+    } else {
+        result = pool->allocateItem(pool->memoryArena, pool->userData);
+        pool->totalItemCount++;
+    }
 
-	result->prevPoolItem = null;
-	result->nextPoolItem = null;
+    result->prevPoolItem = null;
+    result->nextPoolItem = null;
 
-	return result;
+    return result;
 }
 
 template<typename T>
-void addItemToPool(Pool<T> *pool, T *item)
+void addItemToPool(Pool<T>* pool, T* item)
 {
-	// Remove item from its existing list
-	if (item->prevPoolItem != null) item->prevPoolItem->nextPoolItem = item->nextPoolItem;
-	if (item->nextPoolItem != null) item->nextPoolItem->prevPoolItem = item->prevPoolItem;
+    // Remove item from its existing list
+    if (item->prevPoolItem != null)
+        item->prevPoolItem->nextPoolItem = item->nextPoolItem;
+    if (item->nextPoolItem != null)
+        item->nextPoolItem->prevPoolItem = item->prevPoolItem;
 
-	// Add to the pool
-	item->prevPoolItem = null;
-	item->nextPoolItem = pool->firstItem;
-	if (pool->firstItem != null)
-	{
-		pool->firstItem->prevPoolItem = item;
-	}
-	pool->firstItem = item;
+    // Add to the pool
+    item->prevPoolItem = null;
+    item->nextPoolItem = pool->firstItem;
+    if (pool->firstItem != null) {
+        pool->firstItem->prevPoolItem = item;
+    }
+    pool->firstItem = item;
 
-	pool->pooledItemCount++;
+    pool->pooledItemCount++;
 }

@@ -1,25 +1,22 @@
 #pragma once
 
-struct Rect2
-{
-	union
-	{
-		V2 pos;
-		struct
-		{
-			f32 x;
-			f32 y;
-		};
-	};
-	union
-	{
-		V2 size;
-		struct
-		{
-			f32 w;
-			f32 h;
-		};
-	};
+struct Rect2 {
+    union {
+        V2 pos;
+        struct
+        {
+            f32 x;
+            f32 y;
+        };
+    };
+    union {
+        V2 size;
+        struct
+        {
+            f32 w;
+            f32 h;
+        };
+    };
 };
 
 Rect2 rectXYWH(f32 x, f32 y, f32 w, f32 h);
@@ -44,30 +41,27 @@ V2 centreOf(Rect2 rect);
 f32 areaOf(Rect2 rect); // Always positive, even if the rect has negative dimensions
 bool hasPositiveArea(Rect2 rect);
 
-struct Rect2I
-{
-	union
-	{
-		V2I pos;
-		struct
-		{
-			s32 x;
-			s32 y;
-		};
-	};
-	union
-	{
-		V2I size;
-		struct
-		{
-			s32 w;
-			s32 h;
-		};
-	};
+struct Rect2I {
+    union {
+        V2I pos;
+        struct
+        {
+            s32 x;
+            s32 y;
+        };
+    };
+    union {
+        V2I size;
+        struct
+        {
+            s32 w;
+            s32 h;
+        };
+    };
 };
 
 Rect2I irectXYWH(s32 x, s32 y, s32 w, s32 h);
-Rect2I irectInfinity(); // Contains approximately everything...
+Rect2I irectInfinity();         // Contains approximately everything...
 Rect2I irectNegativeInfinity(); // Contains nothing
 Rect2I irectPosSize(V2I position, V2I size);
 Rect2I irectCentreSize(s32 centreX, s32 centreY, s32 sizeX, s32 sizeY);

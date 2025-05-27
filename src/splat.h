@@ -23,20 +23,19 @@
 // Hmmm, actually, that system would mean not needing to store a radius array, as you could
 // just compute the exact radius at any given angle. Interesting!
 //
-struct Splat
-{
-	V2I centre;
+struct Splat {
+    V2I centre;
 
-	f32 minRadius;
-	f32 maxRadius;
-	f32 radiusRange;
-	Array<f32> radius;
-	f32 degreesToIndex;
+    f32 minRadius;
+    f32 maxRadius;
+    f32 radiusRange;
+    Array<f32> radius;
+    f32 degreesToIndex;
 };
 
 // `resolution` is how many radius values are generated. eg, if it's 36, we get 1 value for every 10 degrees.
-Splat createRandomSplat(s32 centreX, s32 centreY, f32 minRadius, f32 maxRadius, s32 resolution, Random *random, s32 smoothness=4, MemoryArena *memoryArena = tempArena);
+Splat createRandomSplat(s32 centreX, s32 centreY, f32 minRadius, f32 maxRadius, s32 resolution, Random* random, s32 smoothness = 4, MemoryArena* memoryArena = tempArena);
 
-f32 getRadiusAtAngle(Splat *splat, f32 degrees);
-Rect2I getBoundingBox(Splat *splat);
-bool contains(Splat *splat, s32 x, s32 y);
+f32 getRadiusAtAngle(Splat* splat, f32 degrees);
+Rect2I getBoundingBox(Splat* splat);
+bool contains(Splat* splat, s32 x, s32 y);

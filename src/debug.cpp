@@ -2,641 +2,557 @@
 
 void debugInit()
 {
-	bootstrapArena(DebugState, globalDebugState, debugArena);
-	globalDebugState->showDebugData = false;
-	globalDebugState->captureDebugData = true;
-	globalDebugState->readingFrameIndex = DEBUG_FRAMES_COUNT - 1;
+    bootstrapArena(DebugState, globalDebugState, debugArena);
+    globalDebugState->showDebugData = false;
+    globalDebugState->captureDebugData = true;
+    globalDebugState->readingFrameIndex = DEBUG_FRAMES_COUNT - 1;
 
-	initLinkedListSentinel(&globalDebugState->arenaDataSentinel);
-	initLinkedListSentinel(&globalDebugState->poolDataSentinel);
-	initLinkedListSentinel(&globalDebugState->renderBufferDataSentinel);
+    initLinkedListSentinel(&globalDebugState->arenaDataSentinel);
+    initLinkedListSentinel(&globalDebugState->poolDataSentinel);
+    initLinkedListSentinel(&globalDebugState->renderBufferDataSentinel);
 
-	initHashTable(&globalDebugState->codeData, 0.5f, 2048);
+    initHashTable(&globalDebugState->codeData, 0.5f, 2048);
 
-	initLinkedListSentinel(&globalDebugState->topCodeBlocksFreeListSentinel);
-	initLinkedListSentinel(&globalDebugState->topCodeBlocksSentinel);
-	for (u32 i=0; i<DEBUG_TOP_CODE_BLOCKS_COUNT; i++)
-	{
-		DebugCodeDataWrapper *item = allocateStruct<DebugCodeDataWrapper>(&globalDebugState->debugArena);
-		addToLinkedList(item, &globalDebugState->topCodeBlocksFreeListSentinel);
-	}
+    initLinkedListSentinel(&globalDebugState->topCodeBlocksFreeListSentinel);
+    initLinkedListSentinel(&globalDebugState->topCodeBlocksSentinel);
+    for (u32 i = 0; i < DEBUG_TOP_CODE_BLOCKS_COUNT; i++) {
+        DebugCodeDataWrapper* item = allocateStruct<DebugCodeDataWrapper>(&globalDebugState->debugArena);
+        addToLinkedList(item, &globalDebugState->topCodeBlocksFreeListSentinel);
+    }
 }
 
-void processDebugData(DebugState *debugState)
+void processDebugData(DebugState* debugState)
 {
-	DEBUG_FUNCTION_T(DCDT_Debug);
-	
-	u32 oldWritingFrameIndex = debugState->writingFrameIndex;
-	debugState->frameEndCycle[debugState->writingFrameIndex] = SDL_GetPerformanceCounter();
-	if (debugState->captureDebugData)
-	{
-		debugState->readingFrameIndex = debugState->writingFrameIndex;
-		debugState->writingFrameIndex = (debugState->writingFrameIndex + 1) % DEBUG_FRAMES_COUNT;
-	}
-	debugState->frameStartCycle[debugState->writingFrameIndex] = SDL_GetPerformanceCounter();
+    DEBUG_FUNCTION_T(DCDT_Debug);
 
-	moveAllNodes(&debugState->topCodeBlocksSentinel, &debugState->topCodeBlocksFreeListSentinel);
-	ASSERT(linkedListIsEmpty(&debugState->topCodeBlocksSentinel)); //List we just freed is not empty!
+    u32 oldWritingFrameIndex = debugState->writingFrameIndex;
+    debugState->frameEndCycle[debugState->writingFrameIndex] = SDL_GetPerformanceCounter();
+    if (debugState->captureDebugData) {
+        debugState->readingFrameIndex = debugState->writingFrameIndex;
+        debugState->writingFrameIndex = (debugState->writingFrameIndex + 1) % DEBUG_FRAMES_COUNT;
+    }
+    debugState->frameStartCycle[debugState->writingFrameIndex] = SDL_GetPerformanceCounter();
 
-	for (auto it = debugState->codeData.iterate(); it.hasNext(); it.next())
-	{
-		DebugCodeData *code = it.get();
+    moveAllNodes(&debugState->topCodeBlocksSentinel, &debugState->topCodeBlocksFreeListSentinel);
+    ASSERT(linkedListIsEmpty(&debugState->topCodeBlocksSentinel)); // List we just freed is not empty!
 
-		// Move the `working` stuff into the correct frame
-		if (debugState->captureDebugData)
-		{
-			code->callCount[oldWritingFrameIndex] = code->workingCallCount;
-			code->totalCycleCount[oldWritingFrameIndex] = code->workingTotalCycleCount;
-			code->averageTotalCycleCount = 0;
-			for (s32 frameIndex = 0; frameIndex < DEBUG_FRAMES_COUNT; frameIndex++)
-			{
-				code->averageTotalCycleCount += code->totalCycleCount[frameIndex];
-			}
-			code->averageTotalCycleCount /= DEBUG_FRAMES_COUNT;
-		}
-		code->workingCallCount = 0;
-		code->workingTotalCycleCount = 0;
+    for (auto it = debugState->codeData.iterate(); it.hasNext(); it.next()) {
+        DebugCodeData* code = it.get();
 
+        // Move the `working` stuff into the correct frame
+        if (debugState->captureDebugData) {
+            code->callCount[oldWritingFrameIndex] = code->workingCallCount;
+            code->totalCycleCount[oldWritingFrameIndex] = code->workingTotalCycleCount;
+            code->averageTotalCycleCount = 0;
+            for (s32 frameIndex = 0; frameIndex < DEBUG_FRAMES_COUNT; frameIndex++) {
+                code->averageTotalCycleCount += code->totalCycleCount[frameIndex];
+            }
+            code->averageTotalCycleCount /= DEBUG_FRAMES_COUNT;
+        }
+        code->workingCallCount = 0;
+        code->workingTotalCycleCount = 0;
 
-		//
-		// Calculate new top blocks list
-		//
+        //
+        // Calculate new top blocks list
+        //
 
-		// Find spot on list. If we fail, target is the sentinel so it all still works!
-		DebugCodeDataWrapper *target = debugState->topCodeBlocksSentinel.nextNode;
-		bool foundSmallerItem = false;
-		while (target != &debugState->topCodeBlocksSentinel)
-		{
-			if (target->data->totalCycleCount[debugState->readingFrameIndex]
-			    < code->totalCycleCount[debugState->readingFrameIndex])
-			{
-				foundSmallerItem = true;
-				break;
-			}
-			target = target->nextNode;
-		}
+        // Find spot on list. If we fail, target is the sentinel so it all still works!
+        DebugCodeDataWrapper* target = debugState->topCodeBlocksSentinel.nextNode;
+        bool foundSmallerItem = false;
+        while (target != &debugState->topCodeBlocksSentinel) {
+            if (target->data->totalCycleCount[debugState->readingFrameIndex]
+                < code->totalCycleCount[debugState->readingFrameIndex]) {
+                foundSmallerItem = true;
+                break;
+            }
+            target = target->nextNode;
+        }
 
-		bool freeListHasItem = !linkedListIsEmpty(&debugState->topCodeBlocksFreeListSentinel);
+        bool freeListHasItem = !linkedListIsEmpty(&debugState->topCodeBlocksFreeListSentinel);
 
-		DebugCodeDataWrapper *item = null;
-		if (freeListHasItem)
-		{
-			item = debugState->topCodeBlocksFreeListSentinel.nextNode;
-		}
-		else if (foundSmallerItem)
-		{
-			item = debugState->topCodeBlocksSentinel.prevNode;
-		}
+        DebugCodeDataWrapper* item = null;
+        if (freeListHasItem) {
+            item = debugState->topCodeBlocksFreeListSentinel.nextNode;
+        } else if (foundSmallerItem) {
+            item = debugState->topCodeBlocksSentinel.prevNode;
+        }
 
-		if (item)
-		{
-			// NB: If the item we want was at the end of the list, it could ALSO be the target!
-			// So, we only move it around if that's not the case. Otherwise it gets added to a
-			// new list that's just itself, and it disappears off into the aether forever.
-			// - Sam, 13/05/2019
-			if (item != target)
-			{
-				removeFromLinkedList(item);
-				addToLinkedList(item, target);
-			}
+        if (item) {
+            // NB: If the item we want was at the end of the list, it could ALSO be the target!
+            // So, we only move it around if that's not the case. Otherwise it gets added to a
+            // new list that's just itself, and it disappears off into the aether forever.
+            // - Sam, 13/05/2019
+            if (item != target) {
+                removeFromLinkedList(item);
+                addToLinkedList(item, target);
+            }
 
-			item->data = code;
-		}
+            item->data = code;
+        }
 
-		ASSERT(countNodes(&debugState->topCodeBlocksSentinel) + countNodes(&debugState->topCodeBlocksFreeListSentinel) == DEBUG_TOP_CODE_BLOCKS_COUNT); //We lost a top code blocks node!
-	}
+        ASSERT(countNodes(&debugState->topCodeBlocksSentinel) + countNodes(&debugState->topCodeBlocksFreeListSentinel) == DEBUG_TOP_CODE_BLOCKS_COUNT); // We lost a top code blocks node!
+    }
 }
 
-void clearNewFrameDebugData(DebugState *debugState)
+void clearNewFrameDebugData(DebugState* debugState)
 {
-	u32 frameIndex = debugState->writingFrameIndex;
+    u32 frameIndex = debugState->writingFrameIndex;
 
-	// Clear away old data before we record the new
-	// This stops ghost data hanging around if the thing isn't tracked at all this frame
+    // Clear away old data before we record the new
+    // This stops ghost data hanging around if the thing isn't tracked at all this frame
 
-	// Memory arenas
-	{
-		DebugArenaData *arena = debugState->arenaDataSentinel.nextNode;
-		while (arena != &debugState->arenaDataSentinel)
-		{
-			arena->blockCount[frameIndex] = 0;
-			arena->totalSize[frameIndex] = 0;
-			arena->usedSize[frameIndex] = 0;
-			arena = arena->nextNode;
-		}
-	}
+    // Memory arenas
+    {
+        DebugArenaData* arena = debugState->arenaDataSentinel.nextNode;
+        while (arena != &debugState->arenaDataSentinel) {
+            arena->blockCount[frameIndex] = 0;
+            arena->totalSize[frameIndex] = 0;
+            arena->usedSize[frameIndex] = 0;
+            arena = arena->nextNode;
+        }
+    }
 
-	// Pools
-	{
-		DebugPoolData *pool = debugState->poolDataSentinel.nextNode;
-		while (pool != &debugState->poolDataSentinel)
-		{
-			pool->pooledItemCount[frameIndex] = 0;
-			pool->totalItemCount[frameIndex] = 0;
-			pool = pool->nextNode;
-		}
-	}
+    // Pools
+    {
+        DebugPoolData* pool = debugState->poolDataSentinel.nextNode;
+        while (pool != &debugState->poolDataSentinel) {
+            pool->pooledItemCount[frameIndex] = 0;
+            pool->totalItemCount[frameIndex] = 0;
+            pool = pool->nextNode;
+        }
+    }
 
-	// Render buffers
-	{
-		DebugRenderBufferData *renderBufferData = debugState->renderBufferDataSentinel.nextNode;
-		while (renderBufferData != &debugState->renderBufferDataSentinel)
-		{
-			renderBufferData->drawCallCount[frameIndex] = 0;
-			renderBufferData->chunkCount[frameIndex] = 0;
-			renderBufferData->startTime[frameIndex] = 0;
-			renderBufferData->endTime[frameIndex] = 0;
+    // Render buffers
+    {
+        DebugRenderBufferData* renderBufferData = debugState->renderBufferDataSentinel.nextNode;
+        while (renderBufferData != &debugState->renderBufferDataSentinel) {
+            renderBufferData->drawCallCount[frameIndex] = 0;
+            renderBufferData->chunkCount[frameIndex] = 0;
+            renderBufferData->startTime[frameIndex] = 0;
+            renderBufferData->endTime[frameIndex] = 0;
 
-			renderBufferData = renderBufferData->nextNode;
-		}
-	}
+            renderBufferData = renderBufferData->nextNode;
+        }
+    }
 }
 
-struct DebugTextState
-{
-	V2I pos;
-	Alignment hAlign;
-	char buffer[1024];
-	BitmapFont *font;
-	V4 color;
-	s32 maxWidth;
-	bool progressUpwards;
+struct DebugTextState {
+    V2I pos;
+    Alignment hAlign;
+    char buffer[1024];
+    BitmapFont* font;
+    V4 color;
+    s32 maxWidth;
+    bool progressUpwards;
 
-	RenderBuffer *renderBuffer;
-	Camera *camera;
-	s8 textShaderID;
-	s8 untexturedShaderID;
+    RenderBuffer* renderBuffer;
+    Camera* camera;
+    s8 textShaderID;
+    s8 untexturedShaderID;
 
-	u32 charsLastPrinted;
+    u32 charsLastPrinted;
 };
 
-void initDebugTextState(DebugTextState *textState, BitmapFont *font, V4 textColor, s32 screenEdgePadding, bool upwards, bool alignLeft)
+void initDebugTextState(DebugTextState* textState, BitmapFont* font, V4 textColor, s32 screenEdgePadding, bool upwards, bool alignLeft)
 {
-	*textState = {};
+    *textState = {};
 
-	textState->renderBuffer = &renderer->debugBuffer;
-	textState->camera = &renderer->uiCamera;
+    textState->renderBuffer = &renderer->debugBuffer;
+    textState->camera = &renderer->uiCamera;
 
-	textState->progressUpwards = upwards;
-	if (alignLeft)
-	{
-		textState->hAlign = ALIGN_LEFT;
-		textState->pos.x = screenEdgePadding;
-	}
-	else
-	{
-		textState->hAlign = ALIGN_RIGHT;
-		textState->pos.x = ceil_s32(renderer->uiCamera.size.x) - screenEdgePadding;
-	}
+    textState->progressUpwards = upwards;
+    if (alignLeft) {
+        textState->hAlign = ALIGN_LEFT;
+        textState->pos.x = screenEdgePadding;
+    } else {
+        textState->hAlign = ALIGN_RIGHT;
+        textState->pos.x = ceil_s32(renderer->uiCamera.size.x) - screenEdgePadding;
+    }
 
-	if (upwards) 
-	{
-		textState->pos.y = ceil_s32(renderer->uiCamera.size.y) - screenEdgePadding;
-	}
-	else
-	{
-		textState->pos.y = screenEdgePadding;
-	}
-	textState->font = font;
-	textState->color = textColor;
-	textState->maxWidth = floor_s32(renderer->uiCamera.size.x) - (2*screenEdgePadding);
+    if (upwards) {
+        textState->pos.y = ceil_s32(renderer->uiCamera.size.y) - screenEdgePadding;
+    } else {
+        textState->pos.y = screenEdgePadding;
+    }
+    textState->font = font;
+    textState->color = textColor;
+    textState->maxWidth = floor_s32(renderer->uiCamera.size.x) - (2 * screenEdgePadding);
 
-	textState->textShaderID = renderer->shaderIds.text;
-	textState->untexturedShaderID = renderer->shaderIds.untextured;
+    textState->textShaderID = renderer->shaderIds.text;
+    textState->untexturedShaderID = renderer->shaderIds.untextured;
 }
 
-void debugTextOut(DebugTextState *textState, String text, bool doHighlight = false, V4 *color = null)
+void debugTextOut(DebugTextState* textState, String text, bool doHighlight = false, V4* color = null)
 {
-	s32 align = textState->hAlign;
-	if (textState->progressUpwards) align |= ALIGN_BOTTOM;
-	else                            align |= ALIGN_TOP;
+    s32 align = textState->hAlign;
+    if (textState->progressUpwards)
+        align |= ALIGN_BOTTOM;
+    else
+        align |= ALIGN_TOP;
 
-	textState->charsLastPrinted = text.length;
-	V4 textColor = (color != null) ? *color : textState->color;
+    textState->charsLastPrinted = text.length;
+    V4 textColor = (color != null) ? *color : textState->color;
 
-	V2I textSize = calculateTextSize(textState->font, text, textState->maxWidth);
-	V2I topLeft  = calculateTextPosition(textState->pos, textSize, align);
+    V2I textSize = calculateTextSize(textState->font, text, textState->maxWidth);
+    V2I topLeft = calculateTextPosition(textState->pos, textSize, align);
 
-	Rect2I bounds = irectPosSize(topLeft, textSize);
+    Rect2I bounds = irectPosSize(topLeft, textSize);
 
-	if (doHighlight && contains(bounds, textState->camera->mousePos))
-	{
-		drawSingleRect(textState->renderBuffer, bounds, textState->untexturedShaderID, textColor * 0.5f);
-		drawText(textState->renderBuffer, textState->font, text, bounds, align, color255(0, 0, 0, 255), textState->textShaderID);
-	}
-	else
-	{
-		drawText(textState->renderBuffer, textState->font, text, bounds, align, textColor, textState->textShaderID);
-	}
+    if (doHighlight && contains(bounds, textState->camera->mousePos)) {
+        drawSingleRect(textState->renderBuffer, bounds, textState->untexturedShaderID, textColor * 0.5f);
+        drawText(textState->renderBuffer, textState->font, text, bounds, align, color255(0, 0, 0, 255), textState->textShaderID);
+    } else {
+        drawText(textState->renderBuffer, textState->font, text, bounds, align, textColor, textState->textShaderID);
+    }
 
-	if (textState->progressUpwards)
-	{
-		textState->pos.y -= bounds.h;
-	}
-	else
-	{
-		textState->pos.y += bounds.h;
-	}
+    if (textState->progressUpwards) {
+        textState->pos.y -= bounds.h;
+    } else {
+        textState->pos.y += bounds.h;
+    }
 }
 
-void renderDebugData(DebugState *debugState)
+void renderDebugData(DebugState* debugState)
 {
-	DEBUG_FUNCTION_T(DCDT_Debug);
+    DEBUG_FUNCTION_T(DCDT_Debug);
 
-	// This is the only usage of getFont(String). Ideally we'd replace it with an
-	// AssetRef, but there's no obvious place to put it. It can't go in the
-	// DebugState because debugInit() is called before the Asset system is
-	// initialised, so getAssetRef() won't work. (getAssetRef() interns the
-	// string it's given, so it crashes if the Asset system isn't initialised.)
-	// So for now, we're keeping this old method.
-	// - Sam, 18/02/2020
-	BitmapFont *font = getFont("debug.fnt"_s);
-	RenderBuffer *renderBuffer = &renderer->debugBuffer;
+    // This is the only usage of getFont(String). Ideally we'd replace it with an
+    // AssetRef, but there's no obvious place to put it. It can't go in the
+    // DebugState because debugInit() is called before the Asset system is
+    // initialised, so getAssetRef() won't work. (getAssetRef() interns the
+    // string it's given, so it crashes if the Asset system isn't initialised.)
+    // So for now, we're keeping this old method.
+    // - Sam, 18/02/2020
+    BitmapFont* font = getFont("debug.fnt"_s);
+    RenderBuffer* renderBuffer = &renderer->debugBuffer;
 
-	u64 cyclesPerSecond = SDL_GetPerformanceFrequency();
-	u32 rfi = debugState->readingFrameIndex;
-	drawSingleRect(renderBuffer, rectXYWH(0,0,renderer->uiCamera.size.x, renderer->uiCamera.size.y), renderer->shaderIds.untextured, color255(0,0,0,128));
-	
-	// Draw a "nice" chart!
-	{
-		f32 graphHeight = 150.0f;
-		drawSingleRect(renderBuffer, rectXYWH(0, renderer->uiCamera.size.y - graphHeight, renderer->uiCamera.size.x, 1), renderer->shaderIds.untextured, color255(255, 255, 255, 128));
-		drawSingleRect(renderBuffer, rectXYWH(0, renderer->uiCamera.size.y - graphHeight*2, renderer->uiCamera.size.x, 1), renderer->shaderIds.untextured, color255(255, 255, 255, 128));
-		f32 targetCyclesPerFrame = cyclesPerSecond / 60.0f;
-		f32 barWidth = renderer->uiCamera.size.x / (f32)DEBUG_FRAMES_COUNT;
-		f32 barHeightPerCycle = graphHeight / targetCyclesPerFrame;
-		V4 barColor = color255(255, 0, 0, 128);
-		V4 activeBarColor = color255(255, 255, 0, 128);
-		u32 barIndex = 0;
-		DrawRectsGroup *rectsGroup = beginRectsGroupUntextured(renderBuffer, renderer->shaderIds.untextured, DEBUG_FRAMES_COUNT);
-		for (u32 fi = debugState->writingFrameIndex + 1;
-				 fi != debugState->writingFrameIndex;
-				 fi = wrap<u32>(fi + 1, DEBUG_FRAMES_COUNT))
-		{
-			u64 frameCycles = debugState->frameEndCycle[fi] - debugState->frameStartCycle[fi];
-			f32 barHeight = barHeightPerCycle * (f32)frameCycles;
-			addUntexturedRect(rectsGroup, rectXYWH(barWidth * barIndex++, renderer->uiCamera.size.y - barHeight, barWidth, barHeight), fi == rfi ? activeBarColor : barColor);
-		}
-		endRectsGroup(rectsGroup);
-	}
+    u64 cyclesPerSecond = SDL_GetPerformanceFrequency();
+    u32 rfi = debugState->readingFrameIndex;
+    drawSingleRect(renderBuffer, rectXYWH(0, 0, renderer->uiCamera.size.x, renderer->uiCamera.size.y), renderer->shaderIds.untextured, color255(0, 0, 0, 128));
 
-	DebugTextState textState;
-	initDebugTextState(&textState, font, makeWhite(), 16, false, true);
+    // Draw a "nice" chart!
+    {
+        f32 graphHeight = 150.0f;
+        drawSingleRect(renderBuffer, rectXYWH(0, renderer->uiCamera.size.y - graphHeight, renderer->uiCamera.size.x, 1), renderer->shaderIds.untextured, color255(255, 255, 255, 128));
+        drawSingleRect(renderBuffer, rectXYWH(0, renderer->uiCamera.size.y - graphHeight * 2, renderer->uiCamera.size.x, 1), renderer->shaderIds.untextured, color255(255, 255, 255, 128));
+        f32 targetCyclesPerFrame = cyclesPerSecond / 60.0f;
+        f32 barWidth = renderer->uiCamera.size.x / (f32)DEBUG_FRAMES_COUNT;
+        f32 barHeightPerCycle = graphHeight / targetCyclesPerFrame;
+        V4 barColor = color255(255, 0, 0, 128);
+        V4 activeBarColor = color255(255, 255, 0, 128);
+        u32 barIndex = 0;
+        DrawRectsGroup* rectsGroup = beginRectsGroupUntextured(renderBuffer, renderer->shaderIds.untextured, DEBUG_FRAMES_COUNT);
+        for (u32 fi = debugState->writingFrameIndex + 1;
+            fi != debugState->writingFrameIndex;
+            fi = wrap<u32>(fi + 1, DEBUG_FRAMES_COUNT)) {
+            u64 frameCycles = debugState->frameEndCycle[fi] - debugState->frameStartCycle[fi];
+            f32 barHeight = barHeightPerCycle * (f32)frameCycles;
+            addUntexturedRect(rectsGroup, rectXYWH(barWidth * barIndex++, renderer->uiCamera.size.y - barHeight, barWidth, barHeight), fi == rfi ? activeBarColor : barColor);
+        }
+        endRectsGroup(rectsGroup);
+    }
 
-	u32 framesAgo = wrap<u32>(debugState->writingFrameIndex - rfi, DEBUG_FRAMES_COUNT);
-	debugTextOut(&textState, myprintf("Examining {0} frames ago"_s, {formatInt(framesAgo)}));
+    DebugTextState textState;
+    initDebugTextState(&textState, font, makeWhite(), 16, false, true);
 
-	// Asset system
-	{
-		DebugAssetData *assetData = &debugState->assetData;
-		smm totalAssetMemory = assetData->assetMemoryAllocated[rfi] + assetData->assetsByNameSize[rfi] + assetData->arenaTotalSize[rfi];
-		smm usedAssetMemory = assetData->assetMemoryAllocated[rfi] + assetData->assetsByNameSize[rfi] + assetData->arenaUsedSize[rfi];
-		debugTextOut(&textState, myprintf("Asset system: {0}/{1} assets loaded, using {2} bytes ({3} allocated)\n    {4} bytes in arena, {5} bytes in assets, {6} bytes in hashtables\n    sizeof(Asset) = {7}"_s, {
-			formatInt(assetData->loadedAssetCount[rfi]),
-			formatInt(assetData->assetCount[rfi]),
-			formatInt(usedAssetMemory),
-			formatInt(totalAssetMemory),
+    u32 framesAgo = wrap<u32>(debugState->writingFrameIndex - rfi, DEBUG_FRAMES_COUNT);
+    debugTextOut(&textState, myprintf("Examining {0} frames ago"_s, { formatInt(framesAgo) }));
 
-			formatInt(assetData->arenaUsedSize[rfi]),
-			formatInt(assetData->assetMemoryAllocated[rfi]),
-			formatInt(assetData->assetsByNameSize[rfi]),
-			formatInt(sizeof(Asset))
-		}));
-	}
+    // Asset system
+    {
+        DebugAssetData* assetData = &debugState->assetData;
+        smm totalAssetMemory = assetData->assetMemoryAllocated[rfi] + assetData->assetsByNameSize[rfi] + assetData->arenaTotalSize[rfi];
+        smm usedAssetMemory = assetData->assetMemoryAllocated[rfi] + assetData->assetsByNameSize[rfi] + assetData->arenaUsedSize[rfi];
+        debugTextOut(&textState, myprintf("Asset system: {0}/{1} assets loaded, using {2} bytes ({3} allocated)\n    {4} bytes in arena, {5} bytes in assets, {6} bytes in hashtables\n    sizeof(Asset) = {7}"_s, { formatInt(assetData->loadedAssetCount[rfi]), formatInt(assetData->assetCount[rfi]), formatInt(usedAssetMemory), formatInt(totalAssetMemory),
 
-	// Memory arenas
-	{
-		DebugArenaData *arena = debugState->arenaDataSentinel.nextNode;
-		while (arena != &debugState->arenaDataSentinel)
-		{
-			debugTextOut(&textState, myprintf("Memory arena {0}: {1} blocks, {2} used / {3} allocated ({4}%)"_s, {
-				arena->name,
-				formatInt(arena->blockCount[rfi]),
-				formatInt(arena->usedSize[rfi]),
-				formatInt(arena->totalSize[rfi]),
-				formatFloat(100.0f * (f32)arena->usedSize[rfi] / (f32)arena->totalSize[rfi], 1)
-			}));
-			arena = arena->nextNode;
-		}
-	}
+                                                                                                                                                                                                                       formatInt(assetData->arenaUsedSize[rfi]), formatInt(assetData->assetMemoryAllocated[rfi]), formatInt(assetData->assetsByNameSize[rfi]), formatInt(sizeof(Asset)) }));
+    }
 
-	// Pools
-	{
-		DebugPoolData *pool = debugState->poolDataSentinel.nextNode;
-		while (pool != &debugState->poolDataSentinel)
-		{
-			debugTextOut(&textState, myprintf("Pool {0}: {1} / {2}"_s, {
-				pool->name,
-				formatInt(pool->pooledItemCount[rfi]),
-				formatInt(pool->totalItemCount[rfi])
-			}));
-			pool = pool->nextNode;
-		}
-	}
+    // Memory arenas
+    {
+        DebugArenaData* arena = debugState->arenaDataSentinel.nextNode;
+        while (arena != &debugState->arenaDataSentinel) {
+            debugTextOut(&textState, myprintf("Memory arena {0}: {1} blocks, {2} used / {3} allocated ({4}%)"_s, { arena->name, formatInt(arena->blockCount[rfi]), formatInt(arena->usedSize[rfi]), formatInt(arena->totalSize[rfi]), formatFloat(100.0f * (f32)arena->usedSize[rfi] / (f32)arena->totalSize[rfi], 1) }));
+            arena = arena->nextNode;
+        }
+    }
 
-	// Render buffers
-	{
-		DebugRenderBufferData *renderBufferData = debugState->renderBufferDataSentinel.nextNode;
-		while (renderBufferData != &debugState->renderBufferDataSentinel)
-		{
-			s32 drawCallCount = renderBufferData->drawCallCount[rfi];
-			// Skip empty renderbuffers
-			if (drawCallCount != 0)
-			{
-				s32 itemsDrawn = 0;
-				for (s32 i=0; i<drawCallCount; i++)
-				{
-					itemsDrawn += renderBufferData->drawCalls[rfi][i].itemsDrawn;
-				}
-				debugTextOut(&textState, myprintf("Render buffer '{0}': {1} items drawn, in {2} batches. ({3} chunks)"_s, {
-					renderBufferData->name,
-					formatInt(itemsDrawn),
-					formatInt(drawCallCount),
-					formatInt(renderBufferData->chunkCount[rfi])
-				}));
-			}
-			renderBufferData = renderBufferData->nextNode;
-		}
-	}
+    // Pools
+    {
+        DebugPoolData* pool = debugState->poolDataSentinel.nextNode;
+        while (pool != &debugState->poolDataSentinel) {
+            debugTextOut(&textState, myprintf("Pool {0}: {1} / {2}"_s, { pool->name, formatInt(pool->pooledItemCount[rfi]), formatInt(pool->totalItemCount[rfi]) }));
+            pool = pool->nextNode;
+        }
+    }
 
-	debugTextOut(&textState, myprintf("There are {0} cycles in a second"_s, {formatInt(cyclesPerSecond)}));
+    // Render buffers
+    {
+        DebugRenderBufferData* renderBufferData = debugState->renderBufferDataSentinel.nextNode;
+        while (renderBufferData != &debugState->renderBufferDataSentinel) {
+            s32 drawCallCount = renderBufferData->drawCallCount[rfi];
+            // Skip empty renderbuffers
+            if (drawCallCount != 0) {
+                s32 itemsDrawn = 0;
+                for (s32 i = 0; i < drawCallCount; i++) {
+                    itemsDrawn += renderBufferData->drawCalls[rfi][i].itemsDrawn;
+                }
+                debugTextOut(&textState, myprintf("Render buffer '{0}': {1} items drawn, in {2} batches. ({3} chunks)"_s, { renderBufferData->name, formatInt(itemsDrawn), formatInt(drawCallCount), formatInt(renderBufferData->chunkCount[rfi]) }));
+            }
+            renderBufferData = renderBufferData->nextNode;
+        }
+    }
 
-	// Top code blocks
-	{
-		debugTextOut(&textState, myprintf("{0}| {1}| {2}| {3}| {4}"_s, {
-			formatString("Code", 60),
-			formatString("Total cycles", 20, false),
-			formatString("Calls", 10, false),
-			formatString("Avg Cycles", 20, false),
-			formatString("2-second avg cycles", 20, false)
-		}));
+    debugTextOut(&textState, myprintf("There are {0} cycles in a second"_s, { formatInt(cyclesPerSecond) }));
 
-		debugTextOut(&textState, repeatChar('-', textState.charsLastPrinted));
-		DebugCodeDataWrapper *topBlock = debugState->topCodeBlocksSentinel.nextNode;
-		f32 msPerCycle = 1000.0f / (f32)cyclesPerSecond;
-		while (topBlock != &debugState->topCodeBlocksSentinel)
-		{
-			DebugCodeData *code = topBlock->data;
-			f32 totalCycles = (f32)code->totalCycleCount[rfi];
-			f32 averageCycles = totalCycles / (f32)code->callCount[rfi];
-			debugTextOut(&textState, myprintf("{0}| {1} ({2}ms)| {3}| {4} ({5}ms)| {6} ({7}ms)"_s, {
-				formatString(code->name, 60),
-				formatString(formatInt(code->totalCycleCount[rfi]), 10, false),
-				formatString(formatFloat((f32)totalCycles * msPerCycle, 2), 5, false),
-				formatString(formatInt(code->callCount[rfi]), 10, false),
-				formatString(formatInt((s32)averageCycles), 10, false),
-				formatString(formatFloat(averageCycles * msPerCycle, 2), 5, false),
-				formatString(formatInt(code->averageTotalCycleCount), 10, false),
-				formatString(formatFloat(code->averageTotalCycleCount * msPerCycle, 2), 5, false),
-			}), true, debugCodeDataTagColors + code->tag);
-			topBlock = topBlock->nextNode;
-		}
-	}
+    // Top code blocks
+    {
+        debugTextOut(&textState, myprintf("{0}| {1}| {2}| {3}| {4}"_s, { formatString("Code", 60), formatString("Total cycles", 20, false), formatString("Calls", 10, false), formatString("Avg Cycles", 20, false), formatString("2-second avg cycles", 20, false) }));
 
-	// Put FPS in top right
-	initDebugTextState(&textState, font, makeWhite(), 16, false, false);
-	{
-		String smsForFrame = "???"_s;
-		String sfps = "???"_s;
-		if (rfi != debugState->writingFrameIndex)
-		{
-			f32 msForFrame = (f32) (debugState->frameEndCycle[rfi] - debugState->frameStartCycle[rfi]) / (f32)(cyclesPerSecond/1000);
-			smsForFrame = formatFloat(msForFrame, 2);
-			sfps = formatFloat(1000.0f / max(msForFrame, 1.0f), 2);
-		}
-		debugTextOut(&textState, myprintf("FPS: {0} ({1}ms)"_s, {sfps, smsForFrame}));
-	}
+        debugTextOut(&textState, repeatChar('-', textState.charsLastPrinted));
+        DebugCodeDataWrapper* topBlock = debugState->topCodeBlocksSentinel.nextNode;
+        f32 msPerCycle = 1000.0f / (f32)cyclesPerSecond;
+        while (topBlock != &debugState->topCodeBlocksSentinel) {
+            DebugCodeData* code = topBlock->data;
+            f32 totalCycles = (f32)code->totalCycleCount[rfi];
+            f32 averageCycles = totalCycles / (f32)code->callCount[rfi];
+            debugTextOut(&textState, myprintf("{0}| {1} ({2}ms)| {3}| {4} ({5}ms)| {6} ({7}ms)"_s, {
+                                                                                                       formatString(code->name, 60),
+                                                                                                       formatString(formatInt(code->totalCycleCount[rfi]), 10, false),
+                                                                                                       formatString(formatFloat((f32)totalCycles * msPerCycle, 2), 5, false),
+                                                                                                       formatString(formatInt(code->callCount[rfi]), 10, false),
+                                                                                                       formatString(formatInt((s32)averageCycles), 10, false),
+                                                                                                       formatString(formatFloat(averageCycles * msPerCycle, 2), 5, false),
+                                                                                                       formatString(formatInt(code->averageTotalCycleCount), 10, false),
+                                                                                                       formatString(formatFloat(code->averageTotalCycleCount * msPerCycle, 2), 5, false),
+                                                                                                   }),
+                true, debugCodeDataTagColors + code->tag);
+            topBlock = topBlock->nextNode;
+        }
+    }
+
+    // Put FPS in top right
+    initDebugTextState(&textState, font, makeWhite(), 16, false, false);
+    {
+        String smsForFrame = "???"_s;
+        String sfps = "???"_s;
+        if (rfi != debugState->writingFrameIndex) {
+            f32 msForFrame = (f32)(debugState->frameEndCycle[rfi] - debugState->frameStartCycle[rfi]) / (f32)(cyclesPerSecond / 1000);
+            smsForFrame = formatFloat(msForFrame, 2);
+            sfps = formatFloat(1000.0f / max(msForFrame, 1.0f), 2);
+        }
+        debugTextOut(&textState, myprintf("FPS: {0} ({1}ms)"_s, { sfps, smsForFrame }));
+    }
 }
 
-void updateAndRenderDebugData(DebugState *debugState)
+void updateAndRenderDebugData(DebugState* debugState)
 {
-	DEBUG_FUNCTION_T(DCDT_Debug);
-	if (keyJustPressed(SDLK_F2))
-	{
-		debugState->showDebugData = !debugState->showDebugData;
-	}
-	
-	if (keyJustPressed(SDLK_PAUSE))
-	{
-		debugState->captureDebugData = !debugState->captureDebugData;
-	}
+    DEBUG_FUNCTION_T(DCDT_Debug);
+    if (keyJustPressed(SDLK_F2)) {
+        debugState->showDebugData = !debugState->showDebugData;
+    }
 
-	if (keyJustPressed(SDLK_PAGEDOWN))
-	{
-		debugState->readingFrameIndex = wrap<u32>(debugState->readingFrameIndex - 1, DEBUG_FRAMES_COUNT);
-	}
-	else if (keyJustPressed(SDLK_PAGEUP))
-	{
-		debugState->readingFrameIndex = wrap<u32>(debugState->readingFrameIndex + 1, DEBUG_FRAMES_COUNT);
-	}
+    if (keyJustPressed(SDLK_PAUSE)) {
+        debugState->captureDebugData = !debugState->captureDebugData;
+    }
 
-	if (keyJustPressed(SDLK_INSERT))
-	{
-		// Output draw call data
-		logDebug("****************** DRAW CALLS ******************"_s);
-		DebugRenderBufferData *renderBufferData = debugState->renderBufferDataSentinel.nextNode;
-		u32 rfi = debugState->readingFrameIndex;
-		while (renderBufferData != &debugState->renderBufferDataSentinel)
-		{
-			s32 drawCallCount = renderBufferData->drawCallCount[rfi];
-			logDebug("Buffer {0} ({1} calls)\n-------------------------------"_s, {renderBufferData->name, formatInt(drawCallCount)});
-			for (s32 i=0; i<drawCallCount; i++)
-			{
-				DebugDrawCallData *drawCall = renderBufferData->drawCalls[rfi] + i;
-				logDebug("{0}: {1} item(s), shader '{2}', texture '{3}'"_s, {formatInt(i), formatInt(drawCall->itemsDrawn), drawCall->shaderName, drawCall->textureName});
-			}
-			renderBufferData = renderBufferData->nextNode;
-		}
-	}
+    if (keyJustPressed(SDLK_PAGEDOWN)) {
+        debugState->readingFrameIndex = wrap<u32>(debugState->readingFrameIndex - 1, DEBUG_FRAMES_COUNT);
+    } else if (keyJustPressed(SDLK_PAGEUP)) {
+        debugState->readingFrameIndex = wrap<u32>(debugState->readingFrameIndex + 1, DEBUG_FRAMES_COUNT);
+    }
 
-	processDebugData(debugState);
+    if (keyJustPressed(SDLK_INSERT)) {
+        // Output draw call data
+        logDebug("****************** DRAW CALLS ******************"_s);
+        DebugRenderBufferData* renderBufferData = debugState->renderBufferDataSentinel.nextNode;
+        u32 rfi = debugState->readingFrameIndex;
+        while (renderBufferData != &debugState->renderBufferDataSentinel) {
+            s32 drawCallCount = renderBufferData->drawCallCount[rfi];
+            logDebug("Buffer {0} ({1} calls)\n-------------------------------"_s, { renderBufferData->name, formatInt(drawCallCount) });
+            for (s32 i = 0; i < drawCallCount; i++) {
+                DebugDrawCallData* drawCall = renderBufferData->drawCalls[rfi] + i;
+                logDebug("{0}: {1} item(s), shader '{2}', texture '{3}'"_s, { formatInt(i), formatInt(drawCall->itemsDrawn), drawCall->shaderName, drawCall->textureName });
+            }
+            renderBufferData = renderBufferData->nextNode;
+        }
+    }
 
-	if (debugState->showDebugData)
-	{
-		renderDebugData(debugState);
-	}
+    processDebugData(debugState);
 
-	clearNewFrameDebugData(debugState);
+    if (debugState->showDebugData) {
+        renderDebugData(debugState);
+    }
+
+    clearNewFrameDebugData(debugState);
 }
 
 template<typename T>
-T *findOrCreateDebugData(DebugState *debugState, String name, T *sentinel)
+T* findOrCreateDebugData(DebugState* debugState, String name, T* sentinel)
 {
-	T *result = null;
+    T* result = null;
 
-	T *data = sentinel->nextNode;
-	while (data != sentinel)
-	{
-		if (equals(data->name, name))
-		{
-			result = data;
-			break;
-		}
-		data = data->nextNode;
-	}
+    T* data = sentinel->nextNode;
+    while (data != sentinel) {
+        if (equals(data->name, name)) {
+            result = data;
+            break;
+        }
+        data = data->nextNode;
+    }
 
-	if (result == null)
-	{
-		result = allocateStruct<T>(&debugState->debugArena);
-		addToLinkedList(result, sentinel);
-		result->name = name;
-	}
+    if (result == null) {
+        result = allocateStruct<T>(&debugState->debugArena);
+        addToLinkedList(result, sentinel);
+        result->name = name;
+    }
 
-	return result;
+    return result;
 }
 
-void debugTrackArena(DebugState *debugState, MemoryArena *arena, String name)
+void debugTrackArena(DebugState* debugState, MemoryArena* arena, String name)
 {
-	DebugArenaData *arenaData = findOrCreateDebugData(debugState, name, &debugState->arenaDataSentinel);
+    DebugArenaData* arenaData = findOrCreateDebugData(debugState, name, &debugState->arenaDataSentinel);
 
-	u32 frameIndex = debugState->writingFrameIndex;
+    u32 frameIndex = debugState->writingFrameIndex;
 
-	if (arena) // So passing null just keeps it zeroed out
-	{
-		if (arena->currentBlock)
-		{
-			arenaData->blockCount[frameIndex] = 1;
-			arenaData->totalSize [frameIndex] = arena->currentBlock->size;
-			arenaData->usedSize  [frameIndex] = arena->currentBlock->used;
+    if (arena) // So passing null just keeps it zeroed out
+    {
+        if (arena->currentBlock) {
+            arenaData->blockCount[frameIndex] = 1;
+            arenaData->totalSize[frameIndex] = arena->currentBlock->size;
+            arenaData->usedSize[frameIndex] = arena->currentBlock->used;
 
-			MemoryBlock *block = arena->currentBlock->prevBlock;
-			while (block)
-			{
-				arenaData->blockCount[frameIndex]++;
-				arenaData->totalSize[frameIndex] += block->size;
-				arenaData->usedSize[frameIndex]  += block->size;
+            MemoryBlock* block = arena->currentBlock->prevBlock;
+            while (block) {
+                arenaData->blockCount[frameIndex]++;
+                arenaData->totalSize[frameIndex] += block->size;
+                arenaData->usedSize[frameIndex] += block->size;
 
-				block = block->prevBlock;
-			}
-		}
-	}
+                block = block->prevBlock;
+            }
+        }
+    }
 }
 
-template <typename T>
-void debugTrackPool(DebugState *debugState, Pool<T> *pool, String name)
+template<typename T>
+void debugTrackPool(DebugState* debugState, Pool<T>* pool, String name)
 {
-	DebugPoolData *poolData = findOrCreateDebugData(debugState, name, &debugState->poolDataSentinel);
-	u32 frameIndex = debugState->writingFrameIndex;
+    DebugPoolData* poolData = findOrCreateDebugData(debugState, name, &debugState->poolDataSentinel);
+    u32 frameIndex = debugState->writingFrameIndex;
 
-	if (pool)
-	{
-		poolData->pooledItemCount[frameIndex] = pool->pooledItemCount;
-		poolData->totalItemCount[frameIndex] = pool->totalItemCount;
-	}
+    if (pool) {
+        poolData->pooledItemCount[frameIndex] = pool->pooledItemCount;
+        poolData->totalItemCount[frameIndex] = pool->totalItemCount;
+    }
 }
 
-void debugTrackAssets(DebugState *debugState)
+void debugTrackAssets(DebugState* debugState)
 {
-	DebugAssetData *assetData = &debugState->assetData;
-	u32 frameIndex = debugState->writingFrameIndex;
+    DebugAssetData* assetData = &debugState->assetData;
+    u32 frameIndex = debugState->writingFrameIndex;
 
-	assetData->arenaBlockCount        [frameIndex] = 0;
-	assetData->arenaTotalSize         [frameIndex] = 0;
-	assetData->arenaUsedSize          [frameIndex] = 0;
-	assetData->assetCount             [frameIndex] = 0;
-	assetData->loadedAssetCount       [frameIndex] = 0;
-	assetData->assetMemoryAllocated   [frameIndex] = 0;
-	assetData->maxAssetMemoryAllocated[frameIndex] = 0;
-	assetData->assetsByNameSize       [frameIndex] = 0;
+    assetData->arenaBlockCount[frameIndex] = 0;
+    assetData->arenaTotalSize[frameIndex] = 0;
+    assetData->arenaUsedSize[frameIndex] = 0;
+    assetData->assetCount[frameIndex] = 0;
+    assetData->loadedAssetCount[frameIndex] = 0;
+    assetData->assetMemoryAllocated[frameIndex] = 0;
+    assetData->maxAssetMemoryAllocated[frameIndex] = 0;
+    assetData->assetsByNameSize[frameIndex] = 0;
 
-	// The assets arena
-	MemoryArena *arena = &assets->assetArena;
-	if (arena->currentBlock)
-	{
-		assetData->arenaBlockCount[frameIndex] = 1;
-		assetData->arenaTotalSize [frameIndex] = arena->currentBlock->size;
-		assetData->arenaUsedSize  [frameIndex] = arena->currentBlock->used;
+    // The assets arena
+    MemoryArena* arena = &assets->assetArena;
+    if (arena->currentBlock) {
+        assetData->arenaBlockCount[frameIndex] = 1;
+        assetData->arenaTotalSize[frameIndex] = arena->currentBlock->size;
+        assetData->arenaUsedSize[frameIndex] = arena->currentBlock->used;
 
-		MemoryBlock *block = arena->currentBlock->prevBlock;
-		while (block)
-		{
-			assetData->arenaBlockCount[frameIndex]++;
-			assetData->arenaTotalSize [frameIndex] += block->size;
-			assetData->arenaUsedSize  [frameIndex] += block->size;
+        MemoryBlock* block = arena->currentBlock->prevBlock;
+        while (block) {
+            assetData->arenaBlockCount[frameIndex]++;
+            assetData->arenaTotalSize[frameIndex] += block->size;
+            assetData->arenaUsedSize[frameIndex] += block->size;
 
-			block = block->prevBlock;
-		}
-	}
+            block = block->prevBlock;
+        }
+    }
 
-	// assetsByType HashTables
-	for (s32 assetType = 0; assetType < AssetTypeCount; assetType++)
-	{
-		auto assetsByNameForType = assets->assetsByType[assetType];
-		assetData->assetsByNameSize[frameIndex] += assetsByNameForType.capacity * sizeof(assetsByNameForType.entries[0]);
-	}
+    // assetsByType HashTables
+    for (s32 assetType = 0; assetType < AssetTypeCount; assetType++) {
+        auto assetsByNameForType = assets->assetsByType[assetType];
+        assetData->assetsByNameSize[frameIndex] += assetsByNameForType.capacity * sizeof(assetsByNameForType.entries[0]);
+    }
 
-	// The asset-memory stuff
-	for (auto it = assets->allAssets.iterate(); it.hasNext(); it.next())
-	{
-		Asset *asset = it.get();
+    // The asset-memory stuff
+    for (auto it = assets->allAssets.iterate(); it.hasNext(); it.next()) {
+        Asset* asset = it.get();
 
-		if (asset->state == AssetState_Loaded) assetData->loadedAssetCount[frameIndex]++;
-	}
-	assetData->assetMemoryAllocated   [frameIndex] = assets->assetMemoryAllocated;
-	assetData->maxAssetMemoryAllocated[frameIndex] = assets->maxAssetMemoryAllocated;
+        if (asset->state == AssetState_Loaded)
+            assetData->loadedAssetCount[frameIndex]++;
+    }
+    assetData->assetMemoryAllocated[frameIndex] = assets->assetMemoryAllocated;
+    assetData->maxAssetMemoryAllocated[frameIndex] = assets->maxAssetMemoryAllocated;
 
-	assetData->assetCount[frameIndex] = (s32)assets->allAssets.count;
+    assetData->assetCount[frameIndex] = (s32)assets->allAssets.count;
 }
 
-void debugStartTrackingRenderBuffer(DebugState *debugState, String renderBufferName, String renderProfileName)
+void debugStartTrackingRenderBuffer(DebugState* debugState, String renderBufferName, String renderProfileName)
 {
-	u32 frameIndex = debugState->writingFrameIndex;
+    u32 frameIndex = debugState->writingFrameIndex;
 
-	if (debugState->currentRenderBuffer != null)
-	{
-		debugEndTrackingRenderBuffer(debugState);
-	}
+    if (debugState->currentRenderBuffer != null) {
+        debugEndTrackingRenderBuffer(debugState);
+    }
 
-	DebugRenderBufferData *renderBufferData = findOrCreateDebugData(debugState, renderBufferName, &debugState->renderBufferDataSentinel);
+    DebugRenderBufferData* renderBufferData = findOrCreateDebugData(debugState, renderBufferName, &debugState->renderBufferDataSentinel);
 
-	debugState->currentRenderBuffer = renderBufferData;
-	renderBufferData->renderProfileName = renderProfileName;
-	renderBufferData->drawCallCount[frameIndex] = 0;
-	renderBufferData->chunkCount[frameIndex] = 1; // Start at 1 because we're already inside a chunk when this is called
-	renderBufferData->startTime[frameIndex] = SDL_GetPerformanceCounter();
+    debugState->currentRenderBuffer = renderBufferData;
+    renderBufferData->renderProfileName = renderProfileName;
+    renderBufferData->drawCallCount[frameIndex] = 0;
+    renderBufferData->chunkCount[frameIndex] = 1; // Start at 1 because we're already inside a chunk when this is called
+    renderBufferData->startTime[frameIndex] = SDL_GetPerformanceCounter();
 }
 
-void debugEndTrackingRenderBuffer(DebugState *debugState)
+void debugEndTrackingRenderBuffer(DebugState* debugState)
 {
-	if (debugState->currentRenderBuffer != null)
-	{
-		u32 frameIndex = debugState->writingFrameIndex;
+    if (debugState->currentRenderBuffer != null) {
+        u32 frameIndex = debugState->writingFrameIndex;
 
-		debugState->currentRenderBuffer->endTime[frameIndex] = SDL_GetPerformanceCounter();
-		debugTrackProfile(debugState->currentRenderBuffer->renderProfileName, debugState->currentRenderBuffer->endTime[frameIndex] - debugState->currentRenderBuffer->startTime[frameIndex], DCDT_Renderer);
+        debugState->currentRenderBuffer->endTime[frameIndex] = SDL_GetPerformanceCounter();
+        debugTrackProfile(debugState->currentRenderBuffer->renderProfileName, debugState->currentRenderBuffer->endTime[frameIndex] - debugState->currentRenderBuffer->startTime[frameIndex], DCDT_Renderer);
 
-		debugState->currentRenderBuffer = null;
-	}
+        debugState->currentRenderBuffer = null;
+    }
 }
 
-void debugTrackDrawCall(DebugState *debugState, String shaderName, String textureName, u32 itemsDrawn)
+void debugTrackDrawCall(DebugState* debugState, String shaderName, String textureName, u32 itemsDrawn)
 {
-	DebugRenderBufferData *renderBufferData = debugState->currentRenderBuffer;
+    DebugRenderBufferData* renderBufferData = debugState->currentRenderBuffer;
 
-	u32 frameIndex = debugState->writingFrameIndex;
+    u32 frameIndex = debugState->writingFrameIndex;
 
-	u32 drawCallIndex = renderBufferData->drawCallCount[frameIndex]++;
-	if (drawCallIndex < DEBUG_DRAW_CALLS_RECORDED_PER_FRAME)
-	{
-		DebugDrawCallData *drawCall = &renderBufferData->drawCalls[frameIndex][drawCallIndex];
-		drawCall->shaderName = shaderName;
-		drawCall->textureName = textureName;
-		drawCall->itemsDrawn = itemsDrawn;
-	}
+    u32 drawCallIndex = renderBufferData->drawCallCount[frameIndex]++;
+    if (drawCallIndex < DEBUG_DRAW_CALLS_RECORDED_PER_FRAME) {
+        DebugDrawCallData* drawCall = &renderBufferData->drawCalls[frameIndex][drawCallIndex];
+        drawCall->shaderName = shaderName;
+        drawCall->textureName = textureName;
+        drawCall->itemsDrawn = itemsDrawn;
+    }
 }
 
-void debugTrackRenderBufferChunk(DebugState *debugState)
+void debugTrackRenderBufferChunk(DebugState* debugState)
 {
-	DebugRenderBufferData *renderBufferData = debugState->currentRenderBuffer;
+    DebugRenderBufferData* renderBufferData = debugState->currentRenderBuffer;
 
-	u32 frameIndex = debugState->writingFrameIndex;
+    u32 frameIndex = debugState->writingFrameIndex;
 
-	renderBufferData->chunkCount[frameIndex]++;
+    renderBufferData->chunkCount[frameIndex]++;
 }
 
 void debugTrackProfile(String name, u64 cycleCount, DebugCodeDataTag tag)
 {
-	DebugCodeData *data = debugFindOrAddCodeData(name, tag);
-	data->workingCallCount++;
-	data->workingTotalCycleCount += cycleCount;
+    DebugCodeData* data = debugFindOrAddCodeData(name, tag);
+    data->workingCallCount++;
+    data->workingTotalCycleCount += cycleCount;
 }

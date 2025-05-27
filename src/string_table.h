@@ -7,11 +7,10 @@
 // But, that works and is fairly simple so I'm going with it.
 //
 
-struct StringTable
-{
-	HashTable<String> table;
+struct StringTable {
+    HashTable<String> table;
 };
 
-void initStringTable(StringTable *table);
+void initStringTable(StringTable* table);
 
-String intern(StringTable *table, String input);
+String intern(StringTable* table, String input);

@@ -20,43 +20,46 @@
 //
 
 template<typename Enum, typename Storage>
-struct Flags
-{
-	s32 flagCount;
-	Storage data;
+struct Flags {
+    s32 flagCount;
+    Storage data;
 
-	// Read the value of the flag
-	bool operator&(Enum flag);
+    // Read the value of the flag
+    bool operator&(Enum flag);
 
-	// Add the flag
-	Flags<Enum, Storage> *operator+=(Enum flag);
+    // Add the flag
+    Flags<Enum, Storage>* operator+=(Enum flag);
 
-	// Remove the flag
-	Flags<Enum, Storage> *operator-=(Enum flag);
+    // Remove the flag
+    Flags<Enum, Storage>* operator-=(Enum flag);
 
-	// Toggle the flag
-	Flags<Enum, Storage> *operator^=(Enum flag);
+    // Toggle the flag
+    Flags<Enum, Storage>* operator^=(Enum flag);
 
-	// Comparison
-	bool operator==(Flags<Enum, Storage> &other);
+    // Comparison
+    bool operator==(Flags<Enum, Storage>& other);
 
-	// Comparison
-	bool operator!=(Flags<Enum, Storage> &other)
-	{
-		return !(*this == other);
-	}
+    // Comparison
+    bool operator!=(Flags<Enum, Storage>& other)
+    {
+        return !(*this == other);
+    }
 };
 
-template<typename Enum> using Flags8  = Flags<Enum, u8>;
-template<typename Enum> using Flags16 = Flags<Enum, u16>;
-template<typename Enum> using Flags32 = Flags<Enum, u32>;
-template<typename Enum> using Flags64 = Flags<Enum, u64>;
+template<typename Enum>
+using Flags8 = Flags<Enum, u8>;
+template<typename Enum>
+using Flags16 = Flags<Enum, u16>;
+template<typename Enum>
+using Flags32 = Flags<Enum, u32>;
+template<typename Enum>
+using Flags64 = Flags<Enum, u64>;
 
 template<typename Enum, typename Storage>
-void initFlags(Flags<Enum, Storage> *flags, Enum flagCount);
+void initFlags(Flags<Enum, Storage>* flags, Enum flagCount);
 
 template<typename Enum, typename Storage>
-bool isEmpty(Flags<Enum, Storage> *flags);
+bool isEmpty(Flags<Enum, Storage>* flags);
 
 template<typename Enum, typename Storage>
-Storage getAll(Flags<Enum, Storage> *flags);
+Storage getAll(Flags<Enum, Storage>* flags);

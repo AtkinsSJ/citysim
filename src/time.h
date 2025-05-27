@@ -1,82 +1,78 @@
 #pragma once
 
-enum DayOfWeek
-{
-	Day_Monday,
-	Day_Tuesday,
-	Day_Wednesday,
-	Day_Thursday,
-	Day_Friday,
-	Day_Saturday,
-	Day_Sunday,
+enum DayOfWeek {
+    Day_Monday,
+    Day_Tuesday,
+    Day_Wednesday,
+    Day_Thursday,
+    Day_Friday,
+    Day_Saturday,
+    Day_Sunday,
 
-	DayOfWeekCount
+    DayOfWeekCount
 };
 
-enum MonthOfYear
-{
-	Month_January,
-	Month_February,
-	Month_March,
-	Month_April,
-	Month_May,
-	Month_June,
-	Month_July,
-	Month_August,
-	Month_September,
-	Month_October,
-	Month_November,
-	Month_December,
+enum MonthOfYear {
+    Month_January,
+    Month_February,
+    Month_March,
+    Month_April,
+    Month_May,
+    Month_June,
+    Month_July,
+    Month_August,
+    Month_September,
+    Month_October,
+    Month_November,
+    Month_December,
 
-	MonthOfYearCount
+    MonthOfYearCount
 };
 
-struct DateTime
-{
-	u64 unixTimestamp; // Global time. Only valid if this DateTime was read from the operating system 
+struct DateTime {
+    u64 unixTimestamp; // Global time. Only valid if this DateTime was read from the operating system
 
-	s32 year;
-	MonthOfYear month;
-	s32 dayOfMonth; // Starts at 1 for the first day
-	s32 hour;
-	s32 minute;
-	s32 second;
-	s32 millisecond;
+    s32 year;
+    MonthOfYear month;
+    s32 dayOfMonth; // Starts at 1 for the first day
+    s32 hour;
+    s32 minute;
+    s32 second;
+    s32 millisecond;
 
-	DayOfWeek dayOfWeek;
+    DayOfWeek dayOfWeek;
 };
 
-enum DateTimeFormat
-{
-	DateTime_ShortDate,
-	DateTime_LongDate,
-	DateTime_ShortDateTime,
-	DateTime_LongDateTime,
+enum DateTimeFormat {
+    DateTime_ShortDate,
+    DateTime_LongDate,
+    DateTime_ShortDateTime,
+    DateTime_LongDateTime,
 };
 
-const String dayNameStrings[DayOfWeekCount] = {
-	"date_part_monday"_s,
-	"date_part_tuesday"_s,
-	"date_part_wednesday"_s,
-	"date_part_thursday"_s,
-	"date_part_friday"_s,
-	"date_part_saturday"_s,
-	"date_part_sunday"_s,
+String const dayNameStrings[DayOfWeekCount] = {
+    "date_part_monday"_s,
+    "date_part_tuesday"_s,
+    "date_part_wednesday"_s,
+    "date_part_thursday"_s,
+    "date_part_friday"_s,
+    "date_part_saturday"_s,
+    "date_part_sunday"_s,
 };
 
-const String monthNameStrings[12] = {
-	"date_part_month01"_s,
-	"date_part_month02"_s,
-	"date_part_month03"_s,
-	"date_part_month04"_s,
-	"date_part_month05"_s,
-	"date_part_month06"_s,
-	"date_part_month07"_s,
-	"date_part_month08"_s,
-	"date_part_month09"_s,
-	"date_part_month10"_s,
-	"date_part_month11"_s,
-	"date_part_month12"_s,
+String const monthNameStrings[12] = {
+    "date_part_month01"_s,
+    "date_part_month02"_s,
+    "date_part_month03"_s,
+    "date_part_month04"_s,
+    "date_part_month05"_s,
+    "date_part_month06"_s,
+    "date_part_month07"_s,
+    "date_part_month08"_s,
+    "date_part_month09"_s,
+    "date_part_month10"_s,
+    "date_part_month11"_s,
+    "date_part_month12"_s,
 };
 
 DateTime getLocalTimeFromTimestamp(u64 unixTimestamp);

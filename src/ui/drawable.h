@@ -1,25 +1,27 @@
 #pragma once
 
-namespace UI
-{
-	struct DrawableStyle;
-	
-	struct Drawable
-	{
-		Drawable() {}
-		Drawable(DrawableStyle *style) : style(style) {}
+namespace UI {
 
-		void preparePlaceholder(RenderBuffer *buffer);
-		void fillPlaceholder(Rect2I bounds);
+struct DrawableStyle;
 
-		void draw(RenderBuffer *buffer, Rect2I bounds);
+struct Drawable {
+    Drawable() { }
+    Drawable(DrawableStyle* style)
+        : style(style)
+    {
+    }
 
-		DrawableStyle *style;
+    void preparePlaceholder(RenderBuffer* buffer);
+    void fillPlaceholder(Rect2I bounds);
 
-		union
-		{
-			DrawRectPlaceholder      rectPlaceholder;
-			DrawNinepatchPlaceholder ninepatchPlaceholder;
-		};
-	};
+    void draw(RenderBuffer* buffer, Rect2I bounds);
+
+    DrawableStyle* style;
+
+    union {
+        DrawRectPlaceholder rectPlaceholder;
+        DrawNinepatchPlaceholder ninepatchPlaceholder;
+    };
+};
+
 }

@@ -1,8 +1,8 @@
 #pragma once
 
-const f32 PI32 = 3.14159265358979323846f;
-const f32 radToDeg = 180.0f / PI32;
-const f32 degToRad = PI32 / 180.0f;
+f32 const PI32 = 3.14159265358979323846f;
+f32 const radToDeg = 180.0f / PI32;
+f32 const degToRad = PI32 / 180.0f;
 
 // Standard rounding functions return doubles, so here's some int ones.
 s32 round_s32(f32 in);
@@ -71,28 +71,50 @@ bool equals(f32 a, f32 b, f32 epsilon);
 //
 // All this mess is just so we can access a type's min/max values from a template.
 //
-template<typename T> const inline T minPossibleValue();
-template<typename T> const inline T maxPossibleValue();
+template<typename T>
+inline T const minPossibleValue();
+template<typename T>
+inline T const maxPossibleValue();
 
-template<> const inline u8  minPossibleValue<u8>()  { return 0;      }
-template<> const inline u8  maxPossibleValue<u8>()  { return u8Max;  }
-template<> const inline u16 minPossibleValue<u16>() { return 0;      }
-template<> const inline u16 maxPossibleValue<u16>() { return u16Max; }
-template<> const inline u32 minPossibleValue<u32>() { return 0;      }
-template<> const inline u32 maxPossibleValue<u32>() { return u32Max; }
-template<> const inline u64 minPossibleValue<u64>() { return 0;      }
-template<> const inline u64 maxPossibleValue<u64>() { return u64Max; }
+template<>
+inline u8 const minPossibleValue<u8>() { return 0; }
+template<>
+inline u8 const maxPossibleValue<u8>() { return u8Max; }
+template<>
+inline u16 const minPossibleValue<u16>() { return 0; }
+template<>
+inline u16 const maxPossibleValue<u16>() { return u16Max; }
+template<>
+inline u32 const minPossibleValue<u32>() { return 0; }
+template<>
+inline u32 const maxPossibleValue<u32>() { return u32Max; }
+template<>
+inline u64 const minPossibleValue<u64>() { return 0; }
+template<>
+inline u64 const maxPossibleValue<u64>() { return u64Max; }
 
-template<> const inline s8  minPossibleValue<s8>()  { return s8Min;  }
-template<> const inline s8  maxPossibleValue<s8>()  { return s8Max;  }
-template<> const inline s16 minPossibleValue<s16>() { return s16Min; }
-template<> const inline s16 maxPossibleValue<s16>() { return s16Max; }
-template<> const inline s32 minPossibleValue<s32>() { return s32Min; }
-template<> const inline s32 maxPossibleValue<s32>() { return s32Max; }
-template<> const inline s64 minPossibleValue<s64>() { return s64Min; }
-template<> const inline s64 maxPossibleValue<s64>() { return s64Max; }
+template<>
+inline s8 const minPossibleValue<s8>() { return s8Min; }
+template<>
+inline s8 const maxPossibleValue<s8>() { return s8Max; }
+template<>
+inline s16 const minPossibleValue<s16>() { return s16Min; }
+template<>
+inline s16 const maxPossibleValue<s16>() { return s16Max; }
+template<>
+inline s32 const minPossibleValue<s32>() { return s32Min; }
+template<>
+inline s32 const maxPossibleValue<s32>() { return s32Max; }
+template<>
+inline s64 const minPossibleValue<s64>() { return s64Min; }
+template<>
+inline s64 const maxPossibleValue<s64>() { return s64Max; }
 
-template<> const inline f32 minPossibleValue<f32>() { return f32Min; }
-template<> const inline f32 maxPossibleValue<f32>() { return f32Max; }
-template<> const inline f64 minPossibleValue<f64>() { return f64Min; }
-template<> const inline f64 maxPossibleValue<f64>() { return f64Max; }
+template<>
+inline f32 const minPossibleValue<f32>() { return f32Min; }
+template<>
+inline f32 const maxPossibleValue<f32>() { return f32Max; }
+template<>
+inline f64 const minPossibleValue<f64>() { return f64Min; }
+template<>
+inline f64 const maxPossibleValue<f64>() { return f64Max; }

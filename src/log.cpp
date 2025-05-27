@@ -2,35 +2,35 @@
 
 void log(SDL_LogPriority priority, String format, std::initializer_list<String> args)
 {
-	String text = myprintf(format, args, true);
-	SDL_LogMessage(SDL_LOG_CATEGORY_CUSTOM, priority, "%s", text.chars);
+    String text = myprintf(format, args, true);
+    SDL_LogMessage(SDL_LOG_CATEGORY_CUSTOM, priority, "%s", text.chars);
 }
 
-inline void logVerbose (String format, std::initializer_list<String> args)
+inline void logVerbose(String format, std::initializer_list<String> args)
 {
-	log(SDL_LOG_PRIORITY_VERBOSE, format, args);
+    log(SDL_LOG_PRIORITY_VERBOSE, format, args);
 }
-inline void logDebug   (String format, std::initializer_list<String> args)
+inline void logDebug(String format, std::initializer_list<String> args)
 {
-	log(SDL_LOG_PRIORITY_DEBUG, format, args);
+    log(SDL_LOG_PRIORITY_DEBUG, format, args);
 }
-inline void logInfo    (String format, std::initializer_list<String> args)
+inline void logInfo(String format, std::initializer_list<String> args)
 {
-	log(SDL_LOG_PRIORITY_INFO, format, args);
+    log(SDL_LOG_PRIORITY_INFO, format, args);
 }
-inline void logWarn    (String format, std::initializer_list<String> args)
+inline void logWarn(String format, std::initializer_list<String> args)
 {
-	log(SDL_LOG_PRIORITY_WARN, format, args);
+    log(SDL_LOG_PRIORITY_WARN, format, args);
 }
-inline void logError   (String format, std::initializer_list<String> args)
+inline void logError(String format, std::initializer_list<String> args)
 {
-	log(SDL_LOG_PRIORITY_ERROR, format, args);
-	DEBUG_BREAK();
+    log(SDL_LOG_PRIORITY_ERROR, format, args);
+    DEBUG_BREAK();
 }
 inline void logCritical(String format, std::initializer_list<String> args)
 {
-	log(SDL_LOG_PRIORITY_CRITICAL, format, args);
-	ASSERT(!"Critical error");
+    log(SDL_LOG_PRIORITY_CRITICAL, format, args);
+    ASSERT(!"Critical error");
 }
 
 /*
@@ -39,35 +39,34 @@ inline void logCritical(String format, std::initializer_list<String> args)
  */
 
 static SDL_LogOutputFunction defaultLogger;
-static void *defaultLoggerUserData;
+static void* defaultLoggerUserData;
 
-void customLogOutputFunction(void * /*userdata*/, int category, SDL_LogPriority priority, const char *message)
+void customLogOutputFunction(void* /*userdata*/, int category, SDL_LogPriority priority, char const* message)
 {
-	defaultLogger(defaultLoggerUserData, category, priority, message);
+    defaultLogger(defaultLoggerUserData, category, priority, message);
 
-	ConsoleLineStyleID style = CLS_Default;
+    ConsoleLineStyleID style = CLS_Default;
 
-	switch (priority)
-	{
-		case SDL_LOG_PRIORITY_WARN:
-			style = CLS_Warning;
-			break;
+    switch (priority) {
+    case SDL_LOG_PRIORITY_WARN:
+        style = CLS_Warning;
+        break;
 
-		case SDL_LOG_PRIORITY_ERROR:
-		case SDL_LOG_PRIORITY_CRITICAL:
-			style = CLS_Error;
-			break;
+    case SDL_LOG_PRIORITY_ERROR:
+    case SDL_LOG_PRIORITY_CRITICAL:
+        style = CLS_Error;
+        break;
 
-		default:
-			style = CLS_Default;
-			break;
-	}
+    default:
+        style = CLS_Default;
+        break;
+    }
 
-	consoleWriteLine(makeString(message), style);
+    consoleWriteLine(makeString(message), style);
 }
 
 void enableCustomLogger()
 {
-	SDL_LogGetOutputFunction(&defaultLogger, &defaultLoggerUserData);
-	SDL_LogSetOutputFunction(&customLogOutputFunction, 0);
+    SDL_LogGetOutputFunction(&defaultLogger, &defaultLoggerUserData);
+    SDL_LogSetOutputFunction(&customLogOutputFunction, 0);
 }

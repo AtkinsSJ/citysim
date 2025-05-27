@@ -1,492 +1,441 @@
 // font.cpp
 
-inline BitmapFontGlyphEntry *findGlyphInternal(BitmapFont *font, unichar targetChar)
+inline BitmapFontGlyphEntry* findGlyphInternal(BitmapFont* font, unichar targetChar)
 {
-	BitmapFontGlyphEntry *result = null;
+    BitmapFontGlyphEntry* result = null;
 
-	// Protect against div-0 error if this is the empty placeholder font
-	if (font->glyphCapacity > 0)
-	{
-		u32 index = targetChar % font->glyphCapacity;
+    // Protect against div-0 error if this is the empty placeholder font
+    if (font->glyphCapacity > 0) {
+        u32 index = targetChar % font->glyphCapacity;
 
-		while (true)
-		{
-			BitmapFontGlyphEntry *entry = font->glyphEntries + index;
-			if (entry->codepoint == targetChar || !entry->isOccupied)
-			{
-				result = entry;
-				break;
-			}
+        while (true) {
+            BitmapFontGlyphEntry* entry = font->glyphEntries + index;
+            if (entry->codepoint == targetChar || !entry->isOccupied) {
+                result = entry;
+                break;
+            }
 
-			index = (index + 1) % font->glyphCapacity;
-		}
-	}
+            index = (index + 1) % font->glyphCapacity;
+        }
+    }
 
-	return result;
+    return result;
 }
 
-BitmapFontGlyph *addGlyph(BitmapFont *font, unichar targetChar)
+BitmapFontGlyph* addGlyph(BitmapFont* font, unichar targetChar)
 {
-	BitmapFontGlyphEntry *result = findGlyphInternal(font, targetChar);
+    BitmapFontGlyphEntry* result = findGlyphInternal(font, targetChar);
 
-	ASSERT(result != null);//, "Failed to add a glyph to font '{0}'!", {font->name});
-	result->codepoint = targetChar;
-	ASSERT(result->isOccupied == false);//, "Attempted to add glyph '{0}' to font '{1}' twice!", {formatInt(targetChar), font->name});
-	result->isOccupied = true;
+    ASSERT(result != null); //, "Failed to add a glyph to font '{0}'!", {font->name});
+    result->codepoint = targetChar;
+    ASSERT(result->isOccupied == false); //, "Attempted to add glyph '{0}' to font '{1}' twice!", {formatInt(targetChar), font->name});
+    result->isOccupied = true;
 
-	font->glyphCount++;
+    font->glyphCount++;
 
-	return &result->glyph;
+    return &result->glyph;
 }
 
-BitmapFontGlyph *findGlyph(BitmapFont *font, unichar targetChar)
+BitmapFontGlyph* findGlyph(BitmapFont* font, unichar targetChar)
 {
-	BitmapFontGlyph *result = null;
-	BitmapFontGlyphEntry *entry = findGlyphInternal(font, targetChar);
+    BitmapFontGlyph* result = null;
+    BitmapFontGlyphEntry* entry = findGlyphInternal(font, targetChar);
 
-	if (entry == null)
-	{
-		logWarn("Failed to find char 0x{0} in font."_s, {formatInt(targetChar, 16)});
-	}
-	else
-	{
-		result = &entry->glyph;
-	}
+    if (entry == null) {
+        logWarn("Failed to find char 0x{0} in font."_s, { formatInt(targetChar, 16) });
+    } else {
+        result = &entry->glyph;
+    }
 
-	return result;
+    return result;
 }
 
-V2I calculateTextSize(BitmapFont *font, String text, s32 maxWidth)
+V2I calculateTextSize(BitmapFont* font, String text, s32 maxWidth)
 {
-	DEBUG_FUNCTION();
+    DEBUG_FUNCTION();
 
-	ASSERT(font != null); //Font must be provided!
-	ASSERT(maxWidth >= 0);
-	
-	V2I result = v2i(maxWidth, font->lineHeight);
+    ASSERT(font != null); // Font must be provided!
+    ASSERT(maxWidth >= 0);
 
-	bool doWrap = (maxWidth > 0);
-	s32 currentX = 0;
-	s32 currentWordWidth = 0;
-	s32 whitespaceWidthBeforeCurrentWord = 0;
+    V2I result = v2i(maxWidth, font->lineHeight);
 
-	s32 lineCount = 1;
-	s32 currentLineWidth = 0;
-	s32 longestLineWidth = 0;
+    bool doWrap = (maxWidth > 0);
+    s32 currentX = 0;
+    s32 currentWordWidth = 0;
+    s32 whitespaceWidthBeforeCurrentWord = 0;
 
-	s32 bytePos = 0;
-	unichar c = 0;
-	bool foundNext = getNextUnichar(text, &bytePos, &c);
+    s32 lineCount = 1;
+    s32 currentLineWidth = 0;
+    s32 longestLineWidth = 0;
 
-	while (foundNext)
-	{
-		if (isNewline(c))
-		{
-			bool prevWasCR = false;
+    s32 bytePos = 0;
+    unichar c = 0;
+    bool foundNext = getNextUnichar(text, &bytePos, &c);
 
-			longestLineWidth = max(longestLineWidth, currentLineWidth + currentWordWidth + whitespaceWidthBeforeCurrentWord);
+    while (foundNext) {
+        if (isNewline(c)) {
+            bool prevWasCR = false;
 
-			whitespaceWidthBeforeCurrentWord = 0;
-			currentWordWidth = 0;
-			currentLineWidth = 0;
+            longestLineWidth = max(longestLineWidth, currentLineWidth + currentWordWidth + whitespaceWidthBeforeCurrentWord);
 
-			currentX = 0;
+            whitespaceWidthBeforeCurrentWord = 0;
+            currentWordWidth = 0;
+            currentLineWidth = 0;
 
-			do
-			{
-				if (c == '\n' && prevWasCR)
-				{
-					// It's a windows newline, and we already moved down one line, so skip it
-				}
-				else
-				{
-					lineCount++;
-				}
+            currentX = 0;
 
-				prevWasCR = (c == '\r');
-				foundNext = getNextUnichar(text, &bytePos, &c);
-			}
-			while (foundNext && isNewline(c));
-		}
-		else if (isWhitespace(c, false))
-		{
-			// WHITESPACE LOOP
+            do {
+                if (c == '\n' && prevWasCR) {
+                    // It's a windows newline, and we already moved down one line, so skip it
+                } else {
+                    lineCount++;
+                }
 
-			// If we had a previous word, we know that it must have just finished, so add the whitespace!
-			currentLineWidth += currentWordWidth + whitespaceWidthBeforeCurrentWord;
-			whitespaceWidthBeforeCurrentWord = 0;
-			currentWordWidth = 0;
+                prevWasCR = (c == '\r');
+                foundNext = getNextUnichar(text, &bytePos, &c);
+            } while (foundNext && isNewline(c));
+        } else if (isWhitespace(c, false)) {
+            // WHITESPACE LOOP
 
-			unichar prevC = 0;
-			BitmapFontGlyph *glyph = null;
+            // If we had a previous word, we know that it must have just finished, so add the whitespace!
+            currentLineWidth += currentWordWidth + whitespaceWidthBeforeCurrentWord;
+            whitespaceWidthBeforeCurrentWord = 0;
+            currentWordWidth = 0;
 
-			do
-			{
-				if (c != prevC)
-				{
-					glyph = findGlyph(font, c);
-					prevC = c;
-				}
+            unichar prevC = 0;
+            BitmapFontGlyph* glyph = null;
 
-				if (glyph)
-				{
-					whitespaceWidthBeforeCurrentWord += glyph->xAdvance;
-				}
+            do {
+                if (c != prevC) {
+                    glyph = findGlyph(font, c);
+                    prevC = c;
+                }
 
-				foundNext = getNextUnichar(text, &bytePos, &c);
-			}
-			while (foundNext && isWhitespace(c, false));
+                if (glyph) {
+                    whitespaceWidthBeforeCurrentWord += glyph->xAdvance;
+                }
 
-			currentX += whitespaceWidthBeforeCurrentWord;
+                foundNext = getNextUnichar(text, &bytePos, &c);
+            } while (foundNext && isWhitespace(c, false));
 
-			continue;
-		}
-		else
-		{
-			BitmapFontGlyph *glyph = findGlyph(font, c);
-			if (glyph)
-			{
-				if (doWrap && ((currentX + glyph->xAdvance) > maxWidth))
-				{
-					// In case this word is the only one on the line, AND is longer than
-					// the max width, we add currentWordWidth to the max() equation below!
-					// Before I added this, it got super weird.
-					// - Sam, 13/01/2020
+            currentX += whitespaceWidthBeforeCurrentWord;
 
-					longestLineWidth = max(longestLineWidth, currentLineWidth, currentWordWidth);
+            continue;
+        } else {
+            BitmapFontGlyph* glyph = findGlyph(font, c);
+            if (glyph) {
+                if (doWrap && ((currentX + glyph->xAdvance) > maxWidth)) {
+                    // In case this word is the only one on the line, AND is longer than
+                    // the max width, we add currentWordWidth to the max() equation below!
+                    // Before I added this, it got super weird.
+                    // - Sam, 13/01/2020
 
-					lineCount++;
+                    longestLineWidth = max(longestLineWidth, currentLineWidth, currentWordWidth);
 
-					if ((currentWordWidth + glyph->xAdvance) > maxWidth)
-					{
-						// The current word is longer than will fit on an entire line!
-						// So, split it at the maximum line length.
+                    lineCount++;
 
-						// This should mean just wrapping the final character
-						currentWordWidth = 0;
-						currentX = 0;
+                    if ((currentWordWidth + glyph->xAdvance) > maxWidth) {
+                        // The current word is longer than will fit on an entire line!
+                        // So, split it at the maximum line length.
 
-						currentLineWidth = 0;
-						whitespaceWidthBeforeCurrentWord = 0;
-					}
-					else
-					{
-						// Wrapping the whole word onto a new line
-						// Set the current position to where the next word will start
-						currentLineWidth = 0;
-						whitespaceWidthBeforeCurrentWord = 0;
+                        // This should mean just wrapping the final character
+                        currentWordWidth = 0;
+                        currentX = 0;
 
-						currentX = currentWordWidth;
-					}
-				}
+                        currentLineWidth = 0;
+                        whitespaceWidthBeforeCurrentWord = 0;
+                    } else {
+                        // Wrapping the whole word onto a new line
+                        // Set the current position to where the next word will start
+                        currentLineWidth = 0;
+                        whitespaceWidthBeforeCurrentWord = 0;
 
-				currentX += glyph->xAdvance;
-				currentWordWidth += glyph->xAdvance;
-			}
-			foundNext = getNextUnichar(text, &bytePos, &c);
-		}
-	}
+                        currentX = currentWordWidth;
+                    }
+                }
 
-	// NB: Trailing whitespace can take currentX beyond maxWidth, because we don't adjust
-	// the line width after whitespace. So, I'm clamping currentX to maxWidth to make sure
-	// we don't erroneously return a size that includes the out-of-bounds whitespace.
-	// Maybe we should just wrap it, but I think wrapping whitespace isn't generally what
-	// you want - it's better to just start the new line with the next printable character.
-	// - Sam, 15/01/2020
-	result.x = max(longestLineWidth, doWrap ? min(currentX, maxWidth) : currentX);
-	result.y = (font->lineHeight * lineCount);
+                currentX += glyph->xAdvance;
+                currentWordWidth += glyph->xAdvance;
+            }
+            foundNext = getNextUnichar(text, &bytePos, &c);
+        }
+    }
 
-	ASSERT(maxWidth == 0 || maxWidth >= result.x); //Somehow we measured text that's too wide!
-	return result;
+    // NB: Trailing whitespace can take currentX beyond maxWidth, because we don't adjust
+    // the line width after whitespace. So, I'm clamping currentX to maxWidth to make sure
+    // we don't erroneously return a size that includes the out-of-bounds whitespace.
+    // Maybe we should just wrap it, but I think wrapping whitespace isn't generally what
+    // you want - it's better to just start the new line with the next printable character.
+    // - Sam, 15/01/2020
+    result.x = max(longestLineWidth, doWrap ? min(currentX, maxWidth) : currentX);
+    result.y = (font->lineHeight * lineCount);
+
+    ASSERT(maxWidth == 0 || maxWidth >= result.x); // Somehow we measured text that's too wide!
+    return result;
 }
 
-s32 calculateMaxTextWidth(BitmapFont *font, std::initializer_list<String> texts, s32 limit)
+s32 calculateMaxTextWidth(BitmapFont* font, std::initializer_list<String> texts, s32 limit)
 {
-	s32 result = 0;
+    s32 result = 0;
 
-	for (auto text = texts.begin(); text != texts.end(); text++)
-	{
-		result = max(result, calculateTextSize(font, *text, limit).x);
-	}
+    for (auto text = texts.begin(); text != texts.end(); text++) {
+        result = max(result, calculateTextSize(font, *text, limit).x);
+    }
 
-	return result;
+    return result;
 }
 
-void _alignText(DrawRectsGroup *state, s32 startIndex, s32 endIndexInclusive, s32 lineWidth, s32 boundsWidth, u32 align)
+void _alignText(DrawRectsGroup* state, s32 startIndex, s32 endIndexInclusive, s32 lineWidth, s32 boundsWidth, u32 align)
 {
-	if (lineWidth == 0)
-	{
-		return;
-	}
+    if (lineWidth == 0) {
+        return;
+    }
 
-	switch (align & ALIGN_H)
-	{
-		case ALIGN_RIGHT:
-		{
-			s32 offsetX = boundsWidth - lineWidth;
-			offsetRange(state, startIndex, endIndexInclusive, (f32) offsetX, 0);
-		} break;
+    switch (align & ALIGN_H) {
+    case ALIGN_RIGHT: {
+        s32 offsetX = boundsWidth - lineWidth;
+        offsetRange(state, startIndex, endIndexInclusive, (f32)offsetX, 0);
+    } break;
 
-		case ALIGN_H_CENTRE:
-		{
-			s32 offsetX = (boundsWidth - lineWidth) / 2;
-			offsetRange(state, startIndex, endIndexInclusive, (f32) offsetX, 0);
-		} break;
+    case ALIGN_H_CENTRE: {
+        s32 offsetX = (boundsWidth - lineWidth) / 2;
+        offsetRange(state, startIndex, endIndexInclusive, (f32)offsetX, 0);
+    } break;
 
-		case ALIGN_LEFT:
-		{
-			// Nothing to do!
-		} break;
+    case ALIGN_LEFT: {
+        // Nothing to do!
+    } break;
 
-		case ALIGN_EXPAND_H:
-		{
-			// Nothing to do! (I think?)
-		} break;
-		
-		default:
-		{
-			DEBUG_BREAK();
-		} break;
-	}
+    case ALIGN_EXPAND_H: {
+        // Nothing to do! (I think?)
+    } break;
+
+    default: {
+        DEBUG_BREAK();
+    } break;
+    }
 }
 
-void drawText(RenderBuffer *renderBuffer, BitmapFont *font, String text, Rect2I bounds, u32 align, V4 color, s8 shaderID, s32 caretIndex, DrawTextResult *caretInfoResult)
+void drawText(RenderBuffer* renderBuffer, BitmapFont* font, String text, Rect2I bounds, u32 align, V4 color, s8 shaderID, s32 caretIndex, DrawTextResult* caretInfoResult)
 {
-	DEBUG_FUNCTION();
+    DEBUG_FUNCTION();
 
-	if (isEmpty(text)) return;
+    if (isEmpty(text))
+        return;
 
-	ASSERT(renderBuffer != null); //RenderBuffer must be provided!
-	ASSERT(font != null); //Font must be provided!
+    ASSERT(renderBuffer != null); // RenderBuffer must be provided!
+    ASSERT(font != null);         // Font must be provided!
 
-	V2I topLeft = bounds.pos;
-	s32 maxWidth = (s32) bounds.w;
-	
-	//
-	// NB: We *could* just use text.length here. That will over-estimate how many RenderItems to reserve,
-	// which is fine if we're sticking with mostly English text, but in languages with a lot of multi-byte
-	// characters, could involve reserving 2 or 3 times what we actually need.
-	// countGlyphs() is not very fast, though it's less bad than I thought once I take the profiling out
-	// of it. It accounts for about 4% of the time for drawText(), which is 0.1ms in my stress-test.
-	// Also, the over-estimate will only boost the size of the renderitems array *once* as it never shrinks.
-	// We could end up with one that's, I dunno, twice the size it needs to be... RenderItem_DrawThing is 64 bytes
-	// right now, so 20,000 of them is around 1.25MB, which isn't a big deal.
-	//
-	// I think I'm going to go with the faster option for now, and maybe revisit this in the future.
-	// Eventually we'll switch to unichar-strings, so all of this will be irrelevant anyway!
-	//
-	// - Sam, 28/06/2019
-	//
-	// s32 glyphsToOutput = countGlyphs(text.chars, text.length);
-	s32 glyphsToOutput = text.length;
+    V2I topLeft = bounds.pos;
+    s32 maxWidth = (s32)bounds.w;
 
-	DrawRectsGroup *group = beginRectsGroupForText(renderBuffer, font, shaderID, glyphsToOutput);
+    //
+    // NB: We *could* just use text.length here. That will over-estimate how many RenderItems to reserve,
+    // which is fine if we're sticking with mostly English text, but in languages with a lot of multi-byte
+    // characters, could involve reserving 2 or 3 times what we actually need.
+    // countGlyphs() is not very fast, though it's less bad than I thought once I take the profiling out
+    // of it. It accounts for about 4% of the time for drawText(), which is 0.1ms in my stress-test.
+    // Also, the over-estimate will only boost the size of the renderitems array *once* as it never shrinks.
+    // We could end up with one that's, I dunno, twice the size it needs to be... RenderItem_DrawThing is 64 bytes
+    // right now, so 20,000 of them is around 1.25MB, which isn't a big deal.
+    //
+    // I think I'm going to go with the faster option for now, and maybe revisit this in the future.
+    // Eventually we'll switch to unichar-strings, so all of this will be irrelevant anyway!
+    //
+    // - Sam, 28/06/2019
+    //
+    // s32 glyphsToOutput = countGlyphs(text.chars, text.length);
+    s32 glyphsToOutput = text.length;
 
-	s32 currentX = 0;
-	s32 currentY = 0;
-	bool doWrap = (maxWidth > 0);
+    DrawRectsGroup* group = beginRectsGroupForText(renderBuffer, font, shaderID, glyphsToOutput);
 
-	if (caretInfoResult && caretIndex == 0)
-	{
-		caretInfoResult->isValid = true;
-		caretInfoResult->caretPosition = bounds.pos + v2i(currentX, currentY);
-	}
+    s32 currentX = 0;
+    s32 currentY = 0;
+    bool doWrap = (maxWidth > 0);
 
-	s32 startOfCurrentLine = 0;
-	s32 currentLineWidth = 0;
+    if (caretInfoResult && caretIndex == 0) {
+        caretInfoResult->isValid = true;
+        caretInfoResult->caretPosition = bounds.pos + v2i(currentX, currentY);
+    }
 
-	s32 whitespaceWidthBeforeCurrentWord = 0;
+    s32 startOfCurrentLine = 0;
+    s32 currentLineWidth = 0;
 
-	s32 glyphCount = 0;
-	s32 bytePos = 0;
-	s32 currentChar = 0;
+    s32 whitespaceWidthBeforeCurrentWord = 0;
 
-	unichar c = 0;
-	unichar prevC = 0;
-	BitmapFontGlyph *glyph = null;
+    s32 glyphCount = 0;
+    s32 bytePos = 0;
+    s32 currentChar = 0;
 
-	bool foundNext = getNextUnichar(text, &bytePos, &c);
-	while (foundNext)
-	{
-		if (isNewline(c))
-		{
-			bool prevWasCR = false;
+    unichar c = 0;
+    unichar prevC = 0;
+    BitmapFontGlyph* glyph = null;
 
-			// Do line-alignment stuff
-			// (This only has to happen for the first newline in a series of newlines!)
-			_alignText(group, startOfCurrentLine, glyphCount - 1, currentLineWidth, maxWidth, align);
-			startOfCurrentLine = glyphCount;
-			currentLineWidth = 0;
+    bool foundNext = getNextUnichar(text, &bytePos, &c);
+    while (foundNext) {
+        if (isNewline(c)) {
+            bool prevWasCR = false;
 
-			currentX = 0;
+            // Do line-alignment stuff
+            // (This only has to happen for the first newline in a series of newlines!)
+            _alignText(group, startOfCurrentLine, glyphCount - 1, currentLineWidth, maxWidth, align);
+            startOfCurrentLine = glyphCount;
+            currentLineWidth = 0;
 
-			do
-			{
-				if (c == '\n' && prevWasCR)
-				{
-					// It's a windows newline, and we already moved down one line, so skip it
-				}
-				else
-				{
-					currentChar++;
-					if (caretInfoResult && currentChar == caretIndex)
-					{
-						caretInfoResult->isValid = true;
-						caretInfoResult->caretPosition = bounds.pos + v2i(currentX, currentY);
-					}
+            currentX = 0;
 
-					currentY += font->lineHeight;
-				}
+            do {
+                if (c == '\n' && prevWasCR) {
+                    // It's a windows newline, and we already moved down one line, so skip it
+                } else {
+                    currentChar++;
+                    if (caretInfoResult && currentChar == caretIndex) {
+                        caretInfoResult->isValid = true;
+                        caretInfoResult->caretPosition = bounds.pos + v2i(currentX, currentY);
+                    }
 
-				prevWasCR = (c == '\r');
-				foundNext = getNextUnichar(text, &bytePos, &c);
-			}
-			while (foundNext && isNewline(c));
-		}
-		else if (isWhitespace(c, false))
-		{
-			// NB: We don't handle whitespace characters that actually print something visibly.
-			// Despite being an oxymoron, they do actually exist, but the chance of me actually
-			// needing to use the "Ogham space mark" is rather slim, though I did add support
-			// for it to isWhitespace() for the sake of correctness. I am strange.
-			// But anyway, the additional complexity, as well as speed reduction, are not worth it.
-			// - Sam, 10/07/2019
+                    currentY += font->lineHeight;
+                }
 
-			do
-			{
-				if (c != prevC)
-				{
-					glyph = findGlyph(font, c);
-					prevC = c;
-				}
+                prevWasCR = (c == '\r');
+                foundNext = getNextUnichar(text, &bytePos, &c);
+            } while (foundNext && isNewline(c));
+        } else if (isWhitespace(c, false)) {
+            // NB: We don't handle whitespace characters that actually print something visibly.
+            // Despite being an oxymoron, they do actually exist, but the chance of me actually
+            // needing to use the "Ogham space mark" is rather slim, though I did add support
+            // for it to isWhitespace() for the sake of correctness. I am strange.
+            // But anyway, the additional complexity, as well as speed reduction, are not worth it.
+            // - Sam, 10/07/2019
 
-				if (glyph)
-				{
-					whitespaceWidthBeforeCurrentWord += glyph->xAdvance;
+            do {
+                if (c != prevC) {
+                    glyph = findGlyph(font, c);
+                    prevC = c;
+                }
 
-					currentChar++;
-					if (caretInfoResult && currentChar == caretIndex)
-					{
-						caretInfoResult->isValid = true;
-						caretInfoResult->caretPosition = bounds.pos + v2i(currentX + whitespaceWidthBeforeCurrentWord, currentY);
-					}
-				}
-				foundNext = getNextUnichar(text, &bytePos, &c);
-			}
-			while (foundNext && isWhitespace(c, false));
+                if (glyph) {
+                    whitespaceWidthBeforeCurrentWord += glyph->xAdvance;
 
-			currentX += whitespaceWidthBeforeCurrentWord;
-		}
-		else
-		{
-			s32 startOfCurrentWord = glyphCount;
-			s32 currentWordWidth = 0;
+                    currentChar++;
+                    if (caretInfoResult && currentChar == caretIndex) {
+                        caretInfoResult->isValid = true;
+                        caretInfoResult->caretPosition = bounds.pos + v2i(currentX + whitespaceWidthBeforeCurrentWord, currentY);
+                    }
+                }
+                foundNext = getNextUnichar(text, &bytePos, &c);
+            } while (foundNext && isWhitespace(c, false));
 
-			do
-			{
-				if (c != prevC)
-				{
-					glyph = findGlyph(font, c);
-					prevC = c;
-				}
+            currentX += whitespaceWidthBeforeCurrentWord;
+        } else {
+            s32 startOfCurrentWord = glyphCount;
+            s32 currentWordWidth = 0;
 
-				if (glyph)
-				{
-					if (doWrap && ((currentX + glyph->xAdvance) > maxWidth))
-					{
-						currentX = 0;
-						currentY += font->lineHeight;
+            do {
+                if (c != prevC) {
+                    glyph = findGlyph(font, c);
+                    prevC = c;
+                }
 
-						if (currentWordWidth + glyph->xAdvance > maxWidth)
-						{
-							// The current word is longer than will fit on an entire line!
-							// So, split it at the maximum line length.
+                if (glyph) {
+                    if (doWrap && ((currentX + glyph->xAdvance) > maxWidth)) {
+                        currentX = 0;
+                        currentY += font->lineHeight;
 
-							// This should mean just wrapping the final character
-							startOfCurrentWord = glyphCount;
-							currentLineWidth = currentWordWidth;
-							currentWordWidth = 0;
-						}
-						else if (currentWordWidth > 0)
-						{
-							// Wrap the whole word onto a new line
+                        if (currentWordWidth + glyph->xAdvance > maxWidth) {
+                            // The current word is longer than will fit on an entire line!
+                            // So, split it at the maximum line length.
 
-							// Offset from where the word was, to its new position
-							f32 offsetX = (f32) -(currentLineWidth + whitespaceWidthBeforeCurrentWord);
-							f32 offsetY = (f32) font->lineHeight;
-							offsetRange(group, startOfCurrentWord, glyphCount - 1, offsetX, offsetY);
+                            // This should mean just wrapping the final character
+                            startOfCurrentWord = glyphCount;
+                            currentLineWidth = currentWordWidth;
+                            currentWordWidth = 0;
+                        } else if (currentWordWidth > 0) {
+                            // Wrap the whole word onto a new line
 
-							// Set the current position to where the next word will start
-							currentX = currentWordWidth;
-						}
+                            // Offset from where the word was, to its new position
+                            f32 offsetX = (f32) - (currentLineWidth + whitespaceWidthBeforeCurrentWord);
+                            f32 offsetY = (f32)font->lineHeight;
+                            offsetRange(group, startOfCurrentWord, glyphCount - 1, offsetX, offsetY);
 
-						// Do line-alignment stuff
-						_alignText(group, startOfCurrentLine, startOfCurrentWord - 1, currentLineWidth, maxWidth, align);
-						startOfCurrentLine = startOfCurrentWord;
-						currentLineWidth = 0;
-						whitespaceWidthBeforeCurrentWord = 0;
-					}
+                            // Set the current position to where the next word will start
+                            currentX = currentWordWidth;
+                        }
 
-					addGlyphRect(group, glyph, v2(topLeft.x + currentX, topLeft.y + currentY), color);
+                        // Do line-alignment stuff
+                        _alignText(group, startOfCurrentLine, startOfCurrentWord - 1, currentLineWidth, maxWidth, align);
+                        startOfCurrentLine = startOfCurrentWord;
+                        currentLineWidth = 0;
+                        whitespaceWidthBeforeCurrentWord = 0;
+                    }
 
-					currentChar++;
-					if (caretInfoResult && currentChar == caretIndex)
-					{
-						caretInfoResult->isValid = true;
-						caretInfoResult->caretPosition = bounds.pos + v2i(currentX + glyph->xAdvance, currentY);
-					}
+                    addGlyphRect(group, glyph, v2(topLeft.x + currentX, topLeft.y + currentY), color);
 
-					currentX += glyph->xAdvance;
-					currentWordWidth += glyph->xAdvance;
+                    currentChar++;
+                    if (caretInfoResult && currentChar == caretIndex) {
+                        caretInfoResult->isValid = true;
+                        caretInfoResult->caretPosition = bounds.pos + v2i(currentX + glyph->xAdvance, currentY);
+                    }
 
-					glyphCount++;
-				}
-				foundNext = getNextUnichar(text, &bytePos, &c);
-			}
-			while (foundNext && !isWhitespace(c, true));
+                    currentX += glyph->xAdvance;
+                    currentWordWidth += glyph->xAdvance;
 
-			currentLineWidth += currentWordWidth + whitespaceWidthBeforeCurrentWord;
-			whitespaceWidthBeforeCurrentWord = 0;
-		}
-	}
+                    glyphCount++;
+                }
+                foundNext = getNextUnichar(text, &bytePos, &c);
+            } while (foundNext && !isWhitespace(c, true));
 
-	// Align the final line
-	_alignText(group, startOfCurrentLine, glyphCount-1, currentLineWidth, maxWidth, align);
+            currentLineWidth += currentWordWidth + whitespaceWidthBeforeCurrentWord;
+            whitespaceWidthBeforeCurrentWord = 0;
+        }
+    }
 
-	if (caretInfoResult && currentChar < caretIndex)
-	{
-		caretInfoResult->isValid = true;
-		caretInfoResult->caretPosition = bounds.pos + v2i(currentX, currentY);
-	}
+    // Align the final line
+    _alignText(group, startOfCurrentLine, glyphCount - 1, currentLineWidth, maxWidth, align);
 
-	ASSERT(glyphCount == group->count);
-	endRectsGroup(group);
+    if (caretInfoResult && currentChar < caretIndex) {
+        caretInfoResult->isValid = true;
+        caretInfoResult->caretPosition = bounds.pos + v2i(currentX, currentY);
+    }
+
+    ASSERT(glyphCount == group->count);
+    endRectsGroup(group);
 }
 
 V2I calculateTextPosition(V2I origin, V2I size, u32 align)
 {
-	V2I offset;
+    V2I offset;
 
-	switch (align & ALIGN_H)
-	{
-		case ALIGN_H_CENTRE:  offset.x = origin.x - (size.x / 2);     break;
-		case ALIGN_RIGHT:     offset.x = origin.x - size.x;           break;
-		case ALIGN_LEFT:      // Left is default
-		case ALIGN_EXPAND_H:  // Same as left
-		default:              offset.x = origin.x;                    break;
-	}
+    switch (align & ALIGN_H) {
+    case ALIGN_H_CENTRE:
+        offset.x = origin.x - (size.x / 2);
+        break;
+    case ALIGN_RIGHT:
+        offset.x = origin.x - size.x;
+        break;
+    case ALIGN_LEFT:     // Left is default
+    case ALIGN_EXPAND_H: // Same as left
+    default:
+        offset.x = origin.x;
+        break;
+    }
 
-	switch (align & ALIGN_V)
-	{
-		case ALIGN_V_CENTRE:  offset.y = origin.y - (size.y / 2);     break;
-		case ALIGN_BOTTOM:    offset.y = origin.y - size.y;           break;
-		case ALIGN_TOP:       // Top is default
-		case ALIGN_EXPAND_V:  // Same as top
-		default:              offset.y = origin.y;                    break;
-	}
+    switch (align & ALIGN_V) {
+    case ALIGN_V_CENTRE:
+        offset.y = origin.y - (size.y / 2);
+        break;
+    case ALIGN_BOTTOM:
+        offset.y = origin.y - size.y;
+        break;
+    case ALIGN_TOP:      // Top is default
+    case ALIGN_EXPAND_V: // Same as top
+    default:
+        offset.y = origin.y;
+        break;
+    }
 
-	offset.x = offset.x;
-	offset.y = offset.y;
+    offset.x = offset.x;
+    offset.y = offset.y;
 
-	return offset;
+    return offset;
 }

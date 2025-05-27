@@ -1,365 +1,348 @@
 #pragma once
 
 // TODO: make this an enum class? For the nicer namespacing
-enum ConsoleLineStyleID
-{
-	// Must match the order in ConsoleStyle!
-	CLS_Default,
-	CLS_InputEcho,
-	CLS_Error,
-	CLS_Success,
-	CLS_Warning,
+enum ConsoleLineStyleID {
+    // Must match the order in ConsoleStyle!
+    CLS_Default,
+    CLS_InputEcho,
+    CLS_Error,
+    CLS_Success,
+    CLS_Warning,
 
-	CLS_COUNT
+    CLS_COUNT
 };
 
 struct LineReader;
 
-namespace UI
-{
-	enum DrawableType
-	{
-		Drawable_None,
-		Drawable_Color,
-		Drawable_Gradient,
-		Drawable_Ninepatch,
-		Drawable_Sprite,
-	};
+namespace UI {
 
-	struct DrawableStyle
-	{
-		DrawableType type;
-		V4 color;
+enum DrawableType {
+    Drawable_None,
+    Drawable_Color,
+    Drawable_Gradient,
+    Drawable_Ninepatch,
+    Drawable_Sprite,
+};
 
-		union
-		{
-			struct {
-				V4 color00;
-				V4 color01;
-				V4 color10;
-				V4 color11;
-			} gradient;
+struct DrawableStyle {
+    DrawableType type;
+    V4 color;
 
-			AssetRef ninepatch;
+    union {
+        struct {
+            V4 color00;
+            V4 color01;
+            V4 color10;
+            V4 color11;
+        } gradient;
 
-			SpriteRef sprite;
-		};
+        AssetRef ninepatch;
 
-	// METHODS
-		bool hasFixedSize();
-		V2I getSize(); // NB: Returns 0 for sizeless types
-	};
-	Maybe<DrawableStyle> readDrawableStyle(LineReader *reader);
+        SpriteRef sprite;
+    };
 
-	enum StyleType {
-		Style_None = 0,
-		Style_Button = 1,
-		Style_Checkbox,
-		Style_Console,
-		Style_DropDownList,
-		Style_Label,
-		Style_Panel,
-		Style_RadioButton,
-		Style_Scrollbar,
-		Style_Slider,
-		Style_TextInput,
-		Style_Window,
-		StyleTypeCount
-	};
+    // METHODS
+    bool hasFixedSize();
+    V2I getSize(); // NB: Returns 0 for sizeless types
+};
+Maybe<DrawableStyle> readDrawableStyle(LineReader* reader);
 
-	struct ButtonStyle
-	{
-		String name;
+enum StyleType {
+    Style_None = 0,
+    Style_Button = 1,
+    Style_Checkbox,
+    Style_Console,
+    Style_DropDownList,
+    Style_Label,
+    Style_Panel,
+    Style_RadioButton,
+    Style_Scrollbar,
+    Style_Slider,
+    Style_TextInput,
+    Style_Window,
+    StyleTypeCount
+};
 
-		AssetRef font;
-		V4 textColor;
-		u32 textAlignment;
+struct ButtonStyle {
+    String name;
 
-		Padding padding;
-		s32 contentPadding; // Between icons and content
+    AssetRef font;
+    V4 textColor;
+    u32 textAlignment;
 
-		DrawableStyle startIcon;
-		u32 startIconAlignment;
+    Padding padding;
+    s32 contentPadding; // Between icons and content
 
-		DrawableStyle endIcon;
-		u32 endIconAlignment;
+    DrawableStyle startIcon;
+    u32 startIconAlignment;
 
-		DrawableStyle background;
-		DrawableStyle backgroundHover;
-		DrawableStyle backgroundPressed;
-		DrawableStyle backgroundDisabled;
-	};
+    DrawableStyle endIcon;
+    u32 endIconAlignment;
 
-	struct CheckboxStyle
-	{
-		String name;
+    DrawableStyle background;
+    DrawableStyle backgroundHover;
+    DrawableStyle backgroundPressed;
+    DrawableStyle backgroundDisabled;
+};
 
-		Padding padding;
+struct CheckboxStyle {
+    String name;
 
-		DrawableStyle background;
-		DrawableStyle backgroundHover;
-		DrawableStyle backgroundPressed;
-		DrawableStyle backgroundDisabled;
+    Padding padding;
 
-		V2I checkSize;
-		DrawableStyle check;
-		DrawableStyle checkHover;
-		DrawableStyle checkPressed;
-		DrawableStyle checkDisabled;
-	};
+    DrawableStyle background;
+    DrawableStyle backgroundHover;
+    DrawableStyle backgroundPressed;
+    DrawableStyle backgroundDisabled;
 
-	struct ConsoleStyle
-	{
-		String name;
-		
-		AssetRef font;
-		union {
-			V4 outputTextColors[CLS_COUNT];
+    V2I checkSize;
+    DrawableStyle check;
+    DrawableStyle checkHover;
+    DrawableStyle checkPressed;
+    DrawableStyle checkDisabled;
+};
 
-			struct {
-				// Must match the order in ConsoleLineStyleID!
-				V4 outputTextColor;
-				V4 outputTextColorInputEcho;
-				V4 outputTextColorError;
-				V4 outputTextColorSuccess;
-				V4 outputTextColorWarning;
-			};
-		};
+struct ConsoleStyle {
+    String name;
 
-		DrawableStyle background;
-		Padding padding;
-		s32 contentPadding;
+    AssetRef font;
+    union {
+        V4 outputTextColors[CLS_COUNT];
 
-		AssetRef scrollbarStyle;
-		AssetRef textInputStyle;
-	};
+        struct {
+            // Must match the order in ConsoleLineStyleID!
+            V4 outputTextColor;
+            V4 outputTextColorInputEcho;
+            V4 outputTextColorError;
+            V4 outputTextColorSuccess;
+            V4 outputTextColorWarning;
+        };
+    };
 
-	struct DropDownListStyle
-	{
-		String name;
+    DrawableStyle background;
+    Padding padding;
+    s32 contentPadding;
 
-		// For now, we'll just piggy-back off of other styles:
-		AssetRef buttonStyle; // For the normal state
-		AssetRef panelStyle;  // For the drop-down state
-	};
+    AssetRef scrollbarStyle;
+    AssetRef textInputStyle;
+};
 
-	struct LabelStyle
-	{
-		String name;
+struct DropDownListStyle {
+    String name;
 
-		Padding padding;
-		DrawableStyle background;
-		
-		AssetRef font;
-		V4 textColor;
-		u32 textAlignment;
-	};
+    // For now, we'll just piggy-back off of other styles:
+    AssetRef buttonStyle; // For the normal state
+    AssetRef panelStyle;  // For the drop-down state
+};
 
-	struct PanelStyle
-	{
-		String name;
-		
-		Padding padding;
-		s32 contentPadding;
-		u32 widgetAlignment;
-		
-		DrawableStyle background;
+struct LabelStyle {
+    String name;
 
-		AssetRef buttonStyle;
-		AssetRef checkboxStyle;
-		AssetRef dropDownListStyle;
-		AssetRef labelStyle;
-		AssetRef radioButtonStyle;
-		AssetRef scrollbarStyle;
-		AssetRef sliderStyle;
-		AssetRef textInputStyle;
-	};
+    Padding padding;
+    DrawableStyle background;
 
-	struct RadioButtonStyle
-	{
-		String name;
+    AssetRef font;
+    V4 textColor;
+    u32 textAlignment;
+};
 
-		V2I size;
-		DrawableStyle background;
-		DrawableStyle backgroundHover;
-		DrawableStyle backgroundPressed;
-		DrawableStyle backgroundDisabled;
+struct PanelStyle {
+    String name;
 
-		V2I dotSize;
-		DrawableStyle dot;
-		DrawableStyle dotHover;
-		DrawableStyle dotPressed;
-		DrawableStyle dotDisabled;
-	};
+    Padding padding;
+    s32 contentPadding;
+    u32 widgetAlignment;
 
-	struct ScrollbarStyle
-	{
-		String name;
+    DrawableStyle background;
 
-		s32 width;
-		
-		DrawableStyle background;
-		
-		DrawableStyle thumb;
-		DrawableStyle thumbHover;
-		DrawableStyle thumbPressed;
-		DrawableStyle thumbDisabled;
-	};
+    AssetRef buttonStyle;
+    AssetRef checkboxStyle;
+    AssetRef dropDownListStyle;
+    AssetRef labelStyle;
+    AssetRef radioButtonStyle;
+    AssetRef scrollbarStyle;
+    AssetRef sliderStyle;
+    AssetRef textInputStyle;
+};
 
-	struct SliderStyle
-	{
-		String name;
-		
-		DrawableStyle track;
-		s32 trackThickness;
+struct RadioButtonStyle {
+    String name;
 
-		DrawableStyle thumb;
-		DrawableStyle thumbHover;
-		DrawableStyle thumbPressed;
-		DrawableStyle thumbDisabled;
-		V2I thumbSize;
-	};
+    V2I size;
+    DrawableStyle background;
+    DrawableStyle backgroundHover;
+    DrawableStyle backgroundPressed;
+    DrawableStyle backgroundDisabled;
 
-	struct TextInputStyle
-	{
-		String name;
-		
-		AssetRef font;
-		V4 textColor;
-		u32 textAlignment;
+    V2I dotSize;
+    DrawableStyle dot;
+    DrawableStyle dotHover;
+    DrawableStyle dotPressed;
+    DrawableStyle dotDisabled;
+};
 
-		DrawableStyle background;
-		Padding padding;
-		
-		bool showCaret;
-		f32 caretFlashCycleDuration;
-	};
+struct ScrollbarStyle {
+    String name;
 
-	struct WindowStyle
-	{
-		String name;
-		
-		AssetRef titleLabelStyle;
-		s32 titleBarHeight;
-		V4 titleBarColor;
-		V4 titleBarColorInactive;
-		V4 titleBarButtonHoverColor;
+    s32 width;
 
-		V2I offsetFromMouse;
+    DrawableStyle background;
 
-		AssetRef panelStyle;
-	};
+    DrawableStyle thumb;
+    DrawableStyle thumbHover;
+    DrawableStyle thumbPressed;
+    DrawableStyle thumbDisabled;
+};
 
-	enum class PropType
-	{
-		Alignment,
-		Bool,
-		Color,
-		Drawable,
-		Float,
-		Font,
-		Int,
-		Padding,
-		String,
-		Style,
-		V2I,
-		PropTypeCount
-	};
+struct SliderStyle {
+    String name;
 
-	struct Property
-	{
-		PropType type;
-		smm offsetInStyleStruct;
-		bool existsInStyle[StyleTypeCount];
-	};
+    DrawableStyle track;
+    s32 trackThickness;
 
-	struct Style
-	{
-		StyleType type;
-		String name;
+    DrawableStyle thumb;
+    DrawableStyle thumbHover;
+    DrawableStyle thumbPressed;
+    DrawableStyle thumbDisabled;
+    V2I thumbSize;
+};
 
-		// PROPERTIES
-		Maybe<Padding> padding;
-		Maybe<s32> contentPadding;
-		Maybe<V2I> offsetFromMouse;
-		Maybe<s32> width;
-		Maybe<u32> widgetAlignment;
-		Maybe<V2I> size;
+struct TextInputStyle {
+    String name;
 
-		Maybe<DrawableStyle> background;
-		Maybe<DrawableStyle> backgroundDisabled;
-		Maybe<DrawableStyle> backgroundHover;
-		Maybe<DrawableStyle> backgroundPressed;
+    AssetRef font;
+    V4 textColor;
+    u32 textAlignment;
 
-		Maybe<String> buttonStyle;
-		Maybe<String> checkboxStyle;
-		Maybe<String> dropDownListStyle;
-		Maybe<String> labelStyle;
-		Maybe<String> panelStyle;
-		Maybe<String> radioButtonStyle;
-		Maybe<String> scrollbarStyle;
-		Maybe<String> sliderStyle;
-		Maybe<String> textInputStyle;
+    DrawableStyle background;
+    Padding padding;
 
-		Maybe<DrawableStyle> startIcon;
-		Maybe<u32> startIconAlignment;
-		
-		Maybe<DrawableStyle> endIcon;
-		Maybe<u32> endIconAlignment;
-		
-		Maybe<bool> showCaret;
-		Maybe<f32> caretFlashCycleDuration;
+    bool showCaret;
+    f32 caretFlashCycleDuration;
+};
 
-		Maybe<DrawableStyle> track;
-		Maybe<s32> trackThickness;
-		Maybe<DrawableStyle> thumb;
-		Maybe<DrawableStyle> thumbHover;
-		Maybe<DrawableStyle> thumbPressed;
-		Maybe<DrawableStyle> thumbDisabled;
-		Maybe<V2I> thumbSize;
-		
-		Maybe<V4> overlayColor;
+struct WindowStyle {
+    String name;
 
-		Maybe<AssetRef> font;
-		Maybe<u32> textAlignment;
-		Maybe<V4> textColor;
-		
-		// Window
-		Maybe<String> titleLabelStyle;
-		Maybe<V4> titleBarButtonHoverColor;
-		Maybe<V4> titleBarColor;
-		Maybe<V4> titleBarColorInactive;
-		Maybe<s32> titleBarHeight;
+    AssetRef titleLabelStyle;
+    s32 titleBarHeight;
+    V4 titleBarColor;
+    V4 titleBarColorInactive;
+    V4 titleBarButtonHoverColor;
 
-		// Checkbox specific
-		Maybe<V2I> checkSize;
-		Maybe<DrawableStyle> check;
-		Maybe<DrawableStyle> checkHover;
-		Maybe<DrawableStyle> checkPressed;
-		Maybe<DrawableStyle> checkDisabled;
+    V2I offsetFromMouse;
 
-		// Console
-		Maybe<V4> outputTextColor;
-		Maybe<V4> outputTextColorInputEcho;
-		Maybe<V4> outputTextColorError;
-		Maybe<V4> outputTextColorSuccess;
-		Maybe<V4> outputTextColorWarning;
+    AssetRef panelStyle;
+};
 
-		// Radio button
-		Maybe<V2I> dotSize;
-		Maybe<DrawableStyle> dot;
-		Maybe<DrawableStyle> dotHover;
-		Maybe<DrawableStyle> dotPressed;
-		Maybe<DrawableStyle> dotDisabled;
-	};
+enum class PropType {
+    Alignment,
+    Bool,
+    Color,
+    Drawable,
+    Float,
+    Font,
+    Int,
+    Padding,
+    String,
+    Style,
+    V2I,
+    PropTypeCount
+};
 
-	HashTable<Property> styleProperties;
-	HashTable<StyleType> styleTypesByName;
-	void initStyleConstants();
-	void assignStyleProperties(StyleType type, std::initializer_list<String> properties);
+struct Property {
+    PropType type;
+    smm offsetInStyleStruct;
+    bool existsInStyle[StyleTypeCount];
+};
 
-	template <typename T>
-	void setPropertyValue(Style *style, Property *property, T value);
+struct Style {
+    StyleType type;
+    String name;
+
+    // PROPERTIES
+    Maybe<Padding> padding;
+    Maybe<s32> contentPadding;
+    Maybe<V2I> offsetFromMouse;
+    Maybe<s32> width;
+    Maybe<u32> widgetAlignment;
+    Maybe<V2I> size;
+
+    Maybe<DrawableStyle> background;
+    Maybe<DrawableStyle> backgroundDisabled;
+    Maybe<DrawableStyle> backgroundHover;
+    Maybe<DrawableStyle> backgroundPressed;
+
+    Maybe<String> buttonStyle;
+    Maybe<String> checkboxStyle;
+    Maybe<String> dropDownListStyle;
+    Maybe<String> labelStyle;
+    Maybe<String> panelStyle;
+    Maybe<String> radioButtonStyle;
+    Maybe<String> scrollbarStyle;
+    Maybe<String> sliderStyle;
+    Maybe<String> textInputStyle;
+
+    Maybe<DrawableStyle> startIcon;
+    Maybe<u32> startIconAlignment;
+
+    Maybe<DrawableStyle> endIcon;
+    Maybe<u32> endIconAlignment;
+
+    Maybe<bool> showCaret;
+    Maybe<f32> caretFlashCycleDuration;
+
+    Maybe<DrawableStyle> track;
+    Maybe<s32> trackThickness;
+    Maybe<DrawableStyle> thumb;
+    Maybe<DrawableStyle> thumbHover;
+    Maybe<DrawableStyle> thumbPressed;
+    Maybe<DrawableStyle> thumbDisabled;
+    Maybe<V2I> thumbSize;
+
+    Maybe<V4> overlayColor;
+
+    Maybe<AssetRef> font;
+    Maybe<u32> textAlignment;
+    Maybe<V4> textColor;
+
+    // Window
+    Maybe<String> titleLabelStyle;
+    Maybe<V4> titleBarButtonHoverColor;
+    Maybe<V4> titleBarColor;
+    Maybe<V4> titleBarColorInactive;
+    Maybe<s32> titleBarHeight;
+
+    // Checkbox specific
+    Maybe<V2I> checkSize;
+    Maybe<DrawableStyle> check;
+    Maybe<DrawableStyle> checkHover;
+    Maybe<DrawableStyle> checkPressed;
+    Maybe<DrawableStyle> checkDisabled;
+
+    // Console
+    Maybe<V4> outputTextColor;
+    Maybe<V4> outputTextColorInputEcho;
+    Maybe<V4> outputTextColorError;
+    Maybe<V4> outputTextColorSuccess;
+    Maybe<V4> outputTextColorWarning;
+
+    // Radio button
+    Maybe<V2I> dotSize;
+    Maybe<DrawableStyle> dot;
+    Maybe<DrawableStyle> dotHover;
+    Maybe<DrawableStyle> dotPressed;
+    Maybe<DrawableStyle> dotDisabled;
+};
+
+HashTable<Property> styleProperties;
+HashTable<StyleType> styleTypesByName;
+void initStyleConstants();
+void assignStyleProperties(StyleType type, std::initializer_list<String> properties);
+
+template<typename T>
+void setPropertyValue(Style* style, Property* property, T value);
+
 }
 
-void loadUITheme(Blob data, struct Asset *asset);
+void loadUITheme(Blob data, struct Asset* asset);

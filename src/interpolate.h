@@ -1,14 +1,13 @@
 #pragma once
 
-enum InterpolationType
-{
-	Interpolate_Linear,
-	
-	Interpolate_Sine,
-	Interpolate_SineIn,
-	Interpolate_SineOut,
+enum InterpolationType {
+    Interpolate_Linear,
 
-	InterpolationTypeCount
+    Interpolate_Sine,
+    Interpolate_SineIn,
+    Interpolate_SineOut,
+
+    InterpolationTypeCount
 };
 
 // t is a value from 0 to 1, representing how far through the interpolation you are
