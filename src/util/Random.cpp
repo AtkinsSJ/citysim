@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "Random.h"
+#include "../types.h"
 
 void initRandom(Random* random, RandomType type, s32 seed)
 {
