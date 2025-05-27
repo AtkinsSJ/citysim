@@ -2,7 +2,6 @@
 
 // platform_linux.cpp
 #include <ctime>
-#include <dirent.h>
 #include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -154,26 +153,87 @@ bool platform_deleteFile(String path)
 struct FileInfo;
 
 struct DirectoryListingHandle;
+
+static void fillFileInfo(DirectoryListingHandle const& handle, dirent const& entry, FileInfo& result)
+{
+	struct stat statBuffer {};
+	result = {
+		.filename = makeString(entry.d_name),
+		.flags = 0,
+		.size = 0,
+	};
+
+	if (fstatat(handle.dirFD, entry.d_name, &statBuffer, 0) != 0) {
+		logInfo("Failed to stat file \"{0}\". (Error {1})"_s, {result.filename, formatInt(errno)});
+		return;
+	}
+
+	result.flags = 0;
+	if (statBuffer.st_mode & S_IFDIR)							result.flags |= FileFlag_Directory;
+	if (findIndexOfChar(result.filename, '.', false).orDefault(-1) == 0)    result.flags |= FileFlag_Hidden;
+	// TODO: ReadOnly flag, which... we never use!
+
+	result.size = statBuffer.st_size;
+}
+
+static bool readNextDirEntry(DirectoryListingHandle& handle, FileInfo& result)
+{
+	handle.isValid = true;
+	errno = 0;
+	dirent* entry = readdir(handle.dir);
+	if (errno != 0) {
+		handle.isValid = false;
+		handle.errorCode = errno;
+		logError("Failed to read directory entry in \"{0}\". (Error {1})"_s, {handle.path, formatInt(handle.errorCode)});
+		return false;
+	}
+
+	if (!entry) {
+		stopDirectoryListing(&handle);
+		return false;
+	}
+
+	fillFileInfo(handle, *entry, result);
+	return true;
+}
+
 DirectoryListingHandle platform_beginDirectoryListing(String path, FileInfo *result)
 {
 	ASSERT(isNullTerminated(path));
 
 	DirectoryListingHandle handle = {};
 
-	// TODO: Implement this!
+	handle.dir = opendir(path.chars);
+	if (handle.dir == nullptr) {
+		handle.isValid = false;
+		handle.errorCode = errno;
+		logError("Failed to read directory listing in \"{0}\". (Error {1})"_s, {handle.path, formatInt(handle.errorCode)});
+		return handle;
+	}
+	handle.dirFD = dirfd(handle.dir);
+	if (handle.dirFD == -1) {
+		handle.isValid = false;
+		handle.errorCode = errno;
+		logError("Failed to read FD of directory \"{0}\". (Error {1})"_s, {handle.path, formatInt(handle.errorCode)});
+		return handle;
+	}
+
+	readNextDirEntry(handle, *result);
 
 	return handle;
 }
 
-bool platform_nextFileInDirectory(DirectoryListingHandle *, FileInfo *)
+bool platform_nextFileInDirectory(DirectoryListingHandle *handle, FileInfo *result)
 {
-	// TODO: Implement this!
-	return false;
+	return readNextDirEntry(*handle, *result);
 }
 
-void platform_stopDirectoryListing(DirectoryListingHandle *)
+void platform_stopDirectoryListing(DirectoryListingHandle *handle)
 {
-	// TODO: Implement this!
+	if (handle->dir) {
+		closedir(handle->dir);
+		handle->dir = nullptr;
+	}
 }
 
 struct DirectoryChangeWatchingHandle;

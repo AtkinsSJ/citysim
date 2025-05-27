@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef __linux__
+#	include <dirent.h>
+#endif
+
 struct FileHandle
 {
 	String path;
@@ -32,17 +36,15 @@ struct DirectoryListingHandle
 	u32 errorCode;
 	String path;
 
-	union
-	{
 #ifdef __linux__
-		int unused;
+	DIR* dir;
+	int dirFD;
 #else
-		struct
-		{
-			HANDLE hFile;
-		} windows;
+	struct
+	{
+		HANDLE hFile;
+	} windows;
 #endif
-	};
 };
 
 enum FileFlags
