@@ -637,11 +637,11 @@ void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType)
 	String pathToScan;
 	if (isEmpty(subDirectory))
 	{
-		pathToScan = constructPath({assets->assetsPath}, true);
+		pathToScan = constructPath({assets->assetsPath});
 	}
 	else
 	{
-		pathToScan = constructPath({assets->assetsPath, subDirectory}, true);
+		pathToScan = constructPath({assets->assetsPath, subDirectory});
 	}
 
 	bool isLocaleSpecific = equals(subDirectory, "locale"_s);

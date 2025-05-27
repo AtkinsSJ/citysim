@@ -52,7 +52,7 @@ void updateSavedGamesCatalogue()
 void readSavedGamesInfo(SavedGamesCatalogue *catalogue)
 {
 	// Load the save game metadata
-	for (auto it = iterateDirectoryListing(constructPath({catalogue->savedGamesPath}, true));
+	for (auto it = iterateDirectoryListing(constructPath({catalogue->savedGamesPath}));
 		hasNextFile(&it);
 		findNextFile(&it))
 	{

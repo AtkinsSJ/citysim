@@ -199,7 +199,9 @@ DirectoryListingHandle platform_beginDirectoryListing(String path, FileInfo *res
 
 	handle.path = path;
 
-	handle.windows.hFile = FindFirstFile(path.chars, &findFileData);
+	auto searchPath = constructPath({path}, true);
+
+	handle.windows.hFile = FindFirstFile(searchPath.chars, &findFileData);
 
 	if (handle.windows.hFile == INVALID_HANDLE_VALUE)
 	{
