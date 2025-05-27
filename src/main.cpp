@@ -42,7 +42,7 @@ struct Settings* settings;
 #include "util/String.h"
 #include "memory.h"
 #include "random.h"
-#include "pool.h"
+#include "util/Pool.h"
 #include "chunked_array.h"
 #include "queue.h"
 #include "stack.h"
