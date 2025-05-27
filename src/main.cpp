@@ -58,7 +58,7 @@ struct Settings* settings;
 #include "util/HashTable.h"
 #include "string_table.h"
 #include "input.h"
-#include "interpolate.h"
+#include "util/Interpolate.h"
 #include "ui/ui.h"
 #include "debug.h"
 #include "util/Endian.h"
@@ -139,7 +139,6 @@ AppState globalAppState;
 #include "game_mainmenu.cpp"
 #include "health.cpp"
 #include "input.cpp"
-#include "interpolate.cpp"
 #include "land_value.cpp"
 #include "line_reader.cpp"
 #include "util/LinkedList.h"
@@ -182,6 +181,7 @@ AppState globalAppState;
 // Below, these are proper independent implementation files that should be separate TUs.
 // FIXME: Multiple translation units!!!
 #include "util/BitArray.cpp"
+#include "util/Interpolate.cpp"
 #include "util/Matrix4.cpp"
 #include "util/String.cpp"
 #include "util/Vector.cpp"

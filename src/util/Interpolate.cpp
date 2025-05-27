@@ -1,4 +1,13 @@
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include "Interpolate.h"
+#include "../maths.h"
 
 f32 interpolate(f32 start, f32 end, f32 t, InterpolationType interpolation)
 {
