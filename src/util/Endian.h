@@ -1,4 +1,12 @@
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include "Basic.h"
 
 // NB: This is inspired by https://github.com/tatewake/endian-template/blob/master/tEndian.h
 // However, we require a *very small* subset of that! Just assignment to/from LE types from
