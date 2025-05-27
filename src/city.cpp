@@ -214,7 +214,7 @@ bool canPlaceBuilding(City* city, BuildingDef* def, s32 left, s32 top)
             }
 
             Building* buildingAtPos = getBuildingAt(city, x, y);
-            if (buildingAtPos != null) {
+            if (buildingAtPos != nullptr) {
                 // Check if we can combine this with the building that's already there
                 Maybe<BuildingDef*> possibleIntersection = findBuildingIntersection(getBuildingDef(buildingAtPos->typeID), def);
                 if (possibleIntersection.isValid) {
@@ -240,7 +240,7 @@ void placeBuilding(City* city, BuildingDef* def, s32 left, s32 top, bool markAre
     Rect2I footprint = irectXYWH(left, top, def->width, def->height);
 
     Building* building = getBuildingAt(city, left, top);
-    if (building != null) {
+    if (building != nullptr) {
         // Do a quick replace! We already established in canPlaceBuilding() that we match.
         // NB: We're keeping the old building's id. I think that's preferable, but might want to change that later.
         BuildingDef* oldDef = getBuildingDef(building->typeID);
@@ -352,7 +352,7 @@ void demolishRect(City* city, Rect2I area)
         city->buildings.removeIndex(buildingIndex);
         removeEntity(city, building->entity);
 
-        building = null; // For safety, because we just deleted the Building!
+        building = nullptr; // For safety, because we just deleted the Building!
 
         for (s32 y = buildingFootprint.y;
             y < buildingFootprint.y + buildingFootprint.h;
@@ -393,7 +393,7 @@ void demolishRect(City* city, Rect2I area)
                     x < sector->bounds.x + sector->bounds.w;
                     x++) {
                     Building* b = getBuildingAt(city, x, y);
-                    if (b != null) {
+                    if (b != nullptr) {
                         if (b->footprint.x == x && b->footprint.y == y) {
                             sector->ownedBuildings.append(b);
                         }
@@ -487,7 +487,7 @@ inline bool buildingExistsAt(City* city, s32 x, s32 y)
 
 Building* getBuildingAt(City* city, s32 x, s32 y)
 {
-    Building* result = null;
+    Building* result = nullptr;
 
     if (tileExists(city, x, y)) {
         u32 buildingID = city->tileBuildingIndex.get(x, y);
@@ -602,7 +602,7 @@ bool loadBuildings(City* city, struct BinaryFileReader* reader)
             String buildingName = reader->readString(entry->name);
 
             BuildingDef* def = findBuildingDef(buildingName);
-            if (def == null) {
+            if (def == nullptr) {
                 // The building doesn't exist in the game... we'll remap to 0
                 //
                 // Ideally, we'd keep the information about what a building really is, so

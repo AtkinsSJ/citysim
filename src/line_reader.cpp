@@ -165,7 +165,7 @@ String readToken(LineReader* reader, char splitChar)
 
 String peekToken(LineReader* reader, char splitChar)
 {
-    String token = nextToken(reader->position.lineRemainder, null, splitChar);
+    String token = nextToken(reader->position.lineRemainder, nullptr, splitChar);
 
     return token;
 }

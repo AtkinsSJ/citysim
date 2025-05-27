@@ -425,11 +425,11 @@ bool splitInTwo(String input, char divider, String* leftResult, String* rightRes
             // bug before where we didn't, and it sometimes had old data in the "hasHash" field, which was
             // causing all kinds of weird stuff to happen!
             // Literally the exact same issue I fixed in nextToken() yesterday. /fp
-            if (leftResult != null) {
+            if (leftResult != nullptr) {
                 *leftResult = makeString(input.chars, i);
             }
 
-            if (rightResult != null) {
+            if (rightResult != nullptr) {
                 *rightResult = makeString(input.chars + i + 1, input.length - i - 1);
             }
 

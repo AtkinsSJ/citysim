@@ -32,9 +32,9 @@ inline bool Queue<T>::isEmpty()
 template<typename T>
 T* Queue<T>::push()
 {
-    if (endChunk == null) {
+    if (endChunk == nullptr) {
         // In case we don't yet have a chunk, or we became empty and removed it, add one.
-        ASSERT(startChunk == null); // If we have a start but no end, something has gone very wrong!!!
+        ASSERT(startChunk == nullptr); // If we have a start but no end, something has gone very wrong!!!
         startChunk = getItemFromPool(&chunkPool);
         startChunk->count = 0;
         startChunk->startIndex = 0;
@@ -96,16 +96,16 @@ Maybe<T> Queue<T>::pop()
                 startChunk->startIndex = 0;
             } else {
                 QueueChunk<T>* newStartChunk = startChunk->nextChunk;
-                if (newStartChunk != null) {
-                    newStartChunk->prevChunk = null;
+                if (newStartChunk != nullptr) {
+                    newStartChunk->prevChunk = nullptr;
                 }
 
                 addItemToPool(&chunkPool, startChunk);
                 startChunk = newStartChunk;
 
                 // If we just removed the only chunk, make sure to clear the endChunk to match.
-                if (startChunk == null) {
-                    endChunk = null;
+                if (startChunk == nullptr) {
+                    endChunk = nullptr;
                 }
             }
         }
@@ -152,7 +152,7 @@ void QueueIterator<T>::next()
         indexInChunk--;
         if (indexInChunk < currentChunk->startIndex) {
             // Previous chunk
-            if (currentChunk->prevChunk == null) {
+            if (currentChunk->prevChunk == nullptr) {
                 // We're done!
                 isDone = true;
             } else {
@@ -164,7 +164,7 @@ void QueueIterator<T>::next()
         indexInChunk++;
         if (indexInChunk >= currentChunk->count + currentChunk->startIndex) {
             // Next chunk
-            if (currentChunk->nextChunk == null) {
+            if (currentChunk->nextChunk == nullptr) {
                 // We're done!
                 isDone = true;
             } else {

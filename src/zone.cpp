@@ -50,7 +50,7 @@ CanZoneQuery* queryCanZoneTiles(City* city, ZoneType zoneType, Rect2I bounds)
     // Assumption made: `bounds` is a valid rectangle within the city's bounds
 
     // Allocate the Query struct
-    CanZoneQuery* query = null;
+    CanZoneQuery* query = nullptr;
     s32 tileCount = areaOf(bounds);
     smm structSize = sizeof(CanZoneQuery) + (tileCount * sizeof(query->tileCanBeZoned[0]));
     u8* memory = (u8*)allocate(tempArena, structSize);

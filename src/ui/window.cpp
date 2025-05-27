@@ -72,7 +72,7 @@ String WindowTitle::getString()
  */
 void showWindow(UI::WindowTitle title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void* userData, WindowProc onClose)
 {
-    if (windowProc == null) {
+    if (windowProc == nullptr) {
         logError("showWindow() called with a null WindowProc. That doesn't make sense? Title: {0}"_s, { title.getString() });
         return;
     }
@@ -94,7 +94,7 @@ void showWindow(UI::WindowTitle title, s32 width, s32 height, V2I position, Stri
     if (uiState.openWindows.count > 0) {
         // If the window wants to be unique, then we search for an existing one with the same WindowProc
         if (flags & WindowFlags::Unique) {
-            Window* toReplace = null;
+            Window* toReplace = nullptr;
 
             s32 oldWindowIndex = 0;
             for (auto it = uiState.openWindows.iterate();
@@ -212,7 +212,7 @@ void updateAndRenderWindows()
         if (!window->isInitialised) {
             window->isInitialised = true;
 
-            WindowContext context = WindowContext(window, windowStyle, true, null);
+            WindowContext context = WindowContext(window, windowStyle, true, nullptr);
             window->windowProc(&context, window->userData);
             context.windowPanel.end(shrinkHeight, shrinkWidth);
 
@@ -441,13 +441,13 @@ inline void closeWindow(s32 windowIndex)
 
     Window* window = uiState.openWindows.get(windowIndex);
 
-    if (window->onClose != null) {
-        window->onClose(null, window->userData);
+    if (window->onClose != nullptr) {
+        window->onClose(nullptr, window->userData);
     }
 
-    if (window->renderBuffer != null) {
+    if (window->renderBuffer != nullptr) {
         returnTemporaryRenderBuffer(window->renderBuffer);
-        window->renderBuffer = null;
+        window->renderBuffer = nullptr;
     }
 
     uiState.openWindows.removeIndex(windowIndex, true);

@@ -6,7 +6,7 @@
 
 static bool checkInGame()
 {
-    bool inGame = (globalAppState.gameState != null);
+    bool inGame = (globalAppState.gameState != nullptr);
     if (!inGame) {
         consoleWriteLine("You can only do that when a game is in progress!"_s, CLS_Error);
     }

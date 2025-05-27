@@ -33,7 +33,7 @@ void updateCrimeLayer(City* city, CrimeLayer* layer)
     layer->totalJailCapacity = 0;
     for (auto it = layer->policeBuildings.iterate(); it.hasNext(); it.next()) {
         Building* building = getBuilding(city, it.getValue());
-        if (building != null) {
+        if (building != nullptr) {
             BuildingDef* def = getBuildingDef(building);
             if (def->jailCapacity > 0)
                 layer->totalJailCapacity += def->jailCapacity;
@@ -51,7 +51,7 @@ void updateCrimeLayer(City* city, CrimeLayer* layer)
                 fillRegion<u8>(&layer->tilePoliceCoverage, sector->bounds, 0);
                 for (auto it = layer->policeBuildings.iterate(); it.hasNext(); it.next()) {
                     Building* building = getBuilding(city, it.getValue());
-                    if (building != null) {
+                    if (building != nullptr) {
                         BuildingDef* def = getBuildingDef(building);
 
                         if (hasEffect(&def->policeEffect)) {

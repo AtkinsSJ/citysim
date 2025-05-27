@@ -27,7 +27,7 @@ void startFrame()
 
     // Clear the drag if the mouse button isn't pressed
     if (!mouseButtonPressed(MouseButton_Left)) {
-        uiState.currentDragObject = null;
+        uiState.currentDragObject = nullptr;
     }
 
     windowSize = v2i(renderer->uiCamera.size);
@@ -41,9 +41,9 @@ void endFrame()
 {
     drawToast();
 
-    if (uiState.openDropDownListRenderBuffer != null) {
+    if (uiState.openDropDownListRenderBuffer != nullptr) {
         // If the buffer is empty, we didn't draw the dropdown this frame, so we should mark it as closed
-        if (uiState.openDropDownListRenderBuffer->firstChunk == null) {
+        if (uiState.openDropDownListRenderBuffer->firstChunk == nullptr) {
             closeDropDownList();
         } else {
             // NB: We transfer to the *window* buffer, not the *ui* buffer, because we
@@ -259,9 +259,9 @@ bool putButton(Rect2I bounds, ButtonStyle* style, ButtonState state, RenderBuffe
 {
     DEBUG_FUNCTION_T(DCDT_UI);
 
-    if (style == null)
+    if (style == nullptr)
         style = getStyle<ButtonStyle>("default"_s);
-    if (renderBuffer == null)
+    if (renderBuffer == nullptr)
         renderBuffer = &renderer->uiBuffer;
 
     bool buttonClicked = false;
@@ -314,7 +314,7 @@ bool putButton(Rect2I bounds, ButtonStyle* style, ButtonState state, RenderBuffe
 
 bool putTextButton(String text, Rect2I bounds, ButtonStyle* style, ButtonState state, RenderBuffer* renderBuffer, String tooltip)
 {
-    if (renderBuffer == null) {
+    if (renderBuffer == nullptr) {
         renderBuffer = &renderer->uiBuffer;
     }
 
@@ -329,7 +329,7 @@ bool putTextButton(String text, Rect2I bounds, ButtonStyle* style, ButtonState s
 
 bool putImageButton(Sprite* sprite, Rect2I bounds, ButtonStyle* style, ButtonState state, RenderBuffer* renderBuffer, String tooltip)
 {
-    if (renderBuffer == null)
+    if (renderBuffer == nullptr)
         renderBuffer = &renderer->uiBuffer;
 
     bool result = putButton(bounds, style, state, renderBuffer, tooltip);
@@ -354,9 +354,9 @@ void putCheckbox(bool* checked, Rect2I bounds, CheckboxStyle* style, bool isDisa
 {
     DEBUG_FUNCTION_T(DCDT_UI);
 
-    if (style == null)
+    if (style == nullptr)
         style = getStyle<CheckboxStyle>("default"_s);
-    if (renderBuffer == null)
+    if (renderBuffer == nullptr)
         renderBuffer = &renderer->uiBuffer;
 
     WidgetMouseState mouseState = getWidgetMouseState(bounds);
@@ -394,7 +394,7 @@ void putCheckbox(bool* checked, Rect2I bounds, CheckboxStyle* style, bool isDisa
 template<typename T>
 V2I calculateDropDownListSize(Array<T>* listOptions, String (*getDisplayName)(T* data), DropDownListStyle* style, s32 maxWidth, bool fillWidth)
 {
-    if (style == null)
+    if (style == nullptr)
         style = getStyle<DropDownListStyle>("default"_s);
     ButtonStyle* buttonStyle = getStyle<ButtonStyle>(&style->buttonStyle);
 
@@ -419,9 +419,9 @@ void putDropDownList(Array<T>* listOptions, s32* currentSelection, String (*getD
 {
     DEBUG_FUNCTION_T(DCDT_UI);
 
-    if (style == null)
+    if (style == nullptr)
         style = getStyle<DropDownListStyle>("default"_s);
-    if (renderBuffer == null)
+    if (renderBuffer == nullptr)
         renderBuffer = &renderer->uiBuffer;
 
     bool isOpen = isDropDownListOpen(listOptions);
@@ -472,7 +472,7 @@ void putDropDownList(Array<T>* listOptions, s32* currentSelection, String (*getD
 void openDropDownList(void* pointer)
 {
     uiState.openDropDownList = pointer;
-    if (uiState.openDropDownListRenderBuffer == null) {
+    if (uiState.openDropDownListRenderBuffer == nullptr) {
         uiState.openDropDownListRenderBuffer = getTemporaryRenderBuffer("DropDownList"_s);
     }
     clearRenderBuffer(uiState.openDropDownListRenderBuffer);
@@ -481,9 +481,9 @@ void openDropDownList(void* pointer)
 
 void closeDropDownList()
 {
-    uiState.openDropDownList = null;
+    uiState.openDropDownList = nullptr;
     returnTemporaryRenderBuffer(uiState.openDropDownListRenderBuffer);
-    uiState.openDropDownListRenderBuffer = null;
+    uiState.openDropDownListRenderBuffer = nullptr;
 }
 
 inline bool isDropDownListOpen(void* pointer)
@@ -493,7 +493,7 @@ inline bool isDropDownListOpen(void* pointer)
 
 V2I calculateLabelSize(String text, LabelStyle* style, s32 maxWidth, bool fillWidth)
 {
-    if (style == null)
+    if (style == nullptr)
         style = getStyle<LabelStyle>("default"_s);
 
     s32 maxTextWidth = maxWidth - (style->padding.left + style->padding.right);
@@ -516,9 +516,9 @@ void putLabel(String text, Rect2I bounds, LabelStyle* style, RenderBuffer* rende
 {
     DEBUG_FUNCTION_T(DCDT_UI);
 
-    if (style == null)
+    if (style == nullptr)
         style = getStyle<LabelStyle>("default"_s);
-    if (renderBuffer == null)
+    if (renderBuffer == nullptr)
         renderBuffer = &renderer->uiBuffer;
 
     Rect2I textBounds = shrink(bounds, style->padding);
@@ -561,7 +561,7 @@ inline ScrollbarState* getMenuScrollbar()
 
 V2I calculateRadioButtonSize(RadioButtonStyle* style)
 {
-    if (style == null)
+    if (style == nullptr)
         style = getStyle<RadioButtonStyle>("default"_s);
 
     V2I result = style->size;
@@ -573,9 +573,9 @@ void putRadioButton(s32* selectedValue, s32 value, Rect2I bounds, RadioButtonSty
 {
     DEBUG_FUNCTION_T(DCDT_UI);
 
-    if (style == null)
+    if (style == nullptr)
         style = getStyle<RadioButtonStyle>("default"_s);
-    if (renderBuffer == null)
+    if (renderBuffer == nullptr)
         renderBuffer = &renderer->uiBuffer;
 
     WidgetMouseState mouseState = getWidgetMouseState(bounds);
@@ -668,9 +668,9 @@ void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, Scrollb
 
     ASSERT(hasPositiveArea(bounds));
 
-    if (style == null)
+    if (style == nullptr)
         style = getStyle<ScrollbarStyle>("default"_s);
-    if (renderBuffer == null)
+    if (renderBuffer == nullptr)
         renderBuffer = &renderer->uiBuffer;
 
     Drawable(&style->background).draw(renderBuffer, bounds);
@@ -764,7 +764,7 @@ s32 getScrollbarContentOffset(ScrollbarState* state, s32 scrollbarSize)
 
 V2I calculateSliderSize(Orientation orientation, SliderStyle* style, V2I availableSpace, bool fillSpace)
 {
-    if (style == null)
+    if (style == nullptr)
         style = getStyle<SliderStyle>("default"_s);
 
     V2I result = {};
@@ -788,9 +788,9 @@ void putSlider(f32* currentValue, f32 minValue, f32 maxValue, Orientation orient
     DEBUG_FUNCTION_T(DCDT_UI);
     ASSERT(maxValue > minValue);
 
-    if (style == null)
+    if (style == nullptr)
         style = getStyle<SliderStyle>("default"_s);
-    if (renderBuffer == null)
+    if (renderBuffer == nullptr)
         renderBuffer = &renderer->uiBuffer;
 
     // Value ranges
@@ -914,9 +914,9 @@ void putSlider(s32* currentValue, s32 minValue, s32 maxValue, Orientation orient
 
 bool putTextInput(TextInput* textInput, Rect2I bounds, TextInputStyle* style, RenderBuffer* renderBuffer)
 {
-    if (style == null)
+    if (style == nullptr)
         style = getStyle<TextInputStyle>("default"_s);
-    if (renderBuffer == null)
+    if (renderBuffer == nullptr)
         renderBuffer = &renderer->uiBuffer;
 
     bool submittedInput = updateTextInput(textInput);

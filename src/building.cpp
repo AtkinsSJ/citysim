@@ -13,10 +13,10 @@ BuildingRef getReferenceTo(Building* building)
 
 Building* getBuilding(City* city, BuildingRef ref)
 {
-    Building* result = null;
+    Building* result = nullptr;
 
     Building* buildingAtPosition = getBuildingAt(city, ref.buildingPos.x, ref.buildingPos.y);
-    if ((buildingAtPosition != null) && (buildingAtPosition->id == ref.buildingID)) {
+    if ((buildingAtPosition != nullptr) && (buildingAtPosition->id == ref.buildingID)) {
         result = buildingAtPosition;
     }
 
@@ -149,7 +149,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
     initHashTable(&templates);
     Deferred defer_free_hash_table = [&templates] { freeHashTable(&templates); };
 
-    BuildingDef* def = null;
+    BuildingDef* def = nullptr;
 
     while (loadNextLine(&reader)) {
         String firstWord = readToken(&reader);
@@ -160,7 +160,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
             firstWord.chars++;
             firstWord.length--;
 
-            if (def != null) {
+            if (def != nullptr) {
                 // Now that the previous building is done, we can categorise it
                 _assignBuildingCategories(catalogue, def);
             }
@@ -213,7 +213,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
 
         } else // Properties!
         {
-            if (def == null) {
+            if (def == nullptr) {
                 error(&reader, "Found a property before starting a :Building, :Intersection or :Template!"_s);
                 return;
             } else {
@@ -464,7 +464,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
         }
     }
 
-    if (def != null) {
+    if (def != nullptr) {
         // Categorise the last building
         _assignBuildingCategories(catalogue, def);
     }
@@ -479,7 +479,7 @@ void removeBuildingDefs(Array<String> idsToRemove)
     for (s32 idIndex = 0; idIndex < idsToRemove.count; idIndex++) {
         String buildingID = idsToRemove[idIndex];
         BuildingDef* def = findBuildingDef(buildingID);
-        if (def != null) {
+        if (def != nullptr) {
             catalogue->constructibleBuildings.findAndRemove(def);
             catalogue->rGrowableBuildings.findAndRemove(def);
             catalogue->cGrowableBuildings.findAndRemove(def);
@@ -513,7 +513,7 @@ inline BuildingDef* getBuildingDef(s32 buildingTypeID)
 
     if (buildingTypeID > 0 && buildingTypeID < buildingCatalogue.allBuildings.count) {
         BuildingDef* found = buildingCatalogue.allBuildings.get(buildingTypeID);
-        if (found != null)
+        if (found != nullptr)
             result = found;
     }
 
@@ -522,9 +522,9 @@ inline BuildingDef* getBuildingDef(s32 buildingTypeID)
 
 inline BuildingDef* getBuildingDef(Building* building)
 {
-    BuildingDef* result = null;
+    BuildingDef* result = nullptr;
 
-    if (building != null) {
+    if (building != nullptr) {
         result = getBuildingDef(building->typeID);
     }
 
@@ -533,7 +533,7 @@ inline BuildingDef* getBuildingDef(Building* building)
 
 inline BuildingDef* findBuildingDef(String name)
 {
-    BuildingDef* result = buildingCatalogue.buildingsByName.findValue(name).orDefault(null);
+    BuildingDef* result = buildingCatalogue.buildingsByName.findValue(name).orDefault(nullptr);
 
     return result;
 }
@@ -560,7 +560,7 @@ BuildingDef* findRandomZoneBuilding(ZoneType zoneType, Random* random, Filter fi
     DEBUG_FUNCTION();
 
     // Choose a random building, then carry on checking buildings until one is acceptable
-    ChunkedArray<BuildingDef*>* buildings = null;
+    ChunkedArray<BuildingDef*>* buildings = nullptr;
     switch (zoneType) {
     case Zone_Residential:
         buildings = &buildingCatalogue.rGrowableBuildings;
@@ -575,7 +575,7 @@ BuildingDef* findRandomZoneBuilding(ZoneType zoneType, Random* random, Filter fi
         INVALID_DEFAULT_CASE;
     }
 
-    BuildingDef* result = null;
+    BuildingDef* result = nullptr;
 
     // TODO: @RandomIterate - This random selection is biased, and wants replacing with an iteration only over valid options,
     // like in "growSomeZoneBuildings - find a valid zone".
@@ -629,7 +629,7 @@ bool matchesVariant(BuildingDef* def, BuildingVariant* variant, BuildingDef** ne
         ConnectionType connectionType = variant->connections[directionIndex];
         BuildingDef* neighbourDef = neighbourDefs[directionIndex];
 
-        if (neighbourDef == null) {
+        if (neighbourDef == nullptr) {
             matchedDirection = (connectionType == ConnectionType_Nothing) || (connectionType == ConnectionType_Anything);
         } else {
             switch (connectionType) {
@@ -682,10 +682,10 @@ void updateBuildingVariant(City* city, Building* building, BuildingDef* passedDe
 {
     DEBUG_FUNCTION();
 
-    if (building == null)
+    if (building == nullptr)
         return;
 
-    BuildingDef* def = (passedDef != null) ? passedDef : getBuildingDef(building->typeID);
+    BuildingDef* def = (passedDef != nullptr) ? passedDef : getBuildingDef(building->typeID);
 
     if (def->variants.count > 0) {
         // NB: Right now we only allow variants for 1x1 buildings.
@@ -996,14 +996,14 @@ void saveBuildingTypes()
             BuildingDef* part1Def = findBuildingDef(def->intersectionPart1Name);
             BuildingDef* part2Def = findBuildingDef(def->intersectionPart2Name);
 
-            if (part1Def == null) {
+            if (part1Def == nullptr) {
                 logError("Unable to find building named '{0}' for part 1 of intersection '{1}'."_s, { def->intersectionPart1Name, def->name });
                 def->intersectionPart1TypeID = 0;
             } else {
                 def->intersectionPart1TypeID = part1Def->typeID;
             }
 
-            if (part2Def == null) {
+            if (part2Def == nullptr) {
                 logError("Unable to find building named '{0}' for part 2 of intersection '{1}'."_s, { def->intersectionPart2Name, def->name });
                 def->intersectionPart2TypeID = 0;
             } else {

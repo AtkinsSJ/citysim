@@ -147,7 +147,7 @@ void drawDataViewUI(GameState* gameState);
 void initDataViewUI(GameState* gameState);
 void setGradient(DataViewUI* dataViewUI, String paletteName);
 void setFixedColors(DataViewUI* dataView, String paletteName, std::initializer_list<String> names);
-void setHighlightedBuildings(DataViewUI* dataViewUI, ChunkedArray<BuildingRef>* highlightedBuildings, EffectRadius BuildingDef::* effectRadiusMember = null);
+void setHighlightedBuildings(DataViewUI* dataViewUI, ChunkedArray<BuildingRef>* highlightedBuildings, EffectRadius BuildingDef::* effectRadiusMember = nullptr);
 void setTileOverlay(DataViewUI* dataViewUI, u8** tileData, String paletteName);
 void setTileOverlayCallback(DataViewUI* dataViewUI, u8 (*calculateTileValue)(City* city, s32 x, s32 y), String paletteName);
 

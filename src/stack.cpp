@@ -21,7 +21,7 @@ T* push(Stack<T>* stack, T item)
 template<typename T>
 T* peek(Stack<T>* stack)
 {
-    T* result = null;
+    T* result = nullptr;
 
     if (!isEmpty(stack)) {
         result = stack->_array.get(stack->_array.count - 1);

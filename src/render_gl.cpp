@@ -34,7 +34,7 @@ bool GL_initializeRenderer(SDL_Window* window)
 
         // Create context
         gl->context = SDL_GL_CreateContext(renderer->window);
-        if (gl->context == NULL) {
+        if (gl->context == nullptr) {
             logCritical("OpenGL context could not be created! :(\n {0}"_s, { makeString(SDL_GetError()) });
             succeeded = false;
         }
@@ -51,7 +51,7 @@ bool GL_initializeRenderer(SDL_Window* window)
         // Debug callbacks
         if (GLEW_KHR_debug) {
             glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-            glDebugMessageCallback(GL_debugCallback, null);
+            glDebugMessageCallback(GL_debugCallback, nullptr);
             logInfo("OpenGL debug message callback enabled"_s);
         } else {
             logInfo("OpenGL debug message callback not available in this context"_s);
@@ -73,7 +73,7 @@ bool GL_initializeRenderer(SDL_Window* window)
             glGenBuffers(1, &gl->VBO);
             glBindBuffer(GL_ARRAY_BUFFER, gl->VBO);
             GLint vBufferSizeNeeded = RENDER_BATCH_VERTEX_COUNT * sizeof(gl->vertices[0]);
-            glBufferData(GL_ARRAY_BUFFER, vBufferSizeNeeded, null, GL_DYNAMIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, vBufferSizeNeeded, nullptr, GL_DYNAMIC_DRAW);
 
 //
 // NB: This is a (slightly crazy) optimization, relying on us always passing vertices as quads.
@@ -431,8 +431,8 @@ void GL_render(Array<RenderBuffer*> buffers)
 
     GL_Renderer* gl = (GL_Renderer*)renderer->platformRenderer;
 
-    GL_ShaderProgram* activeShader = null;
-    Camera* currentCamera = null;
+    GL_ShaderProgram* activeShader = nullptr;
+    Camera* currentCamera = nullptr;
 
     for (s32 bufferIndex = 0; bufferIndex < buffers.count; bufferIndex++) {
         RenderBuffer* buffer = buffers[bufferIndex];
@@ -441,7 +441,7 @@ void GL_render(Array<RenderBuffer*> buffers)
         DEBUG_BEGIN_RENDER_BUFFER(buffer->name, buffer->name);
 
         smm pos = 0;
-        while ((renderBufferChunk != null) && (pos < renderBufferChunk->used)) {
+        while ((renderBufferChunk != nullptr) && (pos < renderBufferChunk->used)) {
             RenderItemType itemType = *((RenderItemType*)(renderBufferChunk->memory + pos));
             pos += sizeof(RenderItemType);
 
@@ -509,7 +509,7 @@ void GL_render(Array<RenderBuffer*> buffers)
                     flushVertices(gl);
                 }
 
-                if (header->texture == null) {
+                if (header->texture == nullptr) {
                     // Raw texture!
                     glActiveTexture(GL_TEXTURE0 + 0);
                     glBindTexture(GL_TEXTURE_2D, gl->rawTextureID);
@@ -729,7 +729,7 @@ inline void uploadTexture2D(GLenum pixelFormat, s32 width, s32 height, void* pix
         glTexImage2D(GL_TEXTURE_2D, 0, pixelFormat, width, height, 0, pixelFormat, GL_UNSIGNED_BYTE, pixelData);
     } else {
         // Send the image as individual rows
-        glTexImage2D(GL_TEXTURE_2D, 0, pixelFormat, width, height, 0, pixelFormat, GL_UNSIGNED_BYTE, null);
+        glTexImage2D(GL_TEXTURE_2D, 0, pixelFormat, width, height, 0, pixelFormat, GL_UNSIGNED_BYTE, nullptr);
 
         s32 stride = width;
         switch (pixelFormat) {
@@ -895,10 +895,10 @@ void flushVertices(GL_Renderer* gl)
 
     {
         // DEBUG_BLOCK_T("flushVertices - glDrawElements", DCDT_Renderer);
-        glDrawElements(GL_TRIANGLES, gl->indexCount, GL_UNSIGNED_INT, NULL);
+        glDrawElements(GL_TRIANGLES, gl->indexCount, GL_UNSIGNED_INT, nullptr);
     }
 
-    DEBUG_DRAW_CALL(gl->shaders.get(gl->currentShader)->asset->shortName, (gl->currentTexture == null) ? nullString : gl->currentTexture->shortName, (gl->vertexCount >> 2));
+    DEBUG_DRAW_CALL(gl->shaders.get(gl->currentShader)->asset->shortName, (gl->currentTexture == nullptr) ? nullString : gl->currentTexture->shortName, (gl->vertexCount >> 2));
 
     gl->vertexCount = 0;
     gl->indexCount = 0;

@@ -108,7 +108,7 @@ void loadTerrainDefs(Blob data, Asset* asset)
 
     restart(&reader);
 
-    TerrainDef* def = null;
+    TerrainDef* def = nullptr;
 
     while (loadNextLine(&reader)) {
         String firstWord = readToken(&reader);
@@ -145,7 +145,7 @@ void loadTerrainDefs(Blob data, Asset* asset)
             }
         } else // Properties!
         {
-            if (def == null) {
+            if (def == nullptr) {
                 error(&reader, "Found a property before starting a :Terrain!"_s);
                 return;
             } else if (equals(firstWord, "borders"_s)) {
@@ -190,7 +190,7 @@ inline TerrainDef* getTerrainDef(u8 terrainType)
 
     if (terrainType > 0 && terrainType < terrainCatalogue.terrainDefs.count) {
         TerrainDef* found = terrainCatalogue.terrainDefs.get(terrainType);
-        if (found != null)
+        if (found != nullptr)
             result = found;
     }
 
@@ -204,7 +204,7 @@ u8 findTerrainTypeByName(String name)
     u8 result = 0;
 
     Maybe<TerrainDef*> def = terrainCatalogue.terrainDefsByName.findValue(name);
-    if (def.isValid && def.value != null) {
+    if (def.isValid && def.value != nullptr) {
         result = def.value->typeID;
     }
 
@@ -322,7 +322,7 @@ void generateTerrain(City* city, Random* gameRandom)
     }
 
     // Forest splats
-    if (treeDef == null) {
+    if (treeDef == nullptr) {
         logError("Map generator is unable to place any trees, because the 'tree' building was not found."_s);
     } else {
         s32 forestCount = randomBetween(&terrainRandom, 10, 20);
@@ -339,7 +339,7 @@ void generateTerrain(City* city, Random* gameRandom)
             for (s32 y = boundingBox.y; y < boundingBox.y + boundingBox.h; y++) {
                 for (s32 x = boundingBox.x; x < boundingBox.x + boundingBox.w; x++) {
                     if (getTerrainAt(city, x, y)->canBuildOn
-                        && (getBuildingAt(city, x, y) == null)
+                        && (getBuildingAt(city, x, y) == nullptr)
                         && contains(&forestSplat, x, y)) {
                         addBuilding(city, treeDef, irectXYWH(x, y, treeDef->size.x, treeDef->size.y));
                     }
@@ -382,7 +382,7 @@ void assignTerrainSprites(City* city, Rect2I bounds)
 
                 // Find the first match, if any
                 // Eventually we probably want to use whichever border terrain is most common instead
-                TerrainDef* borderTerrain = null;
+                TerrainDef* borderTerrain = nullptr;
                 for (s32 i = 0; i < 8; i++) {
                     if ((borders[i] != def) && (!borders[i]->borderSpriteNames.isEmpty())) {
                         borderTerrain = borders[i];

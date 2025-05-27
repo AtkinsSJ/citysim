@@ -4,7 +4,7 @@
 
 void openUrlUnsafe(char const* url)
 {
-    ShellExecute(null, "open", url, null, null, SW_SHOWNORMAL);
+    ShellExecute(nullptr, "open", url, nullptr, nullptr, SW_SHOWNORMAL);
 }
 
 u64 getCurrentUnixTimestamp()
@@ -74,7 +74,7 @@ bool platform_createDirectory(String _path)
 
     // First, we can skip a lot of work if the directory already exists, or all but the
     // last path segment do.
-    if (CreateDirectory(_path.chars, null) || GetLastError() == ERROR_ALREADY_EXISTS) {
+    if (CreateDirectory(_path.chars, nullptr) || GetLastError() == ERROR_ALREADY_EXISTS) {
         // Nothing left to do!
     } else {
         // https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createdirectorya
@@ -107,7 +107,7 @@ bool platform_createDirectory(String _path)
             logInfo("Attempting to create directory: {0}"_s, { path });
 
             // Create the path
-            if (!CreateDirectory(path.chars, null)) {
+            if (!CreateDirectory(path.chars, nullptr)) {
                 if (GetLastError() != ERROR_ALREADY_EXISTS) {
                     succeeded = false;
                     logError("Unable to create directory `{0}` - failed to create `{1}`."_s, { _path, path });

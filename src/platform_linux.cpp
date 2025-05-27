@@ -21,7 +21,7 @@ void openUrlUnsafe(char const* url)
 
 u64 getCurrentUnixTimestamp()
 {
-    return time(null);
+    return time(nullptr);
 }
 
 DateTime platform_getLocalTimeFromTimestamp(u64 unixTimestamp)

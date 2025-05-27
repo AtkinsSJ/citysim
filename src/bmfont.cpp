@@ -15,11 +15,11 @@ void loadBMFont(Blob data, Asset* asset)
         logError("BMFont file version is unsupported: {0}, wanted {1} and got {2}"_s,
             { asset->fullName, formatInt(BMFontSupportedVersion), formatInt(header->version) });
     } else {
-        BMFontBlockHeader* blockHeader = null;
-        BMFontBlock_Common* common = null;
-        BMFont_Char* chars = null;
+        BMFontBlockHeader* blockHeader = nullptr;
+        BMFontBlock_Common* common = nullptr;
+        BMFont_Char* chars = nullptr;
         u32 charCount = 0;
-        void* pages = null;
+        void* pages = nullptr;
 
         blockHeader = (BMFontBlockHeader*)(data.memory + pos);
         pos += sizeof(BMFontBlockHeader);

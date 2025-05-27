@@ -2,7 +2,7 @@
 
 inline BitmapFontGlyphEntry* findGlyphInternal(BitmapFont* font, unichar targetChar)
 {
-    BitmapFontGlyphEntry* result = null;
+    BitmapFontGlyphEntry* result = nullptr;
 
     // Protect against div-0 error if this is the empty placeholder font
     if (font->glyphCapacity > 0) {
@@ -26,7 +26,7 @@ BitmapFontGlyph* addGlyph(BitmapFont* font, unichar targetChar)
 {
     BitmapFontGlyphEntry* result = findGlyphInternal(font, targetChar);
 
-    ASSERT(result != null); //, "Failed to add a glyph to font '{0}'!", {font->name});
+    ASSERT(result != nullptr); //, "Failed to add a glyph to font '{0}'!", {font->name});
     result->codepoint = targetChar;
     ASSERT(result->isOccupied == false); //, "Attempted to add glyph '{0}' to font '{1}' twice!", {formatInt(targetChar), font->name});
     result->isOccupied = true;
@@ -38,10 +38,10 @@ BitmapFontGlyph* addGlyph(BitmapFont* font, unichar targetChar)
 
 BitmapFontGlyph* findGlyph(BitmapFont* font, unichar targetChar)
 {
-    BitmapFontGlyph* result = null;
+    BitmapFontGlyph* result = nullptr;
     BitmapFontGlyphEntry* entry = findGlyphInternal(font, targetChar);
 
-    if (entry == null) {
+    if (entry == nullptr) {
         logWarn("Failed to find char 0x{0} in font."_s, { formatInt(targetChar, 16) });
     } else {
         result = &entry->glyph;
@@ -54,7 +54,7 @@ V2I calculateTextSize(BitmapFont* font, String text, s32 maxWidth)
 {
     DEBUG_FUNCTION();
 
-    ASSERT(font != null); // Font must be provided!
+    ASSERT(font != nullptr); // Font must be provided!
     ASSERT(maxWidth >= 0);
 
     V2I result = v2i(maxWidth, font->lineHeight);
@@ -103,7 +103,7 @@ V2I calculateTextSize(BitmapFont* font, String text, s32 maxWidth)
             currentWordWidth = 0;
 
             unichar prevC = 0;
-            BitmapFontGlyph* glyph = null;
+            BitmapFontGlyph* glyph = nullptr;
 
             do {
                 if (c != prevC) {
@@ -223,8 +223,8 @@ void drawText(RenderBuffer* renderBuffer, BitmapFont* font, String text, Rect2I 
     if (isEmpty(text))
         return;
 
-    ASSERT(renderBuffer != null); // RenderBuffer must be provided!
-    ASSERT(font != null);         // Font must be provided!
+    ASSERT(renderBuffer != nullptr); // RenderBuffer must be provided!
+    ASSERT(font != nullptr);         // Font must be provided!
 
     V2I topLeft = bounds.pos;
     s32 maxWidth = (s32)bounds.w;
@@ -269,7 +269,7 @@ void drawText(RenderBuffer* renderBuffer, BitmapFont* font, String text, Rect2I 
 
     unichar c = 0;
     unichar prevC = 0;
-    BitmapFontGlyph* glyph = null;
+    BitmapFontGlyph* glyph = nullptr;
 
     bool foundNext = getNextUnichar(text, &bytePos, &c);
     while (foundNext) {

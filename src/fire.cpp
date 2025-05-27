@@ -86,7 +86,7 @@ void updateFireLayer(City* city, FireLayer* layer)
                 fillRegion<u8>(&layer->tileFireProtection, sector->bounds, 0);
                 for (auto it = layer->fireProtectionBuildings.iterate(); it.hasNext(); it.next()) {
                     Building* building = getBuilding(city, it.getValue());
-                    if (building != null) {
+                    if (building != nullptr) {
                         BuildingDef* def = getBuildingDef(building);
 
                         f32 effectiveness = layer->fundingLevel;
@@ -177,7 +177,7 @@ bool doesAreaContainFire(City* city, Rect2I bounds)
 void startFireAt(City* city, s32 x, s32 y)
 {
     Indexed<Fire*> existingFire = findFireAt(city, x, y);
-    if (existingFire.value != null) {
+    if (existingFire.value != nullptr) {
         // Fire already exists!
         // TODO: make the fire stronger?
         logWarn("Fire at {0},{1} already exists!"_s, { formatInt(x), formatInt(y) });
@@ -221,7 +221,7 @@ void removeFireAt(City* city, s32 x, s32 y)
     FireSector* sectorAtPosition = getSectorAtTilePos(&layer->sectors, x, y);
     Indexed<Fire*> fireAtPosition = sectorAtPosition->activeFires.findFirst([=](Fire* fire) { return fire->pos.x == x && fire->pos.y == y; });
 
-    if (fireAtPosition.value != null) {
+    if (fireAtPosition.value != nullptr) {
         // Remove it!
         removeEntity(city, fireAtPosition.value->entity);
         sectorAtPosition->activeFires.removeIndex(fireAtPosition.index);
@@ -265,7 +265,7 @@ void debugInspectFire(UI::Panel* panel, City* city, s32 x, s32 y)
     panel->addLabel(myprintf("There are {0} fire protection buildings and {1} active fires in the city."_s, { formatInt(layer->fireProtectionBuildings.count), formatInt(layer->activeFireCount) }));
 
     Building* buildingAtPos = getBuildingAt(city, x, y);
-    f32 buildingFireRisk = 100.0f * ((buildingAtPos == null) ? 0.0f : getBuildingDef(buildingAtPos)->fireRisk);
+    f32 buildingFireRisk = 100.0f * ((buildingAtPos == nullptr) ? 0.0f : getBuildingDef(buildingAtPos)->fireRisk);
 
     panel->addLabel(myprintf("Fire risk: {0}, from:\n- Building: {1}%\n- Nearby fires: {2}"_s, {
                                                                                                    formatInt(getFireRiskAt(city, x, y)),

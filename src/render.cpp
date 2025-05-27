@@ -118,7 +118,7 @@ void rendererLoadAssets()
 
 void rendererUnloadAssets()
 {
-    if (renderer->systemWaitCursor == null) {
+    if (renderer->systemWaitCursor == nullptr) {
         renderer->systemWaitCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
     }
     SDL_SetCursor(renderer->systemWaitCursor);
@@ -127,9 +127,9 @@ void rendererUnloadAssets()
 
 void freeRenderer()
 {
-    if (renderer->systemWaitCursor != null) {
+    if (renderer->systemWaitCursor != nullptr) {
         SDL_FreeCursor(renderer->systemWaitCursor);
-        renderer->systemWaitCursor = null;
+        renderer->systemWaitCursor = nullptr;
     }
     renderer->free();
 }
@@ -217,7 +217,7 @@ void setCursor(String cursorName)
     DEBUG_FUNCTION();
 
     Asset* newCursorAsset = getAsset(AssetType_Cursor, cursorName);
-    if (newCursorAsset != null) {
+    if (newCursorAsset != nullptr) {
         renderer->currentCursorName = cursorName;
         SDL_SetCursor(newCursorAsset->cursor.sdlCursor);
     }
@@ -241,11 +241,11 @@ void initRenderBuffer(MemoryArena* arena, RenderBuffer* buffer, String name, Poo
 
     buffer->chunkPool = chunkPool;
 
-    buffer->firstChunk = null;
-    buffer->currentChunk = null;
+    buffer->firstChunk = nullptr;
+    buffer->currentChunk = nullptr;
 
     buffer->currentShader = -1;
-    buffer->currentTexture = null;
+    buffer->currentTexture = nullptr;
 }
 
 RenderBufferChunk* allocateRenderBufferChunk(MemoryArena* arena, void* userData)
@@ -262,17 +262,17 @@ RenderBufferChunk* allocateRenderBufferChunk(MemoryArena* arena, void* userData)
 void clearRenderBuffer(RenderBuffer* buffer)
 {
     buffer->currentShader = -1;
-    buffer->currentTexture = null;
+    buffer->currentTexture = nullptr;
 
     for (RenderBufferChunk* chunk = buffer->firstChunk;
-        chunk != null;
+        chunk != nullptr;
         chunk = chunk->nextChunk) {
         chunk->used = 0;
         addItemToPool(&renderer->chunkPool, chunk);
     }
 
-    buffer->firstChunk = null;
-    buffer->currentChunk = null;
+    buffer->firstChunk = nullptr;
+    buffer->currentChunk = nullptr;
 }
 
 inline RenderBuffer* getTemporaryRenderBuffer(String name)
@@ -282,7 +282,7 @@ inline RenderBuffer* getTemporaryRenderBuffer(String name)
     clearRenderBuffer(result);
 
     // We only use this for debugging, and it's a leak, so limit it to debug builds
-    if (globalDebugState != null) {
+    if (globalDebugState != nullptr) {
         result->name = pushString(&globalDebugState->debugArena, name);
     }
 
@@ -298,9 +298,9 @@ void returnTemporaryRenderBuffer(RenderBuffer* buffer)
 
 void transferRenderBufferData(RenderBuffer* buffer, RenderBuffer* targetBuffer)
 {
-    if (buffer->currentChunk != null) {
+    if (buffer->currentChunk != nullptr) {
         // If the target is empty, we can take a shortcut and just copy the pointers
-        if (targetBuffer->currentChunk == null) {
+        if (targetBuffer->currentChunk == nullptr) {
             targetBuffer->firstChunk = buffer->firstChunk;
             targetBuffer->currentChunk = buffer->currentChunk;
         } else {
@@ -312,8 +312,8 @@ void transferRenderBufferData(RenderBuffer* buffer, RenderBuffer* targetBuffer)
         }
     }
 
-    buffer->firstChunk = null;
-    buffer->currentChunk = null;
+    buffer->firstChunk = nullptr;
+    buffer->currentChunk = nullptr;
     clearRenderBuffer(buffer); // Make sure things are reset
 }
 
@@ -332,20 +332,20 @@ u8* appendRenderItemInternal(RenderBuffer* buffer, RenderItemType type, smm size
 
     smm totalSizeRequired = (smm)(sizeof(RenderItemType) + size + reservedSize + sizeof(RenderItemType));
 
-    if (buffer->currentChunk == null || ((buffer->currentChunk->size - buffer->currentChunk->used) <= totalSizeRequired)) {
+    if (buffer->currentChunk == nullptr || ((buffer->currentChunk->size - buffer->currentChunk->used) <= totalSizeRequired)) {
         // Out of room! Push a "go to next chunk" item and append some more memory
-        if (buffer->currentChunk != null) {
+        if (buffer->currentChunk != nullptr) {
             ASSERT((buffer->currentChunk->size - buffer->currentChunk->used) > sizeof(RenderItemType)); // Need space for the next-chunk message
             appendRenderItemType(buffer, RenderItemType_NextMemoryChunk);
         }
 
         RenderBufferChunk* newChunk = getItemFromPool(buffer->chunkPool);
         newChunk->used = 0;
-        newChunk->prevChunk = null;
-        newChunk->nextChunk = null;
+        newChunk->prevChunk = nullptr;
+        newChunk->nextChunk = nullptr;
 
         // Add to the renderbuffer
-        if (buffer->currentChunk == null) {
+        if (buffer->currentChunk == nullptr) {
             buffer->firstChunk = newChunk;
             buffer->currentChunk = newChunk;
         } else {
@@ -416,7 +416,7 @@ void addSetShader(RenderBuffer* buffer, s8 shaderID)
         // NB: Setting the opengl shader loses the texture, so we replicate that here.
         // I suppose in the future we could make sure to bind the texture when the shader changes, but
         // most of the time we want to set a new texture anyway, so that would be a waste of cpu time.
-        buffer->currentTexture = null;
+        buffer->currentTexture = nullptr;
     }
 }
 
@@ -435,14 +435,14 @@ void addSetTexture(RenderBuffer* buffer, Asset* texture)
 
 void addSetTextureRaw(RenderBuffer* buffer, s32 width, s32 height, u8 bytesPerPixel, u8* pixels)
 {
-    buffer->currentTexture = null;
+    buffer->currentTexture = nullptr;
 
     smm pixelDataSize = (width * height * bytesPerPixel);
     auto itemAndData = appendRenderItem<RenderItem_SetTexture>(buffer, RenderItemType_SetTexture, pixelDataSize);
 
     RenderItem_SetTexture* textureItem = itemAndData.item;
     *textureItem = {};
-    textureItem->texture = null;
+    textureItem->texture = nullptr;
     textureItem->width = width;
     textureItem->height = height;
     textureItem->bytesPerPixel = bytesPerPixel;
@@ -549,7 +549,7 @@ DrawRectPlaceholder appendDrawRectPlaceholder(RenderBuffer* buffer, s8 shaderID,
 
         // We need to clear this, because we don't know what this texture will be, so any following draw calls
         // have to assume that they need to set their texture
-        buffer->currentTexture = null;
+        buffer->currentTexture = nullptr;
 
         result.setTexture = textureItem;
     }
@@ -588,7 +588,7 @@ inline void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2I bou
 
 void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2 bounds, Sprite* sprite, V4 color)
 {
-    ASSERT(placeholder->setTexture != null);
+    ASSERT(placeholder->setTexture != nullptr);
 
     placeholder->setTexture->texture = sprite->texture;
 
@@ -734,7 +734,7 @@ void fillDrawNinepatchPlaceholder(DrawNinepatchPlaceholder* placeholder, Rect2I 
 DrawRectsGroup* beginRectsGroupInternal(RenderBuffer* buffer, Asset* texture, s8 shaderID, s32 maxCount)
 {
     addSetShader(buffer, shaderID);
-    if (texture != null)
+    if (texture != nullptr)
         addSetTexture(buffer, texture);
 
     DrawRectsGroup* result = allocateStruct<DrawRectsGroup>(tempArena);
@@ -758,7 +758,7 @@ DrawRectsGroup* beginRectsGroupTextured(RenderBuffer* buffer, Asset* texture, s8
 
 inline DrawRectsGroup* beginRectsGroupUntextured(RenderBuffer* buffer, s8 shaderID, s32 maxCount)
 {
-    return beginRectsGroupInternal(buffer, null, shaderID, maxCount);
+    return beginRectsGroupInternal(buffer, nullptr, shaderID, maxCount);
 }
 
 inline DrawRectsGroup* beginRectsGroupForText(RenderBuffer* buffer, BitmapFont* font, s8 shaderID, s32 maxCount)

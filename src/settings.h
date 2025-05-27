@@ -205,7 +205,7 @@ void settingsWindowProc(UI::WindowContext*, void*);
 //
 // INTERNAL
 //
-void registerSetting(String settingName, smm offset, SettingType type, String textAssetName, void* dataA = null, void* dataB = null);
+void registerSetting(String settingName, smm offset, SettingType type, String textAssetName, void* dataA = nullptr, void* dataB = nullptr);
 SettingsState makeDefaultSettings();
 void loadSettingsFile(String name, Blob settingsData);
 

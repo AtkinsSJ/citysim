@@ -217,7 +217,7 @@ BuildingDef* findRandomZoneBuilding(ZoneType zoneType, Random* random, Filter fi
 s32 getMaxBuildingSize(ZoneType zoneType);
 
 struct City;
-void updateBuildingVariant(City* city, Building* building, BuildingDef* def = null);
+void updateBuildingVariant(City* city, Building* building, BuildingDef* def = nullptr);
 void updateAdjacentBuildingVariants(City* city, Rect2I footprint);
 
 void saveBuildingTypes();

@@ -70,7 +70,7 @@ FileHandle openFile(String path, FileAccessMode mode)
 
     result.path = path;
     result.sdl_file = SDL_RWFromFile(path.chars, fileAccessModeStrings[mode]);
-    result.isOpen = (result.sdl_file != null);
+    result.isOpen = (result.sdl_file != nullptr);
 
     return result;
 }

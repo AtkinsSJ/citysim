@@ -37,13 +37,13 @@ struct Pool {
 };
 
 template<typename T>
-void initPool(Pool<T>* pool, MemoryArena* arena, T* (*allocateItem)(MemoryArena* arena, void* userData), void* userData = null)
+void initPool(Pool<T>* pool, MemoryArena* arena, T* (*allocateItem)(MemoryArena* arena, void* userData), void* userData = nullptr)
 {
     *pool = {};
     pool->memoryArena = arena;
     pool->allocateItem = allocateItem;
     pool->userData = userData;
-    pool->firstItem = null;
+    pool->firstItem = nullptr;
     pool->pooledItemCount = 0;
     pool->totalItemCount = 0;
 }
@@ -51,13 +51,13 @@ void initPool(Pool<T>* pool, MemoryArena* arena, T* (*allocateItem)(MemoryArena*
 template<typename T>
 T* getItemFromPool(Pool<T>* pool)
 {
-    T* result = null;
+    T* result = nullptr;
 
-    if (pool->firstItem != null) {
+    if (pool->firstItem != nullptr) {
         result = pool->firstItem;
         pool->firstItem = (T*)result->nextPoolItem;
-        if (pool->firstItem != null) {
-            pool->firstItem->prevPoolItem = null;
+        if (pool->firstItem != nullptr) {
+            pool->firstItem->prevPoolItem = nullptr;
         }
 
         pool->pooledItemCount--;
@@ -66,8 +66,8 @@ T* getItemFromPool(Pool<T>* pool)
         pool->totalItemCount++;
     }
 
-    result->prevPoolItem = null;
-    result->nextPoolItem = null;
+    result->prevPoolItem = nullptr;
+    result->nextPoolItem = nullptr;
 
     return result;
 }
@@ -76,15 +76,15 @@ template<typename T>
 void addItemToPool(Pool<T>* pool, T* item)
 {
     // Remove item from its existing list
-    if (item->prevPoolItem != null)
+    if (item->prevPoolItem != nullptr)
         item->prevPoolItem->nextPoolItem = item->nextPoolItem;
-    if (item->nextPoolItem != null)
+    if (item->nextPoolItem != nullptr)
         item->nextPoolItem->prevPoolItem = item->prevPoolItem;
 
     // Add to the pool
-    item->prevPoolItem = null;
+    item->prevPoolItem = nullptr;
     item->nextPoolItem = pool->firstItem;
-    if (pool->firstItem != null) {
+    if (pool->firstItem != nullptr) {
         pool->firstItem->prevPoolItem = item;
     }
     pool->firstItem = item;

@@ -63,7 +63,7 @@
 #    define DEBUG_END_RENDER_BUFFER(...)
 #endif
 
-struct DebugState* globalDebugState = null;
+struct DebugState* globalDebugState = nullptr;
 
 #define DEBUG_FRAMES_COUNT 120
 #define DEBUG_TOP_CODE_BLOCKS_COUNT 32

@@ -20,7 +20,7 @@ void freeHashTable(HashTable<T>* table)
 {
     ASSERT(!table->hasFixedMemory);
 
-    if (table->entries != null) {
+    if (table->entries != nullptr) {
         deallocateRaw(table->entries);
         *table = {};
     }
@@ -68,13 +68,13 @@ HashTable<T> allocateFixedSizeHashTable(MemoryArena* arena, s32 capacity, f32 ma
 template<typename T>
 inline bool HashTable<T>::isInitialised()
 {
-    return (entries != null || maxLoadFactor > 0.0f);
+    return (entries != nullptr || maxLoadFactor > 0.0f);
 }
 
 template<typename T>
 bool HashTable<T>::contains(String key)
 {
-    if (entries == null)
+    if (entries == nullptr)
         return false;
 
     HashTableEntry<T>* entry = findEntry(key);
@@ -92,7 +92,7 @@ HashTableEntry<T>* HashTable<T>::findEntry(String key)
 
     u32 hash = hashString(&key);
     u32 index = hash % capacity;
-    HashTableEntry<T>* result = null;
+    HashTableEntry<T>* result = nullptr;
 
     // "Linear probing" - on collision, just keep going until you find an empty slot
     s32 itemsChecked = 0;
@@ -101,11 +101,11 @@ HashTableEntry<T>* HashTable<T>::findEntry(String key)
 
         if (entry->isGravestone) {
             // Store the first gravestone we find, in case we fail to find the "real" option
-            if (result == null)
+            if (result == nullptr)
                 result = entry;
         } else if ((entry->isOccupied == false) || (hash == hashString(&entry->key) && equals(key, entry->key))) {
             // If the entry is unoccupied, we'd rather re-use the gravestone we found above
-            if (entry->isOccupied || result == null) {
+            if (entry->isOccupied || result == nullptr) {
                 result = entry;
             }
             break;
@@ -127,7 +127,7 @@ HashTableEntry<T>* HashTable<T>::findOrAddEntry(String key)
 {
     ASSERT(isInitialised());
 
-    HashTableEntry<T>* result = null;
+    HashTableEntry<T>* result = nullptr;
 
     if (capacity > 0) {
         result = findEntry(key);
@@ -165,7 +165,7 @@ Maybe<T*> HashTable<T>::find(String key)
 {
     Maybe<T*> result = makeFailure<T*>();
 
-    if (entries != null) {
+    if (entries != nullptr) {
         HashTableEntry<T>* entry = findEntry(key);
         if (entry->isOccupied) {
             result = makeSuccess(&entry->value);
@@ -180,7 +180,7 @@ Maybe<T> HashTable<T>::findValue(String key)
 {
     Maybe<T> result = makeFailure<T>();
 
-    if (entries != null) {
+    if (entries != nullptr) {
         HashTableEntry<T>* entry = findEntry(key);
         if (entry->isOccupied) {
             result = makeSuccess(entry->value);
@@ -239,7 +239,7 @@ void HashTable<T>::putAll(HashTable<T>* source)
 template<typename T>
 void HashTable<T>::removeKey(String key)
 {
-    if (entries == null)
+    if (entries == nullptr)
         return;
 
     HashTableEntry<T>* entry = findEntry(key);
@@ -257,7 +257,7 @@ void HashTable<T>::clear()
 
     if (count > 0) {
         count = 0;
-        if (entries != null) {
+        if (entries != nullptr) {
             for (s32 i = 0; i < capacity; i++) {
                 entries[i] = {};
             }
@@ -299,7 +299,7 @@ void HashTable<T>::expand(s32 newCapacity)
     entries = (HashTableEntry<T>*)allocateRaw(newCapacity * sizeof(HashTableEntry<T>));
     count = 0;
 
-    if (oldItems != null) {
+    if (oldItems != nullptr) {
         // Migrate old entries over
         for (s32 i = 0; i < oldCapacity; i++) {
             HashTableEntry<T>* oldEntry = oldItems + i;

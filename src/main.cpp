@@ -193,7 +193,7 @@ AppState globalAppState;
 
 SDL_Window* initSDL(WindowSettings windowSettings, const char* windowTitle)
 {
-    SDL_Window* window = null;
+    SDL_Window* window = nullptr;
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         logCritical("SDL could not be initialised! :(\n {0}"_s, { makeString(SDL_GetError()) });
@@ -250,7 +250,7 @@ int main(int argc, char* argv[])
     enableCustomLogger();
 #endif
 
-    initRandom(&globalAppState.cosmeticRandom, Random_MT, (s32)time(null));
+    initRandom(&globalAppState.cosmeticRandom, Random_MT, (s32)time(nullptr));
 
     initSettings();
     loadSettings();
@@ -359,7 +359,7 @@ int main(int argc, char* argv[])
                     // Clean-up for previous state
                     if (appState->appStatus == AppStatus_Game) {
                         freeGameState(appState->gameState);
-                        appState->gameState = null;
+                        appState->gameState = nullptr;
                     }
 
                     appState->appStatus = newAppStatus;
@@ -382,7 +382,7 @@ int main(int argc, char* argv[])
                 DEBUG_ARENA(&appState->systemArena, "System");
                 DEBUG_ARENA(tempArena, "Global Temp Arena");
                 DEBUG_ARENA(&renderer->renderArena, "Renderer");
-                DEBUG_ARENA(appState->gameState ? &appState->gameState->gameArena : null, "GameState");
+                DEBUG_ARENA(appState->gameState ? &appState->gameState->gameArena : nullptr, "GameState");
                 DEBUG_ARENA(&settings->settingsArena, "Settings");
                 DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
 

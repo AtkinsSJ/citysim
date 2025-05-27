@@ -70,7 +70,7 @@ void processDebugData(DebugState* debugState)
 
         bool freeListHasItem = !linkedListIsEmpty(&debugState->topCodeBlocksFreeListSentinel);
 
-        DebugCodeDataWrapper* item = null;
+        DebugCodeDataWrapper* item = nullptr;
         if (freeListHasItem) {
             item = debugState->topCodeBlocksFreeListSentinel.nextNode;
         } else if (foundSmallerItem) {
@@ -182,7 +182,7 @@ void initDebugTextState(DebugTextState* textState, BitmapFont* font, V4 textColo
     textState->untexturedShaderID = renderer->shaderIds.untextured;
 }
 
-void debugTextOut(DebugTextState* textState, String text, bool doHighlight = false, V4* color = null)
+void debugTextOut(DebugTextState* textState, String text, bool doHighlight = false, V4* color = nullptr)
 {
     s32 align = textState->hAlign;
     if (textState->progressUpwards)
@@ -191,7 +191,7 @@ void debugTextOut(DebugTextState* textState, String text, bool doHighlight = fal
         align |= ALIGN_TOP;
 
     textState->charsLastPrinted = text.length;
-    V4 textColor = (color != null) ? *color : textState->color;
+    V4 textColor = (color != nullptr) ? *color : textState->color;
 
     V2I textSize = calculateTextSize(textState->font, text, textState->maxWidth);
     V2I topLeft = calculateTextPosition(textState->pos, textSize, align);
@@ -390,7 +390,7 @@ void updateAndRenderDebugData(DebugState* debugState)
 template<typename T>
 T* findOrCreateDebugData(DebugState* debugState, String name, T* sentinel)
 {
-    T* result = null;
+    T* result = nullptr;
 
     T* data = sentinel->nextNode;
     while (data != sentinel) {
@@ -401,7 +401,7 @@ T* findOrCreateDebugData(DebugState* debugState, String name, T* sentinel)
         data = data->nextNode;
     }
 
-    if (result == null) {
+    if (result == nullptr) {
         result = allocateStruct<T>(&debugState->debugArena);
         addToLinkedList(result, sentinel);
         result->name = name;
@@ -501,7 +501,7 @@ void debugStartTrackingRenderBuffer(DebugState* debugState, String renderBufferN
 {
     u32 frameIndex = debugState->writingFrameIndex;
 
-    if (debugState->currentRenderBuffer != null) {
+    if (debugState->currentRenderBuffer != nullptr) {
         debugEndTrackingRenderBuffer(debugState);
     }
 
@@ -516,13 +516,13 @@ void debugStartTrackingRenderBuffer(DebugState* debugState, String renderBufferN
 
 void debugEndTrackingRenderBuffer(DebugState* debugState)
 {
-    if (debugState->currentRenderBuffer != null) {
+    if (debugState->currentRenderBuffer != nullptr) {
         u32 frameIndex = debugState->writingFrameIndex;
 
         debugState->currentRenderBuffer->endTime[frameIndex] = SDL_GetPerformanceCounter();
         debugTrackProfile(debugState->currentRenderBuffer->renderProfileName, debugState->currentRenderBuffer->endTime[frameIndex] - debugState->currentRenderBuffer->startTime[frameIndex], DCDT_Renderer);
 
-        debugState->currentRenderBuffer = null;
+        debugState->currentRenderBuffer = nullptr;
     }
 }
 

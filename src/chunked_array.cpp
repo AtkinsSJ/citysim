@@ -22,12 +22,12 @@ template<typename T>
 void initChunkedArray(ChunkedArray<T>* array, MemoryArena* arena, s32 itemsPerChunk)
 {
     array->memoryArena = arena;
-    array->chunkPool = null;
+    array->chunkPool = nullptr;
     array->itemsPerChunk = itemsPerChunk;
     array->chunkCount = 0;
     array->count = 0;
-    array->firstChunk = null;
-    array->lastChunk = null;
+    array->firstChunk = nullptr;
+    array->lastChunk = nullptr;
 
     array->appendChunk();
 }
@@ -35,13 +35,13 @@ void initChunkedArray(ChunkedArray<T>* array, MemoryArena* arena, s32 itemsPerCh
 template<typename T>
 void initChunkedArray(ChunkedArray<T>* array, ArrayChunkPool<T>* pool)
 {
-    array->memoryArena = null;
+    array->memoryArena = nullptr;
     array->chunkPool = pool;
     array->itemsPerChunk = pool->itemsPerChunk;
     array->chunkCount = 0;
     array->count = 0;
-    array->firstChunk = null;
-    array->lastChunk = null;
+    array->firstChunk = nullptr;
+    array->lastChunk = nullptr;
 }
 
 template<typename T>
@@ -68,7 +68,7 @@ T* ChunkedArray<T>::get(s32 index)
 {
     ASSERT(index >= 0 && index < count); // Index out of array bounds!
 
-    T* result = null;
+    T* result = nullptr;
 
     s32 chunkIndex = index / itemsPerChunk;
     s32 itemIndex = index % itemsPerChunk;
@@ -127,7 +127,7 @@ void ChunkedArray<T>::clear()
         chunk->count = 0;
     }
 
-    if (chunkPool != null) {
+    if (chunkPool != nullptr) {
         while (chunkCount > 0) {
             returnLastChunkToPool();
         }
@@ -219,7 +219,7 @@ void ChunkedArray<T>::removeIndex(s32 indexToRemove, bool keepItemOrder)
     count--;
 
     // Return empty chunks to the chunkpool
-    if ((chunkPool != null) && (lastChunk != null) && (lastChunk->count == 0)) {
+    if ((chunkPool != nullptr) && (lastChunk != nullptr) && (lastChunk->count == 0)) {
         returnLastChunkToPool();
     }
 }
@@ -234,7 +234,7 @@ s32 ChunkedArray<T>::removeAll(Filter filter, s32 limit, bool keepItemOrder)
     bool limited = (limit != -1);
 
     for (ArrayChunk<T>* chunk = firstChunk;
-        chunk != null;
+        chunk != nullptr;
         chunk = chunk->nextChunk) {
         for (s32 i = 0; i < chunk->count; i++) {
             if (filter(chunk->items + i)) {
@@ -258,8 +258,8 @@ s32 ChunkedArray<T>::removeAll(Filter filter, s32 limit, bool keepItemOrder)
     }
 
     // Return empty chunks to the chunkpool
-    if (removedCount && (chunkPool != null)) {
-        while ((lastChunk != null) && (lastChunk->count == 0)) {
+    if (removedCount && (chunkPool != nullptr)) {
+        while ((lastChunk != nullptr) && (lastChunk->count == 0)) {
             returnLastChunkToPool();
         }
     }
@@ -340,7 +340,7 @@ T* ChunkedArray<T>::appendUninitialised()
     }
 
     // Shortcut to the last chunk, because that's what we want 99% of the time!
-    ArrayChunk<T>* chunk = null;
+    ArrayChunk<T>* chunk = nullptr;
     if (useLastChunk) {
         chunk = lastChunk;
     } else {
@@ -362,23 +362,23 @@ T* ChunkedArray<T>::appendUninitialised()
 template<typename T>
 void ChunkedArray<T>::appendChunk()
 {
-    ArrayChunk<T>* newChunk = null;
+    ArrayChunk<T>* newChunk = nullptr;
 
     // Attempt to get a chunk from the pool if we can
-    if (chunkPool != null) {
+    if (chunkPool != nullptr) {
         newChunk = getItemFromPool(chunkPool);
     } else {
         newChunk = allocateChunk<T>(memoryArena, itemsPerChunk);
     }
     newChunk->prevChunk = lastChunk;
-    newChunk->nextChunk = null;
+    newChunk->nextChunk = nullptr;
 
     chunkCount++;
-    if (lastChunk != null) {
+    if (lastChunk != nullptr) {
         lastChunk->nextChunk = newChunk;
     }
     lastChunk = newChunk;
-    if (firstChunk == null) {
+    if (firstChunk == nullptr) {
         firstChunk = newChunk;
     }
 }
@@ -388,7 +388,7 @@ ArrayChunk<T>* ChunkedArray<T>::getChunkByIndex(s32 chunkIndex)
 {
     ASSERT(chunkIndex >= 0 && chunkIndex < chunkCount); // chunkIndex is out of range!
 
-    ArrayChunk<T>* chunk = null;
+    ArrayChunk<T>* chunk = nullptr;
 
     // Shortcuts for known values
     if (chunkIndex == 0) {
@@ -507,7 +507,7 @@ void ChunkedArrayIterator<T>::next()
             currentChunk = currentChunk->prevChunk;
             chunkIndex--;
 
-            if (currentChunk == null) {
+            if (currentChunk == nullptr) {
                 if (wrapAround) {
                     // Wrap to the beginning!
                     chunkIndex = array->chunkCount - 1;
@@ -530,7 +530,7 @@ void ChunkedArrayIterator<T>::next()
             currentChunk = currentChunk->nextChunk;
             indexInChunk = 0;
 
-            if (currentChunk == null) {
+            if (currentChunk == nullptr) {
                 if (wrapAround) {
                     // Wrap to the beginning!
                     chunkIndex = 0;

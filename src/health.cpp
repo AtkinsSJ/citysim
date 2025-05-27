@@ -42,7 +42,7 @@ void updateHealthLayer(City* city, HealthLayer* layer)
                 fillRegion<u8>(&layer->tileHealthCoverage, sector->bounds, 0);
                 for (auto it = layer->healthBuildings.iterate(); it.hasNext(); it.next()) {
                     Building* building = getBuilding(city, it.getValue());
-                    if (building != null) {
+                    if (building != nullptr) {
                         BuildingDef* def = getBuildingDef(building);
 
                         // Budget

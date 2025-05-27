@@ -245,7 +245,7 @@ void consoleHandleCommand(Console* console, String commandInput)
             String firstToken = nextToken(commandInput, &arguments);
 
             // Find the command
-            Command* command = null;
+            Command* command = nullptr;
             for (auto it = console->commands.iterate();
                 it.hasNext();
                 it.next()) {
@@ -257,7 +257,7 @@ void consoleHandleCommand(Console* console, String commandInput)
             }
 
             // Run the command
-            if (command != null) {
+            if (command != nullptr) {
                 s32 argCount = tokenCount - 1;
                 bool tooManyArgs = (argCount > command->maxArgs) && (command->maxArgs != -1);
                 if ((argCount < command->minArgs) || tooManyArgs) {

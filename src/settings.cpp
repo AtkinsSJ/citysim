@@ -16,7 +16,7 @@ void registerSetting(String settingName, smm offset, SettingType type, String te
     switch (type) {
     case SettingType::Enum: {
         def.enumData = (Array<SettingEnumData>*)dataA;
-        ASSERT(dataB == null);
+        ASSERT(dataB == nullptr);
     } break;
 
     case SettingType::S32_Range: {
@@ -61,11 +61,11 @@ void initSettings()
 #define REGISTER_SETTING(settingName, type, dataA, dataB) registerSetting(makeString(#settingName, true), offsetof(SettingsState, settingName), type, makeString("setting_" #settingName), dataA, dataB)
 
     // NB: The settings will appear in this order in the settings window
-    REGISTER_SETTING(windowed, SettingType::Bool, null, null);
-    REGISTER_SETTING(resolution, SettingType::V2I, null, null);
-    REGISTER_SETTING(locale, SettingType::Enum, &localeData, null);
-    REGISTER_SETTING(musicVolume, SettingType::Percent, null, null);
-    REGISTER_SETTING(soundVolume, SettingType::Percent, null, null);
+    REGISTER_SETTING(windowed, SettingType::Bool, nullptr, nullptr);
+    REGISTER_SETTING(resolution, SettingType::V2I, nullptr, nullptr);
+    REGISTER_SETTING(locale, SettingType::Enum, &localeData, nullptr);
+    REGISTER_SETTING(musicVolume, SettingType::Percent, nullptr, nullptr);
+    REGISTER_SETTING(soundVolume, SettingType::Percent, nullptr, nullptr);
     REGISTER_SETTING(widgetCount, SettingType::S32_Range, (void*)5, (void*)15);
 
 #undef REGISTER_SETTING

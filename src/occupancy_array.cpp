@@ -6,9 +6,9 @@ void initOccupancyArray(OccupancyArray<T>* array, MemoryArena* arena, s32 itemsP
     array->itemsPerChunk = itemsPerChunk;
     array->chunkCount = 0;
     array->count = 0;
-    array->firstChunk = null;
-    array->lastChunk = null;
-    array->firstChunkWithSpace = null;
+    array->firstChunk = nullptr;
+    array->lastChunk = nullptr;
+    array->firstChunkWithSpace = nullptr;
     array->firstChunkWithSpaceIndex = -1;
 }
 
@@ -17,7 +17,7 @@ Indexed<T*> OccupancyArray<T>::append()
 {
     Indexed<T*> result = {};
 
-    if (firstChunkWithSpace == null) {
+    if (firstChunkWithSpace == nullptr) {
         // Append a new chunk
 
         // @Copypasta ArrayChunk::allocateChunk(). We probably want to move this logic into
@@ -38,10 +38,10 @@ Indexed<T*> OccupancyArray<T>::append()
         chunkCount++;
 
         // Attach the chunk to the end, but also make it the "firstChunkWithSpace"
-        if (firstChunk == null)
+        if (firstChunk == nullptr)
             firstChunk = newChunk;
 
-        if (lastChunk != null) {
+        if (lastChunk != nullptr) {
             lastChunk->nextChunk = newChunk;
             newChunk->prevChunk = lastChunk;
         }
@@ -72,7 +72,7 @@ Indexed<T*> OccupancyArray<T>::append()
         // recalculate firstChunkWithSpace/Index
         if (count == itemsPerChunk * chunkCount) {
             // We're full! So just set the firstChunkWithSpace to null
-            firstChunkWithSpace = null;
+            firstChunkWithSpace = nullptr;
             firstChunkWithSpaceIndex = -1;
         } else {
             // There's a chunk with space, we just have to find it
@@ -127,14 +127,14 @@ T* OccupancyArray<T>::get(s32 index)
 {
     ASSERT(index < chunkCount * itemsPerChunk);
 
-    T* result = null;
+    T* result = nullptr;
 
     s32 chunkIndex = index / itemsPerChunk;
     s32 itemIndex = index % itemsPerChunk;
 
     OccupancyArrayChunk<T>* chunk = getChunkByIndex(chunkIndex);
 
-    if (chunk != null && chunk->occupancy[itemIndex]) {
+    if (chunk != nullptr && chunk->occupancy[itemIndex]) {
         result = chunk->items + itemIndex;
     }
 
@@ -155,7 +155,7 @@ OccupancyArrayIterator<T> OccupancyArray<T>::iterate()
     iterator.isDone = (count == 0);
 
     // If the first entry is unoccupied, we need to skip ahead
-    if (!iterator.isDone && (iterator.get() == null)) {
+    if (!iterator.isDone && (iterator.get() == nullptr)) {
         iterator.next();
     }
 
@@ -167,7 +167,7 @@ OccupancyArrayChunk<T>* OccupancyArray<T>::getChunkByIndex(s32 chunkIndex)
 {
     ASSERT(chunkIndex >= 0 && chunkIndex < chunkCount); // chunkIndex is out of range!
 
-    OccupancyArrayChunk<T>* chunk = null;
+    OccupancyArrayChunk<T>* chunk = nullptr;
 
     // Shortcuts for known values
     if (chunkIndex == 0) {
@@ -206,14 +206,14 @@ void OccupancyArrayIterator<T>::next()
             currentChunk = currentChunk->nextChunk;
             indexInChunk = 0;
 
-            if (currentChunk == null) {
+            if (currentChunk == nullptr) {
                 // We're not wrapping, so we're done
                 isDone = true;
             }
         }
 
         // Only stop iterating if we find an occupied entry
-        if (currentChunk != null && get() != null) {
+        if (currentChunk != nullptr && get() != nullptr) {
             break;
         }
     }
@@ -222,7 +222,7 @@ void OccupancyArrayIterator<T>::next()
 template<typename T>
 inline T* OccupancyArrayIterator<T>::get()
 {
-    T* result = null;
+    T* result = nullptr;
 
     if (currentChunk->occupancy[indexInChunk]) {
         result = currentChunk->items + indexInChunk;

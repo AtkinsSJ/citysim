@@ -16,7 +16,7 @@ GameState* newGameState()
 
 void beginNewGame()
 {
-    if (globalAppState.gameState != null) {
+    if (globalAppState.gameState != nullptr) {
         freeGameState(globalAppState.gameState);
     }
 
@@ -317,7 +317,7 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
 
     // Building
     Building* building = getBuildingAt(city, tilePos.x, tilePos.y);
-    if (building != null) {
+    if (building != nullptr) {
         s32 buildingIndex = city->tileBuildingIndex.get(tilePos.x, tilePos.y);
         BuildingDef* def = getBuildingDef(building->typeID);
         ui->addLabel(myprintf("Building: {0} (ID {1}, array index {2})"_s, { getText(def->textAssetName), formatInt(building->id), formatInt(buildingIndex) }));
@@ -1122,7 +1122,7 @@ void drawDataViewUI(GameState* gameState)
 
         s32 paletteBlockSize = font->lineHeight;
 
-        UI::Panel ui = UI::Panel(irectAligned(uiPos.x, uiPos.y, 240, 1000, ALIGN_BOTTOM | ALIGN_LEFT), null, UI::PanelFlags::LayoutBottomToTop);
+        UI::Panel ui = UI::Panel(irectAligned(uiPos.x, uiPos.y, 240, 1000, ALIGN_BOTTOM | ALIGN_LEFT), nullptr, UI::PanelFlags::LayoutBottomToTop);
         {
             // We're working from bottom to top, so we start at the end.
 

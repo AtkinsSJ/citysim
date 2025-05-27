@@ -36,7 +36,7 @@ void initSectorGrid(SectorGrid<Sector>* grid, MemoryArena* arena, s32 cityWidth,
 template<typename Sector>
 inline Sector* getSector(SectorGrid<Sector>* grid, s32 sectorX, s32 sectorY)
 {
-    Sector* result = null;
+    Sector* result = nullptr;
 
     if (sectorX >= 0 && sectorX < grid->sectorsX && sectorY >= 0 && sectorY < grid->sectorsY) {
         result = &grid->sectors[(sectorY * grid->sectorsX) + sectorX];
@@ -48,7 +48,7 @@ inline Sector* getSector(SectorGrid<Sector>* grid, s32 sectorX, s32 sectorY)
 template<typename Sector>
 inline Sector* getSectorByIndex(SectorGrid<Sector>* grid, s32 index)
 {
-    Sector* result = null;
+    Sector* result = nullptr;
 
     if (index >= 0 && index < grid->sectors.count) {
         result = &grid->sectors[index];
@@ -60,7 +60,7 @@ inline Sector* getSectorByIndex(SectorGrid<Sector>* grid, s32 index)
 template<typename Sector>
 inline Sector* getSectorAtTilePos(SectorGrid<Sector>* grid, s32 x, s32 y)
 {
-    Sector* result = null;
+    Sector* result = nullptr;
 
     if (x >= 0 && x < grid->width && y >= 0 && y < grid->height) {
         result = getSector(grid, x / grid->sectorSize, y / grid->sectorSize);

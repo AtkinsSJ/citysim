@@ -291,7 +291,7 @@ void initStyleConstants()
 void assignStyleProperties(StyleType type, std::initializer_list<String> properties)
 {
     for (String* propName = (String*)properties.begin(); propName < properties.end(); propName++) {
-        Property* property = styleProperties.find(*propName).orDefault(null);
+        Property* property = styleProperties.find(*propName).orDefault(nullptr);
         property->existsInStyle[type] = true;
     }
 }
@@ -326,7 +326,7 @@ void loadUITheme(Blob data, Asset* asset)
     s32 styleCount[UI::StyleTypeCount] = {};
 
     String currentSection = nullString;
-    UI::Style* target = null;
+    UI::Style* target = nullptr;
 
     while (loadNextLine(&reader)) {
         String firstWord = readToken(&reader);
@@ -338,7 +338,7 @@ void loadUITheme(Blob data, Asset* asset)
             currentSection = firstWord;
 
             if (equals(firstWord, "Font"_s)) {
-                target = null;
+                target = nullptr;
                 String fontName = readToken(&reader);
                 String fontFilename = getRemainderOfLine(&reader);
 
@@ -389,7 +389,7 @@ void loadUITheme(Blob data, Asset* asset)
                 }
             } else {
                 // Check our properties map for a match
-                UI::Property* property = UI::styleProperties.find(firstWord).orDefault(null);
+                UI::Property* property = UI::styleProperties.find(firstWord).orDefault(nullptr);
                 if (property) {
                     if (property->existsInStyle[target->type]) {
                         switch (property->type) {

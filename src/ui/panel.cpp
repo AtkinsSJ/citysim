@@ -6,7 +6,7 @@ Panel::Panel(Rect2I bounds, PanelStyle* panelStyle, u32 flags, RenderBuffer* ren
 {
     DEBUG_FUNCTION_T(DCDT_UI);
 
-    if (panelStyle == null) {
+    if (panelStyle == nullptr) {
         this->style = getStyle<PanelStyle>("default"_s);
     } else {
         this->style = panelStyle;
@@ -30,8 +30,8 @@ Panel::Panel(Rect2I bounds, PanelStyle* panelStyle, u32 flags, RenderBuffer* ren
         hAlignment = ALIGN_LEFT;
     this->widgetAlignment = hAlignment | (layoutBottomToTop ? ALIGN_BOTTOM : ALIGN_TOP);
 
-    this->hScrollbar = null;
-    this->vScrollbar = null;
+    this->hScrollbar = nullptr;
+    this->vScrollbar = nullptr;
 
     // Relative to contentArea
     this->currentLeft = 0;
@@ -49,7 +49,7 @@ Panel::Panel(Rect2I bounds, PanelStyle* panelStyle, u32 flags, RenderBuffer* ren
 void Panel::enableHorizontalScrolling(ScrollbarState* scrollbarState)
 {
     ScrollbarStyle* scrollbarStyle = getStyle<ScrollbarStyle>(&style->scrollbarStyle);
-    ASSERT(scrollbarStyle != null);
+    ASSERT(scrollbarStyle != nullptr);
 
     this->hScrollbar = scrollbarState;
     this->hScrollbarBounds = irectXYWH(bounds.x, bounds.y + bounds.h - scrollbarStyle->width, bounds.w, scrollbarStyle->width);
@@ -61,7 +61,7 @@ void Panel::enableHorizontalScrolling(ScrollbarState* scrollbarState)
 void Panel::enableVerticalScrolling(ScrollbarState* scrollbarState, bool expandWidth)
 {
     ScrollbarStyle* scrollbarStyle = getStyle<ScrollbarStyle>(&style->scrollbarStyle);
-    ASSERT(scrollbarStyle != null);
+    ASSERT(scrollbarStyle != nullptr);
 
     this->vScrollbar = scrollbarState;
 
@@ -288,7 +288,7 @@ void Panel::addSprite(Sprite* sprite, s32 width, s32 height)
     prepareForWidgets();
 
     V2I size = v2i(width, height);
-    if (sprite != null) {
+    if (sprite != nullptr) {
         if (size.x == -1)
             size.x = sprite->pixelWidth;
         if (size.y == -1)
@@ -297,7 +297,7 @@ void Panel::addSprite(Sprite* sprite, s32 width, s32 height)
 
     Rect2I widgetBounds = calculateWidgetBounds(size);
 
-    if (sprite != null) {
+    if (sprite != nullptr) {
         if (!hideWidgets) {
             drawSingleSprite(renderBuffer, sprite, rect2(widgetBounds), renderer->shaderIds.pixelArt, makeWhite());
         }
@@ -586,19 +586,19 @@ Rect2I Panel::calculateWidgetBounds(Func calculateSize)
     if (layoutBottomToTop) {
         space.y = contentArea.y + currentBottom;
 
-        if (vScrollbar != null) {
+        if (vScrollbar != nullptr) {
             space.y += (vScrollbar->contentSize - getScrollbarContentOffset(vScrollbar, bounds.h) - bounds.h);
         }
     } else {
         space.y = contentArea.y + currentTop;
 
-        if (vScrollbar != null) {
+        if (vScrollbar != nullptr) {
             space.y -= getScrollbarContentOffset(vScrollbar, bounds.h);
         }
     }
 
     // Adjust if we're in a scrolling area
-    if (hScrollbar != null) {
+    if (hScrollbar != nullptr) {
         space.w = s16Max; // Not s32 because then we'd have overflow issues. s16 should be plenty large enough.
         space.x = space.x - getScrollbarContentOffset(hScrollbar, bounds.w);
     }
@@ -673,10 +673,10 @@ void Panel::completeWidget(V2I widgetSize)
 
 inline PanelStyle* Panel::getPanelStyle(String styleName)
 {
-    PanelStyle* result = null;
+    PanelStyle* result = nullptr;
     if (!isEmpty(styleName))
         result = getStyle<PanelStyle>(styleName);
-    if (result == null)
+    if (result == nullptr)
         result = this->style;
 
     return result;

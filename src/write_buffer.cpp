@@ -6,8 +6,8 @@ void WriteBuffer::init(s32 chunkSize_, MemoryArena* arena_)
     this->chunkSize = chunkSize_;
     this->byteCount = 0;
     this->chunkCount = 0;
-    this->firstChunk = null;
-    this->lastChunk = null;
+    this->firstChunk = nullptr;
+    this->lastChunk = nullptr;
 
     appendNewChunk();
 }
@@ -185,7 +185,7 @@ bool WriteBuffer::writeToFile(FileHandle* file)
 
     // Iterate chunks
     for (WriteBufferChunk* chunk = firstChunk;
-        chunk != null;
+        chunk != nullptr;
         chunk = chunk->nextChunk) {
         succeeded = ::writeToFile(file, chunk->used, chunk->bytes);
         if (!succeeded)
@@ -213,7 +213,7 @@ void WriteBuffer::appendNewChunk()
     WriteBufferChunk* newChunk = (WriteBufferChunk*)blob.memory;
     newChunk->used = 0;
     newChunk->bytes = (u8*)(blob.memory + sizeof(WriteBufferChunk));
-    newChunk->nextChunk = null;
+    newChunk->nextChunk = nullptr;
 
     if (chunkCount == 0) {
         firstChunk = lastChunk = newChunk;

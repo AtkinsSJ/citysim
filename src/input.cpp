@@ -371,7 +371,7 @@ void captureInput(void* target)
 void releaseInput(void* target)
 {
     if (inputState->capturedInputTarget == target) {
-        inputState->capturedInputTarget = null;
+        inputState->capturedInputTarget = nullptr;
     }
 }
 
@@ -382,5 +382,5 @@ bool hasCapturedInput(void* target)
 
 bool isInputCaptured()
 {
-    return inputState->capturedInputTarget != null;
+    return inputState->capturedInputTarget != nullptr;
 }

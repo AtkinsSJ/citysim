@@ -53,7 +53,7 @@ bool BinaryFileReader::startSection(FileIdentifier sectionID, u8 supportedSectio
             revertMemoryArena(arena, arenaResetState);
 
             // Find the section in the TOC
-            FileTOCEntry* tocEntry = null;
+            FileTOCEntry* tocEntry = nullptr;
             for (s32 tocIndex = 0; tocIndex < toc.count; tocIndex++) {
                 if (toc[tocIndex].sectionID == sectionID) {
                     tocEntry = &toc[tocIndex];
@@ -61,7 +61,7 @@ bool BinaryFileReader::startSection(FileIdentifier sectionID, u8 supportedSectio
                 }
             }
 
-            if (tocEntry != null) {
+            if (tocEntry != nullptr) {
                 // Read the whole section into memory
                 smm bytesToRead = sizeof(FileSectionHeader) + tocEntry->length;
                 currentSection = allocateBlob(arena, bytesToRead);
@@ -91,9 +91,9 @@ bool BinaryFileReader::startSection(FileIdentifier sectionID, u8 supportedSectio
 template<typename T>
 T* BinaryFileReader::readStruct(smm relativeOffset)
 {
-    T* result = null;
+    T* result = nullptr;
 
-    if (isValidFile && currentSectionHeader != null) {
+    if (isValidFile && currentSectionHeader != nullptr) {
         // Make sure that T actually fits where it was requested
         smm structStartPos = sizeof(FileSectionHeader) + relativeOffset;
 
@@ -127,7 +127,7 @@ String BinaryFileReader::readString(FileString fileString)
 {
     String result = nullString;
 
-    if (isValidFile && currentSectionHeader != null) {
+    if (isValidFile && currentSectionHeader != nullptr) {
         result = makeString((char*)sectionMemoryAt(fileString.relativeOffset), fileString.length, false);
     }
 

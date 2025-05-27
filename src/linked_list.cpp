@@ -56,11 +56,11 @@ s32 countNodes(T* sentinel)
 
     s32 result = 0;
 
-    if (sentinel != null) {
+    if (sentinel != nullptr) {
         T* cursor = sentinel->nextNode;
 
         while (cursor != sentinel) {
-            ASSERT(cursor != null); // null node in linked list
+            ASSERT(cursor != nullptr); // null node in linked list
             cursor = cursor->nextNode;
             result++;
         }

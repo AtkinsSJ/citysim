@@ -188,7 +188,7 @@ void drawBuildingHighlights(City* city, Iterable* buildingRefs)
         for (auto it = buildingRefs->iterate(); it.hasNext(); it.next()) {
             Building* building = getBuilding(city, it.getValue());
             // NB: If we're doing this in a separate loop, we could crop out buildings that aren't in the visible tile bounds
-            if (building != null) {
+            if (building != nullptr) {
                 s32 paletteIndex = (buildingHasPower(building) ? paletteIndexPowered : paletteIndexUnpowered);
                 addUntexturedRect(buildingHighlights, rect2(building->footprint), (*buildingsPalette)[paletteIndex]);
             }
@@ -235,7 +235,7 @@ void drawBuildingEffectRadii(City* city, Iterable* buildingRefs, EffectRadius Bu
             Building* building = getBuilding(city, it.getValue());
             // NB: We don't filter buildings outside of the visibleTileBounds because their radius might be
             // visible even if the building isn't!
-            if (building != null) {
+            if (building != nullptr) {
                 BuildingDef* def = getBuildingDef(building);
                 EffectRadius* effect = &(def->*effectMember);
                 if (hasEffect(effect)) {

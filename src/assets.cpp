@@ -6,7 +6,7 @@ void initAssets()
 
     initStringTable(&assets->assetStrings);
 
-    ASSERT(assets->assetArena.currentBlock != null); // initAssetManager() called with uninitialised/corrupted memory arena!
+    ASSERT(assets->assetArena.currentBlock != nullptr); // initAssetManager() called with uninitialised/corrupted memory arena!
     String basePath = makeString(SDL_GetBasePath());
     assets->assetsPath = intern(&assets->assetStrings, constructPath({ basePath, "assets"_s }));
 
@@ -175,7 +175,7 @@ Asset* addAsset(AssetType type, String shortName, u32 flags)
     }
     asset->state = AssetState_Unloaded;
     asset->data.size = 0;
-    asset->data.memory = null;
+    asset->data.memory = nullptr;
     asset->flags = flags;
 
     assets->assetsByType[type].put(internedShortName, asset);
@@ -195,7 +195,7 @@ void copyFileIntoAsset(Blob* fileData, Asset* asset)
 
 SDL_Surface* createSurfaceFromFileData(Blob fileData, String name)
 {
-    SDL_Surface* result = null;
+    SDL_Surface* result = nullptr;
 
     ASSERT(fileData.size > 0);      //, "Attempted to create a surface from an unloaded asset! ({0})", {name});
     ASSERT(fileData.size < s32Max); //, "File '{0}' is too big for SDL's RWOps!", {name});
@@ -204,7 +204,7 @@ SDL_Surface* createSurfaceFromFileData(Blob fileData, String name)
     if (rw) {
         result = IMG_Load_RW(rw, 0);
 
-        if (result == null) {
+        if (result == nullptr) {
             logError("Failed to create SDL_Surface from asset '{0}'!\n{1}"_s, { name, makeString(IMG_GetError()) });
         }
 
@@ -284,7 +284,7 @@ void loadAsset(Asset* asset)
     } break;
 
     case AssetType_DevKeymap: {
-        if (globalConsole != null) {
+        if (globalConsole != nullptr) {
             // NB: We keep the keymap file in the asset memory, so that the CommandShortcut.command can
             // directly refer to the string data from the file, instead of having to assetsAllocate a copy
             // and not be able to free it ever. This is more memory efficient.
@@ -454,9 +454,9 @@ void unloadAsset(Asset* asset)
     } break;
 
     case AssetType_Cursor: {
-        if (asset->cursor.sdlCursor != null) {
+        if (asset->cursor.sdlCursor != nullptr) {
             SDL_FreeCursor(asset->cursor.sdlCursor);
-            asset->cursor.sdlCursor = null;
+            asset->cursor.sdlCursor = nullptr;
         }
     } break;
 
@@ -478,9 +478,9 @@ void unloadAsset(Asset* asset)
     } break;
 
     case AssetType_Texture: {
-        if (asset->texture.surface != null) {
+        if (asset->texture.surface != nullptr) {
             SDL_FreeSurface(asset->texture.surface);
-            asset->texture.surface = null;
+            asset->texture.surface = nullptr;
         }
     } break;
 
@@ -493,7 +493,7 @@ void unloadAsset(Asset* asset)
         asset->children = makeEmptyArray<AssetID>();
     }
 
-    if (asset->data.memory != null) {
+    if (asset->data.memory != nullptr) {
         assets->assetMemoryAllocated -= asset->data.size;
         asset->data.size = 0;
         deallocateRaw(asset->data.memory);
@@ -505,7 +505,7 @@ void unloadAsset(Asset* asset)
 void removeAsset(AssetType type, String name)
 {
     Asset* asset = getAssetIfExists(type, name);
-    if (asset == null) {
+    if (asset == nullptr) {
         logError("Attempted to remove an asset (name `{0}`, type {1}) which doesn't exist!"_s, { name, formatInt(type) });
     } else {
         unloadAsset(asset);
@@ -677,7 +677,7 @@ Asset* getAsset(AssetType type, String shortName)
     DEBUG_FUNCTION();
     Asset* result = getAssetIfExists(type, shortName);
 
-    if (result == null) {
+    if (result == nullptr) {
         if (assets->missingAssetNames[type].add(shortName)) {
             logWarn("Requested {0} asset '{1}' was not found! Using placeholder."_s, { assetTypeNames[type], shortName });
         }
@@ -691,7 +691,7 @@ Asset* getAssetIfExists(AssetType type, String shortName)
 {
     Maybe<Asset*> result = assets->assetsByType[type].findValue(shortName);
 
-    return result.isValid ? result.value : null;
+    return result.isValid ? result.value : nullptr;
 }
 
 AssetRef getAssetRef(AssetType type, String shortName)
@@ -726,10 +726,10 @@ inline SpriteGroup* getSpriteGroup(String name)
 
 Sprite* getSprite(String name, s32 offset)
 {
-    Sprite* result = null;
+    Sprite* result = nullptr;
 
     SpriteGroup* group = getSpriteGroup(name);
-    if (group != null) {
+    if (group != nullptr) {
         result = group->sprites + (offset % group->count);
     }
 
@@ -753,7 +753,7 @@ Sprite* getSprite(SpriteRef* ref)
 {
     if (SDL_TICKS_PASSED(assets->lastAssetReloadTicks, ref->pointerRetrievedTicks)) {
         SpriteGroup* group = getSpriteGroup(ref->spriteGroupName);
-        if (group != null) {
+        if (group != nullptr) {
             ref->pointer = group->sprites + (ref->spriteIndex % group->count);
         } else {
             // TODO: Dummy sprite!
@@ -773,10 +773,10 @@ inline Shader* getShader(String shaderName)
 
 BitmapFont* getFont(String fontName)
 {
-    BitmapFont* result = null;
+    BitmapFont* result = nullptr;
 
     Asset* fontAsset = getAsset(AssetType_BitmapFont, fontName);
-    if (fontAsset != null) {
+    if (fontAsset != nullptr) {
         result = &fontAsset->bitmapFont;
     } else {
         logError("Failed to find font named '{0}'."_s, { fontName });
@@ -789,10 +789,10 @@ BitmapFont* getFont(AssetRef* fontRef)
 {
     ASSERT(fontRef->type == AssetType_BitmapFont);
 
-    BitmapFont* result = null;
+    BitmapFont* result = nullptr;
     Asset* asset = getAsset(fontRef);
 
-    if (asset != null) {
+    if (asset != nullptr) {
         result = &asset->bitmapFont;
     }
 
@@ -900,10 +900,10 @@ inline T* getStyle(AssetRef* ref)
 template<typename T>
 inline T* getStyle(String styleName, AssetRef* defaultStyle)
 {
-    T* result = null;
+    T* result = nullptr;
     if (!isEmpty(styleName))
         result = getStyle<T>(styleName);
-    if (result == null)
+    if (result == nullptr)
         result = getStyle<T>(defaultStyle);
 
     return result;
@@ -912,7 +912,7 @@ inline T* getStyle(String styleName, AssetRef* defaultStyle)
 template<typename T>
 T* getStyle(String styleName)
 {
-    T* result = null;
+    T* result = nullptr;
 
     AssetType styleType = AssetType_Unknown;
 
@@ -942,7 +942,7 @@ T* getStyle(String styleName)
         ASSERT(false);
 
     Asset* asset = getAsset(styleType, styleName);
-    if (asset != null) {
+    if (asset != nullptr) {
         result = (T*)&asset->_localData;
     }
 
@@ -1056,7 +1056,7 @@ void loadPaletteDefs(Blob data, Asset* asset)
 
     restart(&reader);
 
-    Asset* paletteAsset = null;
+    Asset* paletteAsset = nullptr;
     while (loadNextLine(&reader)) {
         String command = readToken(&reader);
         if (command[0] == ':') {
@@ -1071,7 +1071,7 @@ void loadPaletteDefs(Blob data, Asset* asset)
                 return;
             }
         } else {
-            if (paletteAsset == null) {
+            if (paletteAsset == nullptr) {
                 error(&reader, "Unexpected command '{0}' before the start of a :Palette"_s, { command });
                 return;
             }
@@ -1141,10 +1141,10 @@ void loadSpriteDefs(Blob data, Asset* asset)
 
     LineReader reader = readLines(asset->shortName, data);
 
-    Asset* textureAsset = null;
+    Asset* textureAsset = nullptr;
     V2I spriteSize = v2i(0, 0);
     V2I spriteBorder = v2i(0, 0);
-    Asset* spriteGroup = null;
+    Asset* spriteGroup = nullptr;
     s32 spriteIndex = 0;
 
     // Count the number of child assets, so we can allocate our spriteNames array
@@ -1170,8 +1170,8 @@ void loadSpriteDefs(Blob data, Asset* asset)
             command.chars++;
             command.length--;
 
-            textureAsset = null;
-            spriteGroup = null;
+            textureAsset = nullptr;
+            spriteGroup = nullptr;
 
             if (equals(command, "Ninepatch"_s)) {
                 String name = readToken(&reader);
@@ -1243,7 +1243,7 @@ void loadSpriteDefs(Blob data, Asset* asset)
             }
         } else // Properties!
         {
-            if (spriteGroup == null) {
+            if (spriteGroup == nullptr) {
                 error(&reader, "Found a property outside of a :SpriteGroup!"_s);
                 return;
             } else if (equals(command, "border"_s)) {

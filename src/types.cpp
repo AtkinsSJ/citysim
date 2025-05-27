@@ -30,7 +30,7 @@ Array<T> makeArray(s32 capacity, T* items, s32 count)
 template<typename T>
 inline Array<T> makeEmptyArray()
 {
-    return makeArray<T>(0, null);
+    return makeArray<T>(0, nullptr);
 }
 
 template<typename T>
@@ -82,7 +82,7 @@ inline T* Array<T>::append(T item)
 template<typename T>
 inline bool Array<T>::isInitialised()
 {
-    return items != null;
+    return items != nullptr;
 }
 
 template<typename T>

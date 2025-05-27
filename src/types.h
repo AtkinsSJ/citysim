@@ -86,8 +86,6 @@ typedef intptr_t smm;
 #include <uchar.h>
 typedef char32_t unichar;
 
-#define null nullptr
-
 template<typename T>
 bool equals(T a, T b);
 
@@ -184,7 +182,7 @@ template<typename T>
 inline Indexed<T> makeNullIndexedValue()
 {
     Indexed<T> result;
-    result.value = null;
+    result.value = nullptr;
     result.index = -1;
 
     return result;

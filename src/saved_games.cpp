@@ -136,9 +136,9 @@ void savedGamesWindowProc(UI::WindowContext* context, void* userData)
 {
     UI::Panel* ui = &context->windowPanel;
     SavedGamesCatalogue* catalogue = &savedGamesCatalogue;
-    bool isSaveWindow = userData != null;
+    bool isSaveWindow = userData != nullptr;
 
-    SavedGameInfo* selectedSavedGame = null;
+    SavedGameInfo* selectedSavedGame = nullptr;
     bool justClickedSavedGame = false;
 
     UI::Panel bottomBar = ui->row(26, ALIGN_BOTTOM, "plain"_s);
@@ -290,7 +290,7 @@ void confirmDeleteSaveWindowProc(UI::WindowContext* context, void* /*userData*/)
 
 void loadGame(SavedGameInfo* savedGame)
 {
-    if (globalAppState.gameState != null) {
+    if (globalAppState.gameState != nullptr) {
         freeGameState(globalAppState.gameState);
     }
 

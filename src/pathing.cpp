@@ -210,7 +210,7 @@ void _addPathNodeToQueue(City *city, PathingNode *nodes, V2I pos, PathingNode *p
 			node->prev = 0;
 
 			// Add to the open queue
-			if ((*openQueue) == null)
+			if ((*openQueue) == nullptr)
 			{
 				(*openQueue) = node;
 			}
@@ -237,7 +237,7 @@ void _addPathNodeToQueue(City *city, PathingNode *nodes, V2I pos, PathingNode *p
 						queuedNode->prev = node;
 						break;
 					}
-					else if (queuedNode->next == null)
+					else if (queuedNode->next == nullptr)
 					{
 						queuedNode->next = node;
 						node->prev = queuedNode;
@@ -291,7 +291,7 @@ V2I pathToRectangle(City *city, Rect2I target, V2I from)
 		PathingNode *nodes = allocateMultiple<PathingNode>(tempArena, city->width * city->height);
 		PathingNode *startNode = nodes + tileIndex(city, from.x, from.y);
 		*startNode = {true, from, 0, distance, 0, 0};
-		PathingNode *openQueue = null;
+		PathingNode *openQueue = nullptr;
 
 		if (fromBuilding
 		&& !getBuildingDef(fromBuilding->typeID)->isPath)

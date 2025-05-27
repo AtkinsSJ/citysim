@@ -80,7 +80,7 @@ struct MemoryArena {
 template<typename T>
 T *bootstrapMemoryArena(smm offsetOfArenaMember)
 {
-        T *result = null;
+        T *result = nullptr;
 
         MemoryArena bootstrap;
         initMemoryArena(&bootstrap, sizeof(T));

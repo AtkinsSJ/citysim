@@ -59,7 +59,7 @@ s32 findStartOfGlyph(char* buffer, s32 byteOffset)
 {
     s32 pos = 0;
 
-    if (buffer != null) {
+    if (buffer != nullptr) {
         pos = byteOffset;
         while ((pos > 0) && !byteIsStartOfGlyph(buffer[pos])) {
             pos--;
@@ -143,7 +143,7 @@ unichar readUnicodeChar(char* firstChar)
 {
     unichar result = 0;
 
-    if (firstChar != null && byteIsStartOfGlyph(*firstChar)) {
+    if (firstChar != nullptr && byteIsStartOfGlyph(*firstChar)) {
         u8 b1 = *firstChar;
         if ((b1 & 0b10000000) == 0) {
             // 7-bit ASCII, so just pass through

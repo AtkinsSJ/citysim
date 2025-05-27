@@ -50,9 +50,9 @@ inline void setPowerGroupID(PowerSector* sector, s32 relX, s32 relY, u8 value)
 
 PowerGroup* getPowerGroupAt(PowerSector* sector, s32 relX, s32 relY)
 {
-    PowerGroup* result = null;
+    PowerGroup* result = nullptr;
 
-    if (sector != null) {
+    if (sector != nullptr) {
         s32 powerGroupID = getPowerGroupID(sector, relX, relY);
         if (powerGroupID != 0 && powerGroupID != POWER_GROUP_UNKNOWN) {
             result = sector->powerGroups.get(powerGroupID - 1);
@@ -77,7 +77,7 @@ u8 calculatePowerOverlayForTile(City* city, s32 x, s32 y)
     u8 result = paletteIndexNone;
 
     PowerNetwork* network = getPowerNetworkAt(city, x, y);
-    if (network == null) {
+    if (network == nullptr) {
         result = paletteIndexNone;
     } else if (network->cachedProduction == 0) {
         result = paletteIndexBlackout;
@@ -143,7 +143,7 @@ bool doesTileHavePowerNetwork(City* city, s32 x, s32 y)
 
 PowerNetwork* getPowerNetworkAt(City* city, s32 x, s32 y)
 {
-    PowerNetwork* result = null;
+    PowerNetwork* result = nullptr;
 
     if (tileExists(city, x, y)) {
         PowerLayer* layer = &city->powerLayer;
@@ -231,7 +231,7 @@ void addBuildingToPowerLayer(PowerLayer* layer, Building* building)
 {
     PowerSector* sector = getSectorAtTilePos(&layer->sectors, building->footprint.x, building->footprint.y);
     PowerGroup* group = getPowerGroupAt(sector, building->footprint.x - sector->bounds.x, building->footprint.y - sector->bounds.y);
-    if (group != null) {
+    if (group != nullptr) {
         group->buildings.append(getReferenceTo(building));
     }
 }
@@ -311,7 +311,7 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
         if (contains(sector->bounds, building->footprint.pos)) {
             PowerGroup* group = getPowerGroupAt(sector, building->footprint.x - sector->bounds.x, building->footprint.y - sector->bounds.y);
 
-            ASSERT(group != null);
+            ASSERT(group != nullptr);
             group->buildings.append(getReferenceTo(building));
         }
     }
@@ -325,7 +325,7 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
     // - Step 4.1: Left edge
     if (sector->bounds.x > 0) {
         u8 currentPGId = 0;
-        Rect2I* currentBoundary = null;
+        Rect2I* currentBoundary = nullptr;
 
         s32 relX = 0;
         for (s32 relY = 0;
@@ -354,7 +354,7 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
     // - Step 4.2: Right edge
     if (sector->bounds.x + sector->bounds.w < city->bounds.w) {
         u8 currentPGId = 0;
-        Rect2I* currentBoundary = null;
+        Rect2I* currentBoundary = nullptr;
 
         s32 relX = sector->bounds.w - 1;
         for (s32 relY = 0;
@@ -383,7 +383,7 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
     // - Step 4.3: Top edge
     if (sector->bounds.y > 0) {
         u8 currentPGId = 0;
-        Rect2I* currentBoundary = null;
+        Rect2I* currentBoundary = nullptr;
 
         s32 relY = 0;
         for (s32 relX = 0;
@@ -412,7 +412,7 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
     // - Step 4.4: Bottom edge
     if (sector->bounds.y + sector->bounds.h < city->bounds.h) {
         u8 currentPGId = 0;
-        Rect2I* currentBoundary = null;
+        Rect2I* currentBoundary = nullptr;
 
         s32 relY = sector->bounds.h - 1;
         for (s32 relX = 0;
@@ -548,12 +548,12 @@ void updatePowerLayer(City* city, PowerLayer* layer)
             for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.h; y++) {
                 for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.w; x++) {
                     Building* building = getBuildingAt(city, x, y);
-                    BuildingDef* def = null;
-                    if (building != null) {
+                    BuildingDef* def = nullptr;
+                    if (building != nullptr) {
                         def = getBuildingDef(building->typeID);
                     }
 
-                    if (def != null && def->flags & Building_CarriesPower) {
+                    if (def != nullptr && def->flags & Building_CarriesPower) {
                         layer->tilePowerDistance.set(x, y, 0);
                     } else if (getZoneDef(getZoneAt(city, x, y)).carriesPower) {
                         layer->tilePowerDistance.set(x, y, 0);
@@ -654,7 +654,7 @@ void updatePowerLayer(City* city, PowerLayer* layer)
                 BuildingRef buildingRef = buildingRefIt.getValue();
                 Building* building = getBuilding(city, buildingRef);
 
-                if (building != null) {
+                if (building != nullptr) {
                     switch (networkMode) {
                     case Blackout: {
                         building->allocatedPower = 0;
@@ -704,7 +704,7 @@ void debugInspectPower(UI::Panel* panel, City* city, s32 x, s32 y)
 
     // Power group
     PowerNetwork* powerNetwork = getPowerNetworkAt(city, x, y);
-    if (powerNetwork != null) {
+    if (powerNetwork != nullptr) {
         panel->addLabel(myprintf("Power Network {0}:\n- Production: {1}\n- Consumption: {2}\n- Contained groups: {3}"_s, { formatInt(powerNetwork->id), formatInt(powerNetwork->cachedProduction), formatInt(powerNetwork->cachedConsumption), formatInt(powerNetwork->groups.count) }));
     }
 

@@ -10,7 +10,7 @@ MemoryBlock* addMemoryBlock(MemoryArena* arena, smm size)
     smm totalSize = size + sizeof(MemoryBlock);
     u8* memory = allocateRaw(totalSize);
 
-    ASSERT(memory != null); // Failed to allocate memory block!
+    ASSERT(memory != nullptr); // Failed to allocate memory block!
 
     MemoryBlock* block = (MemoryBlock*)memory;
     block->memory = memory + sizeof(MemoryBlock);
@@ -36,7 +36,7 @@ void* allocate(MemoryArena* arena, smm size)
         arena->currentBlock = addMemoryBlock(arena, newBlockSize);
     }
 
-    ASSERT(arena->currentBlock != null); // No memory in arena!
+    ASSERT(arena->currentBlock != nullptr); // No memory in arena!
 
     void* result = arena->currentBlock->memory + arena->currentBlock->used;
     memset(result, 0, size);
@@ -62,7 +62,7 @@ inline T* allocateMultiple(MemoryArena* arena, smm count)
     // to use the memory if you've got 0 things allocated anyway!
     // - Sam, 28/03/2020
     ASSERT(count >= 0);
-    T* result = null;
+    T* result = nullptr;
 
     if (count > 0) {
         result = (T*)allocate(arena, sizeof(T) * count);
@@ -98,7 +98,7 @@ u8* allocateRaw(smm size)
     ASSERT(size < GB(1)); // Something is very wrong if we're trying to allocate an entire gigabyte for something!
 
     u8* result = (u8*)calloc(size, 1);
-    ASSERT(result != null); // calloc() failed!!! I don't think there's anything reasonable we can do here.
+    ASSERT(result != nullptr); // calloc() failed!!! I don't think there's anything reasonable we can do here.
     return result;
 }
 
@@ -110,7 +110,7 @@ void deallocateRaw(void* memory)
 void freeCurrentBlock(MemoryArena* arena)
 {
     MemoryBlock* block = arena->currentBlock;
-    ASSERT(block != null); // Attempting to free non-existent block
+    ASSERT(block != nullptr); // Attempting to free non-existent block
     arena->currentBlock = block->prevBlock;
     deallocateRaw(block);
 }
