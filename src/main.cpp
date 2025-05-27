@@ -37,7 +37,7 @@ struct Settings* settings;
 #include "log.h"
 #include "types.h"
 #include "maths.h"
-#include "vector.h"
+#include "util/Vector.h"
 #include "rectangle.h"
 #include "util/String.h"
 #include "memory.h"
@@ -179,7 +179,6 @@ AppState globalAppState;
 #include "ui/window.cpp"
 #include "uitheme.cpp"
 #include "unicode.cpp"
-#include "vector.cpp"
 #include "write_buffer.cpp"
 #include "zone.cpp"
 
@@ -190,6 +189,7 @@ AppState globalAppState;
 // FIXME: Multiple translation units!!!
 #include "util/Matrix4.cpp"
 #include "util/String.cpp"
+#include "util/Vector.cpp"
 
 #ifdef __linux__
 #    include "platform_linux.cpp"

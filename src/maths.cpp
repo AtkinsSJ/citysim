@@ -66,6 +66,11 @@ inline f32 tan32(f32 radians)
     return (f32)tan(radians);
 }
 
+inline f32 atan2_f32(f32 y, f32 x)
+{
+    return atan2(y, x);
+}
+
 inline s32 divideCeil(s32 numerator, s32 denominator)
 {
     return (numerator + denominator - 1) / denominator;

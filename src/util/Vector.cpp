@@ -1,4 +1,14 @@
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include "Vector.h"
+#include "../maths.h"
+#include <cmath>
 
 /**********************************************
     V2
