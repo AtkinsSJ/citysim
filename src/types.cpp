@@ -1,65 +1,6 @@
 #pragma once
 
 /**********************************************
-    Array2
- **********************************************/
-
-template<typename T>
-Array2<T> makeArray2(s32 w, s32 h, T* items)
-{
-    Array2<T> result = {};
-
-    result.w = w;
-    result.h = h;
-    result.items = items;
-
-    return result;
-}
-
-template<typename T>
-inline T& Array2<T>::get(s32 x, s32 y)
-{
-    ASSERT(x >= 0 && x < this->w && y >= 0 && y < this->h);
-
-    return this->items[(y * this->w) + x];
-}
-
-template<typename T>
-inline T Array2<T>::getIfExists(s32 x, s32 y, T defaultValue)
-{
-    T result = defaultValue;
-
-    if (x >= 0 && x < this->w && y >= 0 && y < this->h) {
-        result = this->items[(y * this->w) + x];
-    }
-
-    return result;
-}
-
-template<typename T>
-inline void Array2<T>::set(s32 x, s32 y, T value)
-{
-    this->get(x, y) = value;
-}
-
-template<typename T>
-void fill(Array2<T>* array, T value)
-{
-    fillMemory<T>(array->items, value, array->w * array->h);
-}
-
-template<typename T>
-void fillRegion(Array2<T>* array, Rect2I region, T value)
-{
-    ASSERT(contains(irectXYWH(0, 0, array->w, array->h), region));
-
-    for (s32 y = region.y; y < region.y + region.h; y++) {
-        // Set whole rows at a time
-        fillMemory<T>(array->items + (y * array->w) + region.x, value, region.w);
-    }
-}
-
-/**********************************************
     Colours
  **********************************************/
 

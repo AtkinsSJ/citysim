@@ -109,31 +109,6 @@ inline Indexed<T> makeIndexedValue(T value, s32 index)
 }
 
 //
-// 2D Array
-//
-
-template<typename T>
-struct Array2 {
-    s32 w;
-    s32 h;
-    T* items;
-
-    T& get(s32 x, s32 y);
-    T getIfExists(s32 x, s32 y, T defaultValue);
-
-    void set(s32 x, s32 y, T value);
-};
-
-template<typename T>
-Array2<T> makeArray2(s32 w, s32 h, T* items);
-
-template<typename T>
-void fill(Array2<T>* array, T value);
-
-template<typename T>
-void fillRegion(Array2<T>* array, Rect2I region, T value);
-
-//
 // Colours
 //
 V4 color255(u8 r, u8 g, u8 b, u8 a);

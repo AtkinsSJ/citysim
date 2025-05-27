@@ -37,6 +37,7 @@ struct Settings* settings;
 #include "util/Log.h"
 #include "types.h"
 #include "util/Array.h"
+#include "util/Array2.h"
 #include "util/Maths.h"
 #include "util/Vector.h"
 #include "util/Rectangle.h"
