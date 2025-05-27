@@ -1,4 +1,14 @@
+/*
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include "Window.h"
+#include "../debug.h"
+#include "../util/String.h"
 
 namespace UI {
 
@@ -70,7 +80,7 @@ String WindowTitle::getString()
 /**
  * Creates an (in-game) window in the centre of the screen, and puts it in front of all other windows.
  */
-void showWindow(UI::WindowTitle title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void* userData, WindowProc onClose)
+void showWindow(WindowTitle title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void* userData, WindowProc onClose)
 {
     if (windowProc == nullptr) {
         logError("showWindow() called with a null WindowProc. That doesn't make sense? Title: {0}"_s, { title.getString() });
