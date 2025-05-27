@@ -1,4 +1,12 @@
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include "Basic.h"
 
 //
 // I've repeatedly found I want an enum that can be used as a set of flags, but also be usable as indices into an array.
@@ -25,19 +33,46 @@ struct Flags {
     Storage data;
 
     // Read the value of the flag
-    bool operator&(Enum flag);
+    bool operator&(Enum flag)
+    {
+        bool result = false;
+
+        if (flag < 0 || flag >= this->flagCount) {
+            ASSERT(false);
+        } else {
+            result = (this->data & ((u64)1 << flag)) != 0;
+        }
+
+        return result;
+    }
 
     // Add the flag
-    Flags<Enum, Storage>* operator+=(Enum flag);
+    Flags<Enum, Storage>* operator+=(Enum flag)
+    {
+        this->data |= ((u64)1 << flag);
+        return this;
+    }
 
     // Remove the flag
-    Flags<Enum, Storage>* operator-=(Enum flag);
+    Flags<Enum, Storage>* operator-=(Enum flag)
+    {
+        u64 mask = ((u64)1 << flag);
+        this->data &= ~mask;
+        return this;
+    }
 
     // Toggle the flag
-    Flags<Enum, Storage>* operator^=(Enum flag);
+    Flags<Enum, Storage>* operator^=(Enum flag)
+    {
+        this->data ^= ((u64)1 << flag);
+        return this;
+    }
 
     // Comparison
-    bool operator==(Flags<Enum, Storage>& other);
+    bool operator==(Flags<Enum, Storage>& other)
+    {
+        return this->data == other.data;
+    }
 
     // Comparison
     bool operator!=(Flags<Enum, Storage>& other)
@@ -56,10 +91,22 @@ template<typename Enum>
 using Flags64 = Flags<Enum, u64>;
 
 template<typename Enum, typename Storage>
-void initFlags(Flags<Enum, Storage>* flags, Enum flagCount);
+void initFlags(Flags<Enum, Storage>* flags, Enum flagCount)
+{
+    ASSERT(flagCount <= (8 * sizeof(Storage)));
+
+    flags->flagCount = flagCount;
+    flags->data = 0;
+}
 
 template<typename Enum, typename Storage>
-bool isEmpty(Flags<Enum, Storage>* flags);
+bool isEmpty(Flags<Enum, Storage>* flags)
+{
+    return (flags->data == 0);
+}
 
 template<typename Enum, typename Storage>
-Storage getAll(Flags<Enum, Storage>* flags);
+Storage getAll(Flags<Enum, Storage>* flags)
+{
+    return flags->data;
+}
