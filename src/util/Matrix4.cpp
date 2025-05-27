@@ -6,7 +6,7 @@
 
 #include "Matrix4.h"
 #include "../debug.h"
-#include "../maths.h"
+#include "Maths.h"
 #include "Vector.h"
 
 inline Matrix4 identityMatrix4()

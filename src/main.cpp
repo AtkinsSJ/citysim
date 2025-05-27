@@ -36,7 +36,7 @@ struct Settings* settings;
 // clang-format off
 #include "log.h"
 #include "types.h"
-#include "maths.h"
+#include "util/Maths.h"
 #include "util/Vector.h"
 #include "rectangle.h"
 #include "util/String.h"
@@ -143,7 +143,6 @@ AppState globalAppState;
 #include "line_reader.cpp"
 #include "util/LinkedList.h"
 #include "log.cpp"
-#include "maths.cpp"
 #include "memory.cpp"
 #include "pathing.cpp"
 #include "pollution.cpp"
@@ -182,6 +181,7 @@ AppState globalAppState;
 // FIXME: Multiple translation units!!!
 #include "util/BitArray.cpp"
 #include "util/Interpolate.cpp"
+#include "util/Maths.cpp"
 #include "util/Matrix4.cpp"
 #include "util/String.cpp"
 #include "util/Vector.cpp"

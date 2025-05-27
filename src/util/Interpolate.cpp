@@ -7,7 +7,7 @@
 #pragma once
 
 #include "Interpolate.h"
-#include "../maths.h"
+#include "Maths.h"
 
 f32 interpolate(f32 start, f32 end, f32 t, InterpolationType interpolation)
 {

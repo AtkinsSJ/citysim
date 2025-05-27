@@ -7,7 +7,7 @@
 #pragma once
 
 #include "Vector.h"
-#include "../maths.h"
+#include "Maths.h"
 #include <cmath>
 
 /**********************************************
