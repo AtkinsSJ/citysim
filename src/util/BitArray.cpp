@@ -1,3 +1,12 @@
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "BitArray.h"
+#include "../debug.h"
+#include "../memory.h"
 
 void initBitArray(BitArray* array, MemoryArena* arena, s32 size)
 {

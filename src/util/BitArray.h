@@ -1,4 +1,14 @@
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include "../types.h"
+#include "Basic.h"
+#include "Forward.h"
 
 struct BitArrayIterator;
 

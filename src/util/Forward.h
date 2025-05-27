@@ -10,7 +10,10 @@
 
 using std::move, std::forward;
 
+struct BitArray;
+struct BitArrayIterator;
 struct Matrix4;
+struct MemoryArena;
 struct Rect2;
 struct Rect2I;
 struct String;

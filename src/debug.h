@@ -1,5 +1,7 @@
 #pragma once
 
+#include <SDL2/SDL_assert.h>
+
 #define DEBUG_BREAK() SDL_TriggerBreakpoint()
 
 // SDL already does work to avoid MSVC warnings, but we still get them!

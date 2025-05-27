@@ -47,7 +47,7 @@ struct Settings* settings;
 #include "queue.h"
 #include "stack.h"
 #include "set.h"
-#include "bit_array.h"
+#include "util/BitArray.h"
 #include "flags.h"
 #include "occupancy_array.h"
 #include "linked_list.h"
@@ -119,7 +119,6 @@ AppState globalAppState;
 #include "binary_file.cpp"
 #include "binary_file_reader.cpp"
 #include "binary_file_writer.cpp"
-#include "bit_array.cpp"
 #include "bmfont.cpp"
 #include "budget.cpp"
 #include "building.cpp"
@@ -187,6 +186,7 @@ AppState globalAppState;
 
 // Below, these are proper independent implementation files that should be separate TUs.
 // FIXME: Multiple translation units!!!
+#include "util/BitArray.cpp"
 #include "util/Matrix4.cpp"
 #include "util/String.cpp"
 #include "util/Vector.cpp"
