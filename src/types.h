@@ -82,32 +82,6 @@ bool allAreValid(Maybe<T> first, Maybe<TS>... rest)
     return first.isValid && allAreValid(rest...);
 }
 
-template<typename T>
-struct Indexed {
-    T value;
-    s32 index;
-};
-
-template<typename T>
-inline Indexed<T> makeNullIndexedValue()
-{
-    Indexed<T> result;
-    result.value = nullptr;
-    result.index = -1;
-
-    return result;
-}
-
-template<typename T>
-inline Indexed<T> makeIndexedValue(T value, s32 index)
-{
-    Indexed<T> result;
-    result.value = value;
-    result.index = index;
-
-    return result;
-}
-
 //
 // Colours
 //
