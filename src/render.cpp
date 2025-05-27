@@ -1,5 +1,7 @@
 #pragma once
 
+#include "util/Matrix4.h"
+
 void updateCameraMatrix(Camera* camera)
 {
     f32 camHalfWidth = camera->size.x * 0.5f / camera->zoom;

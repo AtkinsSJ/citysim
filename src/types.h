@@ -1,35 +1,6 @@
 #pragma once
-/*
-Meaningless waffling about code typing style:
 
-I guess ideally the types would all be short and convenient:
-u8, u16, u32, u64
-s8, s16, s32, s64 (or would that be i-whatever? Maybe s is better to avoid confusion with vars named i)
-f32, f64
-v2, v3, v4
-v2i, v3i, v4i
-rect2, rect3
-rect2i, rect3i
-
-Capitalisation would then be: lowercase for types, MixedCaseForEverythingElse.
-But, I'm kind of used to ThisCase for types, from Java.
-And ThisCaseForFunctions() looks wrong to me.
-
-JB does This_Stuff for structs,
-this_stuff for vars and functions.
-I kind of like that, but I'm not sure I like the mix of cases for basic and struct types?
-Part of this is that he uses auto-typing a lot so longer type names isn't a problem.
-
-Personally I don't mind CamelCaseStuff, I don't find it hard to read.
-
-I guess my style is:
-blah for basic types
-BactrianCamelCase for struct types
-dromedaryCamelCase for variables and functions
-
-I will create shorter versions of the basic types though.
-
-*/
+#include "util/Forward.h"
 
 // Note for later: variadic macros `#define(foo, ...)` expand the ... with `__VA_ARGS__`
 
@@ -43,48 +14,7 @@ I will create shorter versions of the basic types though.
         ASSERT(false);       \
         break;
 
-#include <float.h>
-#include <stdint.h>
-
-using std::move, std::forward;
-
-typedef int8_t s8;
-typedef int16_t s16;
-typedef int32_t s32;
-typedef int64_t s64;
-
-typedef uint8_t u8;
-typedef uint16_t u16;
-typedef uint32_t u32;
-typedef uint64_t u64;
-
-typedef float f32;
-typedef double f64;
-
-s8 const s8Min = INT8_MIN;
-s8 const s8Max = INT8_MAX;
-s16 const s16Min = INT16_MIN;
-s16 const s16Max = INT16_MAX;
-s32 const s32Min = INT32_MIN;
-s32 const s32Max = INT32_MAX;
-s64 const s64Min = INT64_MIN;
-s64 const s64Max = INT64_MAX;
-
-u8 const u8Max = UINT8_MAX;
-u16 const u16Max = UINT16_MAX;
-u32 const u32Max = UINT32_MAX;
-u64 const u64Max = UINT64_MAX;
-
-f32 const f32Min = -FLT_MAX;
-f32 const f32Max = FLT_MAX;
-f64 const f64Min = -DBL_MAX;
-f64 const f64Max = DBL_MAX;
-
-typedef intptr_t smm;
-// typedef uintptr_t umm; // Turned this off because I don't think there's a good reason for using it?
-
-#include <uchar.h>
-typedef char32_t unichar;
+#include "util/Basic.h"
 
 template<typename T>
 bool equals(T a, T b);
@@ -92,13 +22,6 @@ bool equals(T a, T b);
 #include <typeinfo>
 template<typename T>
 String typeNameOf();
-
-struct V2;
-struct V2I;
-struct V3;
-struct V4;
-struct Rect2;
-struct Rect2I;
 
 enum Alignment {
     ALIGN_LEFT = 1,
@@ -261,34 +184,6 @@ void fill(Array2<T>* array, T value);
 
 template<typename T>
 void fillRegion(Array2<T>* array, Rect2I region, T value);
-
-//
-// Matrix4
-//
-// Matrices! Pretty sure I'm only going to use this for the camera projection,
-// so certain things are missing - notably, we can only rotate in the z-axis
-// because (for now) the game will be in 2D.
-//
-// TODO: When I move to 3D, implement full rotation of matrices!
-//
-
-struct Matrix4 {
-    union {
-        f32 v[4][4]; // Column-major order, so [COLUMN][ROW]
-        f32 flat[4 * 4];
-    };
-};
-
-Matrix4 identityMatrix4();
-Matrix4 orthographicMatrix4(f32 left, f32 right, f32 top, f32 bottom, f32 nearClip, f32 farClip);
-Matrix4 inverse(Matrix4* source);
-void translate(Matrix4* matrix, V3 translation);
-void scale(Matrix4* matrix, V3 scale);
-void rotateZ(Matrix4* matrix, f32 radians);
-
-Matrix4 operator*(Matrix4 a, Matrix4 b);
-Matrix4 operator*=(Matrix4& a, Matrix4 b);
-V4 operator*(Matrix4 m, V4 v);
 
 //
 // Colours

@@ -185,6 +185,10 @@ AppState globalAppState;
 
 #include "render_gl.cpp"
 
+// Below, these are proper independent implementation files that should be separate TUs.
+// FIXME: Multiple translation units!!!
+#include "util/Matrix4.cpp"
+
 #ifdef __linux__
 #    include "platform_linux.cpp"
 #else // Windows

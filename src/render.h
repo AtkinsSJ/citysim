@@ -1,5 +1,7 @@
 #pragma once
 
+#include "util/Matrix4.h"
+
 // General rendering code.
 
 f32 const SECONDS_PER_FRAME = 1.0f / 60.0f;
