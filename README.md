@@ -8,9 +8,6 @@ On Windows, run `./build.bat` and hopefully it works! Then run it with `./build/
 
 ## Linux
 
-> [!WARNING]
-> Linux support is still WIP at the moment, and CitySim won't actually run yet.
-
 On Linux, run `./build.sh`, after installing the required libraries:
 - SDL2
 - SDL2_image
