@@ -3,6 +3,8 @@
 // platform_linux.cpp
 #include <ctime>
 #include <errno.h>
+#include <poll.h>
+#include <sys/inotify.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -242,18 +244,74 @@ DirectoryChangeWatchingHandle platform_beginWatchingDirectory(String path)
 	ASSERT(isNullTerminated(path));
 
 	DirectoryChangeWatchingHandle handle = {};
-	// TODO: Implement this!
+	handle.path = path;
+
+	// Initialize inotify if needed
+	handle.inotify_fd = inotify_init();
+	if (handle.inotify_fd < 0) {
+		handle.isValid = false;
+		handle.errorCode = -errno;
+		logError("Failed to initialize inotify. (Error {})"_s, {formatInt(handle.errorCode)});
+		return handle;
+	}
+
+	handle.watcher_fd = inotify_add_watch(handle.inotify_fd, path.chars, IN_CREATE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVED_FROM | IN_MOVED_TO);
+	if (handle.watcher_fd < 0) {
+		handle.isValid = false;
+		handle.errorCode = -errno;
+		logError("Failed to add inotify watch to \"{}\". (Error {})"_s, {path, formatInt(handle.errorCode)});
+		return handle;
+	}
+
+	handle.isValid = true;
 
 	return handle;
 }
 
 bool platform_hasDirectoryChanged(DirectoryChangeWatchingHandle *handle)
 {
-	// TODO: Implement this!
-	return false;
+	if (!handle->inotify_fd)
+		return false;
+
+	pollfd fd_info {
+		.fd = handle->inotify_fd,
+		.events = POLLIN,
+		.revents = 0,
+	};
+
+	auto result = poll(&fd_info, 1, 0);
+	if (result == 0) {
+		// Nothing happened.
+		return false;
+	}
+
+	if (result < 0) {
+		// Error
+		handle->isValid = false;
+		handle->errorCode = -errno;
+		logError("Failed to poll inotify. (Error {})"_s, {formatInt(handle->errorCode)});
+		return handle;
+	}
+
+	ASSERT(fd_info.revents & POLLIN);
+
+	// TODO: Note which files changed, which we might want at some point?
+	auto constexpr buffer_size = 2048;
+	u8 buffer[buffer_size];
+	auto read_result = read(handle->inotify_fd, buffer, buffer_size);
+	if (read_result < 0) {
+		handle->isValid = false;
+		handle->errorCode = -errno;
+		logError("Failed to read from inotify. (Error {})"_s, {formatInt(handle->errorCode)});
+	}
+
+	return true;
 }
 
 void platform_stopWatchingDirectory(DirectoryChangeWatchingHandle *handle)
 {
-	// TODO: Implement this!
+	inotify_rm_watch(handle->inotify_fd, handle->watcher_fd);
+	handle->watcher_fd = 0;
+	close(handle->inotify_fd);
+	handle->inotify_fd = 0;
 }

@@ -67,17 +67,15 @@ struct DirectoryChangeWatchingHandle
 	u32 errorCode;
 	String path;
 
-	union
-	{
 #ifdef __linux__
-		int unused;
+	int inotify_fd;
+	int watcher_fd;
 #else
-		struct
-		{
-			HANDLE handle;
-		} windows;
+	struct
+	{
+		HANDLE handle;
+	} windows;
 #endif
-	};
 };
 
 // Returns the part of 'filename' after the final '.'
