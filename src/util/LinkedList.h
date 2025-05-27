@@ -1,4 +1,21 @@
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include "Assert.h"
+
+/*****************************************************************
+ * Somewhat less-hacky doubly-linked-list stuff using templates. *
+ *****************************************************************/
+template<typename T>
+struct LinkedListNode {
+    T* prevNode;
+    T* nextNode;
+};
 
 template<typename T>
 void initLinkedListSentinel(T* sentinel)
@@ -52,8 +69,6 @@ void moveAllNodes(T* srcSentinel, T* destSentinel)
 template<typename T>
 s32 countNodes(T* sentinel)
 {
-    DEBUG_FUNCTION();
-
     s32 result = 0;
 
     if (sentinel != nullptr) {

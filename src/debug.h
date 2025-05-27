@@ -1,7 +1,7 @@
 #pragma once
 
-#include "linked_list.h"
 #include "util/HashTable.h"
+#include "util/LinkedList.h"
 
 #if BUILD_DEBUG
 
