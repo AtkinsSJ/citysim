@@ -1,4 +1,13 @@
-#pragma once
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "StringBuilder.h"
+#include "../debug.h"
+#include "../memory.h"
+#include "Log.h"
 
 StringBuilder newStringBuilder(s32 initialSize, MemoryArena* arena)
 {
