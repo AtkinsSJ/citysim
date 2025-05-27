@@ -9,11 +9,6 @@
 #define STRVAL_(a) #a
 #define STRVAL(a) STRVAL_(a)
 
-#define INVALID_DEFAULT_CASE \
-    default:                 \
-        ASSERT(false);       \
-        break;
-
 #include "util/Basic.h"
 
 template<typename T>

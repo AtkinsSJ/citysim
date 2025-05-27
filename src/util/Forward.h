@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "Assert.h"
 #include <utility>
 
 using std::move, std::forward;
