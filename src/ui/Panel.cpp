@@ -8,7 +8,7 @@
 
 #include "Panel.h"
 #include "../util/String.h"
-#include "textinput.h"
+#include "TextInput.h"
 #include "ui.h"
 
 namespace UI {
