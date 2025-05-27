@@ -43,29 +43,10 @@ I will create shorter versions of the basic types though.
         ASSERT(false);       \
         break;
 
-/*
-    Defer macro, to run code at the end of a scope.
-
-    USAGE: defer { do_some_stuff_later(); };
-
-    From https://stackoverflow.com/a/42060129/1178345
-*/
-#ifndef defer
-struct defer_dummy { };
-template<typename F>
-struct deferrer {
-    F f;
-    ~deferrer() { f(); }
-};
-template<typename F>
-deferrer<F> operator*(defer_dummy, F f) { return { f }; }
-#    define DEFER_(LINE) zz_defer##LINE
-#    define DEFER(LINE) DEFER_(LINE)
-#    define defer auto DEFER(__LINE__) = defer_dummy {}* [&]()
-#endif // defer
-
 #include <float.h>
 #include <stdint.h>
+
+using std::move, std::forward;
 
 typedef int8_t s8;
 typedef int16_t s16;

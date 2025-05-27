@@ -1,5 +1,7 @@
 #pragma once
 
+#include "util/Deferred.h"
+
 namespace UI {
 
 Maybe<DrawableStyle> readDrawableStyle(LineReader* reader)
@@ -316,7 +318,7 @@ void loadUITheme(Blob data, Asset* asset)
     HashTable<String> fontNamesToAssetNames;
     initHashTable(&fontNamesToAssetNames);
 
-    defer {
+    Deferred defer_free_hash_tables = [&styles, &fontNamesToAssetNames] {
         freeHashTable(&styles);
         freeHashTable(&fontNamesToAssetNames);
     };

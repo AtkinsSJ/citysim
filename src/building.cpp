@@ -1,5 +1,7 @@
 #pragma once
 
+#include "util/Deferred.h"
+
 BuildingRef getReferenceTo(Building* building)
 {
     BuildingRef result = {};
@@ -145,7 +147,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
 
     HashTable<BuildingDef> templates;
     initHashTable(&templates);
-    defer { freeHashTable(&templates); };
+    Deferred defer_free_hash_table = [&templates] { freeHashTable(&templates); };
 
     BuildingDef* def = null;
 

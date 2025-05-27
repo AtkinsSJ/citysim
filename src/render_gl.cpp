@@ -1,4 +1,6 @@
 
+#include "util/Deferred.h"
+
 bool GL_initializeRenderer(SDL_Window* window)
 {
     GL_Renderer* gl;
@@ -205,7 +207,7 @@ bool compileShader(GL_ShaderProgram* glShader, String shaderName, Shader* shader
     bool result = false;
 
     GLuint shaderID = glCreateShader(shaderPart);
-    defer { glDeleteShader(shaderID); };
+    Deferred defer_delete_shader = [shaderID] { glDeleteShader(shaderID); };
 
     String source = nullString;
     switch (shaderPart) {
