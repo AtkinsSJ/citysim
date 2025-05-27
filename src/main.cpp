@@ -36,6 +36,7 @@ struct Settings* settings;
 // clang-format off
 #include "util/Log.h"
 #include "types.h"
+#include "util/Array.h"
 #include "util/Maths.h"
 #include "util/Vector.h"
 #include "util/Rectangle.h"

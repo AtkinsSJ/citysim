@@ -109,45 +109,6 @@ inline Indexed<T> makeIndexedValue(T value, s32 index)
 }
 
 //
-// Array
-//
-
-template<typename T>
-struct Array {
-    s32 capacity;
-    s32 count;
-    T* items;
-
-    // NB: it's a reference so you can do assignments!
-    T& operator[](s32 index);
-    T* get(s32 index); // Same as [] but easier when we're using an Array*
-    T* first();
-    T* last();
-
-    T* append();
-    T* append(T item);
-
-    bool isInitialised();
-    bool isEmpty();
-    bool hasRoom();
-
-    void swap(s32 indexA, s32 indexB);
-
-    // compareElements(T a, T b) -> returns (a < b), to sort low to high
-    template<typename Comparison>
-    void sort(Comparison compareElements);
-
-    template<typename Comparison>
-    void sortInternal(Comparison compareElements, s32 lowIndex, s32 highIndex);
-};
-
-template<typename T>
-Array<T> makeArray(s32 capacity, T* items, s32 count = 0);
-
-template<typename T>
-Array<T> makeEmptyArray();
-
-//
 // 2D Array
 //
 
