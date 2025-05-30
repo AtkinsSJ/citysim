@@ -116,6 +116,7 @@ void drawZones(City* city, Rect2I visibleTileBounds, s8 shaderID)
 {
     DEBUG_FUNCTION_T(DCDT_GameUpdate);
 
+    auto* renderer = the_renderer();
     Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
     s32 zoneType = -1;
     V4 zoneColor = {};

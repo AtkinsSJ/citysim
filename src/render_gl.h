@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
 
 #ifdef __linux__
@@ -8,7 +14,7 @@
 #    include <gl/glew.h>
 #endif
 
-// render_gl.h
+#include "render.h"
 
 struct GL_VertexData {
     V2 pos;
@@ -45,8 +51,8 @@ int const RENDER_BATCH_SIZE = 1024;
 int const RENDER_BATCH_VERTEX_COUNT = RENDER_BATCH_SIZE * 4;
 int const RENDER_BATCH_INDEX_COUNT = RENDER_BATCH_SIZE * 6;
 
-struct GL_Renderer {
-    Renderer renderer;
+struct GL_Renderer final : public Renderer {
+    virtual ~GL_Renderer() override = default;
 
     SDL_GLContext context;
 

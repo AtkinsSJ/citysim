@@ -179,6 +179,8 @@ struct RenderBuffer : PoolItem {
 };
 
 struct Renderer {
+    virtual ~Renderer() = default;
+
     MemoryArena renderArena;
 
     SDL_Window* window;
@@ -220,7 +222,6 @@ struct Renderer {
     } shaderIds;
 
     // Don't access these directly!
-    void* platformRenderer;
     void (*windowResized)(s32, s32);
     void (*render)(Array<RenderBuffer*>);
     void (*loadAssets)();
@@ -229,6 +230,8 @@ struct Renderer {
 };
 
 void initRenderer(MemoryArena* renderArena, SDL_Window* window);
+Renderer* the_renderer();
+void set_the_renderer(Renderer*);
 void handleWindowEvent(SDL_WindowEvent* event);
 void render();
 void rendererLoadAssets();

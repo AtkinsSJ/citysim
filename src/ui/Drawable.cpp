@@ -10,6 +10,7 @@ namespace UI {
 
 void Drawable::preparePlaceholder(RenderBuffer* buffer)
 {
+    auto* renderer = the_renderer();
     switch (style->type) {
     case Drawable_None: {
         return; // Nothing to do!
@@ -64,6 +65,7 @@ void Drawable::fillPlaceholder(Rect2I bounds)
 
 void Drawable::draw(RenderBuffer* buffer, Rect2I bounds)
 {
+    auto* renderer = the_renderer();
     switch (style->type) {
     case Drawable_None: {
         return; // Nothing to do!

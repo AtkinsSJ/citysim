@@ -1,24 +1,29 @@
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
 
+#include "render_gl.h"
 #include "util/Deferred.h"
 
 bool GL_initializeRenderer(SDL_Window* window)
 {
     GL_Renderer* gl;
-    bootstrapArena(GL_Renderer, gl, renderer.renderArena);
-    bool succeeded = (gl != 0);
-    renderer = &gl->renderer;
+    bootstrapArena(GL_Renderer, gl, renderArena);
+    bool succeeded = (gl != nullptr);
+    set_the_renderer(gl);
 
     if (!succeeded) {
         logCritical("Failed to allocate memory for GL_Renderer!"_s);
     } else {
-        initRenderer(&renderer->renderArena, window);
+        initRenderer(&gl->renderArena, window);
 
-        renderer->platformRenderer = gl;
-        renderer->windowResized = &GL_windowResized;
-        renderer->render = &GL_render;
-        renderer->loadAssets = &GL_loadAssets;
-        renderer->unloadAssets = &GL_unloadAssets;
-        renderer->free = &GL_freeRenderer;
+        gl->windowResized = &GL_windowResized;
+        gl->render = &GL_render;
+        gl->loadAssets = &GL_loadAssets;
+        gl->unloadAssets = &GL_unloadAssets;
+        gl->free = &GL_freeRenderer;
 
         // Use GL3.1 Core
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -33,7 +38,7 @@ bool GL_initializeRenderer(SDL_Window* window)
 #endif
 
         // Create context
-        gl->context = SDL_GL_CreateContext(renderer->window);
+        gl->context = SDL_GL_CreateContext(gl->window);
         if (gl->context == nullptr) {
             logCritical("OpenGL context could not be created! :(\n {0}"_s, { makeString(SDL_GetError()) });
             succeeded = false;
@@ -111,9 +116,9 @@ bool GL_initializeRenderer(SDL_Window* window)
             glGenTextures(1, &gl->rawTextureID);
 
             // Other GL_Renderer struct init stuff
-            initChunkedArray(&gl->shaders, &gl->renderer.renderArena, 64);
+            initChunkedArray(&gl->shaders, &gl->renderArena, 64);
 
-            initStack(&gl->scissorStack, &gl->renderer.renderArena);
+            initStack(&gl->scissorStack, &gl->renderArena);
         } else {
             logCritical("Could not initialise OpenGL! :("_s);
         }
@@ -129,8 +134,7 @@ bool GL_initializeRenderer(SDL_Window* window)
 
 void GL_freeRenderer()
 {
-    GL_Renderer* gl = (GL_Renderer*)renderer->platformRenderer;
-    SDL_GL_DeleteContext(gl->context);
+    SDL_GL_DeleteContext(static_cast<GL_Renderer*>(the_renderer())->context);
 }
 
 void GL_windowResized(s32 newWidth, s32 newHeight)
@@ -322,7 +326,7 @@ void GL_loadAssets()
 {
     DEBUG_FUNCTION_T(DCDT_Renderer);
 
-    GL_Renderer* gl = (GL_Renderer*)renderer->platformRenderer;
+    auto* gl = static_cast<GL_Renderer*>(the_renderer());
 
     // Textures
     for (auto it = asset_manager().assetsByType[AssetType_Texture].iterate();
@@ -359,7 +363,7 @@ void GL_unloadAssets()
 {
     DEBUG_FUNCTION_T(DCDT_Renderer);
 
-    GL_Renderer* gl = (GL_Renderer*)renderer->platformRenderer;
+    auto* gl = static_cast<GL_Renderer*>(the_renderer());
 
     // Textures
     for (auto it = asset_manager().assetsByType[AssetType_Texture].iterate();
@@ -429,7 +433,7 @@ void GL_render(Array<RenderBuffer*> buffers)
 {
     DEBUG_FUNCTION_T(DCDT_Renderer);
 
-    GL_Renderer* gl = (GL_Renderer*)renderer->platformRenderer;
+    auto* gl = static_cast<GL_Renderer*>(the_renderer());
 
     GL_ShaderProgram* activeShader = nullptr;
     Camera* currentCamera = nullptr;

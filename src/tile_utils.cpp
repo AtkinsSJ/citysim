@@ -178,6 +178,7 @@ template<typename Iterable>
 void drawBuildingHighlights(City* city, Iterable* buildingRefs)
 {
     DEBUG_FUNCTION_T(DCDT_GameUpdate);
+    auto* renderer = the_renderer();
 
     if (buildingRefs->count > 0) {
         Array<V4>* buildingsPalette = getPalette("service_buildings"_s);
@@ -200,6 +201,7 @@ void drawBuildingHighlights(City* city, Iterable* buildingRefs)
 template<typename Iterable>
 void drawBuildingEffectRadii(City* city, Iterable* buildingRefs, EffectRadius BuildingDef::* effectMember)
 {
+    auto* renderer = the_renderer();
     //
     // Leaving a note here because it's the first time I've used a pointer-to-member, and it's
     // weird and confusing and the syntax is odd!

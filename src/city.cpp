@@ -1,4 +1,5 @@
 #pragma once
+#include "render.h"
 
 void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String name, String playerName, s32 funds)
 {
@@ -46,7 +47,7 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
     // TODO: Are we sure we want to do this?
     markAreaDirty(city, city->bounds);
 
-    renderer->worldCamera.pos = v2(city->bounds.size) / 2;
+    the_renderer()->worldCamera.pos = v2(city->bounds.size) / 2;
 
     saveBuildingTypes();
     saveTerrainTypes();
@@ -85,7 +86,7 @@ void drawEntities(City* city, Rect2I visibleTileBounds)
     // TODO: Sectors maybe? Though collecting all the visible entities into a data structure might be slower than just
     //  iterating the entities array.
     Rect2 cropArea = rect2(visibleTileBounds);
-    auto shaderID = renderer->shaderIds.pixelArt;
+    auto shaderID = the_renderer()->shaderIds.pixelArt;
 
     bool isDemolitionHappening = (areaOf(city->demolitionRect) > 0);
     V4 drawColorDemolish = color255(255, 128, 128, 255);
@@ -106,7 +107,7 @@ void drawEntities(City* city, Rect2I visibleTileBounds)
                 drawColor *= drawColorDemolish;
             }
 
-            drawSingleSprite(&renderer->worldBuffer, getSprite(&entity->sprite), entity->bounds, shaderID, drawColor);
+            drawSingleSprite(&the_renderer()->worldBuffer, getSprite(&entity->sprite), entity->bounds, shaderID, drawColor);
         }
     }
 }
@@ -448,6 +449,7 @@ ChunkedArray<Building*> findBuildingsOverlappingArea(City* city, Rect2I area, u3
 
 void drawCity(City* city, Rect2I visibleTileBounds)
 {
+    auto* renderer = the_renderer();
     drawTerrain(city, visibleTileBounds, renderer->shaderIds.pixelArt);
 
     drawZones(city, visibleTileBounds, renderer->shaderIds.untextured);

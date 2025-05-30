@@ -21,6 +21,7 @@ ConsoleCommand(debug_tools)
     GameState* gameState = globalAppState.gameState;
 
     // @Hack: This sets the position to outside the camera, and then relies on it automatically snapping back into bounds
+    auto* renderer = the_renderer();
     V2I windowPos = v2i(renderer->uiCamera.pos + renderer->uiCamera.size);
 
     UI::showWindow(UI::WindowTitle::fromTextAsset("title_debug_tools"_s), 250, 200, windowPos, "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Unique, debugToolsWindowProc, gameState);
@@ -198,7 +199,7 @@ ConsoleCommand(window_size)
             consoleWriteLine("Usage: window_size [width height], where both width and height are positive integers. If no width or height are provided, the current window size is returned."_s, CLS_Error);
         }
     } else if (argumentsCount == 0) {
-        V2 screenSize = renderer->uiCamera.size;
+        V2 screenSize = the_renderer()->uiCamera.size;
         consoleWriteLine(myprintf("Window size is {0} by {1}"_s, { formatInt((s32)screenSize.x), formatInt((s32)screenSize.y) }), CLS_Success);
     } else {
         consoleWriteLine("Usage: window_size [width height], where both width and height are positive integers. If no width or height are provided, the current window size is returned."_s, CLS_Error);
@@ -208,6 +209,7 @@ ConsoleCommand(window_size)
 ConsoleCommand(zoom)
 {
     String remainder = arguments;
+    auto* renderer = the_renderer();
 
     if (argumentsCount == 0) {
         // list the zoom

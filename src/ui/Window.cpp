@@ -178,6 +178,7 @@ void closeAllWindows()
 void updateAndRenderWindows()
 {
     DEBUG_FUNCTION_T(DCDT_UI);
+    auto* renderer = the_renderer();
 
     // This is weird, the UI camera should always be positioned with 0,0 being the bottom-left I thought?
     Rect2I validWindowArea = irectCentreSize(v2i(renderer->uiCamera.pos), v2i(renderer->uiCamera.size));

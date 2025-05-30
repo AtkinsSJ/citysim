@@ -216,6 +216,7 @@ void drawTerrain(City* city, Rect2I visibleArea, s8 shaderID)
     DEBUG_FUNCTION_T(DCDT_GameUpdate);
 
     TerrainLayer* layer = &city->terrainLayer;
+    auto* renderer = the_renderer();
 
     Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
     V4 white = makeWhite();

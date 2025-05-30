@@ -27,8 +27,6 @@ enum AppStatus {
     AppStatus_Quit,
 };
 
-struct Renderer* renderer;
-
 // clang-format off
 #include "util/Log.h"
 #include "types.h"
@@ -265,6 +263,7 @@ int main(int argc, char* argv[])
     rendererLoadAssets();
     setCursor("default"_s);
     setCursorVisible(true);
+    auto* renderer = the_renderer();
 
     UI::init(&appState->systemArena);
 

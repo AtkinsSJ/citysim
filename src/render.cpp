@@ -1,6 +1,13 @@
-#pragma once
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
 
+#include "render.h"
 #include "util/Matrix4.h"
+
+static Renderer* s_renderer;
 
 void updateCameraMatrix(Camera* camera)
 {
@@ -39,6 +46,7 @@ inline f32 snapZoomLevel(f32 zoom)
 
 void initRenderer(MemoryArena* renderArena, SDL_Window* window)
 {
+    auto* renderer = s_renderer;
     renderer->window = window;
     SDL_GetWindowSize(window, &renderer->windowWidth, &renderer->windowHeight);
 
@@ -47,7 +55,7 @@ void initRenderer(MemoryArena* renderArena, SDL_Window* window)
 
     initPool<RenderBuffer>(&renderer->renderBufferPool, renderArena, [](MemoryArena* arena, void*) -> RenderBuffer* {
 			RenderBuffer *buffer = allocateStruct<RenderBuffer>(arena);
-			initRenderBuffer(arena, buffer, nullString, &renderer->chunkPool);
+			initRenderBuffer(arena, buffer, nullString, &s_renderer->chunkPool);
 			return buffer; }, renderer);
     initRenderBuffer(renderArena, &renderer->worldBuffer, "WorldBuffer"_s, &renderer->chunkPool);
     initRenderBuffer(renderArena, &renderer->worldOverlayBuffer, "WorldOverlayBuffer"_s, &renderer->chunkPool);
@@ -72,21 +80,31 @@ void initRenderer(MemoryArena* renderArena, SDL_Window* window)
     setCursorVisible(false);
 }
 
+Renderer* the_renderer()
+{
+    return s_renderer;
+}
+
+void set_the_renderer(Renderer* renderer)
+{
+    s_renderer = renderer;
+}
+
 void handleWindowEvent(SDL_WindowEvent* event)
 {
     switch (event->event) {
     case SDL_WINDOWEVENT_SIZE_CHANGED: {
-        renderer->windowWidth = event->data1;
-        renderer->windowHeight = event->data2;
+        s_renderer->windowWidth = event->data1;
+        s_renderer->windowHeight = event->data2;
 
-        renderer->windowResized(renderer->windowWidth, renderer->windowHeight);
+        s_renderer->windowResized(s_renderer->windowWidth, s_renderer->windowHeight);
 
-        V2 windowSize = v2(renderer->windowWidth, renderer->windowHeight);
+        V2 windowSize = v2(s_renderer->windowWidth, s_renderer->windowHeight);
 
-        renderer->worldCamera.size = windowSize * renderer->worldCamera.sizeRatio;
+        s_renderer->worldCamera.size = windowSize * s_renderer->worldCamera.sizeRatio;
 
-        renderer->uiCamera.size = windowSize * renderer->uiCamera.sizeRatio;
-        renderer->uiCamera.pos = renderer->uiCamera.size * 0.5f;
+        s_renderer->uiCamera.size = windowSize * s_renderer->uiCamera.sizeRatio;
+        s_renderer->uiCamera.pos = s_renderer->uiCamera.size * 0.5f;
     } break;
     }
 }
@@ -96,49 +114,49 @@ void render()
     DEBUG_POOL(&renderer->renderBufferPool, "renderBufferPool");
     DEBUG_POOL(&renderer->chunkPool, "renderChunkPool");
 
-    renderer->render(renderer->renderBuffers);
+    s_renderer->render(s_renderer->renderBuffers);
 
-    for (s32 i = 0; i < renderer->renderBuffers.count; i++) {
-        clearRenderBuffer(renderer->renderBuffers[i]);
+    for (s32 i = 0; i < s_renderer->renderBuffers.count; i++) {
+        clearRenderBuffer(s_renderer->renderBuffers[i]);
     }
 }
 
 void rendererLoadAssets()
 {
-    renderer->loadAssets();
+    s_renderer->loadAssets();
 
     // Cache the shader IDs so we don't have to do so many hash lookups
-    renderer->shaderIds.pixelArt = getShader("pixelart.glsl"_s)->rendererShaderID;
-    renderer->shaderIds.text = getShader("textured.glsl"_s)->rendererShaderID;
-    renderer->shaderIds.textured = getShader("textured.glsl"_s)->rendererShaderID;
-    renderer->shaderIds.untextured = getShader("untextured.glsl"_s)->rendererShaderID;
+    s_renderer->shaderIds.pixelArt = getShader("pixelart.glsl"_s)->rendererShaderID;
+    s_renderer->shaderIds.text = getShader("textured.glsl"_s)->rendererShaderID;
+    s_renderer->shaderIds.textured = getShader("textured.glsl"_s)->rendererShaderID;
+    s_renderer->shaderIds.untextured = getShader("untextured.glsl"_s)->rendererShaderID;
 
-    if (!isEmpty(renderer->currentCursorName)) {
-        setCursor(renderer->currentCursorName);
+    if (!isEmpty(s_renderer->currentCursorName)) {
+        setCursor(s_renderer->currentCursorName);
     }
 }
 
 void rendererUnloadAssets()
 {
-    if (renderer->systemWaitCursor == nullptr) {
-        renderer->systemWaitCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
+    if (s_renderer->systemWaitCursor == nullptr) {
+        s_renderer->systemWaitCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
     }
-    SDL_SetCursor(renderer->systemWaitCursor);
-    renderer->unloadAssets();
+    SDL_SetCursor(s_renderer->systemWaitCursor);
+    s_renderer->unloadAssets();
 }
 
 void freeRenderer()
 {
-    if (renderer->systemWaitCursor != nullptr) {
-        SDL_FreeCursor(renderer->systemWaitCursor);
-        renderer->systemWaitCursor = nullptr;
+    if (s_renderer->systemWaitCursor != nullptr) {
+        SDL_FreeCursor(s_renderer->systemWaitCursor);
+        s_renderer->systemWaitCursor = nullptr;
     }
-    renderer->free();
+    s_renderer->free();
 }
 
 void resizeWindow(s32 w, s32 h, bool fullscreen)
 {
-    SDL_RestoreWindow(renderer->window);
+    SDL_RestoreWindow(s_renderer->window);
 
     // So, I'm not super sure how we want to handle fullscreen. Do we scan the
     // available resolution options and list them to select from? Do we just use
@@ -149,9 +167,9 @@ void resizeWindow(s32 w, s32 h, bool fullscreen)
 
     // If the requested setup is what we already have, do nothing!
     // This avoids the window jumping about when you save the settings
-    if ((w == renderer->windowWidth)
-        && (h == renderer->windowHeight)
-        && (fullscreen == renderer->isFullscreen)) {
+    if ((w == s_renderer->windowWidth)
+        && (h == s_renderer->windowHeight)
+        && (fullscreen == s_renderer->isFullscreen)) {
         return;
     }
 
@@ -161,11 +179,11 @@ void resizeWindow(s32 w, s32 h, bool fullscreen)
     if (fullscreen) {
         // Fullscreen!
         // Grab the desktop resolution to use that
-        s32 displayIndex = SDL_GetWindowDisplayIndex(renderer->window);
+        s32 displayIndex = SDL_GetWindowDisplayIndex(s_renderer->window);
         SDL_DisplayMode displayMode;
         if (SDL_GetDesktopDisplayMode(displayIndex, &displayMode) == 0) {
-            SDL_SetWindowDisplayMode(renderer->window, &displayMode);
-            SDL_SetWindowFullscreen(renderer->window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+            SDL_SetWindowDisplayMode(s_renderer->window, &displayMode);
+            SDL_SetWindowFullscreen(s_renderer->window, SDL_WINDOW_FULLSCREEN_DESKTOP);
             newW = displayMode.w;
             newH = displayMode.h;
         } else {
@@ -173,31 +191,31 @@ void resizeWindow(s32 w, s32 h, bool fullscreen)
         }
     } else {
         // Window!
-        SDL_SetWindowSize(renderer->window, newW, newH);
-        SDL_SetWindowFullscreen(renderer->window, 0);
+        SDL_SetWindowSize(s_renderer->window, newW, newH);
+        SDL_SetWindowFullscreen(s_renderer->window, 0);
 
         // Centre it
-        s32 displayIndex = SDL_GetWindowDisplayIndex(renderer->window);
+        s32 displayIndex = SDL_GetWindowDisplayIndex(s_renderer->window);
         SDL_Rect displayBounds;
         if (SDL_GetDisplayBounds(displayIndex, &displayBounds) == 0) {
             s32 leftBorder, rightBorder, topBorder, bottomBorder;
-            SDL_GetWindowBordersSize(renderer->window, &topBorder, &leftBorder, &bottomBorder, &rightBorder);
+            SDL_GetWindowBordersSize(s_renderer->window, &topBorder, &leftBorder, &bottomBorder, &rightBorder);
 
             s32 windowW = w + leftBorder + rightBorder;
             s32 windowH = h + topBorder + bottomBorder;
             s32 windowLeft = (displayBounds.w - windowW) / 2;
             s32 windowTop = (displayBounds.h - windowH) / 2;
 
-            SDL_SetWindowPosition(renderer->window, displayBounds.x + windowLeft, displayBounds.y + windowTop);
+            SDL_SetWindowPosition(s_renderer->window, displayBounds.x + windowLeft, displayBounds.y + windowTop);
         } else {
             logError("Failed to get display bounds: {0}"_s, { makeString(SDL_GetError()) });
 
             // As a backup, just centre it on the main display
-            SDL_SetWindowPosition(renderer->window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+            SDL_SetWindowPosition(s_renderer->window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
         }
     }
 
-    renderer->isFullscreen = fullscreen;
+    s_renderer->isFullscreen = fullscreen;
 }
 
 // Screen -> scene space
@@ -220,14 +238,14 @@ void setCursor(String cursorName)
 
     Asset* newCursorAsset = getAsset(AssetType_Cursor, cursorName);
     if (newCursorAsset != nullptr) {
-        renderer->currentCursorName = cursorName;
+        s_renderer->currentCursorName = cursorName;
         SDL_SetCursor(newCursorAsset->cursor.sdlCursor);
     }
 }
 
 void setCursorVisible(bool visible)
 {
-    renderer->cursorIsVisible = visible;
+    s_renderer->cursorIsVisible = visible;
     SDL_ShowCursor(visible ? 1 : 0);
 }
 
@@ -270,7 +288,7 @@ void clearRenderBuffer(RenderBuffer* buffer)
         chunk != nullptr;
         chunk = chunk->nextChunk) {
         chunk->used = 0;
-        addItemToPool(&renderer->chunkPool, chunk);
+        addItemToPool(&s_renderer->chunkPool, chunk);
     }
 
     buffer->firstChunk = nullptr;
@@ -279,7 +297,7 @@ void clearRenderBuffer(RenderBuffer* buffer)
 
 inline RenderBuffer* getTemporaryRenderBuffer(String name)
 {
-    RenderBuffer* result = getItemFromPool(&renderer->renderBufferPool);
+    RenderBuffer* result = getItemFromPool(&s_renderer->renderBufferPool);
 
     clearRenderBuffer(result);
 
@@ -295,7 +313,7 @@ void returnTemporaryRenderBuffer(RenderBuffer* buffer)
 {
     buffer->name = nullString;
     clearRenderBuffer(buffer);
-    addItemToPool(&renderer->renderBufferPool, buffer);
+    addItemToPool(&s_renderer->renderBufferPool, buffer);
 }
 
 void transferRenderBufferData(RenderBuffer* buffer, RenderBuffer* targetBuffer)
@@ -477,10 +495,10 @@ void addBeginScissor(RenderBuffer* buffer, Rect2I bounds)
     // We have to flip the bounds rectangle vertically because OpenGL has the origin in the bottom-left,
     // whereas our system uses the top-left!
 
-    bounds.y = renderer->windowHeight - bounds.y - bounds.h;
+    bounds.y = s_renderer->windowHeight - bounds.y - bounds.h;
 
     // Crop to window bounds
-    scissor->bounds = intersect(bounds, irectXYWH(0, 0, renderer->windowWidth, renderer->windowHeight));
+    scissor->bounds = intersect(bounds, irectXYWH(0, 0, s_renderer->windowWidth, s_renderer->windowHeight));
 
     ASSERT(scissor->bounds.w >= 0);
     ASSERT(scissor->bounds.h >= 0);
@@ -897,7 +915,7 @@ void drawGrid(RenderBuffer* buffer, Rect2 bounds, s32 gridW, s32 gridH, u8* grid
 {
     DEBUG_FUNCTION_T(DCDT_Renderer);
 
-    addSetShader(buffer, renderer->shaderIds.paletted);
+    addSetShader(buffer, s_renderer->shaderIds.paletted);
 
     addSetTextureRaw(buffer, gridW, gridH, 1, grid);
     addSetPalette(buffer, paletteSize, palette);
@@ -914,7 +932,7 @@ void drawGrid(RenderBuffer* buffer, Rect2 bounds, s32 gridW, s32 gridH, u8* grid
 DrawRingsGroup* beginRingsGroup(RenderBuffer* buffer, s32 maxCount)
 {
     // @Copypasta beginRectsGroupInternal() - maybe factor out common "grouped render items" code?
-    addSetShader(buffer, renderer->shaderIds.untextured);
+    addSetShader(buffer, s_renderer->shaderIds.untextured);
 
     DrawRingsGroup* result = allocateStruct<DrawRingsGroup>(&temp_arena());
     *result = {};

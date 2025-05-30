@@ -44,7 +44,7 @@ bool writeSaveFile(FileHandle* file, GameState* gameState)
             metaSection.timeWithinDay = clock->timeWithinDay;
 
             // Camera
-            Camera* camera = &renderer->worldCamera;
+            Camera* camera = &the_renderer()->worldCamera;
             metaSection.cameraX = camera->pos.x;
             metaSection.cameraY = camera->pos.y;
             metaSection.cameraZoom = camera->zoom;
@@ -113,7 +113,7 @@ bool loadSaveFile(FileHandle* file, GameState* gameState)
             initGameClock(&gameState->gameClock, meta->currentDate, meta->timeWithinDay);
 
             // Camera
-            setCameraPos(&renderer->worldCamera, v2(meta->cameraX, meta->cameraY), meta->cameraZoom);
+            setCameraPos(&the_renderer()->worldCamera, v2(meta->cameraX, meta->cameraY), meta->cameraZoom);
         } else
             break;
 

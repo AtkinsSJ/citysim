@@ -34,6 +34,7 @@ void initConsole(MemoryArena* debugArena, f32 openHeight, f32 maximisedHeight, f
 void updateAndRenderConsole(Console* console)
 {
     bool scrollToBottom = false;
+    auto* renderer = the_renderer();
 
     // Late-init the console style
     if (console->style.type != AssetType_ConsoleStyle) {
@@ -299,6 +300,7 @@ void consoleWriteLine(String text, ConsoleLineStyleID style)
 
 Rect2I getConsoleScrollbarBounds(Console* console)
 {
+    auto* renderer = the_renderer();
     UI::ConsoleStyle* consoleStyle = getStyle<UI::ConsoleStyle>(&console->style);
     UI::ScrollbarStyle* scrollbarStyle = getStyle<UI::ScrollbarStyle>(&consoleStyle->scrollbarStyle);
     UI::TextInputStyle* textInputStyle = getStyle<UI::TextInputStyle>(&consoleStyle->textInputStyle);

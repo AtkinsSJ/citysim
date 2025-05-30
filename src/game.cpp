@@ -364,6 +364,7 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
     // - Sam, 28/08/2019
 
     V4 tileHighlightColor = color255(196, 196, 255, 64);
+    auto* renderer = the_renderer();
     drawSingleRect(&renderer->worldOverlayBuffer, rectXYWHi(tilePos.x, tilePos.y, 1, 1), renderer->shaderIds.untextured, tileHighlightColor);
 }
 
@@ -407,6 +408,7 @@ void updateAndRenderGameUI(GameState* gameState)
 {
     DEBUG_FUNCTION();
 
+    auto* renderer = the_renderer();
     RenderBuffer* uiBuffer = &renderer->uiBuffer;
     UI::LabelStyle* labelStyle = getStyle<UI::LabelStyle>("title"_s);
     BitmapFont* font = getFont(&labelStyle->font);
@@ -638,6 +640,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
 {
     DEBUG_FUNCTION_T(DCDT_GameUpdate);
 
+    auto* renderer = the_renderer();
     AppStatus result = AppStatus_Game;
     City* city = &gameState->city;
 
@@ -1012,6 +1015,7 @@ void drawDataViewOverlay(GameState* gameState, Rect2I visibleTileBounds)
     if (gameState->dataLayerToDraw == DataView_None)
         return;
     ASSERT(gameState->dataLayerToDraw < DataViewCount);
+    auto* renderer = the_renderer();
 
     City* city = &gameState->city;
     DataViewUI* dataView = &gameState->dataViewUI[gameState->dataLayerToDraw];
@@ -1057,6 +1061,7 @@ void drawDataViewUI(GameState* gameState)
 {
     DEBUG_FUNCTION();
 
+    auto* renderer = the_renderer();
     RenderBuffer* uiBuffer = &renderer->uiBuffer;
     UI::LabelStyle* labelStyle = getStyle<UI::LabelStyle>("title"_s);
     BitmapFont* font = getFont(&labelStyle->font);

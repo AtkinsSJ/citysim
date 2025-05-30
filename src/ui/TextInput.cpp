@@ -364,6 +364,7 @@ Rect2I drawTextInput(RenderBuffer* renderBuffer, TextInput* textInput, TextInput
 {
     DEBUG_FUNCTION_T(DCDT_UI);
 
+    auto* renderer = the_renderer();
     String text = textInput->toString();
     BitmapFont* font = getFont(&style->font);
 

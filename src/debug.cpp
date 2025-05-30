@@ -155,6 +155,7 @@ struct DebugTextState {
 
 void initDebugTextState(DebugTextState* textState, BitmapFont* font, V4 textColor, s32 screenEdgePadding, bool upwards, bool alignLeft)
 {
+    auto* renderer = the_renderer();
     *textState = {};
 
     textState->renderBuffer = &renderer->debugBuffer;
@@ -215,6 +216,7 @@ void debugTextOut(DebugTextState* textState, String text, bool doHighlight = fal
 void renderDebugData(DebugState* debugState)
 {
     DEBUG_FUNCTION_T(DCDT_Debug);
+    auto* renderer = the_renderer();
 
     // This is the only usage of getFont(String). Ideally we'd replace it with an
     // AssetRef, but there's no obvious place to put it. It can't go in the
