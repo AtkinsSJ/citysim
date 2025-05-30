@@ -159,7 +159,7 @@ void initDebugTextState(DebugTextState* textState, BitmapFont* font, V4 textColo
     *textState = {};
 
     textState->renderBuffer = &renderer->debugBuffer;
-    textState->camera = &renderer->uiCamera;
+    textState->camera = &renderer->ui_camera();
 
     textState->progressUpwards = upwards;
     if (alignLeft) {

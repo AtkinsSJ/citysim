@@ -178,9 +178,23 @@ struct RenderBuffer : PoolItem {
     Asset* currentTexture;
 };
 
-struct Renderer {
+class Renderer {
+public:
     virtual ~Renderer() = default;
 
+    virtual void on_window_resized(s32 width, s32 height) = 0;
+    virtual void render(Array<RenderBuffer*>) = 0;
+    virtual void load_assets() = 0;
+    virtual void unload_assets() = 0;
+    virtual void free() = 0;
+
+    RenderBuffer& world_buffer() { return m_world_buffer; }
+    RenderBuffer& world_overlay_buffer() { return m_world_overlay_buffer; }
+    RenderBuffer& ui_buffer() { return m_ui_buffer; }
+    RenderBuffer& window_buffer() { return m_window_buffer; }
+    RenderBuffer& debug_buffer() { return m_debug_buffer; }
+
+protected:
     MemoryArena renderArena;
 
     SDL_Window* window;
@@ -198,11 +212,11 @@ struct Renderer {
 
     Pool<RenderBuffer> renderBufferPool;
     Array<RenderBuffer*> renderBuffers;
-    RenderBuffer worldBuffer;
-    RenderBuffer worldOverlayBuffer;
-    RenderBuffer uiBuffer;
-    RenderBuffer windowBuffer;
-    RenderBuffer debugBuffer;
+    RenderBuffer m_world_buffer;
+    RenderBuffer m_world_overlay_buffer;
+    RenderBuffer m_ui_buffer;
+    RenderBuffer m_window_buffer;
+    RenderBuffer m_debug_buffer;
 
     smm renderBufferChunkSize;
     Pool<RenderBufferChunk> chunkPool;
@@ -220,12 +234,6 @@ struct Renderer {
         s8 textured;
         s8 untextured;
     } shaderIds;
-
-    virtual void on_window_resized(s32 width, s32 height) = 0;
-    virtual void render(Array<RenderBuffer*>) = 0;
-    virtual void load_assets() = 0;
-    virtual void unload_assets() = 0;
-    virtual void free() = 0;
 };
 
 void initRenderer(MemoryArena* renderArena, SDL_Window* window);
