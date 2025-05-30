@@ -50,7 +50,6 @@ void initRenderer(MemoryArena* renderArena, SDL_Window* window)
     renderer->window = window;
     SDL_GetWindowSize(window, &renderer->windowWidth, &renderer->windowHeight);
 
-    renderer->renderBufferChunkSize = KB(64);
     initPool<RenderBufferChunk>(&renderer->chunkPool, renderArena, &allocateRenderBufferChunk, renderer);
 
     initPool<RenderBuffer>(&renderer->renderBufferPool, renderArena, [](MemoryArena* arena, void*) -> RenderBuffer* {
@@ -73,8 +72,8 @@ void initRenderer(MemoryArena* renderArena, SDL_Window* window)
     // Init cameras
     V2 windowSize = v2(renderer->windowWidth, renderer->windowHeight);
     f32 const TILE_SIZE = 16.0f;
-    initCamera(&renderer->worldCamera, windowSize, 1.0f / TILE_SIZE, 10000.0f, -10000.0f);
-    initCamera(&renderer->uiCamera, windowSize, 1.0f, 10000.0f, -10000.0f, windowSize * 0.5f);
+    initCamera(&renderer->world_camera(), windowSize, 1.0f / TILE_SIZE, 10000.0f, -10000.0f);
+    initCamera(&renderer->ui_camera(), windowSize, 1.0f, 10000.0f, -10000.0f, windowSize * 0.5f);
 
     // Hide cursor until stuff loads
     setCursorVisible(false);
@@ -101,10 +100,10 @@ void handleWindowEvent(SDL_WindowEvent* event)
 
         V2 windowSize = v2(s_renderer->windowWidth, s_renderer->windowHeight);
 
-        s_renderer->worldCamera.size = windowSize * s_renderer->worldCamera.sizeRatio;
+        s_renderer->world_camera().size = windowSize * s_renderer->world_camera().sizeRatio;
 
-        s_renderer->uiCamera.size = windowSize * s_renderer->uiCamera.sizeRatio;
-        s_renderer->uiCamera.pos = s_renderer->uiCamera.size * 0.5f;
+        s_renderer->ui_camera().size = windowSize * s_renderer->ui_camera().sizeRatio;
+        s_renderer->ui_camera().pos = s_renderer->ui_camera().size * 0.5f;
     } break;
     }
 }

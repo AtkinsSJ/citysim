@@ -47,7 +47,7 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
     // TODO: Are we sure we want to do this?
     markAreaDirty(city, city->bounds);
 
-    the_renderer()->worldCamera.pos = v2(city->bounds.size) / 2;
+    the_renderer()->world_camera().pos = v2(city->bounds.size) / 2;
 
     saveBuildingTypes();
     saveTerrainTypes();
@@ -107,7 +107,7 @@ void drawEntities(City* city, Rect2I visibleTileBounds)
                 drawColor *= drawColorDemolish;
             }
 
-            drawSingleSprite(&the_renderer()->worldBuffer, getSprite(&entity->sprite), entity->bounds, shaderID, drawColor);
+            drawSingleSprite(&the_renderer()->world_buffer(), getSprite(&entity->sprite), entity->bounds, shaderID, drawColor);
         }
     }
 }
@@ -462,7 +462,7 @@ void drawCity(City* city, Rect2I visibleTileBounds)
     // NB: this is really hacky debug code
     if (false) {
         Rect2I visibleSectors = getSectorsCovered(&city->sectors, visibleTileBounds);
-        DrawRectsGroup* group = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, areaOf(visibleSectors));
+        DrawRectsGroup* group = beginRectsGroupUntextured(&renderer->world_overlay_buffer(), renderer->shaderIds.untextured, areaOf(visibleSectors));
         V4 sectorColor = color255(255, 255, 255, 40);
         for (s32 sy = visibleSectors.y;
             sy < visibleSectors.y + visibleSectors.h;

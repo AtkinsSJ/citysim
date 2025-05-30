@@ -37,10 +37,10 @@ void startFrame()
         uiState.currentDragObject = nullptr;
     }
 
-    windowSize = v2i(renderer->uiCamera.size);
-    mousePos = v2i(renderer->uiCamera.mousePos);
+    windowSize = v2i(renderer->ui_camera().size);
+    mousePos = v2i(renderer->ui_camera().mousePos);
     if (mouseButtonPressed(MouseButton_Left)) {
-        mouseClickStartPos = v2i(getClickStartPos(MouseButton_Left, &renderer->uiCamera));
+        mouseClickStartPos = v2i(getClickStartPos(MouseButton_Left, &renderer->ui_camera()));
     }
 }
 

@@ -269,8 +269,8 @@ int main(int argc, char* argv[])
 
     initSavedGamesCatalogue();
 
-    Camera* worldCamera = &renderer->worldCamera;
-    Camera* uiCamera = &renderer->uiCamera;
+    Camera* world_camera() = &renderer -> world_camera();
+    Camera* ui_camera() = &renderer -> ui_camera();
 
     u32 initFinishedTicks = SDL_GetTicks();
     logInfo("Game initialised in {0} milliseconds."_s, { formatInt(initFinishedTicks - initStartTicks) });
@@ -316,12 +316,12 @@ int main(int argc, char* argv[])
                 break;
             }
 
-            worldCamera->mousePos = unproject(worldCamera, input.mousePosNormalised);
-            uiCamera->mousePos = unproject(uiCamera, input.mousePosNormalised);
+            world_camera()->mousePos = unproject(world_camera(), input.mousePosNormalised);
+            ui_camera()->mousePos = unproject(ui_camera(), input.mousePosNormalised);
 
-            addSetCamera(&renderer->worldBuffer, worldCamera);
+            addSetCamera(&renderer->worldBuffer, world_camera());
             addClear(&renderer->worldBuffer);
-            addSetCamera(&renderer->uiBuffer, uiCamera);
+            addSetCamera(&renderer->uiBuffer, ui_camera());
 
             {
                 UI::startFrame();
@@ -364,8 +364,8 @@ int main(int argc, char* argv[])
             }
 
             // Update camera matrices here
-            updateCameraMatrix(worldCamera);
-            updateCameraMatrix(uiCamera);
+            updateCameraMatrix(world_camera());
+            updateCameraMatrix(ui_camera());
 
             // Debug stuff
             if (globalDebugState) {
