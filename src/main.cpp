@@ -27,7 +27,6 @@ enum AppStatus {
     AppStatus_Quit,
 };
 
-struct Assets* assets;
 struct InputState* inputState;
 struct Renderer* renderer;
 struct Settings* settings;
@@ -405,7 +404,7 @@ int main(int argc, char* argv[])
             frameStartTime = now;
         }
 
-        assets->assetReloadHasJustHappened = false;
+        asset_manager().assetReloadHasJustHappened = false;
     }
 
     // CLEAN UP

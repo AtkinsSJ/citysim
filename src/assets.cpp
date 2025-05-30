@@ -1,45 +1,53 @@
-#pragma once
+/*
+ * Copyright (c) 2016-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "assets.h"
+
+Assets* s_assets;
 
 void initAssets()
 {
-    bootstrapArena(Assets, assets, assetArena);
+    bootstrapArena(Assets, s_assets, assetArena);
 
-    initStringTable(&assets->assetStrings);
+    initStringTable(&s_assets->assetStrings);
 
-    ASSERT(assets->assetArena.currentBlock != nullptr); // initAssetManager() called with uninitialised/corrupted memory arena!
+    ASSERT(s_assets->assetArena.currentBlock != nullptr); // initAssetManager() called with uninitialised/corrupted memory arena!
     String basePath = makeString(SDL_GetBasePath());
-    assets->assetsPath = intern(&assets->assetStrings, constructPath({ basePath, "assets"_s }));
+    s_assets->assetsPath = intern(&s_assets->assetStrings, constructPath({ basePath, "assets"_s }));
 
-    // NB: We only need to define these for assets in the root assets/ directory
+    // NB: We only need to define these for s_assets in the root s_assets/ directory
     // Well, for now at least.
     // - Sam, 19/05/2019
-    initHashTable(&assets->fileExtensionToType);
-    assets->fileExtensionToType.put(intern(&assets->assetStrings, "buildings"_s), AssetType_BuildingDefs);
-    assets->fileExtensionToType.put(intern(&assets->assetStrings, "cursors"_s), AssetType_CursorDefs);
-    assets->fileExtensionToType.put(intern(&assets->assetStrings, "keymap"_s), AssetType_DevKeymap);
-    assets->fileExtensionToType.put(intern(&assets->assetStrings, "palettes"_s), AssetType_PaletteDefs);
-    assets->fileExtensionToType.put(intern(&assets->assetStrings, "sprites"_s), AssetType_SpriteDefs);
-    assets->fileExtensionToType.put(intern(&assets->assetStrings, "terrain"_s), AssetType_TerrainDefs);
-    assets->fileExtensionToType.put(intern(&assets->assetStrings, "theme"_s), AssetType_UITheme);
+    initHashTable(&s_assets->fileExtensionToType);
+    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "buildings"_s), AssetType_BuildingDefs);
+    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "cursors"_s), AssetType_CursorDefs);
+    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "keymap"_s), AssetType_DevKeymap);
+    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "palettes"_s), AssetType_PaletteDefs);
+    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "sprites"_s), AssetType_SpriteDefs);
+    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "terrain"_s), AssetType_TerrainDefs);
+    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "theme"_s), AssetType_UITheme);
 
-    initHashTable(&assets->directoryNameToType);
-    assets->directoryNameToType.put(intern(&assets->assetStrings, "fonts"_s), AssetType_BitmapFont);
-    assets->directoryNameToType.put(intern(&assets->assetStrings, "shaders"_s), AssetType_Shader);
-    assets->directoryNameToType.put(intern(&assets->assetStrings, "textures"_s), AssetType_Texture);
-    assets->directoryNameToType.put(intern(&assets->assetStrings, "locale"_s), AssetType_Texts);
+    initHashTable(&s_assets->directoryNameToType);
+    s_assets->directoryNameToType.put(intern(&s_assets->assetStrings, "fonts"_s), AssetType_BitmapFont);
+    s_assets->directoryNameToType.put(intern(&s_assets->assetStrings, "shaders"_s), AssetType_Shader);
+    s_assets->directoryNameToType.put(intern(&s_assets->assetStrings, "textures"_s), AssetType_Texture);
+    s_assets->directoryNameToType.put(intern(&s_assets->assetStrings, "locale"_s), AssetType_Texts);
 
     // NB: The arena block size is 1MB currently, so make sure that this number * sizeof(Asset) is less than that!
     // (Otherwise, we waste a LOT of memory with almost-empty memory blocks.)
-    initChunkedArray(&assets->allAssets, &assets->assetArena, 1024);
-    assets->assetMemoryAllocated = 0;
-    assets->maxAssetMemoryAllocated = 0;
+    initChunkedArray(&s_assets->allAssets, &s_assets->assetArena, 1024);
+    s_assets->assetMemoryAllocated = 0;
+    s_assets->maxAssetMemoryAllocated = 0;
 
     auto compareStrings = [](String* a, String* b) { return equals(*a, *b); };
 
     for (s32 assetType = 0; assetType < AssetTypeCount; assetType++) {
-        initHashTable(&assets->assetsByType[assetType]);
+        initHashTable(&s_assets->assetsByType[assetType]);
 
-        initSet<String>(&assets->missingAssetNames[assetType], &assets->assetArena, compareStrings);
+        initSet<String>(&s_assets->missingAssetNames[assetType], &s_assets->assetArena, compareStrings);
     }
 
     UI::initStyleConstants();
@@ -47,12 +55,12 @@ void initAssets()
     initTerrainCatalogue();
     initBuildingCatalogue();
 
-    initHashTable(&assets->texts);
-    initHashTable(&assets->defaultTexts);
+    initHashTable(&s_assets->texts);
+    initHashTable(&s_assets->defaultTexts);
 
-    initSet<String>(&assets->missingTextIDs, &assets->assetArena, compareStrings);
+    initSet<String>(&s_assets->missingTextIDs, &s_assets->assetArena, compareStrings);
 
-    // Placeholder assets!
+    // Placeholder s_assets!
     {
         // BitmapFont
         makePlaceholderAsset(AssetType_BitmapFont);
@@ -72,7 +80,7 @@ void initAssets()
 
         // Ninepatch
         Asset* placeholderNinepatch = makePlaceholderAsset(AssetType_Ninepatch);
-        placeholderNinepatch->ninepatch.texture = &assets->placeholderAssets[AssetType_Texture];
+        placeholderNinepatch->ninepatch.texture = &s_assets->placeholderAssets[AssetType_Texture];
 
         // Palette
         Asset* placeholderPalette = makePlaceholderAsset(AssetType_Palette);
@@ -88,10 +96,10 @@ void initAssets()
 
         // Sprite!
         Asset* placeholderSprite = makePlaceholderAsset(AssetType_Sprite);
-        placeholderSprite->data = assetsAllocate(assets, 1 * sizeof(Sprite));
+        placeholderSprite->data = assetsAllocate(s_assets, 1 * sizeof(Sprite));
         placeholderSprite->spriteGroup.count = 1;
         placeholderSprite->spriteGroup.sprites = (Sprite*)placeholderSprite->data.memory;
-        placeholderSprite->spriteGroup.sprites[0].texture = &assets->placeholderAssets[AssetType_Texture];
+        placeholderSprite->spriteGroup.sprites[0].texture = &s_assets->placeholderAssets[AssetType_Texture];
         placeholderSprite->spriteGroup.sprites[0].uv = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
 
         // SpriteDefs
@@ -105,7 +113,7 @@ void initAssets()
 
         // Texture
         Asset* placeholderTexture = makePlaceholderAsset(AssetType_Texture);
-        placeholderTexture->data = assetsAllocate(assets, 2 * 2 * sizeof(u32));
+        placeholderTexture->data = assetsAllocate(s_assets, 2 * 2 * sizeof(u32));
         u32* pixels = (u32*)placeholderTexture->data.memory;
         pixels[0] = pixels[3] = 0xffff00ff;
         pixels[1] = pixels[2] = 0xff000000;
@@ -119,12 +127,17 @@ void initAssets()
 
     // NB: This might fail, or we might be on a platform where it isn't implemented.
     // That's OK though!
-    assets->assetChangeHandle = beginWatchingDirectory(assets->assetsPath);
+    s_assets->assetChangeHandle = beginWatchingDirectory(s_assets->assetsPath);
+}
+
+Assets& asset_manager()
+{
+    return *s_assets;
 }
 
 Asset* makePlaceholderAsset(AssetType type)
 {
-    Asset* result = &assets->placeholderAssets[type];
+    Asset* result = &s_assets->placeholderAssets[type];
     result->type = type;
     result->shortName = nullString;
     result->fullName = nullString;
@@ -150,7 +163,7 @@ Blob assetsAllocate(Assets* theAssets, smm size)
 
 void allocateChildren(Asset* asset, s32 childCount)
 {
-    asset->data = assetsAllocate(assets, childCount * sizeof(AssetID));
+    asset->data = assetsAllocate(s_assets, childCount * sizeof(AssetID));
     asset->children = makeArray(childCount, (AssetID*)asset->data.memory);
 }
 
@@ -161,31 +174,31 @@ void addChildAsset(Asset* parent, Asset* child)
 
 Asset* addAsset(AssetType type, String shortName, u32 flags)
 {
-    String internedShortName = intern(&assets->assetStrings, shortName);
+    String internedShortName = intern(&s_assets->assetStrings, shortName);
 
     Asset* existing = getAssetIfExists(type, internedShortName);
     if (existing)
         return existing;
 
-    Asset* asset = assets->allAssets.appendBlank();
+    Asset* asset = s_assets->allAssets.appendBlank();
     asset->type = type;
     asset->shortName = internedShortName;
     if (flags & Asset_IsAFile) {
-        asset->fullName = intern(&assets->assetStrings, getAssetPath(asset->type, internedShortName));
+        asset->fullName = intern(&s_assets->assetStrings, getAssetPath(asset->type, internedShortName));
     }
     asset->state = AssetState_Unloaded;
     asset->data.size = 0;
     asset->data.memory = nullptr;
     asset->flags = flags;
 
-    assets->assetsByType[type].put(internedShortName, asset);
+    s_assets->assetsByType[type].put(internedShortName, asset);
 
     return asset;
 }
 
 void copyFileIntoAsset(Blob* fileData, Asset* asset)
 {
-    asset->data = assetsAllocate(assets, fileData->size);
+    asset->data = assetsAllocate(s_assets, fileData->size);
     memcpy(asset->data.memory, fileData->memory, fileData->size);
 
     // NB: We set the fileData to point at the new copy, so that code after calling copyFileIntoAsset()
@@ -235,7 +248,7 @@ void loadAsset(Asset* asset)
         return;
 
     if (asset->flags & Asset_IsLocaleSpecific) {
-        // Only load assets that match our locale
+        // Only load s_assets that match our locale
         String assetLocale = getFileLocale(asset->fullName);
 
         if (equals(assetLocale, getLocale())) {
@@ -252,7 +265,7 @@ void loadAsset(Asset* asset)
     }
 
     Blob fileData = {};
-    // Some assets (meta-assets?) have no file associated with them, because they are composed of other assets.
+    // Some s_assets (meta-s_assets?) have no file associated with them, because they are composed of other s_assets.
     // eg, ShaderPrograms are made of several ShaderParts.
     if (asset->flags & Asset_IsAFile) {
         fileData = readTempFile(asset->fullName);
@@ -318,7 +331,7 @@ void loadAsset(Asset* asset)
         Palette* palette = &asset->palette;
         switch (palette->type) {
         case PaletteType_Gradient: {
-            asset->data = assetsAllocate(assets, palette->size * sizeof(V4));
+            asset->data = assetsAllocate(s_assets, palette->size * sizeof(V4));
             palette->paletteData = makeArray<V4>(palette->size, (V4*)asset->data.memory, palette->size);
 
             f32 ratio = 1.0f / (f32)(palette->size);
@@ -376,7 +389,7 @@ void loadAsset(Asset* asset)
     } break;
 
     case AssetType_Texts: {
-        HashTable<String>* textsTable = (asset->texts.isFallbackLocale ? &assets->defaultTexts : &assets->texts);
+        HashTable<String>* textsTable = (asset->texts.isFallbackLocale ? &s_assets->defaultTexts : &s_assets->texts);
         loadTexts(textsTable, asset, fileData);
         asset->state = AssetState_Loaded;
     } break;
@@ -468,7 +481,7 @@ void unloadAsset(Asset* asset)
 
     case AssetType_Texts: {
         // Remove all of our texts from the table
-        HashTable<String>* textsTable = (asset->texts.isFallbackLocale ? &assets->defaultTexts : &assets->texts);
+        HashTable<String>* textsTable = (asset->texts.isFallbackLocale ? &s_assets->defaultTexts : &s_assets->texts);
         for (s32 keyIndex = 0; keyIndex < asset->texts.keys.count; keyIndex++) {
             String key = asset->texts.keys[keyIndex];
             textsTable->removeKey(key);
@@ -494,7 +507,7 @@ void unloadAsset(Asset* asset)
     }
 
     if (asset->data.memory != nullptr) {
-        assets->assetMemoryAllocated -= asset->data.size;
+        s_assets->assetMemoryAllocated -= asset->data.size;
         asset->data.size = 0;
         deallocateRaw(asset->data.memory);
     }
@@ -509,14 +522,14 @@ void removeAsset(AssetType type, String name)
         logError("Attempted to remove an asset (name `{0}`, type {1}) which doesn't exist!"_s, { name, formatInt(type) });
     } else {
         unloadAsset(asset);
-        assets->assetsByType[type].removeKey(name);
+        s_assets->assetsByType[type].removeKey(name);
     }
 }
 
-void removeAssets(Array<AssetID> assetsToRemove)
+void removeAssets(Array<AssetID> s_assetsToRemove)
 {
-    for (s32 nameIndex = 0; nameIndex < assetsToRemove.count; nameIndex++) {
-        AssetID assetToRemove = assetsToRemove[nameIndex];
+    for (s32 nameIndex = 0; nameIndex < s_assetsToRemove.count; nameIndex++) {
+        AssetID assetToRemove = s_assetsToRemove[nameIndex];
         removeAsset(assetToRemove.type, assetToRemove.name);
     }
 }
@@ -550,7 +563,7 @@ Asset* addSpriteGroup(String name, s32 spriteCount)
     Asset* spriteGroup = addAsset(AssetType_Sprite, name, 0);
     if (spriteGroup->data.size != 0)
         DEBUG_BREAK(); // @Leak! Creating the sprite group multiple times is probably a bad idea for other reasons too.
-    spriteGroup->data = assetsAllocate(assets, spriteCount * sizeof(Sprite));
+    spriteGroup->data = assetsAllocate(s_assets, spriteCount * sizeof(Sprite));
     spriteGroup->spriteGroup.count = spriteCount;
     spriteGroup->spriteGroup.sprites = (Sprite*)spriteGroup->data.memory;
 
@@ -569,22 +582,22 @@ void loadAssets()
 {
     DEBUG_FUNCTION();
 
-    for (auto it = assets->allAssets.iterate(); it.hasNext(); it.next()) {
+    for (auto it = s_assets->allAssets.iterate(); it.hasNext(); it.next()) {
         Asset* asset = it.get();
         loadAsset(asset);
     }
 
-    assets->lastAssetReloadTicks = SDL_GetTicks();
-    assets->assetReloadHasJustHappened = true;
+    s_assets->lastAssetReloadTicks = SDL_GetTicks();
+    s_assets->assetReloadHasJustHappened = true;
 }
 
 void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType)
 {
     String pathToScan;
     if (isEmpty(subDirectory)) {
-        pathToScan = constructPath({ assets->assetsPath });
+        pathToScan = constructPath({ s_assets->assetsPath });
     } else {
-        pathToScan = constructPath({ assets->assetsPath, subDirectory });
+        pathToScan = constructPath({ s_assets->assetsPath, subDirectory });
     }
 
     bool isLocaleSpecific = equals(subDirectory, "locale"_s);
@@ -602,13 +615,13 @@ void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType)
             continue;
         }
 
-        String filename = intern(&assets->assetStrings, fileInfo->filename);
+        String filename = intern(&s_assets->assetStrings, fileInfo->filename);
         AssetType assetType = manualAssetType;
 
         // Attempt to categorise the asset based on file extension
         if (assetType == AssetType_Unknown) {
             String fileExtension = getFileExtension(filename);
-            Maybe<AssetType> foundAssetType = assets->fileExtensionToType.findValue(fileExtension);
+            Maybe<AssetType> foundAssetType = s_assets->fileExtensionToType.findValue(fileExtension);
             assetType = foundAssetType.orDefault(AssetType_Misc);
             // logInfo("Found asset file '{0}'. Adding as type {1}, calculated from extension '{2}'", {filename, formatInt(assetType), fileExtension});
         } else {
@@ -625,7 +638,7 @@ void addAssets()
 
     addAssetsFromDirectory(nullString);
 
-    for (auto it = assets->directoryNameToType.iterate();
+    for (auto it = s_assets->directoryNameToType.iterate();
         it.hasNext();
         it.next()) {
         auto entry = it.getEntry();
@@ -635,7 +648,7 @@ void addAssets()
 
 bool haveAssetFilesChanged()
 {
-    return hasDirectoryChanged(&assets->assetChangeHandle);
+    return hasDirectoryChanged(&s_assets->assetChangeHandle);
 }
 
 void reloadAssets()
@@ -643,27 +656,27 @@ void reloadAssets()
     DEBUG_FUNCTION();
 
     // Preparation
-    logInfo("Reloading assets..."_s);
+    logInfo("Reloading s_assets..."_s);
     rendererUnloadAssets();
 
-    // Clear managed assets
-    for (auto it = assets->allAssets.iterate(); it.hasNext(); it.next()) {
+    // Clear managed s_assets
+    for (auto it = s_assets->allAssets.iterate(); it.hasNext(); it.next()) {
         Asset* asset = it.get();
         unloadAsset(asset);
     }
 
     // Clear the hash tables
     for (s32 assetType = 0; assetType < AssetTypeCount; assetType++) {
-        assets->assetsByType[assetType].clear();
+        s_assets->assetsByType[assetType].clear();
 
         // Reset missing text warnings
-        assets->missingAssetNames[assetType].clear();
+        s_assets->missingAssetNames[assetType].clear();
     }
 
-    assets->missingTextIDs.clear();
+    s_assets->missingTextIDs.clear();
 
     // Regenerate asset catalogue
-    assets->allAssets.clear();
+    s_assets->allAssets.clear();
     addAssets();
     loadAssets();
 
@@ -678,10 +691,10 @@ Asset* getAsset(AssetType type, String shortName)
     Asset* result = getAssetIfExists(type, shortName);
 
     if (result == nullptr) {
-        if (assets->missingAssetNames[type].add(shortName)) {
+        if (s_assets->missingAssetNames[type].add(shortName)) {
             logWarn("Requested {0} asset '{1}' was not found! Using placeholder."_s, { assetTypeNames[type], shortName });
         }
-        result = &assets->placeholderAssets[type];
+        result = &s_assets->placeholderAssets[type];
     }
 
     return result;
@@ -689,7 +702,7 @@ Asset* getAsset(AssetType type, String shortName)
 
 Asset* getAssetIfExists(AssetType type, String shortName)
 {
-    Maybe<Asset*> result = assets->assetsByType[type].findValue(shortName);
+    Maybe<Asset*> result = s_assets->assetsByType[type].findValue(shortName);
 
     return result.isValid ? result.value : nullptr;
 }
@@ -699,14 +712,14 @@ AssetRef getAssetRef(AssetType type, String shortName)
     AssetRef result = {};
 
     result.type = type;
-    result.name = intern(&assets->assetStrings, shortName);
+    result.name = intern(&s_assets->assetStrings, shortName);
 
     return result;
 }
 
 Asset* getAsset(AssetRef* ref)
 {
-    if (SDL_TICKS_PASSED(assets->lastAssetReloadTicks, ref->pointerRetrievedTicks)) {
+    if (SDL_TICKS_PASSED(s_assets->lastAssetReloadTicks, ref->pointerRetrievedTicks)) {
         ref->pointer = getAsset(ref->type, ref->name);
         ref->pointerRetrievedTicks = SDL_GetTicks();
     }
@@ -740,7 +753,7 @@ SpriteRef getSpriteRef(String groupName, s32 spriteIndex)
 {
     SpriteRef result = {};
 
-    result.spriteGroupName = intern(&assets->assetStrings, groupName);
+    result.spriteGroupName = intern(&s_assets->assetStrings, groupName);
     result.spriteIndex = spriteIndex;
 
     // NB: We don't retrieve the sprite now, we just leave the pointerRetrievedTicks value at 0
@@ -751,7 +764,7 @@ SpriteRef getSpriteRef(String groupName, s32 spriteIndex)
 
 Sprite* getSprite(SpriteRef* ref)
 {
-    if (SDL_TICKS_PASSED(assets->lastAssetReloadTicks, ref->pointerRetrievedTicks)) {
+    if (SDL_TICKS_PASSED(s_assets->lastAssetReloadTicks, ref->pointerRetrievedTicks)) {
         SpriteGroup* group = getSpriteGroup(ref->spriteGroupName);
         if (group != nullptr) {
             ref->pointer = group->sprites + (ref->spriteIndex % group->count);
@@ -807,12 +820,12 @@ inline String getText(String name)
 
     String result = name;
 
-    Maybe<String> foundText = assets->texts.findValue(name);
+    Maybe<String> foundText = s_assets->texts.findValue(name);
     if (foundText.isValid) {
         result = foundText.value;
     } else {
         // Try to fall back to english if possible
-        Maybe<String> defaultText = assets->defaultTexts.findValue(name);
+        Maybe<String> defaultText = s_assets->defaultTexts.findValue(name);
         if (defaultText.isValid) {
             result = defaultText.value;
         }
@@ -836,7 +849,7 @@ inline String getText(String name)
         // What we're doing for now is to only report a missing text if it's not in the missingTextIDs
         // set. (And then add it.)
 
-        if (assets->missingTextIDs.add(name)) {
+        if (s_assets->missingTextIDs.add(name)) {
             if (defaultText.isValid) {
                 logWarn("Locale {0} is missing text for '{1}'. (Fell back to using the default locale.)"_s, { getLocale(), name });
             } else {
@@ -955,22 +968,22 @@ String getAssetPath(AssetType type, String shortName)
 
     switch (type) {
     case AssetType_Cursor:
-        result = myprintf("{0}/cursors/{1}"_s, { assets->assetsPath, shortName }, true);
+        result = myprintf("{0}/cursors/{1}"_s, { s_assets->assetsPath, shortName }, true);
         break;
     case AssetType_BitmapFont:
-        result = myprintf("{0}/fonts/{1}"_s, { assets->assetsPath, shortName }, true);
+        result = myprintf("{0}/fonts/{1}"_s, { s_assets->assetsPath, shortName }, true);
         break;
     case AssetType_Shader:
-        result = myprintf("{0}/shaders/{1}"_s, { assets->assetsPath, shortName }, true);
+        result = myprintf("{0}/shaders/{1}"_s, { s_assets->assetsPath, shortName }, true);
         break;
     case AssetType_Texts:
-        result = myprintf("{0}/locale/{1}"_s, { assets->assetsPath, shortName }, true);
+        result = myprintf("{0}/locale/{1}"_s, { s_assets->assetsPath, shortName }, true);
         break;
     case AssetType_Texture:
-        result = myprintf("{0}/textures/{1}"_s, { assets->assetsPath, shortName }, true);
+        result = myprintf("{0}/textures/{1}"_s, { s_assets->assetsPath, shortName }, true);
         break;
     default:
-        result = myprintf("{0}/{1}"_s, { assets->assetsPath, shortName }, true);
+        result = myprintf("{0}/{1}"_s, { s_assets->assetsPath, shortName }, true);
         break;
     }
 
@@ -980,23 +993,23 @@ String getAssetPath(AssetType type, String shortName)
 void reloadLocaleSpecificAssets()
 {
     // Clear the list of missing texts because they might not be missing in the new locale!
-    assets->missingTextIDs.clear();
+    s_assets->missingTextIDs.clear();
 
-    for (auto it = assets->allAssets.iterate(); it.hasNext(); it.next()) {
+    for (auto it = s_assets->allAssets.iterate(); it.hasNext(); it.next()) {
         Asset* asset = it.get();
         if (asset->flags & Asset_IsLocaleSpecific) {
             unloadAsset(asset);
         }
     }
 
-    for (auto it = assets->allAssets.iterate(); it.hasNext(); it.next()) {
+    for (auto it = s_assets->allAssets.iterate(); it.hasNext(); it.next()) {
         Asset* asset = it.get();
         if (asset->flags & Asset_IsLocaleSpecific) {
             loadAsset(asset);
         }
     }
 
-    assets->assetReloadHasJustHappened = true;
+    s_assets->assetReloadHasJustHappened = true;
 }
 
 void loadCursorDefs(Blob data, Asset* asset)
@@ -1017,7 +1030,7 @@ void loadCursorDefs(Blob data, Asset* asset)
     restart(&reader);
 
     while (loadNextLine(&reader)) {
-        String name = intern(&assets->assetStrings, readToken(&reader));
+        String name = intern(&s_assets->assetStrings, readToken(&reader));
         String filename = readToken(&reader);
 
         Maybe<s32> hotX = readInt<s32>(&reader);
@@ -1026,7 +1039,7 @@ void loadCursorDefs(Blob data, Asset* asset)
         if (hotX.isValid && hotY.isValid) {
             // Add the cursor
             Asset* cursorAsset = addAsset(AssetType_Cursor, name, 0);
-            cursorAsset->cursor.imageFilePath = intern(&assets->assetStrings, getAssetPath(AssetType_Cursor, filename));
+            cursorAsset->cursor.imageFilePath = intern(&s_assets->assetStrings, getAssetPath(AssetType_Cursor, filename));
             cursorAsset->cursor.hotspot = v2i(hotX.value, hotY.value);
             addChildAsset(asset, cursorAsset);
         } else {
@@ -1096,7 +1109,7 @@ void loadPaletteDefs(Blob data, Asset* asset)
                 if (color.isValid) {
                     if (paletteAsset->palette.type == PaletteType_Fixed) {
                         if (!paletteAsset->palette.paletteData.isInitialised()) {
-                            paletteAsset->data = assetsAllocate(assets, paletteAsset->palette.size * sizeof(V4));
+                            paletteAsset->data = assetsAllocate(s_assets, paletteAsset->palette.size * sizeof(V4));
                             paletteAsset->palette.paletteData = makeArray<V4>(paletteAsset->palette.size, (V4*)paletteAsset->data.memory);
                         }
 
@@ -1147,7 +1160,7 @@ void loadSpriteDefs(Blob data, Asset* asset)
     Asset* spriteGroup = nullptr;
     s32 spriteIndex = 0;
 
-    // Count the number of child assets, so we can allocate our spriteNames array
+    // Count the number of child s_assets, so we can allocate our spriteNames array
     s32 childAssetCount = 0;
     while (loadNextLine(&reader)) {
         String command = readToken(&reader);
@@ -1301,7 +1314,7 @@ void loadTexts(HashTable<String>* texts, Asset* asset, Blob fileData)
 
     s32 lineCount = countLines(fileData);
     smm keyArraySize = sizeof(String) * lineCount;
-    asset->data = assetsAllocate(assets, fileData.size + keyArraySize);
+    asset->data = assetsAllocate(s_assets, fileData.size + keyArraySize);
 
     asset->texts.keys = makeArray(lineCount, (String*)asset->data.memory);
 

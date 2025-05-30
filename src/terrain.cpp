@@ -103,7 +103,7 @@ void loadTerrainDefs(Blob data, Asset* asset)
         }
     }
 
-    asset->data = assetsAllocate(assets, sizeof(String) * terrainCount);
+    asset->data = assetsAllocate(&asset_manager(), sizeof(String) * terrainCount);
     asset->terrainDefs.terrainIDs = makeArray(terrainCount, (String*)asset->data.memory);
 
     restart(&reader);
@@ -149,9 +149,9 @@ void loadTerrainDefs(Blob data, Asset* asset)
                 error(&reader, "Found a property before starting a :Terrain!"_s);
                 return;
             } else if (equals(firstWord, "borders"_s)) {
-                def->borderSpriteNames = allocateArray<String>(&assets->assetArena, 80);
+                def->borderSpriteNames = allocateArray<String>(&asset_manager().assetArena, 80);
             } else if (equals(firstWord, "border"_s)) {
-                def->borderSpriteNames.append(intern(&assets->assetStrings, readToken(&reader)));
+                def->borderSpriteNames.append(intern(&asset_manager().assetStrings, readToken(&reader)));
             } else if (equals(firstWord, "can_build_on"_s)) {
                 Maybe<bool> boolRead = readBool(&reader);
                 if (boolRead.isValid)
@@ -161,9 +161,9 @@ void loadTerrainDefs(Blob data, Asset* asset)
                 if (boolRead.isValid)
                     def->drawBordersOver = boolRead.value;
             } else if (equals(firstWord, "name"_s)) {
-                def->textAssetName = intern(&assets->assetStrings, readToken(&reader));
+                def->textAssetName = intern(&asset_manager().assetStrings, readToken(&reader));
             } else if (equals(firstWord, "sprite"_s)) {
-                def->spriteName = intern(&assets->assetStrings, readToken(&reader));
+                def->spriteName = intern(&asset_manager().assetStrings, readToken(&reader));
             } else {
                 warn(&reader, "Unrecognised property '{0}' inside command ':Terrain'"_s, { firstWord });
             }

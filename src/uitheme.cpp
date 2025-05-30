@@ -354,7 +354,7 @@ void loadUITheme(Blob data, Asset* asset)
                 if (foundStyleType.isValid) {
                     UI::StyleType styleType = foundStyleType.value;
 
-                    String name = intern(&assets->assetStrings, readToken(&reader));
+                    String name = intern(&asset_manager().assetStrings, readToken(&reader));
 
                     StylePack* pack = styles.findOrAdd(name);
                     target = &pack->styleByType[(s32)styleType];
@@ -429,7 +429,7 @@ void loadUITheme(Blob data, Asset* asset)
                         } break;
 
                         case UI::PropType::Font: {
-                            String value = intern(&assets->assetStrings, readToken(&reader));
+                            String value = intern(&asset_manager().assetStrings, readToken(&reader));
                             Maybe<String> fontFilename = fontNamesToAssetNames.findValue(value);
                             if (fontFilename.isValid) {
                                 AssetRef fontRef = getAssetRef(AssetType_BitmapFont, fontFilename.value);
@@ -455,7 +455,7 @@ void loadUITheme(Blob data, Asset* asset)
 
                         case UI::PropType::Style: // NB: Style names are just Strings now
                         case UI::PropType::String: {
-                            String value = intern(&assets->assetStrings, readToken(&reader));
+                            String value = intern(&asset_manager().assetStrings, readToken(&reader));
                             // Strings are read directly, so we don't need an if(valid) check
                             UI::setPropertyValue<String>(target, property, value);
                         } break;

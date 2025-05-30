@@ -462,7 +462,7 @@ void debugTrackAssets(DebugState* debugState)
     assetData->assetsByNameSize[frameIndex] = 0;
 
     // The assets arena
-    MemoryArena* arena = &assets->assetArena;
+    MemoryArena* arena = &asset_manager().assetArena;
     if (arena->currentBlock) {
         assetData->arenaBlockCount[frameIndex] = 1;
         assetData->arenaTotalSize[frameIndex] = arena->currentBlock->size;
@@ -480,21 +480,21 @@ void debugTrackAssets(DebugState* debugState)
 
     // assetsByType HashTables
     for (s32 assetType = 0; assetType < AssetTypeCount; assetType++) {
-        auto assetsByNameForType = assets->assetsByType[assetType];
+        auto assetsByNameForType = asset_manager().assetsByType[assetType];
         assetData->assetsByNameSize[frameIndex] += assetsByNameForType.capacity * sizeof(assetsByNameForType.entries[0]);
     }
 
     // The asset-memory stuff
-    for (auto it = assets->allAssets.iterate(); it.hasNext(); it.next()) {
+    for (auto it = asset_manager().allAssets.iterate(); it.hasNext(); it.next()) {
         Asset* asset = it.get();
 
         if (asset->state == AssetState_Loaded)
             assetData->loadedAssetCount[frameIndex]++;
     }
-    assetData->assetMemoryAllocated[frameIndex] = assets->assetMemoryAllocated;
-    assetData->maxAssetMemoryAllocated[frameIndex] = assets->maxAssetMemoryAllocated;
+    assetData->assetMemoryAllocated[frameIndex] = asset_manager().assetMemoryAllocated;
+    assetData->maxAssetMemoryAllocated[frameIndex] = asset_manager().maxAssetMemoryAllocated;
 
-    assetData->assetCount[frameIndex] = (s32)assets->allAssets.count;
+    assetData->assetCount[frameIndex] = asset_manager().allAssets.count;
 }
 
 void debugStartTrackingRenderBuffer(DebugState* debugState, String renderBufferName, String renderProfileName)

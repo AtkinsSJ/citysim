@@ -639,7 +639,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
     AppStatus result = AppStatus_Game;
     City* city = &gameState->city;
 
-    if (assets->assetReloadHasJustHappened) {
+    if (asset_manager().assetReloadHasJustHappened) {
         remapTerrainTypes(city);
         remapBuildingTypes(city);
     }

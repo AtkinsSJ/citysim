@@ -139,7 +139,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
 
     smm buildingNamesSize = sizeof(String) * buildingCount;
     smm variantsSize = sizeof(BuildingVariant) * totalVariantCount;
-    asset->data = assetsAllocate(assets, buildingNamesSize + variantsSize);
+    asset->data = assetsAllocate(&asset_manager(), buildingNamesSize + variantsSize);
     asset->buildingDefs.buildingIDs = makeArray(buildingCount, (String*)asset->data.memory);
     u8* variantsMemory = asset->data.memory + buildingNamesSize;
 
@@ -342,7 +342,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
                         def->landValueEffect = land_value.value;
                     }
                 } else if (equals(firstWord, "name"_s)) {
-                    def->textAssetName = intern(&assets->assetStrings, readToken(&reader));
+                    def->textAssetName = intern(&asset_manager().assetStrings, readToken(&reader));
                 } else if (equals(firstWord, "pollution"_s)) {
                     Maybe<EffectRadius> pollution = readEffectRadius(&reader);
                     if (pollution.isValid) {
@@ -389,7 +389,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
                         return;
                     }
                 } else if (equals(firstWord, "sprite"_s)) {
-                    String spriteName = intern(&assets->assetStrings, readToken(&reader));
+                    String spriteName = intern(&asset_manager().assetStrings, readToken(&reader));
                     def->spriteName = spriteName;
                 } else if (equals(firstWord, "variant"_s)) {
                     //
@@ -417,7 +417,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
                         *variant = {};
 
                         String directionFlags = readToken(&reader);
-                        String spriteName = intern(&assets->assetStrings, readToken(&reader));
+                        String spriteName = intern(&asset_manager().assetStrings, readToken(&reader));
 
                         if (directionFlags.length == 8) {
                             variant->connections[Connect_N] = connectionTypeOf(directionFlags[0]);
