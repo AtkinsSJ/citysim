@@ -35,6 +35,8 @@ struct MemoryArena {
     MemoryArenaResetState resetState;
 };
 
+MemoryArena& temp_arena();
+
 // Creates an arena, and pushes a struct on it which contains the arena.
 // Optional final param is the block size
 #define bootstrapArena(containerType, containerName, arenaVarName, ...)                                                    \

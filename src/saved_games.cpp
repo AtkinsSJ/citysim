@@ -66,7 +66,7 @@ void readSavedGamesInfo(SavedGamesCatalogue* catalogue)
 
         FileHandle savedFile = openFile(savedGame->fullPath, FileAccess_Read);
         if (savedFile.isOpen) {
-            BinaryFileReader reader = readBinaryFile(&savedFile, SAV_FILE_ID, tempArena);
+            BinaryFileReader reader = readBinaryFile(&savedFile, SAV_FILE_ID, &temp_arena());
             savedGame->problems = reader.problems;
 
             if (reader.isValidFile) {

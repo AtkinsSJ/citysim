@@ -87,7 +87,7 @@ bool platform_createDirectory(String _path)
             // Part of the path doesn't exist, so we have to create it, piece by piece
             // We do a similar hack to the win32 version: A duplicate path, which we then swap each
             // `/` with a null byte and then back, to mkdir() one path segment at a time.
-            String path = pushString(tempArena, _path);
+            String path = pushString(&temp_arena(), _path);
             char* pos = path.chars;
             char* afterEndOfPath = path.chars + path.length;
 

@@ -7,7 +7,7 @@ bool writeSaveFile(FileHandle* file, GameState* gameState)
     if (succeeded) {
         City* city = &gameState->city;
 
-        BinaryFileWriter writer = startWritingFile(SAV_FILE_ID, SAV_VERSION, tempArena);
+        BinaryFileWriter writer = startWritingFile(SAV_FILE_ID, SAV_VERSION, &temp_arena());
 
         // Prepare the TOC
         writer.addTOCEntry(SAV_META_ID);
@@ -97,7 +97,7 @@ bool loadSaveFile(FileHandle* file, GameState* gameState)
 
     City* city = &gameState->city;
 
-    BinaryFileReader reader = readBinaryFile(file, SAV_FILE_ID, tempArena);
+    BinaryFileReader reader = readBinaryFile(file, SAV_FILE_ID, &temp_arena());
     // This doesn't actually loop, we're just using a `while` so we can break out of it
     while (reader.isValidFile) {
         // META

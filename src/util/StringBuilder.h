@@ -33,7 +33,7 @@ struct StringBuilder {
     s32 currentMaxLength;
 };
 
-StringBuilder newStringBuilder(s32 initialSize, MemoryArena* arena = tempArena);
+StringBuilder newStringBuilder(s32 initialSize, MemoryArena* arena = &temp_arena());
 
 // NB: As mentioned above, the old buffer is NOT deallocated!
 void expand(StringBuilder* stb, s32 newSize);

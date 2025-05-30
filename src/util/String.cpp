@@ -212,7 +212,7 @@ Maybe<f64> asFloat(String input)
 
     // TODO: Implement this properly!
     // (c runtime functions atof / strtod don't tell you if they failed, they just return 0 which is a valid value!
-    String nullTerminatedInput = pushString(tempArena, input.length + 1);
+    String nullTerminatedInput = pushString(&temp_arena(), input.length + 1);
     copyString(input, &nullTerminatedInput);
     nullTerminatedInput.length++;
     nullTerminatedInput[input.length] = '\0';
@@ -459,7 +459,7 @@ String concatenate(std::initializer_list<String> strings, String between)
             resultLength += it->length;
         }
 
-        StringBuilder stb = newStringBuilder(resultLength, tempArena);
+        StringBuilder stb = newStringBuilder(resultLength, &temp_arena());
 
         append(&stb, *strings.begin());
 
@@ -564,7 +564,7 @@ String formatInt(u64 value, u8 base, s32 zeroPadWidth)
 {
     ASSERT((base > 1) && (base <= 36)); // formatInt() only handles base 2 to base 36.
     s32 arraySize = max(64, zeroPadWidth);
-    char* temp = allocateMultiple<char>(tempArena, arraySize); // Worst case is base 1, which is 64 characters!
+    char* temp = allocateMultiple<char>(&temp_arena(), arraySize); // Worst case is base 1, which is 64 characters!
     s32 count = 0;
 
     u64 v = value;
@@ -586,7 +586,7 @@ String formatInt(s64 value, u8 base, s32 zeroPadWidth)
 {
     ASSERT((base > 1) && (base <= 36)); // formatInt() only handles base 2 to base 36.
     s32 arraySize = max(65, zeroPadWidth + 1);
-    char* temp = allocateMultiple<char>(tempArena, arraySize); // Worst case is base 1, which is 64 characters! Plus 1 for sign
+    char* temp = allocateMultiple<char>(&temp_arena(), arraySize); // Worst case is base 1, which is 64 characters! Plus 1 for sign
     bool isNegative = (value < 0);
     s32 count = 0;
 
@@ -622,7 +622,7 @@ String formatFloat(f64 value, s32 decimalPlaces)
     String formatString = myprintf("%.{0}f"_s, { formatInt(decimalPlaces) }, true);
 
     s32 length = 100; // TODO: is 100 enough?
-    char* buffer = allocateMultiple<char>(tempArena, length);
+    char* buffer = allocateMultiple<char>(&temp_arena(), length);
     s32 written = snprintf(buffer, length, formatString.chars, value);
 
     return makeString(buffer, min(written, length));
@@ -637,7 +637,7 @@ String formatString(String value, s32 length, bool alignLeft, char paddingChar)
         String result = makeString(value.chars, length);
         return result;
     } else {
-        String result = pushString(tempArena, length);
+        String result = pushString(&temp_arena(), length);
         result.length = length;
 
         if (alignLeft) {
@@ -672,7 +672,7 @@ String formatBool(bool value)
 
 String repeatChar(char c, s32 length)
 {
-    String result = pushString(tempArena, length);
+    String result = pushString(&temp_arena(), length);
     result.length = length;
 
     for (s32 i = 0; i < length; i++) {

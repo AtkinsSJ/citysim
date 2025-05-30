@@ -52,7 +52,7 @@ inline FileIdentifier operator""_id(char const* chars, size_t length)
 
 inline String toString(FileIdentifier identifier)
 {
-    String result = pushString(tempArena, 4);
+    String result = pushString(&temp_arena(), 4);
     copyMemory<char>((char*)&identifier, result.chars, 4);
     return result;
 }

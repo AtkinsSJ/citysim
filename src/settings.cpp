@@ -170,7 +170,7 @@ void loadSettings()
     resetMemoryArena(&settings->settingsArena);
     settings->settings = makeDefaultSettings();
 
-    File userSettingsFile = readFile(tempArena, getUserSettingsPath());
+    File userSettingsFile = readFile(&temp_arena(), getUserSettingsPath());
     // User settings might not exist
     if (userSettingsFile.isLoaded) {
         loadSettingsFile(userSettingsFile.name, userSettingsFile.data);

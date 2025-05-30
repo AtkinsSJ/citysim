@@ -237,7 +237,7 @@ bool compileShader(GL_ShaderProgram* glShader, String shaderName, Shader* shader
         int logMaxLength = 0;
 
         glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &logMaxLength);
-        String infoLog = pushString(tempArena, logMaxLength);
+        String infoLog = pushString(&temp_arena(), logMaxLength);
         glGetShaderInfoLog(shaderID, logMaxLength, &infoLog.length, infoLog.chars);
 
         if (isEmpty(infoLog)) {
@@ -292,7 +292,7 @@ void loadShaderProgram(Asset* asset, GL_ShaderProgram* glShader)
                 int logMaxLength = 0;
 
                 glGetProgramiv(glShader->shaderProgramID, GL_INFO_LOG_LENGTH, &logMaxLength);
-                String infoLog = pushString(tempArena, logMaxLength);
+                String infoLog = pushString(&temp_arena(), logMaxLength);
                 glGetProgramInfoLog(glShader->shaderProgramID, logMaxLength, &infoLog.length, infoLog.chars);
 
                 if (isEmpty(infoLog)) {

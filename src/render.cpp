@@ -739,7 +739,7 @@ DrawRectsGroup* beginRectsGroupInternal(RenderBuffer* buffer, Asset* texture, s8
     if (texture != nullptr)
         addSetTexture(buffer, texture);
 
-    DrawRectsGroup* result = allocateStruct<DrawRectsGroup>(tempArena);
+    DrawRectsGroup* result = allocateStruct<DrawRectsGroup>(&temp_arena());
     *result = {};
 
     result->buffer = buffer;
@@ -816,7 +816,7 @@ void addRectInternal(DrawRectsGroup* group, Rect2 bounds, V4 color, Rect2 uv)
     if (group->currentSubGroup->header->count == group->currentSubGroup->maxCount) {
         endCurrentSubGroup(group);
         DrawRectsSubGroup* prevSubGroup = group->currentSubGroup;
-        group->currentSubGroup = allocateStruct<DrawRectsSubGroup>(tempArena);
+        group->currentSubGroup = allocateStruct<DrawRectsSubGroup>(&temp_arena());
         *group->currentSubGroup = beginRectsSubGroup(group);
         prevSubGroup->next = group->currentSubGroup;
         group->currentSubGroup->prev = prevSubGroup;
@@ -916,7 +916,7 @@ DrawRingsGroup* beginRingsGroup(RenderBuffer* buffer, s32 maxCount)
     // @Copypasta beginRectsGroupInternal() - maybe factor out common "grouped render items" code?
     addSetShader(buffer, renderer->shaderIds.untextured);
 
-    DrawRingsGroup* result = allocateStruct<DrawRingsGroup>(tempArena);
+    DrawRingsGroup* result = allocateStruct<DrawRingsGroup>(&temp_arena());
     *result = {};
 
     result->buffer = buffer;
@@ -968,7 +968,7 @@ void addRing(DrawRingsGroup* group, V2 centre, f32 radius, f32 thickness, V4 col
     if (group->currentSubGroup->header->count == group->currentSubGroup->maxCount) {
         endCurrentSubGroup(group);
         DrawRingsSubGroup* prevSubGroup = group->currentSubGroup;
-        group->currentSubGroup = allocateStruct<DrawRingsSubGroup>(tempArena);
+        group->currentSubGroup = allocateStruct<DrawRingsSubGroup>(&temp_arena());
         *group->currentSubGroup = beginRingsSubGroup(group);
         prevSubGroup->next = group->currentSubGroup;
         group->currentSubGroup->prev = prevSubGroup;

@@ -9,6 +9,18 @@
 #include "Maths.h"
 #include "Memory.h"
 
+static MemoryArena s_temp_arena;
+
+MemoryArena& temp_arena()
+{
+    return s_temp_arena;
+}
+
+void init_temp_arena()
+{
+    initMemoryArena(&s_temp_arena, "Temp"_s, MB(4));
+}
+
 inline Blob allocateBlob(MemoryArena* arena, smm size)
 {
     return makeBlob(size, (u8*)allocate(arena, size));

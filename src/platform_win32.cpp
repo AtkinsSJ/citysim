@@ -88,7 +88,7 @@ bool platform_createDirectory(String _path)
         // then switch it back for the next one.
         // The path is guaranteed to be null terminated at the end.
 
-        String path = pushString(tempArena, _path);
+        String path = pushString(&temp_arena(), _path);
 
         char* pos = path.chars;
         char* afterEndOfPath = path.chars + path.length;
@@ -166,7 +166,7 @@ String platform_constructPath(std::initializer_list<String> parts, bool appendWi
 
 inline void fillFileInfo(WIN32_FIND_DATA* findFileData, FileInfo* result)
 {
-    result->filename = pushString(tempArena, findFileData->cFileName);
+    result->filename = pushString(&temp_arena(), findFileData->cFileName);
     u64 fileSize = ((u64)findFileData->nFileSizeHigh << 32) + findFileData->nFileSizeLow;
     result->size = (smm)fileSize; // NB: Theoretically it could be more than s64Max, but that seems unlikely?
 

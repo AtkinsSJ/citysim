@@ -93,7 +93,7 @@ void BitArray::clearBits()
 
 Array<s32> BitArray::getSetBitIndices()
 {
-    Array<s32> result = allocateArray<s32>(tempArena, setBitCount, false);
+    Array<s32> result = allocateArray<s32>(&temp_arena(), setBitCount, false);
 
     for (auto it = iterateSetBits(); it.hasNext(); it.next()) {
         result.append(it.getIndex());

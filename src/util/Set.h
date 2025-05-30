@@ -76,7 +76,7 @@ struct Set {
         Array<T> result = makeEmptyArray<T>();
 
         if (!isEmpty()) {
-            result = allocateArray<T>(tempArena, items.count, false);
+            result = allocateArray<T>(&temp_arena(), items.count, false);
 
             // Gather
             for (auto it = iterate(); it.hasNext(); it.next()) {

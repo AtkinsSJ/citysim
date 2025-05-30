@@ -537,7 +537,7 @@ void updatePowerLayer(City* city, PowerLayer* layer)
 
     if (isDirty(&layer->dirtyRects)) {
         Set<PowerSector*> touchedSectors;
-        initSet<PowerSector*>(&touchedSectors, tempArena, [](PowerSector** a, PowerSector** b) { return *a == *b; });
+        initSet<PowerSector*>(&touchedSectors, &temp_arena(), [](PowerSector** a, PowerSector** b) { return *a == *b; });
 
         for (auto it = layer->dirtyRects.rects.iterate();
             it.hasNext();

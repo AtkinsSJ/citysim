@@ -1029,7 +1029,7 @@ void drawDataViewOverlay(GameState* gameState, Rect2I visibleTileBounds)
         drawGrid(&renderer->worldOverlayBuffer, rect2(bounds), bounds.w, bounds.h, *dataView->overlayTileData, (u16)overlayPalette->count, overlayPalette->items);
     } else if (dataView->calculateTileValue) {
         // The per-tile overlay data is generated
-        Array2<u8> overlayTileData = allocateArray2<u8>(tempArena, visibleTileBounds.w, visibleTileBounds.h);
+        Array2<u8> overlayTileData = allocateArray2<u8>(&temp_arena(), visibleTileBounds.w, visibleTileBounds.h);
 
         for (s32 gridY = 0; gridY < visibleTileBounds.h; gridY++) {
             for (s32 gridX = 0; gridX < visibleTileBounds.w; gridX++) {

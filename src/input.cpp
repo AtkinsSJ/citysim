@@ -303,7 +303,7 @@ inline String getClipboardText()
         char* clipboard = SDL_GetClipboardText();
 
         if (clipboard) {
-            result = pushString(tempArena, clipboard);
+            result = pushString(&temp_arena(), clipboard);
             SDL_free(clipboard);
         }
     }

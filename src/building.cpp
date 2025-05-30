@@ -197,7 +197,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
                     return;
                 }
 
-                def = templates.put(pushString(tempArena, name));
+                def = templates.put(pushString(&temp_arena(), name));
                 initFlags(&def->flags, BuildingFlagCount);
                 initFlags(&def->transportTypes, TransportTypeCount);
             } else {
@@ -1028,7 +1028,7 @@ void remapBuildingTypes(City* city)
     }
 
     if (buildingCatalogue.buildingNameToOldTypeID.count > 0) {
-        Array<s32> oldTypeToNewType = allocateArray<s32>(tempArena, buildingCatalogue.buildingNameToOldTypeID.count, true);
+        Array<s32> oldTypeToNewType = allocateArray<s32>(&temp_arena(), buildingCatalogue.buildingNameToOldTypeID.count, true);
         for (auto it = buildingCatalogue.buildingNameToOldTypeID.iterate(); it.hasNext(); it.next()) {
             auto entry = it.getEntry();
             String buildingName = entry->key;

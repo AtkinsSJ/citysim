@@ -92,13 +92,13 @@ bool deleteFile(String path);
 
 bool createDirectory(String path);
 
-File readFile(FileHandle* file, MemoryArena* arena = tempArena);
+File readFile(FileHandle* file, MemoryArena* arena = &temp_arena());
 File readFile(MemoryArena* memoryArena, String filePath);
 // Reads the entire file into a Blob that's allocated in temporary memory.
 // If you want to refer to parts of it later, you need to copy the data somewhere else!
 inline Blob readTempFile(String filePath)
 {
-    return readFile(tempArena, filePath).data;
+    return readFile(&temp_arena(), filePath).data;
 }
 
 // Returns how much was read

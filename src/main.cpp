@@ -27,7 +27,6 @@ enum AppStatus {
     AppStatus_Quit,
 };
 
-struct MemoryArena* tempArena;
 struct Assets* assets;
 struct InputState* inputState;
 struct Renderer* renderer;
@@ -239,9 +238,7 @@ int main(int argc, char* argv[])
 
     initMemoryArena(&globalAppState.systemArena, "System"_s, MB(1));
 
-    MemoryArena globalFrameTempArena;
-    initMemoryArena(&globalFrameTempArena, "Temp"_s, MB(4));
-    tempArena = &globalFrameTempArena;
+    init_temp_arena();
 
 #if BUILD_DEBUG
     debugInit();
@@ -285,7 +282,7 @@ int main(int argc, char* argv[])
 
     // TEST STUFF
 #if 1
-    BinaryFileWriter test = startWritingFile(SAV_FILE_ID, BINARY_FILE_FORMAT_VERSION, tempArena);
+    BinaryFileWriter test = startWritingFile(SAV_FILE_ID, BINARY_FILE_FORMAT_VERSION, &temp_arena());
     test.addTOCEntry("TEST"_id);
     struct TestSection {
         leU32 a;
@@ -382,7 +379,7 @@ int main(int argc, char* argv[])
                 // TODO: Maybe automatically register arenas with the debug system?
                 // Though, the debug system uses an arena itself, so that could be a bit infinitely-recursive.
                 DEBUG_ARENA(&appState->systemArena, "System");
-                DEBUG_ARENA(tempArena, "Global Temp Arena");
+                DEBUG_ARENA(&temp_arena(), "Global Temp Arena");
                 DEBUG_ARENA(&renderer->renderArena, "Renderer");
                 DEBUG_ARENA(appState->gameState ? &appState->gameState->gameArena : nullptr, "GameState");
                 DEBUG_ARENA(&settings->settingsArena, "Settings");
@@ -394,7 +391,7 @@ int main(int argc, char* argv[])
             // Actually draw things!
             render();
 
-            resetMemoryArena(tempArena);
+            resetMemoryArena(&temp_arena());
         }
 
         // FRAMERATE MONITORING AND CAPPING

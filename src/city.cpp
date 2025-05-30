@@ -416,7 +416,7 @@ ChunkedArray<Building*> findBuildingsOverlappingArea(City* city, Rect2I area, u3
     DEBUG_FUNCTION();
 
     ChunkedArray<Building*> result = {};
-    initChunkedArray(&result, tempArena, 64);
+    initChunkedArray(&result, &temp_arena(), 64);
 
     bool requireOriginInArea = (flags & BQF_RequireOriginInArea) != 0;
 
