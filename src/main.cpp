@@ -29,7 +29,6 @@ enum AppStatus {
 
 struct InputState* inputState;
 struct Renderer* renderer;
-struct Settings* settings;
 
 // clang-format off
 #include "util/Log.h"
@@ -381,7 +380,7 @@ int main(int argc, char* argv[])
                 DEBUG_ARENA(&temp_arena(), "Global Temp Arena");
                 DEBUG_ARENA(&renderer->renderArena, "Renderer");
                 DEBUG_ARENA(appState->gameState ? &appState->gameState->gameArena : nullptr, "GameState");
-                DEBUG_ARENA(&settings->settingsArena, "Settings");
+                DEBUG_ARENA(&settings().settingsArena, "Settings");
                 DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
 
                 updateAndRenderDebugData(globalDebugState);
