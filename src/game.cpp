@@ -1,5 +1,7 @@
 #pragma once
 
+#include "input.h"
+
 GameState* newGameState()
 {
     GameState* gameState;
@@ -61,7 +63,7 @@ void inputMoveCamera(Camera* camera, V2 windowSize, V2 windowMousePos, s32 cityW
 #endif
 
     // Zooming
-    s32 zoomDelta = inputState->wheelY;
+    s32 zoomDelta = input_state().wheelY;
 
     // Turns out that having the zoom bound to the same key I use for navigating debug frames is REALLY ANNOYING
     if (!isInputCaptured()) {

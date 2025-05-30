@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
 
 int const KEYBOARD_KEY_COUNT = SDL_NUM_SCANCODES;
@@ -57,7 +63,8 @@ struct InputState {
 //
 // PUBLIC
 //
-void initInput(InputState* inputState);
+void init_input_state();
+InputState& input_state();
 void updateInput();
 
 bool mouseButtonJustPressed(MouseButton mouseButton);

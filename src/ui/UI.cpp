@@ -701,7 +701,7 @@ void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, Scrollb
 
                 // Scrollwheel stuff
                 // (It's weird that we're putting this within mouseInputHandled, but eh)
-                s32 mouseWheelDelta = (isHorizontal ? inputState->wheelX : -inputState->wheelY);
+                s32 mouseWheelDelta = (isHorizontal ? input_state().wheelX : -input_state().wheelY);
                 if (mouseWheelDelta != 0) {
                     s32 oldScrollOffset = getScrollbarContentOffset(state, gutterSize);
                     s32 scrollOffset = oldScrollOffset + (state->mouseWheelStepSize * mouseWheelDelta);

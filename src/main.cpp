@@ -27,7 +27,6 @@ enum AppStatus {
     AppStatus_Quit,
 };
 
-struct InputState* inputState;
 struct Renderer* renderer;
 
 // clang-format off
@@ -254,9 +253,8 @@ int main(int argc, char* argv[])
 
     SDL_Window* window = initSDL(getWindowSettings(), "Some kind of city builder");
 
-    InputState input;
-    initInput(&input);
-    inputState = &input;
+    init_input_state();
+    auto& input = input_state();
 
     initAssets();
     addAssets();
