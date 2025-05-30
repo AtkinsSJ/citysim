@@ -95,7 +95,8 @@ Blob allocateBlob(MemoryArena* arena, smm size);
 template<typename T>
 T* allocateStruct(MemoryArena* arena)
 {
-    return (T*)allocate(arena, sizeof(T));
+    auto* memory = allocate(arena, sizeof(T));
+    return new (memory) T;
 }
 
 template<typename T>
@@ -108,13 +109,12 @@ T* allocateMultiple(MemoryArena* arena, smm count)
     // to use the memory if you've got 0 things allocated anyway!
     // - Sam, 28/03/2020
     ASSERT(count >= 0);
-    T* result = nullptr;
 
-    if (count > 0) {
-        result = (T*)allocate(arena, sizeof(T) * count);
-    }
+    if (count == 0)
+        return nullptr;
 
-    return result;
+    auto* memory = allocate(arena, sizeof(T) * count);
+    return new (memory) T[count];
 }
 
 template<typename T>
