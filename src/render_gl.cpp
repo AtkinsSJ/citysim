@@ -7,7 +7,7 @@
 #include "render_gl.h"
 #include "util/Deferred.h"
 
-bool GL_initializeRenderer(SDL_Window* window)
+bool GL_Renderer::initialize(SDL_Window* window)
 {
     GL_Renderer* gl;
     bootstrapArena(GL_Renderer, gl, renderArena);
@@ -32,8 +32,8 @@ bool GL_initializeRenderer(SDL_Window* window)
 #endif
 
         // Create context
-        gl->context = SDL_GL_CreateContext(gl->window);
-        if (gl->context == nullptr) {
+        gl->m_context = SDL_GL_CreateContext(gl->window);
+        if (gl->m_context == nullptr) {
             logCritical("OpenGL context could not be created! :(\n {0}"_s, { makeString(SDL_GetError()) });
             succeeded = false;
         }
@@ -69,9 +69,9 @@ bool GL_initializeRenderer(SDL_Window* window)
             glEnable(GL_BLEND);
             glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
-            glGenBuffers(1, &gl->VBO);
-            glBindBuffer(GL_ARRAY_BUFFER, gl->VBO);
-            GLint vBufferSizeNeeded = RENDER_BATCH_VERTEX_COUNT * sizeof(gl->vertices[0]);
+            glGenBuffers(1, &gl->m_vbo);
+            glBindBuffer(GL_ARRAY_BUFFER, gl->m_vbo);
+            GLint vBufferSizeNeeded = RENDER_BATCH_VERTEX_COUNT * sizeof(gl->m_vertices[0]);
             glBufferData(GL_ARRAY_BUFFER, vBufferSizeNeeded, nullptr, GL_DYNAMIC_DRAW);
 
 //
@@ -88,7 +88,7 @@ bool GL_initializeRenderer(SDL_Window* window)
             for (s32 i = 0;
                 i < RENDER_BATCH_INDEX_COUNT;
                 i += 6, firstVertex += 4) {
-                GLuint* index = gl->indices + i;
+                GLuint* index = gl->m_indices + i;
                 index[0] = firstVertex + 0;
                 index[1] = firstVertex + 1;
                 index[2] = firstVertex + 2;
@@ -98,21 +98,21 @@ bool GL_initializeRenderer(SDL_Window* window)
             }
 #endif
 
-            glGenBuffers(1, &gl->IBO);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl->IBO);
-            GLint iBufferSizeNeeded = RENDER_BATCH_INDEX_COUNT * sizeof(gl->indices[0]);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, iBufferSizeNeeded, gl->indices, GL_DYNAMIC_DRAW);
+            glGenBuffers(1, &gl->m_ibo);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl->m_ibo);
+            GLint iBufferSizeNeeded = RENDER_BATCH_INDEX_COUNT * sizeof(gl->m_indices[0]);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, iBufferSizeNeeded, gl->m_indices, GL_DYNAMIC_DRAW);
 
-            gl->vertexCount = 0;
-            gl->indexCount = 0;
+            gl->m_vertex_count = 0;
+            gl->m_index_count = 0;
 
-            glGenTextures(1, &gl->paletteTextureID);
-            glGenTextures(1, &gl->rawTextureID);
+            glGenTextures(1, &gl->m_palette_texture_id);
+            glGenTextures(1, &gl->m_raw_texture_id);
 
             // Other GL_Renderer struct init stuff
-            initChunkedArray(&gl->shaders, &gl->renderArena, 64);
+            initChunkedArray(&gl->m_shaders, &gl->renderArena, 64);
 
-            initStack(&gl->scissorStack, &gl->renderArena);
+            initStack(&gl->m_scissor_stack, &gl->renderArena);
         } else {
             logCritical("Could not initialise OpenGL! :("_s);
         }
@@ -128,7 +128,8 @@ bool GL_initializeRenderer(SDL_Window* window)
 
 void GL_Renderer::free()
 {
-    SDL_GL_DeleteContext(context);
+    SDL_GL_DeleteContext(m_context);
+    m_context = nullptr;
 }
 
 void GL_Renderer::on_window_resized(s32 newWidth, s32 newHeight)
@@ -172,18 +173,18 @@ void GL_Renderer::render(Array<RenderBuffer*> buffers)
                 DEBUG_BLOCK_T("render: RenderItemType_SetPalette", DCDT_Renderer);
                 RenderItem_SetPalette* header = readRenderItem<RenderItem_SetPalette>(renderBufferChunk, &pos);
 
-                if (this->vertexCount > 0) {
+                if (m_vertex_count > 0) {
                     flush_vertices();
                 }
 
                 // A palette is a 1D texture
                 glActiveTexture(GL_TEXTURE0 + 1);
-                glBindTexture(GL_TEXTURE_1D, this->paletteTextureID);
+                glBindTexture(GL_TEXTURE_1D, m_palette_texture_id);
 
                 glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                 glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-                // Having a transparent border color which we clamp outside indices to, means that any parts of the
+                // Having a transparent border color which we clamp outside m_indices to, means that any parts of the
                 // texture that specify a palette color that doesn't exist, will be fully transparent.
                 // This is a bit of a hack... but it's a useful one!
                 f32 borderColor[4] = { 0, 0, 0, 0 };
@@ -201,7 +202,7 @@ void GL_Renderer::render(Array<RenderBuffer*> buffers)
                 DEBUG_BLOCK_T("render: RenderItemType_SetShader", DCDT_Renderer);
                 RenderItem_SetShader* header = readRenderItem<RenderItem_SetShader>(renderBufferChunk, &pos);
 
-                if (this->vertexCount > 0) {
+                if (m_vertex_count > 0) {
                     flush_vertices();
                 }
 
@@ -214,14 +215,14 @@ void GL_Renderer::render(Array<RenderBuffer*> buffers)
                 DEBUG_BLOCK_T("render: RenderItemType_SetTexture", DCDT_Renderer);
                 RenderItem_SetTexture* header = readRenderItem<RenderItem_SetTexture>(renderBufferChunk, &pos);
 
-                if (this->vertexCount > 0) {
+                if (m_vertex_count > 0) {
                     flush_vertices();
                 }
 
                 if (header->texture == nullptr) {
                     // Raw texture!
                     glActiveTexture(GL_TEXTURE0 + 0);
-                    glBindTexture(GL_TEXTURE_2D, this->rawTextureID);
+                    glBindTexture(GL_TEXTURE_2D, m_raw_texture_id);
 
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -271,7 +272,7 @@ void GL_Renderer::render(Array<RenderBuffer*> buffers)
                 }
 
                 glUniform1i(activeShader->uTextureLoc, 0);
-                this->currentTexture = header->texture;
+                m_current_texture = header->texture;
             } break;
 
             case RenderItemType_Clear: {
@@ -279,7 +280,7 @@ void GL_Renderer::render(Array<RenderBuffer*> buffers)
                 RenderItem_Clear* header = readRenderItem<RenderItem_Clear>(renderBufferChunk, &pos);
 
                 // NB: We MUST flush here, otherwise we could render some things after the clear instead of before it!
-                if (this->vertexCount > 0) {
+                if (m_vertex_count > 0) {
                     flush_vertices();
                 }
 
@@ -292,15 +293,15 @@ void GL_Renderer::render(Array<RenderBuffer*> buffers)
                 RenderItem_BeginScissor* header = readRenderItem<RenderItem_BeginScissor>(renderBufferChunk, &pos);
 
                 // NB: We MUST flush here, otherwise we could render some things after the scissor instead of before it!
-                if (this->vertexCount > 0) {
+                if (m_vertex_count > 0) {
                     flush_vertices();
                 }
 
-                if (isEmpty(&this->scissorStack)) {
+                if (isEmpty(&m_scissor_stack)) {
                     glEnable(GL_SCISSOR_TEST);
                 }
 
-                push(&this->scissorStack, header->bounds);
+                push(&m_scissor_stack, header->bounds);
 
                 glScissor(header->bounds.x, header->bounds.y, header->bounds.w, header->bounds.h);
             } break;
@@ -311,15 +312,15 @@ void GL_Renderer::render(Array<RenderBuffer*> buffers)
 
                 // NB: We MUST flush here, otherwise we could render some things after the scissor is removed!
                 // (This bug took me nearly half an hour to figure out.)
-                if (this->vertexCount > 0) {
+                if (m_vertex_count > 0) {
                     flush_vertices();
                 }
 
-                pop(&this->scissorStack);
+                pop(&m_scissor_stack);
 
                 // Restore previous scissor
-                if (!isEmpty(&this->scissorStack)) {
-                    Rect2I* previousScissor = peek(&this->scissorStack);
+                if (!isEmpty(&m_scissor_stack)) {
+                    Rect2I* previousScissor = peek(&m_scissor_stack);
                     glScissor(previousScissor->x, previousScissor->y, previousScissor->w, previousScissor->h);
                 } else {
                     glDisable(GL_SCISSOR_TEST);
@@ -333,7 +334,7 @@ void GL_Renderer::render(Array<RenderBuffer*> buffers)
                 for (s32 itemIndex = 0; itemIndex < header->count; itemIndex++) {
                     RenderItem_DrawRects_Item* item = readRenderItem<RenderItem_DrawRects_Item>(renderBufferChunk, &pos);
 
-                    if (this->vertexCount + 4 > RENDER_BATCH_VERTEX_COUNT) {
+                    if (m_vertex_count + 4 > RENDER_BATCH_VERTEX_COUNT) {
                         flush_vertices();
                     }
                     push_quad_with_uv(item->bounds, item->color, item->uv);
@@ -344,7 +345,7 @@ void GL_Renderer::render(Array<RenderBuffer*> buffers)
                 DEBUG_BLOCK_T("render: RenderItemType_DrawSingleRect", DCDT_Renderer);
                 RenderItem_DrawSingleRect* item = readRenderItem<RenderItem_DrawSingleRect>(renderBufferChunk, &pos);
 
-                if (this->vertexCount + 4 > RENDER_BATCH_VERTEX_COUNT) {
+                if (m_vertex_count + 4 > RENDER_BATCH_VERTEX_COUNT) {
                     flush_vertices();
                 }
                 push_quad_with_uv_multicolor(item->bounds, item->color00, item->color01, item->color10, item->color11, item->uv);
@@ -366,7 +367,7 @@ void GL_Renderer::render(Array<RenderBuffer*> buffers)
                         ringSegmentsCount = maxRingSegmentsCount;
                     }
 
-                    if (this->vertexCount + (4 * ringSegmentsCount) > RENDER_BATCH_VERTEX_COUNT) {
+                    if (m_vertex_count + (4 * ringSegmentsCount) > RENDER_BATCH_VERTEX_COUNT) {
                         flush_vertices();
                     }
 
@@ -375,7 +376,7 @@ void GL_Renderer::render(Array<RenderBuffer*> buffers)
                     f32 radPerSegment = (2.0f * PI32) / (f32)ringSegmentsCount;
 
                     for (s32 segmentIndex = 0; segmentIndex < ringSegmentsCount; segmentIndex++) {
-                        GL_VertexData* vertex = this->vertices + this->vertexCount;
+                        GL_VertexData* vertex = m_vertices + m_vertex_count;
                         f32 startAngle = segmentIndex * radPerSegment;
                         f32 endAngle = (segmentIndex + 1) * radPerSegment;
 
@@ -398,12 +399,12 @@ void GL_Renderer::render(Array<RenderBuffer*> buffers)
                         vertex->pos.y = item->centre.y + (maxRadius * sin32(startAngle));
                         vertex->color = item->color;
 
-                        this->vertexCount += 4;
+                        m_vertex_count += 4;
 
                         // NB: See comment in GL_initializeRenderer() - we can use the same buffer index buffer data
                         // always, as long as we only render quads.
 #if 0
-                            GLuint *index = this->indices + this->indexCount;
+                            GLuint *index = m_indices + m_index_count;
                             index[0] = firstVertex + 0;
                             index[1] = firstVertex + 1;
                             index[2] = firstVertex + 2;
@@ -411,7 +412,7 @@ void GL_Renderer::render(Array<RenderBuffer*> buffers)
                             index[4] = firstVertex + 2;
                             index[5] = firstVertex + 3;
 #endif
-                        this->indexCount += 6;
+                        m_index_count += 6;
                     }
                 }
             } break;
@@ -420,14 +421,14 @@ void GL_Renderer::render(Array<RenderBuffer*> buffers)
             }
         }
 
-        if (this->vertexCount > 0) {
+        if (m_vertex_count > 0) {
             flush_vertices();
         }
 
         DEBUG_END_RENDER_BUFFER();
     }
 
-    ASSERT(isEmpty(&this->scissorStack));
+    ASSERT(isEmpty(&m_scissor_stack));
 }
 
 void GL_Renderer::load_assets()
@@ -446,15 +447,15 @@ void GL_Renderer::load_assets()
     }
 
     // Shaders
-    this->shaders.clear(); // Just in case
+    m_shaders.clear(); // Just in case
     ASSERT(asset_manager().assetsByType[AssetType_Shader].count <= s8Max);
     for (auto it = asset_manager().assetsByType[AssetType_Shader].iterate();
         it.hasNext();
         it.next()) {
         Asset* asset = *it.get();
 
-        s8 shaderIndex = (s8)this->shaders.count;
-        GL_ShaderProgram* shader = this->shaders.appendBlank();
+        s8 shaderIndex = (s8)m_shaders.count;
+        GL_ShaderProgram* shader = m_shaders.appendBlank();
         shader->asset = asset;
         asset->shader.rendererShaderID = shaderIndex;
 
@@ -484,13 +485,13 @@ void GL_Renderer::unload_assets()
     }
 
     // Shaders
-    this->currentShader = -1;
-    for (s8 shaderID = 0; shaderID < this->shaders.count; shaderID++) {
-        GL_ShaderProgram* shader = this->shaders.get(shaderID);
+    m_current_shader = -1;
+    for (s8 shaderID = 0; shaderID < m_shaders.count; shaderID++) {
+        GL_ShaderProgram* shader = m_shaders.get(shaderID);
         glDeleteProgram(shader->shaderProgramID);
         *shader = {};
     }
-    this->shaders.clear();
+    m_shaders.clear();
 }
 
 void logGLError(GLenum errorCode)
@@ -675,16 +676,16 @@ void loadShaderProgram(Asset* asset, GL_ShaderProgram* glShader)
 
 GL_ShaderProgram* GL_Renderer::use_shader(s8 shaderID)
 {
-    ASSERT(shaderID >= 0 && shaderID < this->shaders.count); // Invalid shader!
+    ASSERT(shaderID >= 0 && shaderID < m_shaders.count); // Invalid shader!
 
     // Early-out if nothing is changing!
-    if (shaderID == this->currentShader) {
-        return this->shaders.get(this->currentShader);
+    if (shaderID == m_current_shader) {
+        return m_shaders.get(m_current_shader);
     }
 
-    if (this->currentShader >= 0 && this->currentShader < this->shaders.count) {
+    if (m_current_shader >= 0 && m_current_shader < m_shaders.count) {
         // Clean up the old shader's stuff
-        GL_ShaderProgram* oldShader = this->shaders.get(this->currentShader);
+        GL_ShaderProgram* oldShader = m_shaders.get(m_current_shader);
         glDisableVertexAttribArray(oldShader->aPositionLoc);
         glDisableVertexAttribArray(oldShader->aColorLoc);
         if (oldShader->aUVLoc != -1) {
@@ -692,8 +693,8 @@ GL_ShaderProgram* GL_Renderer::use_shader(s8 shaderID)
         }
     }
 
-    this->currentShader = shaderID;
-    GL_ShaderProgram* activeShader = this->shaders.get(this->currentShader);
+    m_current_shader = shaderID;
+    GL_ShaderProgram* activeShader = m_shaders.get(m_current_shader);
 
     ASSERT(activeShader->isValid); // Attempting to use a shader that isn't loaded!
     glUseProgram(activeShader->shaderProgramID);
@@ -752,9 +753,9 @@ void GL_Renderer::upload_texture_2d(GLenum pixelFormat, s32 width, s32 height, v
 void GL_Renderer::push_quad(Rect2 bounds, V4 color)
 {
     DEBUG_FUNCTION_T(DCDT_Renderer);
-    // s32 firstVertex = this->vertexCount;
+    // s32 firstVertex = m_vertex_count;
 
-    GL_VertexData* vertex = this->vertices + this->vertexCount;
+    GL_VertexData* vertex = m_vertices + m_vertex_count;
 
     f32 minX = bounds.x;
     f32 maxX = bounds.x + bounds.w;
@@ -780,12 +781,12 @@ void GL_Renderer::push_quad(Rect2 bounds, V4 color)
     vertex->pos.y = maxY;
     vertex->color = color;
 
-    this->vertexCount += 4;
+    m_vertex_count += 4;
 
 // NB: See comment in GL_initializeRenderer() - we can use the same buffer index buffer data
 // always, as long as we only render quads.
 #if 0
-	GLuint *index = this->indices + this->indexCount;
+	GLuint *index = m_indices + m_index_count;
 	index[0] = firstVertex + 0;
 	index[1] = firstVertex + 1;
 	index[2] = firstVertex + 2;
@@ -793,7 +794,7 @@ void GL_Renderer::push_quad(Rect2 bounds, V4 color)
 	index[4] = firstVertex + 2;
 	index[5] = firstVertex + 3;
 #endif
-    this->indexCount += 6;
+    m_index_count += 6;
 }
 
 void GL_Renderer::push_quad_with_uv(Rect2 bounds, V4 color, Rect2 uv)
@@ -804,9 +805,9 @@ void GL_Renderer::push_quad_with_uv(Rect2 bounds, V4 color, Rect2 uv)
 void GL_Renderer::push_quad_with_uv_multicolor(Rect2 bounds, V4 color00, V4 color01, V4 color10, V4 color11, Rect2 uv)
 {
     DEBUG_FUNCTION_T(DCDT_Renderer);
-    // s32 firstVertex = this->vertexCount;
+    // s32 firstVertex = m_vertex_count;
 
-    GL_VertexData* vertex = this->vertices + this->vertexCount;
+    GL_VertexData* vertex = m_vertices + m_vertex_count;
 
     f32 minX = bounds.x;
     f32 maxX = bounds.x + bounds.w;
@@ -845,12 +846,12 @@ void GL_Renderer::push_quad_with_uv_multicolor(Rect2 bounds, V4 color00, V4 colo
     vertex->uv.x = minU;
     vertex->uv.y = maxV;
 
-    this->vertexCount += 4;
+    m_vertex_count += 4;
 
 // NB: See comment in GL_initializeRenderer() - we can use the same buffer index buffer data
 // always, as long as we only render quads.
 #if 0
-	GLuint *index = this->indices + this->indexCount;
+	GLuint *index = m_indices + m_index_count;
 	index[0] = firstVertex + 0;
 	index[1] = firstVertex + 1;
 	index[2] = firstVertex + 2;
@@ -858,7 +859,7 @@ void GL_Renderer::push_quad_with_uv_multicolor(Rect2 bounds, V4 color00, V4 colo
 	index[4] = firstVertex + 2;
 	index[5] = firstVertex + 3;
 #endif
-    this->indexCount += 6;
+    m_index_count += 6;
 }
 
 void GL_Renderer::flush_vertices()
@@ -868,9 +869,9 @@ void GL_Renderer::flush_vertices()
     // Fill VBO
     {
         // DEBUG_BLOCK_T("flushVertices - Fill VBO", DCDT_Renderer);
-        ASSERT(this->vertexCount <= RENDER_BATCH_VERTEX_COUNT); // Tried to render too many vertices at once!
-        GLint vBufferSizeNeeded = this->vertexCount * sizeof(this->vertices[0]);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, vBufferSizeNeeded, this->vertices);
+        ASSERT(m_vertex_count <= RENDER_BATCH_VERTEX_COUNT); // Tried to render too many vertices at once!
+        GLint vBufferSizeNeeded = m_vertex_count * sizeof(m_vertices[0]);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, vBufferSizeNeeded, m_vertices);
     }
 
 // Fill IBO
@@ -879,19 +880,19 @@ void GL_Renderer::flush_vertices()
 #if 0
 	{
 		DEBUG_BLOCK_T("flushVertices - Fill IBO", DCDT_Renderer);
-		ASSERT(this->indexCount <= RENDER_BATCH_INDEX_COUNT); //Tried to render too many indices at once!
-		GLint iBufferSizeNeeded = this->indexCount * sizeof(this->indices[0]);
-		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, iBufferSizeNeeded, this->indices);
+		ASSERT(m_index_count <= RENDER_BATCH_INDEX_COUNT); //Tried to render too many indices at once!
+		GLint iBufferSizeNeeded = m_index_count * sizeof(m_indices[0]);
+		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, iBufferSizeNeeded, m_indices);
 	}
 #endif
 
     {
         // DEBUG_BLOCK_T("flushVertices - glDrawElements", DCDT_Renderer);
-        glDrawElements(GL_TRIANGLES, this->indexCount, GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, m_index_count, GL_UNSIGNED_INT, nullptr);
     }
 
-    DEBUG_DRAW_CALL(this->shaders.get(this->currentShader)->asset->shortName, (this->currentTexture == nullptr) ? nullString : this->currentTexture->shortName, (this->vertexCount >> 2));
+    DEBUG_DRAW_CALL(m_shaders.get(m_current_shader)->asset->shortName, (m_current_texture == nullptr) ? nullString : m_current_texture->shortName, (m_vertex_count >> 2));
 
-    this->vertexCount = 0;
-    this->indexCount = 0;
+    m_vertex_count = 0;
+    m_index_count = 0;
 }

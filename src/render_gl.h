@@ -51,7 +51,10 @@ int const RENDER_BATCH_SIZE = 1024;
 int const RENDER_BATCH_VERTEX_COUNT = RENDER_BATCH_SIZE * 4;
 int const RENDER_BATCH_INDEX_COUNT = RENDER_BATCH_SIZE * 6;
 
-struct GL_Renderer final : public Renderer {
+class GL_Renderer final : public Renderer {
+public:
+    static bool initialize(SDL_Window*);
+
     virtual ~GL_Renderer() override = default;
     // FIXME: Move free() into the destructor, once I sort out the MemoryArena mess.
     virtual void free() override;
@@ -70,31 +73,27 @@ private:
     void push_quad_with_uv_multicolor(Rect2 bounds, V4 color00, V4 color01, V4 color10, V4 color11, Rect2 uv);
     void flush_vertices();
 
-public:
-    // FIXME: Un-publicize
-    SDL_GLContext context;
+    SDL_GLContext m_context {};
 
-    ChunkedArray<GL_ShaderProgram> shaders;
-    s32 currentShader;
+    ChunkedArray<GL_ShaderProgram> m_shaders {};
+    s32 m_current_shader { 0 };
 
-    GLuint VBO;
-    GLuint IBO;
+    GLuint m_vbo { 0 };
+    GLuint m_ibo { 0 };
 
-    s32 vertexCount;
-    s32 indexCount;
-    GL_VertexData vertices[RENDER_BATCH_VERTEX_COUNT];
-    GLuint indices[RENDER_BATCH_INDEX_COUNT];
+    s32 m_vertex_count { 0 };
+    s32 m_index_count { 0 };
+    GL_VertexData m_vertices[RENDER_BATCH_VERTEX_COUNT] {};
+    GLuint m_indices[RENDER_BATCH_INDEX_COUNT] {};
 
-    u32 paletteTextureID;
-    u32 rawTextureID; // TODO: @Speed: Using one texture means that it'll get resized a lot. That's probably really bad!
+    u32 m_palette_texture_id { 0 };
+    u32 m_raw_texture_id { 0 }; // TODO: @Speed: Using one texture means that it'll get resized a lot. That's probably really bad!
 
-    Stack<Rect2I> scissorStack;
+    Stack<Rect2I> m_scissor_stack {};
 
     // For debugging only
-    Asset* currentTexture;
+    Asset* m_current_texture { nullptr };
 };
-
-bool GL_initializeRenderer(SDL_Window* window);
 
 void logGLError(GLenum errorCode);
 void GLAPIENTRY GL_debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* userParam);
