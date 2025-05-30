@@ -145,7 +145,6 @@ AppState globalAppState;
 #include "land_value.cpp"
 #include "line_reader.cpp"
 #include "util/LinkedList.h"
-#include "pathing.cpp"
 #include "pollution.cpp"
 #include "power.cpp"
 #include "render.cpp"
