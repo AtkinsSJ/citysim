@@ -221,12 +221,11 @@ struct Renderer {
         s8 untextured;
     } shaderIds;
 
-    // Don't access these directly!
-    void (*windowResized)(s32, s32);
-    void (*render)(Array<RenderBuffer*>);
-    void (*loadAssets)();
-    void (*unloadAssets)();
-    void (*free)();
+    virtual void on_window_resized(s32 width, s32 height) = 0;
+    virtual void render(Array<RenderBuffer*>) = 0;
+    virtual void load_assets() = 0;
+    virtual void unload_assets() = 0;
+    virtual void free() = 0;
 };
 
 void initRenderer(MemoryArena* renderArena, SDL_Window* window);

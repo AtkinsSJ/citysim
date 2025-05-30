@@ -53,7 +53,25 @@ int const RENDER_BATCH_INDEX_COUNT = RENDER_BATCH_SIZE * 6;
 
 struct GL_Renderer final : public Renderer {
     virtual ~GL_Renderer() override = default;
+    // FIXME: Move free() into the destructor, once I sort out the MemoryArena mess.
+    virtual void free() override;
 
+    virtual void on_window_resized(s32 width, s32 height) override;
+    virtual void render(Array<RenderBuffer*>) override;
+    virtual void load_assets() override;
+    virtual void unload_assets() override;
+
+    GL_ShaderProgram* use_shader(s8 shaderID);
+
+private:
+    void upload_texture_2d(GLenum pixelFormat, s32 width, s32 height, void* pixelData);
+    void push_quad(Rect2 bounds, V4 color);
+    void push_quad_with_uv(Rect2 bounds, V4 color, Rect2 uv);
+    void push_quad_with_uv_multicolor(Rect2 bounds, V4 color00, V4 color01, V4 color10, V4 color11, Rect2 uv);
+    void flush_vertices();
+
+public:
+    // FIXME: Un-publicize
     SDL_GLContext context;
 
     ChunkedArray<GL_ShaderProgram> shaders;
@@ -77,11 +95,6 @@ struct GL_Renderer final : public Renderer {
 };
 
 bool GL_initializeRenderer(SDL_Window* window);
-void GL_render(Array<RenderBuffer*> buffers);
-void GL_windowResized(s32 newWidth, s32 newHeight);
-void GL_loadAssets();
-void GL_unloadAssets();
-void GL_freeRenderer();
 
 void logGLError(GLenum errorCode);
 void GLAPIENTRY GL_debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* userParam);
@@ -91,11 +104,3 @@ bool compileShader(GL_ShaderProgram* glShader, String shaderName, Shader* shader
 // NB: Using char* because we have to pass the names to GL!
 void loadShaderAttrib(GL_ShaderProgram* glShader, char const* attribName, int* attribLocation);
 void loadShaderUniform(GL_ShaderProgram* glShader, char const* uniformName, int* uniformLocation);
-GL_ShaderProgram* useShader(GL_Renderer* gl, s8 shaderID);
-
-// Internal
-void uploadTexture2D(GLenum pixelFormat, s32 width, s32 height, void* pixelData);
-void pushQuad(GL_Renderer* gl, Rect2 bounds, V4 color);
-void pushQuadWithUV(GL_Renderer* gl, Rect2 bounds, V4 color, Rect2 uv);
-void pushQuadWithUVMulticolor(GL_Renderer* gl, Rect2 bounds, V4 color00, V4 color01, V4 color10, V4 color11, Rect2 uv);
-void flushVertices(GL_Renderer* gl);

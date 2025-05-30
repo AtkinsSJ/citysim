@@ -97,7 +97,7 @@ void handleWindowEvent(SDL_WindowEvent* event)
         s_renderer->windowWidth = event->data1;
         s_renderer->windowHeight = event->data2;
 
-        s_renderer->windowResized(s_renderer->windowWidth, s_renderer->windowHeight);
+        s_renderer->on_window_resized(s_renderer->windowWidth, s_renderer->windowHeight);
 
         V2 windowSize = v2(s_renderer->windowWidth, s_renderer->windowHeight);
 
@@ -123,7 +123,7 @@ void render()
 
 void rendererLoadAssets()
 {
-    s_renderer->loadAssets();
+    s_renderer->load_assets();
 
     // Cache the shader IDs so we don't have to do so many hash lookups
     s_renderer->shaderIds.pixelArt = getShader("pixelart.glsl"_s)->rendererShaderID;
@@ -142,11 +142,12 @@ void rendererUnloadAssets()
         s_renderer->systemWaitCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
     }
     SDL_SetCursor(s_renderer->systemWaitCursor);
-    s_renderer->unloadAssets();
+    s_renderer->unload_assets();
 }
 
 void freeRenderer()
 {
+    // FIXME: Put this in destructor
     if (s_renderer->systemWaitCursor != nullptr) {
         SDL_FreeCursor(s_renderer->systemWaitCursor);
         s_renderer->systemWaitCursor = nullptr;
