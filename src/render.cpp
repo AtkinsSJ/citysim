@@ -44,36 +44,35 @@ inline f32 snapZoomLevel(f32 zoom)
     return (f32)clamp(round_f32(10 * zoom) * 0.1f, 0.1f, 10.0f);
 }
 
-void initRenderer(MemoryArena* renderArena, SDL_Window* window)
+void Renderer::init(SDL_Window* window)
 {
-    auto* renderer = s_renderer;
-    renderer->window = window;
-    SDL_GetWindowSize(window, &renderer->windowWidth, &renderer->windowHeight);
+    m_window = window;
+    SDL_GetWindowSize(window, &m_window_width, &m_window_height);
 
-    initPool<RenderBufferChunk>(&renderer->chunkPool, renderArena, &allocateRenderBufferChunk, renderer);
+    initPool<RenderBufferChunk>(&m_chunk_pool, &m_arena, &allocateRenderBufferChunk, this);
 
-    initPool<RenderBuffer>(&renderer->renderBufferPool, renderArena, [](MemoryArena* arena, void*) -> RenderBuffer* {
-			RenderBuffer *buffer = allocateStruct<RenderBuffer>(arena);
-			initRenderBuffer(arena, buffer, nullString, &s_renderer->chunkPool);
-			return buffer; }, renderer);
-    initRenderBuffer(renderArena, &renderer->worldBuffer, "WorldBuffer"_s, &renderer->chunkPool);
-    initRenderBuffer(renderArena, &renderer->worldOverlayBuffer, "WorldOverlayBuffer"_s, &renderer->chunkPool);
-    initRenderBuffer(renderArena, &renderer->uiBuffer, "UIBuffer"_s, &renderer->chunkPool);
-    initRenderBuffer(renderArena, &renderer->windowBuffer, "WindowBuffer"_s, &renderer->chunkPool);
-    initRenderBuffer(renderArena, &renderer->debugBuffer, "DebugBuffer"_s, &renderer->chunkPool);
+    initPool<RenderBuffer>(&m_render_buffer_pool, &m_arena, [](MemoryArena* arena, void*) -> RenderBuffer* {
+                        RenderBuffer *buffer = allocateStruct<RenderBuffer>(arena);
+                        initRenderBuffer(arena, buffer, nullString, &m_chunk_pool);
+                        return buffer; }, this);
+    initRenderBuffer(&m_arena, &m_world_buffer, "WorldBuffer"_s, &m_chunk_pool);
+    initRenderBuffer(&m_arena, &m_world_overlay_buffer, "WorldOverlayBuffer"_s, &m_chunk_pool);
+    initRenderBuffer(&m_arena, &m_ui_buffer, "UIBuffer"_s, &m_chunk_pool);
+    initRenderBuffer(&m_arena, &m_window_buffer, "WindowBuffer"_s, &m_chunk_pool);
+    initRenderBuffer(&m_arena, &m_debug_buffer, "DebugBuffer"_s, &m_chunk_pool);
 
-    renderer->renderBuffers = allocateArray<RenderBuffer*>(renderArena, 5);
-    renderer->renderBuffers.append(&renderer->worldBuffer);
-    renderer->renderBuffers.append(&renderer->worldOverlayBuffer);
-    renderer->renderBuffers.append(&renderer->uiBuffer);
-    renderer->renderBuffers.append(&renderer->windowBuffer);
-    renderer->renderBuffers.append(&renderer->debugBuffer);
+    m_render_buffers = allocateArray<RenderBuffer*>(&m_arena, 5);
+    m_render_buffers.append(&m_world_buffer);
+    m_render_buffers.append(&m_world_overlay_buffer);
+    m_render_buffers.append(&m_ui_buffer);
+    m_render_buffers.append(&m_window_buffer);
+    m_render_buffers.append(&m_debug_buffer);
 
     // Init cameras
-    V2 windowSize = v2(renderer->windowWidth, renderer->windowHeight);
+    V2 windowSize = v2(m_window_width, m_window_height);
     f32 const TILE_SIZE = 16.0f;
-    initCamera(&renderer->world_camera(), windowSize, 1.0f / TILE_SIZE, 10000.0f, -10000.0f);
-    initCamera(&renderer->ui_camera(), windowSize, 1.0f, 10000.0f, -10000.0f, windowSize * 0.5f);
+    initCamera(&world_camera(), windowSize, 1.0f / TILE_SIZE, 10000.0f, -10000.0f);
+    initCamera(&ui_camera(), windowSize, 1.0f, 10000.0f, -10000.0f, windowSize * 0.5f);
 
     // Hide cursor until stuff loads
     setCursorVisible(false);
@@ -110,7 +109,7 @@ void handleWindowEvent(SDL_WindowEvent* event)
 
 void render()
 {
-    DEBUG_POOL(&renderer->renderBufferPool, "renderBufferPool");
+    DEBUG_POOL(&renderer->m_render_buffer_pool, "m_render_buffer_pool");
     DEBUG_POOL(&renderer->chunkPool, "renderChunkPool");
 
     s_renderer->render(s_renderer->renderBuffers);
@@ -297,7 +296,7 @@ void clearRenderBuffer(RenderBuffer* buffer)
 
 inline RenderBuffer* getTemporaryRenderBuffer(String name)
 {
-    RenderBuffer* result = getItemFromPool(&s_renderer->renderBufferPool);
+    RenderBuffer* result = getItemFromPool(&s_renderer->m_render_buffer_pool);
 
     clearRenderBuffer(result);
 
@@ -313,7 +312,7 @@ void returnTemporaryRenderBuffer(RenderBuffer* buffer)
 {
     buffer->name = nullString;
     clearRenderBuffer(buffer);
-    addItemToPool(&s_renderer->renderBufferPool, buffer);
+    addItemToPool(&s_renderer->m_render_buffer_pool, buffer);
 }
 
 void transferRenderBufferData(RenderBuffer* buffer, RenderBuffer* targetBuffer)

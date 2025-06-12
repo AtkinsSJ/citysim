@@ -17,7 +17,7 @@ bool GL_Renderer::initialize(SDL_Window* window)
     if (!succeeded) {
         logCritical("Failed to allocate memory for GL_Renderer!"_s);
     } else {
-        initRenderer(&gl->renderArena, window);
+        gl->init(window);
 
         // Use GL3.1 Core
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);

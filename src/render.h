@@ -182,6 +182,8 @@ class Renderer {
 public:
     virtual ~Renderer() = default;
 
+    void init(SDL_Window* window);
+
     virtual void on_window_resized(s32 width, s32 height) = 0;
     virtual void render(Array<RenderBuffer*>) = 0;
     virtual void load_assets() = 0;
@@ -198,32 +200,33 @@ public:
     Camera& ui_camera() { return m_ui_camera; }
 
 protected:
-    MemoryArena renderArena;
+    MemoryArena m_arena;
 
-    SDL_Window* window;
-    s32 windowWidth;
-    s32 windowHeight;
-    bool isFullscreen;
+    SDL_Window* m_window;
+    s32 m_window_width;
+    s32 m_window_height;
+    bool m_is_fullscreen;
 
     Camera m_world_camera;
     Camera m_ui_camera;
 
     // Cursor stuff
-    String currentCursorName;
-    bool cursorIsVisible;
-    SDL_Cursor* systemWaitCursor;
+    String m_current_cursor_name;
+    bool m_cursor_is_visible;
+    SDL_Cursor* m_system_wait_cursor;
 
-    Pool<RenderBuffer> renderBufferPool;
-    Array<RenderBuffer*> renderBuffers;
+    Pool<RenderBuffer> m_render_buffer_pool;
+    Array<RenderBuffer*> m_render_buffers;
     RenderBuffer m_world_buffer;
     RenderBuffer m_world_overlay_buffer;
     RenderBuffer m_ui_buffer;
     RenderBuffer m_window_buffer;
     RenderBuffer m_debug_buffer;
 
-    smm renderBufferChunkSize { KB(64) };
-    Pool<RenderBufferChunk> chunkPool;
+    smm m_render_buffer_chunk_size { KB(64) };
+    Pool<RenderBufferChunk> m_chunk_pool;
 
+public:
     // Not convinced this is the best way of doing it, but it's better than what we had before!
     // Really, we do want to have this stuff in code, because it's accessed a LOT and we don't
     // want to be doing a million hashtable lookups all the time. It does feel like a hack, but
@@ -239,7 +242,6 @@ protected:
     } shaderIds;
 };
 
-void initRenderer(MemoryArena* renderArena, SDL_Window* window);
 Renderer* the_renderer();
 void set_the_renderer(Renderer*);
 void handleWindowEvent(SDL_WindowEvent* event);
