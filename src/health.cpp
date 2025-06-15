@@ -1,4 +1,4 @@
-#pragma once
+
 
 inline f32 getHealthCoveragePercentAt(City* city, s32 x, s32 y)
 {

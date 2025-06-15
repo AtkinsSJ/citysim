@@ -1,4 +1,4 @@
-#pragma once
+
 
 LineReader readLines(String filename, Blob data, u32 flags, char commentChar)
 {

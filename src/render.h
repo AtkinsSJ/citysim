@@ -1,6 +1,25 @@
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
 
-#include "util/Matrix4.h"
+#include "bmfont.h"
+#include "font.h"
+#include "types.h"
+#include <Assets/Forward.h>
+#include <SDL2/SDL_events.h>
+#include <Util/Basic.h>
+#include <Util/Matrix4.h>
+#include <Util/MemoryArena.h>
+#include <Util/Pool.h>
+#include <Util/Rectangle.h>
+#include <Util/String.h>
+#include <Util/Vector.h>
+
+struct RenderBuffer;
 
 // General rendering code.
 

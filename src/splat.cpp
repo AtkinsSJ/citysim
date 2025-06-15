@@ -1,4 +1,4 @@
-#pragma once
+
 
 Splat createRandomSplat(s32 centreX, s32 centreY, f32 minRadius, f32 maxRadius, s32 resolution, Random* random, s32 smoothness, MemoryArena* memoryArena)
 {

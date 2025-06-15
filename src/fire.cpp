@@ -1,4 +1,4 @@
-#pragma once
+
 
 void initFireLayer(FireLayer* layer, City* city, MemoryArena* gameArena)
 {

@@ -1,4 +1,4 @@
-#pragma once
+
 
 AppStatus updateAndRenderMainMenu(f32 /*deltaTime*/)
 {

@@ -1,4 +1,4 @@
-#pragma once
+
 
 void initDirtyRects(DirtyRects* dirtyRects, MemoryArena* arena, s32 expansionRadius, Rect2I bounds)
 {

@@ -1,4 +1,4 @@
-#pragma once
+
 
 void aboutWindowProc(UI::WindowContext* context, void* /*userData*/)
 {

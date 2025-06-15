@@ -1,4 +1,4 @@
-#pragma once
+
 
 void initPollutionLayer(PollutionLayer* layer, City* city, MemoryArena* gameArena)
 {

@@ -1,4 +1,4 @@
-#pragma once
+
 
 // Returns the part of 'filename' after the final '.'
 // eg, getFileExtension("foo.bar.baz") would return "baz".

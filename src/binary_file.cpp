@@ -1,4 +1,4 @@
-#pragma once
+
 
 void rleDecode(u8* source, u8* dest, smm destSize)
 {

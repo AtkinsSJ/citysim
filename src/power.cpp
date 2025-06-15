@@ -1,4 +1,4 @@
-#pragma once
+
 
 void initPowerLayer(PowerLayer* layer, City* city, MemoryArena* gameArena)
 {

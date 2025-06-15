@@ -1,4 +1,16 @@
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include <SDL2/SDL_rwops.h>
+#include <Util/Basic.h>
+#include <Util/Memory.h>
+#include <Util/MemoryArena.h>
+#include <Util/String.h>
 
 #ifdef __linux__
 #    include <dirent.h>

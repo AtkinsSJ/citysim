@@ -1,4 +1,4 @@
-#pragma once
+
 
 void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena)
 {

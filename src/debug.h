@@ -1,7 +1,9 @@
 #pragma once
 
-#include "util/HashTable.h"
-#include "util/LinkedList.h"
+#include "Util/HashTable.h"
+#include "Util/LinkedList.h"
+#include "Util/Pool.h"
+#include <SDL2/SDL_timer.h>
 
 #if BUILD_DEBUG
 
@@ -188,7 +190,7 @@ struct DebugBlock {
     DebugCodeData* codeData;
     u64 startTime;
 
-    DebugBlock(DebugCodeData* codeData)
+    explicit DebugBlock(DebugCodeData* codeData)
     {
         this->codeData = codeData;
         this->startTime = SDL_GetPerformanceCounter();

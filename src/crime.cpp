@@ -1,4 +1,4 @@
-#pragma once
+
 
 void initCrimeLayer(CrimeLayer* layer, City* city, MemoryArena* gameArena)
 {

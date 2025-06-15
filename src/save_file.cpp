@@ -1,4 +1,4 @@
-#pragma once
+
 
 bool writeSaveFile(FileHandle* file, GameState* gameState)
 {

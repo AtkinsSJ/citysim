@@ -1,4 +1,4 @@
-#pragma once
+
 
 void initTerrainLayer(TerrainLayer* layer, City* city, MemoryArena* gameArena)
 {

@@ -1,6 +1,13 @@
-#pragma once
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
 
-// platform_win32.cpp
+#include "platform.h"
+#define NOMINMAX
+#include <shellapi.h>
+#include <windows.h>
 
 void openUrlUnsafe(char const* url)
 {

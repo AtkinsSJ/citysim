@@ -1,4 +1,4 @@
-#pragma once
+
 
 AppStatus updateAndRenderCredits(f32 /*deltaTime*/)
 {

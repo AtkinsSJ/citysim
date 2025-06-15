@@ -1,6 +1,6 @@
-#pragma once
 
-#include "util/Deferred.h"
+
+#include "Util/Deferred.h"
 
 BuildingRef getReferenceTo(Building* building)
 {

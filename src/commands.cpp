@@ -1,4 +1,4 @@
-#pragma once
+
 #pragma warning(push)
 #pragma warning(disable : 4100) // Disable unused-arg warnings for commands, as they all have to take the same args.
 

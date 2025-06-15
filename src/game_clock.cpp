@@ -1,4 +1,4 @@
-#pragma once
+
 
 // We don't bother with leap years, so the month lengths are hard-coded
 u32 const DAYS_PER_YEAR = 365;

@@ -1,7 +1,15 @@
-#pragma once
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
 
-// platform_linux.cpp
+#include "file.h"
+#include "platform.h"
+#include <Util/Log.h>
+#include <Util/StringBuilder.h>
 #include <ctime>
+#include <dirent.h>
 #include <errno.h>
 #include <poll.h>
 #include <sys/inotify.h>

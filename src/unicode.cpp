@@ -1,5 +1,5 @@
-#pragma once
-#pragma once
+
+
 
 inline bool byteIsStartOfGlyph(char b)
 {

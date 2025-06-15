@@ -1,4 +1,4 @@
-#pragma once
+
 
 void initTransportLayer(TransportLayer* layer, City* city, MemoryArena* gameArena)
 {

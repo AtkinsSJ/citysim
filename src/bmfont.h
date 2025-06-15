@@ -1,4 +1,14 @@
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include <Assets/Forward.h>
+#include <Util/Basic.h>
+#include <Util/Forward.h>
 
 // See: http://www.angelcode.com/products/bmfont/doc/file_format.html
 
@@ -54,4 +64,4 @@ struct BMFont_Char {
 
 #pragma pack(pop)
 
-void loadBMFont(Blob data, struct Asset* asset);
+void loadBMFont(Blob data, Asset* asset);

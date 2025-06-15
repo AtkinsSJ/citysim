@@ -1,4 +1,4 @@
-#pragma once
+
 
 void WriteBuffer::init(s32 chunkSize_, MemoryArena* arena_)
 {

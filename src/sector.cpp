@@ -1,4 +1,4 @@
-#pragma once
+
 
 template<typename Sector>
 void initSectorGrid(SectorGrid<Sector>* grid, MemoryArena* arena, s32 cityWidth, s32 cityHeight, s32 sectorSize, s32 sectorsToUpdatePerTick)

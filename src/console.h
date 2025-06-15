@@ -1,6 +1,17 @@
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
 
-// NB: ConsoleLineStyleID is in uitheme.h
+#include "input.h"
+#include <UI/Forward.h>
+#include <UI/TextInput.h>
+#include <UI/UI.h>
+#include <UI/UITheme.h>
+#include <Util/ChunkedArray.h>
 
 struct ConsoleOutputLine {
     String text;

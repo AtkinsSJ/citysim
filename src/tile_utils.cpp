@@ -1,4 +1,4 @@
-#pragma once
+
 
 template<typename T>
 void applyEffect(EffectRadius* effectRadius, V2 effectCentre, EffectType type, Array2<T>* tileValues, Rect2I region, f32 scale)
