@@ -6,6 +6,15 @@
 
 #pragma once
 
+#include <SDL2/SDL_events.h>
+#include <SDL2/SDL_keycode.h>
+#include <SDL2/SDL_mouse.h>
+#include <SDL2/SDL_scancode.h>
+#include <Util/Basic.h>
+#include <Util/HashTable.h>
+#include <Util/String.h>
+#include <Util/Vector.h>
+
 int const KEYBOARD_KEY_COUNT = SDL_NUM_SCANCODES;
 
 enum MouseButton {

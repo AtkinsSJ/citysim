@@ -1,4 +1,15 @@
+/*
+ * Copyright (c) 2021-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include "binary_file.h"
+#include "file.h"
+#include "write_buffer.h"
+#include <Util/MemoryArena.h>
 
 struct BinaryFileWriter {
     MemoryArena* arena;
@@ -23,17 +34,61 @@ struct BinaryFileWriter {
     void addTOCEntry(FileIdentifier sectionID);
 
     template<typename T>
-    void startSection(FileIdentifier sectionID, u8 sectionVersion);
+    void startSection(FileIdentifier sectionID, u8 sectionVersion)
+    {
+        tocComplete = true;
+
+        sectionHeaderRange = buffer.reserve<FileSectionHeader>();
+        startOfSectionData = buffer.getCurrentPosition();
+
+        sectionHeader = {};
+        sectionHeader.identifier = sectionID;
+        sectionHeader.version = sectionVersion;
+
+        // Find our TOC entry
+        Maybe<WriteBufferRange> tocEntry = findTOCEntry(sectionID);
+        ASSERT(tocEntry.isValid); // Must add a TOC entry for each section in advance!
+        sectionTOCRange = tocEntry.value;
+
+        // Reserve our "section struct"
+        buffer.reserve<T>();
+    }
 
     s32 getSectionRelativeOffset();
 
     template<typename T>
-    FileArray appendArray(Array<T> data);
+    FileArray appendArray(Array<T> data)
+    {
+        FileArray result = {};
+        result.count = data.count;
+        result.relativeOffset = getSectionRelativeOffset();
+
+        for (s32 i = 0; i < data.count; i++) {
+            buffer.append<T>(&data[i]);
+        }
+
+        return result;
+    }
 
     template<typename T>
-    WriteBufferRange reserveArray(s32 length);
+    WriteBufferRange reserveArray(s32 length)
+    {
+        return buffer.reserveBytes(length * sizeof(T));
+    }
+
     template<typename T>
-    FileArray writeArray(Array<T> data, WriteBufferRange location);
+    FileArray writeArray(Array<T> data, WriteBufferRange location)
+    {
+        s32 dataLength = data.count * sizeof(T);
+        ASSERT(dataLength <= location.length);
+
+        buffer.overwriteAt(location.start, dataLength, data.items);
+
+        FileArray result = {};
+        result.count = data.count;
+        result.relativeOffset = location.start - startOfSectionData;
+        return result;
+    }
 
     FileBlob appendBlob(s32 length, u8* data, FileBlobCompressionScheme scheme);
     FileBlob appendBlob(Array2<u8>* data, FileBlobCompressionScheme scheme);
@@ -41,7 +96,21 @@ struct BinaryFileWriter {
     FileString appendString(String s);
 
     template<typename T>
-    void endSection(T* sectionStruct);
+    void endSection(T* sectionStruct)
+    {
+        buffer.overwriteAt(startOfSectionData, sizeof(T), sectionStruct);
+
+        // Update section header
+        u32 sectionLength = buffer.getLengthSince(startOfSectionData);
+        sectionHeader.length = sectionLength;
+        buffer.overwriteAt<FileSectionHeader>(sectionHeaderRange, &sectionHeader);
+
+        // Update TOC
+        FileTOCEntry tocEntry = buffer.readAt<FileTOCEntry>(sectionTOCRange);
+        tocEntry.offset = sectionHeaderRange.start;
+        tocEntry.length = sectionLength;
+        buffer.overwriteAt<FileTOCEntry>(sectionTOCRange, &tocEntry);
+    }
 
     bool outputToFile(FileHandle* file);
 

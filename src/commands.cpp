@@ -1,4 +1,17 @@
-#pragma once
+/*
+ * Copyright (c) 2017-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "AppState.h"
+#include "city.h"
+#include "console.h"
+#include "render.h"
+#include "settings.h"
+#include "terrain.h"
+#include <UI/Window.h>
+
 #pragma warning(push)
 #pragma warning(disable : 4100) // Disable unused-arg warnings for commands, as they all have to take the same args.
 
@@ -6,7 +19,7 @@
 
 static bool checkInGame()
 {
-    bool inGame = (globalAppState.gameState != nullptr);
+    bool inGame = (AppState::the().gameState != nullptr);
     if (!inGame) {
         consoleWriteLine("You can only do that when a game is in progress!"_s, CLS_Error);
     }
@@ -18,7 +31,7 @@ ConsoleCommand(debug_tools)
     if (!checkInGame())
         return;
 
-    GameState* gameState = globalAppState.gameState;
+    GameState* gameState = AppState::the().gameState;
 
     // @Hack: This sets the position to outside the camera, and then relies on it automatically snapping back into bounds
     auto* renderer = the_renderer();
@@ -30,7 +43,7 @@ ConsoleCommand(debug_tools)
 ConsoleCommand(exit)
 {
     consoleWriteLine("Quitting game..."_s, CLS_Success);
-    globalAppState.appStatus = AppStatus_Quit;
+    AppState::the().appStatus = AppStatus_Quit;
 }
 
 ConsoleCommand(funds)
@@ -43,7 +56,7 @@ ConsoleCommand(funds)
     Maybe<s64> amount = asInt(sAmount);
     if (amount.isValid) {
         consoleWriteLine(myprintf("Set funds to {0}"_s, { sAmount }), CLS_Success);
-        globalAppState.gameState->city.funds = truncate32(amount.value);
+        AppState::the().gameState->city.funds = truncate32(amount.value);
     } else {
         consoleWriteLine("Usage: funds amount, where amount is an integer"_s, CLS_Error);
     }
@@ -54,14 +67,16 @@ ConsoleCommand(generate)
     if (!checkInGame())
         return;
 
-    City* city = &globalAppState.gameState->city;
+    auto& app_state = AppState::the();
+
+    City* city = &app_state.gameState->city;
     // TODO: Some kind of reset would be better than this, but this is temporary until we add
     // proper terrain generation and UI, so meh.
     if (city->buildings.count > 0) {
         demolishRect(city, city->bounds);
         city->highestBuildingID = 0;
     }
-    generateTerrain(city, &globalAppState.gameState->gameRandom);
+    generateTerrain(city, &app_state.gameState->gameRandom);
 
     consoleWriteLine("Generated new map"_s, CLS_Success);
 }
@@ -89,14 +104,14 @@ ConsoleCommand(map_info)
     if (!checkInGame())
         return;
 
-    City* city = &globalAppState.gameState->city;
+    City* city = &AppState::the().gameState->city;
 
     consoleWriteLine(myprintf("Map: {0} x {1} tiles. Seed: {2}"_s, { formatInt(city->bounds.w), formatInt(city->bounds.h), formatInt(city->terrainLayer.terrainGenerationSeed) }), CLS_Success);
 }
 
 ConsoleCommand(mark_all_dirty)
 {
-    City* city = &globalAppState.gameState->city;
+    City* city = &AppState::the().gameState->city;
     markAreaDirty(city, city->bounds);
 }
 
@@ -117,38 +132,40 @@ ConsoleCommand(show_layer)
     if (!checkInGame())
         return;
 
+    auto& app_state = AppState::the();
+
     if (argumentsCount == 0) {
         // Hide layers
-        globalAppState.gameState->dataLayerToDraw = DataView_None;
+        app_state.gameState->dataLayerToDraw = DataView_None;
         consoleWriteLine("Hiding data layers"_s, CLS_Success);
     } else if (argumentsCount == 1) {
         String layerName = nextToken(remainder, &remainder);
         if (equals(layerName, "crime"_s)) {
-            globalAppState.gameState->dataLayerToDraw = DataView_Crime;
+            app_state.gameState->dataLayerToDraw = DataView_Crime;
             consoleWriteLine("Showing crime layer"_s, CLS_Success);
         } else if (equals(layerName, "des_res"_s)) {
-            globalAppState.gameState->dataLayerToDraw = DataView_Desirability_Residential;
+            app_state.gameState->dataLayerToDraw = DataView_Desirability_Residential;
             consoleWriteLine("Showing residential desirability"_s, CLS_Success);
         } else if (equals(layerName, "des_com"_s)) {
-            globalAppState.gameState->dataLayerToDraw = DataView_Desirability_Commercial;
+            app_state.gameState->dataLayerToDraw = DataView_Desirability_Commercial;
             consoleWriteLine("Showing commercial desirability"_s, CLS_Success);
         } else if (equals(layerName, "des_ind"_s)) {
-            globalAppState.gameState->dataLayerToDraw = DataView_Desirability_Industrial;
+            app_state.gameState->dataLayerToDraw = DataView_Desirability_Industrial;
             consoleWriteLine("Showing industrial desirability"_s, CLS_Success);
         } else if (equals(layerName, "fire"_s)) {
-            globalAppState.gameState->dataLayerToDraw = DataView_Fire;
+            app_state.gameState->dataLayerToDraw = DataView_Fire;
             consoleWriteLine("Showing fire layer"_s, CLS_Success);
         } else if (equals(layerName, "health"_s)) {
-            globalAppState.gameState->dataLayerToDraw = DataView_Health;
+            app_state.gameState->dataLayerToDraw = DataView_Health;
             consoleWriteLine("Showing health layer"_s, CLS_Success);
         } else if (equals(layerName, "land_value"_s)) {
-            globalAppState.gameState->dataLayerToDraw = DataView_LandValue;
+            app_state.gameState->dataLayerToDraw = DataView_LandValue;
             consoleWriteLine("Showing land value layer"_s, CLS_Success);
         } else if (equals(layerName, "pollution"_s)) {
-            globalAppState.gameState->dataLayerToDraw = DataView_Pollution;
+            app_state.gameState->dataLayerToDraw = DataView_Pollution;
             consoleWriteLine("Showing pollution layer"_s, CLS_Success);
         } else if (equals(layerName, "power"_s)) {
-            globalAppState.gameState->dataLayerToDraw = DataView_Power;
+            app_state.gameState->dataLayerToDraw = DataView_Power;
             consoleWriteLine("Showing power layer"_s, CLS_Success);
         } else {
             consoleWriteLine("Usage: show_layer (layer_name), or with no argument to hide the data layer. Layer names are: crime, des_res, des_com, des_ind, fire, health, land_value, pollution, power"_s, CLS_Error);
@@ -158,8 +175,10 @@ ConsoleCommand(show_layer)
 
 ConsoleCommand(speed)
 {
+    auto& app_state = AppState::the();
+
     if (argumentsCount == 0) {
-        consoleWriteLine(myprintf("Current game speed: {0}"_s, { formatFloat(globalAppState.speedMultiplier, 3) }), CLS_Success);
+        consoleWriteLine(myprintf("Current game speed: {0}"_s, { formatFloat(app_state.speedMultiplier, 3) }), CLS_Success);
     } else {
         String remainder = arguments;
 
@@ -167,7 +186,7 @@ ConsoleCommand(speed)
 
         if (speedMultiplier.isValid) {
             f32 multiplier = (f32)speedMultiplier.value;
-            globalAppState.setSpeedMultiplier(multiplier);
+            app_state.setSpeedMultiplier(multiplier);
             consoleWriteLine(myprintf("Set speed to {0}"_s, { formatFloat(multiplier, 3) }), CLS_Success);
         } else {
             consoleWriteLine("Usage: speed (multiplier), where multiplier is a float, or with no argument to list the current speed"_s, CLS_Error);
@@ -234,7 +253,7 @@ void initCommands(Console* console)
 {
     // NB: Increase the count before we reach it - hash tables like lots of extra space!
     s32 commandCapacity = 128;
-    console->commands = allocateFixedSizeHashTable<Command>(&globalAppState.systemArena, commandCapacity);
+    console->commands = allocateFixedSizeHashTable<Command>(&AppState::the().systemArena, commandCapacity);
 
     // NB: a max-arguments value of -1 means "no maximum"
 #define AddCommand(name, minArgs, maxArgs) console->commands.put(#name##_h, Command(#name##_h, &cmd_##name, minArgs, maxArgs))

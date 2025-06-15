@@ -1,4 +1,21 @@
+/*
+ * Copyright (c) 2018-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include "entity.h"
+#include "game_clock.h"
+#include "tile_utils.h"
+#include "transport.h"
+#include <Sim/BuildingRef.h>
+#include <Util/Flags.h>
+#include <Util/OccupancyArray.h>
+#include <Util/StringTable.h>
+
+struct City;
 
 enum BuildMethod {
     BuildMethod_None,
@@ -120,7 +137,7 @@ struct BuildingCatalogue {
     s32 overallMaxBuildingDim;
 };
 
-BuildingCatalogue buildingCatalogue = {};
+inline BuildingCatalogue buildingCatalogue = {};
 
 enum BuildingProblemType {
     BuildingProblem_Fire,
@@ -136,7 +153,7 @@ struct BuildingProblem {
     GameTimestamp startDate;
 };
 
-String buildingProblemNames[BuildingProblemCount] = {
+inline String buildingProblemNames[BuildingProblemCount] = {
     "building_problem_fire"_s,
     "building_problem_no_power"_s,
     "building_problem_no_transport"_s
@@ -161,21 +178,6 @@ struct Building {
     BuildingProblem problems[BuildingProblemCount];
 };
 
-// NB: If someone needs a pointer to a building across multiple frames, use one of these references.
-// The position lets you look-up the building via getBuildingAt(), and the buildingID lets you check
-// that the found building is indeed the one you were after.
-// You'd then do something like this:
-//     Building *theBuilding = getBuilding(city, buildingRef);
-// which would look-up the building, check its ID, and return the Building* if it matches
-// and null if it doesn't, or if no building is at the position any more.
-// - Sam, 19/08/2019
-struct BuildingRef {
-    u32 buildingID;
-    V2I buildingPos;
-};
-BuildingRef getReferenceTo(Building* building);
-Building* getBuilding(City* city, BuildingRef ref);
-
 void initBuildingCatalogue();
 
 BuildingDef* appendNewBuildingDef(String name);
@@ -191,6 +193,7 @@ s32 getRequiredPower(Building* building);
 bool buildingHasPower(Building* building);
 
 void initBuilding(Building* building);
+void initBuilding(Building* building, s32 id, BuildingDef* def, Rect2I footprint, GameTimestamp creationDate);
 void updateBuilding(City* city, Building* building);
 void addProblem(Building* building, BuildingProblemType problem);
 void removeProblem(Building* building, BuildingProblemType problem);
@@ -211,12 +214,8 @@ Maybe<BuildingDef*> findBuildingIntersection(BuildingDef* defA, BuildingDef* def
 // - Sam, 15/06/2019
 ChunkedArray<BuildingDef*>* getConstructibleBuildings();
 
-template<typename Filter>
-BuildingDef* findRandomZoneBuilding(ZoneType zoneType, Random* random, Filter filter);
-
 s32 getMaxBuildingSize(ZoneType zoneType);
 
-struct City;
 void updateBuildingVariant(City* city, Building* building, BuildingDef* def = nullptr);
 void updateAdjacentBuildingVariants(City* city, Rect2I footprint);
 

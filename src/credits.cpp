@@ -1,4 +1,14 @@
-#pragma once
+/*
+ * Copyright (c) 2016-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "credits.h"
+#include "line_reader.h"
+#include <Assets/AssetManager.h>
+#include <UI/UI.h>
+#include <Util/Vector.h>
 
 AppStatus updateAndRenderCredits(f32 /*deltaTime*/)
 {

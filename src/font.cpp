@@ -1,6 +1,16 @@
-// font.cpp
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
 
-inline BitmapFontGlyphEntry* findGlyphInternal(BitmapFont* font, unichar targetChar)
+#include "font.h"
+#include "debug.h"
+#include "render.h"
+#include "unicode.h"
+#include <Util/Log.h>
+
+ BitmapFontGlyphEntry* findGlyphInternal(BitmapFont* font, unichar targetChar)
 {
     BitmapFontGlyphEntry* result = nullptr;
 

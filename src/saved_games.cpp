@@ -1,4 +1,16 @@
-#pragma once
+/*
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "saved_games.h"
+#include "AppState.h"
+#include "binary_file_reader.h"
+#include "input.h"
+#include "save_file.h"
+#include "settings.h"
+#include <UI/Window.h>
 
 void initSavedGamesCatalogue()
 {
@@ -290,12 +302,13 @@ void confirmDeleteSaveWindowProc(UI::WindowContext* context, void* /*userData*/)
 
 void loadGame(SavedGameInfo* savedGame)
 {
-    if (globalAppState.gameState != nullptr) {
-        freeGameState(globalAppState.gameState);
+    auto& app_state = AppState::the();
+    if (app_state.gameState != nullptr) {
+        freeGameState(app_state.gameState);
     }
 
-    globalAppState.gameState = newGameState();
-    GameState* gameState = globalAppState.gameState;
+    app_state.gameState = newGameState();
+    GameState* gameState = app_state.gameState;
 
     u32 startTicks = SDL_GetTicks();
 
@@ -309,7 +322,7 @@ void loadGame(SavedGameInfo* savedGame)
 
         UI::pushToast(getText("msg_load_success"_s, { savedGame->shortName }));
 
-        globalAppState.appStatus = AppStatus_Game;
+        app_state.appStatus = AppStatus_Game;
 
         UI::closeAllWindows();
 
@@ -331,7 +344,7 @@ bool saveGame(String saveName)
 
     String savePath = constructPath({ catalogue->savedGamesPath, saveFilename });
     FileHandle saveFile = openFile(savePath, FileAccess_Write);
-    bool saveSucceeded = writeSaveFile(&saveFile, globalAppState.gameState);
+    bool saveSucceeded = writeSaveFile(&saveFile, AppState::the().gameState);
     closeFile(&saveFile);
 
     if (saveSucceeded) {

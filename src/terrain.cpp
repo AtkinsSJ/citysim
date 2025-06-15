@@ -1,4 +1,22 @@
-#pragma once
+/*
+ * Copyright (c) 2018-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "terrain.h"
+#include "AppState.h"
+#include "binary_file_reader.h"
+#include "binary_file_writer.h"
+#include "city.h"
+#include "line_reader.h"
+#include "render.h"
+#include "save_file.h"
+#include "splat.h"
+#include <Assets/AssetManager.h>
+#include <UI/Window.h>
+
+TerrainCatalogue s_terrain_catalogue = {};
 
 void initTerrainLayer(TerrainLayer* layer, City* city, MemoryArena* gameArena)
 {
@@ -11,14 +29,14 @@ void initTerrainLayer(TerrainLayer* layer, City* city, MemoryArena* gameArena)
     layer->tileBorderSprite = allocateArray2<SpriteRef>(gameArena, city->bounds.w, city->bounds.h);
 }
 
-inline TerrainDef* getTerrainAt(City* city, s32 x, s32 y)
+ TerrainDef* getTerrainAt(City* city, s32 x, s32 y)
 {
     u8 terrainType = city->terrainLayer.tileTerrainType.getIfExists(x, y, 0);
 
     return getTerrainDef(terrainType);
 }
 
-inline u8 getTerrainHeightAt(City* city, s32 x, s32 y)
+ u8 getTerrainHeightAt(City* city, s32 x, s32 y)
 {
     return city->terrainLayer.tileHeight.get(x, y);
 }
@@ -42,7 +60,7 @@ void setTerrainAt(City* city, s32 x, s32 y, u8 terrainType)
     updateDistanceToWater(city, irectXYWH(x, y, 1, 1));
 }
 
-inline u8 getDistanceToWaterAt(City* city, s32 x, s32 y)
+ u8 getDistanceToWaterAt(City* city, s32 x, s32 y)
 {
     return city->terrainLayer.tileDistanceToWater.get(x, y);
 }
@@ -73,19 +91,19 @@ void updateDistanceToWater(City* city, Rect2I dirtyBounds)
 
 void initTerrainCatalogue()
 {
-    terrainCatalogue = {};
+    s_terrain_catalogue = {};
 
-    initOccupancyArray(&terrainCatalogue.terrainDefs, &globalAppState.systemArena, 128);
-    Indexed<TerrainDef*> nullTerrainDef = terrainCatalogue.terrainDefs.append();
+    initOccupancyArray(&s_terrain_catalogue.terrainDefs, &AppState::the().systemArena, 128);
+    Indexed<TerrainDef*> nullTerrainDef = s_terrain_catalogue.terrainDefs.append();
     *nullTerrainDef.value = {};
 
-    initHashTable(&terrainCatalogue.terrainDefsByName, 0.75f, 128);
-    initStringTable(&terrainCatalogue.terrainNames);
+    initHashTable(&s_terrain_catalogue.terrainDefsByName, 0.75f, 128);
+    initStringTable(&s_terrain_catalogue.terrainNames);
 
-    initHashTable(&terrainCatalogue.terrainNameToType, 0.75f, 128);
-    terrainCatalogue.terrainNameToType.put(nullString, 0);
+    initHashTable(&s_terrain_catalogue.terrainNameToType, 0.75f, 128);
+    s_terrain_catalogue.terrainNameToType.put(nullString, 0);
 
-    initHashTable(&terrainCatalogue.terrainNameToOldType, 0.75f, 128);
+    initHashTable(&s_terrain_catalogue.terrainNameToOldType, 0.75f, 128);
 }
 
 void loadTerrainDefs(Blob data, Asset* asset)
@@ -126,7 +144,7 @@ void loadTerrainDefs(Blob data, Asset* asset)
                     return;
                 }
 
-                Indexed<TerrainDef*> slot = terrainCatalogue.terrainDefs.append();
+                Indexed<TerrainDef*> slot = s_terrain_catalogue.terrainDefs.append();
                 def = slot.value;
                 *def = {};
 
@@ -136,10 +154,10 @@ void loadTerrainDefs(Blob data, Asset* asset)
                 }
                 def->typeID = (u8)slot.index;
 
-                def->name = intern(&terrainCatalogue.terrainNames, name);
+                def->name = intern(&s_terrain_catalogue.terrainNames, name);
                 asset->terrainDefs.terrainIDs.append(def->name);
-                terrainCatalogue.terrainDefsByName.put(def->name, def);
-                terrainCatalogue.terrainNameToType.put(def->name, def->typeID);
+                s_terrain_catalogue.terrainDefsByName.put(def->name, def);
+                s_terrain_catalogue.terrainNameToType.put(def->name, def->typeID);
             } else {
                 error(&reader, "Unrecognised command: '{0}'"_s, { firstWord });
             }
@@ -177,19 +195,19 @@ void removeTerrainDefs(Array<String> namesToRemove)
         String terrainName = namesToRemove[nameIndex];
         s32 terrainIndex = findTerrainTypeByName(terrainName);
         if (terrainIndex > 0) {
-            terrainCatalogue.terrainDefs.removeIndex(terrainIndex);
+            s_terrain_catalogue.terrainDefs.removeIndex(terrainIndex);
 
-            terrainCatalogue.terrainNameToType.removeKey(terrainName);
+            s_terrain_catalogue.terrainNameToType.removeKey(terrainName);
         }
     }
 }
 
-inline TerrainDef* getTerrainDef(u8 terrainType)
+ TerrainDef* getTerrainDef(u8 terrainType)
 {
-    TerrainDef* result = terrainCatalogue.terrainDefs.get(0);
+    TerrainDef* result = s_terrain_catalogue.terrainDefs.get(0);
 
-    if (terrainType > 0 && terrainType < terrainCatalogue.terrainDefs.count) {
-        TerrainDef* found = terrainCatalogue.terrainDefs.get(terrainType);
+    if (terrainType > 0 && terrainType < s_terrain_catalogue.terrainDefs.count) {
+        TerrainDef* found = s_terrain_catalogue.terrainDefs.get(terrainType);
         if (found != nullptr)
             result = found;
     }
@@ -203,7 +221,7 @@ u8 findTerrainTypeByName(String name)
 
     u8 result = 0;
 
-    Maybe<TerrainDef*> def = terrainCatalogue.terrainDefsByName.findValue(name);
+    Maybe<TerrainDef*> def = s_terrain_catalogue.terrainDefsByName.findValue(name);
     if (def.isValid && def.value != nullptr) {
         result = def.value->typeID;
     }
@@ -254,6 +272,7 @@ void generateTerrain(City* city, Random* gameRandom)
     DEBUG_FUNCTION();
 
     TerrainLayer* layer = &city->terrainLayer;
+    auto& app_state = AppState::the();
 
     u8 tGround = truncate<u8>(findTerrainTypeByName("ground"_s));
     u8 tWater = truncate<u8>(findTerrainTypeByName("water"_s));
@@ -267,7 +286,7 @@ void generateTerrain(City* city, Random* gameRandom)
 
     for (s32 y = 0; y < city->bounds.h; y++) {
         for (s32 x = 0; x < city->bounds.w; x++) {
-            layer->tileSpriteOffset.set(x, y, randomInRange<u8>(&globalAppState.cosmeticRandom));
+            layer->tileSpriteOffset.set(x, y, randomInRange<u8>(&app_state.cosmeticRandom));
         }
     }
 
@@ -417,28 +436,28 @@ void assignTerrainSprites(City* city, Rect2I bounds)
 
 void saveTerrainTypes()
 {
-    terrainCatalogue.terrainNameToOldType.putAll(&terrainCatalogue.terrainNameToType);
+    s_terrain_catalogue.terrainNameToOldType.putAll(&s_terrain_catalogue.terrainNameToType);
 }
 
 void remapTerrainTypes(City* city)
 {
     // First, remap any Names that are not present in the current data, so they won't get
     // merged accidentally.
-    for (auto it = terrainCatalogue.terrainNameToOldType.iterate(); it.hasNext(); it.next()) {
+    for (auto it = s_terrain_catalogue.terrainNameToOldType.iterate(); it.hasNext(); it.next()) {
         auto entry = it.getEntry();
-        if (!terrainCatalogue.terrainNameToType.contains(entry->key)) {
-            terrainCatalogue.terrainNameToType.put(entry->key, (u8)terrainCatalogue.terrainNameToType.count);
+        if (!s_terrain_catalogue.terrainNameToType.contains(entry->key)) {
+            s_terrain_catalogue.terrainNameToType.put(entry->key, (u8)s_terrain_catalogue.terrainNameToType.count);
         }
     }
 
-    if (terrainCatalogue.terrainNameToOldType.count > 0) {
-        Array<u8> oldTypeToNewType = allocateArray<u8>(&temp_arena(), terrainCatalogue.terrainNameToOldType.count, true);
-        for (auto it = terrainCatalogue.terrainNameToOldType.iterate(); it.hasNext(); it.next()) {
+    if (s_terrain_catalogue.terrainNameToOldType.count > 0) {
+        Array<u8> oldTypeToNewType = allocateArray<u8>(&temp_arena(), s_terrain_catalogue.terrainNameToOldType.count, true);
+        for (auto it = s_terrain_catalogue.terrainNameToOldType.iterate(); it.hasNext(); it.next()) {
             auto entry = it.getEntry();
             String terrainName = entry->key;
             u8 oldType = entry->value;
 
-            oldTypeToNewType[oldType] = terrainCatalogue.terrainNameToType.findValue(terrainName).orDefault(0);
+            oldTypeToNewType[oldType] = s_terrain_catalogue.terrainNameToType.findValue(terrainName).orDefault(0);
         }
 
         TerrainLayer* layer = &city->terrainLayer;
@@ -465,10 +484,10 @@ void showTerrainWindow()
 void modifyTerrainWindowProc(UI::WindowContext* context, void*)
 {
     UI::Panel* ui = &context->windowPanel;
-    GameState* gameState = globalAppState.gameState;
+    GameState* gameState = AppState::the().gameState;
     bool terrainToolIsActive = (gameState->actionMode == ActionMode_SetTerrain);
 
-    for (auto it = terrainCatalogue.terrainDefs.iterate(); it.hasNext(); it.next()) {
+    for (auto it = s_terrain_catalogue.terrainDefs.iterate(); it.hasNext(); it.next()) {
         TerrainDef* terrain = it.get();
         if (terrain->typeID == 0)
             continue; // Skip the null terrain
@@ -489,10 +508,10 @@ void saveTerrainLayer(TerrainLayer* layer, BinaryFileWriter* writer)
     terrainSection.terrainGenerationSeed = layer->terrainGenerationSeed;
 
     // Terrain types table
-    s32 terrainDefCount = terrainCatalogue.terrainDefs.count - 1; // Skip the null def
+    s32 terrainDefCount = s_terrain_catalogue.terrainDefs.count - 1; // Skip the null def
     WriteBufferRange terrainTypeTableLoc = writer->reserveArray<SAVTerrainTypeEntry>(terrainDefCount);
     Array<SAVTerrainTypeEntry> terrainTypeTable = allocateArray<SAVTerrainTypeEntry>(writer->arena, terrainDefCount);
-    for (auto it = terrainCatalogue.terrainDefs.iterate(); it.hasNext(); it.next()) {
+    for (auto it = s_terrain_catalogue.terrainDefs.iterate(); it.hasNext(); it.next()) {
         TerrainDef* def = it.get();
         if (def->typeID == 0)
             continue; // Skip the null terrain def!

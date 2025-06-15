@@ -1,4 +1,16 @@
-#pragma once
+/*
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "power.h"
+#include "UI/Panel.h"
+#include "Util/Set.h"
+#include "binary_file_reader.h"
+#include "binary_file_writer.h"
+#include "city.h"
+#include "save_file.h"
 
 void initPowerLayer(PowerLayer* layer, City* city, MemoryArena* gameArena)
 {
@@ -38,12 +50,12 @@ void freePowerNetwork(PowerNetwork* network)
     network->groups.clear();
 }
 
-inline u8 getPowerGroupID(PowerSector* sector, s32 relX, s32 relY)
+ u8 getPowerGroupID(PowerSector* sector, s32 relX, s32 relY)
 {
     return sector->tilePowerGroup.get(relX, relY);
 }
 
-inline void setPowerGroupID(PowerSector* sector, s32 relX, s32 relY, u8 value)
+ void setPowerGroupID(PowerSector* sector, s32 relX, s32 relY, u8 value)
 {
     sector->tilePowerGroup.set(relX, relY, value);
 }
@@ -205,7 +217,7 @@ void floodFillSectorPowerGroup(PowerSector* sector, s32 x, s32 y, u8 fillValue)
     }
 }
 
-inline void setRectPowerGroupUnknown(PowerSector* sector, Rect2I area)
+ void setRectPowerGroupUnknown(PowerSector* sector, Rect2I area)
 {
     DEBUG_FUNCTION();
 

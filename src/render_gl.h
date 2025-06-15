@@ -14,6 +14,8 @@
 #    include <gl/glew.h>
 #endif
 
+#include "Util/ChunkedArray.h"
+#include "Util/Stack.h"
 #include "render.h"
 
 struct GL_VertexData {

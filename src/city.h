@@ -1,4 +1,28 @@
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include "budget.h"
+#include "crime.h"
+#include "education.h"
+#include "entity.h"
+#include "fire.h"
+#include "health.h"
+#include "land_value.h"
+#include "pollution.h"
+#include "power.h"
+#include "sector.h"
+#include "terrain.h"
+#include "zone.h"
+#include <Util/ChunkedArray.h>
+#include <Util/OccupancyArray.h>
+#include <Util/Rectangle.h>
+
+struct Building;
 
 struct CitySector {
     Rect2I bounds;
@@ -77,7 +101,26 @@ s32 calculateDemolitionCost(City* city, Rect2I area);
 void demolishRect(City* city, Rect2I area);
 
 template<typename T>
-Entity* addEntity(City* city, EntityType type, T* entityData);
+Entity* addEntity(City* city, EntityType type, T* entityData)
+{
+    Indexed<Entity*> entityRecord = city->entities.append();
+    // logInfo("Adding entity #{0}"_s, {formatInt(entityRecord.index)});
+    entityRecord.value->index = entityRecord.index;
+
+    Entity* entity = entityRecord.value;
+    entity->type = type;
+    // Make sure we're supplying entity data that matched the entity type!
+    ASSERT(checkEntityMatchesType<T>(entity));
+    entity->dataPointer = entityData;
+
+    entity->color = makeWhite();
+    entity->depth = 0;
+
+    entity->canBeDemolished = false;
+
+    return entity;
+}
+
 void removeEntity(City* city, Entity* entity);
 void drawEntities(City* city, Rect2I visibleTileBounds);
 

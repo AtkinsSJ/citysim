@@ -1,10 +1,16 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "settings.h"
+#include "line_reader.h"
+#include "render.h"
+#include <Assets/AssetManager.h>
+#include <SDL2/SDL_filesystem.h>
+#include <UI/Window.h>
+#include <Util/StringBuilder.h>
 
 static Settings* s_settings;
 
@@ -84,12 +90,12 @@ void initSettings()
 #undef REGISTER_SETTING
 }
 
-inline String getUserDataPath()
+String getUserDataPath()
 {
     return s_settings->userDataPath;
 }
 
-inline String getUserSettingsPath()
+String getUserSettingsPath()
 {
     return myprintf("{0}{1}"_s, { s_settings->userDataPath, s_settings->userSettingsFilename }, true);
 }
@@ -348,49 +354,4 @@ void settingsWindowProc(UI::WindowContext* context, void*)
         applySettings();
         context->closeRequested = true;
     }
-}
-
-template<typename T>
-T* getSettingDataRaw(SettingsState* state, SettingDef* def)
-{
-    // Make sure the requested type it the right one
-    switch (def->type) {
-    case SettingType::Bool:
-        ASSERT(typeid(T*) == typeid(bool*));
-        break;
-    case SettingType::Enum:
-        ASSERT(typeid(T*) == typeid(s32*));
-        break;
-    case SettingType::Percent:
-        ASSERT(typeid(T*) == typeid(f32*));
-        break;
-    case SettingType::S32:
-        ASSERT(typeid(T*) == typeid(s32*));
-        break;
-    case SettingType::S32_Range:
-        ASSERT(typeid(T*) == typeid(s32*));
-        break;
-    case SettingType::String:
-        ASSERT(typeid(T*) == typeid(String*));
-        break;
-    case SettingType::V2I:
-        ASSERT(typeid(T*) == typeid(V2I*));
-        break;
-        INVALID_DEFAULT_CASE;
-    }
-
-    T* firstItem = (T*)((u8*)(state) + def->offsetWithinSettingsState);
-    return firstItem;
-}
-
-template<typename T>
-inline T getSettingData(SettingsState* state, SettingDef* def)
-{
-    return *getSettingDataRaw<T>(state, def);
-}
-
-template<typename T>
-inline void setSettingData(SettingsState* state, SettingDef* def, T value)
-{
-    *getSettingDataRaw<T>(state, def) = value;
 }

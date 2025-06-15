@@ -1,4 +1,13 @@
-#pragma once
+/*
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "file.h"
+#include "debug.h"
+#include "platform.h"
+#include <Util/Log.h>
 
 // Returns the part of 'filename' after the final '.'
 // eg, getFileExtension("foo.bar.baz") would return "baz".
@@ -150,46 +159,6 @@ smm readData(FileHandle* file, smm position, smm size, void* result)
     return bytesRead;
 }
 
-template<typename T>
-bool readStruct(FileHandle* file, smm position, T* result)
-{
-    DEBUG_FUNCTION();
-
-    bool succeeded = true;
-
-    smm byteLength = sizeof(T);
-    smm bytesRead = readData(file, position, byteLength, result);
-    if (bytesRead != byteLength) {
-        succeeded = false;
-        logWarn("Failed to read struct '{0}' from file '{1}'"_s, { typeNameOf<T>(), file->path });
-    }
-
-    return succeeded;
-}
-
-template<typename T>
-bool readArray(FileHandle* file, smm position, s32 count, Array<T>* result)
-{
-    DEBUG_FUNCTION();
-
-    bool succeeded = false;
-
-    if (result->capacity >= count) {
-        smm byteLength = sizeof(T) * count;
-        smm bytesRead = readData(file, position, byteLength, result->items);
-        if (bytesRead == byteLength) {
-            result->count = count;
-            succeeded = true;
-        } else {
-            logWarn("Failed to read array of '{0}', length {1}, from file '{2}': Reached end of file"_s, { typeNameOf<T>(), formatInt(count), file->path });
-        }
-    } else {
-        logError("Failed to read array of '{0}', length {1}, from file '{2}': result parameter too small"_s, { typeNameOf<T>(), formatInt(count), file->path });
-    }
-
-    return succeeded;
-}
-
 File readFile(FileHandle* handle, MemoryArena* arena)
 {
     DEBUG_FUNCTION();
@@ -259,12 +228,6 @@ bool writeToFile(FileHandle* file, smm dataLength, void* data)
     return succeeded;
 }
 
-template<typename T>
-bool writeToFile(FileHandle* file, T* data)
-{
-    return writeToFile(file, sizeof(T), data);
-}
-
 DirectoryListingHandle beginDirectoryListing(String path, FileInfo* result)
 {
     return platform_beginDirectoryListing(path, result);
@@ -287,17 +250,17 @@ void stopDirectoryListing(DirectoryListingHandle* handle)
     }
 }
 
-inline bool hasNextFile(iterateDirectoryListing* iterator)
+ bool hasNextFile(iterateDirectoryListing* iterator)
 {
     return iterator->handle.isValid;
 }
 
-inline void findNextFile(iterateDirectoryListing* iterator)
+ void findNextFile(iterateDirectoryListing* iterator)
 {
     nextFileInDirectory(&iterator->handle, &iterator->fileInfo);
 }
 
-inline FileInfo* getFileInfo(iterateDirectoryListing* iterator)
+ FileInfo* getFileInfo(iterateDirectoryListing* iterator)
 {
     return &iterator->fileInfo;
 }

@@ -1,4 +1,19 @@
+/*
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include "file.h"
+#include <UI/TextInput.h>
+#include <UI/UI.h>
+#include <Util/ChunkedArray.h>
+#include <Util/String.h>
+#include <Util/StringTable.h>
+#include <Util/Time.h>
+#include <Util/Vector.h>
 
 struct SavedGameInfo {
     // File properties
@@ -39,7 +54,7 @@ struct SavedGamesCatalogue {
     UI::ScrollbarState savedGamesListScrollbar;
 };
 
-SavedGamesCatalogue savedGamesCatalogue;
+inline SavedGamesCatalogue savedGamesCatalogue;
 
 void initSavedGamesCatalogue();
 void updateSavedGamesCatalogue();

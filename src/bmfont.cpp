@@ -1,4 +1,13 @@
-#pragma once
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "bmfont.h"
+#include <Assets/Asset.h>
+#include <Assets/AssetManager.h>
+#include <Util/Memory.h>
 
 void loadBMFont(Blob data, Asset* asset)
 {

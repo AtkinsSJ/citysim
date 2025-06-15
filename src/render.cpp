@@ -5,7 +5,9 @@
  */
 
 #include "render.h"
-#include "util/Matrix4.h"
+#include "debug.h"
+#include <Assets/AssetManager.h>
+#include <Util/Matrix4.h>
 
 static Renderer* s_renderer;
 
@@ -39,7 +41,7 @@ void setCameraPos(Camera* camera, V2 position, f32 zoom)
     updateCameraMatrix(camera);
 }
 
-inline f32 snapZoomLevel(f32 zoom)
+ f32 snapZoomLevel(f32 zoom)
 {
     return (f32)clamp(round_f32(10 * zoom) * 0.1f, 0.1f, 10.0f);
 }
@@ -296,7 +298,7 @@ void clearRenderBuffer(RenderBuffer* buffer)
     buffer->currentChunk = nullptr;
 }
 
-inline RenderBuffer* getTemporaryRenderBuffer(String name)
+ RenderBuffer* getTemporaryRenderBuffer(String name)
 {
     RenderBuffer* result = getItemFromPool(&s_renderer->renderBufferPool);
 
@@ -338,7 +340,7 @@ void transferRenderBufferData(RenderBuffer* buffer, RenderBuffer* targetBuffer)
     clearRenderBuffer(buffer); // Make sure things are reset
 }
 
-inline void appendRenderItemType(RenderBuffer* buffer, RenderItemType type)
+ void appendRenderItemType(RenderBuffer* buffer, RenderItemType type)
 {
     *(RenderItemType*)(buffer->currentChunk->memory + buffer->currentChunk->used) = type;
     buffer->currentChunk->used += sizeof(RenderItemType);
@@ -381,41 +383,6 @@ u8* appendRenderItemInternal(RenderBuffer* buffer, RenderItemType type, smm size
     u8* result = (buffer->currentChunk->memory + buffer->currentChunk->used);
     buffer->currentChunk->used += size;
     return result;
-}
-
-template<typename T>
-inline T* appendRenderItem(RenderBuffer* buffer, RenderItemType type)
-{
-    u8* data = appendRenderItemInternal(buffer, type, sizeof(T), 0);
-    return (T*)data;
-}
-
-template<typename T>
-RenderItemAndData<T> appendRenderItem(RenderBuffer* buffer, RenderItemType type, smm dataSize)
-{
-    RenderItemAndData<T> result = {};
-
-    u8* bufferData = appendRenderItemInternal(buffer, type, sizeof(T) + dataSize, 0);
-    result.item = (T*)bufferData;
-    result.data = bufferData + sizeof(T);
-
-    return result;
-}
-
-template<typename T>
-inline T* readRenderItem(RenderBufferChunk* renderBufferChunk, smm* pos)
-{
-    T* item = (T*)(renderBufferChunk->memory + *pos);
-    *pos += sizeof(T);
-    return item;
-}
-
-template<typename T>
-inline T* readRenderData(RenderBufferChunk* renderBufferChunk, smm* pos, s32 count)
-{
-    T* item = (T*)(renderBufferChunk->memory + *pos);
-    *pos += sizeof(T) * count;
-    return item;
 }
 
 void addSetCamera(RenderBuffer* buffer, Camera* camera)
@@ -529,12 +496,12 @@ void drawSingleSprite(RenderBuffer* buffer, Sprite* sprite, Rect2 bounds, s8 sha
     rect->uv = sprite->uv;
 }
 
-inline void drawSingleRect(RenderBuffer* buffer, Rect2 bounds, s8 shaderID, V4 color)
+ void drawSingleRect(RenderBuffer* buffer, Rect2 bounds, s8 shaderID, V4 color)
 {
     drawSingleRect(buffer, bounds, shaderID, color, color, color, color);
 }
 
-inline void drawSingleRect(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, V4 color)
+ void drawSingleRect(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, V4 color)
 {
     drawSingleRect(buffer, rect2(bounds), shaderID, color, color, color, color);
 }
@@ -553,7 +520,7 @@ void drawSingleRect(RenderBuffer* buffer, Rect2 bounds, s8 shaderID, V4 color00,
     rect->uv = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
 }
 
-inline void drawSingleRect(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, V4 color00, V4 color01, V4 color10, V4 color11)
+ void drawSingleRect(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, V4 color00, V4 color01, V4 color10, V4 color11)
 {
     drawSingleRect(buffer, rect2(bounds), shaderID, color00, color01, color10, color11);
 }
@@ -580,12 +547,12 @@ DrawRectPlaceholder appendDrawRectPlaceholder(RenderBuffer* buffer, s8 shaderID,
     return result;
 }
 
-inline void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2 bounds, V4 color)
+ void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2 bounds, V4 color)
 {
     fillDrawRectPlaceholder(placeholder, bounds, color, color, color, color);
 }
 
-inline void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2I bounds, V4 color)
+ void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2I bounds, V4 color)
 {
     fillDrawRectPlaceholder(placeholder, rect2(bounds), color, color, color, color);
 }
@@ -602,7 +569,7 @@ void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2 bounds, V4 
     rect->uv = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
 }
 
-inline void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2I bounds, V4 color00, V4 color01, V4 color10, V4 color11)
+ void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2I bounds, V4 color00, V4 color01, V4 color10, V4 color11)
 {
     fillDrawRectPlaceholder(placeholder, rect2(bounds), color00, color01, color10, color11);
 }
@@ -777,12 +744,12 @@ DrawRectsGroup* beginRectsGroupTextured(RenderBuffer* buffer, Asset* texture, s8
     return beginRectsGroupInternal(buffer, texture, shaderID, maxCount);
 }
 
-inline DrawRectsGroup* beginRectsGroupUntextured(RenderBuffer* buffer, s8 shaderID, s32 maxCount)
+ DrawRectsGroup* beginRectsGroupUntextured(RenderBuffer* buffer, s8 shaderID, s32 maxCount)
 {
     return beginRectsGroupInternal(buffer, nullptr, shaderID, maxCount);
 }
 
-inline DrawRectsGroup* beginRectsGroupForText(RenderBuffer* buffer, BitmapFont* font, s8 shaderID, s32 maxCount)
+ DrawRectsGroup* beginRectsGroupForText(RenderBuffer* buffer, BitmapFont* font, s8 shaderID, s32 maxCount)
 {
     return beginRectsGroupInternal(buffer, font->texture, shaderID, maxCount);
 }
@@ -850,18 +817,18 @@ void addRectInternal(DrawRectsGroup* group, Rect2 bounds, V4 color, Rect2 uv)
     group->count++;
 }
 
-inline void addUntexturedRect(DrawRectsGroup* group, Rect2 bounds, V4 color)
+ void addUntexturedRect(DrawRectsGroup* group, Rect2 bounds, V4 color)
 {
     addRectInternal(group, bounds, color, rectXYWH(0, 0, 0, 0));
 }
 
-inline void addGlyphRect(DrawRectsGroup* group, BitmapFontGlyph* glyph, V2 position, V4 color)
+ void addGlyphRect(DrawRectsGroup* group, BitmapFontGlyph* glyph, V2 position, V4 color)
 {
     Rect2 bounds = rectXYWH(position.x + glyph->xOffset, position.y + glyph->yOffset, glyph->width, glyph->height);
     addRectInternal(group, bounds, color, glyph->uv);
 }
 
-inline void addSpriteRect(DrawRectsGroup* group, Sprite* sprite, Rect2 bounds, V4 color)
+ void addSpriteRect(DrawRectsGroup* group, Sprite* sprite, Rect2 bounds, V4 color)
 {
     ASSERT(group->texture == sprite->texture);
 

@@ -1,4 +1,17 @@
-#pragma once
+/*
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "fire.h"
+#include "AppState.h"
+#include "binary_file_reader.h"
+#include "binary_file_writer.h"
+#include "city.h"
+#include "save_file.h"
+#include <UI/Panel.h>
+#include <Util/Random.h>
 
 void initFireLayer(FireLayer* layer, City* city, MemoryArena* gameArena)
 {
@@ -29,7 +42,7 @@ void initFireLayer(FireLayer* layer, City* city, MemoryArena* gameArena)
     }
 }
 
-inline void markFireLayerDirty(FireLayer* layer, Rect2I bounds)
+ void markFireLayerDirty(FireLayer* layer, Rect2I bounds)
 {
     markRectAsDirty(&layer->dirtyRects, bounds);
 }
@@ -185,6 +198,13 @@ void startFireAt(City* city, s32 x, s32 y)
         addFireRaw(city, x, y, getCurrentTimestamp());
     }
 }
+/*
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "fire.h"
 
 void addFireRaw(City* city, s32 x, s32 y, GameTimestamp startDate)
 {
@@ -201,7 +221,7 @@ void addFireRaw(City* city, s32 x, s32 y, GameTimestamp startDate)
     fire->entity = addEntity(city, EntityType_Fire, fire);
     // TODO: Probably most of this wants to be moved into addEntity()
     fire->entity->bounds = rectXYWHi(x, y, 1, 1);
-    fire->entity->sprite = getSpriteRef("e_fire_1x1"_s, randomNext(&globalAppState.cosmeticRandom));
+    fire->entity->sprite = getSpriteRef("e_fire_1x1"_s, randomNext(&AppState::the().cosmeticRandom));
 
     layer->activeFireCount++;
 

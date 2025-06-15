@@ -1,4 +1,10 @@
-#pragma once
+/*
+ * Copyright (c) 2021-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "binary_file.h"
 
 void rleDecode(u8* source, u8* dest, smm destSize)
 {

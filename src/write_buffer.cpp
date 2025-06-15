@@ -1,4 +1,12 @@
-#pragma once
+/*
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "write_buffer.h"
+#include "file.h"
+#include <Util/MemoryArena.h>
 
 void WriteBuffer::init(s32 chunkSize_, MemoryArena* arena_)
 {
@@ -10,18 +18,6 @@ void WriteBuffer::init(s32 chunkSize_, MemoryArena* arena_)
     this->lastChunk = nullptr;
 
     appendNewChunk();
-}
-
-template<typename T>
-inline WriteBufferRange WriteBuffer::append(T* thing)
-{
-    return appendBytes(sizeof(T), thing);
-}
-
-template<typename T>
-inline WriteBufferRange WriteBuffer::reserve()
-{
-    return reserveBytes(sizeof(T));
 }
 
 WriteBufferRange WriteBuffer::appendBytes(s32 length, void* bytes)
@@ -89,7 +85,7 @@ WriteBufferRange WriteBuffer::reserveBytes(s32 length)
     return result;
 }
 
-inline WriteBufferLocation WriteBuffer::getCurrentPosition()
+ WriteBufferLocation WriteBuffer::getCurrentPosition()
 {
     return byteCount;
 }
@@ -97,48 +93,6 @@ inline WriteBufferLocation WriteBuffer::getCurrentPosition()
 s32 WriteBuffer::getLengthSince(WriteBufferLocation start)
 {
     return getCurrentPosition() - start;
-}
-
-template<typename T>
-T WriteBuffer::readAt(WriteBufferRange range)
-{
-    ASSERT(sizeof(T) <= range.length);
-    return readAt<T>(range.start);
-}
-
-template<typename T>
-T WriteBuffer::readAt(WriteBufferLocation location)
-{
-    // Make sure the requested range is valid
-    ASSERT((location + sizeof(T)) <= byteCount);
-
-    T result;
-
-    WriteBufferChunk* chunk = getChunkAt(location);
-    s32 posInChunk = location % chunkSize;
-
-    u8* dataPos = (u8*)&result;
-    s32 remainingLength = sizeof(T);
-    while (remainingLength > 0) {
-        s32 remainingInChunk = chunkSize - posInChunk;
-        if (remainingInChunk > remainingLength) {
-            // Copy the whole thing into the current chunk
-            copyMemory((chunk->bytes + posInChunk), dataPos, remainingLength);
-            remainingLength = 0;
-        } else {
-            // Copy the amount that will fit in the current chunk
-            s32 lengthToCopy = remainingInChunk;
-            copyMemory((chunk->bytes + posInChunk), dataPos, lengthToCopy);
-            dataPos += lengthToCopy;
-            remainingLength -= lengthToCopy;
-
-            // Go to next chunk
-            chunk = chunk->nextChunk;
-            posInChunk = 0;
-        }
-    }
-
-    return result;
 }
 
 void WriteBuffer::overwriteAt(WriteBufferLocation location, s32 length, void* data)
@@ -170,13 +124,6 @@ void WriteBuffer::overwriteAt(WriteBufferLocation location, s32 length, void* da
             posInChunk = 0;
         }
     }
-}
-
-template<typename T>
-void WriteBuffer::overwriteAt(WriteBufferRange range, T* data)
-{
-    ASSERT(sizeof(T) <= range.length);
-    overwriteAt(range.start, min(range.length, (s32)sizeof(T)), data);
 }
 
 bool WriteBuffer::writeToFile(FileHandle* file)

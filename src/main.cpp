@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #include <initializer_list>
 #include <inttypes.h>
 #include <math.h>
@@ -20,174 +26,25 @@
 #    include <SDL_image.h>
 #endif
 
-enum AppStatus {
-    AppStatus_MainMenu,
-    AppStatus_Game,
-    AppStatus_Credits,
-    AppStatus_Quit,
-};
-
-// clang-format off
-#include "util/Log.h"
-#include "types.h"
-#include "util/Array.h"
-#include "util/Array2.h"
-#include "util/Maths.h"
-#include "util/Vector.h"
-#include "util/Rectangle.h"
-#include "util/String.h"
-#include "util/Memory.h"
-#include "util/Random.h"
-#include "util/Indexed.h"
-#include "util/Maybe.h"
-#include "util/Pool.h"
-#include "util/ChunkedArray.h"
-#include "util/Queue.h"
-#include "util/Stack.h"
-#include "util/Set.h"
-#include "util/BitArray.h"
-#include "util/Flags.h"
-#include "util/OccupancyArray.h"
-#include "util/LinkedList.h"
-#include "splat.h"
-#include "util/Time.h"
-#include "unicode.h"
-#include "util/StringBuilder.h"
-#include "util/HashTable.h"
-#include "util/StringTable.h"
-#include "util/MemoryArena.h"
-#include "input.h"
-#include "util/Interpolate.h"
-#include "ui/UI.h"
-#include "debug.h"
-#include "util/Endian.h"
-#include "platform.h"
-#include "file.h"
-#include "write_buffer.h"
-#include "settings.h"
-#include "font.h"
-#include "bmfont.h"
-#include "asset.h"
-#include "assets.h"
-#include "line_reader.h"
-#include "render.h"
-#include "ui/Drawable.h"
-#include "ui/Panel.h"
-#include "ui/TextInput.h"
-#include "ui/Window.h"
+#include "AppState.h"
 #include "console.h"
-
-struct City;
-
-#include "game_clock.h"
-#include "entity.h"
-#include "sector.h"
-#include "dirty.h"
-#include "tile_utils.h"
-#include "transport.h"
-#include "budget.h"
-#include "building.h"
-#include "crime.h"
-#include "education.h"
-#include "fire.h"
-#include "health.h"
-#include "land_value.h"
-#include "pollution.h"
-#include "power.h"
-#include "terrain.h"
-#include "zone.h"
-#include "city.h"
-
-#include "binary_file.h"
-#include "binary_file_reader.h"
-#include "binary_file_writer.h"
-#include "save_file.h"
-#include "saved_games.h"
-#include "game.h"
-
-// TODO: Some kind of switch to determine which renderer we want to load.
+#include "credits.h"
+#include "game_mainmenu.h"
+#include "input.h"
 #include "render_gl.h"
+#include "saved_games.h"
+#include "settings.h"
+#include <Assets/AssetManager.h>
+#include <UI/UI.h>
+#include <UI/Window.h>
+#include <Util/Log.h>
+#include <Util/Memory.h>
+#include <Util/MemoryArena.h>
+#include <Util/Random.h>
+#include <Util/String.h>
+#include <Util/Vector.h>
 
-#include "global_state.h"
-AppState globalAppState;
-
-#include "about.cpp"
-#include "assets.cpp"
-#include "binary_file.cpp"
-#include "binary_file_reader.cpp"
-#include "binary_file_writer.cpp"
-#include "bmfont.cpp"
-#include "budget.cpp"
-#include "building.cpp"
-#include "city.cpp"
-#include "commands.cpp"
-#include "console.cpp"
-#include "credits.cpp"
-#include "crime.cpp"
-#include "debug.cpp"
-#include "dirty.cpp"
-#include "education.cpp"
-#include "entity.cpp"
-#include "file.cpp"
-#include "fire.cpp"
-#include "font.cpp"
-#include "game.cpp"
-#include "game_clock.cpp"
-#include "game_mainmenu.cpp"
-#include "health.cpp"
-#include "input.cpp"
-#include "land_value.cpp"
-#include "line_reader.cpp"
-#include "util/LinkedList.h"
-#include "pollution.cpp"
-#include "power.cpp"
-#include "render.cpp"
-#include "save_file.cpp"
-#include "saved_games.cpp"
-#include "sector.cpp"
-#include "settings.cpp"
-#include "splat.cpp"
-#include "terrain.cpp"
-#include "tile_utils.cpp"
-#include "transport.cpp"
-#include "types.cpp"
-#include "uitheme.cpp"
-#include "unicode.cpp"
-#include "write_buffer.cpp"
-#include "zone.cpp"
-
-#include "render_gl.cpp"
-// clang-format on
-
-// Below, these are proper independent implementation files that should be separate TUs.
-// FIXME: Multiple translation units!!!
-#include "ui/Drawable.cpp"
-#include "ui/Panel.cpp"
-#include "ui/TextInput.cpp"
-#include "ui/UI.cpp"
-#include "ui/Window.cpp"
-#include "util/BitArray.cpp"
-#include "util/Interpolate.cpp"
-#include "util/Log.cpp"
-#include "util/Maths.cpp"
-#include "util/Matrix4.cpp"
-#include "util/Memory.cpp"
-#include "util/MemoryArena.cpp"
-#include "util/Random.cpp"
-#include "util/Rectangle.cpp"
-#include "util/String.cpp"
-#include "util/StringBuilder.cpp"
-#include "util/StringTable.cpp"
-#include "util/Time.cpp"
-#include "util/Vector.cpp"
-
-#ifdef __linux__
-#    include "platform_linux.cpp"
-#else // Windows
-#    include "platform_win32.cpp"
-#endif
-
-SDL_Window* initSDL(WindowSettings windowSettings, const char* windowTitle)
+SDL_Window* initSDL(WindowSettings windowSettings, char const* windowTitle)
 {
     SDL_Window* window = nullptr;
 
@@ -225,13 +82,13 @@ int main(int argc, char* argv[])
     // INIT
     u32 initStartTicks = SDL_GetTicks();
 
-    globalAppState = {};
-    AppState* appState = &globalAppState;
-    globalAppState.rawDeltaTime = SECONDS_PER_FRAME;
-    globalAppState.speedMultiplier = 1.0f;
-    globalAppState.deltaTime = globalAppState.rawDeltaTime * globalAppState.speedMultiplier;
+    auto& app_state = AppState::the();
+    app_state = {};
+    app_state.rawDeltaTime = SECONDS_PER_FRAME;
+    app_state.speedMultiplier = 1.0f;
+    app_state.deltaTime = app_state.rawDeltaTime * app_state.speedMultiplier;
 
-    initMemoryArena(&globalAppState.systemArena, "System"_s, MB(1));
+    initMemoryArena(&app_state.systemArena, "System"_s, MB(1));
 
     init_temp_arena();
 
@@ -244,7 +101,7 @@ int main(int argc, char* argv[])
     enableCustomLogger();
 #endif
 
-    initRandom(&globalAppState.cosmeticRandom, Random_MT, (s32)time(nullptr));
+    initRandom(&app_state.cosmeticRandom, Random_MT, (s32)time(nullptr));
 
     initSettings();
     loadSettings();
@@ -265,7 +122,7 @@ int main(int argc, char* argv[])
     setCursorVisible(true);
     auto* renderer = the_renderer();
 
-    UI::init(&appState->systemArena);
+    UI::init(&app_state.systemArena);
 
     initSavedGamesCatalogue();
 
@@ -275,27 +132,9 @@ int main(int argc, char* argv[])
     u32 initFinishedTicks = SDL_GetTicks();
     logInfo("Game initialised in {0} milliseconds."_s, { formatInt(initFinishedTicks - initStartTicks) });
 
-    // TEST STUFF
-#if 1
-    BinaryFileWriter test = startWritingFile(SAV_FILE_ID, BINARY_FILE_FORMAT_VERSION, &temp_arena());
-    test.addTOCEntry("TEST"_id);
-    struct TestSection {
-        leU32 a;
-        leU32 b;
-        FileBlob data;
-    };
-    test.startSection<TestSection>("TEST"_id, 1);
-    TestSection ts = {};
-    ts.a = 123456789;
-    ts.b = 987654321;
-    String testBlob = "12212233313334444122155555122122188888888"_s;
-    ts.data = test.appendBlob(testBlob.length, (u8*)testBlob.chars, Blob_RLE_S8);
-    test.endSection(&ts);
-#endif
-
     // GAME LOOP
     u64 frameStartTime = SDL_GetPerformanceCounter();
-    while (appState->appStatus != AppStatus_Quit) {
+    while (app_state.appStatus != AppStatus_Quit) {
         {
             DEBUG_BLOCK("Game loop");
 
@@ -312,7 +151,7 @@ int main(int argc, char* argv[])
             updateSavedGamesCatalogue();
 
             if (input.receivedQuitSignal) {
-                appState->appStatus = AppStatus_Quit;
+                app_state.appStatus = AppStatus_Quit;
                 break;
             }
 
@@ -328,19 +167,19 @@ int main(int argc, char* argv[])
 
                 UI::updateAndRenderWindows();
 
-                AppStatus newAppStatus = appState->appStatus;
+                AppStatus newAppStatus = app_state.appStatus;
 
-                switch (appState->appStatus) {
+                switch (app_state.appStatus) {
                 case AppStatus_MainMenu: {
-                    newAppStatus = updateAndRenderMainMenu(globalAppState.deltaTime);
+                    newAppStatus = updateAndRenderMainMenu(app_state.deltaTime);
                 } break;
 
                 case AppStatus_Credits: {
-                    newAppStatus = updateAndRenderCredits(globalAppState.deltaTime);
+                    newAppStatus = updateAndRenderCredits(app_state.deltaTime);
                 } break;
 
                 case AppStatus_Game: {
-                    newAppStatus = updateAndRenderGame(appState->gameState, globalAppState.deltaTime);
+                    newAppStatus = updateAndRenderGame(app_state.gameState, app_state.deltaTime);
                 } break;
 
                 case AppStatus_Quit:
@@ -349,14 +188,14 @@ int main(int argc, char* argv[])
                     INVALID_DEFAULT_CASE;
                 }
 
-                if (newAppStatus != appState->appStatus) {
+                if (newAppStatus != app_state.appStatus) {
                     // Clean-up for previous state
-                    if (appState->appStatus == AppStatus_Game) {
-                        freeGameState(appState->gameState);
-                        appState->gameState = nullptr;
+                    if (app_state.appStatus == AppStatus_Game) {
+                        freeGameState(app_state.gameState);
+                        app_state.gameState = nullptr;
                     }
 
-                    appState->appStatus = newAppStatus;
+                    app_state.appStatus = newAppStatus;
                     UI::closeAllWindows();
                 }
 
@@ -373,10 +212,10 @@ int main(int argc, char* argv[])
 
                 // TODO: Maybe automatically register arenas with the debug system?
                 // Though, the debug system uses an arena itself, so that could be a bit infinitely-recursive.
-                DEBUG_ARENA(&appState->systemArena, "System");
+                DEBUG_ARENA(&app_state.systemArena, "System");
                 DEBUG_ARENA(&temp_arena(), "Global Temp Arena");
                 DEBUG_ARENA(&renderer->renderArena, "Renderer");
-                DEBUG_ARENA(appState->gameState ? &appState->gameState->gameArena : nullptr, "GameState");
+                DEBUG_ARENA(app_state.gameState ? &app_state.gameState->gameArena : nullptr, "GameState");
                 DEBUG_ARENA(&settings().settingsArena, "Settings");
                 DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
 
@@ -396,7 +235,7 @@ int main(int argc, char* argv[])
 
             u64 now = SDL_GetPerformanceCounter();
             f32 deltaTime = (f32)(((f64)(now - frameStartTime)) / ((f64)(SDL_GetPerformanceFrequency())));
-            globalAppState.setDeltaTimeFromLastFrame(deltaTime);
+            app_state.setDeltaTimeFromLastFrame(deltaTime);
             frameStartTime = now;
         }
 

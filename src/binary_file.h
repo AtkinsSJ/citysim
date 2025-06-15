@@ -1,4 +1,16 @@
+/*
+ * Copyright (c) 2021-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include <Util/Assert.h>
+#include <Util/Basic.h>
+#include <Util/Endian.h>
+#include <Util/MemoryArena.h>
+#include <Util/String.h>
 
 /*
 

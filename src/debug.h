@@ -1,7 +1,15 @@
+/*
+ * Copyright (c) 2016-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
 
-#include "util/HashTable.h"
-#include "util/LinkedList.h"
+#include <SDL2/SDL_timer.h>
+#include <Util/HashTable.h>
+#include <Util/LinkedList.h>
+#include <Util/Pool.h>
 
 #if BUILD_DEBUG
 
@@ -44,7 +52,7 @@
 #    define DEBUG_END_RENDER_BUFFER(...)
 #endif
 
-struct DebugState* globalDebugState = nullptr;
+inline struct DebugState* globalDebugState = nullptr;
 
 #define DEBUG_FRAMES_COUNT 120
 #define DEBUG_TOP_CODE_BLOCKS_COUNT 32
@@ -76,7 +84,7 @@ enum DebugCodeDataTag {
 
     DebugCodeDataTagCount
 };
-V4 debugCodeDataTagColors[DebugCodeDataTagCount] = {
+inline V4 debugCodeDataTagColors[DebugCodeDataTagCount] = {
     color255(255, 255, 255, 255), // White
     color255(255, 0, 255, 255),   // Magenta
     color255(128, 128, 128, 255), // Grey
@@ -175,7 +183,7 @@ void debugTrackRenderBufferChunk(DebugState* debugState);
 void debugEndTrackingRenderBuffer(DebugState* debugState);
 void debugTrackProfile(String name, u64 cycleCount, DebugCodeDataTag tag = DCDT_Misc);
 
-DebugCodeData* debugFindOrAddCodeData(String name, DebugCodeDataTag tag)
+inline DebugCodeData* debugFindOrAddCodeData(String name, DebugCodeDataTag tag)
 {
     DebugCodeData* result = globalDebugState->codeData.findOrAdd(name);
     result->name = name;
@@ -188,7 +196,7 @@ struct DebugBlock {
     DebugCodeData* codeData;
     u64 startTime;
 
-    DebugBlock(DebugCodeData* codeData)
+    explicit DebugBlock(DebugCodeData* codeData)
     {
         this->codeData = codeData;
         this->startTime = SDL_GetPerformanceCounter();

@@ -1,4 +1,17 @@
-#pragma once
+/*
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "pollution.h"
+#include "binary_file.h"
+#include "binary_file_reader.h"
+#include "binary_file_writer.h"
+#include "building.h"
+#include "city.h"
+#include "land_value.h"
+#include "save_file.h"
 
 void initPollutionLayer(PollutionLayer* layer, City* city, MemoryArena* gameArena)
 {
@@ -94,12 +107,12 @@ void markPollutionLayerDirty(PollutionLayer* layer, Rect2I bounds)
     markRectAsDirty(&layer->dirtyRects, bounds);
 }
 
-inline u8 getPollutionAt(City* city, s32 x, s32 y)
+ u8 getPollutionAt(City* city, s32 x, s32 y)
 {
     return city->pollutionLayer.tilePollution.get(x, y);
 }
 
-inline f32 getPollutionPercentAt(City* city, s32 x, s32 y)
+ f32 getPollutionPercentAt(City* city, s32 x, s32 y)
 {
     return city->pollutionLayer.tilePollution.get(x, y) / 255.0f;
 }

@@ -1,4 +1,14 @@
-#pragma once
+/*
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "land_value.h"
+#include "binary_file_reader.h"
+#include "binary_file_writer.h"
+#include "city.h"
+#include "save_file.h"
 
 void initLandValueLayer(LandValueLayer* layer, City* city, MemoryArena* gameArena)
 {
@@ -13,7 +23,7 @@ void initLandValueLayer(LandValueLayer* layer, City* city, MemoryArena* gameAren
     initDirtyRects(&layer->dirtyRects, gameArena, maxLandValueEffectDistance, city->bounds);
 }
 
-inline void markLandValueLayerDirty(LandValueLayer* layer, Rect2I bounds)
+ void markLandValueLayerDirty(LandValueLayer* layer, Rect2I bounds)
 {
     markRectAsDirty(&layer->dirtyRects, bounds);
 }
@@ -124,7 +134,7 @@ void updateLandValueLayer(City* city, LandValueLayer* layer)
     }
 }
 
-inline f32 getLandValuePercentAt(City* city, s32 x, s32 y)
+ f32 getLandValuePercentAt(City* city, s32 x, s32 y)
 {
     return city->landValueLayer.tileLandValue.get(x, y) / 255.0f;
 }

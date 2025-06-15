@@ -1,7 +1,14 @@
-#pragma once
-#pragma once
+/*
+ * Copyright (c) 2017-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
 
-inline bool byteIsStartOfGlyph(char b)
+#include "unicode.h"
+
+#include "Util/Log.h"
+
+ bool byteIsStartOfGlyph(char b)
 {
     // continuation bytes always start with 10xxxxxx
     // So if it doesn't, it must be the start byte!
@@ -13,7 +20,7 @@ inline bool byteIsStartOfGlyph(char b)
 // Decodes the byte to see how long it claims to be.
 // There is no guarantee that the bytes that follow it are valid within the string, we don't check!
 // returns 0 for an invalid start byte
-inline s32 lengthOfGlyph(char startByte)
+ s32 lengthOfGlyph(char startByte)
 {
     s32 result = 0;
 
@@ -41,7 +48,7 @@ inline s32 lengthOfGlyph(char startByte)
     return result;
 }
 
-inline s32 lengthOfUnichar(unichar c)
+ s32 lengthOfUnichar(unichar c)
 {
     if (c <= 0x7F) {
         return 1;
@@ -190,7 +197,7 @@ unichar readUnicodeChar(char* firstChar)
     return result;
 }
 
-inline bool isWhitespace(unichar uChar, bool countNewlines)
+ bool isWhitespace(unichar uChar, bool countNewlines)
 {
     // NB: See note in isNewline() about why we use a switch. (Basically, it's faster!)
 
@@ -237,7 +244,7 @@ inline bool isWhitespace(unichar uChar, bool countNewlines)
     return result;
 }
 
-inline bool isNewline(unichar uChar)
+ bool isNewline(unichar uChar)
 {
     bool result = false;
 
@@ -272,7 +279,7 @@ inline bool isNewline(unichar uChar)
     return result;
 }
 
-inline bool getNextUnichar(String string, s32* bytePos, unichar* result)
+ bool getNextUnichar(String string, s32* bytePos, unichar* result)
 {
     bool foundResult = false;
 

@@ -5,10 +5,13 @@
  */
 
 #include "input.h"
+#include "AppState.h"
+#include "render.h"
+#include <SDL2/SDL_clipboard.h>
 
 static InputState s_input_state;
 
-inline u32 keycodeToIndex(u32 key)
+ u32 keycodeToIndex(u32 key)
 {
     return key & ~SDLK_SCANCODE_MASK;
 }
@@ -17,7 +20,7 @@ void init_input_state()
 {
     s_input_state = {};
 
-    MemoryArena* systemArena = &globalAppState.systemArena;
+    MemoryArena* systemArena = &AppState::the().systemArena;
 
     s_input_state.textEntered = makeString(&s_input_state._textEntered[0], SDL_TEXTINPUTEVENT_TEXT_SIZE);
     s_input_state.textEnteredLength = 0;
@@ -159,20 +162,20 @@ void updateInput()
 /**
  * MOUSE INPUT
  */
-inline bool mouseButtonJustPressed(MouseButton mouseButton)
+ bool mouseButtonJustPressed(MouseButton mouseButton)
 {
     return s_input_state.mouseDown[mouseButton] && !s_input_state.mouseWasDown[mouseButton];
 }
-inline bool mouseButtonJustReleased(MouseButton mouseButton)
+ bool mouseButtonJustReleased(MouseButton mouseButton)
 {
     return !s_input_state.mouseDown[mouseButton] && s_input_state.mouseWasDown[mouseButton];
 }
-inline bool mouseButtonPressed(MouseButton mouseButton)
+ bool mouseButtonPressed(MouseButton mouseButton)
 {
     return s_input_state.mouseDown[mouseButton];
 }
 
-inline V2 getClickStartPos(MouseButton mouseButton, struct Camera* camera)
+ V2 getClickStartPos(MouseButton mouseButton, struct Camera* camera)
 {
     return unproject(camera, s_input_state.clickStartPosNormalised[mouseButton]);
 }
@@ -181,7 +184,7 @@ inline V2 getClickStartPos(MouseButton mouseButton, struct Camera* camera)
  * KEYBOARD INPUT
  */
 
-inline bool modifierKeyIsPressed(ModifierKey modifier)
+ bool modifierKeyIsPressed(ModifierKey modifier)
 {
     bool result = false;
 
@@ -203,7 +206,7 @@ inline bool modifierKeyIsPressed(ModifierKey modifier)
     return result;
 }
 
-inline u8 getPressedModifierKeys()
+ u8 getPressedModifierKeys()
 {
     u8 result = 0;
 
@@ -219,7 +222,7 @@ inline u8 getPressedModifierKeys()
     return result;
 }
 
-inline bool modifierKeysArePressed(u8 modifiers)
+ bool modifierKeysArePressed(u8 modifiers)
 {
     bool result = true;
 
@@ -241,7 +244,7 @@ inline bool modifierKeysArePressed(u8 modifiers)
     return result;
 }
 
-inline bool keyIsPressed(SDL_Keycode key, u8 modifiers)
+ bool keyIsPressed(SDL_Keycode key, u8 modifiers)
 {
     s32 keycode = keycodeToIndex(key);
 
@@ -254,7 +257,7 @@ inline bool keyIsPressed(SDL_Keycode key, u8 modifiers)
     return result;
 }
 
-inline bool keyWasPressed(SDL_Keycode key, u8 modifiers)
+ bool keyWasPressed(SDL_Keycode key, u8 modifiers)
 {
     s32 keycode = keycodeToIndex(key);
 
@@ -278,7 +281,7 @@ inline bool keyWasPressed(SDL_Keycode key, u8 modifiers)
     return result;
 }
 
-inline bool keyJustPressed(SDL_Keycode key, u8 modifiers, bool ignoreRepeats)
+ bool keyJustPressed(SDL_Keycode key, u8 modifiers, bool ignoreRepeats)
 {
     bool result = keyIsPressed(key, modifiers) && !keyWasPressed(key);
 
@@ -293,23 +296,23 @@ inline bool keyJustPressed(SDL_Keycode key, u8 modifiers, bool ignoreRepeats)
     return result;
 }
 
-inline bool wasShortcutJustPressed(KeyboardShortcut shortcut)
+ bool wasShortcutJustPressed(KeyboardShortcut shortcut)
 {
     return keyJustPressed(shortcut.key, shortcut.modifiers, true);
 }
 
-inline bool wasTextEntered()
+ bool wasTextEntered()
 {
     return s_input_state.hasUnhandledTextEntered;
 }
 
-inline String getEnteredText()
+ String getEnteredText()
 {
     s_input_state.hasUnhandledTextEntered = false;
     return makeString(s_input_state.textEntered.chars, s_input_state.textEnteredLength);
 }
 
-inline String getClipboardText()
+ String getClipboardText()
 {
     String result = {};
 

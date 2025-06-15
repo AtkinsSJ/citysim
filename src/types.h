@@ -1,6 +1,12 @@
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
 
-#include "util/Forward.h"
+#include <Util/Forward.h>
 
 // Note for later: variadic macros `#define(foo, ...)` expand the ... with `__VA_ARGS__`
 
@@ -9,7 +15,7 @@
 #define STRVAL_(a) #a
 #define STRVAL(a) STRVAL_(a)
 
-#include "util/Basic.h"
+#include "Util/Basic.h"
 
 template<typename T>
 inline bool equals(T a, T b)

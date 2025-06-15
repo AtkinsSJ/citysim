@@ -1,4 +1,14 @@
+/*
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include <Util/Basic.h>
+#include <Util/ChunkedArray.h>
+#include <Util/Rectangle.h>
 
 struct DirtyRects {
     ChunkedArray<Rect2I> rects;

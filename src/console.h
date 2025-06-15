@@ -1,6 +1,17 @@
+/*
+ * Copyright (c) 2017-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
 
-// NB: ConsoleLineStyleID is in uitheme.h
+#include "input.h"
+#include <UI/Forward.h>
+#include <UI/TextInput.h>
+#include <UI/UI.h>
+#include <UI/UITheme.h>
+#include <Util/ChunkedArray.h>
 
 struct ConsoleOutputLine {
     String text;
@@ -48,7 +59,7 @@ struct Console {
     ChunkedArray<CommandShortcut> commandShortcuts;
 };
 
-Console* globalConsole;
+inline Console* globalConsole;
 s32 const consoleLineLength = 255;
 
 void initConsole(MemoryArena* debugArena, f32 openHeight, f32 maximisedHeight, f32 openSpeed);

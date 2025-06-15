@@ -1,4 +1,13 @@
+/*
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include <Util/Basic.h>
+#include <Util/MemoryArena.h>
 
 /*
 
@@ -45,9 +54,16 @@ struct WriteBuffer {
     void init(s32 chunkSize = KB(4), MemoryArena* arena = &temp_arena());
 
     template<typename T>
-    WriteBufferRange append(T* thing);
+    WriteBufferRange append(T* thing)
+    {
+        return appendBytes(sizeof(T), thing);
+    }
+
     template<typename T>
-    WriteBufferRange reserve();
+    WriteBufferRange reserve()
+    {
+        return reserveBytes(sizeof(T));
+    }
 
     WriteBufferRange appendBytes(s32 length, void* bytes);
     WriteBufferRange reserveBytes(s32 length);
@@ -56,15 +72,57 @@ struct WriteBuffer {
     s32 getLengthSince(WriteBufferLocation start); // How many bytes were output since that point
 
     template<typename T>
-    T readAt(WriteBufferRange range);
+    T readAt(WriteBufferRange range)
+    {
+        ASSERT(sizeof(T) <= range.length);
+        return readAt<T>(range.start);
+    }
+
     template<typename T>
-    T readAt(WriteBufferLocation location);
+    T readAt(WriteBufferLocation location)
+    {
+        // Make sure the requested range is valid
+        ASSERT((location + sizeof(T)) <= byteCount);
+
+        T result;
+
+        WriteBufferChunk* chunk = getChunkAt(location);
+        s32 posInChunk = location % chunkSize;
+
+        u8* dataPos = (u8*)&result;
+        s32 remainingLength = sizeof(T);
+        while (remainingLength > 0) {
+            s32 remainingInChunk = chunkSize - posInChunk;
+            if (remainingInChunk > remainingLength) {
+                // Copy the whole thing into the current chunk
+                copyMemory((chunk->bytes + posInChunk), dataPos, remainingLength);
+                remainingLength = 0;
+            } else {
+                // Copy the amount that will fit in the current chunk
+                s32 lengthToCopy = remainingInChunk;
+                copyMemory((chunk->bytes + posInChunk), dataPos, lengthToCopy);
+                dataPos += lengthToCopy;
+                remainingLength -= lengthToCopy;
+
+                // Go to next chunk
+                chunk = chunk->nextChunk;
+                posInChunk = 0;
+            }
+        }
+
+        return result;
+    }
 
     void overwriteAt(WriteBufferLocation location, s32 length, void* data);
-    template<typename T>
-    void overwriteAt(WriteBufferRange range, T* data);
 
-    bool writeToFile(FileHandle* file);
+    template<typename T>
+    void overwriteAt(WriteBufferRange range, T* data)
+    {
+        ASSERT(sizeof(T) <= range.length);
+        overwriteAt(range.start, min(range.length, (s32)sizeof(T)), data);
+    }
+
+    bool writeToFile(struct FileHandle* file);
 
     // Internal
 

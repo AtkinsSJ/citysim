@@ -1,6 +1,15 @@
-#pragma once
+/*
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
 
-void aboutWindowProc(UI::WindowContext* context, void* /*userData*/)
+#include "about.h"
+#include "platform.h"
+#include <UI/Window.h>
+#include <Util/Vector.h>
+
+static void aboutWindowProc(UI::WindowContext* context, void* /*userData*/)
 {
     UI::Panel* ui = &context->windowPanel;
 

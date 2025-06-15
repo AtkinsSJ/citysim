@@ -1,4 +1,14 @@
+/*
+ * Copyright (c) 2018-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include "dirty.h"
+#include "sector.h"
+#include <Util/BitArray.h>
 
 struct City;
 
@@ -22,7 +32,7 @@ struct ZoneDef {
     s32 maximumDistanceToRoad;
 };
 
-ZoneDef zoneDefs[] = {
+inline ZoneDef zoneDefs[] = {
     { Zone_None, "zone_none"_s, color255(255, 255, 255, 128), 10, false, 0 },
     { Zone_Residential, "zone_residential"_s, color255(0, 255, 0, 128), 10, true, 3 },
     { Zone_Commercial, "zone_commercial"_s, color255(0, 0, 255, 128), 10, true, 2 },

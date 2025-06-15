@@ -1,4 +1,17 @@
-#pragma once
+/*
+ * Copyright (c) 2017-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "console.h"
+
+#include "AppState.h"
+#include "Assets/AssetManager.h"
+#include "UI/Drawable.h"
+#include "UI/TextInput.h"
+#include "line_reader.h"
+#include "render.h"
 
 static Console theConsole;
 
@@ -22,7 +35,7 @@ void initConsole(MemoryArena* debugArena, f32 openHeight, f32 maximisedHeight, f
     initChunkedArray(&console->outputLines, debugArena, 1024);
     UI::initScrollbar(&console->scrollbar, Orientation::Vertical);
 
-    initChunkedArray(&console->commandShortcuts, &globalAppState.systemArena, 64);
+    initChunkedArray(&console->commandShortcuts, &AppState::the().systemArena, 64);
 
     globalConsole = console;
     initCommands(console);
@@ -73,7 +86,7 @@ void updateAndRenderConsole(Console* console)
     }
 
     if (console->currentHeight != console->targetHeight) {
-        console->currentHeight = approach(console->currentHeight, console->targetHeight, console->openSpeed * globalAppState.deltaTime);
+        console->currentHeight = approach(console->currentHeight, console->targetHeight, console->openSpeed * AppState::the().deltaTime);
     }
 
     // This is a little hacky... I think we want the console to ALWAYS consume input if it is open.

@@ -1,4 +1,18 @@
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include "debug.h"
+#include <SDL2/SDL_rwops.h>
+#include <Util/Basic.h>
+#include <Util/Log.h>
+#include <Util/Memory.h>
+#include <Util/MemoryArena.h>
+#include <Util/String.h>
 
 #ifdef __linux__
 #    include <dirent.h>
@@ -22,7 +36,7 @@ enum FileAccessMode {
     FileAccess_Write
 };
 
-char const* fileAccessModeStrings[] = {
+inline char const* fileAccessModeStrings[] = {
     "rb",
     "wb"
 };
@@ -109,17 +123,54 @@ smm readFromFile(FileHandle* file, smm size, u8* memory);
 smm readData(FileHandle* file, smm position, smm size, void* result);
 
 template<typename T>
-bool readStruct(FileHandle* file, smm position, T* result);
+bool readStruct(FileHandle* file, smm position, T* result)
+{
+    DEBUG_FUNCTION();
+
+    bool succeeded = true;
+
+    smm byteLength = sizeof(T);
+    smm bytesRead = readData(file, position, byteLength, result);
+    if (bytesRead != byteLength) {
+        succeeded = false;
+        logWarn("Failed to read struct '{0}' from file '{1}'"_s, { typeNameOf<T>(), file->path });
+    }
+
+    return succeeded;
+}
 
 template<typename T>
-bool readArray(FileHandle* file, smm position, s32 count, Array<T>* result);
+bool readArray(FileHandle* file, smm position, s32 count, Array<T>* result)
+{
+    DEBUG_FUNCTION();
+
+    bool succeeded = false;
+
+    if (result->capacity >= count) {
+        smm byteLength = sizeof(T) * count;
+        smm bytesRead = readData(file, position, byteLength, result->items);
+        if (bytesRead == byteLength) {
+            result->count = count;
+            succeeded = true;
+        } else {
+            logWarn("Failed to read array of '{0}', length {1}, from file '{2}': Reached end of file"_s, { typeNameOf<T>(), formatInt(count), file->path });
+        }
+    } else {
+        logError("Failed to read array of '{0}', length {1}, from file '{2}': result parameter too small"_s, { typeNameOf<T>(), formatInt(count), file->path });
+    }
+
+    return succeeded;
+}
 
 bool writeFile(String filePath, String contents);
 
 bool writeToFile(FileHandle* file, smm dataLength, void* data);
 
 template<typename T>
-bool writeToFile(FileHandle* file, T* data);
+bool writeToFile(FileHandle* file, T* data)
+{
+    return writeToFile(file, sizeof(T), data);
+}
 
 /*
  * Lists the files and folders in a directory, one at a time. This is NOT recursive!

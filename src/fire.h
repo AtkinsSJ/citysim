@@ -1,4 +1,21 @@
+/*
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include "building.h"
+#include "dirty.h"
+#include "game_clock.h"
+#include "sector.h"
+#include <UI/Forward.h>
+#include <Util/ChunkedArray.h>
+#include <Util/Rectangle.h>
+#include <Util/Vector.h>
+
+struct Entity;
 
 struct Fire {
     Entity* entity;

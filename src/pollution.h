@@ -1,4 +1,14 @@
+/*
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include "dirty.h"
+
+struct City;
 
 struct PollutionLayer {
     DirtyRects dirtyRects;

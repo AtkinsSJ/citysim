@@ -1,4 +1,11 @@
-#pragma once
+/*
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "splat.h"
+#include <Util/Random.h>
 
 Splat createRandomSplat(s32 centreX, s32 centreY, f32 minRadius, f32 maxRadius, s32 resolution, Random* random, s32 smoothness, MemoryArena* memoryArena)
 {

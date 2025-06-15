@@ -1,3 +1,14 @@
+/*
+ * Copyright (c) 2021-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "budget.h"
+#include "binary_file_reader.h"
+#include "binary_file_writer.h"
+#include "city.h"
+#include "save_file.h"
 
 void initBudgetLayer(BudgetLayer* layer, City* /*city*/, MemoryArena* /*gameArena*/)
 {

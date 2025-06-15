@@ -1,4 +1,17 @@
-#pragma once
+/*
+ * Copyright (c) 2016-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "game_mainmenu.h"
+#include "about.h"
+#include "debug.h"
+#include "game.h"
+#include "render.h"
+#include "saved_games.h"
+#include "settings.h"
+#include <UI/Panel.h>
 
 AppStatus updateAndRenderMainMenu(f32 /*deltaTime*/)
 {

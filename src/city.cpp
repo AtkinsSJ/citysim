@@ -1,5 +1,19 @@
-#pragma once
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "city.h"
+#include "AppState.h"
+#include "Assets/AssetManager.h"
+#include "Util/Random.h"
+#include "Util/Rectangle.h"
+#include "binary_file_reader.h"
+#include "binary_file_writer.h"
 #include "render.h"
+#include "save_file.h"
+#include "write_buffer.h"
 
 void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String name, String playerName, s32 funds)
 {
@@ -53,28 +67,7 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
     saveTerrainTypes();
 }
 
-template<typename T>
-Entity* addEntity(City* city, EntityType type, T* entityData)
-{
-    Indexed<Entity*> entityRecord = city->entities.append();
-    // logInfo("Adding entity #{0}"_s, {formatInt(entityRecord.index)});
-    entityRecord.value->index = entityRecord.index;
-
-    Entity* entity = entityRecord.value;
-    entity->type = type;
-    // Make sure we're supplying entity data that matched the entity type!
-    ASSERT(checkEntityMatchesType<T>(entity));
-    entity->dataPointer = entityData;
-
-    entity->color = makeWhite();
-    entity->depth = 0;
-
-    entity->canBeDemolished = false;
-
-    return entity;
-}
-
-inline void removeEntity(City* city, Entity* entity)
+ void removeEntity(City* city, Entity* entity)
 {
     // logInfo("Removing entity #{0}"_s, {formatInt(entity->index)});
     city->entities.removeIndex(entity->index);
@@ -122,7 +115,7 @@ Building* addBuildingDirect(City* city, s32 id, BuildingDef* def, Rect2I footpri
     initBuilding(building, id, def, footprint, creationDate);
 
     // Random sprite!
-    building->spriteOffset = randomNext(&globalAppState.cosmeticRandom);
+    building->spriteOffset = randomNext(&AppState::the().cosmeticRandom);
 
     building->entity = addEntity(city, EntityType_Building, building);
     building->entity->bounds = rect2(footprint);
@@ -172,18 +165,18 @@ void markAreaDirty(City* city, Rect2I bounds)
     markTransportLayerDirty(&city->transportLayer, bounds);
 }
 
-inline bool tileExists(City* city, s32 x, s32 y)
+ bool tileExists(City* city, s32 x, s32 y)
 {
     return (x >= 0) && (x < city->bounds.w)
         && (y >= 0) && (y < city->bounds.h);
 }
 
-inline bool canAfford(City* city, s32 cost)
+ bool canAfford(City* city, s32 cost)
 {
     return city->funds >= cost;
 }
 
-inline void spend(City* city, s32 cost)
+ void spend(City* city, s32 cost)
 {
     city->funds -= cost;
 }
@@ -480,7 +473,7 @@ void drawCity(City* city, Rect2I visibleTileBounds)
     }
 }
 
-inline bool buildingExistsAt(City* city, s32 x, s32 y)
+ bool buildingExistsAt(City* city, s32 x, s32 y)
 {
     bool result = city->tileBuildingIndex.get(x, y) > 0;
 

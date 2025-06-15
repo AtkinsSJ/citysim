@@ -1,6 +1,22 @@
-#pragma once
+/*
+ * Copyright (c) 2016-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
 
+#include "game.h"
+
+#include "AppState.h"
+#include "Assets/AssetManager.h"
+#include "UI/Window.h"
+#include "Util/Flags.h"
+#include "Util/Random.h"
+#include "about.h"
+#include "city.h"
 #include "input.h"
+#include "render.h"
+#include "saved_games.h"
+#include "settings.h"
 
 GameState* newGameState()
 {
@@ -18,12 +34,13 @@ GameState* newGameState()
 
 void beginNewGame()
 {
-    if (globalAppState.gameState != nullptr) {
-        freeGameState(globalAppState.gameState);
+    auto& app_state = AppState::the();
+    if (app_state.gameState != nullptr) {
+        freeGameState(app_state.gameState);
     }
 
-    globalAppState.gameState = newGameState();
-    GameState* gameState = globalAppState.gameState;
+    app_state.gameState = newGameState();
+    GameState* gameState = app_state.gameState;
 
     s32 gameStartFunds = 1000000;
     initCity(&gameState->gameArena, &gameState->city, 128, 128, getText("city_default_name"_s), getText("player_default_name"_s), gameStartFunds);
@@ -79,7 +96,7 @@ void inputMoveCamera(Camera* camera, V2 windowSize, V2 windowMousePos, s32 cityW
     }
 
     // Panning
-    f32 scrollSpeed = (CAMERA_PAN_SPEED * (f32)sqrt(camera->zoom)) * globalAppState.deltaTime;
+    f32 scrollSpeed = (CAMERA_PAN_SPEED * (f32)sqrt(camera->zoom)) * AppState::the().deltaTime;
     f32 cameraEdgeScrollPixelMargin = 8.0f;
 
     if (mouseButtonPressed(MouseButton_Middle)) {
@@ -395,7 +412,7 @@ void pauseMenuWindowProc(UI::WindowContext* context, void* /*userData*/)
     }
 
     if (ui->addTextButton(getText("button_exit"_s))) {
-        globalAppState.gameState->status = GameStatus_Quit;
+        AppState::the().gameState->status = GameStatus_Quit;
         // NB: We don't close the window here, because doing so makes the window disappear one frame
         // before the main menu appears, so we get a flash of the game world.
         // All windows are closed when switching GameStatus so it's fine.
@@ -594,7 +611,7 @@ void updateAndRenderGameUI(GameState* gameState)
 void costTooltipWindowProc(UI::WindowContext* context, void* userData)
 {
     s32 buildCost = truncate32((smm)userData);
-    City* city = &globalAppState.gameState->city;
+    City* city = &AppState::the().gameState->city;
 
     UI::Panel* ui = &context->windowPanel;
 
@@ -877,7 +894,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
                     gameState->inspectedTilePosition = mouseTilePos;
                     V2I windowPos = v2i(renderer->uiCamera.mousePos) + v2i(16, 16);
                     UI::showWindow(UI::WindowTitle::fromLambda([]() {
-                        V2I tilePos = globalAppState.gameState->inspectedTilePosition;
+                        V2I tilePos = AppState::the().gameState->inspectedTilePosition;
                         return getText("title_inspect"_s, { formatInt(tilePos.x), formatInt(tilePos.y) });
                     }),
                         250, 200, windowPos, "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Unique, inspectTileWindowProc, gameState);
@@ -982,11 +999,12 @@ void setGradient(DataViewUI* dataView, String paletteName)
 
 void setFixedColors(DataViewUI* dataView, String paletteName, std::initializer_list<String> names)
 {
+    auto& app_state = AppState::the();
     dataView->hasFixedColors = true;
     dataView->fixedPaletteName = paletteName;
-    dataView->fixedColorNames = allocateArray<String>(&globalAppState.systemArena, truncate32(names.size()), false);
+    dataView->fixedColorNames = allocateArray<String>(&app_state.systemArena, truncate32(names.size()), false);
     for (auto it = names.begin(); it != names.end(); it++) {
-        dataView->fixedColorNames.append(pushString(&globalAppState.systemArena, *it));
+        dataView->fixedColorNames.append(pushString(&app_state.systemArena, *it));
     }
 }
 
@@ -1006,6 +1024,83 @@ void setTileOverlayCallback(DataViewUI* dataView, u8 (*calculateTileValue)(City*
 {
     dataView->calculateTileValue = calculateTileValue;
     dataView->overlayPaletteName = paletteName;
+}
+
+template<typename Iterable>
+static void drawBuildingHighlights(City* city, Iterable* buildingRefs)
+{
+    DEBUG_FUNCTION_T(DCDT_GameUpdate);
+    auto* renderer = the_renderer();
+
+    if (buildingRefs->count > 0) {
+        Array<V4>* buildingsPalette = getPalette("service_buildings"_s);
+        s32 paletteIndexPowered = 0;
+        s32 paletteIndexUnpowered = 1;
+
+        DrawRectsGroup* buildingHighlights = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, buildingRefs->count);
+        for (auto it = buildingRefs->iterate(); it.hasNext(); it.next()) {
+            Building* building = getBuilding(city, it.getValue());
+            // NB: If we're doing this in a separate loop, we could crop out buildings that aren't in the visible tile bounds
+            if (building != nullptr) {
+                s32 paletteIndex = (buildingHasPower(building) ? paletteIndexPowered : paletteIndexUnpowered);
+                addUntexturedRect(buildingHighlights, rect2(building->footprint), (*buildingsPalette)[paletteIndex]);
+            }
+        }
+        endRectsGroup(buildingHighlights);
+    }
+}
+
+template<typename Iterable>
+static void drawBuildingEffectRadii(City* city, Iterable* buildingRefs, EffectRadius BuildingDef::* effectMember)
+{
+    auto* renderer = the_renderer();
+    //
+    // Leaving a note here because it's the first time I've used a pointer-to-member, and it's
+    // weird and confusing and the syntax is odd!
+    //
+    // You declare the variable/parameter like this:
+    //    EffectRadius BuildingDef::* effectMember;
+    // Essentially it's just a regular variable definition, with the struct name in the middle and ::*
+    //
+    // Then, we use it like this:
+    //    EffectRadius *effect = &(def->*effectMember);
+    // (The important part is      ^^^^^^^^^^^^^^^^^^)
+    // So, you access the member like you would normally with a . or ->, except you put a * before
+    // the member name to show that it's a member pointer instead of an actual member.
+    //
+    // Now that I've written it out, it's not so bad, but it was really hard to look up about because
+    // I assumed this would be a template-related feature, and so all the examples I found were super
+    // template heavy and abstract and confusing. But no! It's a built-in feature that's actually not
+    // too complicated. I might use this more now that I know about it.
+    //
+    // - Sam, 18/09/2019
+    //
+
+    DEBUG_FUNCTION_T(DCDT_GameUpdate);
+
+    if (buildingRefs->count > 0) {
+        Array<V4>* ringsPalette = getPalette("coverage_radius"_s);
+        s32 paletteIndexPowered = 0;
+        s32 paletteIndexUnpowered = 1;
+
+        DrawRingsGroup* buildingRadii = beginRingsGroup(&renderer->worldOverlayBuffer, buildingRefs->count);
+
+        for (auto it = buildingRefs->iterate(); it.hasNext(); it.next()) {
+            Building* building = getBuilding(city, it.getValue());
+            // NB: We don't filter buildings outside of the visibleTileBounds because their radius might be
+            // visible even if the building isn't!
+            if (building != nullptr) {
+                BuildingDef* def = getBuildingDef(building);
+                EffectRadius* effect = &(def->*effectMember);
+                if (hasEffect(effect)) {
+                    s32 paletteIndex = (buildingHasPower(building) ? paletteIndexPowered : paletteIndexUnpowered);
+                    addRing(buildingRadii, centreOf(building->footprint), (f32)effect->radius, 0.5f, (*ringsPalette)[paletteIndex]);
+                }
+            }
+        }
+
+        endRingsGroup(buildingRadii);
+    }
 }
 
 void drawDataViewOverlay(GameState* gameState, Rect2I visibleTileBounds)

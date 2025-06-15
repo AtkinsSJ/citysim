@@ -1,4 +1,17 @@
+/*
+ * Copyright (c) 2018-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include <Assets/Sprite.h>
+#include <UI/Forward.h>
+#include <Util/OccupancyArray.h>
+#include <Util/StringTable.h>
+
+struct City;
 
 struct TerrainDef {
     String name;
@@ -24,8 +37,6 @@ struct TerrainCatalogue {
     HashTable<u8> terrainNameToOldType;
     HashTable<u8> terrainNameToType;
 };
-
-TerrainCatalogue terrainCatalogue = {};
 
 struct TerrainLayer {
     s32 terrainGenerationSeed;

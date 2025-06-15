@@ -5,125 +5,131 @@
  */
 
 #include "render_gl.h"
-#include "util/Deferred.h"
+#include <Assets/Asset.h>
+#include <Assets/AssetManager.h>
+#include <Util/Deferred.h>
+#include <Util/Log.h>
 
 bool GL_Renderer::initialize(SDL_Window* window)
 {
-    GL_Renderer* gl;
-    bootstrapArena(GL_Renderer, gl, renderArena);
-    bool succeeded = (gl != nullptr);
-    set_the_renderer(gl);
-
-    if (!succeeded) {
+    MemoryArena bootstrap;
+    bool bootstrapSucceeded = initMemoryArena(&bootstrap, "renderArena"_s, sizeof(GL_Renderer), MB(1));
+    if (!bootstrapSucceeded) {
+        logCritical("Failed to create renderer arena!"_s);
+        return false;
+    }
+    auto* gl = allocateStruct<GL_Renderer>(&bootstrap);
+    if (!gl) {
         logCritical("Failed to allocate memory for GL_Renderer!"_s);
-    } else {
-        initRenderer(&gl->renderArena, window);
-
-        // Use GL3.1 Core
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
-#if BUILD_DEBUG
-        s32 contextFlags = 0;
-        SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &contextFlags);
-        contextFlags |= SDL_GL_CONTEXT_DEBUG_FLAG;
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, contextFlags);
-#endif
-
-        // Create context
-        gl->m_context = SDL_GL_CreateContext(gl->window);
-        if (gl->m_context == nullptr) {
-            logCritical("OpenGL context could not be created! :(\n {0}"_s, { makeString(SDL_GetError()) });
-            succeeded = false;
-        }
-
-        // GLEW
-        glewExperimental = GL_TRUE;
-        GLenum glewError = glewInit();
-        if (succeeded && glewError != GLEW_OK) {
-            logCritical("Could not initialise GLEW! :(\n {0}"_s, { makeString((char*)glewGetErrorString(glewError)) });
-            succeeded = false;
-        }
-
-#if BUILD_DEBUG
-        // Debug callbacks
-        if (GLEW_KHR_debug) {
-            glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-            glDebugMessageCallback(GL_debugCallback, nullptr);
-            logInfo("OpenGL debug message callback enabled"_s);
-        } else {
-            logInfo("OpenGL debug message callback not available in this context"_s);
-        }
-#endif
-
-        // VSync
-        if (succeeded && SDL_GL_SetSwapInterval(1) < 0) {
-            logCritical("Could not set vsync! :(\n {0}"_s, { makeString(SDL_GetError()) });
-            succeeded = false;
-        }
-
-        // Init OpenGL
-        if (succeeded) {
-            glEnable(GL_TEXTURE_2D);
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-
-            glGenBuffers(1, &gl->m_vbo);
-            glBindBuffer(GL_ARRAY_BUFFER, gl->m_vbo);
-            GLint vBufferSizeNeeded = RENDER_BATCH_VERTEX_COUNT * sizeof(gl->m_vertices[0]);
-            glBufferData(GL_ARRAY_BUFFER, vBufferSizeNeeded, nullptr, GL_DYNAMIC_DRAW);
-
-//
-// NB: This is a (slightly crazy) optimization, relying on us always passing vertices as quads.
-// If that every changes, we'll have to go back to assigning indices as we add vertices to the
-// VBO, instead of always reusing them like this. But for now, this lets us skip the (slow)
-// call to send the indices to the GPU every draw call.
-// If you want to change back, see the #ifdef'd out code in flushVertices() and pushQuad().
-//
-// - Sam, 29/07/2019
-//
-#if 1
-            s32 firstVertex = 0;
-            for (s32 i = 0;
-                i < RENDER_BATCH_INDEX_COUNT;
-                i += 6, firstVertex += 4) {
-                GLuint* index = gl->m_indices + i;
-                index[0] = firstVertex + 0;
-                index[1] = firstVertex + 1;
-                index[2] = firstVertex + 2;
-                index[3] = firstVertex + 0;
-                index[4] = firstVertex + 2;
-                index[5] = firstVertex + 3;
-            }
-#endif
-
-            glGenBuffers(1, &gl->m_ibo);
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl->m_ibo);
-            GLint iBufferSizeNeeded = RENDER_BATCH_INDEX_COUNT * sizeof(gl->m_indices[0]);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, iBufferSizeNeeded, gl->m_indices, GL_DYNAMIC_DRAW);
-
-            gl->m_vertex_count = 0;
-            gl->m_index_count = 0;
-
-            glGenTextures(1, &gl->m_palette_texture_id);
-            glGenTextures(1, &gl->m_raw_texture_id);
-
-            // Other GL_Renderer struct init stuff
-            initChunkedArray(&gl->m_shaders, &gl->renderArena, 64);
-
-            initStack(&gl->m_scissor_stack, &gl->renderArena);
-        } else {
-            logCritical("Could not initialise OpenGL! :("_s);
-        }
-
-        if (!succeeded) {
-            freeMemoryArena(&gl->renderArena);
-            gl = nullptr;
-        }
+        freeMemoryArena(&bootstrap);
+        return false;
     }
 
-    return succeeded;
+    gl->renderArena = move(bootstrap);
+    markResetPosition(&gl->renderArena);
+    set_the_renderer(gl);
+
+    initRenderer(&gl->renderArena, window);
+
+    Deferred free_arena { [&]() {
+        freeMemoryArena(&gl->renderArena);
+    } };
+
+    // Use GL3.1 Core
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+#if BUILD_DEBUG
+    s32 contextFlags = 0;
+    SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &contextFlags);
+    contextFlags |= SDL_GL_CONTEXT_DEBUG_FLAG;
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, contextFlags);
+#endif
+
+    // Create context
+    gl->m_context = SDL_GL_CreateContext(gl->window);
+    if (gl->m_context == nullptr) {
+        logCritical("OpenGL context could not be created! :(\n {0}"_s, { makeString(SDL_GetError()) });
+        return false;
+    }
+
+    // GLEW
+    glewExperimental = GL_TRUE;
+    if (auto const glewError = glewInit(); glewError != GLEW_OK) {
+        logCritical("Could not initialise GLEW! :(\n {0}"_s, { makeString((char*)glewGetErrorString(glewError)) });
+        return false;
+    }
+
+#if BUILD_DEBUG
+    // Debug callbacks
+    if (GLEW_KHR_debug) {
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        glDebugMessageCallback(GL_debugCallback, nullptr);
+        logInfo("OpenGL debug message callback enabled"_s);
+    } else {
+        logInfo("OpenGL debug message callback not available in this context"_s);
+    }
+#endif
+
+    // VSync
+    if (SDL_GL_SetSwapInterval(1) < 0) {
+        logCritical("Could not set vsync! :(\n {0}"_s, { makeString(SDL_GetError()) });
+        return false;
+    }
+
+    // Init OpenGL
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+    glGenBuffers(1, &gl->m_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, gl->m_vbo);
+    GLint vBufferSizeNeeded = RENDER_BATCH_VERTEX_COUNT * sizeof(gl->m_vertices[0]);
+    glBufferData(GL_ARRAY_BUFFER, vBufferSizeNeeded, nullptr, GL_DYNAMIC_DRAW);
+
+    //
+    // NB: This is a (slightly crazy) optimization, relying on us always passing vertices as quads.
+    // If that every changes, we'll have to go back to assigning indices as we add vertices to the
+    // VBO, instead of always reusing them like this. But for now, this lets us skip the (slow)
+    // call to send the indices to the GPU every draw call.
+    // If you want to change back, see the #ifdef'd out code in flushVertices() and pushQuad().
+    //
+    // - Sam, 29/07/2019
+    //
+#if 1
+    s32 firstVertex = 0;
+    for (s32 i = 0;
+        i < RENDER_BATCH_INDEX_COUNT;
+        i += 6, firstVertex += 4) {
+        GLuint* index = gl->m_indices + i;
+        index[0] = firstVertex + 0;
+        index[1] = firstVertex + 1;
+        index[2] = firstVertex + 2;
+        index[3] = firstVertex + 0;
+        index[4] = firstVertex + 2;
+        index[5] = firstVertex + 3;
+    }
+#endif
+
+    glGenBuffers(1, &gl->m_ibo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl->m_ibo);
+    GLint iBufferSizeNeeded = RENDER_BATCH_INDEX_COUNT * sizeof(gl->m_indices[0]);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, iBufferSizeNeeded, gl->m_indices, GL_DYNAMIC_DRAW);
+
+    gl->m_vertex_count = 0;
+    gl->m_index_count = 0;
+
+    glGenTextures(1, &gl->m_palette_texture_id);
+    glGenTextures(1, &gl->m_raw_texture_id);
+
+    // Other GL_Renderer struct init stuff
+    initChunkedArray(&gl->m_shaders, &gl->renderArena, 64);
+
+    initStack(&gl->m_scissor_stack, &gl->renderArena);
+
+    free_arena.disable();
+    return true;
 }
 
 void GL_Renderer::free()

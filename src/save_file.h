@@ -1,4 +1,16 @@
+/*
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include "binary_file.h"
+#include "game_clock.h"
+#include <Util/Basic.h>
+
+struct FileHandle;
 
 //
 // A crazy, completely-unnecessary idea: we could implement a thumbnail handler so that

@@ -1,4 +1,25 @@
+/*
+ * Copyright (c) 2016-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include "AppStatus.h"
+#include "city.h"
+#include "game_clock.h"
+#include "tile_utils.h"
+#include "zone.h"
+#include <Sim/BuildingRef.h>
+#include <Util/Basic.h>
+#include <Util/ChunkedArray.h>
+#include <Util/Flags.h>
+#include <Util/Random.h>
+#include <Util/String.h>
+#include <Util/Vector.h>
+
+struct Camera;
 
 enum GameStatus {
     GameStatus_Playing,

@@ -1,10 +1,16 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #pragma once
+
+#include <UI/Forward.h>
+#include <Util/Array.h>
+#include <Util/ChunkedArray.h>
+#include <Util/HashTable.h>
+#include <Util/String.h>
 
 enum class SettingType {
     Bool,
@@ -102,7 +108,7 @@ enum Locale {
     LocaleCount
 };
 
-SettingEnumData _localeData[LocaleCount] = {
+inline SettingEnumData _localeData[LocaleCount] = {
     { "en"_s, "locale_en"_s },
     { "es"_s, "locale_es"_s },
     { "pl"_s, "locale_pl"_s },
@@ -161,7 +167,7 @@ SettingEnumData _localeData[LocaleCount] = {
             {"pl"_s, "locale_pl"_s},
             {"pl"_s, "locale_pl"_s},*/
 };
-Array<SettingEnumData> localeData = makeArray<SettingEnumData>(LocaleCount, _localeData, LocaleCount);
+inline Array<SettingEnumData> localeData = makeArray<SettingEnumData>(LocaleCount, _localeData, LocaleCount);
 
 struct SettingsState {
     bool windowed;
@@ -218,11 +224,49 @@ void loadSettingsFile(String name, Blob settingsData);
 
 // Grab a setting. index is for multi-value settings, to specify the array index
 template<typename T>
-T* getSettingDataRaw(SettingsState* state, SettingDef* def);
+T* getSettingDataRaw(SettingsState* state, SettingDef* def)
+{
+    // Make sure the requested type it the right one
+    switch (def->type) {
+    case SettingType::Bool:
+        ASSERT(typeid(T*) == typeid(bool*));
+        break;
+    case SettingType::Enum:
+        ASSERT(typeid(T*) == typeid(s32*));
+        break;
+    case SettingType::Percent:
+        ASSERT(typeid(T*) == typeid(f32*));
+        break;
+    case SettingType::S32:
+        ASSERT(typeid(T*) == typeid(s32*));
+        break;
+    case SettingType::S32_Range:
+        ASSERT(typeid(T*) == typeid(s32*));
+        break;
+    case SettingType::String:
+        ASSERT(typeid(T*) == typeid(String*));
+        break;
+    case SettingType::V2I:
+        ASSERT(typeid(T*) == typeid(V2I*));
+        break;
+        INVALID_DEFAULT_CASE;
+    }
+
+    T* firstItem = (T*)((u8*)(state) + def->offsetWithinSettingsState);
+    return firstItem;
+}
+
 template<typename T>
-T getSettingData(SettingsState* state, SettingDef* def);
+T getSettingData(SettingsState* state, SettingDef* def)
+{
+    return *getSettingDataRaw<T>(state, def);
+}
+
 template<typename T>
-void setSettingData(SettingsState* state, SettingDef* def, T value);
+void setSettingData(SettingsState* state, SettingDef* def, T value)
+{
+    *getSettingDataRaw<T>(state, def) = value;
+}
 
 String getUserDataPath();
 String getUserSettingsPath();

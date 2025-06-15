@@ -1,4 +1,14 @@
+/*
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include <Util/Basic.h>
+#include <Util/Memory.h>
+#include <Util/String.h>
 
 struct LineReaderPosition {
     String currentLine;
@@ -44,8 +54,6 @@ String readToken(LineReader* reader, char splitChar = 0);
 String peekToken(LineReader* reader, char splitChar = 0);
 s32 countRemainingTokens(LineReader* reader, char splitChar = 0);
 
-template<typename T>
-Maybe<T> readInt(LineReader* reader, bool isOptional = false, char splitChar = 0);
 Maybe<f64> readFloat(LineReader* reader, bool isOptional = false, char splitChar = 0);
 Maybe<bool> readBool(LineReader* reader, bool isOptional = false, char splitChar = 0);
 
@@ -57,3 +65,27 @@ Maybe<V2I> readV2I(LineReader* reader);
 
 void warn(LineReader* reader, String message, std::initializer_list<String> args = {});
 void error(LineReader* reader, String message, std::initializer_list<String> args = {});
+
+template<typename T>
+Maybe<T> readInt(LineReader* reader, bool isOptional = false, char splitChar = 0)
+{
+    String token = readToken(reader, splitChar);
+    Maybe<T> result = makeFailure<T>();
+
+    if (!(isOptional && isEmpty(token))) // If it's optional, don't print errors
+    {
+        Maybe<s64> s64Result = asInt(token);
+
+        if (!s64Result.isValid) {
+            error(reader, "Couldn't parse '{0}' as an integer."_s, { token });
+        } else {
+            if (canCastIntTo<T>(s64Result.value)) {
+                result = makeSuccess<T>((T)s64Result.value);
+            } else {
+                error(reader, "Value {0} cannot fit in a {1}."_s, { token, typeNameOf<T>() });
+            }
+        }
+    }
+
+    return result;
+}

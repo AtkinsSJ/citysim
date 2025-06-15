@@ -1,3 +1,11 @@
+/*
+ * Copyright (c) 2021-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "binary_file_reader.h"
+#include <Util/Log.h>
 
 BinaryFileReader readBinaryFile(FileHandle* handle, FileIdentifier identifier, MemoryArena* arena)
 {
@@ -88,41 +96,6 @@ bool BinaryFileReader::startSection(FileIdentifier sectionID, u8 supportedSectio
     return succeeded;
 }
 
-template<typename T>
-T* BinaryFileReader::readStruct(smm relativeOffset)
-{
-    T* result = nullptr;
-
-    if (isValidFile && currentSectionHeader != nullptr) {
-        // Make sure that T actually fits where it was requested
-        smm structStartPos = sizeof(FileSectionHeader) + relativeOffset;
-
-        if ((relativeOffset >= 0) && ((relativeOffset + sizeof(T)) <= currentSectionHeader->length)) {
-            result = (T*)(currentSection.memory + structStartPos);
-        }
-    }
-
-    return result;
-}
-
-template<typename T>
-bool BinaryFileReader::readArray(FileArray source, Array<T>* dest)
-{
-    bool succeeded = false;
-
-    if (source.count <= (u32)dest->capacity) {
-        if (source.count < (u32)dest->capacity) {
-            logWarn("Destination passed to readArray() is larger than needed. (Need {0}, got {1})"_s, { formatInt(source.count), formatInt(dest->capacity) });
-        }
-
-        copyMemory<T>((T*)sectionMemoryAt(source.relativeOffset), dest->items, source.count);
-        dest->count = source.count;
-        succeeded = true;
-    }
-
-    return succeeded;
-}
-
 String BinaryFileReader::readString(FileString fileString)
 {
     String result = nullString;
@@ -163,27 +136,6 @@ bool BinaryFileReader::readBlob(FileBlob source, u8* dest, smm destSize)
     }
 
     return succeeded;
-}
-
-template<typename T>
-bool BinaryFileReader::readBlob(FileBlob source, Array<T>* dest)
-{
-    smm destSize = dest->capacity * sizeof(T);
-
-    bool succeeded = readBlob(source, (u8*)dest->items, destSize);
-    if (succeeded) {
-        dest->count = dest->capacity;
-    }
-
-    return succeeded;
-}
-
-template<typename T>
-bool BinaryFileReader::readBlob(FileBlob source, Array2<T>* dest)
-{
-    smm destSize = dest->w * dest->h * sizeof(T);
-
-    return readBlob(source, (u8*)dest->items, destSize);
 }
 
 u8* BinaryFileReader::sectionMemoryAt(smm relativeOffset)

@@ -1,4 +1,18 @@
-#pragma once
+/*
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "save_file.h"
+#include "binary_file_reader.h"
+#include "binary_file_writer.h"
+#include "city.h"
+#include "game.h"
+#include "platform.h"
+#include "render.h"
+#include "terrain.h"
+#include "zone.h"
 
 bool writeSaveFile(FileHandle* file, GameState* gameState)
 {

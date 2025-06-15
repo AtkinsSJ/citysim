@@ -1,4 +1,15 @@
-#pragma once
+/*
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "transport.h"
+#include "binary_file_reader.h"
+#include "binary_file_writer.h"
+#include "city.h"
+#include "save_file.h"
+#include <UI/Panel.h>
 
 void initTransportLayer(TransportLayer* layer, City* city, MemoryArena* gameArena)
 {
@@ -109,7 +120,7 @@ void addTransportToTile(City* city, s32 x, s32 y, Flags_TransportType types)
     city->transportLayer.tileTransportTypes.set(x, y, newValue);
 }
 
-inline s32 getDistanceToTransport(City* city, s32 x, s32 y, TransportType type)
+ s32 getDistanceToTransport(City* city, s32 x, s32 y, TransportType type)
 {
     return city->transportLayer.tileTransportDistance[type].get(x, y);
 }

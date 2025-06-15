@@ -1,4 +1,14 @@
-#pragma once
+/*
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "line_reader.h"
+#include "tile_utils.h"
+#include "types.h"
+#include "unicode.h"
+#include <Util/Log.h>
 
 LineReader readLines(String filename, Blob data, u32 flags, char commentChar)
 {
@@ -132,12 +142,12 @@ bool loadNextLine(LineReader* reader)
     return result;
 }
 
-inline String getLine(LineReader* reader)
+ String getLine(LineReader* reader)
 {
     return reader->position.currentLine;
 }
 
-inline String getRemainderOfLine(LineReader* reader)
+ String getRemainderOfLine(LineReader* reader)
 {
     return trim(reader->position.lineRemainder);
 }
@@ -173,30 +183,6 @@ String peekToken(LineReader* reader, char splitChar)
 s32 countRemainingTokens(LineReader* reader, char splitChar)
 {
     return countTokens(reader->position.lineRemainder, splitChar);
-}
-
-template<typename T>
-Maybe<T> readInt(LineReader* reader, bool isOptional, char splitChar)
-{
-    String token = readToken(reader, splitChar);
-    Maybe<T> result = makeFailure<T>();
-
-    if (!(isOptional && isEmpty(token))) // If it's optional, don't print errors
-    {
-        Maybe<s64> s64Result = asInt(token);
-
-        if (!s64Result.isValid) {
-            error(reader, "Couldn't parse '{0}' as an integer."_s, { token });
-        } else {
-            if (canCastIntTo<T>(s64Result.value)) {
-                result = makeSuccess<T>((T)s64Result.value);
-            } else {
-                error(reader, "Value {0} cannot fit in a {1}."_s, { token, typeNameOf<T>() });
-            }
-        }
-    }
-
-    return result;
 }
 
 Maybe<f64> readFloat(LineReader* reader, bool isOptional, char splitChar)

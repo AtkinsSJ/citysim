@@ -1,10 +1,17 @@
-#pragma once
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "types.h"
+#include <Util/Vector.h>
 
 /**********************************************
     Colours
  **********************************************/
 
-inline V4 color255(u8 r, u8 g, u8 b, u8 a)
+V4 color255(u8 r, u8 g, u8 b, u8 a)
 {
     static f32 const inv255 = 1.0f / 255.0f;
 
@@ -19,12 +26,12 @@ inline V4 color255(u8 r, u8 g, u8 b, u8 a)
     return v;
 }
 
-inline V4 makeWhite()
+V4 makeWhite()
 {
     return v4(1.0f, 1.0f, 1.0f, 1.0f);
 }
 
-inline V4 asOpaque(V4 color)
+V4 asOpaque(V4 color)
 {
     // Colors are always stored with premultiplied alpha, so in order to set the alpha
     // back to 100%, we have to divide by that alpha.

@@ -1,4 +1,16 @@
-#pragma once
+/*
+ * Copyright (c) 2018-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "zone.h"
+#include "AppState.h"
+#include "binary_file_reader.h"
+#include "binary_file_writer.h"
+#include "city.h"
+#include "render.h"
+#include "save_file.h"
 
 void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena)
 {
@@ -28,18 +40,18 @@ void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena)
     }
 }
 
-inline ZoneDef getZoneDef(s32 zoneType)
+ ZoneDef getZoneDef(s32 zoneType)
 {
     ASSERT(zoneType >= 0 && zoneType < ZoneTypeCount);
     return zoneDefs[zoneType];
 }
 
-inline ZoneType getZoneAt(City* city, s32 x, s32 y)
+ ZoneType getZoneAt(City* city, s32 x, s32 y)
 {
     return (ZoneType)city->zoneLayer.tileZone.getIfExists(x, y, Zone_None);
 }
 
-inline s32 calculateZoneCost(CanZoneQuery* query)
+ s32 calculateZoneCost(CanZoneQuery* query)
 {
     return query->zoneableTilesCount * query->zoneDef->costPerTile;
 }
@@ -103,7 +115,7 @@ CanZoneQuery* queryCanZoneTiles(City* city, ZoneType zoneType, Rect2I bounds)
     return query;
 }
 
-inline bool canZoneTile(CanZoneQuery* query, s32 x, s32 y)
+ bool canZoneTile(CanZoneQuery* query, s32 x, s32 y)
 {
     ASSERT(contains(query->bounds, x, y));
     s32 qX = x - query->bounds.x;
@@ -405,12 +417,55 @@ bool isZoneAcceptable(City* city, ZoneType zoneType, s32 x, s32 y)
     return isAcceptable;
 }
 
+template<typename Filter>
+static BuildingDef* findRandomZoneBuilding(ZoneType zoneType, Random* random, Filter filter)
+{
+    DEBUG_FUNCTION();
+
+    // Choose a random building, then carry on checking buildings until one is acceptable
+    ChunkedArray<BuildingDef*>* buildings = nullptr;
+    switch (zoneType) {
+    case Zone_Residential:
+        buildings = &buildingCatalogue.rGrowableBuildings;
+        break;
+    case Zone_Commercial:
+        buildings = &buildingCatalogue.cGrowableBuildings;
+        break;
+    case Zone_Industrial:
+        buildings = &buildingCatalogue.iGrowableBuildings;
+        break;
+
+        INVALID_DEFAULT_CASE;
+    }
+
+    BuildingDef* result = nullptr;
+
+    // TODO: @RandomIterate - This random selection is biased, and wants replacing with an iteration only over valid options,
+    // like in "growSomeZoneBuildings - find a valid zone".
+    // Well, it does if growing buildings one at a time is how we want to do things. I'm not sure.
+    // Growing a whole "block" of a building might make more sense for residential at least.
+    // Something to decide on later.
+    // - Sam, 18/08/2019
+    for (auto it = buildings->iterate(randomBelow(random, truncate32(buildings->count)));
+        it.hasNext();
+        it.next()) {
+        BuildingDef* def = it.getValue();
+
+        if (filter(def)) {
+            result = def;
+            break;
+        }
+    }
+
+    return result;
+}
+
 void growSomeZoneBuildings(City* city)
 {
     DEBUG_FUNCTION_T(DCDT_Simulation);
 
     ZoneLayer* layer = &city->zoneLayer;
-    Random* random = &globalAppState.gameState->gameRandom;
+    Random* random = &AppState::the().gameState->gameRandom;
 
     for (ZoneType zoneType = FirstZoneType; zoneType < ZoneTypeCount; zoneType = (ZoneType)(zoneType + 1)) {
         if (layer->demand[zoneType] > 0) {
@@ -610,12 +665,12 @@ void growSomeZoneBuildings(City* city)
     }
 }
 
-inline s32 getTotalResidents(City* city)
+ s32 getTotalResidents(City* city)
 {
     return city->zoneLayer.population[Zone_Residential];
 }
 
-inline s32 getTotalJobs(City* city)
+ s32 getTotalJobs(City* city)
 {
     return city->zoneLayer.population[Zone_Commercial] + city->zoneLayer.population[Zone_Industrial] + city->zoneLayer.population[Zone_None];
 }

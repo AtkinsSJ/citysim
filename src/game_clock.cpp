@@ -1,4 +1,12 @@
-#pragma once
+/*
+ * Copyright (c) 2020-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "game_clock.h"
+#include "AppState.h"
+#include <Util/Maths.h>
 
 // We don't bother with leap years, so the month lengths are hard-coded
 u32 const DAYS_PER_YEAR = 365;
@@ -111,7 +119,7 @@ u8 incrementClock(GameClock* clock, f32 deltaTime)
     return clockEvents;
 }
 
-inline GameTimestamp getCurrentTimestamp()
+ GameTimestamp getCurrentTimestamp()
 {
-    return globalAppState.gameState->gameClock.currentDay;
+    return AppState::the().gameState->gameClock.currentDay;
 }

@@ -1,4 +1,16 @@
-#pragma once
+/*
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "crime.h"
+#include "binary_file_reader.h"
+#include "binary_file_writer.h"
+#include "city.h"
+#include "land_value.h"
+#include "save_file.h"
+#include "tile_utils.h"
 
 void initCrimeLayer(CrimeLayer* layer, City* city, MemoryArena* gameArena)
 {
@@ -93,7 +105,7 @@ f32 getPoliceCoveragePercentAt(City* city, s32 x, s32 y)
     return city->crimeLayer.tilePoliceCoverage.get(x, y) / 255.0f;
 }
 
-void saveCrimeLayer(CrimeLayer* layer, struct BinaryFileWriter* writer)
+void saveCrimeLayer(CrimeLayer* layer, BinaryFileWriter* writer)
 {
     writer->startSection<SAVSection_Crime>(SAV_CRIME_ID, SAV_CRIME_VERSION);
     SAVSection_Crime crimeSection = {};
@@ -104,7 +116,7 @@ void saveCrimeLayer(CrimeLayer* layer, struct BinaryFileWriter* writer)
     writer->endSection<SAVSection_Crime>(&crimeSection);
 }
 
-bool loadCrimeLayer(CrimeLayer* layer, City* /*city*/, struct BinaryFileReader* reader)
+bool loadCrimeLayer(CrimeLayer* layer, City*, BinaryFileReader* reader)
 {
     bool succeeded = false;
     while (reader->startSection(SAV_CRIME_ID, SAV_CRIME_VERSION)) {

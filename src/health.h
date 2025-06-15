@@ -1,4 +1,14 @@
+/*
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include "building.h"
+#include "dirty.h"
+#include "sector.h"
 
 struct HealthLayer {
     DirtyRects dirtyRects;

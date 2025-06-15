@@ -1,40 +1,30 @@
-#pragma once
+/*
+ * Copyright (c) 2018-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
 
-#include "util/Deferred.h"
-
-BuildingRef getReferenceTo(Building* building)
-{
-    BuildingRef result = {};
-    result.buildingID = building->id;
-    result.buildingPos = building->footprint.pos;
-
-    return result;
-}
-
-Building* getBuilding(City* city, BuildingRef ref)
-{
-    Building* result = nullptr;
-
-    Building* buildingAtPosition = getBuildingAt(city, ref.buildingPos.x, ref.buildingPos.y);
-    if ((buildingAtPosition != nullptr) && (buildingAtPosition->id == ref.buildingID)) {
-        result = buildingAtPosition;
-    }
-
-    return result;
-}
+#include "building.h"
+#include "AppState.h"
+#include "city.h"
+#include "line_reader.h"
+#include <Assets/AssetManager.h>
+#include <Util/Deferred.h>
 
 void initBuildingCatalogue()
 {
     BuildingCatalogue* catalogue = &buildingCatalogue;
     *catalogue = {};
 
-    initChunkedArray(&catalogue->constructibleBuildings, &globalAppState.systemArena, 64);
-    initChunkedArray(&catalogue->rGrowableBuildings, &globalAppState.systemArena, 64);
-    initChunkedArray(&catalogue->cGrowableBuildings, &globalAppState.systemArena, 64);
-    initChunkedArray(&catalogue->iGrowableBuildings, &globalAppState.systemArena, 64);
-    initChunkedArray(&catalogue->intersectionBuildings, &globalAppState.systemArena, 64);
+    auto& app_state = AppState::the();
 
-    initOccupancyArray(&catalogue->allBuildings, &globalAppState.systemArena, 64);
+    initChunkedArray(&catalogue->constructibleBuildings, &app_state.systemArena, 64);
+    initChunkedArray(&catalogue->rGrowableBuildings, &app_state.systemArena, 64);
+    initChunkedArray(&catalogue->cGrowableBuildings, &app_state.systemArena, 64);
+    initChunkedArray(&catalogue->iGrowableBuildings, &app_state.systemArena, 64);
+    initChunkedArray(&catalogue->intersectionBuildings, &app_state.systemArena, 64);
+
+    initOccupancyArray(&catalogue->allBuildings, &app_state.systemArena, 64);
     // NB: BuildingDef ids are 1-indexed. At least one place (BuildingDef.canBeBuiltOnID) uses 0 as a "none" value.
     // So, we have to append a blank for a "null" def. Could probably get rid of it, but initialise-to-zero is convenient
     // and I'm likely to accidentally leave other things set to 0, so it's safer to just keep the null def.
@@ -507,7 +497,7 @@ void removeBuildingDefs(Array<String> idsToRemove)
     // catalogue->overallMaxBuildingDim = 0;
 }
 
-inline BuildingDef* getBuildingDef(s32 buildingTypeID)
+ BuildingDef* getBuildingDef(s32 buildingTypeID)
 {
     BuildingDef* result = buildingCatalogue.allBuildings.get(0);
 
@@ -520,7 +510,7 @@ inline BuildingDef* getBuildingDef(s32 buildingTypeID)
     return result;
 }
 
-inline BuildingDef* getBuildingDef(Building* building)
+ BuildingDef* getBuildingDef(Building* building)
 {
     BuildingDef* result = nullptr;
 
@@ -531,14 +521,14 @@ inline BuildingDef* getBuildingDef(Building* building)
     return result;
 }
 
-inline BuildingDef* findBuildingDef(String name)
+ BuildingDef* findBuildingDef(String name)
 {
     BuildingDef* result = buildingCatalogue.buildingsByName.findValue(name).orDefault(nullptr);
 
     return result;
 }
 
-inline bool buildingDefHasType(BuildingDef* def, s32 typeID)
+ bool buildingDefHasType(BuildingDef* def, s32 typeID)
 {
     bool result = (def->typeID == typeID);
 
@@ -549,52 +539,9 @@ inline bool buildingDefHasType(BuildingDef* def, s32 typeID)
     return result;
 }
 
-inline ChunkedArray<BuildingDef*>* getConstructibleBuildings()
+ ChunkedArray<BuildingDef*>* getConstructibleBuildings()
 {
     return &buildingCatalogue.constructibleBuildings;
-}
-
-template<typename Filter>
-BuildingDef* findRandomZoneBuilding(ZoneType zoneType, Random* random, Filter filter)
-{
-    DEBUG_FUNCTION();
-
-    // Choose a random building, then carry on checking buildings until one is acceptable
-    ChunkedArray<BuildingDef*>* buildings = nullptr;
-    switch (zoneType) {
-    case Zone_Residential:
-        buildings = &buildingCatalogue.rGrowableBuildings;
-        break;
-    case Zone_Commercial:
-        buildings = &buildingCatalogue.cGrowableBuildings;
-        break;
-    case Zone_Industrial:
-        buildings = &buildingCatalogue.iGrowableBuildings;
-        break;
-
-        INVALID_DEFAULT_CASE;
-    }
-
-    BuildingDef* result = nullptr;
-
-    // TODO: @RandomIterate - This random selection is biased, and wants replacing with an iteration only over valid options,
-    // like in "growSomeZoneBuildings - find a valid zone".
-    // Well, it does if growing buildings one at a time is how we want to do things. I'm not sure.
-    // Growing a whole "block" of a building might make more sense for residential at least.
-    // Something to decide on later.
-    // - Sam, 18/08/2019
-    for (auto it = buildings->iterate(randomBelow(random, truncate32(buildings->count)));
-        it.hasNext();
-        it.next()) {
-        BuildingDef* def = it.getValue();
-
-        if (filter(def)) {
-            result = def;
-            break;
-        }
-    }
-
-    return result;
 }
 
 s32 getMaxBuildingSize(ZoneType zoneType)
@@ -879,7 +826,7 @@ void updateBuilding(City* city, Building* building)
     }
 }
 
-inline void addProblem(Building* building, BuildingProblemType problem)
+ void addProblem(Building* building, BuildingProblemType problem)
 {
     BuildingProblem* bp = &building->problems[problem];
     if (!bp->isActive) {
@@ -891,7 +838,7 @@ inline void addProblem(Building* building, BuildingProblemType problem)
     // TODO: Update zots!
 }
 
-inline void removeProblem(Building* building, BuildingProblemType problem)
+ void removeProblem(Building* building, BuildingProblemType problem)
 {
     if (building->problems[problem].isActive) {
         building->problems[problem].isActive = false;
@@ -900,7 +847,7 @@ inline void removeProblem(Building* building, BuildingProblemType problem)
     }
 }
 
-inline bool hasProblem(Building* building, BuildingProblemType problem)
+ bool hasProblem(Building* building, BuildingProblemType problem)
 {
     bool result = building->problems[problem].isActive;
 
@@ -918,7 +865,7 @@ void loadBuildingSprite(Building* building)
     }
 }
 
-inline ConnectionType connectionTypeOf(char c)
+ ConnectionType connectionTypeOf(char c)
 {
     ConnectionType result;
 
@@ -944,7 +891,7 @@ inline ConnectionType connectionTypeOf(char c)
     return result;
 }
 
-inline char asChar(ConnectionType connectionType)
+ char asChar(ConnectionType connectionType)
 {
     char result;
 
@@ -970,7 +917,7 @@ inline char asChar(ConnectionType connectionType)
     return result;
 }
 
-inline s32 getRequiredPower(Building* building)
+ s32 getRequiredPower(Building* building)
 {
     s32 result = 0;
 
@@ -982,7 +929,7 @@ inline s32 getRequiredPower(Building* building)
     return result;
 }
 
-inline bool buildingHasPower(Building* building)
+ bool buildingHasPower(Building* building)
 {
     return !hasProblem(building, BuildingProblem_NoPower);
 }

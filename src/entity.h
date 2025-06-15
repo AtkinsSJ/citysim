@@ -1,4 +1,15 @@
+/*
+ * Copyright (c) 2020-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
+
+#include <Assets/Sprite.h>
+#include <Util/Basic.h>
+#include <Util/Rectangle.h>
+#include <Util/Vector.h>
 
 enum EntityType {
     EntityType_None,
@@ -23,14 +34,6 @@ struct Entity {
 };
 
 template<typename T>
-inline T* getEntityData(Entity* entity)
-{
-    ASSERT(checkEntityMatchesType<T>(entity));
-
-    return (T*)entity->dataPointer;
-}
-
-template<typename T>
 inline bool checkEntityMatchesType(Entity* entity)
 {
     // TODO: Re-enable this. We currently can't call it because the structs (Building, Fire) aren't included yet.
@@ -48,4 +51,12 @@ inline bool checkEntityMatchesType(Entity* entity)
 
             return false;
     */
+}
+
+template<typename T>
+inline T* getEntityData(Entity* entity)
+{
+    ASSERT(checkEntityMatchesType<T>(entity));
+
+    return (T*)entity->dataPointer;
 }

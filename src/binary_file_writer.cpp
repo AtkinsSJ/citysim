@@ -1,4 +1,11 @@
+/*
+ * Copyright (c) 2021-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
 
+#include "binary_file_writer.h"
+#include <Util/Log.h>
 
 BinaryFileWriter startWritingFile(FileIdentifier identifier, u8 version, MemoryArena* arena)
 {
@@ -42,64 +49,9 @@ void BinaryFileWriter::addTOCEntry(FileIdentifier sectionID)
     buffer.overwriteAt(tocCountLoc, sizeof(leU32), &tocCount);
 }
 
-template<typename T>
-void BinaryFileWriter::startSection(FileIdentifier sectionID, u8 sectionVersion)
-{
-    tocComplete = true;
-
-    sectionHeaderRange = buffer.reserve<FileSectionHeader>();
-    startOfSectionData = buffer.getCurrentPosition();
-
-    sectionHeader = {};
-    sectionHeader.identifier = sectionID;
-    sectionHeader.version = sectionVersion;
-
-    // Find our TOC entry
-    Maybe<WriteBufferRange> tocEntry = findTOCEntry(sectionID);
-    ASSERT(tocEntry.isValid); // Must add a TOC entry for each section in advance!
-    sectionTOCRange = tocEntry.value;
-
-    // Reserve our "section struct"
-    buffer.reserve<T>();
-}
-
 s32 BinaryFileWriter::getSectionRelativeOffset()
 {
     return buffer.getCurrentPosition() - startOfSectionData;
-}
-
-template<typename T>
-FileArray BinaryFileWriter::appendArray(Array<T> data)
-{
-    FileArray result = {};
-    result.count = data.count;
-    result.relativeOffset = getSectionRelativeOffset();
-
-    for (s32 i = 0; i < data.count; i++) {
-        buffer.append<T>(&data[i]);
-    }
-
-    return result;
-}
-
-template<typename T>
-WriteBufferRange BinaryFileWriter::reserveArray(s32 length)
-{
-    return buffer.reserveBytes(length * sizeof(T));
-}
-
-template<typename T>
-FileArray BinaryFileWriter::writeArray(Array<T> data, WriteBufferRange location)
-{
-    s32 dataLength = data.count * sizeof(T);
-    ASSERT(dataLength <= location.length);
-
-    buffer.overwriteAt(location.start, dataLength, data.items);
-
-    FileArray result = {};
-    result.count = data.count;
-    result.relativeOffset = location.start - startOfSectionData;
-    return result;
 }
 
 FileBlob BinaryFileWriter::appendBlob(s32 length, u8* data, FileBlobCompressionScheme scheme)
@@ -193,23 +145,6 @@ FileString BinaryFileWriter::appendString(String s)
     buffer.appendBytes(s.length, s.chars);
 
     return result;
-}
-
-template<typename T>
-void BinaryFileWriter::endSection(T* sectionStruct)
-{
-    buffer.overwriteAt(startOfSectionData, sizeof(T), sectionStruct);
-
-    // Update section header
-    u32 sectionLength = buffer.getLengthSince(startOfSectionData);
-    sectionHeader.length = sectionLength;
-    buffer.overwriteAt<FileSectionHeader>(sectionHeaderRange, &sectionHeader);
-
-    // Update TOC
-    FileTOCEntry tocEntry = buffer.readAt<FileTOCEntry>(sectionTOCRange);
-    tocEntry.offset = sectionHeaderRange.start;
-    tocEntry.length = sectionLength;
-    buffer.overwriteAt<FileTOCEntry>(sectionTOCRange, &tocEntry);
 }
 
 bool BinaryFileWriter::outputToFile(FileHandle* file)

@@ -1,13 +1,14 @@
+/*
+ * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
 #pragma once
 
-// platform.h
-#ifdef __linux__
-// stuff
-#else // Windows
-#    define NOMINMAX
-#    include <shellapi.h>
-#    include <windows.h>
-#endif
+#include <Util/Basic.h>
+#include <Util/Forward.h>
+#include <Util/Time.h>
 
 // Open the given URL in the user's default browser.
 // NB: No check is done to ensure the URL is safe to use in a console command!

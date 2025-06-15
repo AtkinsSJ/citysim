@@ -1,4 +1,10 @@
-#pragma once
+/*
+ * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "dirty.h"
 
 void initDirtyRects(DirtyRects* dirtyRects, MemoryArena* arena, s32 expansionRadius, Rect2I bounds)
 {
@@ -62,7 +68,7 @@ void clearDirtyRects(DirtyRects* dirtyRects)
     dirtyRects->rects.clear();
 }
 
-inline bool isDirty(DirtyRects* dirtyRects)
+ bool isDirty(DirtyRects* dirtyRects)
 {
     return dirtyRects->rects.count > 0;
 }
