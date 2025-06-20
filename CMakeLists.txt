@@ -4,6 +4,12 @@ project(CitySim VERSION 0.1)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if (MSVC)
+    add_compile_options(-EHsc -MD -W4 -wd4201 -Zi -Od -Oi)
+else()
+    add_compile_options(-Wall -Werror -Wno-unknown-pragmas -Wno-unqualified-std-cast-call)
+endif()
+
 find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 find_package(SDL2 REQUIRED)
