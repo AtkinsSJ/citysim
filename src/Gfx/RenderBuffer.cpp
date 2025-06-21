@@ -4,8 +4,4 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#pragma once
-
-class Camera;
-struct RenderBuffer;
-struct Renderer;
+#include <Gfx/RenderBuffer.h>

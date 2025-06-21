@@ -362,8 +362,6 @@ void addSetCamera(RenderBuffer* buffer, Camera* camera)
 {
     RenderItem_SetCamera* cameraItem = appendRenderItem<RenderItem_SetCamera>(buffer, RenderItemType_SetCamera);
     cameraItem->camera = camera;
-
-    buffer->currentCamera = camera;
 }
 
 void addSetShader(RenderBuffer* buffer, s8 shaderID)
