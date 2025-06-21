@@ -33,6 +33,11 @@ struct Rect2 {
             f32 h;
         };
     };
+
+    f32 left() const { return x; }
+    f32 right() const { return x + w; }
+    f32 top() const { return y; }
+    f32 bottom() const { return y + h; }
 };
 
 Rect2 rectXYWH(f32 x, f32 y, f32 w, f32 h);
