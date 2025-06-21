@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <Gfx/Forward.h>
 #include <SDL2/SDL_events.h>
 #include <SDL2/SDL_keycode.h>
 #include <SDL2/SDL_mouse.h>
@@ -79,7 +80,7 @@ void updateInput();
 bool mouseButtonJustPressed(MouseButton mouseButton);
 bool mouseButtonJustReleased(MouseButton mouseButton);
 bool mouseButtonPressed(MouseButton mouseButton);
-V2 getClickStartPos(MouseButton mouseButton, struct Camera* camera);
+V2 getClickStartPos(MouseButton mouseButton, Camera* camera);
 
 bool modifierKeyIsPressed(ModifierKey modifier);
 bool keyIsPressed(SDL_Keycode key, u8 modifiers = 0);

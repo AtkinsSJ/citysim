@@ -51,6 +51,7 @@ elseif (WIN32)
 endif ()
 
 add_subdirectory("Assets")
+add_subdirectory("Gfx")
 add_subdirectory("Sim")
 add_subdirectory("UI")
 add_subdirectory("Util")

@@ -178,17 +178,17 @@ void initDebugTextState(DebugTextState* textState, BitmapFont* font, V4 textColo
         textState->pos.x = screenEdgePadding;
     } else {
         textState->hAlign = ALIGN_RIGHT;
-        textState->pos.x = ceil_s32(renderer->uiCamera.size.x) - screenEdgePadding;
+        textState->pos.x = ceil_s32(textState->camera->size().x) - screenEdgePadding;
     }
 
     if (upwards) {
-        textState->pos.y = ceil_s32(renderer->uiCamera.size.y) - screenEdgePadding;
+        textState->pos.y = ceil_s32(textState->camera->size().y) - screenEdgePadding;
     } else {
         textState->pos.y = screenEdgePadding;
     }
     textState->font = font;
     textState->color = textColor;
-    textState->maxWidth = floor_s32(renderer->uiCamera.size.x) - (2 * screenEdgePadding);
+    textState->maxWidth = floor_s32(textState->camera->size().x) - (2 * screenEdgePadding);
 
     textState->textShaderID = renderer->shaderIds.text;
     textState->untexturedShaderID = renderer->shaderIds.untextured;
@@ -210,7 +210,7 @@ void debugTextOut(DebugTextState* textState, String text, bool doHighlight = fal
 
     Rect2I bounds = irectPosSize(topLeft, textSize);
 
-    if (doHighlight && contains(bounds, textState->camera->mousePos)) {
+    if (doHighlight && contains(bounds, textState->camera->mouse_position())) {
         drawSingleRect(textState->renderBuffer, bounds, textState->untexturedShaderID, textColor * 0.5f);
         drawText(textState->renderBuffer, textState->font, text, bounds, align, color255(0, 0, 0, 255), textState->textShaderID);
     } else {
@@ -241,15 +241,15 @@ void renderDebugData(DebugState* debugState)
 
     u64 cyclesPerSecond = SDL_GetPerformanceFrequency();
     u32 rfi = debugState->readingFrameIndex;
-    drawSingleRect(renderBuffer, rectXYWH(0, 0, renderer->uiCamera.size.x, renderer->uiCamera.size.y), renderer->shaderIds.untextured, color255(0, 0, 0, 128));
+    drawSingleRect(renderBuffer, rectXYWH(0, 0, renderer->uiCamera.size().x, renderer->uiCamera.size().y), renderer->shaderIds.untextured, color255(0, 0, 0, 128));
 
     // Draw a "nice" chart!
     {
         f32 graphHeight = 150.0f;
-        drawSingleRect(renderBuffer, rectXYWH(0, renderer->uiCamera.size.y - graphHeight, renderer->uiCamera.size.x, 1), renderer->shaderIds.untextured, color255(255, 255, 255, 128));
-        drawSingleRect(renderBuffer, rectXYWH(0, renderer->uiCamera.size.y - graphHeight * 2, renderer->uiCamera.size.x, 1), renderer->shaderIds.untextured, color255(255, 255, 255, 128));
+        drawSingleRect(renderBuffer, rectXYWH(0, renderer->uiCamera.size().y - graphHeight, renderer->uiCamera.size().x, 1), renderer->shaderIds.untextured, color255(255, 255, 255, 128));
+        drawSingleRect(renderBuffer, rectXYWH(0, renderer->uiCamera.size().y - graphHeight * 2, renderer->uiCamera.size().x, 1), renderer->shaderIds.untextured, color255(255, 255, 255, 128));
         f32 targetCyclesPerFrame = cyclesPerSecond / 60.0f;
-        f32 barWidth = renderer->uiCamera.size.x / (f32)DEBUG_FRAMES_COUNT;
+        f32 barWidth = renderer->uiCamera.size().x / (f32)DEBUG_FRAMES_COUNT;
         f32 barHeightPerCycle = graphHeight / targetCyclesPerFrame;
         V4 barColor = color255(255, 0, 0, 128);
         V4 activeBarColor = color255(255, 255, 0, 128);
@@ -260,7 +260,7 @@ void renderDebugData(DebugState* debugState)
             fi = wrap<u32>(fi + 1, DEBUG_FRAMES_COUNT)) {
             u64 frameCycles = debugState->frameEndCycle[fi] - debugState->frameStartCycle[fi];
             f32 barHeight = barHeightPerCycle * (f32)frameCycles;
-            addUntexturedRect(rectsGroup, rectXYWH(barWidth * barIndex++, renderer->uiCamera.size.y - barHeight, barWidth, barHeight), fi == rfi ? activeBarColor : barColor);
+            addUntexturedRect(rectsGroup, rectXYWH(barWidth * barIndex++, renderer->uiCamera.size().y - barHeight, barWidth, barHeight), fi == rfi ? activeBarColor : barColor);
         }
         endRectsGroup(rectsGroup);
     }

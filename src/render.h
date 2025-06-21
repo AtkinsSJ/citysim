@@ -10,9 +10,9 @@
 #include "font.h"
 #include "types.h"
 #include <Assets/Forward.h>
+#include <Gfx/Camera.h>
 #include <SDL2/SDL_events.h>
 #include <Util/Basic.h>
-#include <Util/Matrix4.h>
 #include <Util/MemoryArena.h>
 #include <Util/Pool.h>
 #include <Util/Rectangle.h>
@@ -24,21 +24,6 @@ struct RenderBuffer;
 // General rendering code.
 
 f32 const SECONDS_PER_FRAME = 1.0f / 60.0f;
-
-struct Camera {
-    V2 pos;        // Centre of camera, in camera units
-    V2 size;       // Size of camera, in camera units
-    f32 sizeRatio; // Size of window is multiplied by this to produce the camera's size
-    f32 zoom;      // 1 = normal, 2 = things appear twice their size, etc.
-    Matrix4 projectionMatrix;
-
-    // NB: We don't use depth anywhere any more, but these do get used in generating the
-    // projection matrix. - Sam, 26/07/2019
-    f32 nearClippingPlane;
-    f32 farClippingPlane;
-
-    V2 mousePos;
-};
 
 enum RenderItemType {
     RenderItemType_NextMemoryChunk,
@@ -206,8 +191,8 @@ struct Renderer {
     s32 windowHeight { 0 };
     bool isFullscreen { false };
 
-    Camera worldCamera {};
-    Camera uiCamera {};
+    Camera worldCamera;
+    Camera uiCamera;
 
     // Cursor stuff
     String currentCursorName {};
@@ -265,13 +250,6 @@ void clearRenderBuffer(RenderBuffer* buffer);
 RenderBuffer* getTemporaryRenderBuffer(String name);
 void transferRenderBufferData(RenderBuffer* buffer, RenderBuffer* targetBuffer);
 void returnTemporaryRenderBuffer(RenderBuffer* buffer);
-
-void initCamera(Camera* camera, V2 size, f32 sizeRatio, f32 nearClippingPlane, f32 farClippingPlane, V2 position = v2(0, 0));
-void updateCameraMatrix(Camera* camera);
-V2 unproject(Camera* camera, V2 screenPos);
-void setCameraPos(Camera* camera, V2 position, f32 zoom);
-// rounding the zoom so it doesn't gradually drift due to float imprecision
-f32 snapZoomLevel(f32 zoom);
 
 void setCursor(String cursorName);
 

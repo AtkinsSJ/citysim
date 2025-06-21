@@ -158,8 +158,8 @@ int main(int argc, char* argv[])
                 break;
             }
 
-            worldCamera->mousePos = unproject(worldCamera, input.mousePosNormalised);
-            uiCamera->mousePos = unproject(uiCamera, input.mousePosNormalised);
+            worldCamera->update_mouse_position(input.mousePosNormalised);
+            uiCamera->update_mouse_position(input.mousePosNormalised);
 
             addSetCamera(&renderer->worldBuffer, worldCamera);
             addClear(&renderer->worldBuffer);
@@ -206,8 +206,8 @@ int main(int argc, char* argv[])
             }
 
             // Update camera matrices here
-            updateCameraMatrix(worldCamera);
-            updateCameraMatrix(uiCamera);
+            worldCamera->update_projection_matrix();
+            uiCamera->update_projection_matrix();
 
             // Debug stuff
             if (globalDebugState) {

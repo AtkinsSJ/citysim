@@ -196,8 +196,8 @@ void GL_Renderer::render(Array<RenderBuffer*> buffers)
                 }
 
                 activeShader = use_shader(header->shaderID);
-                glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, currentCamera->projectionMatrix.flat);
-                glUniform1f(activeShader->uScaleLoc, currentCamera->zoom);
+                glUniformMatrix4fv(activeShader->uProjectionMatrixLoc, 1, false, currentCamera->projection_matrix().flat);
+                glUniform1f(activeShader->uScaleLoc, currentCamera->zoom());
             } break;
 
             case RenderItemType_SetTexture: {

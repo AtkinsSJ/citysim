@@ -61,13 +61,13 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
     // TODO: Are we sure we want to do this?
     markAreaDirty(city, city->bounds);
 
-    the_renderer()->worldCamera.pos = v2(city->bounds.size) / 2;
+    the_renderer()->worldCamera.set_position(v2(city->bounds.size) / 2);
 
     saveBuildingTypes();
     saveTerrainTypes();
 }
 
- void removeEntity(City* city, Entity* entity)
+void removeEntity(City* city, Entity* entity)
 {
     // logInfo("Removing entity #{0}"_s, {formatInt(entity->index)});
     city->entities.removeIndex(entity->index);
@@ -165,18 +165,18 @@ void markAreaDirty(City* city, Rect2I bounds)
     markTransportLayerDirty(&city->transportLayer, bounds);
 }
 
- bool tileExists(City* city, s32 x, s32 y)
+bool tileExists(City* city, s32 x, s32 y)
 {
     return (x >= 0) && (x < city->bounds.w)
         && (y >= 0) && (y < city->bounds.h);
 }
 
- bool canAfford(City* city, s32 cost)
+bool canAfford(City* city, s32 cost)
 {
     return city->funds >= cost;
 }
 
- void spend(City* city, s32 cost)
+void spend(City* city, s32 cost)
 {
     city->funds -= cost;
 }
@@ -473,7 +473,7 @@ void drawCity(City* city, Rect2I visibleTileBounds)
     }
 }
 
- bool buildingExistsAt(City* city, s32 x, s32 y)
+bool buildingExistsAt(City* city, s32 x, s32 y)
 {
     bool result = city->tileBuildingIndex.get(x, y) > 0;
 

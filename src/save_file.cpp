@@ -59,9 +59,9 @@ bool writeSaveFile(FileHandle* file, GameState* gameState)
 
             // Camera
             Camera* camera = &the_renderer()->worldCamera;
-            metaSection.cameraX = camera->pos.x;
-            metaSection.cameraY = camera->pos.y;
-            metaSection.cameraZoom = camera->zoom;
+            metaSection.cameraX = camera->position().x;
+            metaSection.cameraY = camera->position().y;
+            metaSection.cameraZoom = camera->zoom();
 
             writer.endSection(&metaSection);
         }
@@ -127,7 +127,9 @@ bool loadSaveFile(FileHandle* file, GameState* gameState)
             initGameClock(&gameState->gameClock, meta->currentDate, meta->timeWithinDay);
 
             // Camera
-            setCameraPos(&the_renderer()->worldCamera, v2(meta->cameraX, meta->cameraY), meta->cameraZoom);
+            auto& world_camera = the_renderer()->worldCamera;
+            world_camera.set_position(v2(meta->cameraX, meta->cameraY));
+            world_camera.set_zoom(meta->cameraZoom);
         } else
             break;
 

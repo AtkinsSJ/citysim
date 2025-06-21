@@ -35,7 +35,7 @@ ConsoleCommand(debug_tools)
 
     // @Hack: This sets the position to outside the camera, and then relies on it automatically snapping back into bounds
     auto* renderer = the_renderer();
-    V2I windowPos = v2i(renderer->uiCamera.pos + renderer->uiCamera.size);
+    V2I windowPos = v2i(renderer->uiCamera.position() + renderer->uiCamera.size());
 
     UI::showWindow(UI::WindowTitle::fromTextAsset("title_debug_tools"_s), 250, 200, windowPos, "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Unique, debugToolsWindowProc, gameState);
 }
@@ -218,7 +218,7 @@ ConsoleCommand(window_size)
             consoleWriteLine("Usage: window_size [width height], where both width and height are positive integers. If no width or height are provided, the current window size is returned."_s, CLS_Error);
         }
     } else if (argumentsCount == 0) {
-        V2 screenSize = the_renderer()->uiCamera.size;
+        V2 screenSize = the_renderer()->uiCamera.size();
         consoleWriteLine(myprintf("Window size is {0} by {1}"_s, { formatInt((s32)screenSize.x), formatInt((s32)screenSize.y) }), CLS_Success);
     } else {
         consoleWriteLine("Usage: window_size [width height], where both width and height are positive integers. If no width or height are provided, the current window size is returned."_s, CLS_Error);
@@ -232,14 +232,14 @@ ConsoleCommand(zoom)
 
     if (argumentsCount == 0) {
         // list the zoom
-        f32 zoom = renderer->worldCamera.zoom;
+        f32 zoom = renderer->worldCamera.zoom();
         consoleWriteLine(myprintf("Current zoom is {0}"_s, { formatFloat(zoom, 3) }), CLS_Success);
     } else if (argumentsCount == 1) {
         // set the zoom
         Maybe<f64> requestedZoom = asFloat(nextToken(remainder, &remainder));
         if (requestedZoom.isValid) {
             f32 newZoom = (f32)requestedZoom.value;
-            renderer->worldCamera.zoom = newZoom;
+            renderer->worldCamera.set_zoom(newZoom);
             consoleWriteLine(myprintf("Set zoom to {0}"_s, { formatFloat(newZoom, 3) }), CLS_Success);
         } else {
             consoleWriteLine("Usage: zoom (scale), where scale is a float, or with no argument to list the current zoom"_s, CLS_Error);

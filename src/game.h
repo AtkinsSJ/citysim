@@ -19,8 +19,6 @@
 #include <Util/String.h>
 #include <Util/Vector.h>
 
-struct Camera;
-
 enum GameStatus {
     GameStatus_Playing,
     GameStatus_Quit,

@@ -58,7 +58,7 @@ void inputMoveCamera(Camera* camera, V2 windowSize, V2 windowMousePos, s32 cityW
 {
     DEBUG_FUNCTION();
 
-    f32 const CAMERA_MARGIN = 1;        // How many tiles beyond the map can the camera scroll to show?
+    s32 const CAMERA_MARGIN = 1;        // How many tiles beyond the map can the camera scroll to show?
     f32 const CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second
 
     // Zooming
@@ -74,57 +74,42 @@ void inputMoveCamera(Camera* camera, V2 windowSize, V2 windowMousePos, s32 cityW
     }
 
     if (zoomDelta) {
-        camera->zoom = snapZoomLevel(camera->zoom + (zoomDelta * 0.1f));
+        camera->zoom_by(zoomDelta * 0.1f);
     }
 
     // Panning
-    f32 scrollSpeed = (CAMERA_PAN_SPEED * (f32)sqrt(camera->zoom)) * AppState::the().deltaTime;
+    f32 scrollSpeed = (CAMERA_PAN_SPEED * sqrt(camera->zoom())) * AppState::the().deltaTime;
     f32 cameraEdgeScrollPixelMargin = 8.0f;
 
     if (mouseButtonPressed(MouseButton_Middle)) {
         // Click-panning!
         float scale = scrollSpeed * 1.0f;
         V2 clickStartPos = getClickStartPos(MouseButton_Middle, camera);
-        camera->pos += (camera->mousePos - clickStartPos) * scale;
+        camera->move_by((camera->mouse_position() - clickStartPos) * scale);
     } else if (!isInputCaptured()) {
         if (keyIsPressed(SDLK_LEFT)
             || keyIsPressed(SDLK_a)
             || (windowMousePos.x < cameraEdgeScrollPixelMargin)) {
-            camera->pos.x -= scrollSpeed;
+            camera->move_by(v2(-scrollSpeed, 0.f));
         } else if (keyIsPressed(SDLK_RIGHT)
             || keyIsPressed(SDLK_d)
             || (windowMousePos.x > (windowSize.x - cameraEdgeScrollPixelMargin))) {
-            camera->pos.x += scrollSpeed;
+            camera->move_by(v2(scrollSpeed, 0.f));
         }
 
         if (keyIsPressed(SDLK_UP)
             || keyIsPressed(SDLK_w)
             || (windowMousePos.y < cameraEdgeScrollPixelMargin)) {
-            camera->pos.y -= scrollSpeed;
+            camera->move_by(v2(0.f, -scrollSpeed));
         } else if (keyIsPressed(SDLK_DOWN)
             || keyIsPressed(SDLK_s)
             || (windowMousePos.y > (windowSize.y - cameraEdgeScrollPixelMargin))) {
-            camera->pos.y += scrollSpeed;
+            camera->move_by(v2(0.f, scrollSpeed));
         }
     }
 
     // Clamp camera
-    V2 cameraSize = camera->size / camera->zoom;
-    if (cityWidth < cameraSize.x) {
-        // City smaller than camera, so centre on it
-        camera->pos.x = cityWidth * 0.5f;
-    } else {
-        f32 minX = (cameraSize.x * 0.5f) - CAMERA_MARGIN;
-        camera->pos.x = clamp(camera->pos.x, minX, (f32)cityWidth - minX);
-    }
-
-    if (cityHeight < camera->size.y / camera->zoom) {
-        // City smaller than camera, so centre on it
-        camera->pos.y = cityHeight * 0.5f;
-    } else {
-        f32 minY = (cameraSize.y * 0.5f) - CAMERA_MARGIN;
-        camera->pos.y = clamp(camera->pos.y, minY, (f32)cityHeight - minY);
-    }
+    camera->snap_to_rectangle(rectXYWHi(-CAMERA_MARGIN, -CAMERA_MARGIN, cityWidth + (2 * CAMERA_MARGIN), cityHeight + (2 * CAMERA_MARGIN)));
 }
 
 Rect2I getDragArea(DragState* dragState, Rect2I cityBounds, DragType dragType, V2I itemSize)
@@ -674,10 +659,10 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
     Camera* worldCamera = &renderer->worldCamera;
     Camera* uiCamera = &renderer->uiCamera;
     if (gameState->status == GameStatus_Playing) {
-        inputMoveCamera(worldCamera, uiCamera->size, uiCamera->mousePos, gameState->city.bounds.w, gameState->city.bounds.h);
+        inputMoveCamera(worldCamera, uiCamera->size(), uiCamera->mouse_position(), gameState->city.bounds.w, gameState->city.bounds.h);
     }
 
-    V2I mouseTilePos = v2i(worldCamera->mousePos);
+    V2I mouseTilePos = v2i(worldCamera->mouse_position());
     bool mouseIsOverUI = UI::isMouseInputHandled() || UI::mouseIsWithinUIRects();
 
     city->demolitionRect = irectNegativeInfinity();
@@ -863,7 +848,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
             if (!mouseIsOverUI && mouseButtonJustPressed(MouseButton_Left)) {
                 if (tileExists(city, mouseTilePos.x, mouseTilePos.y)) {
                     gameState->inspectedTilePosition = mouseTilePos;
-                    V2I windowPos = v2i(renderer->uiCamera.mousePos) + v2i(16, 16);
+                    V2I windowPos = v2i(renderer->uiCamera.mouse_position()) + v2i(16, 16);
                     UI::showWindow(UI::WindowTitle::fromLambda([]() {
                         V2I tilePos = AppState::the().gameState->inspectedTilePosition;
                         return getText("title_inspect"_s, { formatInt(tilePos.x), formatInt(tilePos.y) });
@@ -892,7 +877,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
     // Pre-calculate the tile area that's visible to the player.
     // We err on the side of drawing too much, rather than risking having holes in the world.
     Rect2I visibleTileBounds = irectCentreSize(
-        v2i(worldCamera->pos), v2i(worldCamera->size / worldCamera->zoom) + v2i(3, 3));
+        v2i(worldCamera->position()), v2i(worldCamera->size() / worldCamera->zoom()) + v2i(3, 3));
     visibleTileBounds = intersect(visibleTileBounds, city->bounds);
 
     // logInfo("visibleTileBounds = {0} {1} {2} {3}"_s, {formatInt(visibleTileBounds.x),formatInt(visibleTileBounds.y),formatInt(visibleTileBounds.w),formatInt(visibleTileBounds.h)});

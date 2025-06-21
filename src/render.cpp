@@ -8,39 +8,8 @@
 #include "debug.h"
 #include "render_gl.h"
 #include <Assets/AssetManager.h>
-#include <Util/Matrix4.h>
 
 static Renderer* s_renderer;
-
-void updateCameraMatrix(Camera* camera)
-{
-    f32 camHalfWidth = camera->size.x * 0.5f / camera->zoom;
-    f32 camHalfHeight = camera->size.y * 0.5f / camera->zoom;
-    camera->projectionMatrix = orthographicMatrix4(
-        camera->pos.x - camHalfWidth, camera->pos.x + camHalfWidth,
-        camera->pos.y - camHalfHeight, camera->pos.y + camHalfHeight,
-        camera->nearClippingPlane, camera->farClippingPlane);
-}
-
-void initCamera(Camera* camera, V2 size, f32 sizeRatio, f32 nearClippingPlane, f32 farClippingPlane, V2 position)
-{
-    camera->sizeRatio = sizeRatio;
-    camera->size = size * sizeRatio;
-    camera->pos = position;
-    camera->zoom = 1.0f;
-    camera->nearClippingPlane = nearClippingPlane;
-    camera->farClippingPlane = farClippingPlane;
-
-    updateCameraMatrix(camera);
-}
-
-void setCameraPos(Camera* camera, V2 position, f32 zoom)
-{
-    camera->pos = position;
-    camera->zoom = snapZoomLevel(zoom);
-
-    updateCameraMatrix(camera);
-}
 
 f32 snapZoomLevel(f32 zoom)
 {
@@ -80,8 +49,8 @@ Renderer::Renderer(SDL_Window* window)
     // Init cameras
     V2 windowSize = v2(windowWidth, windowHeight);
     f32 const TILE_SIZE = 16.0f;
-    initCamera(&worldCamera, windowSize, 1.0f / TILE_SIZE, 10000.0f, -10000.0f);
-    initCamera(&uiCamera, windowSize, 1.0f, 10000.0f, -10000.0f, windowSize * 0.5f);
+    worldCamera = Camera(windowSize, 1.0f / TILE_SIZE, 10000.0f, -10000.0f);
+    uiCamera = Camera(windowSize, 1.0f, 10000.0f, -10000.0f, windowSize * 0.5f);
 
     // Hide cursor until stuff loads
     set_cursor_visible(false);
@@ -121,10 +90,10 @@ void handleWindowEvent(SDL_WindowEvent* event)
 
         V2 windowSize = v2(s_renderer->windowWidth, s_renderer->windowHeight);
 
-        s_renderer->worldCamera.size = windowSize * s_renderer->worldCamera.sizeRatio;
+        s_renderer->worldCamera.set_size(windowSize);
 
-        s_renderer->uiCamera.size = windowSize * s_renderer->uiCamera.sizeRatio;
-        s_renderer->uiCamera.pos = s_renderer->uiCamera.size * 0.5f;
+        s_renderer->uiCamera.set_size(windowSize);
+        s_renderer->uiCamera.set_position(s_renderer->uiCamera.size() * 0.5f);
     } break;
     }
 }
@@ -237,20 +206,6 @@ void resizeWindow(s32 w, s32 h, bool fullscreen)
     }
 
     s_renderer->isFullscreen = fullscreen;
-}
-
-// Screen -> scene space
-V2 unproject(Camera* camera, V2 screenPos)
-{
-    V2 result = {};
-
-    V4 screenPosV4 = v4(screenPos.x, screenPos.y, 0.0f, 1.0f);
-
-    // Convert into scene space
-    V4 unprojected = inverse(&camera->projectionMatrix) * screenPosV4;
-    result = unprojected.xy;
-
-    return result;
 }
 
 void setCursor(String cursorName)
