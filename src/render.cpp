@@ -41,7 +41,7 @@ void setCameraPos(Camera* camera, V2 position, f32 zoom)
     updateCameraMatrix(camera);
 }
 
- f32 snapZoomLevel(f32 zoom)
+f32 snapZoomLevel(f32 zoom)
 {
     return (f32)clamp(round_f32(10 * zoom) * 0.1f, 0.1f, 10.0f);
 }
@@ -298,7 +298,7 @@ void clearRenderBuffer(RenderBuffer* buffer)
     buffer->currentChunk = nullptr;
 }
 
- RenderBuffer* getTemporaryRenderBuffer(String name)
+RenderBuffer* getTemporaryRenderBuffer(String name)
 {
     RenderBuffer* result = getItemFromPool(&s_renderer->renderBufferPool);
 
@@ -340,7 +340,7 @@ void transferRenderBufferData(RenderBuffer* buffer, RenderBuffer* targetBuffer)
     clearRenderBuffer(buffer); // Make sure things are reset
 }
 
- void appendRenderItemType(RenderBuffer* buffer, RenderItemType type)
+void appendRenderItemType(RenderBuffer* buffer, RenderItemType type)
 {
     *(RenderItemType*)(buffer->currentChunk->memory + buffer->currentChunk->used) = type;
     buffer->currentChunk->used += sizeof(RenderItemType);
@@ -496,12 +496,12 @@ void drawSingleSprite(RenderBuffer* buffer, Sprite* sprite, Rect2 bounds, s8 sha
     rect->uv = sprite->uv;
 }
 
- void drawSingleRect(RenderBuffer* buffer, Rect2 bounds, s8 shaderID, V4 color)
+void drawSingleRect(RenderBuffer* buffer, Rect2 bounds, s8 shaderID, V4 color)
 {
     drawSingleRect(buffer, bounds, shaderID, color, color, color, color);
 }
 
- void drawSingleRect(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, V4 color)
+void drawSingleRect(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, V4 color)
 {
     drawSingleRect(buffer, rect2(bounds), shaderID, color, color, color, color);
 }
@@ -520,7 +520,7 @@ void drawSingleRect(RenderBuffer* buffer, Rect2 bounds, s8 shaderID, V4 color00,
     rect->uv = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
 }
 
- void drawSingleRect(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, V4 color00, V4 color01, V4 color10, V4 color11)
+void drawSingleRect(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, V4 color00, V4 color01, V4 color10, V4 color11)
 {
     drawSingleRect(buffer, rect2(bounds), shaderID, color00, color01, color10, color11);
 }
@@ -547,12 +547,12 @@ DrawRectPlaceholder appendDrawRectPlaceholder(RenderBuffer* buffer, s8 shaderID,
     return result;
 }
 
- void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2 bounds, V4 color)
+void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2 bounds, V4 color)
 {
     fillDrawRectPlaceholder(placeholder, bounds, color, color, color, color);
 }
 
- void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2I bounds, V4 color)
+void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2I bounds, V4 color)
 {
     fillDrawRectPlaceholder(placeholder, rect2(bounds), color, color, color, color);
 }
@@ -569,7 +569,7 @@ void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2 bounds, V4 
     rect->uv = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
 }
 
- void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2I bounds, V4 color00, V4 color01, V4 color10, V4 color11)
+void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2I bounds, V4 color00, V4 color01, V4 color10, V4 color11)
 {
     fillDrawRectPlaceholder(placeholder, rect2(bounds), color00, color01, color10, color11);
 }
@@ -744,12 +744,12 @@ DrawRectsGroup* beginRectsGroupTextured(RenderBuffer* buffer, Asset* texture, s8
     return beginRectsGroupInternal(buffer, texture, shaderID, maxCount);
 }
 
- DrawRectsGroup* beginRectsGroupUntextured(RenderBuffer* buffer, s8 shaderID, s32 maxCount)
+DrawRectsGroup* beginRectsGroupUntextured(RenderBuffer* buffer, s8 shaderID, s32 maxCount)
 {
     return beginRectsGroupInternal(buffer, nullptr, shaderID, maxCount);
 }
 
- DrawRectsGroup* beginRectsGroupForText(RenderBuffer* buffer, BitmapFont* font, s8 shaderID, s32 maxCount)
+DrawRectsGroup* beginRectsGroupForText(RenderBuffer* buffer, BitmapFont* font, s8 shaderID, s32 maxCount)
 {
     return beginRectsGroupInternal(buffer, font->texture, shaderID, maxCount);
 }
@@ -817,18 +817,18 @@ void addRectInternal(DrawRectsGroup* group, Rect2 bounds, V4 color, Rect2 uv)
     group->count++;
 }
 
- void addUntexturedRect(DrawRectsGroup* group, Rect2 bounds, V4 color)
+void addUntexturedRect(DrawRectsGroup* group, Rect2 bounds, V4 color)
 {
     addRectInternal(group, bounds, color, rectXYWH(0, 0, 0, 0));
 }
 
- void addGlyphRect(DrawRectsGroup* group, BitmapFontGlyph* glyph, V2 position, V4 color)
+void addGlyphRect(DrawRectsGroup* group, BitmapFontGlyph* glyph, V2 position, V4 color)
 {
     Rect2 bounds = rectXYWH(position.x + glyph->xOffset, position.y + glyph->yOffset, glyph->width, glyph->height);
     addRectInternal(group, bounds, color, glyph->uv);
 }
 
- void addSpriteRect(DrawRectsGroup* group, Sprite* sprite, Rect2 bounds, V4 color)
+void addSpriteRect(DrawRectsGroup* group, Sprite* sprite, Rect2 bounds, V4 color)
 {
     ASSERT(group->texture == sprite->texture);
 
