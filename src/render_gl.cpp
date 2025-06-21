@@ -10,6 +10,8 @@
 #include <Util/Deferred.h>
 #include <Util/Log.h>
 
+#define OPTIMIZE_IBO 1
+
 bool GL_Renderer::initialize(SDL_Window* window)
 {
     MemoryArena bootstrap;
@@ -97,7 +99,7 @@ bool GL_Renderer::initialize(SDL_Window* window)
     //
     // - Sam, 29/07/2019
     //
-#if 1
+#if OPTIMIZE_IBO
     s32 firstVertex = 0;
     for (s32 i = 0;
         i < RENDER_BATCH_INDEX_COUNT;
@@ -383,6 +385,8 @@ void GL_Renderer::render(Array<RenderBuffer*> buffers)
 
                     for (s32 segmentIndex = 0; segmentIndex < ringSegmentsCount; segmentIndex++) {
                         GL_VertexData* vertex = m_vertices + m_vertex_count;
+                        [[maybe_unused]] s32 firstVertex = m_vertex_count;
+
                         f32 startAngle = segmentIndex * radPerSegment;
                         f32 endAngle = (segmentIndex + 1) * radPerSegment;
 
@@ -409,14 +413,14 @@ void GL_Renderer::render(Array<RenderBuffer*> buffers)
 
                         // NB: See comment in GL_initializeRenderer() - we can use the same buffer index buffer data
                         // always, as long as we only render quads.
-#if 0
-                            GLuint *index = m_indices + m_index_count;
-                            index[0] = firstVertex + 0;
-                            index[1] = firstVertex + 1;
-                            index[2] = firstVertex + 2;
-                            index[3] = firstVertex + 0;
-                            index[4] = firstVertex + 2;
-                            index[5] = firstVertex + 3;
+#if !OPTIMIZE_IBO
+                        GLuint* index = m_indices + m_index_count;
+                        index[0] = firstVertex + 0;
+                        index[1] = firstVertex + 1;
+                        index[2] = firstVertex + 2;
+                        index[3] = firstVertex + 0;
+                        index[4] = firstVertex + 2;
+                        index[5] = firstVertex + 3;
 #endif
                         m_index_count += 6;
                     }
@@ -759,7 +763,7 @@ void GL_Renderer::upload_texture_2d(GLenum pixelFormat, s32 width, s32 height, v
 void GL_Renderer::push_quad(Rect2 bounds, V4 color)
 {
     DEBUG_FUNCTION_T(DCDT_Renderer);
-    // s32 firstVertex = m_vertex_count;
+    [[maybe_unused]] s32 firstVertex = m_vertex_count;
 
     GL_VertexData* vertex = m_vertices + m_vertex_count;
 
@@ -791,14 +795,14 @@ void GL_Renderer::push_quad(Rect2 bounds, V4 color)
 
 // NB: See comment in GL_initializeRenderer() - we can use the same buffer index buffer data
 // always, as long as we only render quads.
-#if 0
-	GLuint *index = m_indices + m_index_count;
-	index[0] = firstVertex + 0;
-	index[1] = firstVertex + 1;
-	index[2] = firstVertex + 2;
-	index[3] = firstVertex + 0;
-	index[4] = firstVertex + 2;
-	index[5] = firstVertex + 3;
+#if !OPTIMIZE_IBO
+    GLuint* index = m_indices + m_index_count;
+    index[0] = firstVertex + 0;
+    index[1] = firstVertex + 1;
+    index[2] = firstVertex + 2;
+    index[3] = firstVertex + 0;
+    index[4] = firstVertex + 2;
+    index[5] = firstVertex + 3;
 #endif
     m_index_count += 6;
 }
@@ -811,7 +815,7 @@ void GL_Renderer::push_quad_with_uv(Rect2 bounds, V4 color, Rect2 uv)
 void GL_Renderer::push_quad_with_uv_multicolor(Rect2 bounds, V4 color00, V4 color01, V4 color10, V4 color11, Rect2 uv)
 {
     DEBUG_FUNCTION_T(DCDT_Renderer);
-    // s32 firstVertex = m_vertex_count;
+    [[maybe_unused]] s32 firstVertex = m_vertex_count;
 
     GL_VertexData* vertex = m_vertices + m_vertex_count;
 
@@ -856,14 +860,14 @@ void GL_Renderer::push_quad_with_uv_multicolor(Rect2 bounds, V4 color00, V4 colo
 
 // NB: See comment in GL_initializeRenderer() - we can use the same buffer index buffer data
 // always, as long as we only render quads.
-#if 0
-	GLuint *index = m_indices + m_index_count;
-	index[0] = firstVertex + 0;
-	index[1] = firstVertex + 1;
-	index[2] = firstVertex + 2;
-	index[3] = firstVertex + 0;
-	index[4] = firstVertex + 2;
-	index[5] = firstVertex + 3;
+#if !OPTIMIZE_IBO
+    GLuint* index = m_indices + m_index_count;
+    index[0] = firstVertex + 0;
+    index[1] = firstVertex + 1;
+    index[2] = firstVertex + 2;
+    index[3] = firstVertex + 0;
+    index[4] = firstVertex + 2;
+    index[5] = firstVertex + 3;
 #endif
     m_index_count += 6;
 }
@@ -883,13 +887,13 @@ void GL_Renderer::flush_vertices()
 // Fill IBO
 // NB: See comment in GL_initializeRenderer() - we can use the same buffer index buffer data
 // always, as long as we only render quads.
-#if 0
-	{
-		DEBUG_BLOCK_T("flushVertices - Fill IBO", DCDT_Renderer);
-		ASSERT(m_index_count <= RENDER_BATCH_INDEX_COUNT); //Tried to render too many indices at once!
-		GLint iBufferSizeNeeded = m_index_count * sizeof(m_indices[0]);
-		glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, iBufferSizeNeeded, m_indices);
-	}
+#if !OPTIMIZE_IBO
+    {
+        DEBUG_BLOCK_T("flushVertices - Fill IBO", DCDT_Renderer);
+        ASSERT(m_index_count <= RENDER_BATCH_INDEX_COUNT); // Tried to render too many indices at once!
+        GLint iBufferSizeNeeded = m_index_count * sizeof(m_indices[0]);
+        glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, iBufferSizeNeeded, m_indices);
+    }
 #endif
 
     {
