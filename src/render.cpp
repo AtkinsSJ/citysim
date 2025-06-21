@@ -6,6 +6,7 @@
 
 #include "render.h"
 #include "debug.h"
+#include "render_gl.h"
 #include <Assets/AssetManager.h>
 #include <Util/Matrix4.h>
 
@@ -87,14 +88,26 @@ Renderer::Renderer(SDL_Window* window)
     markResetPosition(&renderArena);
 }
 
+bool Renderer::initialize(SDL_Window* window)
+{
+    // TODO: Potentially support other renderers.
+    auto* gl_renderer = new GL_Renderer(window);
+
+    if (!gl_renderer->set_up_context()) {
+        logCritical("Failed to create OpenGL context!"_s);
+        delete gl_renderer;
+        return false;
+    }
+
+    markResetPosition(&gl_renderer->renderArena);
+
+    s_renderer = gl_renderer;
+    return true;
+}
+
 Renderer* the_renderer()
 {
     return s_renderer;
-}
-
-void set_the_renderer(Renderer* renderer)
-{
-    s_renderer = renderer;
 }
 
 void handleWindowEvent(SDL_WindowEvent* event)

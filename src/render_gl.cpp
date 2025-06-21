@@ -12,18 +12,8 @@
 
 #define OPTIMIZE_IBO 1
 
-bool GL_Renderer::initialize(SDL_Window* window)
+bool GL_Renderer::set_up_context()
 {
-    auto* gl = new GL_Renderer(window);
-    gl->renderArena.external_tracked_memory_size = sizeof(GL_Renderer);
-    markResetPosition(&gl->renderArena);
-    set_the_renderer(gl);
-
-    Deferred free_renderer { [&]() {
-        set_the_renderer(nullptr);
-        delete gl;
-    } };
-
     // Use GL3.1 Core
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
@@ -37,8 +27,8 @@ bool GL_Renderer::initialize(SDL_Window* window)
 #endif
 
     // Create context
-    gl->m_context = SDL_GL_CreateContext(gl->window);
-    if (gl->m_context == nullptr) {
+    m_context = SDL_GL_CreateContext(window);
+    if (m_context == nullptr) {
         logCritical("OpenGL context could not be created! :(\n {0}"_s, { makeString(SDL_GetError()) });
         return false;
     }
@@ -72,9 +62,9 @@ bool GL_Renderer::initialize(SDL_Window* window)
     glEnable(GL_BLEND);
     glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
-    glGenBuffers(1, &gl->m_vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, gl->m_vbo);
-    GLint vBufferSizeNeeded = RENDER_BATCH_VERTEX_COUNT * sizeof(gl->m_vertices[0]);
+    glGenBuffers(1, &m_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    GLint vBufferSizeNeeded = RENDER_BATCH_VERTEX_COUNT * sizeof(m_vertices[0]);
     glBufferData(GL_ARRAY_BUFFER, vBufferSizeNeeded, nullptr, GL_DYNAMIC_DRAW);
 
     //
@@ -91,7 +81,7 @@ bool GL_Renderer::initialize(SDL_Window* window)
     for (s32 i = 0;
         i < RENDER_BATCH_INDEX_COUNT;
         i += 6, firstVertex += 4) {
-        GLuint* index = gl->m_indices + i;
+        GLuint* index = m_indices + i;
         index[0] = firstVertex + 0;
         index[1] = firstVertex + 1;
         index[2] = firstVertex + 2;
@@ -101,23 +91,22 @@ bool GL_Renderer::initialize(SDL_Window* window)
     }
 #endif
 
-    glGenBuffers(1, &gl->m_ibo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl->m_ibo);
-    GLint iBufferSizeNeeded = RENDER_BATCH_INDEX_COUNT * sizeof(gl->m_indices[0]);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, iBufferSizeNeeded, gl->m_indices, GL_DYNAMIC_DRAW);
+    glGenBuffers(1, &m_ibo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+    GLint iBufferSizeNeeded = RENDER_BATCH_INDEX_COUNT * sizeof(m_indices[0]);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, iBufferSizeNeeded, m_indices, GL_DYNAMIC_DRAW);
 
-    gl->m_vertex_count = 0;
-    gl->m_index_count = 0;
+    m_vertex_count = 0;
+    m_index_count = 0;
 
-    glGenTextures(1, &gl->m_palette_texture_id);
-    glGenTextures(1, &gl->m_raw_texture_id);
+    glGenTextures(1, &m_palette_texture_id);
+    glGenTextures(1, &m_raw_texture_id);
 
     // Other GL_Renderer struct init stuff
-    initChunkedArray(&gl->m_shaders, &gl->renderArena, 64);
+    initChunkedArray(&m_shaders, &renderArena, 64);
 
-    initStack(&gl->m_scissor_stack, &gl->renderArena);
+    initStack(&m_scissor_stack, &renderArena);
 
-    free_renderer.disable();
     return true;
 }
 

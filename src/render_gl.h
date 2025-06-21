@@ -55,9 +55,11 @@ int const RENDER_BATCH_INDEX_COUNT = RENDER_BATCH_SIZE * 6;
 
 class GL_Renderer final : public Renderer {
 public:
-    static bool initialize(SDL_Window*);
-
+    explicit GL_Renderer(SDL_Window*);
     virtual ~GL_Renderer() override = default;
+
+    bool set_up_context();
+
     // FIXME: Move free() into the destructor, once I sort out the MemoryArena mess.
     virtual void free() override;
 
@@ -69,8 +71,6 @@ public:
     GL_ShaderProgram* use_shader(s8 shaderID);
 
 private:
-    explicit GL_Renderer(SDL_Window*);
-
     void upload_texture_2d(GLenum pixelFormat, s32 width, s32 height, void* pixelData);
     void push_quad(Rect2 bounds, V4 color);
     void push_quad_with_uv(Rect2 bounds, V4 color, Rect2 uv);
@@ -80,7 +80,7 @@ private:
     SDL_GLContext m_context {};
 
     ChunkedArray<GL_ShaderProgram> m_shaders {};
-    s32 m_current_shader { 0 };
+    s32 m_current_shader { -1 };
 
     GLuint m_vbo { 0 };
     GLuint m_ibo { 0 };

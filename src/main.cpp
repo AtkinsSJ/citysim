@@ -31,7 +31,7 @@
 #include "credits.h"
 #include "game_mainmenu.h"
 #include "input.h"
-#include "render_gl.h"
+#include "render.h"
 #include "saved_games.h"
 #include "settings.h"
 #include <Assets/AssetManager.h>
@@ -115,12 +115,15 @@ int main(int argc, char* argv[])
     addAssets();
     loadAssets();
 
-    bool initialised = GL_Renderer::initialize(window);
-    ASSERT(initialised); // Failed to initialize renderer.
+    if (!Renderer::initialize(window)) {
+        logError("Failed to initialize renderer!"_s);
+        return 1;
+    }
+
+    auto* renderer = the_renderer();
     rendererLoadAssets();
     setCursor("default"_s);
-    the_renderer()->set_cursor_visible(true);
-    auto* renderer = the_renderer();
+    renderer->set_cursor_visible(true);
 
     UI::init(&app_state.systemArena);
 

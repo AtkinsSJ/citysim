@@ -200,6 +200,8 @@ struct RenderBuffer : PoolItem {
 struct Renderer {
     virtual ~Renderer() = default;
 
+    static bool initialize(SDL_Window*);
+
     MemoryArena renderArena {};
 
     SDL_Window* window { nullptr };
@@ -253,7 +255,6 @@ protected:
 };
 
 Renderer* the_renderer();
-void set_the_renderer(Renderer*);
 void handleWindowEvent(SDL_WindowEvent* event);
 void render();
 void rendererLoadAssets();
