@@ -6,11 +6,11 @@
 
 #include "terrain.h"
 #include "AppState.h"
+#include <Gfx/Renderer.h>
 #include "binary_file_reader.h"
 #include "binary_file_writer.h"
 #include "city.h"
 #include "line_reader.h"
-#include "render.h"
 #include "save_file.h"
 #include "splat.h"
 #include <Assets/AssetManager.h>

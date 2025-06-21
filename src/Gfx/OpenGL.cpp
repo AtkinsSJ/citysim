@@ -4,15 +4,17 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "render_gl.h"
 #include <Assets/Asset.h>
 #include <Assets/AssetManager.h>
+#include <Gfx/OpenGL.h>
 #include <Util/Deferred.h>
 #include <Util/Log.h>
 
+namespace GL {
+
 #define OPTIMIZE_IBO 1
 
-bool GL_Renderer::set_up_context()
+bool Renderer::set_up_context()
 {
     // Use GL3.1 Core
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -44,7 +46,7 @@ bool GL_Renderer::set_up_context()
     // Debug callbacks
     if (GLEW_KHR_debug) {
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        glDebugMessageCallback(GL_debugCallback, nullptr);
+        glDebugMessageCallback(debugCallback, nullptr);
         logInfo("OpenGL debug message callback enabled"_s);
     } else {
         logInfo("OpenGL debug message callback not available in this context"_s);
@@ -110,27 +112,27 @@ bool GL_Renderer::set_up_context()
     return true;
 }
 
-GL_Renderer::GL_Renderer(SDL_Window* window)
-    : Renderer(window)
+Renderer::Renderer(SDL_Window* window)
+    : ::Renderer(window)
 {
 }
 
-void GL_Renderer::free()
+void Renderer::free()
 {
     SDL_GL_DeleteContext(m_context);
     m_context = nullptr;
 }
 
-void GL_Renderer::on_window_resized(s32 newWidth, s32 newHeight)
+void Renderer::on_window_resized(s32 newWidth, s32 newHeight)
 {
     glViewport(0, 0, newWidth, newHeight);
 }
 
-void GL_Renderer::render(Array<RenderBuffer*> buffers)
+void Renderer::render(Array<RenderBuffer*> buffers)
 {
     DEBUG_FUNCTION_T(DCDT_Renderer);
 
-    GL_ShaderProgram* activeShader = nullptr;
+    ShaderProgram* activeShader = nullptr;
     Camera* currentCamera = nullptr;
 
     for (s32 bufferIndex = 0; bufferIndex < buffers.count; bufferIndex++) {
@@ -365,7 +367,7 @@ void GL_Renderer::render(Array<RenderBuffer*> buffers)
                     f32 radPerSegment = (2.0f * PI32) / (f32)ringSegmentsCount;
 
                     for (s32 segmentIndex = 0; segmentIndex < ringSegmentsCount; segmentIndex++) {
-                        GL_VertexData* vertex = m_vertices + m_vertex_count;
+                        VertexData* vertex = m_vertices + m_vertex_count;
                         [[maybe_unused]] s32 firstVertex = m_vertex_count;
 
                         f32 startAngle = segmentIndex * radPerSegment;
@@ -422,7 +424,7 @@ void GL_Renderer::render(Array<RenderBuffer*> buffers)
     ASSERT(isEmpty(&m_scissor_stack));
 }
 
-void GL_Renderer::load_assets()
+void Renderer::load_assets()
 {
     DEBUG_FUNCTION_T(DCDT_Renderer);
 
@@ -446,7 +448,7 @@ void GL_Renderer::load_assets()
         Asset* asset = *it.get();
 
         s8 shaderIndex = (s8)m_shaders.count;
-        GL_ShaderProgram* shader = m_shaders.appendBlank();
+        ShaderProgram* shader = m_shaders.appendBlank();
         shader->asset = asset;
         asset->shader.rendererShaderID = shaderIndex;
 
@@ -457,7 +459,7 @@ void GL_Renderer::load_assets()
     }
 }
 
-void GL_Renderer::unload_assets()
+void Renderer::unload_assets()
 {
     DEBUG_FUNCTION_T(DCDT_Renderer);
 
@@ -478,7 +480,7 @@ void GL_Renderer::unload_assets()
     // Shaders
     m_current_shader = -1;
     for (s8 shaderID = 0; shaderID < m_shaders.count; shaderID++) {
-        GL_ShaderProgram* shader = m_shaders.get(shaderID);
+        ShaderProgram* shader = m_shaders.get(shaderID);
         glDeleteProgram(shader->shaderProgramID);
         *shader = {};
     }
@@ -492,7 +494,7 @@ void logGLError(GLenum errorCode)
     }
 }
 
-void GLAPIENTRY GL_debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* userParam)
+void GLAPIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* userParam)
 {
     // Prevent warnings
     if (userParam && source) { }
@@ -547,7 +549,7 @@ void GLAPIENTRY GL_debugCallback(GLenum source, GLenum type, GLuint id, GLenum s
     DEBUG_BREAK();
 }
 
-bool compileShader(GL_ShaderProgram* glShader, String shaderName, Shader* shaderProgram, GL_ShaderPart shaderPart)
+bool compileShader(ShaderProgram* glShader, String shaderName, Shader* shaderProgram, ShaderPart shaderPart)
 {
     DEBUG_FUNCTION_T(DCDT_Renderer);
 
@@ -597,7 +599,7 @@ bool compileShader(GL_ShaderProgram* glShader, String shaderName, Shader* shader
     return result;
 }
 
-void loadShaderAttrib(GL_ShaderProgram* glShader, char const* attribName, int* attribLocation)
+void loadShaderAttrib(ShaderProgram* glShader, char const* attribName, int* attribLocation)
 {
     DEBUG_FUNCTION_T(DCDT_Renderer);
 
@@ -607,7 +609,7 @@ void loadShaderAttrib(GL_ShaderProgram* glShader, char const* attribName, int* a
     }
 }
 
-void loadShaderUniform(GL_ShaderProgram* glShader, char const* uniformName, int* uniformLocation)
+void loadShaderUniform(ShaderProgram* glShader, char const* uniformName, int* uniformLocation)
 {
     DEBUG_FUNCTION_T(DCDT_Renderer);
 
@@ -617,7 +619,7 @@ void loadShaderUniform(GL_ShaderProgram* glShader, char const* uniformName, int*
     }
 }
 
-void loadShaderProgram(Asset* asset, GL_ShaderProgram* glShader)
+void loadShaderProgram(Asset* asset, ShaderProgram* glShader)
 {
     DEBUG_FUNCTION_T(DCDT_Renderer);
 
@@ -665,7 +667,7 @@ void loadShaderProgram(Asset* asset, GL_ShaderProgram* glShader)
     }
 }
 
-GL_ShaderProgram* GL_Renderer::use_shader(s8 shaderID)
+ShaderProgram* Renderer::use_shader(s8 shaderID)
 {
     ASSERT(shaderID >= 0 && shaderID < m_shaders.count); // Invalid shader!
 
@@ -676,7 +678,7 @@ GL_ShaderProgram* GL_Renderer::use_shader(s8 shaderID)
 
     if (m_current_shader >= 0 && m_current_shader < m_shaders.count) {
         // Clean up the old shader's stuff
-        GL_ShaderProgram* oldShader = m_shaders.get(m_current_shader);
+        ShaderProgram* oldShader = m_shaders.get(m_current_shader);
         glDisableVertexAttribArray(oldShader->aPositionLoc);
         glDisableVertexAttribArray(oldShader->aColorLoc);
         if (oldShader->aUVLoc != -1) {
@@ -685,27 +687,27 @@ GL_ShaderProgram* GL_Renderer::use_shader(s8 shaderID)
     }
 
     m_current_shader = shaderID;
-    GL_ShaderProgram* activeShader = m_shaders.get(m_current_shader);
+    ShaderProgram* activeShader = m_shaders.get(m_current_shader);
 
     ASSERT(activeShader->isValid); // Attempting to use a shader that isn't loaded!
     glUseProgram(activeShader->shaderProgramID);
 
     // Initialise the new shader's stuff
     glEnableVertexAttribArray(activeShader->aPositionLoc);
-    glVertexAttribPointer(activeShader->aPositionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, pos));
+    glVertexAttribPointer(activeShader->aPositionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, pos));
 
     glEnableVertexAttribArray(activeShader->aColorLoc);
-    glVertexAttribPointer(activeShader->aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, color));
+    glVertexAttribPointer(activeShader->aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, color));
 
     if (activeShader->aUVLoc != -1) {
         glEnableVertexAttribArray(activeShader->aUVLoc);
-        glVertexAttribPointer(activeShader->aUVLoc, 2, GL_FLOAT, GL_FALSE, sizeof(GL_VertexData), (GLvoid*)offsetof(GL_VertexData, uv));
+        glVertexAttribPointer(activeShader->aUVLoc, 2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, uv));
     }
 
     return activeShader;
 }
 
-void GL_Renderer::upload_texture_2d(GLenum pixelFormat, s32 width, s32 height, void* pixelData)
+void Renderer::upload_texture_2d(GLenum pixelFormat, s32 width, s32 height, void* pixelData)
 {
     // OpenGL appears to pad images to the nearest multiple of 4 bytes wide, which messes things up.
     // So, we only send the whole image as once if that isn't going to happen.
@@ -741,12 +743,12 @@ void GL_Renderer::upload_texture_2d(GLenum pixelFormat, s32 width, s32 height, v
     }
 }
 
-void GL_Renderer::push_quad(Rect2 bounds, V4 color)
+void Renderer::push_quad(Rect2 bounds, V4 color)
 {
     DEBUG_FUNCTION_T(DCDT_Renderer);
     [[maybe_unused]] s32 firstVertex = m_vertex_count;
 
-    GL_VertexData* vertex = m_vertices + m_vertex_count;
+    VertexData* vertex = m_vertices + m_vertex_count;
 
     f32 minX = bounds.x;
     f32 maxX = bounds.x + bounds.w;
@@ -774,8 +776,8 @@ void GL_Renderer::push_quad(Rect2 bounds, V4 color)
 
     m_vertex_count += 4;
 
-// NB: See comment in GL_initializeRenderer() - we can use the same buffer index buffer data
-// always, as long as we only render quads.
+    // NB: See comment in GL_initializeRenderer() - we can use the same buffer index buffer data
+    // always, as long as we only render quads.
 #if !OPTIMIZE_IBO
     GLuint* index = m_indices + m_index_count;
     index[0] = firstVertex + 0;
@@ -788,17 +790,17 @@ void GL_Renderer::push_quad(Rect2 bounds, V4 color)
     m_index_count += 6;
 }
 
-void GL_Renderer::push_quad_with_uv(Rect2 bounds, V4 color, Rect2 uv)
+void Renderer::push_quad_with_uv(Rect2 bounds, V4 color, Rect2 uv)
 {
     return push_quad_with_uv_multicolor(bounds, color, color, color, color, uv);
 }
 
-void GL_Renderer::push_quad_with_uv_multicolor(Rect2 bounds, V4 color00, V4 color01, V4 color10, V4 color11, Rect2 uv)
+void Renderer::push_quad_with_uv_multicolor(Rect2 bounds, V4 color00, V4 color01, V4 color10, V4 color11, Rect2 uv)
 {
     DEBUG_FUNCTION_T(DCDT_Renderer);
     [[maybe_unused]] s32 firstVertex = m_vertex_count;
 
-    GL_VertexData* vertex = m_vertices + m_vertex_count;
+    VertexData* vertex = m_vertices + m_vertex_count;
 
     f32 minX = bounds.x;
     f32 maxX = bounds.x + bounds.w;
@@ -839,8 +841,8 @@ void GL_Renderer::push_quad_with_uv_multicolor(Rect2 bounds, V4 color00, V4 colo
 
     m_vertex_count += 4;
 
-// NB: See comment in GL_initializeRenderer() - we can use the same buffer index buffer data
-// always, as long as we only render quads.
+    // NB: See comment in GL_initializeRenderer() - we can use the same buffer index buffer data
+    // always, as long as we only render quads.
 #if !OPTIMIZE_IBO
     GLuint* index = m_indices + m_index_count;
     index[0] = firstVertex + 0;
@@ -853,7 +855,7 @@ void GL_Renderer::push_quad_with_uv_multicolor(Rect2 bounds, V4 color00, V4 colo
     m_index_count += 6;
 }
 
-void GL_Renderer::flush_vertices()
+void Renderer::flush_vertices()
 {
     DEBUG_FUNCTION_T(DCDT_Renderer);
 
@@ -865,9 +867,9 @@ void GL_Renderer::flush_vertices()
         glBufferSubData(GL_ARRAY_BUFFER, 0, vBufferSizeNeeded, m_vertices);
     }
 
-// Fill IBO
-// NB: See comment in GL_initializeRenderer() - we can use the same buffer index buffer data
-// always, as long as we only render quads.
+    // Fill IBO
+    // NB: See comment in GL_initializeRenderer() - we can use the same buffer index buffer data
+    // always, as long as we only render quads.
 #if !OPTIMIZE_IBO
     {
         DEBUG_BLOCK_T("flushVertices - Fill IBO", DCDT_Renderer);
@@ -886,4 +888,6 @@ void GL_Renderer::flush_vertices()
 
     m_vertex_count = 0;
     m_index_count = 0;
+}
+
 }

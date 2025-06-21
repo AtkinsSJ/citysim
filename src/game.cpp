@@ -8,13 +8,13 @@
 
 #include "AppState.h"
 #include "Assets/AssetManager.h"
+#include <Gfx/Renderer.h>
 #include "UI/Window.h"
 #include "Util/Flags.h"
 #include "Util/Random.h"
 #include "about.h"
 #include "city.h"
 #include "input.h"
-#include "render.h"
 #include "saved_games.h"
 #include "settings.h"
 

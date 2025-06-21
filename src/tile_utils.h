@@ -6,8 +6,8 @@
 
 #pragma once
 
+#include <Gfx/Renderer.h>
 #include "dirty.h"
-#include "render.h"
 #include <Assets/AssetManager.h>
 #include <Util/Array2.h>
 #include <Util/Basic.h>

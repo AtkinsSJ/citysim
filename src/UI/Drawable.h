@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include "../render.h"
-#include "Forward.h"
+#include <Gfx/Renderer.h>
+#include <UI/Forward.h>
 
 namespace UI {
 

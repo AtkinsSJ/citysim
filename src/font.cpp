@@ -5,12 +5,12 @@
  */
 
 #include "font.h"
+#include <Gfx/Renderer.h>
 #include "debug.h"
-#include "render.h"
 #include "unicode.h"
 #include <Util/Log.h>
 
- BitmapFontGlyphEntry* findGlyphInternal(BitmapFont* font, unichar targetChar)
+BitmapFontGlyphEntry* findGlyphInternal(BitmapFont* font, unichar targetChar)
 {
     BitmapFontGlyphEntry* result = nullptr;
 

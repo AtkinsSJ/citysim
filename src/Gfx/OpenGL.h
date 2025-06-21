@@ -14,23 +14,25 @@
 #    include <gl/glew.h>
 #endif
 
-#include "Util/ChunkedArray.h"
-#include "Util/Stack.h"
-#include "render.h"
+#include <Gfx/Renderer.h>
+#include <Util/ChunkedArray.h>
+#include <Util/Stack.h>
 
-struct GL_VertexData {
+namespace GL {
+
+struct VertexData {
     V2 pos;
     V4 color;
     V2 uv;
 };
 
-enum GL_ShaderPart {
+enum ShaderPart {
     GL_ShaderPart_Fragment = GL_FRAGMENT_SHADER,
     GL_ShaderPart_Geometry = GL_GEOMETRY_SHADER,
     GL_ShaderPart_Vertex = GL_VERTEX_SHADER,
 };
 
-struct GL_ShaderProgram {
+struct ShaderProgram {
     GLuint shaderProgramID;
     bool isValid;
 
@@ -53,10 +55,10 @@ int const RENDER_BATCH_SIZE = 1024;
 int const RENDER_BATCH_VERTEX_COUNT = RENDER_BATCH_SIZE * 4;
 int const RENDER_BATCH_INDEX_COUNT = RENDER_BATCH_SIZE * 6;
 
-class GL_Renderer final : public Renderer {
+class Renderer final : public ::Renderer {
 public:
-    explicit GL_Renderer(SDL_Window*);
-    virtual ~GL_Renderer() override = default;
+    explicit Renderer(SDL_Window*);
+    virtual ~Renderer() override = default;
 
     bool set_up_context();
 
@@ -68,7 +70,7 @@ public:
     virtual void load_assets() override;
     virtual void unload_assets() override;
 
-    GL_ShaderProgram* use_shader(s8 shaderID);
+    ShaderProgram* use_shader(s8 shaderID);
 
 private:
     void upload_texture_2d(GLenum pixelFormat, s32 width, s32 height, void* pixelData);
@@ -79,7 +81,7 @@ private:
 
     SDL_GLContext m_context {};
 
-    ChunkedArray<GL_ShaderProgram> m_shaders {};
+    ChunkedArray<ShaderProgram> m_shaders {};
     s32 m_current_shader { -1 };
 
     GLuint m_vbo { 0 };
@@ -87,7 +89,7 @@ private:
 
     s32 m_vertex_count { 0 };
     s32 m_index_count { 0 };
-    GL_VertexData m_vertices[RENDER_BATCH_VERTEX_COUNT] {};
+    VertexData m_vertices[RENDER_BATCH_VERTEX_COUNT] {};
     GLuint m_indices[RENDER_BATCH_INDEX_COUNT] {};
 
     u32 m_palette_texture_id { 0 };
@@ -100,10 +102,12 @@ private:
 };
 
 void logGLError(GLenum errorCode);
-void GLAPIENTRY GL_debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* userParam);
+void GLAPIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* userParam);
 
-void loadShaderProgram(Asset* asset, GL_ShaderProgram* glShader);
-bool compileShader(GL_ShaderProgram* glShader, String shaderName, Shader* shaderProgram, GL_ShaderPart shaderPart);
+void loadShaderProgram(Asset* asset, ShaderProgram* glShader);
+bool compileShader(ShaderProgram* glShader, String shaderName, Shader* shaderProgram, ShaderPart shaderPart);
 // NB: Using char* because we have to pass the names to GL!
-void loadShaderAttrib(GL_ShaderProgram* glShader, char const* attribName, int* attribLocation);
-void loadShaderUniform(GL_ShaderProgram* glShader, char const* uniformName, int* uniformLocation);
+void loadShaderAttrib(ShaderProgram* glShader, char const* attribName, int* attribLocation);
+void loadShaderUniform(ShaderProgram* glShader, char const* uniformName, int* uniformLocation);
+
+}

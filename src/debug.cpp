@@ -7,9 +7,9 @@
 #include "debug.h"
 
 #include "Assets/AssetManager.h"
+#include <Gfx/Renderer.h>
 #include "font.h"
 #include "input.h"
-#include "render.h"
 
 void debugInit()
 {

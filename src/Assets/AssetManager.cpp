@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "AssetManager.h"
 #include "building.h"
 #include "console.h"
 #include "file.h"
 #include "line_reader.h"
-#include "render.h"
 #include "settings.h"
 #include "terrain.h"
+#include <Assets/AssetManager.h>
+#include <Gfx/Renderer.h>
 #include <SDL2/SDL_filesystem.h>
 #include <SDL2/SDL_image.h>
 

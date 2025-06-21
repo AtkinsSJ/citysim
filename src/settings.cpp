@@ -5,8 +5,8 @@
  */
 
 #include "settings.h"
+#include <Gfx/Renderer.h>
 #include "line_reader.h"
-#include "render.h"
 #include <Assets/AssetManager.h>
 #include <SDL2/SDL_filesystem.h>
 #include <UI/Window.h>

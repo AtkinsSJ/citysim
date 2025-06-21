@@ -5,12 +5,12 @@
  */
 
 #include "save_file.h"
+#include <Gfx/Renderer.h>
 #include "binary_file_reader.h"
 #include "binary_file_writer.h"
 #include "city.h"
 #include "game.h"
 #include "platform.h"
-#include "render.h"
 #include "terrain.h"
 #include "zone.h"
 

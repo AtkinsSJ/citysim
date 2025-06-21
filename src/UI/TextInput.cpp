@@ -5,9 +5,9 @@
  */
 
 #include "AppState.h"
+#include <Gfx/Renderer.h>
 #include "font.h"
 #include "input.h"
-#include "render.h"
 #include "unicode.h"
 #include <Assets/AssetManager.h>
 #include <UI/Drawable.h>

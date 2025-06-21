@@ -5,10 +5,10 @@
  */
 
 #include "AppState.h"
+#include <Gfx/Renderer.h>
 #include "Window.h"
 #include "font.h"
 #include "input.h"
-#include "render.h"
 #include <Assets/AssetManager.h>
 #include <UI/Drawable.h>
 #include <UI/Panel.h>

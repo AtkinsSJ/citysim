@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "render.h"
 #include "debug.h"
-#include "render_gl.h"
 #include <Assets/AssetManager.h>
+#include <Gfx/OpenGL.h>
+#include <Gfx/Renderer.h>
 
 static Renderer* s_renderer;
 
@@ -60,7 +60,7 @@ Renderer::Renderer(SDL_Window* window)
 bool Renderer::initialize(SDL_Window* window)
 {
     // TODO: Potentially support other renderers.
-    auto* gl_renderer = new GL_Renderer(window);
+    auto* gl_renderer = new GL::Renderer(window);
 
     if (!gl_renderer->set_up_context()) {
         logCritical("Failed to create OpenGL context!"_s);

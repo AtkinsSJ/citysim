@@ -29,8 +29,6 @@ target_sources(CitySim PRIVATE
     # PLATFORM?
     pollution.cpp
     power.cpp
-    render.cpp
-    render_gl.cpp
     save_file.cpp
     saved_games.cpp
     settings.cpp

@@ -5,10 +5,10 @@
  */
 
 #include "game_mainmenu.h"
+#include <Gfx/Renderer.h>
 #include "about.h"
 #include "debug.h"
 #include "game.h"
-#include "render.h"
 #include "saved_games.h"
 #include "settings.h"
 #include <UI/Panel.h>

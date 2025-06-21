@@ -5,8 +5,8 @@
  */
 
 #include "tile_utils.h"
+#include <Gfx/Renderer.h>
 #include "building.h"
-#include "render.h"
 #include <Assets/AssetManager.h>
 
 // The simplest possible algorithm is, just spread the 0s out that we marked above.

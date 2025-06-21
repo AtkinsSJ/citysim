@@ -27,11 +27,11 @@
 #endif
 
 #include "AppState.h"
+#include <Gfx/Renderer.h>
 #include "console.h"
 #include "credits.h"
 #include "game_mainmenu.h"
 #include "input.h"
-#include "render.h"
 #include "saved_games.h"
 #include "settings.h"
 #include <Assets/AssetManager.h>

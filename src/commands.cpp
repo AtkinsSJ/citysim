@@ -5,9 +5,9 @@
  */
 
 #include "AppState.h"
+#include <Gfx/Renderer.h>
 #include "city.h"
 #include "console.h"
-#include "render.h"
 #include "settings.h"
 #include "terrain.h"
 #include <UI/Window.h>

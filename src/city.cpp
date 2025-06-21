@@ -7,11 +7,11 @@
 #include "city.h"
 #include "AppState.h"
 #include "Assets/AssetManager.h"
+#include <Gfx/Renderer.h>
 #include "Util/Random.h"
 #include "Util/Rectangle.h"
 #include "binary_file_reader.h"
 #include "binary_file_writer.h"
-#include "render.h"
 #include "save_file.h"
 #include "write_buffer.h"
 

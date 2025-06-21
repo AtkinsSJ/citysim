@@ -6,7 +6,7 @@
 
 #include "input.h"
 #include "AppState.h"
-#include "render.h"
+#include <Gfx/Renderer.h>
 #include <SDL2/SDL_clipboard.h>
 
 static InputState s_input_state;
