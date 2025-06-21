@@ -410,8 +410,8 @@ void debugTrackArena(DebugState* debugState, MemoryArena* arena, String name)
     {
         if (arena->currentBlock) {
             arenaData->blockCount[frameIndex] = 1;
-            arenaData->totalSize[frameIndex] = arena->currentBlock->size;
-            arenaData->usedSize[frameIndex] = arena->currentBlock->used;
+            arenaData->totalSize[frameIndex] = arena->currentBlock->size + arena->external_tracked_memory_size;
+            arenaData->usedSize[frameIndex] = arena->currentBlock->used + arena->external_tracked_memory_size;
 
             MemoryBlock* block = arena->currentBlock->prevBlock;
             while (block) {

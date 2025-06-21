@@ -35,6 +35,8 @@ struct MemoryArena {
 
     smm minimumBlockSize;
 
+    smm external_tracked_memory_size { 0 };
+
     MemoryArenaResetState resetState;
 };
 
