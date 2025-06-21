@@ -24,20 +24,20 @@ struct MemoryBlock {
 };
 
 struct MemoryArenaResetState {
-    MemoryBlock* currentBlock;
-    smm used;
+    MemoryBlock* currentBlock { nullptr };
+    smm used { 0 };
 };
 
 struct MemoryArena {
-    String name;
+    String name { "UNINITIALIZED"_s };
 
-    MemoryBlock* currentBlock;
+    MemoryBlock* currentBlock { nullptr };
 
-    smm minimumBlockSize;
+    smm minimumBlockSize { 0 };
 
     smm external_tracked_memory_size { 0 };
 
-    MemoryArenaResetState resetState;
+    MemoryArenaResetState resetState {};
 };
 
 MemoryArena& temp_arena();
