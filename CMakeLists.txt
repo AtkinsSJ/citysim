@@ -20,6 +20,12 @@ add_subdirectory("src")
 include_directories("src")
 target_include_directories(CitySim PRIVATE ${OPENGL_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
 
+target_compile_definitions(CitySim PRIVATE
+    $<$<CONFIG:Debug>:
+        BUILD_DEBUG=1
+    >
+)
+
 target_link_libraries(CitySim PRIVATE ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${SDL2_LIBRARIES} SDL2_image::SDL2_image)
 
 file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_BINARY_DIR})
