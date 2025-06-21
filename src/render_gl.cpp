@@ -14,27 +14,22 @@
 
 bool GL_Renderer::initialize(SDL_Window* window)
 {
-    MemoryArena bootstrap;
-    bool bootstrapSucceeded = initMemoryArena(&bootstrap, "renderArena"_s, sizeof(GL_Renderer), MB(1));
-    if (!bootstrapSucceeded) {
+    auto* gl = new GL_Renderer();
+    if (!initMemoryArena(&gl->renderArena, "renderArena"_s, sizeof(GL_Renderer), MB(1))) {
         logCritical("Failed to create renderer arena!"_s);
+        delete gl;
         return false;
     }
-    auto* gl = allocateStruct<GL_Renderer>(&bootstrap);
-    if (!gl) {
-        logCritical("Failed to allocate memory for GL_Renderer!"_s);
-        freeMemoryArena(&bootstrap);
-        return false;
-    }
-
-    gl->renderArena = move(bootstrap);
+    gl->renderArena.external_tracked_memory_size = sizeof(GL_Renderer);
     markResetPosition(&gl->renderArena);
     set_the_renderer(gl);
 
     initRenderer(&gl->renderArena, window);
 
-    Deferred free_arena { [&]() {
+    Deferred free_renderer { [&]() {
+        set_the_renderer(nullptr);
         freeMemoryArena(&gl->renderArena);
+        delete gl;
     } };
 
     // Use GL3.1 Core
@@ -130,7 +125,7 @@ bool GL_Renderer::initialize(SDL_Window* window)
 
     initStack(&gl->m_scissor_stack, &gl->renderArena);
 
-    free_arena.disable();
+    free_renderer.disable();
     return true;
 }
 
