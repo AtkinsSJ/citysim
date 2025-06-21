@@ -96,11 +96,11 @@ void freeMemoryArena(MemoryArena* arena);
 void* allocate(MemoryArena* arena, smm size);
 Blob allocateBlob(MemoryArena* arena, smm size);
 
-template<typename T>
-T* allocateStruct(MemoryArena* arena)
+template<typename T, typename... Args>
+T* allocateStruct(MemoryArena* arena, Args&&... args)
 {
     auto* memory = allocate(arena, sizeof(T));
-    return new (memory) T;
+    return new (memory) T(forward<Args>(args)...);
 }
 
 template<typename T>
