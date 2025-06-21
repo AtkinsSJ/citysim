@@ -14,21 +14,13 @@
 
 bool GL_Renderer::initialize(SDL_Window* window)
 {
-    auto* gl = new GL_Renderer();
-    if (!initMemoryArena(&gl->renderArena, "renderArena"_s, sizeof(GL_Renderer), MB(1))) {
-        logCritical("Failed to create renderer arena!"_s);
-        delete gl;
-        return false;
-    }
+    auto* gl = new GL_Renderer(window);
     gl->renderArena.external_tracked_memory_size = sizeof(GL_Renderer);
     markResetPosition(&gl->renderArena);
     set_the_renderer(gl);
 
-    initRenderer(&gl->renderArena, window);
-
     Deferred free_renderer { [&]() {
         set_the_renderer(nullptr);
-        freeMemoryArena(&gl->renderArena);
         delete gl;
     } };
 
@@ -127,6 +119,11 @@ bool GL_Renderer::initialize(SDL_Window* window)
 
     free_renderer.disable();
     return true;
+}
+
+GL_Renderer::GL_Renderer(SDL_Window* window)
+    : Renderer(window)
+{
 }
 
 void GL_Renderer::free()

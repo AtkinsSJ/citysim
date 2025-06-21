@@ -69,6 +69,8 @@ public:
     GL_ShaderProgram* use_shader(s8 shaderID);
 
 private:
+    explicit GL_Renderer(SDL_Window*);
+
     void upload_texture_2d(GLenum pixelFormat, s32 width, s32 height, void* pixelData);
     void push_quad(Rect2 bounds, V4 color);
     void push_quad_with_uv(Rect2 bounds, V4 color, Rect2 uv);

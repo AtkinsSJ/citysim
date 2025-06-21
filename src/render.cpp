@@ -46,40 +46,45 @@ f32 snapZoomLevel(f32 zoom)
     return (f32)clamp(round_f32(10 * zoom) * 0.1f, 0.1f, 10.0f);
 }
 
-void initRenderer(MemoryArena* renderArena, SDL_Window* window)
+Renderer::Renderer(SDL_Window* window)
+    : window(window)
 {
-    auto* renderer = s_renderer;
-    renderer->window = window;
-    SDL_GetWindowSize(window, &renderer->windowWidth, &renderer->windowHeight);
+    if (!initMemoryArena(&renderArena, "renderArena"_s, 0, MB(1))) {
+        logCritical("Failed to create renderer arena!"_s);
+        ASSERT(false);
+    }
 
-    renderer->renderBufferChunkSize = KB(64);
-    initPool<RenderBufferChunk>(&renderer->chunkPool, renderArena, &allocateRenderBufferChunk, renderer);
+    SDL_GetWindowSize(window, &windowWidth, &windowHeight);
 
-    initPool<RenderBuffer>(&renderer->renderBufferPool, renderArena, [](MemoryArena* arena, void*) -> RenderBuffer* {
+    renderBufferChunkSize = KB(64);
+    initPool<RenderBufferChunk>(&chunkPool, &renderArena, &allocateRenderBufferChunk, this);
+
+    initPool<RenderBuffer>(&renderBufferPool, &renderArena, [](MemoryArena* arena, void* chunk_pool_pointer) -> RenderBuffer* {
 			RenderBuffer *buffer = allocateStruct<RenderBuffer>(arena);
-			initRenderBuffer(arena, buffer, nullString, &s_renderer->chunkPool);
-			return buffer; }, renderer);
-    initRenderBuffer(renderArena, &renderer->worldBuffer, "WorldBuffer"_s, &renderer->chunkPool);
-    initRenderBuffer(renderArena, &renderer->worldOverlayBuffer, "WorldOverlayBuffer"_s, &renderer->chunkPool);
-    initRenderBuffer(renderArena, &renderer->uiBuffer, "UIBuffer"_s, &renderer->chunkPool);
-    initRenderBuffer(renderArena, &renderer->windowBuffer, "WindowBuffer"_s, &renderer->chunkPool);
-    initRenderBuffer(renderArena, &renderer->debugBuffer, "DebugBuffer"_s, &renderer->chunkPool);
+			initRenderBuffer(arena, buffer, nullString, static_cast<Pool<RenderBufferChunk>*>(chunk_pool_pointer));
+			return buffer; }, &chunkPool);
+    initRenderBuffer(&renderArena, &worldBuffer, "WorldBuffer"_s, &chunkPool);
+    initRenderBuffer(&renderArena, &worldOverlayBuffer, "WorldOverlayBuffer"_s, &chunkPool);
+    initRenderBuffer(&renderArena, &uiBuffer, "UIBuffer"_s, &chunkPool);
+    initRenderBuffer(&renderArena, &windowBuffer, "WindowBuffer"_s, &chunkPool);
+    initRenderBuffer(&renderArena, &debugBuffer, "DebugBuffer"_s, &chunkPool);
 
-    renderer->renderBuffers = allocateArray<RenderBuffer*>(renderArena, 5);
-    renderer->renderBuffers.append(&renderer->worldBuffer);
-    renderer->renderBuffers.append(&renderer->worldOverlayBuffer);
-    renderer->renderBuffers.append(&renderer->uiBuffer);
-    renderer->renderBuffers.append(&renderer->windowBuffer);
-    renderer->renderBuffers.append(&renderer->debugBuffer);
+    renderBuffers = allocateArray<RenderBuffer*>(&renderArena, 5);
+    renderBuffers.append(&worldBuffer);
+    renderBuffers.append(&worldOverlayBuffer);
+    renderBuffers.append(&uiBuffer);
+    renderBuffers.append(&windowBuffer);
+    renderBuffers.append(&debugBuffer);
 
     // Init cameras
-    V2 windowSize = v2(renderer->windowWidth, renderer->windowHeight);
+    V2 windowSize = v2(windowWidth, windowHeight);
     f32 const TILE_SIZE = 16.0f;
-    initCamera(&renderer->worldCamera, windowSize, 1.0f / TILE_SIZE, 10000.0f, -10000.0f);
-    initCamera(&renderer->uiCamera, windowSize, 1.0f, 10000.0f, -10000.0f, windowSize * 0.5f);
+    initCamera(&worldCamera, windowSize, 1.0f / TILE_SIZE, 10000.0f, -10000.0f);
+    initCamera(&uiCamera, windowSize, 1.0f, 10000.0f, -10000.0f, windowSize * 0.5f);
 
     // Hide cursor until stuff loads
-    setCursorVisible(false);
+    set_cursor_visible(false);
+    markResetPosition(&renderArena);
 }
 
 Renderer* the_renderer()
@@ -246,9 +251,9 @@ void setCursor(String cursorName)
     }
 }
 
-void setCursorVisible(bool visible)
+void Renderer::set_cursor_visible(bool visible)
 {
-    s_renderer->cursorIsVisible = visible;
+    cursorIsVisible = visible;
     SDL_ShowCursor(visible ? 1 : 0);
 }
 

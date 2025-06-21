@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
     ASSERT(initialised); // Failed to initialize renderer.
     rendererLoadAssets();
     setCursor("default"_s);
-    setCursorVisible(true);
+    the_renderer()->set_cursor_visible(true);
     auto* renderer = the_renderer();
 
     UI::init(&app_state.systemArena);

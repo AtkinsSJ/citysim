@@ -200,31 +200,31 @@ struct RenderBuffer : PoolItem {
 struct Renderer {
     virtual ~Renderer() = default;
 
-    MemoryArena renderArena;
+    MemoryArena renderArena {};
 
-    SDL_Window* window;
-    s32 windowWidth;
-    s32 windowHeight;
-    bool isFullscreen;
+    SDL_Window* window { nullptr };
+    s32 windowWidth { 0 };
+    s32 windowHeight { 0 };
+    bool isFullscreen { false };
 
-    Camera worldCamera;
-    Camera uiCamera;
+    Camera worldCamera {};
+    Camera uiCamera {};
 
     // Cursor stuff
-    String currentCursorName;
-    bool cursorIsVisible;
-    SDL_Cursor* systemWaitCursor;
+    String currentCursorName {};
+    bool cursorIsVisible { true };
+    SDL_Cursor* systemWaitCursor { nullptr };
 
-    Pool<RenderBuffer> renderBufferPool;
-    Array<RenderBuffer*> renderBuffers;
-    RenderBuffer worldBuffer;
-    RenderBuffer worldOverlayBuffer;
-    RenderBuffer uiBuffer;
-    RenderBuffer windowBuffer;
-    RenderBuffer debugBuffer;
+    Pool<RenderBuffer> renderBufferPool {};
+    Array<RenderBuffer*> renderBuffers {};
+    RenderBuffer worldBuffer {};
+    RenderBuffer worldOverlayBuffer {};
+    RenderBuffer uiBuffer {};
+    RenderBuffer windowBuffer {};
+    RenderBuffer debugBuffer {};
 
-    smm renderBufferChunkSize;
-    Pool<RenderBufferChunk> chunkPool;
+    smm renderBufferChunkSize { 0 };
+    Pool<RenderBufferChunk> chunkPool {};
 
     // Not convinced this is the best way of doing it, but it's better than what we had before!
     // Really, we do want to have this stuff in code, because it's accessed a LOT and we don't
@@ -233,11 +233,11 @@ struct Renderer {
     // - Sam, 23/07/2019
     struct
     {
-        s8 paletted;
-        s8 pixelArt;
-        s8 text;
-        s8 textured;
-        s8 untextured;
+        s8 paletted { 0 };
+        s8 pixelArt { 0 };
+        s8 text { 0 };
+        s8 textured { 0 };
+        s8 untextured { 0 };
     } shaderIds;
 
     virtual void on_window_resized(s32 width, s32 height) = 0;
@@ -245,9 +245,13 @@ struct Renderer {
     virtual void load_assets() = 0;
     virtual void unload_assets() = 0;
     virtual void free() = 0;
+
+    void set_cursor_visible(bool);
+
+protected:
+    explicit Renderer(SDL_Window*);
 };
 
-void initRenderer(MemoryArena* renderArena, SDL_Window* window);
 Renderer* the_renderer();
 void set_the_renderer(Renderer*);
 void handleWindowEvent(SDL_WindowEvent* event);
@@ -272,7 +276,6 @@ void setCameraPos(Camera* camera, V2 position, f32 zoom);
 f32 snapZoomLevel(f32 zoom);
 
 void setCursor(String cursorName);
-void setCursorVisible(bool visible);
 
 void appendRenderItemType(RenderBuffer* buffer, RenderItemType type);
 
