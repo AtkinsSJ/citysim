@@ -400,29 +400,6 @@ void updateAndRenderDebugData(DebugState* debugState)
     clearNewFrameDebugData(debugState);
 }
 
-template<typename T>
-T* findOrCreateDebugData(DebugState* debugState, String name, T* sentinel)
-{
-    T* result = nullptr;
-
-    T* data = sentinel->nextNode;
-    while (data != sentinel) {
-        if (equals(data->name, name)) {
-            result = data;
-            break;
-        }
-        data = data->nextNode;
-    }
-
-    if (result == nullptr) {
-        result = allocateStruct<T>(&debugState->debugArena);
-        addToLinkedList(result, sentinel);
-        result->name = name;
-    }
-
-    return result;
-}
-
 void debugTrackArena(DebugState* debugState, MemoryArena* arena, String name)
 {
     DebugArenaData* arenaData = findOrCreateDebugData(debugState, name, &debugState->arenaDataSentinel);
@@ -445,18 +422,6 @@ void debugTrackArena(DebugState* debugState, MemoryArena* arena, String name)
                 block = block->prevBlock;
             }
         }
-    }
-}
-
-template<typename T>
-void debugTrackPool(DebugState* debugState, Pool<T>* pool, String name)
-{
-    DebugPoolData* poolData = findOrCreateDebugData(debugState, name, &debugState->poolDataSentinel);
-    u32 frameIndex = debugState->writingFrameIndex;
-
-    if (pool) {
-        poolData->pooledItemCount[frameIndex] = pool->pooledItemCount;
-        poolData->totalItemCount[frameIndex] = pool->totalItemCount;
     }
 }
 

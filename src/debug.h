@@ -174,8 +174,42 @@ void debugInit();
 void updateAndRenderDebugData(DebugState* debugState);
 
 void debugTrackArena(DebugState* debugState, MemoryArena* arena, String name);
+
 template<typename T>
-void debugTrackPool(DebugState* debugState, Pool<T>* pool, String name);
+T* findOrCreateDebugData(DebugState* debugState, String name, T* sentinel)
+{
+    T* result = nullptr;
+
+    T* data = sentinel->nextNode;
+    while (data != sentinel) {
+        if (equals(data->name, name)) {
+            result = data;
+            break;
+        }
+        data = data->nextNode;
+    }
+
+    if (result == nullptr) {
+        result = allocateStruct<T>(&debugState->debugArena);
+        addToLinkedList(result, sentinel);
+        result->name = name;
+    }
+
+    return result;
+}
+
+template<typename T>
+void debugTrackPool(DebugState* debugState, Pool<T>* pool, String name)
+{
+    DebugPoolData* poolData = findOrCreateDebugData(debugState, name, &debugState->poolDataSentinel);
+    u32 frameIndex = debugState->writingFrameIndex;
+
+    if (pool) {
+        poolData->pooledItemCount[frameIndex] = pool->pooledItemCount;
+        poolData->totalItemCount[frameIndex] = pool->totalItemCount;
+    }
+}
+
 void debugTrackAssets(DebugState* debugState);
 void debugStartTrackingRenderBuffer(DebugState* debugState, String renderBufferName, String renderProfileName);
 void debugTrackDrawCall(DebugState* debugState, String shaderName, String textureName, u32 itemsDrawn);

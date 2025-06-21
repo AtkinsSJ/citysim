@@ -113,8 +113,8 @@ void handleWindowEvent(SDL_WindowEvent* event)
 
 void render()
 {
-    DEBUG_POOL(&renderer->renderBufferPool, "renderBufferPool");
-    DEBUG_POOL(&renderer->chunkPool, "renderChunkPool");
+    DEBUG_POOL(&s_renderer->renderBufferPool, "renderBufferPool");
+    DEBUG_POOL(&s_renderer->chunkPool, "renderChunkPool");
 
     s_renderer->render(s_renderer->renderBuffers);
 
