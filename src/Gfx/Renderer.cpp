@@ -106,8 +106,8 @@ void Renderer::render()
 
     render_internal();
 
-    for (s32 i = 0; i < renderBuffers.count; i++) {
-        clearRenderBuffer(renderBuffers[i]);
+    for (s32 i = 0; i < s_renderer->renderBuffers.count; i++) {
+        renderBuffers[i]->clear_for_pool();
     }
 }
 
@@ -256,29 +256,12 @@ RenderBufferChunk* allocateRenderBufferChunk(MemoryArena* arena, void* userData)
     return result;
 }
 
-void clearRenderBuffer(RenderBuffer* buffer)
+RenderBuffer* Renderer::get_temporary_render_buffer(String name)
 {
-    buffer->currentShader = -1;
-    buffer->currentTexture = nullptr;
+    RenderBuffer* result = getItemFromPool(&renderBufferPool);
+    result->clear_for_pool();
 
-    for (RenderBufferChunk* chunk = buffer->firstChunk;
-        chunk != nullptr;
-        chunk = chunk->nextChunk) {
-        chunk->used = 0;
-        addItemToPool(&s_renderer->chunkPool, chunk);
-    }
-
-    buffer->firstChunk = nullptr;
-    buffer->currentChunk = nullptr;
-}
-
-RenderBuffer* getTemporaryRenderBuffer(String name)
-{
-    RenderBuffer* result = getItemFromPool(&s_renderer->renderBufferPool);
-
-    clearRenderBuffer(result);
-
-    // We only use this for debugging, and it's a leak, so limit it to debug builds
+    // FIXME: LEAK: We only use this for debugging, and it's a leak, so limit it to debug builds
     if (globalDebugState != nullptr) {
         result->name = pushString(&globalDebugState->debugArena, name);
     }
@@ -286,32 +269,11 @@ RenderBuffer* getTemporaryRenderBuffer(String name)
     return result;
 }
 
-void returnTemporaryRenderBuffer(RenderBuffer* buffer)
+void Renderer::return_temporary_render_buffer(RenderBuffer& buffer)
 {
-    buffer->name = nullString;
-    clearRenderBuffer(buffer);
-    addItemToPool(&s_renderer->renderBufferPool, buffer);
-}
-
-void transferRenderBufferData(RenderBuffer* buffer, RenderBuffer* targetBuffer)
-{
-    if (buffer->currentChunk != nullptr) {
-        // If the target is empty, we can take a shortcut and just copy the pointers
-        if (targetBuffer->currentChunk == nullptr) {
-            targetBuffer->firstChunk = buffer->firstChunk;
-            targetBuffer->currentChunk = buffer->currentChunk;
-        } else {
-            ASSERT((targetBuffer->currentChunk->size - targetBuffer->currentChunk->used) > sizeof(RenderItemType)); // Need space for the next-chunk message
-            appendRenderItemType(targetBuffer, RenderItemType_NextMemoryChunk);
-            targetBuffer->currentChunk->nextChunk = buffer->firstChunk;
-            buffer->firstChunk->prevChunk = targetBuffer->currentChunk;
-            targetBuffer->currentChunk = buffer->currentChunk;
-        }
-    }
-
-    buffer->firstChunk = nullptr;
-    buffer->currentChunk = nullptr;
-    clearRenderBuffer(buffer); // Make sure things are reset
+    buffer.name = nullString;
+    buffer.clear_for_pool();
+    addItemToPool(&renderBufferPool, &buffer);
 }
 
 void appendRenderItemType(RenderBuffer* buffer, RenderItemType type)

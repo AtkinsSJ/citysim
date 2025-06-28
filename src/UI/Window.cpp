@@ -95,7 +95,7 @@ void showWindow(WindowTitle title, s32 width, s32 height, V2I position, String s
         .windowProc = windowProc,
         .userData = userData,
         .onClose = onClose,
-        .renderBuffer = getTemporaryRenderBuffer(title.getString()),
+        .renderBuffer = the_renderer().get_temporary_render_buffer(title.getString()),
     };
 
     bool createdWindowAlready = false;
@@ -425,7 +425,7 @@ void updateAndRenderWindows()
         it.hasNext();
         it.next()) {
         Window* window = it.get();
-        transferRenderBufferData(window->renderBuffer, &renderer.windowBuffer);
+        the_renderer().windowBuffer.take_from(*window->renderBuffer);
     }
 
     // Remove the tooltip now that it's been shown
@@ -456,7 +456,7 @@ void closeWindow(s32 windowIndex)
     }
 
     if (window->renderBuffer != nullptr) {
-        returnTemporaryRenderBuffer(window->renderBuffer);
+        the_renderer().return_temporary_render_buffer(*window->renderBuffer);
         window->renderBuffer = nullptr;
     }
 

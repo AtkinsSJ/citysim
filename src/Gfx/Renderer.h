@@ -158,6 +158,9 @@ struct Renderer {
 
     static bool initialize(SDL_Window*);
 
+    RenderBuffer* get_temporary_render_buffer(String name);
+    void return_temporary_render_buffer(RenderBuffer&);
+
     MemoryArena renderArena {};
 
     SDL_Window* window { nullptr };
@@ -219,11 +222,6 @@ void freeRenderer();
 
 void initRenderBuffer(MemoryArena* arena, RenderBuffer* buffer, String name, Pool<RenderBufferChunk>* chunkPool);
 RenderBufferChunk* allocateRenderBufferChunk(MemoryArena* arena, void* userData);
-void clearRenderBuffer(RenderBuffer* buffer);
-
-RenderBuffer* getTemporaryRenderBuffer(String name);
-void transferRenderBufferData(RenderBuffer* buffer, RenderBuffer* targetBuffer);
-void returnTemporaryRenderBuffer(RenderBuffer* buffer);
 
 void setCursor(String cursorName);
 

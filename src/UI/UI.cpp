@@ -68,7 +68,7 @@ void endFrame()
         } else {
             // NB: We transfer to the *window* buffer, not the *ui* buffer, because we
             // want the drop-down to appear in front of any windows.
-            transferRenderBufferData(uiState.openDropDownListRenderBuffer, &the_renderer().windowBuffer);
+            the_renderer().windowBuffer.take_from(*uiState.openDropDownListRenderBuffer);
         }
     }
 }
@@ -417,16 +417,16 @@ void openDropDownList(void* pointer)
 {
     uiState.openDropDownList = pointer;
     if (uiState.openDropDownListRenderBuffer == nullptr) {
-        uiState.openDropDownListRenderBuffer = getTemporaryRenderBuffer("DropDownList"_s);
+        uiState.openDropDownListRenderBuffer = the_renderer().get_temporary_render_buffer("DropDownList"_s);
     }
-    clearRenderBuffer(uiState.openDropDownListRenderBuffer);
+    uiState.openDropDownListRenderBuffer->clear_for_pool();
     initScrollbar(&uiState.openDropDownListScrollbar, Orientation::Vertical);
 }
 
 void closeDropDownList()
 {
     uiState.openDropDownList = nullptr;
-    returnTemporaryRenderBuffer(uiState.openDropDownListRenderBuffer);
+    the_renderer().return_temporary_render_buffer(*uiState.openDropDownListRenderBuffer);
     uiState.openDropDownListRenderBuffer = nullptr;
 }
 

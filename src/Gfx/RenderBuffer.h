@@ -22,6 +22,9 @@ struct RenderBufferChunk : PoolItem {
 };
 
 struct RenderBuffer : PoolItem {
+    void take_from(RenderBuffer& other);
+    void clear_for_pool();
+
     String name;
 
     RenderBufferChunk* firstChunk;
