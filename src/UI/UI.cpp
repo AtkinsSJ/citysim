@@ -68,7 +68,7 @@ void endFrame()
         } else {
             // NB: We transfer to the *window* buffer, not the *ui* buffer, because we
             // want the drop-down to appear in front of any windows.
-            the_renderer().windowBuffer.take_from(*uiState.openDropDownListRenderBuffer);
+            the_renderer().window_buffer().take_from(*uiState.openDropDownListRenderBuffer);
         }
     }
 }
@@ -282,7 +282,7 @@ bool putButton(Rect2I bounds, ButtonStyle* style, ButtonState state, RenderBuffe
     if (style == nullptr)
         style = getStyle<ButtonStyle>("default"_s);
     if (renderBuffer == nullptr)
-        renderBuffer = &the_renderer().uiBuffer;
+        renderBuffer = &the_renderer().ui_buffer();
 
     bool buttonClicked = false;
 
@@ -336,7 +336,7 @@ bool putTextButton(String text, Rect2I bounds, ButtonStyle* style, ButtonState s
 {
     auto& renderer = the_renderer();
     if (renderBuffer == nullptr) {
-        renderBuffer = &renderer.uiBuffer;
+        renderBuffer = &renderer.ui_buffer();
     }
 
     bool result = putButton(bounds, style, state, renderBuffer, tooltip);
@@ -352,7 +352,7 @@ bool putImageButton(Sprite* sprite, Rect2I bounds, ButtonStyle* style, ButtonSta
 {
     auto& renderer = the_renderer();
     if (renderBuffer == nullptr)
-        renderBuffer = &renderer.uiBuffer;
+        renderBuffer = &renderer.ui_buffer();
 
     bool result = putButton(bounds, style, state, renderBuffer, tooltip);
 
@@ -379,7 +379,7 @@ void putCheckbox(bool* checked, Rect2I bounds, CheckboxStyle* style, bool isDisa
     if (style == nullptr)
         style = getStyle<CheckboxStyle>("default"_s);
     if (renderBuffer == nullptr)
-        renderBuffer = &the_renderer().uiBuffer;
+        renderBuffer = &the_renderer().ui_buffer();
 
     WidgetMouseState mouseState = getWidgetMouseState(bounds);
 
@@ -464,7 +464,7 @@ void putLabel(String text, Rect2I bounds, LabelStyle* style, RenderBuffer* rende
     if (style == nullptr)
         style = getStyle<LabelStyle>("default"_s);
     if (renderBuffer == nullptr)
-        renderBuffer = &renderer.uiBuffer;
+        renderBuffer = &renderer.ui_buffer();
 
     Rect2I textBounds = shrink(bounds, style->padding);
 
@@ -522,7 +522,7 @@ void putRadioButton(s32* selectedValue, s32 value, Rect2I bounds, RadioButtonSty
     if (style == nullptr)
         style = getStyle<RadioButtonStyle>("default"_s);
     if (renderBuffer == nullptr)
-        renderBuffer = &renderer.uiBuffer;
+        renderBuffer = &renderer.ui_buffer();
 
     WidgetMouseState mouseState = getWidgetMouseState(bounds);
 
@@ -618,7 +618,7 @@ void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, Scrollb
     if (style == nullptr)
         style = getStyle<ScrollbarStyle>("default"_s);
     if (renderBuffer == nullptr)
-        renderBuffer = &renderer.uiBuffer;
+        renderBuffer = &renderer.ui_buffer();
 
     Drawable(&style->background).draw(renderBuffer, bounds);
 
@@ -739,7 +739,7 @@ void putSlider(f32* currentValue, f32 minValue, f32 maxValue, Orientation orient
     if (style == nullptr)
         style = getStyle<SliderStyle>("default"_s);
     if (renderBuffer == nullptr)
-        renderBuffer = &renderer.uiBuffer;
+        renderBuffer = &renderer.ui_buffer();
 
     // Value ranges
     *currentValue = clamp(*currentValue, minValue, maxValue);
@@ -866,7 +866,7 @@ bool putTextInput(TextInput* textInput, Rect2I bounds, TextInputStyle* style, Re
     if (style == nullptr)
         style = getStyle<TextInputStyle>("default"_s);
     if (renderBuffer == nullptr)
-        renderBuffer = &renderer.uiBuffer;
+        renderBuffer = &renderer.ui_buffer();
 
     bool submittedInput = updateTextInput(textInput);
 

@@ -241,7 +241,7 @@ void drawTerrain(City* city, Rect2I visibleArea, s8 shaderID)
 
     // s32 tilesToDraw = areaOf(visibleArea);
     // Asset *terrainTexture = getSprite(getTerrainDef(1)->sprites, 0)->texture;
-    // DrawRectsGroup *group = beginRectsGroupTextured(&renderer.worldBuffer, terrainTexture, shaderID, tilesToDraw);
+    // DrawRectsGroup *group = beginRectsGroupTextured(&renderer.world_buffer(), terrainTexture, shaderID, tilesToDraw);
 
     for (s32 y = visibleArea.y;
         y < visibleArea.y + visibleArea.h;
@@ -253,13 +253,13 @@ void drawTerrain(City* city, Rect2I visibleArea, s8 shaderID)
             x++) {
             Sprite* sprite = getSprite(&layer->tileSprite.get(x, y));
             spriteBounds.x = (f32)x;
-            drawSingleSprite(&renderer.worldBuffer, sprite, spriteBounds, shaderID, white);
+            drawSingleSprite(&renderer.world_buffer(), sprite, spriteBounds, shaderID, white);
             // addSpriteRect(group, sprite, spriteBounds, white);
 
             SpriteRef* borderSpriteRef = &layer->tileBorderSprite.get(x, y);
             if (!borderSpriteRef->spriteGroupName.isEmpty()) {
                 Sprite* borderSprite = getSprite(borderSpriteRef);
-                drawSingleSprite(&renderer.worldBuffer, borderSprite, spriteBounds, shaderID, white);
+                drawSingleSprite(&renderer.world_buffer(), borderSprite, spriteBounds, shaderID, white);
                 // addSpriteRect(group, borderSprite, spriteBounds, white);
             }
         }

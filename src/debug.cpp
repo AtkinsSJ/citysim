@@ -169,7 +169,7 @@ void initDebugTextState(DebugTextState* textState, BitmapFont* font, V4 textColo
     auto& renderer = the_renderer();
     *textState = {};
 
-    textState->renderBuffer = &renderer.debugBuffer;
+    textState->renderBuffer = &renderer.debug_buffer();
     textState->camera = &renderer.uiCamera;
 
     textState->progressUpwards = upwards;
@@ -237,7 +237,7 @@ void renderDebugData(DebugState* debugState)
     // So for now, we're keeping this old method.
     // - Sam, 18/02/2020
     BitmapFont* font = getFont("debug.fnt"_s);
-    RenderBuffer* renderBuffer = &renderer.debugBuffer;
+    RenderBuffer* renderBuffer = &renderer.debug_buffer();
 
     u64 cyclesPerSecond = SDL_GetPerformanceFrequency();
     u32 rfi = debugState->readingFrameIndex;

@@ -176,13 +176,11 @@ struct Renderer {
     bool cursorIsVisible { true };
     SDL_Cursor* systemWaitCursor { nullptr };
 
-    Pool<RenderBuffer> renderBufferPool {};
-    Array<RenderBuffer*> renderBuffers {};
-    RenderBuffer worldBuffer {};
-    RenderBuffer worldOverlayBuffer {};
-    RenderBuffer uiBuffer {};
-    RenderBuffer windowBuffer {};
-    RenderBuffer debugBuffer {};
+    RenderBuffer& world_buffer() { return m_world_buffer; }
+    RenderBuffer& world_overlay_buffer() { return m_world_overlay_buffer; }
+    RenderBuffer& ui_buffer() { return m_ui_buffer; }
+    RenderBuffer& window_buffer() { return m_window_buffer; }
+    RenderBuffer& debug_buffer() { return m_debug_buffer; }
 
     smm renderBufferChunkSize { 0 };
     Pool<RenderBufferChunk> chunkPool {};
@@ -212,6 +210,14 @@ struct Renderer {
 
 protected:
     explicit Renderer(SDL_Window*);
+
+    Pool<RenderBuffer> m_render_buffer_pool {};
+    Array<RenderBuffer*> m_render_buffers {};
+    RenderBuffer m_world_buffer {};
+    RenderBuffer m_world_overlay_buffer {};
+    RenderBuffer m_ui_buffer {};
+    RenderBuffer m_window_buffer {};
+    RenderBuffer m_debug_buffer {};
 };
 
 Renderer& the_renderer();

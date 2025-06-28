@@ -29,22 +29,22 @@ Renderer::Renderer(SDL_Window* window)
     renderBufferChunkSize = KB(64);
     initPool<RenderBufferChunk>(&chunkPool, &renderArena, &allocateRenderBufferChunk, this);
 
-    initPool<RenderBuffer>(&renderBufferPool, &renderArena, [](MemoryArena* arena, void* chunk_pool_pointer) -> RenderBuffer* {
+    initPool<RenderBuffer>(&m_render_buffer_pool, &renderArena, [](MemoryArena* arena, void* chunk_pool_pointer) -> RenderBuffer* {
 			RenderBuffer *buffer = allocateStruct<RenderBuffer>(arena);
 			initRenderBuffer(arena, buffer, nullString, static_cast<Pool<RenderBufferChunk>*>(chunk_pool_pointer));
 			return buffer; }, &chunkPool);
-    initRenderBuffer(&renderArena, &worldBuffer, "WorldBuffer"_s, &chunkPool);
-    initRenderBuffer(&renderArena, &worldOverlayBuffer, "WorldOverlayBuffer"_s, &chunkPool);
-    initRenderBuffer(&renderArena, &uiBuffer, "UIBuffer"_s, &chunkPool);
-    initRenderBuffer(&renderArena, &windowBuffer, "WindowBuffer"_s, &chunkPool);
-    initRenderBuffer(&renderArena, &debugBuffer, "DebugBuffer"_s, &chunkPool);
+    initRenderBuffer(&renderArena, &m_world_buffer, "WorldBuffer"_s, &chunkPool);
+    initRenderBuffer(&renderArena, &m_world_overlay_buffer, "WorldOverlayBuffer"_s, &chunkPool);
+    initRenderBuffer(&renderArena, &m_ui_buffer, "UIBuffer"_s, &chunkPool);
+    initRenderBuffer(&renderArena, &m_window_buffer, "WindowBuffer"_s, &chunkPool);
+    initRenderBuffer(&renderArena, &m_debug_buffer, "DebugBuffer"_s, &chunkPool);
 
-    renderBuffers = allocateArray<RenderBuffer*>(&renderArena, 5);
-    renderBuffers.append(&worldBuffer);
-    renderBuffers.append(&worldOverlayBuffer);
-    renderBuffers.append(&uiBuffer);
-    renderBuffers.append(&windowBuffer);
-    renderBuffers.append(&debugBuffer);
+    m_render_buffers = allocateArray<RenderBuffer*>(&renderArena, 5);
+    m_render_buffers.append(&m_world_buffer);
+    m_render_buffers.append(&m_world_overlay_buffer);
+    m_render_buffers.append(&m_ui_buffer);
+    m_render_buffers.append(&m_window_buffer);
+    m_render_buffers.append(&m_debug_buffer);
 
     // Init cameras
     V2 windowSize = v2(windowWidth, windowHeight);
@@ -101,13 +101,13 @@ void handleWindowEvent(SDL_WindowEvent* event)
 
 void Renderer::render()
 {
-    DEBUG_POOL(&renderBufferPool, "renderBufferPool");
+    DEBUG_POOL(&m_render_buffer_pool, "renderBufferPool");
     DEBUG_POOL(&chunkPool, "renderChunkPool");
 
     render_internal();
 
-    for (s32 i = 0; i < s_renderer->renderBuffers.count; i++) {
-        renderBuffers[i]->clear_for_pool();
+    for (s32 i = 0; i < m_render_buffers.count; i++) {
+        m_render_buffers[i]->clear_for_pool();
     }
 }
 
@@ -258,7 +258,7 @@ RenderBufferChunk* allocateRenderBufferChunk(MemoryArena* arena, void* userData)
 
 RenderBuffer* Renderer::get_temporary_render_buffer(String name)
 {
-    RenderBuffer* result = getItemFromPool(&renderBufferPool);
+    RenderBuffer* result = getItemFromPool(&m_render_buffer_pool);
     result->clear_for_pool();
 
     // FIXME: LEAK: We only use this for debugging, and it's a leak, so limit it to debug builds
@@ -273,7 +273,7 @@ void Renderer::return_temporary_render_buffer(RenderBuffer& buffer)
 {
     buffer.name = nullString;
     buffer.clear_for_pool();
-    addItemToPool(&renderBufferPool, &buffer);
+    addItemToPool(&m_render_buffer_pool, &buffer);
 }
 
 void appendRenderItemType(RenderBuffer* buffer, RenderItemType type)

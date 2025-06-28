@@ -100,7 +100,7 @@ void drawEntities(City* city, Rect2I visibleTileBounds)
                 drawColor *= drawColorDemolish;
             }
 
-            drawSingleSprite(&the_renderer().worldBuffer, getSprite(&entity->sprite), entity->bounds, shaderID, drawColor);
+            drawSingleSprite(&the_renderer().world_buffer(), getSprite(&entity->sprite), entity->bounds, shaderID, drawColor);
         }
     }
 }
@@ -455,7 +455,7 @@ void drawCity(City* city, Rect2I visibleTileBounds)
     // NB: this is really hacky debug code
     if (false) {
         Rect2I visibleSectors = getSectorsCovered(&city->sectors, visibleTileBounds);
-        DrawRectsGroup* group = beginRectsGroupUntextured(&renderer.worldOverlayBuffer, renderer.shaderIds.untextured, areaOf(visibleSectors));
+        DrawRectsGroup* group = beginRectsGroupUntextured(&renderer.world_overlay_buffer(), renderer.shaderIds.untextured, areaOf(visibleSectors));
         V4 sectorColor = color255(255, 255, 255, 40);
         for (s32 sy = visibleSectors.y;
             sy < visibleSectors.y + visibleSectors.h;

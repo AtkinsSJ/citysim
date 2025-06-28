@@ -425,7 +425,7 @@ void updateAndRenderWindows()
         it.hasNext();
         it.next()) {
         Window* window = it.get();
-        the_renderer().windowBuffer.take_from(*window->renderBuffer);
+        the_renderer().window_buffer().take_from(*window->renderBuffer);
     }
 
     // Remove the tooltip now that it's been shown

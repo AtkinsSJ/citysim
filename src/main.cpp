@@ -161,9 +161,9 @@ int main(int argc, char* argv[])
             worldCamera->update_mouse_position(input.mousePosNormalised);
             uiCamera->update_mouse_position(input.mousePosNormalised);
 
-            addSetCamera(&renderer.worldBuffer, worldCamera);
-            addClear(&renderer.worldBuffer);
-            addSetCamera(&renderer.uiBuffer, uiCamera);
+            addSetCamera(&renderer.world_buffer(), worldCamera);
+            addClear(&renderer.world_buffer());
+            addSetCamera(&renderer.ui_buffer(), uiCamera);
 
             {
                 UI::startFrame();

@@ -195,7 +195,7 @@ void putDropDownList(Array<T>* listOptions, s32* currentSelection, String (*getD
     if (style == nullptr)
         style = getStyle<DropDownListStyle>("default"_s);
     if (renderBuffer == nullptr)
-        renderBuffer = &the_renderer().uiBuffer;
+        renderBuffer = &the_renderer().ui_buffer();
 
     bool isOpen = isDropDownListOpen(listOptions);
 

@@ -162,7 +162,7 @@ void updateAndRenderConsole(Console* console)
 
     // Display the console
     if (console->currentHeight > 0) {
-        RenderBuffer* renderBuffer = &renderer.debugBuffer;
+        RenderBuffer* renderBuffer = &renderer.debug_buffer();
         s32 actualConsoleHeight = floor_s32(console->currentHeight * (f32)UI::windowSize.y);
         s32 screenWidth = renderer.windowWidth;
 
