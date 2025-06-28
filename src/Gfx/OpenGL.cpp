@@ -128,15 +128,15 @@ void Renderer::on_window_resized(s32 newWidth, s32 newHeight)
     glViewport(0, 0, newWidth, newHeight);
 }
 
-void Renderer::render(Array<RenderBuffer*> buffers)
+void Renderer::render_internal()
 {
     DEBUG_FUNCTION_T(DCDT_Renderer);
 
     ShaderProgram* activeShader = nullptr;
     Camera* currentCamera = nullptr;
 
-    for (s32 bufferIndex = 0; bufferIndex < buffers.count; bufferIndex++) {
-        RenderBuffer* buffer = buffers[bufferIndex];
+    for (s32 bufferIndex = 0; bufferIndex < renderBuffers.count; bufferIndex++) {
+        RenderBuffer* buffer = renderBuffers[bufferIndex];
         RenderBufferChunk* renderBufferChunk = buffer->firstChunk;
 
         DEBUG_BEGIN_RENDER_BUFFER(buffer->name, buffer->name);

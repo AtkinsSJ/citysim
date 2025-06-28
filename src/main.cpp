@@ -27,7 +27,6 @@
 #endif
 
 #include "AppState.h"
-#include <Gfx/Renderer.h>
 #include "console.h"
 #include "credits.h"
 #include "game_mainmenu.h"
@@ -35,6 +34,7 @@
 #include "saved_games.h"
 #include "settings.h"
 #include <Assets/AssetManager.h>
+#include <Gfx/Renderer.h>
 #include <UI/UI.h>
 #include <UI/Window.h>
 #include <Util/Log.h>
@@ -226,7 +226,7 @@ int main(int argc, char* argv[])
             }
 
             // Actually draw things!
-            render();
+            the_renderer()->render();
 
             resetMemoryArena(&temp_arena());
         }

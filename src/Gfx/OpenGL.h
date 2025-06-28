@@ -66,7 +66,7 @@ public:
     virtual void free() override;
 
     virtual void on_window_resized(s32 width, s32 height) override;
-    virtual void render(Array<RenderBuffer*>) override;
+    virtual void render_internal() override;
     virtual void load_assets() override;
     virtual void unload_assets() override;
 

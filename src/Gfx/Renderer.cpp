@@ -98,15 +98,15 @@ void handleWindowEvent(SDL_WindowEvent* event)
     }
 }
 
-void render()
+void Renderer::render()
 {
-    DEBUG_POOL(&s_renderer->renderBufferPool, "renderBufferPool");
-    DEBUG_POOL(&s_renderer->chunkPool, "renderChunkPool");
+    DEBUG_POOL(&renderBufferPool, "renderBufferPool");
+    DEBUG_POOL(&chunkPool, "renderChunkPool");
 
-    s_renderer->render(s_renderer->renderBuffers);
+    render_internal();
 
-    for (s32 i = 0; i < s_renderer->renderBuffers.count; i++) {
-        clearRenderBuffer(s_renderer->renderBuffers[i]);
+    for (s32 i = 0; i < renderBuffers.count; i++) {
+        clearRenderBuffer(renderBuffers[i]);
     }
 }
 

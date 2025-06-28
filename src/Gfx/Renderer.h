@@ -199,7 +199,8 @@ struct Renderer {
     } shaderIds;
 
     virtual void on_window_resized(s32 width, s32 height) = 0;
-    virtual void render(Array<RenderBuffer*>) = 0;
+    void render();
+    virtual void render_internal() = 0;
     virtual void load_assets() = 0;
     virtual void unload_assets() = 0;
     virtual void free() = 0;
@@ -212,7 +213,6 @@ protected:
 
 Renderer* the_renderer();
 void handleWindowEvent(SDL_WindowEvent* event);
-void render();
 void rendererLoadAssets();
 void rendererUnloadAssets();
 void freeRenderer();
