@@ -91,6 +91,7 @@ void updateInput()
             s_input_state.receivedQuitSignal = true;
         } break;
         case SDL_WINDOWEVENT: {
+            the_renderer().handle_window_event(event.window);
             handleWindowEvent(&event.window);
         } break;
 

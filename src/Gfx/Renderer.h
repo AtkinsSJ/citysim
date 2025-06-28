@@ -163,10 +163,9 @@ struct Renderer {
 
     MemoryArena renderArena {};
 
-    SDL_Window* window { nullptr };
-    s32 windowWidth { 0 };
-    s32 windowHeight { 0 };
-    bool isFullscreen { false };
+    SDL_Window* sdl_window() const { return m_sdl_window; }
+    V2I window_size() const { return m_window_size; }
+    bool window_is_fullscreen() const { return m_window_is_fullscreen; }
 
     Camera& world_camera() { return m_world_camera; }
     Camera& ui_camera() { return m_ui_camera; }
@@ -205,6 +204,8 @@ struct Renderer {
     void set_cursor(String name);
     void set_cursor_visible(bool);
 
+    void handle_window_event(SDL_WindowEvent const&);
+
 protected:
     explicit Renderer(SDL_Window*);
 
@@ -215,6 +216,10 @@ protected:
     RenderBuffer m_ui_buffer {};
     RenderBuffer m_window_buffer {};
     RenderBuffer m_debug_buffer {};
+
+    SDL_Window* m_sdl_window { nullptr };
+    V2I m_window_size {};
+    bool m_window_is_fullscreen { false };
 
     Camera m_world_camera {};
     Camera m_ui_camera {};

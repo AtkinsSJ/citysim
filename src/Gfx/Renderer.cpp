@@ -88,21 +88,20 @@ Renderer& the_renderer()
     return *s_renderer;
 }
 
-void handleWindowEvent(SDL_WindowEvent* event)
+void Renderer::handle_window_event(SDL_WindowEvent const& event)
 {
-    switch (event->event) {
+    switch (event.event) {
     case SDL_WINDOWEVENT_SIZE_CHANGED: {
-        s_renderer->windowWidth = event->data1;
-        s_renderer->windowHeight = event->data2;
+        m_window_size = v2i(event.data1, event.data2);
 
-        s_renderer->on_window_resized(s_renderer->windowWidth, s_renderer->windowHeight);
+        on_window_resized(windowWidth, windowHeight);
 
-        V2 windowSize = v2(s_renderer->windowWidth, s_renderer->windowHeight);
+        V2 windowSize = v2(windowWidth, windowHeight);
 
-        s_renderer->world_camera().set_size(windowSize);
+        world_camera().set_size(windowSize);
 
-        s_renderer->ui_camera().set_size(windowSize);
-        s_renderer->ui_camera().set_position(s_renderer->ui_camera().size() * 0.5f);
+        ui_camera().set_size(windowSize);
+        ui_camera().set_position(ui_camera().size() * 0.5f);
     } break;
     }
 }
