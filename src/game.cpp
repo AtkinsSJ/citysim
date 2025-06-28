@@ -337,8 +337,8 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
     // - Sam, 28/08/2019
 
     V4 tileHighlightColor = color255(196, 196, 255, 64);
-    auto* renderer = the_renderer();
-    drawSingleRect(&renderer->worldOverlayBuffer, rectXYWHi(tilePos.x, tilePos.y, 1, 1), renderer->shaderIds.untextured, tileHighlightColor);
+    auto& renderer = the_renderer();
+    drawSingleRect(&renderer.worldOverlayBuffer, rectXYWHi(tilePos.x, tilePos.y, 1, 1), renderer.shaderIds.untextured, tileHighlightColor);
 }
 
 void pauseMenuWindowProc(UI::WindowContext* context, void* /*userData*/)
@@ -381,8 +381,8 @@ void updateAndRenderGameUI(GameState* gameState)
 {
     DEBUG_FUNCTION();
 
-    auto* renderer = the_renderer();
-    RenderBuffer* uiBuffer = &renderer->uiBuffer;
+    auto& renderer = the_renderer();
+    RenderBuffer* uiBuffer = &renderer.uiBuffer;
     UI::LabelStyle* labelStyle = getStyle<UI::LabelStyle>("title"_s);
     BitmapFont* font = getFont(&labelStyle->font);
     City* city = &gameState->city;
@@ -396,7 +396,7 @@ void updateAndRenderGameUI(GameState* gameState)
 
     Rect2I uiRect = irectXYWH(0, 0, UI::windowSize.x, toolbarHeight);
     UI::addUIRect(uiRect);
-    drawSingleRect(uiBuffer, uiRect, renderer->shaderIds.untextured, color255(0, 0, 0, 128));
+    drawSingleRect(uiBuffer, uiRect, renderer.shaderIds.untextured, color255(0, 0, 0, 128));
 
     UI::putLabel(city->name, irectXYWH(left, uiPadding, width3, rowHeight), labelStyle);
 
@@ -422,10 +422,10 @@ void updateAndRenderGameUI(GameState* gameState)
 
         // Draw a progress bar for the current day
         Rect2I dateRect = irectXYWH(right - clockWidth, uiPadding, clockWidth, dateStringSize.y);
-        drawSingleRect(uiBuffer, dateRect, renderer->shaderIds.untextured, color255(0, 0, 0, 128));
+        drawSingleRect(uiBuffer, dateRect, renderer.shaderIds.untextured, color255(0, 0, 0, 128));
         Rect2I dateProgressRect = dateRect;
         dateProgressRect.w = round_s32(dateProgressRect.w * clock->timeWithinDay);
-        drawSingleRect(uiBuffer, dateProgressRect, renderer->shaderIds.untextured, color255(64, 255, 64, 128));
+        drawSingleRect(uiBuffer, dateProgressRect, renderer.shaderIds.untextured, color255(64, 255, 64, 128));
 
         UI::putLabel(dateString, dateRect, labelStyle);
 
@@ -613,7 +613,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
 {
     DEBUG_FUNCTION_T(DCDT_GameUpdate);
 
-    auto* renderer = the_renderer();
+    auto& renderer = the_renderer();
     AppStatus result = AppStatus_Game;
     City* city = &gameState->city;
 
@@ -656,8 +656,8 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
     V4 ghostColorInvalid = color255(255, 0, 0, 128);
 
     // CAMERA!
-    Camera* worldCamera = &renderer->worldCamera;
-    Camera* uiCamera = &renderer->uiCamera;
+    Camera* worldCamera = &renderer.worldCamera;
+    Camera* uiCamera = &renderer.uiCamera;
     if (gameState->status == GameStatus_Playing) {
         inputMoveCamera(worldCamera, uiCamera->size(), uiCamera->mouse_position(), gameState->city.bounds.w, gameState->city.bounds.h);
     }
@@ -696,7 +696,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
 
                     Sprite* sprite = getSprite(buildingDef->spriteName, 0);
                     V4 color = canPlace ? ghostColorValid : ghostColorInvalid;
-                    drawSingleSprite(&renderer->worldOverlayBuffer, sprite, rect2(footprint), renderer->shaderIds.pixelArt, color);
+                    drawSingleSprite(&renderer.worldOverlayBuffer, sprite, rect2(footprint), renderer.shaderIds.pixelArt, color);
                 }
             } break;
 
@@ -725,7 +725,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
                         Sprite* sprite = getSprite(buildingDef->spriteName, 0);
                         s32 maxGhosts = (dragResult.dragRect.w / buildingDef->width) * (dragResult.dragRect.h / buildingDef->height);
                         // TODO: If maxGhosts is 1, just draw 1!
-                        DrawRectsGroup* rectsGroup = beginRectsGroupTextured(&renderer->worldOverlayBuffer, sprite->texture, renderer->shaderIds.pixelArt, maxGhosts);
+                        DrawRectsGroup* rectsGroup = beginRectsGroupTextured(&renderer.worldOverlayBuffer, sprite->texture, renderer.shaderIds.pixelArt, maxGhosts);
                         for (s32 y = 0; y + buildingDef->height <= dragResult.dragRect.h; y += buildingDef->height) {
                             for (s32 x = 0; x + buildingDef->width <= dragResult.dragRect.w; x += buildingDef->width) {
                                 bool canPlace = canPlaceBuilding(city, buildingDef, dragResult.dragRect.x + x, dragResult.dragRect.y + y);
@@ -740,7 +740,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
                         }
                         endRectsGroup(rectsGroup);
                     } else {
-                        drawSingleRect(&renderer->worldOverlayBuffer, dragResult.dragRect, renderer->shaderIds.untextured, color255(255, 64, 64, 128));
+                        drawSingleRect(&renderer.worldOverlayBuffer, dragResult.dragRect, renderer.shaderIds.untextured, color255(255, 64, 64, 128));
                     }
                 } break;
 
@@ -775,9 +775,9 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
                         color255(255, 0, 0, 16),
                         getZoneDef(gameState->selectedZoneID).color
                     };
-                    drawGrid(&renderer->worldOverlayBuffer, rect2(canZoneQuery->bounds), canZoneQuery->bounds.w, canZoneQuery->bounds.h, canZoneQuery->tileCanBeZoned, 2, palette);
+                    drawGrid(&renderer.worldOverlayBuffer, rect2(canZoneQuery->bounds), canZoneQuery->bounds.w, canZoneQuery->bounds.h, canZoneQuery->tileCanBeZoned, 2, palette);
                 } else {
-                    drawSingleRect(&renderer->worldOverlayBuffer, dragResult.dragRect, renderer->shaderIds.untextured, color255(255, 64, 64, 128));
+                    drawSingleRect(&renderer.worldOverlayBuffer, dragResult.dragRect, renderer.shaderIds.untextured, color255(255, 64, 64, 128));
                 }
             } break;
 
@@ -807,9 +807,9 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
 
                 if (canAfford(city, demolishCost)) {
                     // Demolition outline
-                    drawSingleRect(&renderer->worldOverlayBuffer, dragResult.dragRect, renderer->shaderIds.untextured, color255(128, 0, 0, 128));
+                    drawSingleRect(&renderer.worldOverlayBuffer, dragResult.dragRect, renderer.shaderIds.untextured, color255(128, 0, 0, 128));
                 } else {
-                    drawSingleRect(&renderer->worldOverlayBuffer, dragResult.dragRect, renderer->shaderIds.untextured, color255(255, 64, 64, 128));
+                    drawSingleRect(&renderer.worldOverlayBuffer, dragResult.dragRect, renderer.shaderIds.untextured, color255(255, 64, 64, 128));
                 }
             } break;
 
@@ -848,7 +848,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
             if (!mouseIsOverUI && mouseButtonJustPressed(MouseButton_Left)) {
                 if (tileExists(city, mouseTilePos.x, mouseTilePos.y)) {
                     gameState->inspectedTilePosition = mouseTilePos;
-                    V2I windowPos = v2i(renderer->uiCamera.mouse_position()) + v2i(16, 16);
+                    V2I windowPos = v2i(renderer.uiCamera.mouse_position()) + v2i(16, 16);
                     UI::showWindow(UI::WindowTitle::fromLambda([]() {
                         V2I tilePos = AppState::the().gameState->inspectedTilePosition;
                         return getText("title_inspect"_s, { formatInt(tilePos.x), formatInt(tilePos.y) });
@@ -986,14 +986,14 @@ template<typename Iterable>
 static void drawBuildingHighlights(City* city, Iterable* buildingRefs)
 {
     DEBUG_FUNCTION_T(DCDT_GameUpdate);
-    auto* renderer = the_renderer();
+    auto& renderer = the_renderer();
 
     if (buildingRefs->count > 0) {
         Array<V4>* buildingsPalette = getPalette("service_buildings"_s);
         s32 paletteIndexPowered = 0;
         s32 paletteIndexUnpowered = 1;
 
-        DrawRectsGroup* buildingHighlights = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, buildingRefs->count);
+        DrawRectsGroup* buildingHighlights = beginRectsGroupUntextured(&renderer.worldOverlayBuffer, renderer.shaderIds.untextured, buildingRefs->count);
         for (auto it = buildingRefs->iterate(); it.hasNext(); it.next()) {
             Building* building = getBuilding(city, it.getValue());
             // NB: If we're doing this in a separate loop, we could crop out buildings that aren't in the visible tile bounds
@@ -1009,7 +1009,7 @@ static void drawBuildingHighlights(City* city, Iterable* buildingRefs)
 template<typename Iterable>
 static void drawBuildingEffectRadii(City* city, Iterable* buildingRefs, EffectRadius BuildingDef::* effectMember)
 {
-    auto* renderer = the_renderer();
+    auto& renderer = the_renderer();
     //
     // Leaving a note here because it's the first time I've used a pointer-to-member, and it's
     // weird and confusing and the syntax is odd!
@@ -1039,7 +1039,7 @@ static void drawBuildingEffectRadii(City* city, Iterable* buildingRefs, EffectRa
         s32 paletteIndexPowered = 0;
         s32 paletteIndexUnpowered = 1;
 
-        DrawRingsGroup* buildingRadii = beginRingsGroup(&renderer->worldOverlayBuffer, buildingRefs->count);
+        DrawRingsGroup* buildingRadii = beginRingsGroup(&renderer.worldOverlayBuffer, buildingRefs->count);
 
         for (auto it = buildingRefs->iterate(); it.hasNext(); it.next()) {
             Building* building = getBuilding(city, it.getValue());
@@ -1066,7 +1066,7 @@ void drawDataViewOverlay(GameState* gameState, Rect2I visibleTileBounds)
     if (gameState->dataLayerToDraw == DataView_None)
         return;
     ASSERT(gameState->dataLayerToDraw < DataViewCount);
-    auto* renderer = the_renderer();
+    auto& renderer = the_renderer();
 
     City* city = &gameState->city;
     DataViewUI* dataView = &gameState->dataViewUI[gameState->dataLayerToDraw];
@@ -1083,7 +1083,7 @@ void drawDataViewOverlay(GameState* gameState, Rect2I visibleTileBounds)
         Rect2I bounds = city->bounds;
 
         Array<V4>* overlayPalette = getPalette(dataView->overlayPaletteName);
-        drawGrid(&renderer->worldOverlayBuffer, rect2(bounds), bounds.w, bounds.h, *dataView->overlayTileData, (u16)overlayPalette->count, overlayPalette->items);
+        drawGrid(&renderer.worldOverlayBuffer, rect2(bounds), bounds.w, bounds.h, *dataView->overlayTileData, (u16)overlayPalette->count, overlayPalette->items);
     } else if (dataView->calculateTileValue) {
         // The per-tile overlay data is generated
         Array2<u8> overlayTileData = allocateArray2<u8>(&temp_arena(), visibleTileBounds.w, visibleTileBounds.h);
@@ -1096,7 +1096,7 @@ void drawDataViewOverlay(GameState* gameState, Rect2I visibleTileBounds)
         }
 
         Array<V4>* overlayPalette = getPalette(dataView->overlayPaletteName);
-        drawGrid(&renderer->worldOverlayBuffer, rect2(visibleTileBounds), overlayTileData.w, overlayTileData.h, overlayTileData.items, (u16)overlayPalette->count, overlayPalette->items);
+        drawGrid(&renderer.worldOverlayBuffer, rect2(visibleTileBounds), overlayTileData.w, overlayTileData.h, overlayTileData.items, (u16)overlayPalette->count, overlayPalette->items);
     }
 
     if (dataView->highlightedBuildings) {
@@ -1112,8 +1112,8 @@ void drawDataViewUI(GameState* gameState)
 {
     DEBUG_FUNCTION();
 
-    auto* renderer = the_renderer();
-    RenderBuffer* uiBuffer = &renderer->uiBuffer;
+    auto& renderer = the_renderer();
+    RenderBuffer* uiBuffer = &renderer.uiBuffer;
     UI::LabelStyle* labelStyle = getStyle<UI::LabelStyle>("title"_s);
     BitmapFont* font = getFont(&labelStyle->font);
 
@@ -1127,7 +1127,7 @@ void drawDataViewUI(GameState* gameState)
     Rect2I dataViewButtonBounds = irectXYWH(uiPadding, UI::windowSize.y - uiPadding - dataViewButtonSize.y, dataViewButtonSize.x, dataViewButtonSize.y);
 
     Rect2I dataViewUIBounds = expand(dataViewButtonBounds, uiPadding);
-    drawSingleRect(uiBuffer, dataViewUIBounds, renderer->shaderIds.untextured, color255(0, 0, 0, 128));
+    drawSingleRect(uiBuffer, dataViewUIBounds, renderer.shaderIds.untextured, color255(0, 0, 0, 128));
     UI::addUIRect(dataViewUIBounds);
 
     if (UI::putTextButton(dataViewButtonText, dataViewButtonBounds, buttonStyle)) {
@@ -1191,7 +1191,7 @@ void drawDataViewUI(GameState* gameState)
 
                 for (s32 fixedColorIndex = dataView->fixedColorNames.count - 1; fixedColorIndex >= 0; fixedColorIndex--) {
                     Rect2I paletteBlockBounds = ui.addBlank(paletteBlockSize, paletteBlockSize);
-                    drawSingleRect(uiBuffer, paletteBlockBounds, renderer->shaderIds.untextured, asOpaque((*fixedPalette)[fixedColorIndex]));
+                    drawSingleRect(uiBuffer, paletteBlockBounds, renderer.shaderIds.untextured, asOpaque((*fixedPalette)[fixedColorIndex]));
 
                     ui.addLabel(getText(dataView->fixedColorNames[fixedColorIndex]));
                     ui.startNewLine();
@@ -1212,7 +1212,7 @@ void drawDataViewUI(GameState* gameState)
                     V4 minColor = asOpaque(*gradientPalette->first());
                     V4 maxColor = asOpaque(*gradientPalette->last());
 
-                    drawSingleRect(uiBuffer, rect2(gradientBounds), renderer->shaderIds.untextured, maxColor, maxColor, minColor, minColor);
+                    drawSingleRect(uiBuffer, rect2(gradientBounds), renderer.shaderIds.untextured, maxColor, maxColor, minColor, minColor);
                 }
                 gradientColumn.end();
 

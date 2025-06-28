@@ -7,13 +7,13 @@
 #include "city.h"
 #include "AppState.h"
 #include "Assets/AssetManager.h"
-#include <Gfx/Renderer.h>
 #include "Util/Random.h"
 #include "Util/Rectangle.h"
 #include "binary_file_reader.h"
 #include "binary_file_writer.h"
 #include "save_file.h"
 #include "write_buffer.h"
+#include <Gfx/Renderer.h>
 
 void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String name, String playerName, s32 funds)
 {
@@ -61,7 +61,7 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
     // TODO: Are we sure we want to do this?
     markAreaDirty(city, city->bounds);
 
-    the_renderer()->worldCamera.set_position(v2(city->bounds.size) / 2);
+    the_renderer().worldCamera.set_position(v2(city->bounds.size) / 2);
 
     saveBuildingTypes();
     saveTerrainTypes();
@@ -79,7 +79,7 @@ void drawEntities(City* city, Rect2I visibleTileBounds)
     // TODO: Sectors maybe? Though collecting all the visible entities into a data structure might be slower than just
     //  iterating the entities array.
     Rect2 cropArea = rect2(visibleTileBounds);
-    auto shaderID = the_renderer()->shaderIds.pixelArt;
+    auto shaderID = the_renderer().shaderIds.pixelArt;
 
     bool isDemolitionHappening = (areaOf(city->demolitionRect) > 0);
     V4 drawColorDemolish = color255(255, 128, 128, 255);
@@ -100,7 +100,7 @@ void drawEntities(City* city, Rect2I visibleTileBounds)
                 drawColor *= drawColorDemolish;
             }
 
-            drawSingleSprite(&the_renderer()->worldBuffer, getSprite(&entity->sprite), entity->bounds, shaderID, drawColor);
+            drawSingleSprite(&the_renderer().worldBuffer, getSprite(&entity->sprite), entity->bounds, shaderID, drawColor);
         }
     }
 }
@@ -442,12 +442,12 @@ ChunkedArray<Building*> findBuildingsOverlappingArea(City* city, Rect2I area, u3
 
 void drawCity(City* city, Rect2I visibleTileBounds)
 {
-    auto* renderer = the_renderer();
-    drawTerrain(city, visibleTileBounds, renderer->shaderIds.pixelArt);
+    auto& renderer = the_renderer();
+    drawTerrain(city, visibleTileBounds, renderer.shaderIds.pixelArt);
 
-    drawZones(city, visibleTileBounds, renderer->shaderIds.untextured);
+    drawZones(city, visibleTileBounds, renderer.shaderIds.untextured);
 
-    // drawBuildings(city, visibleTileBounds, renderer->shaderIds.pixelArt, demolitionRect);
+    // drawBuildings(city, visibleTileBounds, renderer.shaderIds.pixelArt, demolitionRect);
 
     drawEntities(city, visibleTileBounds);
 
@@ -455,7 +455,7 @@ void drawCity(City* city, Rect2I visibleTileBounds)
     // NB: this is really hacky debug code
     if (false) {
         Rect2I visibleSectors = getSectorsCovered(&city->sectors, visibleTileBounds);
-        DrawRectsGroup* group = beginRectsGroupUntextured(&renderer->worldOverlayBuffer, renderer->shaderIds.untextured, areaOf(visibleSectors));
+        DrawRectsGroup* group = beginRectsGroupUntextured(&renderer.worldOverlayBuffer, renderer.shaderIds.untextured, areaOf(visibleSectors));
         V4 sectorColor = color255(255, 255, 255, 40);
         for (s32 sy = visibleSectors.y;
             sy < visibleSectors.y + visibleSectors.h;

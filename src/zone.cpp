@@ -128,7 +128,7 @@ void drawZones(City* city, Rect2I visibleTileBounds, s8 shaderID)
 {
     DEBUG_FUNCTION_T(DCDT_GameUpdate);
 
-    auto* renderer = the_renderer();
+    auto& renderer = the_renderer();
     Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
     s32 zoneType = -1;
     V4 zoneColor = {};
@@ -137,7 +137,7 @@ void drawZones(City* city, Rect2I visibleTileBounds, s8 shaderID)
 
     // TODO: @Speed: areaOf() is a poor heuristic! It's safely >= the actual value, but it would be better to
     // actually see how many there are. Though that'd be a double-iteration, unless we keep a cached count.
-    DrawRectsGroup* group = beginRectsGroupUntextured(&renderer->worldBuffer, shaderID, areaOf(visibleTileBounds));
+    DrawRectsGroup* group = beginRectsGroupUntextured(&renderer.worldBuffer, shaderID, areaOf(visibleTileBounds));
 
     for (s32 y = visibleTileBounds.y;
         y < visibleTileBounds.y + visibleTileBounds.h;

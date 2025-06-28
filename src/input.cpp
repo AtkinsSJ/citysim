@@ -146,9 +146,9 @@ void updateInput()
         }
     }
 
-    auto* renderer = the_renderer();
-    s_input_state.mousePosNormalised.x = ((s_input_state.mousePosRaw.x * 2.0f) / renderer->windowWidth) - 1.0f;
-    s_input_state.mousePosNormalised.y = ((s_input_state.mousePosRaw.y * -2.0f) + renderer->windowHeight) / renderer->windowHeight;
+    auto& renderer = the_renderer();
+    s_input_state.mousePosNormalised.x = ((s_input_state.mousePosRaw.x * 2.0f) / renderer.windowWidth) - 1.0f;
+    s_input_state.mousePosNormalised.y = ((s_input_state.mousePosRaw.y * -2.0f) + renderer.windowHeight) / renderer.windowHeight;
 
     for (s32 i = 1; i < MouseButtonCount; i++) {
         MouseButton button = MouseButton(i);

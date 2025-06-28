@@ -211,7 +211,7 @@ protected:
     explicit Renderer(SDL_Window*);
 };
 
-Renderer* the_renderer();
+Renderer& the_renderer();
 void handleWindowEvent(SDL_WindowEvent* event);
 void rendererLoadAssets();
 void rendererUnloadAssets();

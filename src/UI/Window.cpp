@@ -177,10 +177,10 @@ void closeAllWindows()
 void updateAndRenderWindows()
 {
     DEBUG_FUNCTION_T(DCDT_UI);
-    auto* renderer = the_renderer();
+    auto& renderer = the_renderer();
 
     // This is weird, the UI camera should always be positioned with 0,0 being the bottom-left I thought?
-    Rect2I validWindowArea = irectCentreSize(v2i(renderer->uiCamera.position()), v2i(renderer->uiCamera.size()));
+    Rect2I validWindowArea = irectCentreSize(v2i(renderer.uiCamera.position()), v2i(renderer.uiCamera.size()));
 
     uiState.isAPauseWindowOpen = false;
     s32 tooltipIndex = -1;
@@ -214,7 +214,7 @@ void updateAndRenderWindows()
 
         // Modal windows get a translucent colour over everything behind them
         if (isModal) {
-            drawSingleRect(window->renderBuffer, rectPosSize(v2(0, 0), renderer->uiCamera.size()), renderer->shaderIds.untextured, color255(64, 64, 64, 128));
+            drawSingleRect(window->renderBuffer, rectPosSize(v2(0, 0), renderer.uiCamera.size()), renderer.shaderIds.untextured, color255(64, 64, 64, 128));
         }
 
         // If the window is new, make sure it has a valid area by running the WindowProc once
@@ -303,7 +303,7 @@ void updateAndRenderWindows()
             String closeButtonString = "X"_s;
             V4 closeButtonColorHover = windowStyle->titleBarButtonHoverColor;
 
-            drawSingleRect(window->renderBuffer, barArea, renderer->shaderIds.untextured, barColor);
+            drawSingleRect(window->renderBuffer, barArea, renderer.shaderIds.untextured, barColor);
             String titleString = window->title.getString();
 
             LabelStyle* titleStyle = getStyle<LabelStyle>(&windowStyle->titleLabelStyle);
@@ -315,11 +315,11 @@ void updateAndRenderWindows()
             auto titleFont = getFont(&titleStyle->font);
             if (hoveringOverCloseButton
                 && (!isMouseInputHandled() || windowIndex == 0)) {
-                drawSingleRect(window->renderBuffer, closeButtonRect, renderer->shaderIds.untextured, closeButtonColorHover);
+                drawSingleRect(window->renderBuffer, closeButtonRect, renderer.shaderIds.untextured, closeButtonColorHover);
             }
             V2I closeTextSize = calculateTextSize(titleFont, closeButtonString);
             Rect2I closeTextBounds = irectAligned(centreOfI(closeButtonRect), closeTextSize, ALIGN_CENTRE);
-            drawText(window->renderBuffer, titleFont, closeButtonString, closeTextBounds, ALIGN_CENTRE, titleStyle->textColor, renderer->shaderIds.text);
+            drawText(window->renderBuffer, titleFont, closeButtonString, closeTextBounds, ALIGN_CENTRE, titleStyle->textColor, renderer.shaderIds.text);
 
             if ((!isMouseInputHandled() || windowIndex == 0)
                 && contains(wholeWindowArea, mousePos)
@@ -425,7 +425,7 @@ void updateAndRenderWindows()
         it.hasNext();
         it.next()) {
         Window* window = it.get();
-        transferRenderBufferData(window->renderBuffer, &renderer->windowBuffer);
+        transferRenderBufferData(window->renderBuffer, &renderer.windowBuffer);
     }
 
     // Remove the tooltip now that it's been shown

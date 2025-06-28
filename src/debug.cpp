@@ -166,11 +166,11 @@ struct DebugTextState {
 
 void initDebugTextState(DebugTextState* textState, BitmapFont* font, V4 textColor, s32 screenEdgePadding, bool upwards, bool alignLeft)
 {
-    auto* renderer = the_renderer();
+    auto& renderer = the_renderer();
     *textState = {};
 
-    textState->renderBuffer = &renderer->debugBuffer;
-    textState->camera = &renderer->uiCamera;
+    textState->renderBuffer = &renderer.debugBuffer;
+    textState->camera = &renderer.uiCamera;
 
     textState->progressUpwards = upwards;
     if (alignLeft) {
@@ -190,8 +190,8 @@ void initDebugTextState(DebugTextState* textState, BitmapFont* font, V4 textColo
     textState->color = textColor;
     textState->maxWidth = floor_s32(textState->camera->size().x) - (2 * screenEdgePadding);
 
-    textState->textShaderID = renderer->shaderIds.text;
-    textState->untexturedShaderID = renderer->shaderIds.untextured;
+    textState->textShaderID = renderer.shaderIds.text;
+    textState->untexturedShaderID = renderer.shaderIds.untextured;
 }
 
 void debugTextOut(DebugTextState* textState, String text, bool doHighlight = false, V4* color = nullptr)
@@ -227,7 +227,7 @@ void debugTextOut(DebugTextState* textState, String text, bool doHighlight = fal
 void renderDebugData(DebugState* debugState)
 {
     DEBUG_FUNCTION_T(DCDT_Debug);
-    auto* renderer = the_renderer();
+    auto& renderer = the_renderer();
 
     // This is the only usage of getFont(String). Ideally we'd replace it with an
     // AssetRef, but there's no obvious place to put it. It can't go in the
@@ -237,30 +237,30 @@ void renderDebugData(DebugState* debugState)
     // So for now, we're keeping this old method.
     // - Sam, 18/02/2020
     BitmapFont* font = getFont("debug.fnt"_s);
-    RenderBuffer* renderBuffer = &renderer->debugBuffer;
+    RenderBuffer* renderBuffer = &renderer.debugBuffer;
 
     u64 cyclesPerSecond = SDL_GetPerformanceFrequency();
     u32 rfi = debugState->readingFrameIndex;
-    drawSingleRect(renderBuffer, rectXYWH(0, 0, renderer->uiCamera.size().x, renderer->uiCamera.size().y), renderer->shaderIds.untextured, color255(0, 0, 0, 128));
+    drawSingleRect(renderBuffer, rectXYWH(0, 0, renderer.uiCamera.size().x, renderer.uiCamera.size().y), renderer.shaderIds.untextured, color255(0, 0, 0, 128));
 
     // Draw a "nice" chart!
     {
         f32 graphHeight = 150.0f;
-        drawSingleRect(renderBuffer, rectXYWH(0, renderer->uiCamera.size().y - graphHeight, renderer->uiCamera.size().x, 1), renderer->shaderIds.untextured, color255(255, 255, 255, 128));
-        drawSingleRect(renderBuffer, rectXYWH(0, renderer->uiCamera.size().y - graphHeight * 2, renderer->uiCamera.size().x, 1), renderer->shaderIds.untextured, color255(255, 255, 255, 128));
+        drawSingleRect(renderBuffer, rectXYWH(0, renderer.uiCamera.size().y - graphHeight, renderer.uiCamera.size().x, 1), renderer.shaderIds.untextured, color255(255, 255, 255, 128));
+        drawSingleRect(renderBuffer, rectXYWH(0, renderer.uiCamera.size().y - graphHeight * 2, renderer.uiCamera.size().x, 1), renderer.shaderIds.untextured, color255(255, 255, 255, 128));
         f32 targetCyclesPerFrame = cyclesPerSecond / 60.0f;
-        f32 barWidth = renderer->uiCamera.size().x / (f32)DEBUG_FRAMES_COUNT;
+        f32 barWidth = renderer.uiCamera.size().x / (f32)DEBUG_FRAMES_COUNT;
         f32 barHeightPerCycle = graphHeight / targetCyclesPerFrame;
         V4 barColor = color255(255, 0, 0, 128);
         V4 activeBarColor = color255(255, 255, 0, 128);
         u32 barIndex = 0;
-        DrawRectsGroup* rectsGroup = beginRectsGroupUntextured(renderBuffer, renderer->shaderIds.untextured, DEBUG_FRAMES_COUNT);
+        DrawRectsGroup* rectsGroup = beginRectsGroupUntextured(renderBuffer, renderer.shaderIds.untextured, DEBUG_FRAMES_COUNT);
         for (u32 fi = debugState->writingFrameIndex + 1;
             fi != debugState->writingFrameIndex;
             fi = wrap<u32>(fi + 1, DEBUG_FRAMES_COUNT)) {
             u64 frameCycles = debugState->frameEndCycle[fi] - debugState->frameStartCycle[fi];
             f32 barHeight = barHeightPerCycle * (f32)frameCycles;
-            addUntexturedRect(rectsGroup, rectXYWH(barWidth * barIndex++, renderer->uiCamera.size().y - barHeight, barWidth, barHeight), fi == rfi ? activeBarColor : barColor);
+            addUntexturedRect(rectsGroup, rectXYWH(barWidth * barIndex++, renderer.uiCamera.size().y - barHeight, barWidth, barHeight), fi == rfi ? activeBarColor : barColor);
         }
         endRectsGroup(rectsGroup);
     }

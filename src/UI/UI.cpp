@@ -5,11 +5,11 @@
  */
 
 #include "AppState.h"
-#include <Gfx/Renderer.h>
 #include "Window.h"
 #include "font.h"
 #include "input.h"
 #include <Assets/AssetManager.h>
+#include <Gfx/Renderer.h>
 #include <UI/Drawable.h>
 #include <UI/Panel.h>
 #include <UI/TextInput.h>
@@ -40,7 +40,7 @@ void init(MemoryArena* arena)
 
 void startFrame()
 {
-    auto* renderer = the_renderer();
+    auto& renderer = the_renderer();
     uiState.uiRects.clear();
     uiState.mouseInputHandled = false;
 
@@ -49,10 +49,10 @@ void startFrame()
         uiState.currentDragObject = nullptr;
     }
 
-    windowSize = v2i(renderer->uiCamera.size());
-    mousePos = v2i(renderer->uiCamera.mouse_position());
+    windowSize = v2i(renderer.uiCamera.size());
+    mousePos = v2i(renderer.uiCamera.mouse_position());
     if (mouseButtonPressed(MouseButton_Left)) {
-        mouseClickStartPos = v2i(getClickStartPos(MouseButton_Left, &renderer->uiCamera));
+        mouseClickStartPos = v2i(getClickStartPos(MouseButton_Left, &renderer.uiCamera));
     }
 }
 
@@ -68,7 +68,7 @@ void endFrame()
         } else {
             // NB: We transfer to the *window* buffer, not the *ui* buffer, because we
             // want the drop-down to appear in front of any windows.
-            transferRenderBufferData(uiState.openDropDownListRenderBuffer, &the_renderer()->windowBuffer);
+            transferRenderBufferData(uiState.openDropDownListRenderBuffer, &the_renderer().windowBuffer);
         }
     }
 }
@@ -282,7 +282,7 @@ bool putButton(Rect2I bounds, ButtonStyle* style, ButtonState state, RenderBuffe
     if (style == nullptr)
         style = getStyle<ButtonStyle>("default"_s);
     if (renderBuffer == nullptr)
-        renderBuffer = &the_renderer()->uiBuffer;
+        renderBuffer = &the_renderer().uiBuffer;
 
     bool buttonClicked = false;
 
@@ -334,31 +334,31 @@ bool putButton(Rect2I bounds, ButtonStyle* style, ButtonState state, RenderBuffe
 
 bool putTextButton(String text, Rect2I bounds, ButtonStyle* style, ButtonState state, RenderBuffer* renderBuffer, String tooltip)
 {
-    auto* renderer = the_renderer();
+    auto& renderer = the_renderer();
     if (renderBuffer == nullptr) {
-        renderBuffer = &renderer->uiBuffer;
+        renderBuffer = &renderer.uiBuffer;
     }
 
     bool result = putButton(bounds, style, state, renderBuffer, tooltip);
 
     Rect2I contentBounds = calculateButtonContentBounds(bounds, style);
 
-    drawText(renderBuffer, getFont(&style->font), text, contentBounds, style->textAlignment, style->textColor, renderer->shaderIds.text);
+    drawText(renderBuffer, getFont(&style->font), text, contentBounds, style->textAlignment, style->textColor, renderer.shaderIds.text);
 
     return result;
 }
 
 bool putImageButton(Sprite* sprite, Rect2I bounds, ButtonStyle* style, ButtonState state, RenderBuffer* renderBuffer, String tooltip)
 {
-    auto* renderer = the_renderer();
+    auto& renderer = the_renderer();
     if (renderBuffer == nullptr)
-        renderBuffer = &renderer->uiBuffer;
+        renderBuffer = &renderer.uiBuffer;
 
     bool result = putButton(bounds, style, state, renderBuffer, tooltip);
 
     Rect2I contentBounds = calculateButtonContentBounds(bounds, style);
     Rect2 spriteBounds = rect2(contentBounds);
-    drawSingleSprite(renderBuffer, sprite, spriteBounds, renderer->shaderIds.textured, makeWhite());
+    drawSingleSprite(renderBuffer, sprite, spriteBounds, renderer.shaderIds.textured, makeWhite());
 
     return result;
 }
@@ -379,7 +379,7 @@ void putCheckbox(bool* checked, Rect2I bounds, CheckboxStyle* style, bool isDisa
     if (style == nullptr)
         style = getStyle<CheckboxStyle>("default"_s);
     if (renderBuffer == nullptr)
-        renderBuffer = &the_renderer()->uiBuffer;
+        renderBuffer = &the_renderer().uiBuffer;
 
     WidgetMouseState mouseState = getWidgetMouseState(bounds);
 
@@ -460,17 +460,17 @@ void putLabel(String text, Rect2I bounds, LabelStyle* style, RenderBuffer* rende
 {
     DEBUG_FUNCTION_T(DCDT_UI);
 
-    auto* renderer = the_renderer();
+    auto& renderer = the_renderer();
     if (style == nullptr)
         style = getStyle<LabelStyle>("default"_s);
     if (renderBuffer == nullptr)
-        renderBuffer = &renderer->uiBuffer;
+        renderBuffer = &renderer.uiBuffer;
 
     Rect2I textBounds = shrink(bounds, style->padding);
 
     Drawable(&style->background).draw(renderBuffer, bounds);
 
-    drawText(renderBuffer, getFont(&style->font), text, textBounds, style->textAlignment, style->textColor, renderer->shaderIds.text);
+    drawText(renderBuffer, getFont(&style->font), text, textBounds, style->textAlignment, style->textColor, renderer.shaderIds.text);
 }
 
 void showMenu(s32 menuID)
@@ -518,11 +518,11 @@ void putRadioButton(s32* selectedValue, s32 value, Rect2I bounds, RadioButtonSty
 {
     DEBUG_FUNCTION_T(DCDT_UI);
 
-    auto* renderer = the_renderer();
+    auto& renderer = the_renderer();
     if (style == nullptr)
         style = getStyle<RadioButtonStyle>("default"_s);
     if (renderBuffer == nullptr)
-        renderBuffer = &renderer->uiBuffer;
+        renderBuffer = &renderer.uiBuffer;
 
     WidgetMouseState mouseState = getWidgetMouseState(bounds);
 
@@ -614,11 +614,11 @@ void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, Scrollb
 
     ASSERT(hasPositiveArea(bounds));
 
-    auto* renderer = the_renderer();
+    auto& renderer = the_renderer();
     if (style == nullptr)
         style = getStyle<ScrollbarStyle>("default"_s);
     if (renderBuffer == nullptr)
-        renderBuffer = &renderer->uiBuffer;
+        renderBuffer = &renderer.uiBuffer;
 
     Drawable(&style->background).draw(renderBuffer, bounds);
 
@@ -735,11 +735,11 @@ void putSlider(f32* currentValue, f32 minValue, f32 maxValue, Orientation orient
     DEBUG_FUNCTION_T(DCDT_UI);
     ASSERT(maxValue > minValue);
 
-    auto* renderer = the_renderer();
+    auto& renderer = the_renderer();
     if (style == nullptr)
         style = getStyle<SliderStyle>("default"_s);
     if (renderBuffer == nullptr)
-        renderBuffer = &renderer->uiBuffer;
+        renderBuffer = &renderer.uiBuffer;
 
     // Value ranges
     *currentValue = clamp(*currentValue, minValue, maxValue);
@@ -862,11 +862,11 @@ void putSlider(s32* currentValue, s32 minValue, s32 maxValue, Orientation orient
 
 bool putTextInput(TextInput* textInput, Rect2I bounds, TextInputStyle* style, RenderBuffer* renderBuffer)
 {
-    auto* renderer = the_renderer();
+    auto& renderer = the_renderer();
     if (style == nullptr)
         style = getStyle<TextInputStyle>("default"_s);
     if (renderBuffer == nullptr)
-        renderBuffer = &renderer->uiBuffer;
+        renderBuffer = &renderer.uiBuffer;
 
     bool submittedInput = updateTextInput(textInput);
 

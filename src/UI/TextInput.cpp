@@ -373,7 +373,7 @@ Rect2I drawTextInput(RenderBuffer* renderBuffer, TextInput* textInput, TextInput
 {
     DEBUG_FUNCTION_T(DCDT_UI);
 
-    auto* renderer = the_renderer();
+    auto& renderer = the_renderer();
     String text = textInput->toString();
     BitmapFont* font = getFont(&style->font);
 
@@ -385,7 +385,7 @@ Rect2I drawTextInput(RenderBuffer* renderBuffer, TextInput* textInput, TextInput
 
     Rect2I textBounds = shrink(bounds, style->padding);
     DrawTextResult drawTextResult = {};
-    drawText(renderBuffer, font, text, textBounds, style->textAlignment, style->textColor, renderer->shaderIds.text, textInput->caret.glyphPos, &drawTextResult);
+    drawText(renderBuffer, font, text, textBounds, style->textAlignment, style->textColor, renderer.shaderIds.text, textInput->caret.glyphPos, &drawTextResult);
 
     textInput->caretFlashCounter = (f32)fmod(textInput->caretFlashCounter + AppState::the().deltaTime, style->caretFlashCycleDuration);
 
@@ -400,7 +400,7 @@ Rect2I drawTextInput(RenderBuffer* renderBuffer, TextInput* textInput, TextInput
         // Shifted 1px left for better legibility of text
         caretRect.x -= 1.0f;
 
-        drawSingleRect(renderBuffer, caretRect, renderer->shaderIds.untextured, style->textColor);
+        drawSingleRect(renderBuffer, caretRect, renderer.shaderIds.untextured, style->textColor);
     }
 
     return bounds;

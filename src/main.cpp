@@ -120,17 +120,17 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    auto* renderer = the_renderer();
+    auto& renderer = the_renderer();
     rendererLoadAssets();
     setCursor("default"_s);
-    renderer->set_cursor_visible(true);
+    renderer.set_cursor_visible(true);
 
     UI::init(&app_state.systemArena);
 
     initSavedGamesCatalogue();
 
-    Camera* worldCamera = &renderer->worldCamera;
-    Camera* uiCamera = &renderer->uiCamera;
+    Camera* worldCamera = &renderer.worldCamera;
+    Camera* uiCamera = &renderer.uiCamera;
 
     u32 initFinishedTicks = SDL_GetTicks();
     logInfo("Game initialised in {0} milliseconds."_s, { formatInt(initFinishedTicks - initStartTicks) });
@@ -161,9 +161,9 @@ int main(int argc, char* argv[])
             worldCamera->update_mouse_position(input.mousePosNormalised);
             uiCamera->update_mouse_position(input.mousePosNormalised);
 
-            addSetCamera(&renderer->worldBuffer, worldCamera);
-            addClear(&renderer->worldBuffer);
-            addSetCamera(&renderer->uiBuffer, uiCamera);
+            addSetCamera(&renderer.worldBuffer, worldCamera);
+            addClear(&renderer.worldBuffer);
+            addSetCamera(&renderer.uiBuffer, uiCamera);
 
             {
                 UI::startFrame();
@@ -217,7 +217,7 @@ int main(int argc, char* argv[])
                 // Though, the debug system uses an arena itself, so that could be a bit infinitely-recursive.
                 DEBUG_ARENA(&app_state.systemArena, "System");
                 DEBUG_ARENA(&temp_arena(), "Global Temp Arena");
-                DEBUG_ARENA(&renderer->renderArena, "Renderer");
+                DEBUG_ARENA(&renderer.renderArena, "Renderer");
                 DEBUG_ARENA(app_state.gameState ? &app_state.gameState->gameArena : nullptr, "GameState");
                 DEBUG_ARENA(&settings().settingsArena, "Settings");
                 DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
@@ -226,7 +226,7 @@ int main(int argc, char* argv[])
             }
 
             // Actually draw things!
-            the_renderer()->render();
+            the_renderer().render();
 
             resetMemoryArena(&temp_arena());
         }
@@ -234,7 +234,7 @@ int main(int argc, char* argv[])
         // FRAMERATE MONITORING AND CAPPING
         {
             DEBUG_BLOCK("SDL_GL_SwapWindow");
-            SDL_GL_SwapWindow(renderer->window);
+            SDL_GL_SwapWindow(renderer.window);
 
             u64 now = SDL_GetPerformanceCounter();
             f32 deltaTime = (f32)(((f64)(now - frameStartTime)) / ((f64)(SDL_GetPerformanceFrequency())));

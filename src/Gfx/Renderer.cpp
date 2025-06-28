@@ -74,9 +74,10 @@ bool Renderer::initialize(SDL_Window* window)
     return true;
 }
 
-Renderer* the_renderer()
+Renderer& the_renderer()
 {
-    return s_renderer;
+    ASSERT(s_renderer);
+    return *s_renderer;
 }
 
 void handleWindowEvent(SDL_WindowEvent* event)
