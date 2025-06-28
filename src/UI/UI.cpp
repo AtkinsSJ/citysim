@@ -41,6 +41,7 @@ void init(MemoryArena* arena)
 void startFrame()
 {
     auto& renderer = the_renderer();
+    auto& ui_camera = renderer.ui_camera();
     uiState.uiRects.clear();
     uiState.mouseInputHandled = false;
 
@@ -49,10 +50,10 @@ void startFrame()
         uiState.currentDragObject = nullptr;
     }
 
-    windowSize = v2i(renderer.uiCamera.size());
-    mousePos = v2i(renderer.uiCamera.mouse_position());
+    windowSize = v2i(ui_camera.size());
+    mousePos = v2i(ui_camera.mouse_position());
     if (mouseButtonPressed(MouseButton_Left)) {
-        mouseClickStartPos = v2i(getClickStartPos(MouseButton_Left, &renderer.uiCamera));
+        mouseClickStartPos = v2i(getClickStartPos(MouseButton_Left, &ui_camera));
     }
 }
 

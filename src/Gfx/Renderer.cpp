@@ -49,8 +49,8 @@ Renderer::Renderer(SDL_Window* window)
     // Init cameras
     V2 windowSize = v2(windowWidth, windowHeight);
     f32 const TILE_SIZE = 16.0f;
-    worldCamera = Camera(windowSize, 1.0f / TILE_SIZE, 10000.0f, -10000.0f);
-    uiCamera = Camera(windowSize, 1.0f, 10000.0f, -10000.0f, windowSize * 0.5f);
+    m_world_camera = Camera(windowSize, 1.0f / TILE_SIZE, 10000.0f, -10000.0f);
+    m_ui_camera = Camera(windowSize, 1.0f, 10000.0f, -10000.0f, windowSize * 0.5f);
 
     // Hide cursor until stuff loads
     set_cursor_visible(false);
@@ -99,10 +99,10 @@ void handleWindowEvent(SDL_WindowEvent* event)
 
         V2 windowSize = v2(s_renderer->windowWidth, s_renderer->windowHeight);
 
-        s_renderer->worldCamera.set_size(windowSize);
+        s_renderer->world_camera().set_size(windowSize);
 
-        s_renderer->uiCamera.set_size(windowSize);
-        s_renderer->uiCamera.set_position(s_renderer->uiCamera.size() * 0.5f);
+        s_renderer->ui_camera().set_size(windowSize);
+        s_renderer->ui_camera().set_position(s_renderer->ui_camera().size() * 0.5f);
     } break;
     }
 }

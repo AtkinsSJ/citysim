@@ -8,7 +8,6 @@
 
 #include "AppState.h"
 #include "Assets/AssetManager.h"
-#include <Gfx/Renderer.h>
 #include "UI/Window.h"
 #include "Util/Flags.h"
 #include "Util/Random.h"
@@ -17,6 +16,7 @@
 #include "input.h"
 #include "saved_games.h"
 #include "settings.h"
+#include <Gfx/Renderer.h>
 
 GameState* newGameState()
 {
@@ -656,13 +656,13 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
     V4 ghostColorInvalid = color255(255, 0, 0, 128);
 
     // CAMERA!
-    Camera* worldCamera = &renderer.worldCamera;
-    Camera* uiCamera = &renderer.uiCamera;
+    Camera& world_camera = renderer.world_camera();
+    Camera& ui_camera = renderer.ui_camera();
     if (gameState->status == GameStatus_Playing) {
-        inputMoveCamera(worldCamera, uiCamera->size(), uiCamera->mouse_position(), gameState->city.bounds.w, gameState->city.bounds.h);
+        inputMoveCamera(&world_camera, ui_camera.size(), ui_camera.mouse_position(), gameState->city.bounds.w, gameState->city.bounds.h);
     }
 
-    V2I mouseTilePos = v2i(worldCamera->mouse_position());
+    V2I mouseTilePos = v2i(world_camera.mouse_position());
     bool mouseIsOverUI = UI::isMouseInputHandled() || UI::mouseIsWithinUIRects();
 
     city->demolitionRect = irectNegativeInfinity();
@@ -848,7 +848,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
             if (!mouseIsOverUI && mouseButtonJustPressed(MouseButton_Left)) {
                 if (tileExists(city, mouseTilePos.x, mouseTilePos.y)) {
                     gameState->inspectedTilePosition = mouseTilePos;
-                    V2I windowPos = v2i(renderer.uiCamera.mouse_position()) + v2i(16, 16);
+                    V2I windowPos = v2i(ui_camera.mouse_position()) + v2i(16, 16);
                     UI::showWindow(UI::WindowTitle::fromLambda([]() {
                         V2I tilePos = AppState::the().gameState->inspectedTilePosition;
                         return getText("title_inspect"_s, { formatInt(tilePos.x), formatInt(tilePos.y) });
@@ -877,7 +877,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
     // Pre-calculate the tile area that's visible to the player.
     // We err on the side of drawing too much, rather than risking having holes in the world.
     Rect2I visibleTileBounds = irectCentreSize(
-        v2i(worldCamera->position()), v2i(worldCamera->size() / worldCamera->zoom()) + v2i(3, 3));
+        v2i(world_camera.position()), v2i(world_camera.size() / world_camera.zoom()) + v2i(3, 3));
     visibleTileBounds = intersect(visibleTileBounds, city->bounds);
 
     // logInfo("visibleTileBounds = {0} {1} {2} {3}"_s, {formatInt(visibleTileBounds.x),formatInt(visibleTileBounds.y),formatInt(visibleTileBounds.w),formatInt(visibleTileBounds.h)});

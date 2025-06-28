@@ -61,7 +61,7 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
     // TODO: Are we sure we want to do this?
     markAreaDirty(city, city->bounds);
 
-    the_renderer().worldCamera.set_position(v2(city->bounds.size) / 2);
+    the_renderer().world_camera().set_position(v2(city->bounds.size) / 2);
 
     saveBuildingTypes();
     saveTerrainTypes();

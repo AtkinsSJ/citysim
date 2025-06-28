@@ -5,7 +5,6 @@
  */
 
 #include "save_file.h"
-#include <Gfx/Renderer.h>
 #include "binary_file_reader.h"
 #include "binary_file_writer.h"
 #include "city.h"
@@ -13,6 +12,7 @@
 #include "platform.h"
 #include "terrain.h"
 #include "zone.h"
+#include <Gfx/Renderer.h>
 
 bool writeSaveFile(FileHandle* file, GameState* gameState)
 {
@@ -58,10 +58,10 @@ bool writeSaveFile(FileHandle* file, GameState* gameState)
             metaSection.timeWithinDay = clock->timeWithinDay;
 
             // Camera
-            Camera* camera = &the_renderer().worldCamera;
-            metaSection.cameraX = camera->position().x;
-            metaSection.cameraY = camera->position().y;
-            metaSection.cameraZoom = camera->zoom();
+            Camera& camera = the_renderer().world_camera();
+            metaSection.cameraX = camera.position().x;
+            metaSection.cameraY = camera.position().y;
+            metaSection.cameraZoom = camera.zoom();
 
             writer.endSection(&metaSection);
         }
@@ -127,7 +127,7 @@ bool loadSaveFile(FileHandle* file, GameState* gameState)
             initGameClock(&gameState->gameClock, meta->currentDate, meta->timeWithinDay);
 
             // Camera
-            auto& world_camera = the_renderer().worldCamera;
+            auto& world_camera = the_renderer().world_camera();
             world_camera.set_position(v2(meta->cameraX, meta->cameraY));
             world_camera.set_zoom(meta->cameraZoom);
         } else

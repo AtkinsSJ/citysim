@@ -168,8 +168,8 @@ struct Renderer {
     s32 windowHeight { 0 };
     bool isFullscreen { false };
 
-    Camera worldCamera;
-    Camera uiCamera;
+    Camera& world_camera() { return m_world_camera; }
+    Camera& ui_camera() { return m_ui_camera; }
 
     RenderBuffer& world_buffer() { return m_world_buffer; }
     RenderBuffer& world_overlay_buffer() { return m_world_overlay_buffer; }
@@ -216,7 +216,9 @@ protected:
     RenderBuffer m_window_buffer {};
     RenderBuffer m_debug_buffer {};
 
-    // Cursor stuff
+    Camera m_world_camera {};
+    Camera m_ui_camera {};
+
     String m_current_cursor_name {};
     bool m_cursor_is_visible { true };
     SDL_Cursor* m_system_wait_cursor { nullptr };
