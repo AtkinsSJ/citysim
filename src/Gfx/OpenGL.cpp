@@ -428,6 +428,8 @@ void Renderer::load_assets()
 {
     DEBUG_FUNCTION_T(DCDT_Renderer);
 
+    ::Renderer::load_assets();
+
     // Textures
     for (auto it = asset_manager().assetsByType[AssetType_Texture].iterate();
         it.hasNext();
@@ -457,11 +459,19 @@ void Renderer::load_assets()
             logError("Failed to load shader '{0}' into OpenGL."_s, { asset->shortName });
         }
     }
+
+    // Cache the shader IDs so we don't have to do so many hash lookups
+    shaderIds.pixelArt = getShader("pixelart.glsl"_s)->rendererShaderID;
+    shaderIds.text = getShader("textured.glsl"_s)->rendererShaderID;
+    shaderIds.textured = getShader("textured.glsl"_s)->rendererShaderID;
+    shaderIds.untextured = getShader("untextured.glsl"_s)->rendererShaderID;
 }
 
 void Renderer::unload_assets()
 {
     DEBUG_FUNCTION_T(DCDT_Renderer);
+
+    ::Renderer::unload_assets();
 
     // Textures
     for (auto it = asset_manager().assetsByType[AssetType_Texture].iterate();

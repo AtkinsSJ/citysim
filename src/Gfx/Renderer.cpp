@@ -57,6 +57,14 @@ Renderer::Renderer(SDL_Window* window)
     markResetPosition(&renderArena);
 }
 
+Renderer::~Renderer()
+{
+    if (m_system_wait_cursor != nullptr) {
+        SDL_FreeCursor(m_system_wait_cursor);
+        m_system_wait_cursor = nullptr;
+    }
+}
+
 bool Renderer::initialize(SDL_Window* window)
 {
     // TODO: Potentially support other renderers.
@@ -111,38 +119,22 @@ void Renderer::render()
     }
 }
 
-void rendererLoadAssets()
+void Renderer::load_assets()
 {
-    s_renderer->load_assets();
-
-    // Cache the shader IDs so we don't have to do so many hash lookups
-    s_renderer->shaderIds.pixelArt = getShader("pixelart.glsl"_s)->rendererShaderID;
-    s_renderer->shaderIds.text = getShader("textured.glsl"_s)->rendererShaderID;
-    s_renderer->shaderIds.textured = getShader("textured.glsl"_s)->rendererShaderID;
-    s_renderer->shaderIds.untextured = getShader("untextured.glsl"_s)->rendererShaderID;
-
-    if (!isEmpty(s_renderer->currentCursorName)) {
-        setCursor(s_renderer->currentCursorName);
+    if (!isEmpty(m_current_cursor_name)) {
+        set_cursor(m_current_cursor_name);
     }
 }
 
-void rendererUnloadAssets()
+void Renderer::unload_assets()
 {
-    if (s_renderer->systemWaitCursor == nullptr) {
-        s_renderer->systemWaitCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
-    }
-    SDL_SetCursor(s_renderer->systemWaitCursor);
-    s_renderer->unload_assets();
+    show_system_wait_cursor();
 }
 
 void freeRenderer()
 {
-    // FIXME: Put this in destructor
-    if (s_renderer->systemWaitCursor != nullptr) {
-        SDL_FreeCursor(s_renderer->systemWaitCursor);
-        s_renderer->systemWaitCursor = nullptr;
-    }
     s_renderer->free();
+    delete s_renderer;
 }
 
 void resizeWindow(s32 w, s32 h, bool fullscreen)
@@ -209,20 +201,27 @@ void resizeWindow(s32 w, s32 h, bool fullscreen)
     s_renderer->isFullscreen = fullscreen;
 }
 
-void setCursor(String cursorName)
+void Renderer::show_system_wait_cursor()
+{
+    if (m_system_wait_cursor == nullptr) {
+        m_system_wait_cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
+    }
+    SDL_SetCursor(m_system_wait_cursor);
+}
+
+void Renderer::set_cursor(String name)
 {
     DEBUG_FUNCTION();
 
-    Asset* newCursorAsset = getAsset(AssetType_Cursor, cursorName);
-    if (newCursorAsset != nullptr) {
-        s_renderer->currentCursorName = cursorName;
-        SDL_SetCursor(newCursorAsset->cursor.sdlCursor);
+    if (Asset const* new_cursor_asset = getAsset(AssetType_Cursor, name)) {
+        m_current_cursor_name = name;
+        SDL_SetCursor(new_cursor_asset->cursor.sdlCursor);
     }
 }
 
 void Renderer::set_cursor_visible(bool visible)
 {
-    cursorIsVisible = visible;
+    m_cursor_is_visible = visible;
     SDL_ShowCursor(visible ? 1 : 0);
 }
 

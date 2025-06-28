@@ -496,7 +496,7 @@ void updateAndRenderGameUI(GameState* gameState)
                     UI::hideMenus();
                     gameState->selectedZoneID = (ZoneType)zoneIndex;
                     gameState->actionMode = ActionMode_Zone;
-                    setCursor("build"_s);
+                    renderer.set_cursor("build"_s);
                 }
             }
             menu.end(true);
@@ -529,7 +529,7 @@ void updateAndRenderGameUI(GameState* gameState)
                     UI::hideMenus();
                     gameState->selectedBuildingTypeID = buildingDef->typeID;
                     gameState->actionMode = ActionMode_Build;
-                    setCursor("build"_s);
+                    renderer.set_cursor("build"_s);
                 }
             }
 
@@ -556,7 +556,7 @@ void updateAndRenderGameUI(GameState* gameState)
         if (UI::putTextButton(demolishButtonText, buttonRect, buttonStyle,
                 buttonIsActive(gameState->actionMode == ActionMode_Demolish))) {
             gameState->actionMode = ActionMode_Demolish;
-            setCursor("demolish"_s);
+            renderer.set_cursor("demolish"_s);
         }
         buttonRect.x += buttonRect.w + uiPadding;
     }
@@ -870,7 +870,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
     if (mouseButtonJustPressed(MouseButton_Right)) {
         // Unselect current thing
         gameState->actionMode = ActionMode_None;
-        setCursor("default"_s);
+        renderer.set_cursor("default"_s);
     }
 
     // RENDERING

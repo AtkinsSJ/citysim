@@ -121,8 +121,8 @@ int main(int argc, char* argv[])
     }
 
     auto& renderer = the_renderer();
-    rendererLoadAssets();
-    setCursor("default"_s);
+    renderer.load_assets();
+    renderer.set_cursor("default"_s);
     renderer.set_cursor_visible(true);
 
     UI::init(&app_state.systemArena);

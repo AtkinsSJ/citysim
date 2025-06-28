@@ -154,7 +154,7 @@ struct DrawRingsGroup {
 };
 
 struct Renderer {
-    virtual ~Renderer() = default;
+    virtual ~Renderer();
 
     static bool initialize(SDL_Window*);
 
@@ -170,11 +170,6 @@ struct Renderer {
 
     Camera worldCamera;
     Camera uiCamera;
-
-    // Cursor stuff
-    String currentCursorName {};
-    bool cursorIsVisible { true };
-    SDL_Cursor* systemWaitCursor { nullptr };
 
     RenderBuffer& world_buffer() { return m_world_buffer; }
     RenderBuffer& world_overlay_buffer() { return m_world_overlay_buffer; }
@@ -202,10 +197,12 @@ struct Renderer {
     virtual void on_window_resized(s32 width, s32 height) = 0;
     void render();
     virtual void render_internal() = 0;
-    virtual void load_assets() = 0;
-    virtual void unload_assets() = 0;
+    virtual void load_assets();
+    virtual void unload_assets();
     virtual void free() = 0;
 
+    void show_system_wait_cursor();
+    void set_cursor(String name);
     void set_cursor_visible(bool);
 
 protected:
@@ -218,18 +215,19 @@ protected:
     RenderBuffer m_ui_buffer {};
     RenderBuffer m_window_buffer {};
     RenderBuffer m_debug_buffer {};
+
+    // Cursor stuff
+    String m_current_cursor_name {};
+    bool m_cursor_is_visible { true };
+    SDL_Cursor* m_system_wait_cursor { nullptr };
 };
 
 Renderer& the_renderer();
 void handleWindowEvent(SDL_WindowEvent* event);
-void rendererLoadAssets();
-void rendererUnloadAssets();
 void freeRenderer();
 
 void initRenderBuffer(MemoryArena* arena, RenderBuffer* buffer, String name, Pool<RenderBufferChunk>* chunkPool);
 RenderBufferChunk* allocateRenderBufferChunk(MemoryArena* arena, void* userData);
-
-void setCursor(String cursorName);
 
 void appendRenderItemType(RenderBuffer* buffer, RenderItemType type);
 
