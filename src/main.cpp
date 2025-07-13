@@ -234,7 +234,7 @@ int main(int argc, char* argv[])
         // FRAMERATE MONITORING AND CAPPING
         {
             DEBUG_BLOCK("SDL_GL_SwapWindow");
-            SDL_GL_SwapWindow(renderer.window);
+            SDL_GL_SwapWindow(renderer.sdl_window());
 
             u64 now = SDL_GetPerformanceCounter();
             f32 deltaTime = (f32)(((f64)(now - frameStartTime)) / ((f64)(SDL_GetPerformanceFrequency())));

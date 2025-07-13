@@ -29,7 +29,7 @@ bool Renderer::set_up_context()
 #endif
 
     // Create context
-    m_context = SDL_GL_CreateContext(window);
+    m_context = SDL_GL_CreateContext(m_sdl_window);
     if (m_context == nullptr) {
         logCritical("OpenGL context could not be created! :(\n {0}"_s, { makeString(SDL_GetError()) });
         return false;

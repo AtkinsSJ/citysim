@@ -8,10 +8,10 @@
 
 #include "AppState.h"
 #include "Assets/AssetManager.h"
-#include <Gfx/Renderer.h>
 #include "UI/Drawable.h"
 #include "UI/TextInput.h"
 #include "line_reader.h"
+#include <Gfx/Renderer.h>
 
 static Console theConsole;
 
@@ -164,7 +164,7 @@ void updateAndRenderConsole(Console* console)
     if (console->currentHeight > 0) {
         RenderBuffer* renderBuffer = &renderer.debug_buffer();
         s32 actualConsoleHeight = floor_s32(console->currentHeight * (f32)UI::windowSize.y);
-        s32 screenWidth = renderer.windowWidth;
+        s32 screenWidth = renderer.window_width();
 
         UI::ConsoleStyle* consoleStyle = getStyle<UI::ConsoleStyle>(&console->style);
         UI::ScrollbarStyle* scrollbarStyle = getStyle<UI::ScrollbarStyle>(&consoleStyle->scrollbarStyle);
@@ -318,9 +318,9 @@ Rect2I getConsoleScrollbarBounds(Console* console)
     UI::ScrollbarStyle* scrollbarStyle = getStyle<UI::ScrollbarStyle>(&consoleStyle->scrollbarStyle);
     UI::TextInputStyle* textInputStyle = getStyle<UI::TextInputStyle>(&consoleStyle->textInputStyle);
 
-    V2I textInputSize = UI::calculateTextInputSize(&console->input, textInputStyle, renderer.windowWidth);
+    V2I textInputSize = UI::calculateTextInputSize(&console->input, textInputStyle, renderer.window_width());
 
-    Rect2I scrollbarBounds = irectXYWH(renderer.windowWidth - scrollbarStyle->width, 0, scrollbarStyle->width, floor_s32(console->currentHeight * renderer.windowHeight) - textInputSize.y);
+    Rect2I scrollbarBounds = irectXYWH(renderer.window_width() - scrollbarStyle->width, 0, scrollbarStyle->width, floor_s32(console->currentHeight * renderer.window_height()) - textInputSize.y);
 
     return scrollbarBounds;
 }

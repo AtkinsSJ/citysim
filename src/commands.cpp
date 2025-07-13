@@ -213,7 +213,7 @@ ConsoleCommand(window_size)
             && height.isValid && (height.value > 0)) {
             consoleWriteLine(myprintf("Window resized to {0} by {1}"_s, { sWidth, sHeight }), CLS_Success);
 
-            resizeWindow(truncate32(width.value), truncate32(height.value), false);
+            the_renderer().resize_window(truncate32(width.value), truncate32(height.value), false);
         } else {
             consoleWriteLine("Usage: window_size [width height], where both width and height are positive integers. If no width or height are provided, the current window size is returned."_s, CLS_Error);
         }

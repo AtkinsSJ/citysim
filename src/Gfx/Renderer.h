@@ -163,10 +163,12 @@ struct Renderer {
 
     MemoryArena renderArena {};
 
-    SDL_Window* window { nullptr };
-    s32 windowWidth { 0 };
-    s32 windowHeight { 0 };
-    bool isFullscreen { false };
+    SDL_Window* sdl_window() const { return m_sdl_window; }
+    V2I window_size() const { return m_window_size; }
+    void resize_window(s32 width, s32 height, bool fullscreen);
+    u32 window_width() const { return m_window_size.x; }
+    u32 window_height() const { return m_window_size.y; }
+    bool window_is_fullscreen() const { return m_window_is_fullscreen; }
 
     Camera& world_camera() { return m_world_camera; }
     Camera& ui_camera() { return m_ui_camera; }
@@ -205,6 +207,8 @@ struct Renderer {
     void set_cursor(String name);
     void set_cursor_visible(bool);
 
+    void handle_window_event(SDL_WindowEvent const&);
+
 protected:
     explicit Renderer(SDL_Window*);
 
@@ -216,6 +220,10 @@ protected:
     RenderBuffer m_window_buffer {};
     RenderBuffer m_debug_buffer {};
 
+    SDL_Window* m_sdl_window { nullptr };
+    V2I m_window_size {};
+    bool m_window_is_fullscreen { false };
+
     Camera m_world_camera {};
     Camera m_ui_camera {};
 
@@ -225,7 +233,6 @@ protected:
 };
 
 Renderer& the_renderer();
-void handleWindowEvent(SDL_WindowEvent* event);
 void freeRenderer();
 
 void initRenderBuffer(MemoryArena* arena, RenderBuffer* buffer, String name, Pool<RenderBufferChunk>* chunkPool);
@@ -337,5 +344,3 @@ DrawRingsGroup* beginRingsGroup(RenderBuffer* buffer, s32 maxCount);
 DrawRingsSubGroup beginRingsSubGroup(DrawRingsGroup* group);
 void addRing(DrawRingsGroup* group, V2 centre, f32 radius, f32 thickness, V4 color);
 void endRingsGroup(DrawRingsGroup* group);
-
-void resizeWindow(s32 w, s32 h, bool fullscreen);

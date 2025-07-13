@@ -5,9 +5,9 @@
  */
 
 #include "settings.h"
-#include <Gfx/Renderer.h>
 #include "line_reader.h"
 #include <Assets/AssetManager.h>
+#include <Gfx/Renderer.h>
 #include <SDL2/SDL_filesystem.h>
 #include <UI/Window.h>
 #include <Util/StringBuilder.h>
@@ -200,7 +200,7 @@ void loadSettings()
 
 void applySettings()
 {
-    resizeWindow(s_settings->settings.resolution.x, s_settings->settings.resolution.y, !s_settings->settings.windowed);
+    the_renderer().resize_window(s_settings->settings.resolution.x, s_settings->settings.resolution.y, !s_settings->settings.windowed);
 
     reloadLocaleSpecificAssets();
 }

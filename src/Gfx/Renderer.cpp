@@ -17,14 +17,14 @@ f32 snapZoomLevel(f32 zoom)
 }
 
 Renderer::Renderer(SDL_Window* window)
-    : window(window)
+    : m_sdl_window(window)
 {
     if (!initMemoryArena(&renderArena, "renderArena"_s, 0, MB(1))) {
         logCritical("Failed to create renderer arena!"_s);
         ASSERT(false);
     }
 
-    SDL_GetWindowSize(window, &windowWidth, &windowHeight);
+    SDL_GetWindowSize(window, &m_window_size.x, &m_window_size.y);
 
     renderBufferChunkSize = KB(64);
     initPool<RenderBufferChunk>(&chunkPool, &renderArena, &allocateRenderBufferChunk, this);
@@ -47,10 +47,10 @@ Renderer::Renderer(SDL_Window* window)
     m_render_buffers.append(&m_debug_buffer);
 
     // Init cameras
-    V2 windowSize = v2(windowWidth, windowHeight);
+    V2 camera_size = v2(m_window_size);
     f32 const TILE_SIZE = 16.0f;
-    m_world_camera = Camera(windowSize, 1.0f / TILE_SIZE, 10000.0f, -10000.0f);
-    m_ui_camera = Camera(windowSize, 1.0f, 10000.0f, -10000.0f, windowSize * 0.5f);
+    m_world_camera = Camera(camera_size, 1.0f / TILE_SIZE, 10000.0f, -10000.0f);
+    m_ui_camera = Camera(camera_size, 1.0f, 10000.0f, -10000.0f, camera_size * 0.5f);
 
     // Hide cursor until stuff loads
     set_cursor_visible(false);
@@ -88,21 +88,20 @@ Renderer& the_renderer()
     return *s_renderer;
 }
 
-void handleWindowEvent(SDL_WindowEvent* event)
+void Renderer::handle_window_event(SDL_WindowEvent const& event)
 {
-    switch (event->event) {
+    switch (event.event) {
     case SDL_WINDOWEVENT_SIZE_CHANGED: {
-        s_renderer->windowWidth = event->data1;
-        s_renderer->windowHeight = event->data2;
+        m_window_size = v2i(event.data1, event.data2);
 
-        s_renderer->on_window_resized(s_renderer->windowWidth, s_renderer->windowHeight);
+        on_window_resized(m_window_size.x, m_window_size.y);
 
-        V2 windowSize = v2(s_renderer->windowWidth, s_renderer->windowHeight);
+        V2 camera_size = v2(m_window_size);
 
-        s_renderer->world_camera().set_size(windowSize);
+        world_camera().set_size(camera_size);
 
-        s_renderer->ui_camera().set_size(windowSize);
-        s_renderer->ui_camera().set_position(s_renderer->ui_camera().size() * 0.5f);
+        ui_camera().set_size(camera_size);
+        ui_camera().set_position(ui_camera().size() * 0.5f);
     } break;
     }
 }
@@ -137,9 +136,9 @@ void freeRenderer()
     delete s_renderer;
 }
 
-void resizeWindow(s32 w, s32 h, bool fullscreen)
+void Renderer::resize_window(s32 w, s32 h, bool fullscreen)
 {
-    SDL_RestoreWindow(s_renderer->window);
+    SDL_RestoreWindow(m_sdl_window);
 
     // So, I'm not super sure how we want to handle fullscreen. Do we scan the
     // available resolution options and list them to select from? Do we just use
@@ -150,9 +149,9 @@ void resizeWindow(s32 w, s32 h, bool fullscreen)
 
     // If the requested setup is what we already have, do nothing!
     // This avoids the window jumping about when you save the settings
-    if ((w == s_renderer->windowWidth)
-        && (h == s_renderer->windowHeight)
-        && (fullscreen == s_renderer->isFullscreen)) {
+    if ((w == s_renderer->window_width())
+        && (h == s_renderer->window_height())
+        && (fullscreen == s_renderer->window_is_fullscreen())) {
         return;
     }
 
@@ -162,11 +161,11 @@ void resizeWindow(s32 w, s32 h, bool fullscreen)
     if (fullscreen) {
         // Fullscreen!
         // Grab the desktop resolution to use that
-        s32 displayIndex = SDL_GetWindowDisplayIndex(s_renderer->window);
+        s32 displayIndex = SDL_GetWindowDisplayIndex(m_sdl_window);
         SDL_DisplayMode displayMode;
         if (SDL_GetDesktopDisplayMode(displayIndex, &displayMode) == 0) {
-            SDL_SetWindowDisplayMode(s_renderer->window, &displayMode);
-            SDL_SetWindowFullscreen(s_renderer->window, SDL_WINDOW_FULLSCREEN_DESKTOP);
+            SDL_SetWindowDisplayMode(m_sdl_window, &displayMode);
+            SDL_SetWindowFullscreen(m_sdl_window, SDL_WINDOW_FULLSCREEN_DESKTOP);
             newW = displayMode.w;
             newH = displayMode.h;
         } else {
@@ -174,31 +173,31 @@ void resizeWindow(s32 w, s32 h, bool fullscreen)
         }
     } else {
         // Window!
-        SDL_SetWindowSize(s_renderer->window, newW, newH);
-        SDL_SetWindowFullscreen(s_renderer->window, 0);
+        SDL_SetWindowSize(m_sdl_window, newW, newH);
+        SDL_SetWindowFullscreen(m_sdl_window, 0);
 
         // Centre it
-        s32 displayIndex = SDL_GetWindowDisplayIndex(s_renderer->window);
+        s32 displayIndex = SDL_GetWindowDisplayIndex(m_sdl_window);
         SDL_Rect displayBounds;
         if (SDL_GetDisplayBounds(displayIndex, &displayBounds) == 0) {
             s32 leftBorder, rightBorder, topBorder, bottomBorder;
-            SDL_GetWindowBordersSize(s_renderer->window, &topBorder, &leftBorder, &bottomBorder, &rightBorder);
+            SDL_GetWindowBordersSize(m_sdl_window, &topBorder, &leftBorder, &bottomBorder, &rightBorder);
 
             s32 windowW = w + leftBorder + rightBorder;
             s32 windowH = h + topBorder + bottomBorder;
             s32 windowLeft = (displayBounds.w - windowW) / 2;
             s32 windowTop = (displayBounds.h - windowH) / 2;
 
-            SDL_SetWindowPosition(s_renderer->window, displayBounds.x + windowLeft, displayBounds.y + windowTop);
+            SDL_SetWindowPosition(m_sdl_window, displayBounds.x + windowLeft, displayBounds.y + windowTop);
         } else {
             logError("Failed to get display bounds: {0}"_s, { makeString(SDL_GetError()) });
 
             // As a backup, just centre it on the main display
-            SDL_SetWindowPosition(s_renderer->window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+            SDL_SetWindowPosition(m_sdl_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
         }
     }
 
-    s_renderer->isFullscreen = fullscreen;
+    s_renderer->m_window_is_fullscreen = fullscreen;
 }
 
 void Renderer::show_system_wait_cursor()
@@ -396,10 +395,10 @@ void addBeginScissor(RenderBuffer* buffer, Rect2I bounds)
     // We have to flip the bounds rectangle vertically because OpenGL has the origin in the bottom-left,
     // whereas our system uses the top-left!
 
-    bounds.y = s_renderer->windowHeight - bounds.y - bounds.h;
+    bounds.y = s_renderer->window_height() - bounds.y - bounds.h;
 
     // Crop to window bounds
-    scissor->bounds = intersect(bounds, irectXYWH(0, 0, s_renderer->windowWidth, s_renderer->windowHeight));
+    scissor->bounds = intersect(bounds, irectXYWH(0, 0, s_renderer->window_width(), s_renderer->window_height()));
 
     ASSERT(scissor->bounds.w >= 0);
     ASSERT(scissor->bounds.h >= 0);

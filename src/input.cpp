@@ -91,7 +91,7 @@ void updateInput()
             s_input_state.receivedQuitSignal = true;
         } break;
         case SDL_WINDOWEVENT: {
-            handleWindowEvent(&event.window);
+            the_renderer().handle_window_event(event.window);
         } break;
 
         // MOUSE EVENTS
@@ -147,8 +147,9 @@ void updateInput()
     }
 
     auto& renderer = the_renderer();
-    s_input_state.mousePosNormalised.x = ((s_input_state.mousePosRaw.x * 2.0f) / renderer.windowWidth) - 1.0f;
-    s_input_state.mousePosNormalised.y = ((s_input_state.mousePosRaw.y * -2.0f) + renderer.windowHeight) / renderer.windowHeight;
+    auto const window_size = renderer.window_size();
+    s_input_state.mousePosNormalised.x = ((s_input_state.mousePosRaw.x * 2.0f) / window_size.x) - 1.0f;
+    s_input_state.mousePosNormalised.y = ((s_input_state.mousePosRaw.y * -2.0f) + window_size.y) / window_size.y;
 
     for (s32 i = 1; i < MouseButtonCount; i++) {
         MouseButton button = MouseButton(i);

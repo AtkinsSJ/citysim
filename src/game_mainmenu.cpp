@@ -5,12 +5,12 @@
  */
 
 #include "game_mainmenu.h"
-#include <Gfx/Renderer.h>
 #include "about.h"
 #include "debug.h"
 #include "game.h"
 #include "saved_games.h"
 #include "settings.h"
+#include <Gfx/Renderer.h>
 #include <UI/Panel.h>
 
 AppStatus updateAndRenderMainMenu(f32 /*deltaTime*/)
@@ -20,7 +20,8 @@ AppStatus updateAndRenderMainMenu(f32 /*deltaTime*/)
     AppStatus result = AppStatus_MainMenu;
     auto& renderer = the_renderer();
 
-    UI::Panel panel = UI::Panel(irectXYWH(0, renderer.windowHeight / 4, renderer.windowWidth, renderer.windowHeight), "mainMenu"_s);
+    auto window_size = renderer.window_size();
+    UI::Panel panel = UI::Panel(irectXYWH(0, window_size.y / 4, window_size.x, window_size.y), "mainMenu"_s);
 
     panel.addLabel(getText("game_title"_s));
     panel.addLabel(getText("game_subtitle"_s));
