@@ -18,6 +18,7 @@ f32 snapZoomLevel(f32 zoom)
 
 Renderer::Renderer(SDL_Window* window)
     : m_render_buffer_pool(renderArena)
+    , m_render_buffer_chunk_pool(renderArena)
     , m_sdl_window(window)
 {
     if (!initMemoryArena(&renderArena, "renderArena"_s, 0, MB(1))) {
@@ -27,14 +28,11 @@ Renderer::Renderer(SDL_Window* window)
 
     SDL_GetWindowSize(window, &m_window_size.x, &m_window_size.y);
 
-    renderBufferChunkSize = KB(64);
-    initPool<RenderBufferChunk>(&chunkPool, &renderArena, &allocateRenderBufferChunk, this);
-
-    m_world_buffer = &m_render_buffer_pool.obtain(renderArena, "WorldBuffer"_s, &chunkPool);
-    m_world_overlay_buffer = &m_render_buffer_pool.obtain(renderArena, "WorldOverlayBuffer"_s, &chunkPool);
-    m_ui_buffer = &m_render_buffer_pool.obtain(renderArena, "UIBuffer"_s, &chunkPool);
-    m_window_buffer = &m_render_buffer_pool.obtain(renderArena, "WindowBuffer"_s, &chunkPool);
-    m_debug_buffer = &m_render_buffer_pool.obtain(renderArena, "DebugBuffer"_s, &chunkPool);
+    m_world_buffer = &m_render_buffer_pool.obtain(renderArena, "WorldBuffer"_s, &m_render_buffer_chunk_pool);
+    m_world_overlay_buffer = &m_render_buffer_pool.obtain(renderArena, "WorldOverlayBuffer"_s, &m_render_buffer_chunk_pool);
+    m_ui_buffer = &m_render_buffer_pool.obtain(renderArena, "UIBuffer"_s, &m_render_buffer_chunk_pool);
+    m_window_buffer = &m_render_buffer_pool.obtain(renderArena, "WindowBuffer"_s, &m_render_buffer_chunk_pool);
+    m_debug_buffer = &m_render_buffer_pool.obtain(renderArena, "DebugBuffer"_s, &m_render_buffer_chunk_pool);
 
     m_render_buffers = allocateArray<RenderBuffer*>(&renderArena, 5);
     m_render_buffers.append(m_world_buffer);
@@ -106,7 +104,7 @@ void Renderer::handle_window_event(SDL_WindowEvent const& event)
 void Renderer::render()
 {
     DEBUG_POOL(&m_render_buffer_pool, "renderBufferPool");
-    DEBUG_POOL(&chunkPool, "renderChunkPool");
+    DEBUG_POOL(&m_render_buffer_chunk_pool, "renderChunkPool");
 
     render_internal();
 
@@ -221,20 +219,9 @@ void Renderer::set_cursor_visible(bool visible)
     SDL_ShowCursor(visible ? 1 : 0);
 }
 
-RenderBufferChunk* allocateRenderBufferChunk(MemoryArena* arena, void* userData)
-{
-    smm newChunkSize = ((Renderer*)userData)->renderBufferChunkSize;
-    RenderBufferChunk* result = (RenderBufferChunk*)allocate(arena, newChunkSize + sizeof(RenderBufferChunk));
-    result->size = newChunkSize;
-    result->used = 0;
-    result->memory = (u8*)(result + 1);
-
-    return result;
-}
-
 RenderBuffer* Renderer::get_temporary_render_buffer(String name)
 {
-    return &m_render_buffer_pool.obtain(renderArena, name, &chunkPool);
+    return &m_render_buffer_pool.obtain(renderArena, name, &m_render_buffer_chunk_pool);
 }
 
 void Renderer::return_temporary_render_buffer(RenderBuffer& buffer)
@@ -264,21 +251,21 @@ u8* appendRenderItemInternal(RenderBuffer* buffer, RenderItemType type, smm size
             appendRenderItemType(buffer, RenderItemType_NextMemoryChunk);
         }
 
-        RenderBufferChunk* newChunk = getItemFromPool(buffer->chunkPool);
-        newChunk->used = 0;
-        newChunk->prevChunk = nullptr;
-        newChunk->nextChunk = nullptr;
+        RenderBufferChunk& new_chunk = buffer->chunkPool->obtain();
+        new_chunk.used = 0;
+        new_chunk.prevChunk = nullptr;
+        new_chunk.nextChunk = nullptr;
 
         // Add to the renderbuffer
         if (buffer->currentChunk == nullptr) {
-            buffer->firstChunk = newChunk;
-            buffer->currentChunk = newChunk;
+            buffer->firstChunk = &new_chunk;
+            buffer->currentChunk = &new_chunk;
         } else {
-            buffer->currentChunk->nextChunk = newChunk;
-            newChunk->prevChunk = buffer->currentChunk;
+            buffer->currentChunk->nextChunk = &new_chunk;
+            new_chunk.prevChunk = buffer->currentChunk;
         }
 
-        buffer->currentChunk = newChunk;
+        buffer->currentChunk = &new_chunk;
     }
 
     appendRenderItemType(buffer, type);

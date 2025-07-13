@@ -7,6 +7,23 @@
 #include <Gfx/RenderBuffer.h>
 #include <Gfx/Renderer.h>
 
+RenderBufferChunk& RenderBufferChunk::allocate_from_pool(MemoryArena& arena)
+{
+    RenderBufferChunk* result = static_cast<RenderBufferChunk*>(allocate(&arena, DEFAULT_SIZE + sizeof(RenderBufferChunk)));
+    result->size = DEFAULT_SIZE;
+    result->used = 0;
+    result->memory = reinterpret_cast<u8*>(result + 1);
+
+    return *result;
+}
+
+void RenderBufferChunk::clear_for_pool()
+{
+    used = 0;
+    prevChunk = nullptr;
+    nextChunk = nullptr;
+}
+
 void RenderBuffer::take_from(RenderBuffer& other)
 {
     if (other.currentChunk != nullptr) {
@@ -28,7 +45,7 @@ void RenderBuffer::take_from(RenderBuffer& other)
     other.clear_for_pool(); // Make sure things are reset
 }
 
-void RenderBuffer::initialize_from_pool(MemoryArena& arena, String name, DeprecatedPool<RenderBufferChunk>* chunk_pool)
+void RenderBuffer::initialize_from_pool(MemoryArena& arena, String name, Pool<RenderBufferChunk>* chunk_pool)
 {
     this->name = pushString(&arena, name);
     hashString(&this->name);
@@ -50,11 +67,11 @@ void RenderBuffer::clear_for_pool()
     currentShader = -1;
     currentTexture = nullptr;
 
-    for (RenderBufferChunk* chunk = firstChunk;
-        chunk != nullptr;
-        chunk = chunk->nextChunk) {
-        chunk->used = 0;
-        addItemToPool(chunkPool, chunk);
+    for (RenderBufferChunk* chunk = firstChunk; chunk != nullptr;) {
+        // NB: `discard()` wipes the nextChunk member, so we need to grab it first.
+        auto* next_chunk = chunk->nextChunk;
+        chunkPool->discard(*chunk);
+        chunk = next_chunk;
     }
 
     firstChunk = nullptr;

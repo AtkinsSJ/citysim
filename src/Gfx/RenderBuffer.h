@@ -7,12 +7,19 @@
 #pragma once
 
 #include <Assets/Forward.h>
-#include <Gfx/Forward.h>
-#include <Util/DeprecatedPool.h>
 #include <Util/Pool.h>
 #include <Util/String.h>
 
-struct RenderBufferChunk : PoolItem {
+struct RenderBufferChunk final : public Poolable<RenderBufferChunk> {
+    RenderBufferChunk() = default;
+
+    // Poolable
+    static RenderBufferChunk& allocate_from_pool(MemoryArena&);
+    void initialize_from_pool() { }
+    virtual void clear_for_pool() override;
+
+    static constexpr u64 DEFAULT_SIZE = KB(64);
+
     smm size;
     smm used;
     u8* memory;
@@ -27,14 +34,14 @@ struct RenderBuffer final : public Poolable<RenderBuffer> {
     void take_from(RenderBuffer& other);
 
     // Poolable
-    void initialize_from_pool(MemoryArena&, String name, DeprecatedPool<RenderBufferChunk>*);
+    void initialize_from_pool(MemoryArena&, String name, Pool<RenderBufferChunk>*);
     virtual void clear_for_pool() override;
 
     String name;
 
     RenderBufferChunk* firstChunk;
     RenderBufferChunk* currentChunk;
-    DeprecatedPool<RenderBufferChunk>* chunkPool;
+    Pool<RenderBufferChunk>* chunkPool;
 
     // Transient stuff
     bool hasRangeReserved;
