@@ -90,7 +90,7 @@ struct Window {
 // As it is, the user code has to know way too much about the window. We end
 // up creating showXWindow() functions to wrap the showWindow call for each
 // window type.
-void showWindow(WindowTitle title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void* userData = nullptr, WindowProc onClose = nullptr);
+void showWindow(WindowTitle title, s32 width, s32 height, V2I position, String style_name, u32 flags, WindowProc windowProc, void* user_data = nullptr, WindowProc on_close = nullptr);
 
 bool hasPauseWindowOpen();
 bool isWindowOpen(WindowProc windowProc);

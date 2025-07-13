@@ -79,69 +79,56 @@ String WindowTitle::getString()
 /**
  * Creates an (in-game) window in the centre of the screen, and puts it in front of all other windows.
  */
-void showWindow(WindowTitle title, s32 width, s32 height, V2I position, String styleName, u32 flags, WindowProc windowProc, void* userData, WindowProc onClose)
+void showWindow(WindowTitle title, s32 width, s32 height, V2I position, String style_name, u32 flags, WindowProc window_proc, void* user_data, WindowProc on_close)
 {
-    if (windowProc == nullptr) {
+    if (window_proc == nullptr) {
         logError("showWindow() called with a null WindowProc. That doesn't make sense? Title: {0}"_s, { title.getString() });
         return;
     }
 
-    Window newWindow = {
+    // If the window wants to be unique, then we search for an existing one with the same WindowProc
+    if (uiState.openWindows.count > 0 && flags & WindowFlags::Unique) {
+        Window* existing_window = nullptr;
+
+        s32 existing_window_index = 0;
+        for (auto it = uiState.openWindows.iterate();
+            it.hasNext();
+            it.next()) {
+            Window* oldWindow = it.get();
+            if (oldWindow->windowProc == window_proc) {
+                existing_window = oldWindow;
+                existing_window_index = it.getIndex();
+                break;
+            }
+        }
+
+        if (existing_window) {
+            existing_window->id = uiState.nextWindowID++,
+            existing_window->title = title;
+            existing_window->flags = flags;
+            existing_window->styleName = style_name;
+            existing_window->userData = user_data;
+            existing_window->onClose = on_close;
+            // NB: existing_window->renderBuffer is left as it is.
+
+            uiState.windowsToMakeActive.add(existing_window_index);
+            return;
+        }
+    }
+
+    Window new_window = {
         .id = uiState.nextWindowID++,
         .title = title,
         .flags = flags,
         .area = irectPosSize(position, v2i(width, height)),
-        .styleName = styleName,
-        .windowProc = windowProc,
-        .userData = userData,
-        .onClose = onClose,
+        .styleName = style_name,
+        .windowProc = window_proc,
+        .userData = user_data,
+        .onClose = on_close,
         .renderBuffer = the_renderer().get_temporary_render_buffer(title.getString()),
     };
-
-    bool createdWindowAlready = false;
-
-    if (uiState.openWindows.count > 0) {
-        // If the window wants to be unique, then we search for an existing one with the same WindowProc
-        if (flags & WindowFlags::Unique) {
-            Window* toReplace = nullptr;
-
-            s32 oldWindowIndex = 0;
-            for (auto it = uiState.openWindows.iterate();
-                it.hasNext();
-                it.next()) {
-                Window* oldWindow = it.get();
-                if (oldWindow->windowProc == windowProc) {
-                    toReplace = oldWindow;
-                    oldWindowIndex = (s32)it.getIndex();
-                    break;
-                }
-            }
-
-            if (toReplace) {
-                //
-                // I don't think we actually want to keep the old window position, at least we don't in the
-                // one case that actually uses this! (inspectTileWindowProc)
-                // But leaving it commented in case I change my mind later.
-                // - Sam, 08/08/2019
-                //
-                // Update 24/09/2019: I'm finding it really annoying having the window move, so un-commenting
-                // this again!
-                //
-
-                // Make it keep the current window's position
-                newWindow.area = toReplace->area;
-
-                *toReplace = newWindow;
-                uiState.windowsToMakeActive.add(oldWindowIndex);
-                createdWindowAlready = true;
-            }
-        }
-    }
-
-    if (!createdWindowAlready) {
-        uiState.openWindows.append(newWindow);
-        uiState.windowsToMakeActive.add(truncate32(uiState.openWindows.count - 1));
-    }
+    uiState.openWindows.append(new_window);
+    uiState.windowsToMakeActive.add(truncate32(uiState.openWindows.count - 1));
 }
 
 bool hasPauseWindowOpen()
