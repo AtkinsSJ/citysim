@@ -14,8 +14,8 @@
 #include <Gfx/RenderBuffer.h>
 #include <SDL2/SDL_events.h>
 #include <Util/Basic.h>
+#include <Util/DeprecatedPool.h>
 #include <Util/MemoryArena.h>
-#include <Util/Pool.h>
 #include <Util/Rectangle.h>
 #include <Util/String.h>
 #include <Util/Vector.h>
@@ -181,7 +181,7 @@ public:
     RenderBuffer& debug_buffer() { return m_debug_buffer; }
 
     smm renderBufferChunkSize { 0 };
-    Pool<RenderBufferChunk> chunkPool {};
+    DeprecatedPool<RenderBufferChunk> chunkPool {};
 
     // Not convinced this is the best way of doing it, but it's better than what we had before!
     // Really, we do want to have this stuff in code, because it's accessed a LOT and we don't
@@ -213,7 +213,7 @@ public:
 protected:
     explicit Renderer(SDL_Window*);
 
-    Pool<RenderBuffer> m_render_buffer_pool {};
+    DeprecatedPool<RenderBuffer> m_render_buffer_pool {};
     Array<RenderBuffer*> m_render_buffers {};
     RenderBuffer m_world_buffer {};
     RenderBuffer m_world_overlay_buffer {};
@@ -236,7 +236,7 @@ protected:
 Renderer& the_renderer();
 void freeRenderer();
 
-void initRenderBuffer(MemoryArena* arena, RenderBuffer* buffer, String name, Pool<RenderBufferChunk>* chunkPool);
+void initRenderBuffer(MemoryArena* arena, RenderBuffer* buffer, String name, DeprecatedPool<RenderBufferChunk>* chunkPool);
 RenderBufferChunk* allocateRenderBufferChunk(MemoryArena* arena, void* userData);
 
 void appendRenderItemType(RenderBuffer* buffer, RenderItemType type);

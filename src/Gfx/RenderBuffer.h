@@ -8,7 +8,7 @@
 
 #include <Assets/Forward.h>
 #include <Gfx/Forward.h>
-#include <Util/Pool.h>
+#include <Util/DeprecatedPool.h>
 #include <Util/String.h>
 
 struct RenderBufferChunk : PoolItem {
@@ -29,7 +29,7 @@ struct RenderBuffer : PoolItem {
 
     RenderBufferChunk* firstChunk;
     RenderBufferChunk* currentChunk;
-    Pool<RenderBufferChunk>* chunkPool;
+    DeprecatedPool<RenderBufferChunk>* chunkPool;
 
     // Transient stuff
     bool hasRangeReserved;

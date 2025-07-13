@@ -41,7 +41,7 @@ ArrayChunk<T>* allocateChunk(MemoryArena* arena, s32 itemsPerChunk)
 }
 
 template<typename T>
-struct ArrayChunkPool : Pool<ArrayChunk<T>> {
+struct ArrayChunkPool : DeprecatedPool<ArrayChunk<T>> {
     s32 itemsPerChunk;
 };
 

@@ -7,9 +7,9 @@
 #pragma once
 
 #include <SDL2/SDL_timer.h>
+#include <Util/DeprecatedPool.h>
 #include <Util/HashTable.h>
 #include <Util/LinkedList.h>
-#include <Util/Pool.h>
 
 #if BUILD_DEBUG
 
@@ -199,7 +199,7 @@ T* findOrCreateDebugData(DebugState* debugState, String name, T* sentinel)
 }
 
 template<typename T>
-void debugTrackPool(DebugState* debugState, Pool<T>* pool, String name)
+void debugTrackPool(DebugState* debugState, DeprecatedPool<T>* pool, String name)
 {
     DebugPoolData* poolData = findOrCreateDebugData(debugState, name, &debugState->poolDataSentinel);
     u32 frameIndex = debugState->writingFrameIndex;

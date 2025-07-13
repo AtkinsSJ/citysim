@@ -7,10 +7,10 @@
 #pragma once
 
 #include <Util/Basic.h>
+#include <Util/DeprecatedPool.h>
 #include <Util/Forward.h>
 #include <Util/Indexed.h>
 #include <Util/MemoryArena.h>
-#include <Util/Pool.h>
 
 //
 // Queue! Your standard FIFO data structure
@@ -145,7 +145,7 @@ struct Queue {
     }
 
     // "private"
-    Pool<QueueChunk<T>> chunkPool;
+    DeprecatedPool<QueueChunk<T>> chunkPool;
     s32 chunkSize;
 
     s32 count;

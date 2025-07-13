@@ -31,7 +31,7 @@ Renderer::Renderer(SDL_Window* window)
 
     initPool<RenderBuffer>(&m_render_buffer_pool, &renderArena, [](MemoryArena* arena, void* chunk_pool_pointer) -> RenderBuffer* {
 			RenderBuffer *buffer = allocateStruct<RenderBuffer>(arena);
-			initRenderBuffer(arena, buffer, nullString, static_cast<Pool<RenderBufferChunk>*>(chunk_pool_pointer));
+			initRenderBuffer(arena, buffer, nullString, static_cast<DeprecatedPool<RenderBufferChunk>*>(chunk_pool_pointer));
 			return buffer; }, &chunkPool);
     initRenderBuffer(&renderArena, &m_world_buffer, "WorldBuffer"_s, &chunkPool);
     initRenderBuffer(&renderArena, &m_world_overlay_buffer, "WorldOverlayBuffer"_s, &chunkPool);
@@ -224,7 +224,7 @@ void Renderer::set_cursor_visible(bool visible)
     SDL_ShowCursor(visible ? 1 : 0);
 }
 
-void initRenderBuffer(MemoryArena* arena, RenderBuffer* buffer, String name, Pool<RenderBufferChunk>* chunkPool)
+void initRenderBuffer(MemoryArena* arena, RenderBuffer* buffer, String name, DeprecatedPool<RenderBufferChunk>* chunkPool)
 {
     *buffer = {};
 

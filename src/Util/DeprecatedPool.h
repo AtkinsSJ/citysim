@@ -34,7 +34,7 @@ struct PoolItem {
 };
 
 template<typename T>
-struct Pool {
+struct DeprecatedPool {
     MemoryArena* memoryArena;
     T* (*allocateItem)(MemoryArena* arena, void* userData);
     void* userData; // Passed to allocateItem()
@@ -46,7 +46,7 @@ struct Pool {
 };
 
 template<typename T>
-void initPool(Pool<T>* pool, MemoryArena* arena, T* (*allocateItem)(MemoryArena* arena, void* userData), void* userData = nullptr)
+void initPool(DeprecatedPool<T>* pool, MemoryArena* arena, T* (*allocateItem)(MemoryArena* arena, void* userData), void* userData = nullptr)
 {
     *pool = {};
     pool->memoryArena = arena;
@@ -58,7 +58,7 @@ void initPool(Pool<T>* pool, MemoryArena* arena, T* (*allocateItem)(MemoryArena*
 }
 
 template<typename T>
-T* getItemFromPool(Pool<T>* pool)
+T* getItemFromPool(DeprecatedPool<T>* pool)
 {
     T* result = nullptr;
 
@@ -82,7 +82,7 @@ T* getItemFromPool(Pool<T>* pool)
 }
 
 template<typename T>
-void addItemToPool(Pool<T>* pool, T* item)
+void addItemToPool(DeprecatedPool<T>* pool, T* item)
 {
     // Remove item from its existing list
     if (item->prevPoolItem != nullptr)
