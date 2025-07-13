@@ -16,6 +16,7 @@
 #include <Util/Basic.h>
 #include <Util/DeprecatedPool.h>
 #include <Util/MemoryArena.h>
+#include <Util/Pool.h>
 #include <Util/Rectangle.h>
 #include <Util/String.h>
 #include <Util/Vector.h>
@@ -174,11 +175,11 @@ public:
     Camera& world_camera() { return m_world_camera; }
     Camera& ui_camera() { return m_ui_camera; }
 
-    RenderBuffer& world_buffer() { return m_world_buffer; }
-    RenderBuffer& world_overlay_buffer() { return m_world_overlay_buffer; }
-    RenderBuffer& ui_buffer() { return m_ui_buffer; }
-    RenderBuffer& window_buffer() { return m_window_buffer; }
-    RenderBuffer& debug_buffer() { return m_debug_buffer; }
+    RenderBuffer& world_buffer() { return *m_world_buffer; }
+    RenderBuffer& world_overlay_buffer() { return *m_world_overlay_buffer; }
+    RenderBuffer& ui_buffer() { return *m_ui_buffer; }
+    RenderBuffer& window_buffer() { return *m_window_buffer; }
+    RenderBuffer& debug_buffer() { return *m_debug_buffer; }
 
     smm renderBufferChunkSize { 0 };
     DeprecatedPool<RenderBufferChunk> chunkPool {};
@@ -213,13 +214,13 @@ public:
 protected:
     explicit Renderer(SDL_Window*);
 
-    DeprecatedPool<RenderBuffer> m_render_buffer_pool {};
+    Pool<RenderBuffer> m_render_buffer_pool;
     Array<RenderBuffer*> m_render_buffers {};
-    RenderBuffer m_world_buffer {};
-    RenderBuffer m_world_overlay_buffer {};
-    RenderBuffer m_ui_buffer {};
-    RenderBuffer m_window_buffer {};
-    RenderBuffer m_debug_buffer {};
+    RenderBuffer* m_world_buffer { nullptr };
+    RenderBuffer* m_world_overlay_buffer { nullptr };
+    RenderBuffer* m_ui_buffer { nullptr };
+    RenderBuffer* m_window_buffer { nullptr };
+    RenderBuffer* m_debug_buffer { nullptr };
 
     SDL_Window* m_sdl_window { nullptr };
     V2I m_window_size {};
@@ -236,7 +237,6 @@ protected:
 Renderer& the_renderer();
 void freeRenderer();
 
-void initRenderBuffer(MemoryArena* arena, RenderBuffer* buffer, String name, DeprecatedPool<RenderBufferChunk>* chunkPool);
 RenderBufferChunk* allocateRenderBufferChunk(MemoryArena* arena, void* userData);
 
 void appendRenderItemType(RenderBuffer* buffer, RenderItemType type);

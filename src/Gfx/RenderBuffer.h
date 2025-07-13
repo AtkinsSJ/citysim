@@ -9,6 +9,7 @@
 #include <Assets/Forward.h>
 #include <Gfx/Forward.h>
 #include <Util/DeprecatedPool.h>
+#include <Util/Pool.h>
 #include <Util/String.h>
 
 struct RenderBufferChunk : PoolItem {
@@ -21,9 +22,13 @@ struct RenderBufferChunk : PoolItem {
     RenderBufferChunk* nextChunk;
 };
 
-struct RenderBuffer : PoolItem {
+struct RenderBuffer final : public Poolable<RenderBuffer> {
+    RenderBuffer() = default;
     void take_from(RenderBuffer& other);
-    void clear_for_pool();
+
+    // Poolable
+    void initialize_from_pool(MemoryArena&, String name, DeprecatedPool<RenderBufferChunk>*);
+    virtual void clear_for_pool() override;
 
     String name;
 

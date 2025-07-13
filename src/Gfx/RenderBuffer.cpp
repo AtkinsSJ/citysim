@@ -28,6 +28,23 @@ void RenderBuffer::take_from(RenderBuffer& other)
     other.clear_for_pool(); // Make sure things are reset
 }
 
+void RenderBuffer::initialize_from_pool(MemoryArena& arena, String name, DeprecatedPool<RenderBufferChunk>* chunk_pool)
+{
+    this->name = pushString(&arena, name);
+    hashString(&this->name);
+
+    this->hasRangeReserved = false;
+    this->scissorCount = 0;
+
+    this->chunkPool = chunk_pool;
+
+    this->firstChunk = nullptr;
+    this->currentChunk = nullptr;
+
+    this->currentShader = -1;
+    this->currentTexture = nullptr;
+}
+
 void RenderBuffer::clear_for_pool()
 {
     currentShader = -1;
