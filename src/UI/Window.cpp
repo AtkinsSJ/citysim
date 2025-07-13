@@ -106,6 +106,8 @@ void showWindow(WindowTitle title, s32 width, s32 height, V2I position, String s
             existing_window->id = uiState.nextWindowID++,
             existing_window->title = title;
             existing_window->flags = flags;
+            if (!(flags & WindowFlags::UniqueKeepPosition))
+                existing_window->area = irectPosSize(position, v2i(width, height));
             existing_window->styleName = style_name;
             existing_window->userData = user_data;
             existing_window->onClose = on_close;

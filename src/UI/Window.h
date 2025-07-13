@@ -14,13 +14,14 @@
 namespace WindowFlags {
 
 enum {
-    AutomaticHeight = 1 << 0, // Height determined by content
-    Unique = 1 << 1,          // Only one window with the same WindowProc will be allowed. A new one will replace the old.
-    Modal = 1 << 2,
-    Tooltip = 1 << 3,     // Follows the mouse cursor
-    Headless = 1 << 4,    // No title bar
-    ShrinkWidth = 1 << 5, // Reduces the width to match the content of the window
-    Pause = 1 << 6,       // Pauses the game while open
+    AutomaticHeight = 1 << 0,    // Height determined by content
+    Unique = 1 << 1,             // Only one window with the same WindowProc will be allowed. A new one will replace the old.
+    UniqueKeepPosition = 1 << 2, // Requires Unique. Keeps the old window's position and size.
+    Modal = 1 << 3,              // Prevent interaction with anything else while open
+    Tooltip = 1 << 4,            // Follows the mouse cursor
+    Headless = 1 << 5,           // No title bar
+    ShrinkWidth = 1 << 6,        // Reduces the width to match the content of the window
+    Pause = 1 << 7,              // Pauses the game while open
 };
 
 };

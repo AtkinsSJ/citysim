@@ -37,7 +37,7 @@ ConsoleCommand(debug_tools)
     auto& renderer = the_renderer();
     V2I windowPos = v2i(renderer.ui_camera().position() + renderer.ui_camera().size());
 
-    UI::showWindow(UI::WindowTitle::fromTextAsset("title_debug_tools"_s), 250, 200, windowPos, "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Unique, debugToolsWindowProc, gameState);
+    UI::showWindow(UI::WindowTitle::fromTextAsset("title_debug_tools"_s), 250, 200, windowPos, "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Unique | WindowFlags::UniqueKeepPosition, debugToolsWindowProc, gameState);
 }
 
 ConsoleCommand(exit)

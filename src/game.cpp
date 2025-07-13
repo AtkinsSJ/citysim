@@ -853,7 +853,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
                         V2I tilePos = AppState::the().gameState->inspectedTilePosition;
                         return getText("title_inspect"_s, { formatInt(tilePos.x), formatInt(tilePos.y) });
                     }),
-                        250, 200, windowPos, "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Unique, inspectTileWindowProc, gameState);
+                        250, 200, windowPos, "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Unique | WindowFlags::UniqueKeepPosition, inspectTileWindowProc, gameState);
                 }
             }
         } break;
