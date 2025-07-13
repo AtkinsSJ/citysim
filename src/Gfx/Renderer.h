@@ -225,8 +225,8 @@ protected:
     V2I m_window_size {};
     bool m_window_is_fullscreen { false };
 
-    Camera m_world_camera {};
-    Camera m_ui_camera {};
+    Camera m_world_camera;
+    Camera m_ui_camera;
 
     String m_current_cursor_name {};
     bool m_cursor_is_visible { true };
