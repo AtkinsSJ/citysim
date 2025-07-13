@@ -8,4 +8,4 @@
 
 class Camera;
 struct RenderBuffer;
-struct Renderer;
+class Renderer;

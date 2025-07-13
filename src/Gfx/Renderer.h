@@ -153,7 +153,8 @@ struct DrawRingsGroup {
     s32 maxCount;
 };
 
-struct Renderer {
+class Renderer {
+public:
     virtual ~Renderer();
 
     static bool initialize(SDL_Window*);
