@@ -10,6 +10,7 @@
 #include <Util/DeprecatedLinkedList.h>
 #include <Util/DeprecatedPool.h>
 #include <Util/HashTable.h>
+#include <Util/Pool.h>
 
 #if BUILD_DEBUG
 
@@ -207,6 +208,18 @@ void debugTrackPool(DebugState* debugState, DeprecatedPool<T>* pool, String name
     if (pool) {
         poolData->pooledItemCount[frameIndex] = pool->pooledItemCount;
         poolData->totalItemCount[frameIndex] = pool->totalItemCount;
+    }
+}
+
+template<typename T>
+void debugTrackPool(DebugState* debugState, Pool<T>* pool, String name)
+{
+    DebugPoolData* poolData = findOrCreateDebugData(debugState, name, &debugState->poolDataSentinel);
+    u32 frameIndex = debugState->writingFrameIndex;
+
+    if (pool) {
+        poolData->pooledItemCount[frameIndex] = pool->available_item_count();
+        poolData->totalItemCount[frameIndex] = pool->total_created_item_count();
     }
 }
 
