@@ -7,12 +7,13 @@
 #pragma once
 
 #include "Assert.h"
+#include "Basic.h"
 
 /*****************************************************************
  * Somewhat less-hacky doubly-linked-list stuff using templates. *
  *****************************************************************/
 template<typename T>
-struct LinkedListNode {
+struct DeprecatedLinkedListNode {
     T* prevNode;
     T* nextNode;
 };
@@ -43,7 +44,7 @@ void removeFromLinkedList(T* item)
 }
 
 template<typename T>
-bool linkedListIsEmpty(LinkedListNode<T>* sentinel)
+bool linkedListIsEmpty(DeprecatedLinkedListNode<T>* sentinel)
 {
     bool hasNext = (sentinel->nextNode != sentinel);
     bool hasPrev = (sentinel->prevNode != sentinel);

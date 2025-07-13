@@ -7,9 +7,9 @@
 #pragma once
 
 #include <SDL2/SDL_timer.h>
+#include <Util/DeprecatedLinkedList.h>
 #include <Util/DeprecatedPool.h>
 #include <Util/HashTable.h>
-#include <Util/LinkedList.h>
 
 #if BUILD_DEBUG
 
@@ -57,7 +57,7 @@ inline struct DebugState* globalDebugState = nullptr;
 #define DEBUG_FRAMES_COUNT 120
 #define DEBUG_TOP_CODE_BLOCKS_COUNT 32
 
-struct DebugArenaData : LinkedListNode<DebugArenaData> {
+struct DebugArenaData : DeprecatedLinkedListNode<DebugArenaData> {
     String name;
 
     u32 blockCount[DEBUG_FRAMES_COUNT];
@@ -65,7 +65,7 @@ struct DebugArenaData : LinkedListNode<DebugArenaData> {
     smm usedSize[DEBUG_FRAMES_COUNT]; // How do we count free space in old blocks?
 };
 
-struct DebugPoolData : LinkedListNode<DebugPoolData> {
+struct DebugPoolData : DeprecatedLinkedListNode<DebugPoolData> {
     String name;
 
     smm pooledItemCount[DEBUG_FRAMES_COUNT];
@@ -107,7 +107,7 @@ struct DebugCodeData {
     u64 totalCycleCount[DEBUG_FRAMES_COUNT];
 };
 
-struct DebugCodeDataWrapper : LinkedListNode<DebugCodeDataWrapper> {
+struct DebugCodeDataWrapper : DeprecatedLinkedListNode<DebugCodeDataWrapper> {
     DebugCodeData* data;
 };
 
@@ -118,7 +118,7 @@ struct DebugDrawCallData {
 };
 
 #define DEBUG_DRAW_CALLS_RECORDED_PER_FRAME 8192
-struct DebugRenderBufferData : LinkedListNode<DebugRenderBufferData> {
+struct DebugRenderBufferData : DeprecatedLinkedListNode<DebugRenderBufferData> {
     String name;
     String renderProfileName;
 
