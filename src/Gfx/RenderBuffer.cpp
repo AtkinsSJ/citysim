@@ -33,7 +33,7 @@ void RenderBuffer::take_from(RenderBuffer& other)
             this->currentChunk = other.currentChunk;
         } else {
             ASSERT((this->currentChunk->size - this->currentChunk->used) > sizeof(RenderItemType)); // Need space for the next-chunk message
-            appendRenderItemType(this, RenderItemType_NextMemoryChunk);
+            appendRenderItemType(this, RenderItemType::NextMemoryChunk);
             this->currentChunk->nextChunk = other.firstChunk;
             other.firstChunk->prevChunk = this->currentChunk;
             this->currentChunk = other.currentChunk;

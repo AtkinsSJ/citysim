@@ -147,21 +147,21 @@ void Renderer::render_internal()
             pos += sizeof(RenderItemType);
 
             switch (itemType) {
-            case RenderItemType_NextMemoryChunk: {
-                DEBUG_BLOCK_T("render: RenderItemType_NextMemoryChunk", DCDT_Renderer);
+            case RenderItemType::NextMemoryChunk: {
+                DEBUG_BLOCK_T("render: RenderItemType::NextMemoryChunk", DCDT_Renderer);
                 DEBUG_TRACK_RENDER_BUFFER_CHUNK();
                 renderBufferChunk = renderBufferChunk->nextChunk;
                 pos = 0;
             } break;
 
-            case RenderItemType_SetCamera: {
-                DEBUG_BLOCK_T("render: RenderItemType_SetCamera", DCDT_Renderer);
+            case RenderItemType::SetCamera: {
+                DEBUG_BLOCK_T("render: RenderItemType::SetCamera", DCDT_Renderer);
                 RenderItem_SetCamera* header = readRenderItem<RenderItem_SetCamera>(renderBufferChunk, &pos);
                 currentCamera = header->camera;
             } break;
 
-            case RenderItemType_SetPalette: {
-                DEBUG_BLOCK_T("render: RenderItemType_SetPalette", DCDT_Renderer);
+            case RenderItemType::SetPalette: {
+                DEBUG_BLOCK_T("render: RenderItemType::SetPalette", DCDT_Renderer);
                 RenderItem_SetPalette* header = readRenderItem<RenderItem_SetPalette>(renderBufferChunk, &pos);
 
                 if (m_vertex_count > 0) {
@@ -189,8 +189,8 @@ void Renderer::render_internal()
                 glUniform1i(activeShader->uPaletteLoc, 1);
             } break;
 
-            case RenderItemType_SetShader: {
-                DEBUG_BLOCK_T("render: RenderItemType_SetShader", DCDT_Renderer);
+            case RenderItemType::SetShader: {
+                DEBUG_BLOCK_T("render: RenderItemType::SetShader", DCDT_Renderer);
                 RenderItem_SetShader* header = readRenderItem<RenderItem_SetShader>(renderBufferChunk, &pos);
 
                 if (m_vertex_count > 0) {
@@ -202,8 +202,8 @@ void Renderer::render_internal()
                 glUniform1f(activeShader->uScaleLoc, currentCamera->zoom());
             } break;
 
-            case RenderItemType_SetTexture: {
-                DEBUG_BLOCK_T("render: RenderItemType_SetTexture", DCDT_Renderer);
+            case RenderItemType::SetTexture: {
+                DEBUG_BLOCK_T("render: RenderItemType::SetTexture", DCDT_Renderer);
                 RenderItem_SetTexture* header = readRenderItem<RenderItem_SetTexture>(renderBufferChunk, &pos);
 
                 if (m_vertex_count > 0) {
@@ -266,8 +266,8 @@ void Renderer::render_internal()
                 m_current_texture = header->texture;
             } break;
 
-            case RenderItemType_Clear: {
-                DEBUG_BLOCK_T("render: RenderItemType_Clear", DCDT_Renderer);
+            case RenderItemType::Clear: {
+                DEBUG_BLOCK_T("render: RenderItemType::Clear", DCDT_Renderer);
                 RenderItem_Clear* header = readRenderItem<RenderItem_Clear>(renderBufferChunk, &pos);
 
                 // NB: We MUST flush here, otherwise we could render some things after the clear instead of before it!
@@ -279,8 +279,8 @@ void Renderer::render_internal()
                 glClear(GL_COLOR_BUFFER_BIT);
             } break;
 
-            case RenderItemType_BeginScissor: {
-                DEBUG_BLOCK_T("render: RenderItemType_BeginScissor", DCDT_Renderer);
+            case RenderItemType::BeginScissor: {
+                DEBUG_BLOCK_T("render: RenderItemType::BeginScissor", DCDT_Renderer);
                 RenderItem_BeginScissor* header = readRenderItem<RenderItem_BeginScissor>(renderBufferChunk, &pos);
 
                 // NB: We MUST flush here, otherwise we could render some things after the scissor instead of before it!
@@ -297,8 +297,8 @@ void Renderer::render_internal()
                 glScissor(header->bounds.x, header->bounds.y, header->bounds.w, header->bounds.h);
             } break;
 
-            case RenderItemType_EndScissor: {
-                DEBUG_BLOCK_T("render: RenderItemType_EndScissor", DCDT_Renderer);
+            case RenderItemType::EndScissor: {
+                DEBUG_BLOCK_T("render: RenderItemType::EndScissor", DCDT_Renderer);
                 [[maybe_unused]] RenderItem_EndScissor* header = readRenderItem<RenderItem_EndScissor>(renderBufferChunk, &pos);
 
                 // NB: We MUST flush here, otherwise we could render some things after the scissor is removed!
@@ -318,8 +318,8 @@ void Renderer::render_internal()
                 }
             } break;
 
-            case RenderItemType_DrawRects: {
-                DEBUG_BLOCK_T("render: RenderItemType_DrawRects", DCDT_Renderer);
+            case RenderItemType::DrawRects: {
+                DEBUG_BLOCK_T("render: RenderItemType::DrawRects", DCDT_Renderer);
                 RenderItem_DrawRects* header = readRenderItem<RenderItem_DrawRects>(renderBufferChunk, &pos);
 
                 for (s32 itemIndex = 0; itemIndex < header->count; itemIndex++) {
@@ -332,8 +332,8 @@ void Renderer::render_internal()
                 }
             } break;
 
-            case RenderItemType_DrawSingleRect: {
-                DEBUG_BLOCK_T("render: RenderItemType_DrawSingleRect", DCDT_Renderer);
+            case RenderItemType::DrawSingleRect: {
+                DEBUG_BLOCK_T("render: RenderItemType::DrawSingleRect", DCDT_Renderer);
                 RenderItem_DrawSingleRect* item = readRenderItem<RenderItem_DrawSingleRect>(renderBufferChunk, &pos);
 
                 if (m_vertex_count + 4 > RENDER_BATCH_VERTEX_COUNT) {
@@ -343,8 +343,8 @@ void Renderer::render_internal()
 
             } break;
 
-            case RenderItemType_DrawRings: {
-                DEBUG_BLOCK_T("render: RenderItemType_DrawRings", DCDT_Renderer);
+            case RenderItemType::DrawRings: {
+                DEBUG_BLOCK_T("render: RenderItemType::DrawRings", DCDT_Renderer);
                 RenderItem_DrawRings* header = readRenderItem<RenderItem_DrawRings>(renderBufferChunk, &pos);
 
                 for (s32 itemIndex = 0; itemIndex < header->count; itemIndex++) {

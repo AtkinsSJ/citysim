@@ -10,22 +10,22 @@
 #include <Util/Basic.h>
 #include <Util/Rectangle.h>
 
-enum RenderItemType {
-    RenderItemType_NextMemoryChunk,
+enum class RenderItemType : u8 {
+    NextMemoryChunk,
 
-    RenderItemType_SetCamera,
-    RenderItemType_SetPalette,
-    RenderItemType_SetShader,
-    RenderItemType_SetTexture,
+    SetCamera,
+    SetPalette,
+    SetShader,
+    SetTexture,
 
-    RenderItemType_Clear,
+    Clear,
 
-    RenderItemType_BeginScissor,
-    RenderItemType_EndScissor,
+    BeginScissor,
+    EndScissor,
 
-    RenderItemType_DrawSingleRect,
-    RenderItemType_DrawRects,
-    RenderItemType_DrawRings,
+    DrawSingleRect,
+    DrawRects,
+    DrawRings,
 };
 
 struct RenderItem_SetCamera {

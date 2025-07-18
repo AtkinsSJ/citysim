@@ -248,7 +248,7 @@ u8* appendRenderItemInternal(RenderBuffer* buffer, RenderItemType type, smm size
         // Out of room! Push a "go to next chunk" item and append some more memory
         if (buffer->currentChunk != nullptr) {
             ASSERT((buffer->currentChunk->size - buffer->currentChunk->used) > sizeof(RenderItemType)); // Need space for the next-chunk message
-            appendRenderItemType(buffer, RenderItemType_NextMemoryChunk);
+            appendRenderItemType(buffer, RenderItemType::NextMemoryChunk);
         }
 
         RenderBufferChunk& new_chunk = buffer->chunkPool->obtain();
@@ -276,14 +276,14 @@ u8* appendRenderItemInternal(RenderBuffer* buffer, RenderItemType type, smm size
 
 void addSetCamera(RenderBuffer* buffer, Camera* camera)
 {
-    RenderItem_SetCamera* cameraItem = appendRenderItem<RenderItem_SetCamera>(buffer, RenderItemType_SetCamera);
+    RenderItem_SetCamera* cameraItem = appendRenderItem<RenderItem_SetCamera>(buffer, RenderItemType::SetCamera);
     cameraItem->camera = camera;
 }
 
 void addSetShader(RenderBuffer* buffer, s8 shaderID)
 {
     if (buffer->currentShader != shaderID) {
-        RenderItem_SetShader* shaderItem = appendRenderItem<RenderItem_SetShader>(buffer, RenderItemType_SetShader);
+        RenderItem_SetShader* shaderItem = appendRenderItem<RenderItem_SetShader>(buffer, RenderItemType::SetShader);
         *shaderItem = {};
         shaderItem->shaderID = shaderID;
 
@@ -300,7 +300,7 @@ void addSetTexture(RenderBuffer* buffer, Asset* texture)
     ASSERT(texture->state == AssetState_Loaded);
 
     if (buffer->currentTexture != texture) {
-        RenderItem_SetTexture* textureItem = appendRenderItem<RenderItem_SetTexture>(buffer, RenderItemType_SetTexture);
+        RenderItem_SetTexture* textureItem = appendRenderItem<RenderItem_SetTexture>(buffer, RenderItemType::SetTexture);
         *textureItem = {};
         textureItem->texture = texture;
 
@@ -313,7 +313,7 @@ void addSetTextureRaw(RenderBuffer* buffer, s32 width, s32 height, u8 bytesPerPi
     buffer->currentTexture = nullptr;
 
     smm pixelDataSize = (width * height * bytesPerPixel);
-    auto itemAndData = appendRenderItem<RenderItem_SetTexture>(buffer, RenderItemType_SetTexture, pixelDataSize);
+    auto itemAndData = appendRenderItem<RenderItem_SetTexture>(buffer, RenderItemType::SetTexture, pixelDataSize);
 
     RenderItem_SetTexture* textureItem = itemAndData.item;
     *textureItem = {};
@@ -327,7 +327,7 @@ void addSetTextureRaw(RenderBuffer* buffer, s32 width, s32 height, u8 bytesPerPi
 
 void addSetPalette(RenderBuffer* buffer, s32 paletteSize, V4* palette)
 {
-    auto itemAndData = appendRenderItem<RenderItem_SetPalette>(buffer, RenderItemType_SetPalette, sizeof(V4) * paletteSize);
+    auto itemAndData = appendRenderItem<RenderItem_SetPalette>(buffer, RenderItemType::SetPalette, sizeof(V4) * paletteSize);
 
     itemAndData.item->paletteSize = paletteSize;
 
@@ -336,7 +336,7 @@ void addSetPalette(RenderBuffer* buffer, s32 paletteSize, V4* palette)
 
 void addClear(RenderBuffer* buffer, V4 clearColor)
 {
-    RenderItem_Clear* clear = appendRenderItem<RenderItem_Clear>(buffer, RenderItemType_Clear);
+    RenderItem_Clear* clear = appendRenderItem<RenderItem_Clear>(buffer, RenderItemType::Clear);
     clear->clearColor = clearColor;
 }
 
@@ -345,7 +345,7 @@ void addBeginScissor(RenderBuffer* buffer, Rect2I bounds)
     ASSERT(bounds.w >= 0);
     ASSERT(bounds.h >= 0);
 
-    RenderItem_BeginScissor* scissor = appendRenderItem<RenderItem_BeginScissor>(buffer, RenderItemType_BeginScissor);
+    RenderItem_BeginScissor* scissor = appendRenderItem<RenderItem_BeginScissor>(buffer, RenderItemType::BeginScissor);
 
     // We have to flip the bounds rectangle vertically because OpenGL has the origin in the bottom-left,
     // whereas our system uses the top-left!
@@ -364,7 +364,7 @@ void addBeginScissor(RenderBuffer* buffer, Rect2I bounds)
 void addEndScissor(RenderBuffer* buffer)
 {
     ASSERT(buffer->scissorCount > 0);
-    [[maybe_unused]] RenderItem_EndScissor* scissor = appendRenderItem<RenderItem_EndScissor>(buffer, RenderItemType_EndScissor);
+    [[maybe_unused]] RenderItem_EndScissor* scissor = appendRenderItem<RenderItem_EndScissor>(buffer, RenderItemType::EndScissor);
     buffer->scissorCount--;
 }
 
@@ -373,7 +373,7 @@ void drawSingleSprite(RenderBuffer* buffer, Sprite* sprite, Rect2 bounds, s8 sha
     addSetShader(buffer, shaderID);
     addSetTexture(buffer, sprite->texture);
 
-    RenderItem_DrawSingleRect* rect = appendRenderItem<RenderItem_DrawSingleRect>(buffer, RenderItemType_DrawSingleRect);
+    RenderItem_DrawSingleRect* rect = appendRenderItem<RenderItem_DrawSingleRect>(buffer, RenderItemType::DrawSingleRect);
 
     rect->bounds = bounds;
     rect->color00 = color;
@@ -397,7 +397,7 @@ void drawSingleRect(RenderBuffer* buffer, Rect2 bounds, s8 shaderID, V4 color00,
 {
     addSetShader(buffer, shaderID);
 
-    RenderItem_DrawSingleRect* rect = appendRenderItem<RenderItem_DrawSingleRect>(buffer, RenderItemType_DrawSingleRect);
+    RenderItem_DrawSingleRect* rect = appendRenderItem<RenderItem_DrawSingleRect>(buffer, RenderItemType::DrawSingleRect);
 
     rect->bounds = bounds;
     rect->color00 = color00;
@@ -419,7 +419,7 @@ DrawRectPlaceholder appendDrawRectPlaceholder(RenderBuffer* buffer, s8 shaderID,
     DrawRectPlaceholder result = {};
 
     if (hasTexture) {
-        RenderItem_SetTexture* textureItem = appendRenderItem<RenderItem_SetTexture>(buffer, RenderItemType_SetTexture);
+        RenderItem_SetTexture* textureItem = appendRenderItem<RenderItem_SetTexture>(buffer, RenderItemType::SetTexture);
         *textureItem = {};
 
         // We need to clear this, because we don't know what this texture will be, so any following draw calls
@@ -429,7 +429,7 @@ DrawRectPlaceholder appendDrawRectPlaceholder(RenderBuffer* buffer, s8 shaderID,
         result.setTexture = textureItem;
     }
 
-    result.drawRect = appendRenderItem<RenderItem_DrawSingleRect>(buffer, RenderItemType_DrawSingleRect);
+    result.drawRect = appendRenderItem<RenderItem_DrawSingleRect>(buffer, RenderItemType::DrawSingleRect);
 
     return result;
 }
@@ -649,7 +649,7 @@ DrawRectsSubGroup beginRectsSubGroup(DrawRectsGroup* group)
     ASSERT(subGroupItemCount > 0 && subGroupItemCount <= maxRenderItemsPerGroup);
 
     smm reservedSize = sizeof(RenderItem_DrawRects_Item) * subGroupItemCount;
-    u8* data = appendRenderItemInternal(group->buffer, RenderItemType_DrawRects, sizeof(RenderItem_DrawRects), reservedSize);
+    u8* data = appendRenderItemInternal(group->buffer, RenderItemType::DrawRects, sizeof(RenderItem_DrawRects), reservedSize);
     group->buffer->hasRangeReserved = true;
 
     result.header = (RenderItem_DrawRects*)data;
@@ -775,7 +775,7 @@ void drawGrid(RenderBuffer* buffer, Rect2 bounds, s32 gridW, s32 gridH, u8* grid
     addSetTextureRaw(buffer, gridW, gridH, 1, grid);
     addSetPalette(buffer, paletteSize, palette);
 
-    RenderItem_DrawSingleRect* rect = appendRenderItem<RenderItem_DrawSingleRect>(buffer, RenderItemType_DrawSingleRect);
+    RenderItem_DrawSingleRect* rect = appendRenderItem<RenderItem_DrawSingleRect>(buffer, RenderItemType::DrawSingleRect);
     rect->bounds = bounds;
     rect->color00 = makeWhite();
     rect->color01 = makeWhite();
@@ -811,7 +811,7 @@ DrawRingsSubGroup beginRingsSubGroup(DrawRingsGroup* group)
     ASSERT(subGroupItemCount > 0 && subGroupItemCount <= maxRenderItemsPerGroup);
 
     smm reservedSize = sizeof(RenderItem_DrawRings_Item) * subGroupItemCount;
-    u8* data = appendRenderItemInternal(group->buffer, RenderItemType_DrawRings, sizeof(RenderItem_DrawRings), reservedSize);
+    u8* data = appendRenderItemInternal(group->buffer, RenderItemType::DrawRings, sizeof(RenderItem_DrawRings), reservedSize);
     group->buffer->hasRangeReserved = true;
 
     result.header = (RenderItem_DrawRings*)data;
