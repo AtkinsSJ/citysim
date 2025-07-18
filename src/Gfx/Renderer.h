@@ -11,6 +11,7 @@
 #include "types.h"
 #include <Assets/Forward.h>
 #include <Gfx/Camera.h>
+#include <Gfx/Forward.h>
 #include <Gfx/RenderBuffer.h>
 #include <SDL2/SDL_events.h>
 #include <Util/Basic.h>
@@ -19,8 +20,6 @@
 #include <Util/Rectangle.h>
 #include <Util/String.h>
 #include <Util/Vector.h>
-
-struct RenderBuffer;
 
 // General rendering code.
 

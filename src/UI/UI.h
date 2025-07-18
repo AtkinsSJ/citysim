@@ -10,6 +10,7 @@
 #include "input.h"
 #include "types.h"
 #include <Assets/AssetManager.h>
+#include <Gfx/Forward.h>
 #include <Util/Array.h>
 #include <Util/Basic.h>
 #include <Util/Queue.h>
@@ -27,7 +28,6 @@ inline ButtonState buttonIsActive(bool isActive)
     return isActive ? Button_Active : Button_Normal;
 }
 
-struct RenderBuffer;
 struct BitmapFont;
 struct Sprite;
 

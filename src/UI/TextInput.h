@@ -6,12 +6,11 @@
 
 #pragma once
 
+#include <Gfx/Forward.h>
 #include <UI/Forward.h>
 #include <Util/Basic.h>
 #include <Util/Forward.h>
 #include <Util/String.h>
-
-struct RenderBuffer;
 
 namespace UI {
 
