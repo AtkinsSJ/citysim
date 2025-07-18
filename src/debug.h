@@ -8,7 +8,6 @@
 
 #include <SDL2/SDL_timer.h>
 #include <Util/DeprecatedLinkedList.h>
-#include <Util/DeprecatedPool.h>
 #include <Util/HashTable.h>
 #include <Util/Pool.h>
 
@@ -197,18 +196,6 @@ T* findOrCreateDebugData(DebugState* debugState, String name, T* sentinel)
     }
 
     return result;
-}
-
-template<typename T>
-void debugTrackPool(DebugState* debugState, DeprecatedPool<T>* pool, String name)
-{
-    DebugPoolData* poolData = findOrCreateDebugData(debugState, name, &debugState->poolDataSentinel);
-    u32 frameIndex = debugState->writingFrameIndex;
-
-    if (pool) {
-        poolData->pooledItemCount[frameIndex] = pool->pooledItemCount;
-        poolData->totalItemCount[frameIndex] = pool->totalItemCount;
-    }
 }
 
 template<typename T>

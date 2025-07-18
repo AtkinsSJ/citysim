@@ -8,6 +8,7 @@
 
 #include "../debug.h"
 #include <Util/Basic.h>
+#include <Util/DeprecatedPool.h>
 #include <Util/Indexed.h>
 #include <Util/Log.h>
 #include <Util/Memory.h>
