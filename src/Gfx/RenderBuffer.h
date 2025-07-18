@@ -7,6 +7,7 @@
 #pragma once
 
 #include <Assets/Forward.h>
+#include <Gfx/RenderItem.h>
 #include <Util/Pool.h>
 #include <Util/String.h>
 
