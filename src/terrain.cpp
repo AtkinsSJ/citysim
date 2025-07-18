@@ -6,7 +6,6 @@
 
 #include "terrain.h"
 #include "AppState.h"
-#include <Gfx/Renderer.h>
 #include "binary_file_reader.h"
 #include "binary_file_writer.h"
 #include "city.h"
@@ -14,6 +13,7 @@
 #include "save_file.h"
 #include "splat.h"
 #include <Assets/AssetManager.h>
+#include <Gfx/Renderer.h>
 #include <UI/Window.h>
 
 TerrainCatalogue s_terrain_catalogue = {};
@@ -29,14 +29,14 @@ void initTerrainLayer(TerrainLayer* layer, City* city, MemoryArena* gameArena)
     layer->tileBorderSprite = allocateArray2<SpriteRef>(gameArena, city->bounds.w, city->bounds.h);
 }
 
- TerrainDef* getTerrainAt(City* city, s32 x, s32 y)
+TerrainDef* getTerrainAt(City* city, s32 x, s32 y)
 {
     u8 terrainType = city->terrainLayer.tileTerrainType.getIfExists(x, y, 0);
 
     return getTerrainDef(terrainType);
 }
 
- u8 getTerrainHeightAt(City* city, s32 x, s32 y)
+u8 getTerrainHeightAt(City* city, s32 x, s32 y)
 {
     return city->terrainLayer.tileHeight.get(x, y);
 }
@@ -60,7 +60,7 @@ void setTerrainAt(City* city, s32 x, s32 y, u8 terrainType)
     updateDistanceToWater(city, irectXYWH(x, y, 1, 1));
 }
 
- u8 getDistanceToWaterAt(City* city, s32 x, s32 y)
+u8 getDistanceToWaterAt(City* city, s32 x, s32 y)
 {
     return city->terrainLayer.tileDistanceToWater.get(x, y);
 }
@@ -122,7 +122,7 @@ void loadTerrainDefs(Blob data, Asset* asset)
     }
 
     asset->data = assetsAllocate(&asset_manager(), sizeof(String) * terrainCount);
-    asset->terrainDefs.terrainIDs = makeArray(terrainCount, (String*)asset->data.memory);
+    asset->terrainDefs.terrainIDs = makeArray(terrainCount, (String*)asset->data.writable_data());
 
     restart(&reader);
 
@@ -202,7 +202,7 @@ void removeTerrainDefs(Array<String> namesToRemove)
     }
 }
 
- TerrainDef* getTerrainDef(u8 terrainType)
+TerrainDef* getTerrainDef(u8 terrainType)
 {
     TerrainDef* result = s_terrain_catalogue.terrainDefs.get(0);
 

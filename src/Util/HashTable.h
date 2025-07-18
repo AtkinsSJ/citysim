@@ -346,9 +346,9 @@ void initFixedSizeHashTable(HashTable<T>* table, s32 capacity, f32 maxLoadFactor
     table->hasFixedMemory = true;
 
     smm requiredSize = calculateHashTableDataSize<T>(capacity, maxLoadFactor);
-    ASSERT(requiredSize >= entryData.size);
+    ASSERT(requiredSize >= entryData.size());
 
-    table->entries = (HashTableEntry<T>*)entryData.memory;
+    table->entries = (HashTableEntry<T>*)entryData.data();
 
     // TODO: Eliminate this somehow
     initMemoryArena(&table->keyDataArena, "FixedSizeHashTable"_s, KB(4), KB(4));

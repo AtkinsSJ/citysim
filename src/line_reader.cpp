@@ -43,6 +43,8 @@ void restart(LineReader* reader)
 
 s32 countLines(Blob data)
 {
+    // FIXME: This should be some kind of Span type instead of Blob.
+
     s32 result = 0;
 
     smm startOfNextLine = 0;
@@ -50,18 +52,18 @@ s32 countLines(Blob data)
     // Code originally based on loadNextLine() but with a lot of alterations!
     do {
         ++result;
-        while ((startOfNextLine < data.size) && !isNewline(data.memory[startOfNextLine])) {
+        while ((startOfNextLine < data.size()) && !isNewline(data.data()[startOfNextLine])) {
             ++startOfNextLine;
         }
 
         // Handle Windows' stupid double-character newline.
-        if (startOfNextLine < data.size) {
+        if (startOfNextLine < data.size()) {
             ++startOfNextLine;
-            if (isNewline(data.memory[startOfNextLine]) && (data.memory[startOfNextLine] != data.memory[startOfNextLine - 1])) {
+            if (isNewline(data.data()[startOfNextLine]) && (data.data()[startOfNextLine] != data.data()[startOfNextLine - 1])) {
                 ++startOfNextLine;
             }
         }
-    } while (!(startOfNextLine >= data.size));
+    } while (!(startOfNextLine >= data.size()));
 
     return result;
 }
@@ -93,17 +95,17 @@ bool loadNextLine(LineReader* reader)
     do {
         // Get next line
         ++reader->position.currentLineNumber;
-        line.chars = (char*)(reader->data.memory + reader->position.startOfNextLine);
+        line.chars = (char*)(reader->data.data() + reader->position.startOfNextLine);
         line.length = 0;
-        while ((reader->position.startOfNextLine < reader->data.size) && !isNewline(reader->data.memory[reader->position.startOfNextLine])) {
+        while ((reader->position.startOfNextLine < reader->data.size()) && !isNewline(reader->data.data()[reader->position.startOfNextLine])) {
             ++reader->position.startOfNextLine;
             ++line.length;
         }
 
         // Handle Windows' stupid double-character newline.
-        if (reader->position.startOfNextLine < reader->data.size) {
+        if (reader->position.startOfNextLine < reader->data.size()) {
             ++reader->position.startOfNextLine;
-            if (isNewline(reader->data.memory[reader->position.startOfNextLine]) && (reader->data.memory[reader->position.startOfNextLine] != reader->data.memory[reader->position.startOfNextLine - 1])) {
+            if (isNewline(reader->data.data()[reader->position.startOfNextLine]) && (reader->data.data()[reader->position.startOfNextLine] != reader->data.data()[reader->position.startOfNextLine - 1])) {
                 ++reader->position.startOfNextLine;
             }
         }
@@ -124,7 +126,7 @@ bool loadNextLine(LineReader* reader)
         // This seems weird, but basically: The break means all lines get returned if we're not skipping blank ones.
         if (!reader->skipBlankLines)
             break;
-    } while (isEmpty(line) && !(reader->position.startOfNextLine >= reader->data.size));
+    } while (isEmpty(line) && !(reader->position.startOfNextLine >= reader->data.size()));
 
     reader->position.currentLine = line;
     reader->position.lineRemainder = line;
@@ -133,7 +135,7 @@ bool loadNextLine(LineReader* reader)
         if (reader->skipBlankLines) {
             result = false;
             reader->position.atEndOfFile = true;
-        } else if (reader->position.startOfNextLine >= reader->data.size) {
+        } else if (reader->position.startOfNextLine >= reader->data.size()) {
             result = false;
             reader->position.atEndOfFile = true;
         }
@@ -142,12 +144,12 @@ bool loadNextLine(LineReader* reader)
     return result;
 }
 
- String getLine(LineReader* reader)
+String getLine(LineReader* reader)
 {
     return reader->position.currentLine;
 }
 
- String getRemainderOfLine(LineReader* reader)
+String getRemainderOfLine(LineReader* reader)
 {
     return trim(reader->position.lineRemainder);
 }

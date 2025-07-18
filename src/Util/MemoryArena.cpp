@@ -23,7 +23,7 @@ void init_temp_arena()
 
 Blob allocateBlob(MemoryArena* arena, smm size)
 {
-    return makeBlob(size, (u8*)allocate(arena, size));
+    return Blob { size, (u8*)allocate(arena, size) };
 }
 
 MemoryBlock* addMemoryBlock(MemoryArena* arena, smm size)

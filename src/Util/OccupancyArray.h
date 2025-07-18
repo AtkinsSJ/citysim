@@ -58,10 +58,10 @@ struct OccupancyArray {
             smm occupancyArraySize = occupancyArrayCount * sizeof(u64);
 
             Blob blob = allocateBlob(memoryArena, structSize + arraySize + occupancyArraySize);
-            OccupancyArrayChunk<T>* newChunk = (OccupancyArrayChunk<T>*)blob.memory;
+            OccupancyArrayChunk<T>* newChunk = (OccupancyArrayChunk<T>*)blob.data();
             *newChunk = {};
-            newChunk->items = (T*)(blob.memory + structSize);
-            initBitArray(&newChunk->occupancy, itemsPerChunk, makeArray(occupancyArrayCount, (u64*)(blob.memory + structSize + arraySize), occupancyArrayCount));
+            newChunk->items = (T*)(blob.writable_data() + structSize);
+            initBitArray(&newChunk->occupancy, itemsPerChunk, makeArray(occupancyArrayCount, (u64*)(blob.writable_data() + structSize + arraySize), occupancyArrayCount));
 
             chunkCount++;
 

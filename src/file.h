@@ -116,7 +116,7 @@ inline Blob readTempFile(String filePath)
 }
 
 // Returns how much was read
-smm readFromFile(FileHandle* file, smm size, u8* memory);
+smm readFromFile(FileHandle* file, Blob& dest);
 
 // Attempts to read `size` bytes from position `position`, and copies them to `result`.
 // If there are fewer than `size` bytes remaining, reads all it can. Returns how many bytes were read.

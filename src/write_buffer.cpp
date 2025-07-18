@@ -85,7 +85,7 @@ WriteBufferRange WriteBuffer::reserveBytes(s32 length)
     return result;
 }
 
- WriteBufferLocation WriteBuffer::getCurrentPosition()
+WriteBufferLocation WriteBuffer::getCurrentPosition()
 {
     return byteCount;
 }
@@ -157,9 +157,9 @@ WriteBufferChunk* WriteBuffer::getChunkAt(WriteBufferLocation location)
 void WriteBuffer::appendNewChunk()
 {
     Blob blob = allocateBlob(arena, sizeof(WriteBufferChunk) + chunkSize);
-    WriteBufferChunk* newChunk = (WriteBufferChunk*)blob.memory;
+    WriteBufferChunk* newChunk = (WriteBufferChunk*)blob.data();
     newChunk->used = 0;
-    newChunk->bytes = (u8*)(blob.memory + sizeof(WriteBufferChunk));
+    newChunk->bytes = blob.writable_data() + sizeof(WriteBufferChunk);
     newChunk->nextChunk = nullptr;
 
     if (chunkCount == 0) {

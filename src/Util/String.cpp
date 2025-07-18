@@ -38,7 +38,7 @@ String makeString(char const* chars, bool hash)
 
 String stringFromBlob(Blob blob, bool hash)
 {
-    return makeString((char*)blob.memory, truncate32(blob.size), hash);
+    return makeString((char*)blob.data(), truncate32(blob.size()), hash);
 }
 
 char& String::operator[](s32 index)

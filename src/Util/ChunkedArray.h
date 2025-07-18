@@ -33,10 +33,10 @@ ArrayChunk<T>* allocateChunk(MemoryArena* arena, s32 itemsPerChunk)
 {
     // Rolled into a single allocation
     Blob blob = allocateBlob(arena, sizeof(ArrayChunk<T>) + (sizeof(T) * itemsPerChunk));
-    ArrayChunk<T>* newChunk = (ArrayChunk<T>*)blob.memory;
+    ArrayChunk<T>* newChunk = (ArrayChunk<T>*)blob.data();
     *newChunk = {};
     newChunk->count = 0;
-    newChunk->items = (T*)(blob.memory + sizeof(ArrayChunk<T>));
+    newChunk->items = (T*)(blob.data() + sizeof(ArrayChunk<T>));
 
     return newChunk;
 }

@@ -131,14 +131,14 @@ bool createDirectory(String path)
     return platform_createDirectory(path);
 }
 
-smm readFromFile(FileHandle* file, smm size, u8* memory)
+smm readFromFile(FileHandle* file, Blob& dest)
 {
     DEBUG_FUNCTION();
 
     smm bytesRead = 0;
 
     if (file->isOpen) {
-        bytesRead = SDL_RWread(file->sdl_file, memory, 1, size);
+        bytesRead = SDL_RWread(file->sdl_file, dest.writable_data(), 1, dest.size());
     }
 
     return bytesRead;
@@ -170,7 +170,7 @@ File readFile(FileHandle* handle, MemoryArena* arena)
     if (handle->isOpen) {
         smm fileSize = getFileSize(handle);
         result.data = allocateBlob(arena, fileSize);
-        smm bytesRead = readFromFile(handle, fileSize, result.data.memory);
+        smm bytesRead = readFromFile(handle, result.data);
 
         if (bytesRead != fileSize) {
             logWarn("File '{0}' was only partially read. Size {1}, read {2}"_s, { handle->path, formatInt(fileSize), formatInt(bytesRead) });
@@ -250,17 +250,17 @@ void stopDirectoryListing(DirectoryListingHandle* handle)
     }
 }
 
- bool hasNextFile(iterateDirectoryListing* iterator)
+bool hasNextFile(iterateDirectoryListing* iterator)
 {
     return iterator->handle.isValid;
 }
 
- void findNextFile(iterateDirectoryListing* iterator)
+void findNextFile(iterateDirectoryListing* iterator)
 {
     nextFileInDirectory(&iterator->handle, &iterator->fileInfo);
 }
 
- FileInfo* getFileInfo(iterateDirectoryListing* iterator)
+FileInfo* getFileInfo(iterateDirectoryListing* iterator)
 {
     return &iterator->fileInfo;
 }

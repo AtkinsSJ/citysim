@@ -108,7 +108,7 @@ void initAssets()
         Asset* placeholderSprite = makePlaceholderAsset(AssetType_Sprite);
         placeholderSprite->data = assetsAllocate(s_assets, 1 * sizeof(Sprite));
         placeholderSprite->spriteGroup.count = 1;
-        placeholderSprite->spriteGroup.sprites = (Sprite*)placeholderSprite->data.memory;
+        placeholderSprite->spriteGroup.sprites = (Sprite*)placeholderSprite->data.writable_data();
         placeholderSprite->spriteGroup.sprites[0].texture = &s_assets->placeholderAssets[AssetType_Texture];
         placeholderSprite->spriteGroup.sprites[0].uv = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
 
@@ -124,7 +124,7 @@ void initAssets()
         // Texture
         Asset* placeholderTexture = makePlaceholderAsset(AssetType_Texture);
         placeholderTexture->data = assetsAllocate(s_assets, 2 * 2 * sizeof(u32));
-        u32* pixels = (u32*)placeholderTexture->data.memory;
+        u32* pixels = (u32*)placeholderTexture->data.writable_data();
         pixels[0] = pixels[3] = 0xffff00ff;
         pixels[1] = pixels[2] = 0xff000000;
         placeholderTexture->texture.surface = SDL_CreateRGBSurfaceFrom(pixels, 2, 2, 32, 2 * sizeof(u32),
@@ -161,9 +161,7 @@ Asset* makePlaceholderAsset(AssetType type)
 
 Blob assetsAllocate(AssetManager* theAssets, smm size)
 {
-    Blob result = {};
-    result.size = size;
-    result.memory = allocateRaw(size);
+    Blob result { size, allocateRaw(size) };
 
     theAssets->assetMemoryAllocated += size;
     theAssets->maxAssetMemoryAllocated = max(theAssets->assetMemoryAllocated, theAssets->maxAssetMemoryAllocated);
@@ -174,7 +172,7 @@ Blob assetsAllocate(AssetManager* theAssets, smm size)
 void allocateChildren(Asset* asset, s32 childCount)
 {
     asset->data = assetsAllocate(s_assets, childCount * sizeof(AssetID));
-    asset->children = makeArray(childCount, (AssetID*)asset->data.memory);
+    asset->children = makeArray(childCount, (AssetID*)asset->data.writable_data());
 }
 
 void addChildAsset(Asset* parent, Asset* child)
@@ -197,8 +195,7 @@ Asset* addAsset(AssetType type, String shortName, u32 flags)
         asset->fullName = intern(&s_assets->assetStrings, getAssetPath(asset->type, internedShortName));
     }
     asset->state = AssetState_Unloaded;
-    asset->data.size = 0;
-    asset->data.memory = nullptr;
+    asset->data = {};
     asset->flags = flags;
 
     s_assets->assetsByType[type].put(internedShortName, asset);
@@ -208,22 +205,23 @@ Asset* addAsset(AssetType type, String shortName, u32 flags)
 
 void copyFileIntoAsset(Blob* fileData, Asset* asset)
 {
-    asset->data = assetsAllocate(s_assets, fileData->size);
-    memcpy(asset->data.memory, fileData->memory, fileData->size);
+    asset->data = assetsAllocate(s_assets, fileData->size());
+    memcpy(asset->data.writable_data(), fileData->data(), fileData->size());
 
     // NB: We set the fileData to point at the new copy, so that code after calling copyFileIntoAsset()
     // can still use fileData without having to mess with it. Already had one bug caused by not doing this!
-    fileData->memory = asset->data.memory;
+    // FIXME: Stop doing this?
+    *fileData = asset->data;
 }
 
 SDL_Surface* createSurfaceFromFileData(Blob fileData, String name)
 {
     SDL_Surface* result = nullptr;
 
-    ASSERT(fileData.size > 0);      //, "Attempted to create a surface from an unloaded asset! ({0})", {name});
-    ASSERT(fileData.size < s32Max); //, "File '{0}' is too big for SDL's RWOps!", {name});
+    ASSERT(fileData.size() > 0);      //, "Attempted to create a surface from an unloaded asset! ({0})", {name});
+    ASSERT(fileData.size() < s32Max); //, "File '{0}' is too big for SDL's RWOps!", {name});
 
-    SDL_RWops* rw = SDL_RWFromConstMem(fileData.memory, truncate32(fileData.size));
+    SDL_RWops* rw = SDL_RWFromConstMem(fileData.data(), truncate32(fileData.size()));
     if (rw) {
         result = IMG_Load_RW(rw, 0);
 
@@ -342,7 +340,7 @@ void loadAsset(Asset* asset)
         switch (palette->type) {
         case PaletteType_Gradient: {
             asset->data = assetsAllocate(s_assets, palette->size * sizeof(V4));
-            palette->paletteData = makeArray<V4>(palette->size, (V4*)asset->data.memory, palette->size);
+            palette->paletteData = makeArray<V4>(palette->size, (V4*)asset->data.writable_data(), palette->size);
 
             f32 ratio = 1.0f / (f32)(palette->size);
             for (s32 i = 0; i < palette->size; i++) {
@@ -516,10 +514,10 @@ void unloadAsset(Asset* asset)
         asset->children = makeEmptyArray<AssetID>();
     }
 
-    if (asset->data.memory != nullptr) {
-        s_assets->assetMemoryAllocated -= asset->data.size;
-        asset->data.size = 0;
-        deallocateRaw(asset->data.memory);
+    if (asset->data.data() != nullptr) {
+        s_assets->assetMemoryAllocated -= asset->data.size();
+        deallocateRaw(asset->data.writable_data());
+        asset->data = {};
     }
 
     asset->state = AssetState_Unloaded;
@@ -571,11 +569,11 @@ Asset* addSpriteGroup(String name, s32 spriteCount)
     ASSERT(spriteCount > 0); // Must have a positive number of sprites in a Sprite Group!
 
     Asset* spriteGroup = addAsset(AssetType_Sprite, name, 0);
-    if (spriteGroup->data.size != 0)
+    if (spriteGroup->data.size() != 0)
         DEBUG_BREAK(); // @Leak! Creating the sprite group multiple times is probably a bad idea for other reasons too.
     spriteGroup->data = assetsAllocate(s_assets, spriteCount * sizeof(Sprite));
     spriteGroup->spriteGroup.count = spriteCount;
-    spriteGroup->spriteGroup.sprites = (Sprite*)spriteGroup->data.memory;
+    spriteGroup->spriteGroup.sprites = (Sprite*)spriteGroup->data.writable_data();
 
     return spriteGroup;
 }
@@ -1026,7 +1024,7 @@ void loadPaletteDefs(Blob data, Asset* asset)
                     if (paletteAsset->palette.type == PaletteType_Fixed) {
                         if (!paletteAsset->palette.paletteData.isInitialised()) {
                             paletteAsset->data = assetsAllocate(s_assets, paletteAsset->palette.size * sizeof(V4));
-                            paletteAsset->palette.paletteData = makeArray<V4>(paletteAsset->palette.size, (V4*)paletteAsset->data.memory);
+                            paletteAsset->palette.paletteData = makeArray<V4>(paletteAsset->palette.size, (V4*)paletteAsset->data.writable_data());
                         }
 
                         s32 colorIndex = paletteAsset->palette.paletteData.count;
@@ -1230,26 +1228,26 @@ void loadTexts(HashTable<String>* texts, Asset* asset, Blob fileData)
 
     s32 lineCount = countLines(fileData);
     smm keyArraySize = sizeof(String) * lineCount;
-    asset->data = assetsAllocate(s_assets, fileData.size + keyArraySize);
+    asset->data = assetsAllocate(s_assets, fileData.size() + keyArraySize);
 
-    asset->texts.keys = makeArray(lineCount, (String*)asset->data.memory);
+    asset->texts.keys = makeArray(lineCount, (String*)asset->data.writable_data());
 
     smm currentSize = keyArraySize;
-    char* currentPos = (char*)(asset->data.memory + keyArraySize);
+    char* currentPos = (char*)(asset->data.writable_data() + keyArraySize);
 
     while (loadNextLine(&reader)) {
         String inputKey = readToken(&reader);
         String inputText = getRemainderOfLine(&reader);
 
         // Store the key
-        ASSERT(currentSize + inputKey.length <= asset->data.size);
+        ASSERT(currentSize + inputKey.length <= asset->data.size());
         String key = makeString(currentPos, inputKey.length, false);
         copyString(inputKey, &key);
         currentSize += key.length;
         currentPos += key.length;
 
         // Store the text
-        ASSERT(currentSize + inputText.length <= asset->data.size);
+        ASSERT(currentSize + inputText.length <= asset->data.size());
         String text = makeString(currentPos, 0, false);
 
         for (s32 charIndex = 0; charIndex < inputText.length; charIndex++) {

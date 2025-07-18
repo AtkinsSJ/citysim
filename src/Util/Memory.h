@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Maths.h"
+#include <Util/Blob.h>
 #include <cstring> // For memset
 
 #define KB(x) ((x) * 1024)
@@ -15,20 +16,6 @@
 
 #define ArrayCount(a) (sizeof(a) / sizeof(a[0]))
 #define ArrayCountS(a) ((int)(ArrayCount(a)))
-
-struct Blob {
-    smm size;
-    u8* memory;
-};
-inline Blob makeBlob(smm size, u8* memory)
-{
-    Blob result = {};
-
-    result.size = size;
-    result.memory = memory;
-
-    return result;
-}
 
 // Allocates directly from the OS, not from an arena
 u8* allocateRaw(smm size);

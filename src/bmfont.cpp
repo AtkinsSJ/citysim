@@ -12,7 +12,7 @@
 void loadBMFont(Blob data, Asset* asset)
 {
     smm pos = 0;
-    BMFontHeader* header = (BMFontHeader*)(data.memory + pos);
+    BMFontHeader* header = (BMFontHeader*)(data.data() + pos);
     pos += sizeof(BMFontHeader);
 
     // Check it's a valid BMF
@@ -28,27 +28,27 @@ void loadBMFont(Blob data, Asset* asset)
         BMFontBlock_Common* common = nullptr;
         BMFont_Char* chars = nullptr;
         u32 charCount = 0;
-        void* pages = nullptr;
+        void const* pages = nullptr;
 
-        blockHeader = (BMFontBlockHeader*)(data.memory + pos);
+        blockHeader = (BMFontBlockHeader*)(data.data() + pos);
         pos += sizeof(BMFontBlockHeader);
 
-        while (pos < data.size) {
+        while (pos < data.size()) {
             switch (blockHeader->type) {
             case BMF_Block_Info: {
                 // Ignored
             } break;
 
             case BMF_Block_Common: {
-                common = (BMFontBlock_Common*)(data.memory + pos);
+                common = (BMFontBlock_Common*)(data.data() + pos);
             } break;
 
             case BMF_Block_Pages: {
-                pages = data.memory + pos;
+                pages = data.data() + pos;
             } break;
 
             case BMF_Block_Chars: {
-                chars = (BMFont_Char*)(data.memory + pos);
+                chars = (BMFont_Char*)(data.data() + pos);
                 charCount = blockHeader->size / sizeof(BMFont_Char);
             } break;
 
@@ -59,7 +59,7 @@ void loadBMFont(Blob data, Asset* asset)
 
             pos += blockHeader->size;
 
-            blockHeader = (BMFontBlockHeader*)(data.memory + pos);
+            blockHeader = (BMFontBlockHeader*)(data.data() + pos);
             pos += sizeof(BMFontBlockHeader);
         }
 
@@ -77,7 +77,7 @@ void loadBMFont(Blob data, Asset* asset)
             font->glyphCapacity = ceil_s32(charCount * 2.0f);
             smm glyphEntryMemorySize = font->glyphCapacity * sizeof(BitmapFontGlyphEntry);
             asset->data = assetsAllocate(&asset_manager(), glyphEntryMemorySize);
-            font->glyphEntries = (BitmapFontGlyphEntry*)(asset->data.memory);
+            font->glyphEntries = (BitmapFontGlyphEntry*)(asset->data.data());
 
             String textureName = makeString((char*)pages);
             font->texture = addTexture(textureName, false);

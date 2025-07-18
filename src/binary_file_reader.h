@@ -44,7 +44,7 @@ struct BinaryFileReader {
             smm structStartPos = sizeof(FileSectionHeader) + relativeOffset;
 
             if ((relativeOffset >= 0) && ((relativeOffset + sizeof(T)) <= currentSectionHeader->length)) {
-                result = (T*)(currentSection.memory + structStartPos);
+                result = (T*)(currentSection.data() + structStartPos);
             }
         }
 

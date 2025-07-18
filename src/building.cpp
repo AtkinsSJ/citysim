@@ -130,8 +130,8 @@ void loadBuildingDefs(Blob data, Asset* asset)
     smm buildingNamesSize = sizeof(String) * buildingCount;
     smm variantsSize = sizeof(BuildingVariant) * totalVariantCount;
     asset->data = assetsAllocate(&asset_manager(), buildingNamesSize + variantsSize);
-    asset->buildingDefs.buildingIDs = makeArray(buildingCount, (String*)asset->data.memory);
-    u8* variantsMemory = asset->data.memory + buildingNamesSize;
+    asset->buildingDefs.buildingIDs = makeArray(buildingCount, (String*)asset->data.writable_data());
+    u8* variantsMemory = asset->data.writable_data() + buildingNamesSize;
 
     restart(&reader);
 
@@ -497,7 +497,7 @@ void removeBuildingDefs(Array<String> idsToRemove)
     // catalogue->overallMaxBuildingDim = 0;
 }
 
- BuildingDef* getBuildingDef(s32 buildingTypeID)
+BuildingDef* getBuildingDef(s32 buildingTypeID)
 {
     BuildingDef* result = buildingCatalogue.allBuildings.get(0);
 
@@ -510,7 +510,7 @@ void removeBuildingDefs(Array<String> idsToRemove)
     return result;
 }
 
- BuildingDef* getBuildingDef(Building* building)
+BuildingDef* getBuildingDef(Building* building)
 {
     BuildingDef* result = nullptr;
 
@@ -521,14 +521,14 @@ void removeBuildingDefs(Array<String> idsToRemove)
     return result;
 }
 
- BuildingDef* findBuildingDef(String name)
+BuildingDef* findBuildingDef(String name)
 {
     BuildingDef* result = buildingCatalogue.buildingsByName.findValue(name).orDefault(nullptr);
 
     return result;
 }
 
- bool buildingDefHasType(BuildingDef* def, s32 typeID)
+bool buildingDefHasType(BuildingDef* def, s32 typeID)
 {
     bool result = (def->typeID == typeID);
 
@@ -539,7 +539,7 @@ void removeBuildingDefs(Array<String> idsToRemove)
     return result;
 }
 
- ChunkedArray<BuildingDef*>* getConstructibleBuildings()
+ChunkedArray<BuildingDef*>* getConstructibleBuildings()
 {
     return &buildingCatalogue.constructibleBuildings;
 }
@@ -826,7 +826,7 @@ void updateBuilding(City* city, Building* building)
     }
 }
 
- void addProblem(Building* building, BuildingProblemType problem)
+void addProblem(Building* building, BuildingProblemType problem)
 {
     BuildingProblem* bp = &building->problems[problem];
     if (!bp->isActive) {
@@ -838,7 +838,7 @@ void updateBuilding(City* city, Building* building)
     // TODO: Update zots!
 }
 
- void removeProblem(Building* building, BuildingProblemType problem)
+void removeProblem(Building* building, BuildingProblemType problem)
 {
     if (building->problems[problem].isActive) {
         building->problems[problem].isActive = false;
@@ -847,7 +847,7 @@ void updateBuilding(City* city, Building* building)
     }
 }
 
- bool hasProblem(Building* building, BuildingProblemType problem)
+bool hasProblem(Building* building, BuildingProblemType problem)
 {
     bool result = building->problems[problem].isActive;
 
@@ -865,7 +865,7 @@ void loadBuildingSprite(Building* building)
     }
 }
 
- ConnectionType connectionTypeOf(char c)
+ConnectionType connectionTypeOf(char c)
 {
     ConnectionType result;
 
@@ -891,7 +891,7 @@ void loadBuildingSprite(Building* building)
     return result;
 }
 
- char asChar(ConnectionType connectionType)
+char asChar(ConnectionType connectionType)
 {
     char result;
 
@@ -917,7 +917,7 @@ void loadBuildingSprite(Building* building)
     return result;
 }
 
- s32 getRequiredPower(Building* building)
+s32 getRequiredPower(Building* building)
 {
     s32 result = 0;
 
@@ -929,7 +929,7 @@ void loadBuildingSprite(Building* building)
     return result;
 }
 
- bool buildingHasPower(Building* building)
+bool buildingHasPower(Building* building)
 {
     return !hasProblem(building, BuildingProblem_NoPower);
 }

@@ -73,9 +73,9 @@ bool BinaryFileReader::startSection(FileIdentifier sectionID, u8 supportedSectio
                 // Read the whole section into memory
                 smm bytesToRead = sizeof(FileSectionHeader) + tocEntry->length;
                 currentSection = allocateBlob(arena, bytesToRead);
-                smm bytesRead = readData(fileHandle, tocEntry->offset, bytesToRead, currentSection.memory);
+                smm bytesRead = readData(fileHandle, tocEntry->offset, bytesToRead, currentSection.writable_data());
                 if (bytesRead == bytesToRead) {
-                    currentSectionHeader = (FileSectionHeader*)currentSection.memory;
+                    currentSectionHeader = (FileSectionHeader*)currentSection.data();
 
                     // Check the version
                     if (currentSectionHeader->version <= supportedSectionVersion) {
@@ -140,5 +140,5 @@ bool BinaryFileReader::readBlob(FileBlob source, u8* dest, smm destSize)
 
 u8* BinaryFileReader::sectionMemoryAt(smm relativeOffset)
 {
-    return currentSection.memory + sizeof(FileSectionHeader) + relativeOffset;
+    return currentSection.writable_data() + sizeof(FileSectionHeader) + relativeOffset;
 }
