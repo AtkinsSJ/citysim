@@ -565,16 +565,16 @@ bool compileShader(ShaderProgram* glShader, String shaderName, Shader* shaderPro
 
     bool result = false;
 
-    GLuint shaderID = glCreateShader(shaderPart);
+    GLuint shaderID = glCreateShader(to_underlying(shaderPart));
     Deferred defer_delete_shader = [shaderID] { glDeleteShader(shaderID); };
 
     String source = nullString;
     switch (shaderPart) {
-    case GL_ShaderPart_Vertex: {
+    case ShaderPart::Vertex: {
         source = shaderProgram->vertexShader;
     } break;
 
-    case GL_ShaderPart_Fragment: {
+    case ShaderPart::Fragment: {
         source = shaderProgram->fragmentShader;
     } break;
 
@@ -636,8 +636,8 @@ void loadShaderProgram(Asset* asset, ShaderProgram* glShader)
     glShader->shaderProgramID = glCreateProgram();
 
     if (glShader->shaderProgramID) {
-        bool isVertexShaderCompiled = compileShader(glShader, asset->shortName, &asset->shader, GL_ShaderPart_Vertex);
-        bool isFragmentShaderCompiled = compileShader(glShader, asset->shortName, &asset->shader, GL_ShaderPart_Fragment);
+        bool isVertexShaderCompiled = compileShader(glShader, asset->shortName, &asset->shader, ShaderPart::Vertex);
+        bool isFragmentShaderCompiled = compileShader(glShader, asset->shortName, &asset->shader, ShaderPart::Fragment);
 
         // Link shader programs
         if (isVertexShaderCompiled && isFragmentShaderCompiled) {

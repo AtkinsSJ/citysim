@@ -26,10 +26,10 @@ struct VertexData {
     V2 uv;
 };
 
-enum ShaderPart {
-    GL_ShaderPart_Fragment = GL_FRAGMENT_SHADER,
-    GL_ShaderPart_Geometry = GL_GEOMETRY_SHADER,
-    GL_ShaderPart_Vertex = GL_VERTEX_SHADER,
+enum class ShaderPart : GLenum {
+    Fragment = GL_FRAGMENT_SHADER,
+    Geometry = GL_GEOMETRY_SHADER,
+    Vertex = GL_VERTEX_SHADER,
 };
 
 struct ShaderProgram {
