@@ -26,12 +26,13 @@ struct LineReader;
 
 namespace UI {
 
-enum DrawableType {
-    Drawable_None,
-    Drawable_Color,
-    Drawable_Gradient,
-    Drawable_Ninepatch,
-    Drawable_Sprite,
+// FIXME: This should go somewhere else probably.
+enum class DrawableType : u8 {
+    None,
+    Color,
+    Gradient,
+    Ninepatch,
+    Sprite,
 };
 
 struct DrawableStyle {

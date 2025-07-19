@@ -18,14 +18,14 @@ Maybe<DrawableStyle> readDrawableStyle(LineReader* reader)
 
     if (equals(typeName, "none"_s)) {
         DrawableStyle drawable = {};
-        drawable.type = Drawable_None;
+        drawable.type = DrawableType::None;
 
         result = makeSuccess(drawable);
     } else if (equals(typeName, "color"_s)) {
         Maybe<V4> color = readColor(reader);
         if (color.isValid) {
             DrawableStyle drawable = {};
-            drawable.type = Drawable_Color;
+            drawable.type = DrawableType::Color;
             drawable.color = color.value;
 
             result = makeSuccess(drawable);
@@ -38,7 +38,7 @@ Maybe<DrawableStyle> readDrawableStyle(LineReader* reader)
 
         if (color00.isValid && color01.isValid && color10.isValid && color11.isValid) {
             DrawableStyle drawable = {};
-            drawable.type = Drawable_Gradient;
+            drawable.type = DrawableType::Gradient;
             drawable.gradient.color00 = color00.value;
             drawable.gradient.color01 = color01.value;
             drawable.gradient.color10 = color10.value;
@@ -52,7 +52,7 @@ Maybe<DrawableStyle> readDrawableStyle(LineReader* reader)
         Maybe<V4> color = readColor(reader, true);
 
         DrawableStyle drawable = {};
-        drawable.type = Drawable_Ninepatch;
+        drawable.type = DrawableType::Ninepatch;
         drawable.color = color.orDefault(makeWhite());
         drawable.ninepatch = getAssetRef(AssetType::Ninepatch, ninepatchName);
 
@@ -63,7 +63,7 @@ Maybe<DrawableStyle> readDrawableStyle(LineReader* reader)
         Maybe<V4> color = readColor(reader, true);
 
         DrawableStyle drawable = {};
-        drawable.type = Drawable_Sprite;
+        drawable.type = DrawableType::Sprite;
         drawable.color = color.orDefault(makeWhite());
         drawable.sprite = getSpriteRef(spriteName, 0);
 
@@ -77,7 +77,7 @@ Maybe<DrawableStyle> readDrawableStyle(LineReader* reader)
 
 bool DrawableStyle::hasFixedSize()
 {
-    return (type == Drawable_None || type == Drawable_Sprite);
+    return (type == DrawableType::None || type == DrawableType::Sprite);
 }
 
 V2I DrawableStyle::getSize()
@@ -85,7 +85,7 @@ V2I DrawableStyle::getSize()
     V2I result = {};
 
     switch (type) {
-    case Drawable_Sprite: {
+    case DrawableType::Sprite: {
         Sprite* theSprite = getSprite(&sprite);
         result.x = theSprite->pixelWidth;
         result.y = theSprite->pixelHeight;

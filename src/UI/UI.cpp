@@ -311,13 +311,13 @@ bool putButton(Rect2I bounds, ButtonStyle* style, ButtonState state, RenderBuffe
     buttonBackground.draw(renderBuffer, bounds);
 
     // Icons!
-    if (style->startIcon.type != Drawable_None) {
+    if (style->startIcon.type != DrawableType::None) {
         V2I startIconSize = style->startIcon.getSize();
         Rect2I startIconBounds = alignWithinRectangle(bounds, startIconSize, style->startIconAlignment, style->padding);
 
         Drawable(&style->startIcon).draw(renderBuffer, startIconBounds);
     }
-    if (style->endIcon.type != Drawable_None) {
+    if (style->endIcon.type != DrawableType::None) {
         V2I endIconSize = style->endIcon.getSize();
         Rect2I endIconBounds = alignWithinRectangle(bounds, endIconSize, style->endIconAlignment, style->padding);
 
