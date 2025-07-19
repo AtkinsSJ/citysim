@@ -6,13 +6,13 @@
 
 #pragma once
 
-#include "Array.h"
-#include "Basic.h"
-#include "Forward.h"
-#include "Maths.h"
+#include <Util/Array.h>
+#include <Util/Basic.h>
+#include <Util/Forward.h>
+#include <Util/Maths.h>
 
-enum RandomType {
-    Random_MT,
+enum class RandomType : u8 {
+    MT,
 };
 
 // Mersenne Twister
@@ -21,6 +21,7 @@ struct RandomMT {
     s32 index;
 };
 
+// FIXME: Random as an abstract class and MT as a subclass
 struct Random {
     RandomType type;
     union {

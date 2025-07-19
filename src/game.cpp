@@ -21,7 +21,7 @@
 GameState* newGameState()
 {
     GameState* gameState = MemoryArena::bootstrap<GameState>("Game"_s);
-    initRandom(&gameState->gameRandom, Random_MT, 12345);
+    initRandom(&gameState->gameRandom, RandomType::MT, 12345);
 
     gameState->status = GameStatus_Playing;
     gameState->actionMode = ActionMode_None;

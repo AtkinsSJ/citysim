@@ -15,7 +15,7 @@ void initRandom(Random* random, RandomType type, s32 seed)
     random->type = type;
 
     switch (type) {
-    case Random_MT: {
+    case RandomType::MT: {
         MT_randomSeed(&random->mt, seed);
     } break;
 
@@ -28,7 +28,7 @@ s32 randomNext(Random* random)
     s32 result = 0;
 
     switch (random->type) {
-    case Random_MT: {
+    case RandomType::MT: {
         result = MT_randomNext(&random->mt);
     } break;
 

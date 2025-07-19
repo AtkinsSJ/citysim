@@ -100,7 +100,7 @@ int main(int argc, char* argv[])
         enableCustomLogger();
     }
 
-    initRandom(&app_state.cosmeticRandom, Random_MT, (s32)time(nullptr));
+    initRandom(&app_state.cosmeticRandom, RandomType::MT, (s32)time(nullptr));
 
     initSettings();
     loadSettings();
