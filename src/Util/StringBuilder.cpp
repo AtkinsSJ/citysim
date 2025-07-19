@@ -15,7 +15,7 @@ StringBuilder newStringBuilder(s32 initialSize, MemoryArena* arena)
 
     StringBuilder b = {};
     b.arena = arena;
-    b.buffer = allocateMultiple<char>(arena, allocationSize);
+    b.buffer = arena->allocate_multiple<char>(allocationSize);
     b.currentMaxLength = allocationSize;
     b.length = 0;
 
@@ -29,7 +29,7 @@ void expand(StringBuilder* stb, s32 newSize)
 
     s32 targetSize = max(newSize, stb->currentMaxLength * 2);
 
-    char* newBuffer = allocateMultiple<char>(stb->arena, targetSize);
+    char* newBuffer = stb->arena->allocate_multiple<char>(targetSize);
     copyMemory(stb->buffer, newBuffer, stb->length);
 
     stb->buffer = newBuffer;

@@ -18,7 +18,7 @@ void initPowerLayer(PowerLayer* layer, City* city, MemoryArena* gameArena)
     initChunkPool(&layer->powerGroupsChunkPool, gameArena, 4);
     initChunkPool(&layer->powerGroupPointersChunkPool, gameArena, 32);
 
-    layer->tilePowerDistance = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
+    layer->tilePowerDistance = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
     fill<u8>(&layer->tilePowerDistance, 255);
     layer->powerMaxDistance = 2;
     initDirtyRects(&layer->dirtyRects, gameArena, layer->powerMaxDistance, city->bounds);
@@ -27,7 +27,7 @@ void initPowerLayer(PowerLayer* layer, City* city, MemoryArena* gameArena)
     for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&layer->sectors); sectorIndex++) {
         PowerSector* sector = &layer->sectors.sectors[sectorIndex];
 
-        sector->tilePowerGroup = allocateArray2<u8>(gameArena, sector->bounds.w, sector->bounds.h);
+        sector->tilePowerGroup = gameArena->allocate_array_2d<u8>(sector->bounds.w, sector->bounds.h);
 
         initChunkedArray(&sector->powerGroups, &layer->powerGroupsChunkPool);
     }

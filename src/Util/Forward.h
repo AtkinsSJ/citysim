@@ -16,7 +16,7 @@ struct BitArrayIterator;
 class Blob;
 struct DateTime;
 struct Matrix4;
-struct MemoryArena;
+class MemoryArena;
 struct Padding;
 struct Random;
 struct Rect2;

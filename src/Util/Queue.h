@@ -164,7 +164,7 @@ void initQueue(Queue<T>* queue, MemoryArena* arena, s32 chunkSize = 32)
     initPool<QueueChunk<T>>(&queue->chunkPool, arena, [](MemoryArena* arena, void* userData) {
                 s32 chunkSize = *(s32*)userData;
 
-                u8 *bytes = (u8*) allocate(arena, sizeof(QueueChunk<T>) + (sizeof(T) * chunkSize));
+                u8 *bytes = (u8*) arena->allocate_deprecated(sizeof(QueueChunk<T>) + (sizeof(T) * chunkSize));
                 QueueChunk<T> *newChunk = (QueueChunk<T> *)bytes;
                 *newChunk = {};
                 newChunk->items = (T *)(bytes + sizeof(QueueChunk<T>));

@@ -91,9 +91,7 @@ int main(int argc, char* argv[])
     app_state.speedMultiplier = 1.0f;
     app_state.deltaTime = app_state.rawDeltaTime * app_state.speedMultiplier;
 
-    initMemoryArena(&app_state.systemArena, "System"_s, MB(1));
-
-    init_temp_arena();
+    app_state.systemArena = { "System"_s };
 
     if constexpr (BUILD_DEBUG) {
         debugInit();
@@ -229,7 +227,7 @@ int main(int argc, char* argv[])
             // Actually draw things!
             the_renderer().render();
 
-            resetMemoryArena(&temp_arena());
+            temp_arena().reset();
         }
 
         // FRAMERATE MONITORING AND CAPPING

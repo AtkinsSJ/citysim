@@ -36,7 +36,7 @@ BinaryFileReader readBinaryFile(FileHandle* handle, FileIdentifier identifier, M
             reader.problems |= BFP_VersionTooNew;
         } else {
             // Read the TOC in
-            Array<FileTOCEntry> toc = allocateArray<FileTOCEntry>(arena, header.toc.count, false);
+            Array<FileTOCEntry> toc = arena->allocate_array<FileTOCEntry>(header.toc.count, false);
             if (readArray(handle, header.toc.relativeOffset, header.toc.count, &toc)) {
                 reader.toc = toc;
                 reader.isValidFile = true;
@@ -47,7 +47,7 @@ BinaryFileReader readBinaryFile(FileHandle* handle, FileIdentifier identifier, M
     }
 
     // Save the current arena state so we can revert to it after each section
-    reader.arenaResetState = getArenaPosition(arena);
+    reader.arenaResetState = arena->get_current_position();
 
     return reader;
 }
@@ -58,7 +58,7 @@ bool BinaryFileReader::startSection(FileIdentifier sectionID, u8 supportedSectio
 
     if (isValidFile) {
         if (sectionID != currentSectionID) {
-            revertMemoryArena(arena, arenaResetState);
+            arena->revert_to(arenaResetState);
 
             // Find the section in the TOC
             FileTOCEntry* tocEntry = nullptr;
@@ -72,7 +72,7 @@ bool BinaryFileReader::startSection(FileIdentifier sectionID, u8 supportedSectio
             if (tocEntry != nullptr) {
                 // Read the whole section into memory
                 smm bytesToRead = sizeof(FileSectionHeader) + tocEntry->length;
-                currentSection = allocateBlob(arena, bytesToRead);
+                currentSection = arena->allocate_blob(bytesToRead);
                 smm bytesRead = readData(fileHandle, tocEntry->offset, bytesToRead, currentSection.writable_data());
                 if (bytesRead == bytesToRead) {
                     currentSectionHeader = (FileSectionHeader*)currentSection.data();

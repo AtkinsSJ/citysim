@@ -67,7 +67,7 @@ public:
     // NB: Override this to do custom allocation logic.
     static T& allocate_from_pool(MemoryArena& arena)
     {
-        return *allocateStruct<T>(&arena);
+        return *arena.allocate<T>();
     }
 
     virtual void clear_for_pool() = 0;

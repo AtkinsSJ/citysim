@@ -72,7 +72,7 @@ void initSettings()
     bootstrapArena(Settings, s_settings, settingsArena);
     initHashTable(&s_settings->defs);
     initChunkedArray(&s_settings->defsOrder, &s_settings->settingsArena, 32);
-    markResetPosition(&s_settings->settingsArena);
+    s_settings->settingsArena.mark_reset_position();
 
     s_settings->userDataPath = makeString(SDL_GetPrefPath("Baffled Badger Games", "CitySim"));
     s_settings->userSettingsFilename = "settings.cnf"_s;
@@ -186,7 +186,7 @@ void loadSettingsFile(String name, Blob settingsData)
 
 void loadSettings()
 {
-    resetMemoryArena(&s_settings->settingsArena);
+    s_settings->settingsArena.reset();
     s_settings->settings = makeDefaultSettings();
 
     File userSettingsFile = readFile(&temp_arena(), getUserSettingsPath());

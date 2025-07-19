@@ -27,7 +27,7 @@ void debugInit()
     initLinkedListSentinel(&globalDebugState->topCodeBlocksFreeListSentinel);
     initLinkedListSentinel(&globalDebugState->topCodeBlocksSentinel);
     for (u32 i = 0; i < DEBUG_TOP_CODE_BLOCKS_COUNT; i++) {
-        DebugCodeDataWrapper* item = allocateStruct<DebugCodeDataWrapper>(&globalDebugState->debugArena);
+        DebugCodeDataWrapper* item = globalDebugState->debugArena.allocate<DebugCodeDataWrapper>();
         addToLinkedList(item, &globalDebugState->topCodeBlocksFreeListSentinel);
     }
 }
@@ -401,28 +401,18 @@ void updateAndRenderDebugData(DebugState* debugState)
     clearNewFrameDebugData(debugState);
 }
 
-void debugTrackArena(DebugState* debugState, MemoryArena* arena, String name)
+void debugTrackArena(DebugState* debug_state, MemoryArena* arena, String name)
 {
-    DebugArenaData* arenaData = findOrCreateDebugData(debugState, name, &debugState->arenaDataSentinel);
+    DebugArenaData* arena_data = findOrCreateDebugData(debug_state, name, &debug_state->arenaDataSentinel);
 
-    u32 frameIndex = debugState->writingFrameIndex;
+    u32 frame_index = debug_state->writingFrameIndex;
 
     if (arena) // So passing null just keeps it zeroed out
     {
-        if (arena->currentBlock) {
-            arenaData->blockCount[frameIndex] = 1;
-            arenaData->totalSize[frameIndex] = arena->currentBlock->size + arena->external_tracked_memory_size;
-            arenaData->usedSize[frameIndex] = arena->currentBlock->used + arena->external_tracked_memory_size;
-
-            MemoryBlock* block = arena->currentBlock->prevBlock;
-            while (block) {
-                arenaData->blockCount[frameIndex]++;
-                arenaData->totalSize[frameIndex] += block->size;
-                arenaData->usedSize[frameIndex] += block->size;
-
-                block = block->prevBlock;
-            }
-        }
+        auto const statistics = arena->get_statistics();
+        arena_data->blockCount[frame_index] = statistics.block_count;
+        arena_data->totalSize[frame_index] = statistics.total_size;
+        arena_data->usedSize[frame_index] = statistics.used_size;
     }
 }
 
@@ -441,21 +431,10 @@ void debugTrackAssets(DebugState* debugState)
     assetData->assetsByNameSize[frameIndex] = 0;
 
     // The assets arena
-    MemoryArena* arena = &asset_manager().assetArena;
-    if (arena->currentBlock) {
-        assetData->arenaBlockCount[frameIndex] = 1;
-        assetData->arenaTotalSize[frameIndex] = arena->currentBlock->size;
-        assetData->arenaUsedSize[frameIndex] = arena->currentBlock->used;
-
-        MemoryBlock* block = arena->currentBlock->prevBlock;
-        while (block) {
-            assetData->arenaBlockCount[frameIndex]++;
-            assetData->arenaTotalSize[frameIndex] += block->size;
-            assetData->arenaUsedSize[frameIndex] += block->size;
-
-            block = block->prevBlock;
-        }
-    }
+    auto const statistics = asset_manager().assetArena.get_statistics();
+    assetData->arenaBlockCount[frameIndex] = statistics.block_count;
+    assetData->arenaTotalSize[frameIndex] = statistics.total_size;
+    assetData->arenaUsedSize[frameIndex] = statistics.used_size;
 
     // assetsByType HashTables
     for (s32 assetType = 0; assetType < AssetTypeCount; assetType++) {

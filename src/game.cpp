@@ -51,7 +51,7 @@ void beginNewGame()
 
 void freeGameState(GameState* gameState)
 {
-    freeMemoryArena(&gameState->gameArena);
+    gameState->gameArena.~MemoryArena();
 }
 
 void inputMoveCamera(Camera* camera, V2 windowSize, V2 windowMousePos, s32 cityWidth, s32 cityHeight)
@@ -958,7 +958,7 @@ void setFixedColors(DataViewUI* dataView, String paletteName, std::initializer_l
     auto& app_state = AppState::the();
     dataView->hasFixedColors = true;
     dataView->fixedPaletteName = paletteName;
-    dataView->fixedColorNames = allocateArray<String>(&app_state.systemArena, truncate32(names.size()), false);
+    dataView->fixedColorNames = app_state.systemArena.allocate_array<String>(truncate32(names.size()), false);
     for (auto it = names.begin(); it != names.end(); it++) {
         dataView->fixedColorNames.append(pushString(&app_state.systemArena, *it));
     }
@@ -1086,7 +1086,7 @@ void drawDataViewOverlay(GameState* gameState, Rect2I visibleTileBounds)
         drawGrid(&renderer.world_overlay_buffer(), rect2(bounds), bounds.w, bounds.h, *dataView->overlayTileData, (u16)overlayPalette->count, overlayPalette->items);
     } else if (dataView->calculateTileValue) {
         // The per-tile overlay data is generated
-        Array2<u8> overlayTileData = allocateArray2<u8>(&temp_arena(), visibleTileBounds.w, visibleTileBounds.h);
+        Array2<u8> overlayTileData = temp_arena().allocate_array_2d<u8>(visibleTileBounds.w, visibleTileBounds.h);
 
         for (s32 gridY = 0; gridY < visibleTileBounds.h; gridY++) {
             for (s32 gridX = 0; gridX < visibleTileBounds.w; gridX++) {

@@ -18,14 +18,14 @@ void initFireLayer(FireLayer* layer, City* city, MemoryArena* gameArena)
     layer->fundingLevel = 1.0f;
 
     layer->maxFireRadius = 4;
-    layer->tileFireProximityEffect = allocateArray2<u16>(gameArena, city->bounds.w, city->bounds.h);
+    layer->tileFireProximityEffect = gameArena->allocate_array_2d<u16>(city->bounds.w, city->bounds.h);
     fill<u16>(&layer->tileFireProximityEffect, 0);
 
-    layer->tileTotalFireRisk = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
+    layer->tileTotalFireRisk = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
     fill<u8>(&layer->tileTotalFireRisk, 0);
-    layer->tileFireProtection = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
+    layer->tileFireProtection = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
     fill<u8>(&layer->tileFireProtection, 0);
-    layer->tileOverallFireRisk = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
+    layer->tileOverallFireRisk = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
     fill<u8>(&layer->tileOverallFireRisk, 0);
 
     initChunkedArray(&layer->fireProtectionBuildings, &city->buildingRefsChunkPool);
@@ -42,7 +42,7 @@ void initFireLayer(FireLayer* layer, City* city, MemoryArena* gameArena)
     }
 }
 
- void markFireLayerDirty(FireLayer* layer, Rect2I bounds)
+void markFireLayerDirty(FireLayer* layer, Rect2I bounds)
 {
     markRectAsDirty(&layer->dirtyRects, bounds);
 }
@@ -305,7 +305,7 @@ void saveFireLayer(FireLayer* layer, struct BinaryFileWriter* writer)
 
     // Active fires
     fireSection.activeFireCount = layer->activeFireCount;
-    Array<SAVFire> tempFires = allocateArray<SAVFire>(writer->arena, fireSection.activeFireCount);
+    Array<SAVFire> tempFires = writer->arena->allocate_array<SAVFire>(fireSection.activeFireCount);
     // ughhhh I have to iterate the sectors to get this information!
     for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&layer->sectors); sectorIndex++) {
         FireSector* sector = getSectorByIndex(&layer->sectors, sectorIndex);
@@ -333,7 +333,7 @@ bool loadFireLayer(FireLayer* layer, City* city, struct BinaryFileReader* reader
             break;
 
         // Active fires
-        Array<SAVFire> tempFires = allocateArray<SAVFire>(reader->arena, section->activeFireCount);
+        Array<SAVFire> tempFires = reader->arena->allocate_array<SAVFire>(section->activeFireCount);
         if (!reader->readArray(section->activeFires, &tempFires))
             break;
         for (u32 activeFireIndex = 0;

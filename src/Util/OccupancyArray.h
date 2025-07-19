@@ -57,7 +57,7 @@ struct OccupancyArray {
             s32 occupancyArrayCount = BitArray::calculateU64Count(itemsPerChunk);
             smm occupancyArraySize = occupancyArrayCount * sizeof(u64);
 
-            Blob blob = allocateBlob(memoryArena, structSize + arraySize + occupancyArraySize);
+            Blob blob = memoryArena->allocate_blob(structSize + arraySize + occupancyArraySize);
             OccupancyArrayChunk<T>* newChunk = (OccupancyArrayChunk<T>*)blob.data();
             *newChunk = {};
             newChunk->items = (T*)(blob.writable_data() + structSize);

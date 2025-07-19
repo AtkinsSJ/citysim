@@ -975,7 +975,7 @@ void remapBuildingTypes(City* city)
     }
 
     if (buildingCatalogue.buildingNameToOldTypeID.count > 0) {
-        Array<s32> oldTypeToNewType = allocateArray<s32>(&temp_arena(), buildingCatalogue.buildingNameToOldTypeID.count, true);
+        Array<s32> oldTypeToNewType = temp_arena().allocate_array<s32>(buildingCatalogue.buildingNameToOldTypeID.count, true);
         for (auto it = buildingCatalogue.buildingNameToOldTypeID.iterate(); it.hasNext(); it.next()) {
             auto entry = it.getEntry();
             String buildingName = entry->key;

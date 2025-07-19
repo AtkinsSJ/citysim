@@ -12,7 +12,7 @@ void initBitArray(BitArray* array, MemoryArena* arena, s32 size)
 {
     array->size = size;
     array->setBitCount = 0;
-    array->u64s = allocateArray<u64>(arena, BitArray::calculateU64Count(size), true);
+    array->u64s = arena->allocate_array<u64>(BitArray::calculateU64Count(size), true);
 }
 
 void initBitArray(BitArray* array, s32 size, Array<u64> u64s)
@@ -93,7 +93,7 @@ void BitArray::clearBits()
 
 Array<s32> BitArray::getSetBitIndices()
 {
-    Array<s32> result = allocateArray<s32>(&temp_arena(), setBitCount, false);
+    Array<s32> result = temp_arena().allocate_array<s32>(setBitCount, false);
 
     for (auto it = iterateSetBits(); it.hasNext(); it.next()) {
         result.append(it.getIndex());

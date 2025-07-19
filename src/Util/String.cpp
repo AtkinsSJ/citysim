@@ -62,7 +62,7 @@ void copyString(String src, String* dest)
 String pushString(MemoryArena* arena, s32 length)
 {
     String s = {};
-    s.chars = allocateMultiple<char>(arena, length);
+    s.chars = arena->allocate_multiple<char>(length);
     s.length = length;
 
     return s;
@@ -570,7 +570,7 @@ String formatInt(u64 value, u8 base, s32 zeroPadWidth)
 {
     ASSERT((base > 1) && (base <= 36)); // formatInt() only handles base 2 to base 36.
     s32 arraySize = max(64, zeroPadWidth);
-    char* temp = allocateMultiple<char>(&temp_arena(), arraySize); // Worst case is base 1, which is 64 characters!
+    char* temp = temp_arena().allocate_multiple<char>(arraySize); // Worst case is base 1, which is 64 characters!
     s32 count = 0;
 
     u64 v = value;
@@ -592,7 +592,7 @@ String formatInt(s64 value, u8 base, s32 zeroPadWidth)
 {
     ASSERT((base > 1) && (base <= 36)); // formatInt() only handles base 2 to base 36.
     s32 arraySize = max(65, zeroPadWidth + 1);
-    char* temp = allocateMultiple<char>(&temp_arena(), arraySize); // Worst case is base 1, which is 64 characters! Plus 1 for sign
+    char* temp = temp_arena().allocate_multiple<char>(arraySize); // Worst case is base 1, which is 64 characters! Plus 1 for sign
     bool isNegative = (value < 0);
     s32 count = 0;
 
@@ -628,7 +628,7 @@ String formatFloat(f64 value, s32 decimalPlaces)
     String formatString = myprintf("%.{0}f"_s, { formatInt(decimalPlaces) }, true);
 
     s32 length = 100; // TODO: is 100 enough?
-    char* buffer = allocateMultiple<char>(&temp_arena(), length);
+    char* buffer = temp_arena().allocate_multiple<char>(length);
     s32 written = snprintf(buffer, length, formatString.chars, value);
 
     return makeString(buffer, min(written, length));

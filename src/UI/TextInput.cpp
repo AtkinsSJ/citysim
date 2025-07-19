@@ -5,11 +5,11 @@
  */
 
 #include "AppState.h"
-#include <Gfx/Renderer.h>
 #include "font.h"
 #include "input.h"
 #include "unicode.h"
 #include <Assets/AssetManager.h>
+#include <Gfx/Renderer.h>
 #include <UI/Drawable.h>
 #include <UI/TextInput.h>
 #include <Util/Maths.h>
@@ -341,7 +341,7 @@ bool updateTextInput(TextInput* textInput)
 TextInput newTextInput(MemoryArena* arena, s32 length, String characterBlacklist)
 {
     TextInput b = {};
-    b.buffer = allocateMultiple<char>(arena, length + 1);
+    b.buffer = arena->allocate_multiple<char>(length + 1);
     b.maxByteLength = length;
     b.characterBlacklist = characterBlacklist;
 

@@ -20,13 +20,13 @@ TerrainCatalogue s_terrain_catalogue = {};
 
 void initTerrainLayer(TerrainLayer* layer, City* city, MemoryArena* gameArena)
 {
-    layer->tileTerrainType = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
-    layer->tileHeight = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
-    layer->tileDistanceToWater = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
+    layer->tileTerrainType = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
+    layer->tileHeight = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
+    layer->tileDistanceToWater = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
 
-    layer->tileSpriteOffset = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
-    layer->tileSprite = allocateArray2<SpriteRef>(gameArena, city->bounds.w, city->bounds.h);
-    layer->tileBorderSprite = allocateArray2<SpriteRef>(gameArena, city->bounds.w, city->bounds.h);
+    layer->tileSpriteOffset = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
+    layer->tileSprite = gameArena->allocate_array_2d<SpriteRef>(city->bounds.w, city->bounds.h);
+    layer->tileBorderSprite = gameArena->allocate_array_2d<SpriteRef>(city->bounds.w, city->bounds.h);
 }
 
 TerrainDef* getTerrainAt(City* city, s32 x, s32 y)
@@ -167,7 +167,7 @@ void loadTerrainDefs(Blob data, Asset* asset)
                 error(&reader, "Found a property before starting a :Terrain!"_s);
                 return;
             } else if (equals(firstWord, "borders"_s)) {
-                def->borderSpriteNames = allocateArray<String>(&asset_manager().assetArena, 80);
+                def->borderSpriteNames = asset_manager().assetArena.allocate_array<String>(80);
             } else if (equals(firstWord, "border"_s)) {
                 def->borderSpriteNames.append(intern(&asset_manager().assetStrings, readToken(&reader)));
             } else if (equals(firstWord, "can_build_on"_s)) {
@@ -291,7 +291,7 @@ void generateTerrain(City* city, Random* gameRandom)
     }
 
     // Generate a river
-    Array<f32> riverOffset = allocateArray<f32>(&temp_arena(), city->bounds.h, true);
+    Array<f32> riverOffset = temp_arena().allocate_array<f32>(city->bounds.h, true);
     generate1DNoise(&terrainRandom, &riverOffset, 10);
     f32 riverMaxWidth = randomFloatBetween(&terrainRandom, 12, 16);
     f32 riverMinWidth = randomFloatBetween(&terrainRandom, 6, riverMaxWidth);
@@ -308,7 +308,7 @@ void generateTerrain(City* city, Random* gameRandom)
     }
 
     // Coastline
-    Array<f32> coastlineOffset = allocateArray<f32>(&temp_arena(), city->bounds.w, true);
+    Array<f32> coastlineOffset = temp_arena().allocate_array<f32>(city->bounds.w, true);
     generate1DNoise(&terrainRandom, &coastlineOffset, 10);
     for (s32 x = 0; x < city->bounds.w; x++) {
         s32 coastDepth = 8 + round_s32(coastlineOffset[x] * 16.0f);
@@ -451,7 +451,7 @@ void remapTerrainTypes(City* city)
     }
 
     if (s_terrain_catalogue.terrainNameToOldType.count > 0) {
-        Array<u8> oldTypeToNewType = allocateArray<u8>(&temp_arena(), s_terrain_catalogue.terrainNameToOldType.count, true);
+        Array<u8> oldTypeToNewType = temp_arena().allocate_array<u8>(s_terrain_catalogue.terrainNameToOldType.count, true);
         for (auto it = s_terrain_catalogue.terrainNameToOldType.iterate(); it.hasNext(); it.next()) {
             auto entry = it.getEntry();
             String terrainName = entry->key;
@@ -510,7 +510,7 @@ void saveTerrainLayer(TerrainLayer* layer, BinaryFileWriter* writer)
     // Terrain types table
     s32 terrainDefCount = s_terrain_catalogue.terrainDefs.count - 1; // Skip the null def
     WriteBufferRange terrainTypeTableLoc = writer->reserveArray<SAVTerrainTypeEntry>(terrainDefCount);
-    Array<SAVTerrainTypeEntry> terrainTypeTable = allocateArray<SAVTerrainTypeEntry>(writer->arena, terrainDefCount);
+    Array<SAVTerrainTypeEntry> terrainTypeTable = writer->arena->allocate_array<SAVTerrainTypeEntry>(terrainDefCount);
     for (auto it = s_terrain_catalogue.terrainDefs.iterate(); it.hasNext(); it.next()) {
         TerrainDef* def = it.get();
         if (def->typeID == 0)
@@ -548,8 +548,8 @@ bool loadTerrainLayer(TerrainLayer* layer, City* city, struct BinaryFileReader* 
 
         // Map the file's terrain type IDs to the game's ones
         // NB: count+1 because the file won't save the null terrain, so we need to compensate
-        Array<u8> oldTypeToNewType = allocateArray<u8>(reader->arena, section->terrainTypeTable.count + 1, true);
-        Array<SAVTerrainTypeEntry> terrainTypeTable = allocateArray<SAVTerrainTypeEntry>(reader->arena, section->terrainTypeTable.count);
+        Array<u8> oldTypeToNewType = reader->arena->allocate_array<u8>(section->terrainTypeTable.count + 1, true);
+        Array<SAVTerrainTypeEntry> terrainTypeTable = reader->arena->allocate_array<SAVTerrainTypeEntry>(section->terrainTypeTable.count);
         if (!reader->readArray(section->terrainTypeTable, &terrainTypeTable))
             break;
         for (s32 i = 0; i < terrainTypeTable.count; i++) {

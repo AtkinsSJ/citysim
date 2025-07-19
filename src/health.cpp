@@ -10,7 +10,7 @@
 #include "city.h"
 #include "save_file.h"
 
- f32 getHealthCoveragePercentAt(City* city, s32 x, s32 y)
+f32 getHealthCoveragePercentAt(City* city, s32 x, s32 y)
 {
     return city->healthLayer.tileHealthCoverage.get(x, y) * 0.01f;
 }
@@ -21,7 +21,7 @@ void initHealthLayer(HealthLayer* layer, City* city, MemoryArena* gameArena)
 
     initDirtyRects(&layer->dirtyRects, gameArena, maxLandValueEffectDistance, city->bounds);
 
-    layer->tileHealthCoverage = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
+    layer->tileHealthCoverage = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
     fill<u8>(&layer->tileHealthCoverage, 0);
 
     initChunkedArray(&layer->healthBuildings, &city->buildingRefsChunkPool);
@@ -75,7 +75,7 @@ void updateHealthLayer(City* city, HealthLayer* layer)
     }
 }
 
- void markHealthLayerDirty(HealthLayer* layer, Rect2I bounds)
+void markHealthLayerDirty(HealthLayer* layer, Rect2I bounds)
 {
     markRectAsDirty(&layer->dirtyRects, bounds);
 }

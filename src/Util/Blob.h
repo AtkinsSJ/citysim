@@ -10,19 +10,24 @@
 
 class Blob {
 public:
-    Blob(smm size, u8* data)
+    Blob(size_t size, u8* data)
         : m_size(size)
         , m_data(data)
     {
     }
 
+    Blob(smm size, u8* data)
+        : Blob(static_cast<size_t>(size), data)
+    {
+    }
+
     Blob() = default;
 
-    smm size() const { return m_size; }
+    size_t size() const { return m_size; }
     u8 const* data() const { return m_data; }
     u8* writable_data() { return m_data; }
 
 private:
-    smm m_size;
+    size_t m_size;
     u8* m_data;
 };

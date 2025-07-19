@@ -190,7 +190,7 @@ T* findOrCreateDebugData(DebugState* debugState, String name, T* sentinel)
     }
 
     if (result == nullptr) {
-        result = allocateStruct<T>(&debugState->debugArena);
+        result = debugState->debugArena.allocate<T>();
         addToLinkedList(result, sentinel);
         result->name = name;
     }

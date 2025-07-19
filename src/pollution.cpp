@@ -15,10 +15,10 @@
 
 void initPollutionLayer(PollutionLayer* layer, City* city, MemoryArena* gameArena)
 {
-    layer->tilePollution = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
+    layer->tilePollution = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
     fill<u8>(&layer->tilePollution, 0);
 
-    layer->tileBuildingContributions = allocateArray2<s16>(gameArena, city->bounds.w, city->bounds.h);
+    layer->tileBuildingContributions = gameArena->allocate_array_2d<s16>(city->bounds.w, city->bounds.h);
     fill<s16>(&layer->tileBuildingContributions, 0);
 
     initDirtyRects(&layer->dirtyRects, gameArena, maxPollutionEffectDistance, city->bounds);
@@ -107,12 +107,12 @@ void markPollutionLayerDirty(PollutionLayer* layer, Rect2I bounds)
     markRectAsDirty(&layer->dirtyRects, bounds);
 }
 
- u8 getPollutionAt(City* city, s32 x, s32 y)
+u8 getPollutionAt(City* city, s32 x, s32 y)
 {
     return city->pollutionLayer.tilePollution.get(x, y);
 }
 
- f32 getPollutionPercentAt(City* city, s32 x, s32 y)
+f32 getPollutionPercentAt(City* city, s32 x, s32 y)
 {
     return city->pollutionLayer.tilePollution.get(x, y) / 255.0f;
 }

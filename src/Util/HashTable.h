@@ -301,7 +301,7 @@ void initHashTable(HashTable<T>* table, f32 maxLoadFactor = 0.75f, s32 initialCa
         table->expand(ceil_s32(initialCapacity / maxLoadFactor));
     }
 
-    initMemoryArena(&table->keyDataArena, "HashTable"_s, KB(4), KB(4));
+    table->keyDataArena = { "HashTable"_s, KB(4), KB(4) };
 }
 
 template<typename T>
@@ -329,7 +329,7 @@ HashTable<T> allocateFixedSizeHashTable(MemoryArena* arena, s32 capacity, f32 ma
     HashTable<T> result;
 
     smm hashTableDataSize = calculateHashTableDataSize<T>(capacity, maxLoadFactor);
-    Blob hashTableData = allocateBlob(arena, hashTableDataSize);
+    Blob hashTableData = arena->allocate_blob(hashTableDataSize);
     initFixedSizeHashTable<T>(&result, capacity, maxLoadFactor, hashTableData);
 
     return result;
@@ -351,7 +351,7 @@ void initFixedSizeHashTable(HashTable<T>* table, s32 capacity, f32 maxLoadFactor
     table->entries = (HashTableEntry<T>*)entryData.data();
 
     // TODO: Eliminate this somehow
-    initMemoryArena(&table->keyDataArena, "FixedSizeHashTable"_s, KB(4), KB(4));
+    table->keyDataArena = { "FixedSizeHashTable"_s, KB(4), KB(4) };
 }
 
 template<typename T>

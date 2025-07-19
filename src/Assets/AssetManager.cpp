@@ -23,7 +23,6 @@ void initAssets()
 
     initStringTable(&s_assets->assetStrings);
 
-    ASSERT(s_assets->assetArena.currentBlock != nullptr); // initAssetManager() called with uninitialised/corrupted memory arena!
     String basePath = makeString(SDL_GetBasePath());
     s_assets->assetsPath = intern(&s_assets->assetStrings, constructPath({ basePath, "assets"_s }));
 

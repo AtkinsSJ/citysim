@@ -25,7 +25,7 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
     city->funds = funds;
     city->bounds = irectXYWH(0, 0, width, height);
 
-    city->tileBuildingIndex = allocateArray2<s32>(gameArena, width, height);
+    city->tileBuildingIndex = gameArena->allocate_array_2d<s32>(width, height);
     initChunkPool(&city->sectorBuildingsChunkPool, gameArena, 128);
     initChunkPool(&city->sectorBoundariesChunkPool, gameArena, 8);
     initChunkPool(&city->buildingRefsChunkPool, gameArena, 128);
@@ -515,7 +515,7 @@ void saveBuildings(City* city, struct BinaryFileWriter* writer)
     // Building types table
     s32 buildingDefCount = buildingCatalogue.allBuildings.count - 1; // Skip the null def
     WriteBufferRange buildingTypeTableLoc = writer->reserveArray<SAVBuildingTypeEntry>(buildingDefCount);
-    Array<SAVBuildingTypeEntry> buildingTypeTable = allocateArray<SAVBuildingTypeEntry>(writer->arena, buildingDefCount);
+    Array<SAVBuildingTypeEntry> buildingTypeTable = writer->arena->allocate_array<SAVBuildingTypeEntry>(buildingDefCount);
     for (auto it = buildingCatalogue.allBuildings.iterate(); it.hasNext(); it.next()) {
         BuildingDef* def = it.get();
         if (def->typeID == 0)
@@ -547,7 +547,7 @@ void saveBuildings(City* city, struct BinaryFileWriter* writer)
     //
     buildingSection.buildingCount = city->buildings.count - 1; // Not the null building!
 
-    SAVBuilding* tempBuildings = allocateMultiple<SAVBuilding>(writer->arena, buildingSection.buildingCount);
+    SAVBuilding* tempBuildings = writer->arena->allocate_multiple<SAVBuilding>(buildingSection.buildingCount);
     s32 tempBuildingIndex = 0;
 
     for (auto it = city->buildings.iterate(); it.hasNext(); it.next()) {
@@ -588,8 +588,8 @@ bool loadBuildings(City* city, struct BinaryFileReader* reader)
 
         // Map the file's building type IDs to the game's ones
         // NB: count+1 because the file won't save the null building, so we need to compensate
-        Array<u32> oldTypeToNewType = allocateArray<u32>(reader->arena, section->buildingTypeTable.count + 1, true);
-        Array<SAVBuildingTypeEntry> buildingTypeTable = allocateArray<SAVBuildingTypeEntry>(reader->arena, section->buildingTypeTable.count);
+        Array<u32> oldTypeToNewType = reader->arena->allocate_array<u32>(section->buildingTypeTable.count + 1, true);
+        Array<SAVBuildingTypeEntry> buildingTypeTable = reader->arena->allocate_array<SAVBuildingTypeEntry>(section->buildingTypeTable.count);
         if (!reader->readArray(section->buildingTypeTable, &buildingTypeTable))
             break;
         for (s32 i = 0; i < buildingTypeTable.count; i++) {
@@ -625,7 +625,7 @@ bool loadBuildings(City* city, struct BinaryFileReader* reader)
             }
         }
 
-        Array<SAVBuilding> tempBuildings = allocateArray<SAVBuilding>(reader->arena, section->buildingCount);
+        Array<SAVBuilding> tempBuildings = reader->arena->allocate_array<SAVBuilding>(section->buildingCount);
         if (!reader->readBlob(section->buildings, &tempBuildings))
             break;
         for (u32 buildingIndex = 0;

@@ -4,141 +4,178 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "MemoryArena.h"
-#include "Log.h"
-#include "Maths.h"
-#include "Memory.h"
+#include <Util/Log.h>
+#include <Util/Maths.h>
+#include <Util/Memory.h>
+#include <Util/MemoryArena.h>
 
-static MemoryArena s_temp_arena;
+static MemoryArena s_temp_arena { "Temp"_s, MB(4) };
+
+MemoryArena::MemoryArena(String name, Optional<size_t> initial_size, size_t minimum_block_size)
+    : m_name(name)
+    , m_minimum_block_size(minimum_block_size)
+{
+    if (initial_size.has_value()) {
+        auto block_size = max(initial_size.value(), m_minimum_block_size);
+        if (!allocate_block(block_size)) {
+            logCritical("Unable to allocate {0} bytes for {1}!"_s, { formatInt(block_size), m_name });
+            ASSERT(!"Failed an allocation!");
+        }
+    }
+    mark_reset_position();
+}
+
+MemoryArena::MemoryArena(MemoryArena&& other)
+    : m_name(other.m_name)
+    , m_current_block(other.m_current_block)
+    , m_minimum_block_size(other.m_minimum_block_size)
+    , m_external_tracked_memory_size(other.m_external_tracked_memory_size)
+    , m_reset_state(other.m_reset_state)
+{
+    other = {};
+}
+
+MemoryArena& MemoryArena::operator=(MemoryArena&& other)
+{
+    this->~MemoryArena();
+
+    m_name = other.m_name;
+    m_current_block = other.m_current_block;
+    m_minimum_block_size = other.m_minimum_block_size;
+    m_external_tracked_memory_size = other.m_external_tracked_memory_size;
+    m_reset_state = other.m_reset_state;
+
+    other.m_current_block = {};
+    other.m_reset_state = {};
+
+    return *this;
+}
+
+MemoryArena::~MemoryArena()
+{
+    if (m_current_block) {
+        // Free all but the original block
+        while (m_current_block->prevBlock) {
+            free_current_block();
+        }
+
+        // Free original block, which may contain the arena so we have to be careful!
+        MemoryBlock* final_block = m_current_block;
+        m_current_block = nullptr;
+        deallocateRaw(final_block);
+    }
+}
+
+MemoryArena::Statistics MemoryArena::get_statistics() const
+{
+    Statistics statistics {};
+    if (m_current_block) {
+        statistics.block_count = 1;
+        statistics.total_size = m_current_block->size + m_external_tracked_memory_size;
+        statistics.used_size = m_current_block->used + m_external_tracked_memory_size;
+
+        MemoryBlock const* block = m_current_block->prevBlock;
+        while (block) {
+            statistics.block_count++;
+            statistics.total_size += block->size;
+            statistics.used_size += block->size;
+
+            block = block->prevBlock;
+        }
+    }
+    return statistics;
+}
+
+MemoryArenaResetState MemoryArena::get_current_position() const
+{
+    return MemoryArenaResetState {
+        .currentBlock = m_current_block,
+        .used = m_current_block ? m_current_block->used : 0,
+    };
+}
+
+void MemoryArena::mark_reset_position()
+{
+    m_reset_state = get_current_position();
+}
+
+void MemoryArena::revert_to(MemoryArenaResetState const& reset_state)
+{
+    while (m_current_block != reset_state.currentBlock) {
+        free_current_block();
+    }
+
+    if (m_current_block) {
+#if BUILD_DEBUG
+        // Clear memory so we spot bugs in keeping pointers to deallocated memory.
+        fillMemory<u8>(m_current_block->memory + reset_state.used, 0xcd, m_current_block->used - reset_state.used);
+#endif
+        m_current_block->used = reset_state.used;
+    }
+}
+
+void MemoryArena::reset()
+{
+    revert_to(m_reset_state);
+}
+
+Blob MemoryArena::allocate_blob(size_t size)
+{
+    return Blob { size, static_cast<u8*>(allocate_internal(size)) };
+}
+
+bool MemoryArena::allocate_block(size_t size)
+{
+    size_t totalSize = size + sizeof(MemoryBlock);
+    u8* memory = allocateRaw(totalSize);
+
+    if (!memory)
+        return false;
+
+    MemoryBlock* block = reinterpret_cast<MemoryBlock*>(memory);
+    block->memory = memory + sizeof(MemoryBlock);
+    block->used = 0;
+    block->size = size;
+
+    block->prevBlock = m_current_block;
+    m_current_block = block;
+
+    return true;
+}
+
+void MemoryArena::free_current_block()
+{
+    MemoryBlock* block = m_current_block;
+    ASSERT(block != nullptr); // Attempting to free non-existent block
+    m_current_block = block->prevBlock;
+    deallocateRaw(block);
+}
 
 MemoryArena& temp_arena()
 {
     return s_temp_arena;
 }
 
-void init_temp_arena()
+void* MemoryArena::allocate_internal(size_t size)
 {
-    initMemoryArena(&s_temp_arena, "Temp"_s, MB(4));
-}
-
-Blob allocateBlob(MemoryArena* arena, smm size)
-{
-    return Blob { size, (u8*)allocate(arena, size) };
-}
-
-MemoryBlock* addMemoryBlock(MemoryArena* arena, smm size)
-{
-    smm totalSize = size + sizeof(MemoryBlock);
-    u8* memory = allocateRaw(totalSize);
-
-    ASSERT(memory != nullptr); // Failed to allocate memory block!
-
-    MemoryBlock* block = (MemoryBlock*)memory;
-    block->memory = memory + sizeof(MemoryBlock);
-    block->used = 0;
-    block->size = size;
-
-    block->prevBlock = arena->currentBlock;
-
-    return block;
-}
-
-void* allocate(MemoryArena* arena, smm size)
-{
-    if (size > arena->minimumBlockSize) {
-        logWarn("Large allocation in {0} arena: {1} bytes when block size is {2} bytes"_s, { arena->name, formatInt(size), formatInt(arena->minimumBlockSize) });
+    if (size > m_minimum_block_size) {
+        logWarn("Large allocation in {0} arena: {1} bytes when block size is {2} bytes"_s, { name(), formatInt(size), formatInt(m_minimum_block_size) });
     }
 
     ASSERT(size < GB(1)); // Something is very wrong if we're trying to allocate an entire gigabyte for something!
 
-    if ((arena->currentBlock == 0)
-        || (arena->currentBlock->used + size > arena->currentBlock->size)) {
-        smm newBlockSize = max(size, arena->minimumBlockSize);
-        arena->currentBlock = addMemoryBlock(arena, newBlockSize);
+    if ((m_current_block == 0)
+        || (m_current_block->used + size > m_current_block->size)) {
+        size_t new_block_size = max(size, m_minimum_block_size);
+        allocate_block(new_block_size);
     }
 
-    ASSERT(arena->currentBlock != nullptr); // No memory in arena!
+    ASSERT(m_current_block != nullptr); // No memory in arena!
 
-    void* result = arena->currentBlock->memory + arena->currentBlock->used;
+    u8* result = m_current_block->memory + m_current_block->used;
     memset(result, 0, size);
 
-    arena->currentBlock->used += size;
+    m_current_block->used += size;
 
     return result;
-}
-
-void freeCurrentBlock(MemoryArena* arena)
-{
-    MemoryBlock* block = arena->currentBlock;
-    ASSERT(block != nullptr); // Attempting to free non-existent block
-    arena->currentBlock = block->prevBlock;
-    deallocateRaw(block);
-}
-
-// Returns the memory arena to a previous state
-void revertMemoryArena(MemoryArena* arena, MemoryArenaResetState resetState)
-{
-    while (arena->currentBlock != resetState.currentBlock) {
-        freeCurrentBlock(arena);
-    }
-
-    if (arena->currentBlock) {
-#if BUILD_DEBUG
-        // Clear memory so we spot bugs in keeping pointers to deallocated memory.
-        fillMemory<u8>(arena->currentBlock->memory + resetState.used, 0xcd, arena->currentBlock->used - resetState.used);
-#endif
-        arena->currentBlock->used = resetState.used;
-    }
-}
-
-void resetMemoryArena(MemoryArena* arena)
-{
-    revertMemoryArena(arena, arena->resetState);
-}
-
-void freeMemoryArena(MemoryArena* arena)
-{
-    // Free all but the original block
-    while (arena->currentBlock->prevBlock) {
-        freeCurrentBlock(arena);
-    }
-
-    // Free original block, which may contain the arena so we have to be careful!
-    MemoryBlock* finalBlock = arena->currentBlock;
-    arena->currentBlock = 0;
-    deallocateRaw(finalBlock);
-}
-
-MemoryArenaResetState getArenaPosition(MemoryArena* arena)
-{
-    MemoryArenaResetState result = {};
-
-    result.currentBlock = arena->currentBlock;
-    result.used = arena->currentBlock ? arena->currentBlock->used : 0;
-
-    return result;
-}
-
-void markResetPosition(MemoryArena* arena)
-{
-    arena->resetState = getArenaPosition(arena);
-}
-
-bool initMemoryArena(MemoryArena* arena, String name, smm size, smm minimumBlockSize)
-{
-    bool succeeded = true;
-
-    *arena = {};
-    arena->minimumBlockSize = minimumBlockSize;
-
-    if (size) {
-        arena->currentBlock = addMemoryBlock(arena, max(size, minimumBlockSize));
-        succeeded = (arena->currentBlock->memory != 0);
-    }
-
-    arena->name = pushString(arena, name);
-
-    markResetPosition(arena);
-
-    return succeeded;
 }

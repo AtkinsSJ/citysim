@@ -13,13 +13,13 @@
 
 void initTransportLayer(TransportLayer* layer, City* city, MemoryArena* gameArena)
 {
-    layer->tileTransportTypes = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
+    layer->tileTransportTypes = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
 
     layer->transportMaxDistance = 8;
     initDirtyRects(&layer->dirtyRects, gameArena, layer->transportMaxDistance, city->bounds);
 
     for (s32 type = 0; type < TransportTypeCount; type++) {
-        layer->tileTransportDistance[type] = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
+        layer->tileTransportDistance[type] = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
         fill<u8>(&layer->tileTransportDistance[type], 255);
     }
 }
@@ -120,7 +120,7 @@ void addTransportToTile(City* city, s32 x, s32 y, Flags_TransportType types)
     city->transportLayer.tileTransportTypes.set(x, y, newValue);
 }
 
- s32 getDistanceToTransport(City* city, s32 x, s32 y, TransportType type)
+s32 getDistanceToTransport(City* city, s32 x, s32 y, TransportType type)
 {
     return city->transportLayer.tileTransportDistance[type].get(x, y);
 }

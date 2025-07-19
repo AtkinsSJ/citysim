@@ -156,7 +156,7 @@ WriteBufferChunk* WriteBuffer::getChunkAt(WriteBufferLocation location)
 
 void WriteBuffer::appendNewChunk()
 {
-    Blob blob = allocateBlob(arena, sizeof(WriteBufferChunk) + chunkSize);
+    Blob blob = arena->allocate_blob(sizeof(WriteBufferChunk) + chunkSize);
     WriteBufferChunk* newChunk = (WriteBufferChunk*)blob.data();
     newChunk->used = 0;
     newChunk->bytes = blob.writable_data() + sizeof(WriteBufferChunk);

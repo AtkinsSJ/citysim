@@ -6,15 +6,15 @@
 
 #include "zone.h"
 #include "AppState.h"
-#include <Gfx/Renderer.h>
 #include "binary_file_reader.h"
 #include "binary_file_writer.h"
 #include "city.h"
 #include "save_file.h"
+#include <Gfx/Renderer.h>
 
 void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena)
 {
-    zoneLayer->tileZone = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
+    zoneLayer->tileZone = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
 
     initSectorGrid(&zoneLayer->sectors, gameArena, city->bounds.w, city->bounds.h, 16, 8);
     s32 sectorCount = getSectorCount(&zoneLayer->sectors);
@@ -24,9 +24,9 @@ void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena)
         initBitArray(&zoneLayer->sectorsWithZones[zoneType], gameArena, sectorCount);
         initBitArray(&zoneLayer->sectorsWithEmptyZones[zoneType], gameArena, sectorCount);
 
-        zoneLayer->tileDesirability[zoneType] = allocateArray2<u8>(gameArena, city->bounds.w, city->bounds.h);
+        zoneLayer->tileDesirability[zoneType] = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
 
-        zoneLayer->mostDesirableSectors[zoneType] = allocateArray<s32>(gameArena, sectorCount, true);
+        zoneLayer->mostDesirableSectors[zoneType] = gameArena->allocate_array<s32>(sectorCount, true);
         for (s32 sectorIndex = 0; sectorIndex < sectorCount; sectorIndex++) {
             // To start with, we just fill the array 0-to-N because we don't know what's the most desirable.
             zoneLayer->mostDesirableSectors[zoneType][sectorIndex] = sectorIndex;
@@ -40,18 +40,18 @@ void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena)
     }
 }
 
- ZoneDef getZoneDef(s32 zoneType)
+ZoneDef getZoneDef(s32 zoneType)
 {
     ASSERT(zoneType >= 0 && zoneType < ZoneTypeCount);
     return zoneDefs[zoneType];
 }
 
- ZoneType getZoneAt(City* city, s32 x, s32 y)
+ZoneType getZoneAt(City* city, s32 x, s32 y)
 {
     return (ZoneType)city->zoneLayer.tileZone.getIfExists(x, y, Zone_None);
 }
 
- s32 calculateZoneCost(CanZoneQuery* query)
+s32 calculateZoneCost(CanZoneQuery* query)
 {
     return query->zoneableTilesCount * query->zoneDef->costPerTile;
 }
@@ -65,7 +65,7 @@ CanZoneQuery* queryCanZoneTiles(City* city, ZoneType zoneType, Rect2I bounds)
     CanZoneQuery* query = nullptr;
     s32 tileCount = areaOf(bounds);
     smm structSize = sizeof(CanZoneQuery) + (tileCount * sizeof(query->tileCanBeZoned[0]));
-    u8* memory = (u8*)allocate(&temp_arena(), structSize);
+    u8* memory = static_cast<u8*>(temp_arena().allocate_deprecated(structSize));
     query = (CanZoneQuery*)memory;
     query->tileCanBeZoned = (u8*)(memory + sizeof(CanZoneQuery));
     query->bounds = bounds;
@@ -115,7 +115,7 @@ CanZoneQuery* queryCanZoneTiles(City* city, ZoneType zoneType, Rect2I bounds)
     return query;
 }
 
- bool canZoneTile(CanZoneQuery* query, s32 x, s32 y)
+bool canZoneTile(CanZoneQuery* query, s32 x, s32 y)
 {
     ASSERT(contains(query->bounds, x, y));
     s32 qX = x - query->bounds.x;
@@ -665,12 +665,12 @@ void growSomeZoneBuildings(City* city)
     }
 }
 
- s32 getTotalResidents(City* city)
+s32 getTotalResidents(City* city)
 {
     return city->zoneLayer.population[Zone_Residential];
 }
 
- s32 getTotalJobs(City* city)
+s32 getTotalJobs(City* city)
 {
     return city->zoneLayer.population[Zone_Commercial] + city->zoneLayer.population[Zone_Industrial] + city->zoneLayer.population[Zone_None];
 }

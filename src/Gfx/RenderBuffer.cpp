@@ -9,7 +9,7 @@
 
 RenderBufferChunk& RenderBufferChunk::allocate_from_pool(MemoryArena& arena)
 {
-    RenderBufferChunk* result = static_cast<RenderBufferChunk*>(allocate(&arena, DEFAULT_SIZE + sizeof(RenderBufferChunk)));
+    RenderBufferChunk* result = static_cast<RenderBufferChunk*>(arena.allocate_deprecated(DEFAULT_SIZE + sizeof(RenderBufferChunk)));
     result->size = DEFAULT_SIZE;
     result->used = 0;
     result->memory = reinterpret_cast<u8*>(result + 1);

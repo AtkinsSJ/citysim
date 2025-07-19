@@ -169,7 +169,7 @@ File readFile(FileHandle* handle, MemoryArena* arena)
 
     if (handle->isOpen) {
         smm fileSize = getFileSize(handle);
-        result.data = allocateBlob(arena, fileSize);
+        result.data = arena->allocate_blob(fileSize);
         smm bytesRead = readFromFile(handle, result.data);
 
         if (bytesRead != fileSize) {
