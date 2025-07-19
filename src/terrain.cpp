@@ -167,7 +167,7 @@ void loadTerrainDefs(Blob data, Asset* asset)
                 error(&reader, "Found a property before starting a :Terrain!"_s);
                 return;
             } else if (equals(firstWord, "borders"_s)) {
-                def->borderSpriteNames = asset_manager().assetArena.allocate_array<String>(80);
+                def->borderSpriteNames = asset_manager().arena.allocate_array<String>(80);
             } else if (equals(firstWord, "border"_s)) {
                 def->borderSpriteNames.append(intern(&asset_manager().assetStrings, readToken(&reader)));
             } else if (equals(firstWord, "can_build_on"_s)) {

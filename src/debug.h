@@ -148,7 +148,7 @@ struct DebugAssetData // Not a linked list because there's only one asset system
 };
 
 struct DebugState {
-    MemoryArena debugArena;
+    MemoryArena arena;
     bool showDebugData;
     bool captureDebugData;
 
@@ -190,7 +190,7 @@ T* findOrCreateDebugData(DebugState* debugState, String name, T* sentinel)
     }
 
     if (result == nullptr) {
-        result = debugState->debugArena.allocate<T>();
+        result = debugState->arena.allocate<T>();
         addToLinkedList(result, sentinel);
         result->name = name;
     }

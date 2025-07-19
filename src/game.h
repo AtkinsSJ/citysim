@@ -119,7 +119,7 @@ enum InspectTileDebugFlags {
 };
 
 struct GameState {
-    MemoryArena gameArena;
+    MemoryArena arena;
     GameStatus status;
     Random gameRandom;
     GameClock gameClock;

@@ -13,7 +13,7 @@
 #include <Util/StringTable.h>
 
 struct AssetManager {
-    MemoryArena assetArena;
+    MemoryArena arena;
     StringTable assetStrings;
 
     DirectoryChangeWatchingHandle assetChangeHandle;

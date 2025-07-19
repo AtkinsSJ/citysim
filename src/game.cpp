@@ -20,8 +20,7 @@
 
 GameState* newGameState()
 {
-    GameState* gameState;
-    bootstrapArena(GameState, gameState, gameArena);
+    GameState* gameState = MemoryArena::bootstrap<GameState>("Game"_s);
     initRandom(&gameState->gameRandom, Random_MT, 12345);
 
     gameState->status = GameStatus_Playing;
@@ -43,7 +42,7 @@ void beginNewGame()
     GameState* gameState = app_state.gameState;
 
     s32 gameStartFunds = 1000000;
-    initCity(&gameState->gameArena, &gameState->city, 128, 128, getText("city_default_name"_s), getText("player_default_name"_s), gameStartFunds);
+    initCity(&gameState->arena, &gameState->city, 128, 128, getText("city_default_name"_s), getText("player_default_name"_s), gameStartFunds);
     generateTerrain(&gameState->city, &gameState->gameRandom);
 
     initGameClock(&gameState->gameClock);
@@ -51,7 +50,7 @@ void beginNewGame()
 
 void freeGameState(GameState* gameState)
 {
-    gameState->gameArena.~MemoryArena();
+    gameState->arena.~MemoryArena();
 }
 
 void inputMoveCamera(Camera* camera, V2 windowSize, V2 windowMousePos, s32 cityWidth, s32 cityHeight)

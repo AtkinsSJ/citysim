@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
     if constexpr (BUILD_DEBUG) {
         debugInit();
         globalDebugState->showDebugData = false;
-        initConsole(&globalDebugState->debugArena, 0.2f, 0.9f, 6.0f);
+        initConsole(&globalDebugState->arena, 0.2f, 0.9f, 6.0f);
         enableCustomLogger();
     }
 
@@ -217,9 +217,9 @@ int main(int argc, char* argv[])
                 DEBUG_ARENA(&app_state.systemArena, "System");
                 DEBUG_ARENA(&temp_arena(), "Global Temp Arena");
                 DEBUG_ARENA(&renderer.arena(), "Renderer");
-                DEBUG_ARENA(app_state.gameState ? &app_state.gameState->gameArena : nullptr, "GameState");
-                DEBUG_ARENA(&settings().settingsArena, "Settings");
-                DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
+                DEBUG_ARENA(app_state.gameState ? &app_state.gameState->arena : nullptr, "GameState");
+                DEBUG_ARENA(&settings().arena, "Settings");
+                DEBUG_ARENA(&globalDebugState->arena, "Debug");
 
                 updateAndRenderDebugData(globalDebugState);
             }

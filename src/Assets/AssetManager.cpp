@@ -19,7 +19,7 @@ AssetManager* s_assets;
 
 void initAssets()
 {
-    bootstrapArena(AssetManager, s_assets, assetArena);
+    s_assets = MemoryArena::bootstrap<AssetManager>("Assets"_s);
 
     initStringTable(&s_assets->assetStrings);
 
@@ -46,7 +46,7 @@ void initAssets()
 
     // NB: The arena block size is 1MB currently, so make sure that this number * sizeof(Asset) is less than that!
     // (Otherwise, we waste a LOT of memory with almost-empty memory blocks.)
-    initChunkedArray(&s_assets->allAssets, &s_assets->assetArena, 1024);
+    initChunkedArray(&s_assets->allAssets, &s_assets->arena, 1024);
     s_assets->assetMemoryAllocated = 0;
     s_assets->maxAssetMemoryAllocated = 0;
 
@@ -55,7 +55,7 @@ void initAssets()
     for (s32 assetType = 0; assetType < AssetTypeCount; assetType++) {
         initHashTable(&s_assets->assetsByType[assetType]);
 
-        initSet<String>(&s_assets->missingAssetNames[assetType], &s_assets->assetArena, compareStrings);
+        initSet<String>(&s_assets->missingAssetNames[assetType], &s_assets->arena, compareStrings);
     }
 
     UI::initStyleConstants();
@@ -67,7 +67,7 @@ void initAssets()
     initHashTable(&s_assets->texts);
     initHashTable(&s_assets->defaultTexts);
 
-    initSet<String>(&s_assets->missingTextIDs, &s_assets->assetArena, compareStrings);
+    initSet<String>(&s_assets->missingTextIDs, &s_assets->arena, compareStrings);
 
     // Placeholder s_assets!
     {

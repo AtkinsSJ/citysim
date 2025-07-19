@@ -121,7 +121,7 @@ bool loadSaveFile(FileHandle* file, GameState* gameState)
 
             String cityName = reader.readString(meta->cityName);
             String playerName = reader.readString(meta->playerName);
-            initCity(&gameState->gameArena, city, meta->cityWidth, meta->cityHeight, cityName, playerName, meta->funds);
+            initCity(&gameState->arena, city, meta->cityWidth, meta->cityHeight, cityName, playerName, meta->funds);
 
             // Clock
             initGameClock(&gameState->gameClock, meta->currentDate, meta->timeWithinDay);

@@ -35,6 +35,17 @@ public:
     MemoryArena(String name, Optional<size_t> initial_size = {}, size_t minimum_block_size = MB(1));
     MemoryArena(MemoryArena&&);
 
+    // Allocates a T, which is contained within its own MemoryArena member.
+    template<typename T>
+    static T* bootstrap(String name, size_t minimum_block_size = MB(1))
+    {
+        MemoryArena arena { name, sizeof(T), minimum_block_size };
+        auto* container = arena.allocate<T>();
+        container->arena = move(arena);
+        container->arena.mark_reset_position();
+        return container;
+    }
+
     MemoryArena& operator=(MemoryArena&&);
 
     ~MemoryArena();
@@ -118,15 +129,3 @@ private:
 };
 
 MemoryArena& temp_arena();
-
-// Creates an arena, and pushes a struct on it which contains the arena.
-// Optional final param is the block size
-#define bootstrapArena(containerType, containerName, arenaVarName, ...)                       \
-    {                                                                                         \
-        /* Hack: Detect if the block-size was provided, and default to MB(1) */               \
-        size_t minimumBlockSize = (__VA_ARGS__ - 0) > 0 ? __VA_ARGS__ : MB(1);                \
-        MemoryArena bootstrap { #arenaVarName##_s, sizeof(containerType), minimumBlockSize }; \
-        containerName = bootstrap.allocate<containerType>();                                  \
-        containerName->arenaVarName = move(bootstrap);                                        \
-        containerName->arenaVarName.mark_reset_position();                                    \
-    }

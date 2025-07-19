@@ -13,7 +13,7 @@
 
 void debugInit()
 {
-    bootstrapArena(DebugState, globalDebugState, debugArena);
+    globalDebugState = MemoryArena::bootstrap<DebugState>("Debug"_s);
     globalDebugState->showDebugData = false;
     globalDebugState->captureDebugData = true;
     globalDebugState->readingFrameIndex = DEBUG_FRAMES_COUNT - 1;
@@ -27,7 +27,7 @@ void debugInit()
     initLinkedListSentinel(&globalDebugState->topCodeBlocksFreeListSentinel);
     initLinkedListSentinel(&globalDebugState->topCodeBlocksSentinel);
     for (u32 i = 0; i < DEBUG_TOP_CODE_BLOCKS_COUNT; i++) {
-        DebugCodeDataWrapper* item = globalDebugState->debugArena.allocate<DebugCodeDataWrapper>();
+        DebugCodeDataWrapper* item = globalDebugState->arena.allocate<DebugCodeDataWrapper>();
         addToLinkedList(item, &globalDebugState->topCodeBlocksFreeListSentinel);
     }
 }
@@ -431,7 +431,7 @@ void debugTrackAssets(DebugState* debugState)
     assetData->assetsByNameSize[frameIndex] = 0;
 
     // The assets arena
-    auto const statistics = asset_manager().assetArena.get_statistics();
+    auto const statistics = asset_manager().arena.get_statistics();
     assetData->arenaBlockCount[frameIndex] = statistics.block_count;
     assetData->arenaTotalSize[frameIndex] = statistics.total_size;
     assetData->arenaUsedSize[frameIndex] = statistics.used_size;

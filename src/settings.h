@@ -179,7 +179,7 @@ struct SettingsState {
 };
 
 struct Settings {
-    MemoryArena settingsArena;
+    MemoryArena arena;
     HashTable<SettingDef> defs;
     ChunkedArray<String> defsOrder;
 
