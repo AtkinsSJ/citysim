@@ -26,3 +26,6 @@ struct V2;
 struct V2I;
 struct V3;
 struct V4;
+
+template<typename T>
+class Optional;
