@@ -71,12 +71,12 @@ struct Ninepatch {
     f32 v3;
 };
 
-enum PaletteType {
-    PaletteType_Fixed,
-    PaletteType_Gradient,
-};
 struct Palette {
-    PaletteType type;
+    enum class Type : u8 {
+        Fixed,
+        Gradient,
+    };
+    Type type;
     s32 size;
 
     union {

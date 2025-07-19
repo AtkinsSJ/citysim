@@ -93,7 +93,7 @@ void initAssets()
 
         // Palette
         Asset* placeholderPalette = makePlaceholderAsset(AssetType_Palette);
-        placeholderPalette->palette.type = PaletteType_Fixed;
+        placeholderPalette->palette.type = Palette::Type::Fixed;
         placeholderPalette->palette.size = 0;
         placeholderPalette->palette.paletteData = makeEmptyArray<V4>();
 
@@ -337,7 +337,7 @@ void loadAsset(Asset* asset)
     case AssetType_Palette: {
         Palette* palette = &asset->palette;
         switch (palette->type) {
-        case PaletteType_Gradient: {
+        case Palette::Type::Gradient: {
             asset->data = assetsAllocate(s_assets, palette->size * sizeof(V4));
             palette->paletteData = makeArray<V4>(palette->size, (V4*)asset->data.writable_data(), palette->size);
 
@@ -347,7 +347,7 @@ void loadAsset(Asset* asset)
             }
         } break;
 
-        case PaletteType_Fixed: {
+        case Palette::Type::Fixed: {
         } break;
 
             INVALID_DEFAULT_CASE;
@@ -1006,9 +1006,9 @@ void loadPaletteDefs(Blob data, Asset* asset)
                 String type = readToken(&reader);
 
                 if (equals(type, "fixed"_s)) {
-                    paletteAsset->palette.type = PaletteType_Fixed;
+                    paletteAsset->palette.type = Palette::Type::Fixed;
                 } else if (equals(type, "gradient"_s)) {
-                    paletteAsset->palette.type = PaletteType_Gradient;
+                    paletteAsset->palette.type = Palette::Type::Gradient;
                 } else {
                     error(&reader, "Unrecognised palette type '{0}', allowed values are: fixed, gradient"_s, { type });
                 }
@@ -1020,7 +1020,7 @@ void loadPaletteDefs(Blob data, Asset* asset)
             } else if (equals(command, "color"_s)) {
                 Maybe<V4> color = readColor(&reader);
                 if (color.isValid) {
-                    if (paletteAsset->palette.type == PaletteType_Fixed) {
+                    if (paletteAsset->palette.type == Palette::Type::Fixed) {
                         if (!paletteAsset->palette.paletteData.isInitialised()) {
                             paletteAsset->data = assetsAllocate(s_assets, paletteAsset->palette.size * sizeof(V4));
                             paletteAsset->palette.paletteData = makeArray<V4>(paletteAsset->palette.size, (V4*)paletteAsset->data.writable_data());
@@ -1039,7 +1039,7 @@ void loadPaletteDefs(Blob data, Asset* asset)
             } else if (equals(command, "from"_s)) {
                 Maybe<V4> from = readColor(&reader);
                 if (from.isValid) {
-                    if (paletteAsset->palette.type == PaletteType_Gradient) {
+                    if (paletteAsset->palette.type == Palette::Type::Gradient) {
                         paletteAsset->palette.gradient.from = from.value;
                     } else {
                         error(&reader, "'from' is only a valid command for gradient palettes."_s);
@@ -1048,7 +1048,7 @@ void loadPaletteDefs(Blob data, Asset* asset)
             } else if (equals(command, "to"_s)) {
                 Maybe<V4> to = readColor(&reader);
                 if (to.isValid) {
-                    if (paletteAsset->palette.type == PaletteType_Gradient) {
+                    if (paletteAsset->palette.type == Palette::Type::Gradient) {
                         paletteAsset->palette.gradient.to = to.value;
                     } else {
                         error(&reader, "'to' is only a valid command for gradient palettes."_s);
