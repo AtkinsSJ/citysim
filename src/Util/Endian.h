@@ -63,27 +63,30 @@ T reverseBytes(T input)
 }
 
 template<typename T>
-struct LittleEndian {
-    T data;
-
+class LittleEndian {
+public:
     //
     // SET
     //
     // Direct assignment
     LittleEndian(T value)
-        : data(cpuIsLittleEndian() ? value : reverseBytes(value))
+        : m_data(cpuIsLittleEndian() ? value : reverseBytes(value))
     {
     }
 
     LittleEndian()
-        : data()
+        : m_data()
     {
     }
 
     //
     // GET
     //
-    operator T() const { return cpuIsLittleEndian() ? data : reverseBytes(data); }
+    operator T() const { return value(); }
+    T value() const { return cpuIsLittleEndian() ? m_data : reverseBytes(m_data); }
+
+private:
+    T m_data;
 };
 
 typedef u8 leU8; // Just for consistency
