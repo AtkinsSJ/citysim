@@ -17,24 +17,24 @@ f32 snapZoomLevel(f32 zoom)
 }
 
 Renderer::Renderer(SDL_Window* window)
-    : m_render_buffer_pool(renderArena)
-    , m_render_buffer_chunk_pool(renderArena)
+    : m_render_buffer_pool(m_arena)
+    , m_render_buffer_chunk_pool(m_arena)
     , m_sdl_window(window)
 {
-    if (!initMemoryArena(&renderArena, "renderArena"_s, 0, MB(1))) {
+    if (!initMemoryArena(&m_arena, "renderArena"_s, 0, MB(1))) {
         logCritical("Failed to create renderer arena!"_s);
         ASSERT(false);
     }
 
     SDL_GetWindowSize(window, &m_window_size.x, &m_window_size.y);
 
-    m_world_buffer = &m_render_buffer_pool.obtain(renderArena, "WorldBuffer"_s, &m_render_buffer_chunk_pool);
-    m_world_overlay_buffer = &m_render_buffer_pool.obtain(renderArena, "WorldOverlayBuffer"_s, &m_render_buffer_chunk_pool);
-    m_ui_buffer = &m_render_buffer_pool.obtain(renderArena, "UIBuffer"_s, &m_render_buffer_chunk_pool);
-    m_window_buffer = &m_render_buffer_pool.obtain(renderArena, "WindowBuffer"_s, &m_render_buffer_chunk_pool);
-    m_debug_buffer = &m_render_buffer_pool.obtain(renderArena, "DebugBuffer"_s, &m_render_buffer_chunk_pool);
+    m_world_buffer = &m_render_buffer_pool.obtain(m_arena, "WorldBuffer"_s, &m_render_buffer_chunk_pool);
+    m_world_overlay_buffer = &m_render_buffer_pool.obtain(m_arena, "WorldOverlayBuffer"_s, &m_render_buffer_chunk_pool);
+    m_ui_buffer = &m_render_buffer_pool.obtain(m_arena, "UIBuffer"_s, &m_render_buffer_chunk_pool);
+    m_window_buffer = &m_render_buffer_pool.obtain(m_arena, "WindowBuffer"_s, &m_render_buffer_chunk_pool);
+    m_debug_buffer = &m_render_buffer_pool.obtain(m_arena, "DebugBuffer"_s, &m_render_buffer_chunk_pool);
 
-    m_render_buffers = allocateArray<RenderBuffer*>(&renderArena, 5);
+    m_render_buffers = allocateArray<RenderBuffer*>(&m_arena, 5);
     m_render_buffers.append(m_world_buffer);
     m_render_buffers.append(m_world_overlay_buffer);
     m_render_buffers.append(m_ui_buffer);
@@ -49,7 +49,7 @@ Renderer::Renderer(SDL_Window* window)
 
     // Hide cursor until stuff loads
     set_cursor_visible(false);
-    markResetPosition(&renderArena);
+    markResetPosition(&m_arena);
 }
 
 Renderer::~Renderer()
@@ -71,7 +71,7 @@ bool Renderer::initialize(SDL_Window* window)
         return false;
     }
 
-    markResetPosition(&gl_renderer->renderArena);
+    markResetPosition(&gl_renderer->m_arena);
 
     s_renderer = gl_renderer;
     return true;
@@ -221,7 +221,7 @@ void Renderer::set_cursor_visible(bool visible)
 
 RenderBuffer* Renderer::get_temporary_render_buffer(String name)
 {
-    return &m_render_buffer_pool.obtain(renderArena, name, &m_render_buffer_chunk_pool);
+    return &m_render_buffer_pool.obtain(m_arena, name, &m_render_buffer_chunk_pool);
 }
 
 void Renderer::return_temporary_render_buffer(RenderBuffer& buffer)

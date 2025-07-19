@@ -54,7 +54,7 @@ public:
     RenderBuffer* get_temporary_render_buffer(String name);
     void return_temporary_render_buffer(RenderBuffer&);
 
-    MemoryArena renderArena {};
+    MemoryArena& arena() { return m_arena; }
 
     SDL_Window* sdl_window() const { return m_sdl_window; }
     V2I window_size() const { return m_window_size; }
@@ -101,6 +101,8 @@ public:
 
 protected:
     explicit Renderer(SDL_Window*);
+
+    MemoryArena m_arena {};
 
     Pool<RenderBuffer> m_render_buffer_pool;
     Pool<RenderBufferChunk> m_render_buffer_chunk_pool;

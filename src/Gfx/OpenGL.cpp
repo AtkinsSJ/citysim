@@ -105,9 +105,9 @@ bool Renderer::set_up_context()
     glGenTextures(1, &m_raw_texture_id);
 
     // Other GL_Renderer struct init stuff
-    initChunkedArray(&m_shaders, &renderArena, 64);
+    initChunkedArray(&m_shaders, &arena(), 64);
 
-    initStack(&m_scissor_stack, &renderArena);
+    initStack(&m_scissor_stack, &arena());
 
     return true;
 }

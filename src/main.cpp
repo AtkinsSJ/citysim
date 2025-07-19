@@ -217,7 +217,7 @@ int main(int argc, char* argv[])
                 // Though, the debug system uses an arena itself, so that could be a bit infinitely-recursive.
                 DEBUG_ARENA(&app_state.systemArena, "System");
                 DEBUG_ARENA(&temp_arena(), "Global Temp Arena");
-                DEBUG_ARENA(&renderer.renderArena, "Renderer");
+                DEBUG_ARENA(&renderer.arena(), "Renderer");
                 DEBUG_ARENA(app_state.gameState ? &app_state.gameState->gameArena : nullptr, "GameState");
                 DEBUG_ARENA(&settings().settingsArena, "Settings");
                 DEBUG_ARENA(&globalDebugState->debugArena, "Debug");
