@@ -151,7 +151,7 @@ Asset* makePlaceholderAsset(AssetType type)
     result->shortName = nullString;
     result->fullName = nullString;
     result->flags = 0;
-    result->state = AssetState_Loaded;
+    result->state = Asset::State::Loaded;
     result->children = makeEmptyArray<AssetID>();
     result->data = {};
 
@@ -193,7 +193,7 @@ Asset* addAsset(AssetType type, String shortName, u32 flags)
     if (flags & Asset_IsAFile) {
         asset->fullName = intern(&s_assets->assetStrings, getAssetPath(asset->type, internedShortName));
     }
-    asset->state = AssetState_Unloaded;
+    asset->state = Asset::State::Unloaded;
     asset->data = {};
     asset->flags = flags;
 
@@ -238,12 +238,12 @@ SDL_Surface* createSurfaceFromFileData(Blob fileData, String name)
 
 void ensureAssetIsLoaded(Asset* asset)
 {
-    if (asset->state == AssetState_Loaded)
+    if (asset->state == Asset::State::Loaded)
         return;
 
     loadAsset(asset);
 
-    if (asset->state != AssetState_Loaded) {
+    if (asset->state != Asset::State::Loaded) {
         logError("Failed to load asset '{0}'"_s, { asset->shortName });
     }
 }
@@ -251,7 +251,7 @@ void ensureAssetIsLoaded(Asset* asset)
 void loadAsset(Asset* asset)
 {
     DEBUG_FUNCTION();
-    if (asset->state != AssetState_Unloaded)
+    if (asset->state != Asset::State::Unloaded)
         return;
 
     if (asset->flags & Asset_IsLocaleSpecific) {
@@ -282,12 +282,12 @@ void loadAsset(Asset* asset)
     switch (asset->type) {
     case AssetType_BitmapFont: {
         loadBMFont(fileData, asset);
-        asset->state = AssetState_Loaded;
+        asset->state = Asset::State::Loaded;
     } break;
 
     case AssetType_BuildingDefs: {
         loadBuildingDefs(fileData, asset);
-        asset->state = AssetState_Loaded;
+        asset->state = Asset::State::Loaded;
     } break;
 
     case AssetType_Cursor: {
@@ -295,12 +295,12 @@ void loadAsset(Asset* asset)
         SDL_Surface* cursorSurface = createSurfaceFromFileData(fileData, asset->shortName);
         asset->cursor.sdlCursor = SDL_CreateColorCursor(cursorSurface, asset->cursor.hotspot.x, asset->cursor.hotspot.y);
         SDL_FreeSurface(cursorSurface);
-        asset->state = AssetState_Loaded;
+        asset->state = Asset::State::Loaded;
     } break;
 
     case AssetType_CursorDefs: {
         loadCursorDefs(fileData, asset);
-        asset->state = AssetState_Loaded;
+        asset->state = Asset::State::Loaded;
     } break;
 
     case AssetType_DevKeymap: {
@@ -311,7 +311,7 @@ void loadAsset(Asset* asset)
             copyFileIntoAsset(&fileData, asset);
             loadConsoleKeyboardShortcuts(globalConsole, fileData, asset->shortName);
         }
-        asset->state = AssetState_Loaded;
+        asset->state = Asset::State::Loaded;
     } break;
 
     case AssetType_Ninepatch: {
@@ -331,7 +331,7 @@ void loadAsset(Asset* asset)
         asset->ninepatch.v2 = asset->ninepatch.pv2 / textureHeight;
         asset->ninepatch.v3 = asset->ninepatch.pv3 / textureHeight;
 
-        asset->state = AssetState_Loaded;
+        asset->state = Asset::State::Loaded;
     } break;
 
     case AssetType_Palette: {
@@ -352,18 +352,18 @@ void loadAsset(Asset* asset)
 
             INVALID_DEFAULT_CASE;
         }
-        asset->state = AssetState_Loaded;
+        asset->state = Asset::State::Loaded;
     } break;
 
     case AssetType_PaletteDefs: {
         loadPaletteDefs(fileData, asset);
-        asset->state = AssetState_Loaded;
+        asset->state = Asset::State::Loaded;
     } break;
 
     case AssetType_Shader: {
         copyFileIntoAsset(&fileData, asset);
         splitInTwo(stringFromBlob(fileData), '$', &asset->shader.vertexShader, &asset->shader.fragmentShader);
-        asset->state = AssetState_Loaded;
+        asset->state = Asset::State::Loaded;
     } break;
 
     case AssetType_Sprite: {
@@ -382,23 +382,23 @@ void loadAsset(Asset* asset)
                 sprite->uv.h / textureHeight);
         }
 
-        asset->state = AssetState_Loaded;
+        asset->state = Asset::State::Loaded;
     } break;
 
     case AssetType_SpriteDefs: {
         loadSpriteDefs(fileData, asset);
-        asset->state = AssetState_Loaded;
+        asset->state = Asset::State::Loaded;
     } break;
 
     case AssetType_TerrainDefs: {
         loadTerrainDefs(fileData, asset);
-        asset->state = AssetState_Loaded;
+        asset->state = Asset::State::Loaded;
     } break;
 
     case AssetType_Texts: {
         HashTable<String>* textsTable = (asset->texts.isFallbackLocale ? &s_assets->defaultTexts : &s_assets->texts);
         loadTexts(textsTable, asset, fileData);
-        asset->state = AssetState_Loaded;
+        asset->state = Asset::State::Loaded;
     } break;
 
     case AssetType_Texture: {
@@ -441,12 +441,12 @@ void loadAsset(Asset* asset)
         }
 
         asset->texture.surface = surface;
-        asset->state = AssetState_Loaded;
+        asset->state = Asset::State::Loaded;
     } break;
 
     case AssetType_UITheme: {
         loadUITheme(fileData, asset);
-        asset->state = AssetState_Loaded;
+        asset->state = Asset::State::Loaded;
     } break;
 
     default: {
@@ -454,7 +454,7 @@ void loadAsset(Asset* asset)
             copyFileIntoAsset(&fileData, asset);
         }
 
-        asset->state = AssetState_Loaded;
+        asset->state = Asset::State::Loaded;
     } break;
     }
 }
@@ -463,7 +463,7 @@ void unloadAsset(Asset* asset)
 {
     DEBUG_FUNCTION();
 
-    if (asset->state == AssetState_Unloaded)
+    if (asset->state == Asset::State::Unloaded)
         return;
 
     switch (asset->type) {
@@ -519,7 +519,7 @@ void unloadAsset(Asset* asset)
         asset->data = {};
     }
 
-    asset->state = AssetState_Unloaded;
+    asset->state = Asset::State::Unloaded;
 }
 
 void removeAsset(AssetType type, String name)

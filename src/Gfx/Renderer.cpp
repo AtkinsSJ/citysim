@@ -293,7 +293,7 @@ void addSetShader(RenderBuffer* buffer, s8 shaderID)
 
 void addSetTexture(RenderBuffer* buffer, Asset* texture)
 {
-    ASSERT(texture->state == AssetState_Loaded);
+    ASSERT(texture->state == Asset::State::Loaded);
 
     if (buffer->currentTexture != texture) {
         RenderItem_SetTexture* textureItem = appendRenderItem<RenderItem_SetTexture>(buffer, RenderItemType::SetTexture);

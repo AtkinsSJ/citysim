@@ -446,7 +446,7 @@ void debugTrackAssets(DebugState* debugState)
     for (auto it = asset_manager().allAssets.iterate(); it.hasNext(); it.next()) {
         Asset* asset = it.get();
 
-        if (asset->state == AssetState_Loaded)
+        if (asset->state == Asset::State::Loaded)
             assetData->loadedAssetCount[frameIndex]++;
     }
     assetData->assetMemoryAllocated[frameIndex] = asset_manager().assetMemoryAllocated;

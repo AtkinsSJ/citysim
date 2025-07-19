@@ -242,7 +242,7 @@ void Renderer::render_internal()
 
                     upload_texture_2d(pixelFormat, header->width, header->height, pixelData);
                 } else {
-                    ASSERT(header->texture->state == AssetState_Loaded);
+                    ASSERT(header->texture->state == Asset::State::Loaded);
 
                     Texture* texture = &header->texture->texture;
 

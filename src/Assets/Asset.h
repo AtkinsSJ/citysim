@@ -16,11 +16,6 @@
 #include <Util/Memory.h>
 #include <Util/Vector.h>
 
-enum AssetState {
-    AssetState_Unloaded,
-    AssetState_Loaded,
-};
-
 struct AssetID {
     AssetType type;
     String name;
@@ -130,7 +125,12 @@ struct Asset {
     String fullName;
 
     u32 flags; // AssetFlags
-    AssetState state;
+
+    enum class State : u8 {
+        Unloaded,
+        Loaded,
+    };
+    State state;
 
     Array<AssetID> children;
 
