@@ -34,7 +34,7 @@ AppStatus updateAndRenderCredits(f32 /*deltaTime*/)
     String backText = getText("button_back"_s);
     V2I backSize = UI::calculateButtonSize(backText, style);
     Rect2I buttonRect = irectXYWH(uiBorderPadding, UI::windowSize.y - uiBorderPadding - backSize.y, backSize.x, backSize.y);
-    if (UI::putTextButton(getText("button_back"_s), buttonRect, style, Button_Normal)) {
+    if (UI::putTextButton(getText("button_back"_s), buttonRect, style, ButtonState::Normal)) {
         result = AppStatus::MainMenu;
     }
 

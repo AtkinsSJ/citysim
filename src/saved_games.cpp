@@ -185,7 +185,7 @@ void savedGamesWindowProc(UI::WindowContext* context, void* userData)
     // Now we have the saved-game info
     if (selectedSavedGame) {
         ui->alignWidgets(ALIGN_RIGHT);
-        if (ui->addImageButton(getSprite("icon_delete"_s), Button_Normal, "delete"_s)) {
+        if (ui->addImageButton(getSprite("icon_delete"_s), ButtonState::Normal, "delete"_s)) {
             UI::showWindow(UI::WindowTitle::fromTextAsset("title_delete_save"_s), 300, 300, v2i(0, 0), "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Modal | WindowFlags::Unique, confirmDeleteSaveWindowProc);
         }
 
@@ -214,7 +214,7 @@ void savedGamesWindowProc(UI::WindowContext* context, void* userData)
             bottomBar.addLabel("Save game name:"_s);
 
             bottomBar.alignWidgets(ALIGN_RIGHT);
-            bool pressedSave = bottomBar.addTextButton(getText("button_save"_s), catalogue->saveGameName.isEmpty() ? Button_Disabled : Button_Normal);
+            bool pressedSave = bottomBar.addTextButton(getText("button_save"_s), catalogue->saveGameName.isEmpty() ? ButtonState::Disabled : ButtonState::Normal);
 
             bottomBar.alignWidgets(ALIGN_EXPAND_H);
             if (justClickedSavedGame) {
@@ -253,7 +253,7 @@ void savedGamesWindowProc(UI::WindowContext* context, void* userData)
             }
 
             bottomBar.alignWidgets(ALIGN_RIGHT);
-            if (bottomBar.addTextButton(getText("button_load"_s), selectedSavedGame ? Button_Normal : Button_Disabled)) {
+            if (bottomBar.addTextButton(getText("button_load"_s), selectedSavedGame ? ButtonState::Normal : ButtonState::Disabled)) {
                 loadGame(selectedSavedGame);
                 context->closeRequested = true;
             }
@@ -271,7 +271,7 @@ void confirmOverwriteSaveWindowProc(UI::WindowContext* context, void* /*userData
     ui->addLabel(getText("msg_save_overwrite_confirm"_s, { inputName }));
     ui->startNewLine(ALIGN_RIGHT);
 
-    if (ui->addTextButton(getText("button_overwrite"_s), Button_Normal, "delete"_s)) {
+    if (ui->addTextButton(getText("button_overwrite"_s), ButtonState::Normal, "delete"_s)) {
         saveGame(inputName);
         context->closeRequested = true;
     }
@@ -290,7 +290,7 @@ void confirmDeleteSaveWindowProc(UI::WindowContext* context, void* /*userData*/)
     ui->addLabel(getText("msg_delete_save_confirm"_s, { savedGame->shortName }));
     ui->startNewLine(ALIGN_RIGHT);
 
-    if (ui->addTextButton(getText("button_delete"_s), Button_Normal, "delete"_s)) {
+    if (ui->addTextButton(getText("button_delete"_s), ButtonState::Normal, "delete"_s)) {
         deleteSave(savedGame);
         context->closeRequested = true;
     }

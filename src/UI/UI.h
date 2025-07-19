@@ -18,14 +18,14 @@
 #include <Util/Stack.h>
 #include <Util/Vector.h>
 
-enum ButtonState {
-    Button_Normal,
-    Button_Disabled,
-    Button_Active,
+enum class ButtonState : u8 {
+    Normal,
+    Disabled,
+    Active,
 };
 inline ButtonState buttonIsActive(bool isActive)
 {
-    return isActive ? Button_Active : Button_Normal;
+    return isActive ? ButtonState::Active : ButtonState::Normal;
 }
 
 struct BitmapFont;
@@ -150,9 +150,9 @@ bool mouseIsWithinUIRects();
 V2I calculateButtonSize(String text, ButtonStyle* style = nullptr, s32 maxWidth = 0, bool fillWidth = true);
 V2I calculateButtonSize(V2I contentSize, ButtonStyle* style = nullptr, s32 maxWidth = 0, bool fillWidth = true);
 Rect2I calculateButtonContentBounds(Rect2I bounds, ButtonStyle* style = nullptr);
-bool putButton(Rect2I bounds, ButtonStyle* style = nullptr, ButtonState state = Button_Normal, RenderBuffer* renderBuffer = nullptr, String tooltip = nullString);
-bool putTextButton(String text, Rect2I bounds, ButtonStyle* style = nullptr, ButtonState state = Button_Normal, RenderBuffer* renderBuffer = nullptr, String tooltip = nullString);
-bool putImageButton(Sprite* sprite, Rect2I bounds, ButtonStyle* style = nullptr, ButtonState state = Button_Normal, RenderBuffer* renderBuffer = nullptr, String tooltip = nullString);
+bool putButton(Rect2I bounds, ButtonStyle* style = nullptr, ButtonState state = ButtonState::Normal, RenderBuffer* renderBuffer = nullptr, String tooltip = nullString);
+bool putTextButton(String text, Rect2I bounds, ButtonStyle* style = nullptr, ButtonState state = ButtonState::Normal, RenderBuffer* renderBuffer = nullptr, String tooltip = nullString);
+bool putImageButton(Sprite* sprite, Rect2I bounds, ButtonStyle* style = nullptr, ButtonState state = ButtonState::Normal, RenderBuffer* renderBuffer = nullptr, String tooltip = nullString);
 
 // Checkboxes
 V2I calculateCheckboxSize(CheckboxStyle* style = nullptr);

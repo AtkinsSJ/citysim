@@ -291,7 +291,7 @@ bool putButton(Rect2I bounds, ButtonStyle* style, ButtonState state, RenderBuffe
 
     DrawableStyle* backgroundStyle = &style->background;
 
-    if (state == Button_Disabled) {
+    if (state == ButtonState::Disabled) {
         backgroundStyle = &style->backgroundDisabled;
     } else if (mouseState.isHovered) {
         if (mouseState.isPressed) {
@@ -303,7 +303,7 @@ bool putButton(Rect2I bounds, ButtonStyle* style, ButtonState state, RenderBuffe
         if (tooltip.length) {
             showTooltip(tooltip);
         }
-    } else if (state == Button_Active) {
+    } else if (state == ButtonState::Active) {
         backgroundStyle = &style->backgroundHover;
     }
 
@@ -325,7 +325,7 @@ bool putButton(Rect2I bounds, ButtonStyle* style, ButtonState state, RenderBuffe
     }
 
     // Respond to click
-    if ((state != Button_Disabled) && justClickedOnUI(bounds)) {
+    if ((state != ButtonState::Disabled) && justClickedOnUI(bounds)) {
         buttonClicked = true;
         markMouseInputHandled();
     }
