@@ -81,6 +81,9 @@ int main(int argc, char* argv[])
 
     // INIT
     u32 initStartTicks = SDL_GetTicks();
+    if constexpr (BUILD_DEBUG) {
+        SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
+    }
 
     auto& app_state = AppState::the();
     app_state = {};
@@ -92,14 +95,12 @@ int main(int argc, char* argv[])
 
     init_temp_arena();
 
-#if BUILD_DEBUG
-    debugInit();
-    globalDebugState->showDebugData = false;
-
-    initConsole(&globalDebugState->debugArena, 0.2f, 0.9f, 6.0f);
-    SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
-    enableCustomLogger();
-#endif
+    if constexpr (BUILD_DEBUG) {
+        debugInit();
+        globalDebugState->showDebugData = false;
+        initConsole(&globalDebugState->debugArena, 0.2f, 0.9f, 6.0f);
+        enableCustomLogger();
+    }
 
     initRandom(&app_state.cosmeticRandom, Random_MT, (s32)time(nullptr));
 
