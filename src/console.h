@@ -15,7 +15,7 @@
 
 struct ConsoleOutputLine {
     String text;
-    ConsoleLineStyleID style;
+    ConsoleLineStyle style;
 };
 
 struct CommandShortcut {
@@ -69,7 +69,7 @@ void initCommands(Console* console); // Implementation in commands.cpp
 void loadConsoleKeyboardShortcuts(Console* console, Blob data, String filename);
 void consoleHandleCommand(Console* console, String commandInput);
 
-void consoleWriteLine(String text, ConsoleLineStyleID style = CLS_Default);
+void consoleWriteLine(String text, ConsoleLineStyle style = ConsoleLineStyle::Default);
 
 // Private
 Rect2I getConsoleScrollbarBounds(Console* console);

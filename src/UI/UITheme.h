@@ -11,16 +11,15 @@
 #include <Util/HashTable.h>
 #include <Util/Vector.h>
 
-// TODO: make this an enum class? For the nicer namespacing
-enum ConsoleLineStyleID {
+enum class ConsoleLineStyle : u8 {
     // Must match the order in ConsoleStyle!
-    CLS_Default,
-    CLS_InputEcho,
-    CLS_Error,
-    CLS_Success,
-    CLS_Warning,
+    Default,
+    InputEcho,
+    Error,
+    Success,
+    Warning,
 
-    CLS_COUNT
+    COUNT
 };
 
 struct LineReader;
@@ -118,10 +117,10 @@ struct ConsoleStyle {
 
     AssetRef font;
     union {
-        V4 outputTextColors[CLS_COUNT];
+        V4 outputTextColors[to_underlying(ConsoleLineStyle::COUNT)];
 
         struct {
-            // Must match the order in ConsoleLineStyleID!
+            // Must match the order in ConsoleLineStyle!
             V4 outputTextColor;
             V4 outputTextColorInputEcho;
             V4 outputTextColorError;

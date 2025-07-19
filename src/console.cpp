@@ -39,7 +39,7 @@ void initConsole(MemoryArena* debugArena, f32 openHeight, f32 maximisedHeight, f
 
     globalConsole = console;
     initCommands(console);
-    consoleWriteLine(myprintf("Loaded {} commands. Type 'help' to list them."_s, { formatInt(console->commands.count) }), CLS_Default);
+    consoleWriteLine(myprintf("Loaded {} commands. Type 'help' to list them."_s, { formatInt(console->commands.count) }), ConsoleLineStyle::Default);
 
     consoleWriteLine("GREETINGS PROFESSOR FALKEN.\nWOULD YOU LIKE TO PLAY A GAME?"_s);
 }
@@ -207,7 +207,7 @@ void updateAndRenderConsole(Console* console)
             it.hasNext();
             it.next()) {
             ConsoleOutputLine* line = it.get();
-            V4 outputTextColor = consoleStyle->outputTextColors[line->style];
+            V4 outputTextColor = consoleStyle->outputTextColors[to_underlying(line->style)];
 
             V2I textSize = calculateTextSize(consoleFont, line->text, textMaxWidth);
             Rect2I textBounds = irectAligned(textPos, textSize, outputLinesAlign);
@@ -246,7 +246,7 @@ void loadConsoleKeyboardShortcuts(Console* console, Blob data, String filename)
 void consoleHandleCommand(Console* console, String commandInput)
 {
     // copy input to output, for readability
-    consoleWriteLine(myprintf("> {0}"_s, { commandInput }), CLS_InputEcho);
+    consoleWriteLine(myprintf("> {0}"_s, { commandInput }), ConsoleLineStyle::InputEcho);
 
     if (!isEmpty(commandInput)) {
         // Add to history
@@ -278,15 +278,15 @@ void consoleHandleCommand(Console* console, String commandInput)
                     if (command->minArgs == command->maxArgs) {
                         consoleWriteLine(myprintf("Command '{0}' requires exactly {1} argument(s), but {2} given."_s,
                                              { firstToken, formatInt(command->minArgs), formatInt(argCount) }),
-                            CLS_Error);
+                            ConsoleLineStyle::Error);
                     } else if (command->maxArgs == -1) {
                         consoleWriteLine(myprintf("Command '{0}' requires at least {1} argument(s), but {2} given."_s,
                                              { firstToken, formatInt(command->minArgs), formatInt(argCount) }),
-                            CLS_Error);
+                            ConsoleLineStyle::Error);
                     } else {
                         consoleWriteLine(myprintf("Command '{0}' requires between {1} and {2} arguments, but {3} given."_s,
                                              { firstToken, formatInt(command->minArgs), formatInt(command->maxArgs), formatInt(argCount) }),
-                            CLS_Error);
+                            ConsoleLineStyle::Error);
                     }
                 } else {
                     u32 commandStartTime = SDL_GetTicks();
@@ -296,13 +296,13 @@ void consoleHandleCommand(Console* console, String commandInput)
                     consoleWriteLine(myprintf("Command executed in {0}ms"_s, { formatInt(commandEndTime - commandStartTime) }));
                 }
             } else {
-                consoleWriteLine(myprintf("I don't understand '{0}'. Try 'help' for a list of commands."_s, { firstToken }), CLS_Error);
+                consoleWriteLine(myprintf("I don't understand '{0}'. Try 'help' for a list of commands."_s, { firstToken }), ConsoleLineStyle::Error);
             }
         }
     }
 }
 
-void consoleWriteLine(String text, ConsoleLineStyleID style)
+void consoleWriteLine(String text, ConsoleLineStyle style)
 {
     if (globalConsole) {
         ConsoleOutputLine* line = globalConsole->outputLines.appendBlank();

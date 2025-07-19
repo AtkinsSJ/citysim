@@ -21,7 +21,7 @@ static bool checkInGame()
 {
     bool inGame = (AppState::the().gameState != nullptr);
     if (!inGame) {
-        consoleWriteLine("You can only do that when a game is in progress!"_s, CLS_Error);
+        consoleWriteLine("You can only do that when a game is in progress!"_s, ConsoleLineStyle::Error);
     }
     return inGame;
 }
@@ -42,7 +42,7 @@ ConsoleCommand(debug_tools)
 
 ConsoleCommand(exit)
 {
-    consoleWriteLine("Quitting game..."_s, CLS_Success);
+    consoleWriteLine("Quitting game..."_s, ConsoleLineStyle::Success);
     AppState::the().appStatus = AppStatus::Quit;
 }
 
@@ -55,10 +55,10 @@ ConsoleCommand(funds)
     String sAmount = nextToken(remainder, &remainder);
     Maybe<s64> amount = asInt(sAmount);
     if (amount.isValid) {
-        consoleWriteLine(myprintf("Set funds to {0}"_s, { sAmount }), CLS_Success);
+        consoleWriteLine(myprintf("Set funds to {0}"_s, { sAmount }), ConsoleLineStyle::Success);
         AppState::the().gameState->city.funds = truncate32(amount.value);
     } else {
-        consoleWriteLine("Usage: funds amount, where amount is an integer"_s, CLS_Error);
+        consoleWriteLine("Usage: funds amount, where amount is an integer"_s, ConsoleLineStyle::Error);
     }
 }
 
@@ -78,7 +78,7 @@ ConsoleCommand(generate)
     }
     generateTerrain(city, &app_state.gameState->gameRandom);
 
-    consoleWriteLine("Generated new map"_s, CLS_Success);
+    consoleWriteLine("Generated new map"_s, ConsoleLineStyle::Success);
 }
 
 ConsoleCommand(hello)
@@ -106,7 +106,7 @@ ConsoleCommand(map_info)
 
     City* city = &AppState::the().gameState->city;
 
-    consoleWriteLine(myprintf("Map: {0} x {1} tiles. Seed: {2}"_s, { formatInt(city->bounds.w), formatInt(city->bounds.h), formatInt(city->terrainLayer.terrainGenerationSeed) }), CLS_Success);
+    consoleWriteLine(myprintf("Map: {0} x {1} tiles. Seed: {2}"_s, { formatInt(city->bounds.w), formatInt(city->bounds.h), formatInt(city->terrainLayer.terrainGenerationSeed) }), ConsoleLineStyle::Success);
 }
 
 ConsoleCommand(mark_all_dirty)
@@ -137,38 +137,38 @@ ConsoleCommand(show_layer)
     if (argumentsCount == 0) {
         // Hide layers
         app_state.gameState->dataLayerToDraw = DataView::None;
-        consoleWriteLine("Hiding data layers"_s, CLS_Success);
+        consoleWriteLine("Hiding data layers"_s, ConsoleLineStyle::Success);
     } else if (argumentsCount == 1) {
         String layerName = nextToken(remainder, &remainder);
         if (equals(layerName, "crime"_s)) {
             app_state.gameState->dataLayerToDraw = DataView::Crime;
-            consoleWriteLine("Showing crime layer"_s, CLS_Success);
+            consoleWriteLine("Showing crime layer"_s, ConsoleLineStyle::Success);
         } else if (equals(layerName, "des_res"_s)) {
             app_state.gameState->dataLayerToDraw = DataView::Desirability_Residential;
-            consoleWriteLine("Showing residential desirability"_s, CLS_Success);
+            consoleWriteLine("Showing residential desirability"_s, ConsoleLineStyle::Success);
         } else if (equals(layerName, "des_com"_s)) {
             app_state.gameState->dataLayerToDraw = DataView::Desirability_Commercial;
-            consoleWriteLine("Showing commercial desirability"_s, CLS_Success);
+            consoleWriteLine("Showing commercial desirability"_s, ConsoleLineStyle::Success);
         } else if (equals(layerName, "des_ind"_s)) {
             app_state.gameState->dataLayerToDraw = DataView::Desirability_Industrial;
-            consoleWriteLine("Showing industrial desirability"_s, CLS_Success);
+            consoleWriteLine("Showing industrial desirability"_s, ConsoleLineStyle::Success);
         } else if (equals(layerName, "fire"_s)) {
             app_state.gameState->dataLayerToDraw = DataView::Fire;
-            consoleWriteLine("Showing fire layer"_s, CLS_Success);
+            consoleWriteLine("Showing fire layer"_s, ConsoleLineStyle::Success);
         } else if (equals(layerName, "health"_s)) {
             app_state.gameState->dataLayerToDraw = DataView::Health;
-            consoleWriteLine("Showing health layer"_s, CLS_Success);
+            consoleWriteLine("Showing health layer"_s, ConsoleLineStyle::Success);
         } else if (equals(layerName, "land_value"_s)) {
             app_state.gameState->dataLayerToDraw = DataView::LandValue;
-            consoleWriteLine("Showing land value layer"_s, CLS_Success);
+            consoleWriteLine("Showing land value layer"_s, ConsoleLineStyle::Success);
         } else if (equals(layerName, "pollution"_s)) {
             app_state.gameState->dataLayerToDraw = DataView::Pollution;
-            consoleWriteLine("Showing pollution layer"_s, CLS_Success);
+            consoleWriteLine("Showing pollution layer"_s, ConsoleLineStyle::Success);
         } else if (equals(layerName, "power"_s)) {
             app_state.gameState->dataLayerToDraw = DataView::Power;
-            consoleWriteLine("Showing power layer"_s, CLS_Success);
+            consoleWriteLine("Showing power layer"_s, ConsoleLineStyle::Success);
         } else {
-            consoleWriteLine("Usage: show_layer (layer_name), or with no argument to hide the data layer. Layer names are: crime, des_res, des_com, des_ind, fire, health, land_value, pollution, power"_s, CLS_Error);
+            consoleWriteLine("Usage: show_layer (layer_name), or with no argument to hide the data layer. Layer names are: crime, des_res, des_com, des_ind, fire, health, land_value, pollution, power"_s, ConsoleLineStyle::Error);
         }
     }
 }
@@ -178,7 +178,7 @@ ConsoleCommand(speed)
     auto& app_state = AppState::the();
 
     if (argumentsCount == 0) {
-        consoleWriteLine(myprintf("Current game speed: {0}"_s, { formatFloat(app_state.speedMultiplier, 3) }), CLS_Success);
+        consoleWriteLine(myprintf("Current game speed: {0}"_s, { formatFloat(app_state.speedMultiplier, 3) }), ConsoleLineStyle::Success);
     } else {
         String remainder = arguments;
 
@@ -187,9 +187,9 @@ ConsoleCommand(speed)
         if (speedMultiplier.isValid) {
             f32 multiplier = (f32)speedMultiplier.value;
             app_state.setSpeedMultiplier(multiplier);
-            consoleWriteLine(myprintf("Set speed to {0}"_s, { formatFloat(multiplier, 3) }), CLS_Success);
+            consoleWriteLine(myprintf("Set speed to {0}"_s, { formatFloat(multiplier, 3) }), ConsoleLineStyle::Success);
         } else {
-            consoleWriteLine("Usage: speed (multiplier), where multiplier is a float, or with no argument to list the current speed"_s, CLS_Error);
+            consoleWriteLine("Usage: speed (multiplier), where multiplier is a float, or with no argument to list the current speed"_s, ConsoleLineStyle::Error);
         }
     }
 }
@@ -211,17 +211,17 @@ ConsoleCommand(window_size)
         Maybe<s64> height = asInt(sHeight);
         if (width.isValid && (width.value > 0)
             && height.isValid && (height.value > 0)) {
-            consoleWriteLine(myprintf("Window resized to {0} by {1}"_s, { sWidth, sHeight }), CLS_Success);
+            consoleWriteLine(myprintf("Window resized to {0} by {1}"_s, { sWidth, sHeight }), ConsoleLineStyle::Success);
 
             the_renderer().resize_window(truncate32(width.value), truncate32(height.value), false);
         } else {
-            consoleWriteLine("Usage: window_size [width height], where both width and height are positive integers. If no width or height are provided, the current window size is returned."_s, CLS_Error);
+            consoleWriteLine("Usage: window_size [width height], where both width and height are positive integers. If no width or height are provided, the current window size is returned."_s, ConsoleLineStyle::Error);
         }
     } else if (argumentsCount == 0) {
         V2 screenSize = the_renderer().ui_camera().size();
-        consoleWriteLine(myprintf("Window size is {0} by {1}"_s, { formatInt((s32)screenSize.x), formatInt((s32)screenSize.y) }), CLS_Success);
+        consoleWriteLine(myprintf("Window size is {0} by {1}"_s, { formatInt((s32)screenSize.x), formatInt((s32)screenSize.y) }), ConsoleLineStyle::Success);
     } else {
-        consoleWriteLine("Usage: window_size [width height], where both width and height are positive integers. If no width or height are provided, the current window size is returned."_s, CLS_Error);
+        consoleWriteLine("Usage: window_size [width height], where both width and height are positive integers. If no width or height are provided, the current window size is returned."_s, ConsoleLineStyle::Error);
     }
 }
 
@@ -233,16 +233,16 @@ ConsoleCommand(zoom)
     if (argumentsCount == 0) {
         // list the zoom
         f32 zoom = renderer.world_camera().zoom();
-        consoleWriteLine(myprintf("Current zoom is {0}"_s, { formatFloat(zoom, 3) }), CLS_Success);
+        consoleWriteLine(myprintf("Current zoom is {0}"_s, { formatFloat(zoom, 3) }), ConsoleLineStyle::Success);
     } else if (argumentsCount == 1) {
         // set the zoom
         Maybe<f64> requestedZoom = asFloat(nextToken(remainder, &remainder));
         if (requestedZoom.isValid) {
             f32 newZoom = (f32)requestedZoom.value;
             renderer.world_camera().set_zoom(newZoom);
-            consoleWriteLine(myprintf("Set zoom to {0}"_s, { formatFloat(newZoom, 3) }), CLS_Success);
+            consoleWriteLine(myprintf("Set zoom to {0}"_s, { formatFloat(newZoom, 3) }), ConsoleLineStyle::Success);
         } else {
-            consoleWriteLine("Usage: zoom (scale), where scale is a float, or with no argument to list the current zoom"_s, CLS_Error);
+            consoleWriteLine("Usage: zoom (scale), where scale is a float, or with no argument to list the current zoom"_s, ConsoleLineStyle::Error);
         }
     }
 }

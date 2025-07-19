@@ -54,20 +54,20 @@ void customLogOutputFunction(void* /*userdata*/, int category, SDL_LogPriority p
 {
     defaultLogger(defaultLoggerUserData, category, priority, message);
 
-    ConsoleLineStyleID style = CLS_Default;
+    ConsoleLineStyle style = ConsoleLineStyle::Default;
 
     switch (priority) {
     case SDL_LOG_PRIORITY_WARN:
-        style = CLS_Warning;
+        style = ConsoleLineStyle::Warning;
         break;
 
     case SDL_LOG_PRIORITY_ERROR:
     case SDL_LOG_PRIORITY_CRITICAL:
-        style = CLS_Error;
+        style = ConsoleLineStyle::Error;
         break;
 
     default:
-        style = CLS_Default;
+        style = ConsoleLineStyle::Default;
         break;
     }
 
