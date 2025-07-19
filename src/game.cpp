@@ -613,7 +613,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
     DEBUG_FUNCTION_T(DCDT_GameUpdate);
 
     auto& renderer = the_renderer();
-    AppStatus result = AppStatus_Game;
+    AppStatus result = AppStatus::Game;
     City* city = &gameState->city;
 
     if (asset_manager().assetReloadHasJustHappened) {
@@ -889,7 +889,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
     }
 
     if (gameState->status == GameStatus_Quit) {
-        result = AppStatus_MainMenu;
+        result = AppStatus::MainMenu;
     }
 
     return result;

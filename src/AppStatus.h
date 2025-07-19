@@ -6,9 +6,11 @@
 
 #pragma once
 
-enum AppStatus {
-    AppStatus_MainMenu,
-    AppStatus_Game,
-    AppStatus_Credits,
-    AppStatus_Quit,
+#include <Util/Basic.h>
+
+enum class AppStatus : u8 {
+    MainMenu,
+    Game,
+    Credits,
+    Quit,
 };

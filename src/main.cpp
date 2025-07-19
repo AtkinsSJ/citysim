@@ -136,7 +136,7 @@ int main(int argc, char* argv[])
 
     // GAME LOOP
     u64 frameStartTime = SDL_GetPerformanceCounter();
-    while (app_state.appStatus != AppStatus_Quit) {
+    while (app_state.appStatus != AppStatus::Quit) {
         {
             DEBUG_BLOCK("Game loop");
 
@@ -153,7 +153,7 @@ int main(int argc, char* argv[])
             updateSavedGamesCatalogue();
 
             if (input.receivedQuitSignal) {
-                app_state.appStatus = AppStatus_Quit;
+                app_state.appStatus = AppStatus::Quit;
                 break;
             }
 
@@ -172,19 +172,19 @@ int main(int argc, char* argv[])
                 AppStatus newAppStatus = app_state.appStatus;
 
                 switch (app_state.appStatus) {
-                case AppStatus_MainMenu: {
+                case AppStatus::MainMenu: {
                     newAppStatus = updateAndRenderMainMenu(app_state.deltaTime);
                 } break;
 
-                case AppStatus_Credits: {
+                case AppStatus::Credits: {
                     newAppStatus = updateAndRenderCredits(app_state.deltaTime);
                 } break;
 
-                case AppStatus_Game: {
+                case AppStatus::Game: {
                     newAppStatus = updateAndRenderGame(app_state.gameState, app_state.deltaTime);
                 } break;
 
-                case AppStatus_Quit:
+                case AppStatus::Quit:
                     break;
 
                     INVALID_DEFAULT_CASE;
@@ -192,7 +192,7 @@ int main(int argc, char* argv[])
 
                 if (newAppStatus != app_state.appStatus) {
                     // Clean-up for previous state
-                    if (app_state.appStatus == AppStatus_Game) {
+                    if (app_state.appStatus == AppStatus::Game) {
                         freeGameState(app_state.gameState);
                         app_state.gameState = nullptr;
                     }

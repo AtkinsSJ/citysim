@@ -43,7 +43,7 @@ ConsoleCommand(debug_tools)
 ConsoleCommand(exit)
 {
     consoleWriteLine("Quitting game..."_s, CLS_Success);
-    AppState::the().appStatus = AppStatus_Quit;
+    AppState::the().appStatus = AppStatus::Quit;
 }
 
 ConsoleCommand(funds)

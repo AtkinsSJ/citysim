@@ -17,7 +17,7 @@ AppStatus updateAndRenderMainMenu(f32 /*deltaTime*/)
 {
     DEBUG_FUNCTION();
 
-    AppStatus result = AppStatus_MainMenu;
+    AppStatus result = AppStatus::MainMenu;
     auto& renderer = the_renderer();
 
     auto window_size = renderer.window_size();
@@ -65,13 +65,13 @@ AppStatus updateAndRenderMainMenu(f32 /*deltaTime*/)
     if (panel.addTextButton(newGameText)) {
         beginNewGame();
 
-        result = AppStatus_Game;
+        result = AppStatus::Game;
     }
     if (panel.addTextButton(loadText)) {
         showLoadGameWindow();
     }
     if (panel.addTextButton(creditsText)) {
-        result = AppStatus_Credits;
+        result = AppStatus::Credits;
     }
     if (panel.addTextButton(settingsText)) {
         showSettingsWindow();
@@ -80,7 +80,7 @@ AppStatus updateAndRenderMainMenu(f32 /*deltaTime*/)
         showAboutWindow();
     }
     if (panel.addTextButton(exitText)) {
-        result = AppStatus_Quit;
+        result = AppStatus::Quit;
     }
 
     panel.end(true);

@@ -322,7 +322,7 @@ void loadGame(SavedGameInfo* savedGame)
 
         UI::pushToast(getText("msg_load_success"_s, { savedGame->shortName }));
 
-        app_state.appStatus = AppStatus_Game;
+        app_state.appStatus = AppStatus::Game;
 
         UI::closeAllWindows();
 

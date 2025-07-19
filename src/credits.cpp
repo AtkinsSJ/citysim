@@ -12,7 +12,7 @@
 
 AppStatus updateAndRenderCredits(f32 /*deltaTime*/)
 {
-    AppStatus result = AppStatus_Credits;
+    AppStatus result = AppStatus::Credits;
 
     V2I position = v2i(UI::windowSize.x / 2, 157);
     s32 maxLabelWidth = UI::windowSize.x - 256;
@@ -35,7 +35,7 @@ AppStatus updateAndRenderCredits(f32 /*deltaTime*/)
     V2I backSize = UI::calculateButtonSize(backText, style);
     Rect2I buttonRect = irectXYWH(uiBorderPadding, UI::windowSize.y - uiBorderPadding - backSize.y, backSize.x, backSize.y);
     if (UI::putTextButton(getText("button_back"_s), buttonRect, style, Button_Normal)) {
-        result = AppStatus_MainMenu;
+        result = AppStatus::MainMenu;
     }
 
     return result;
