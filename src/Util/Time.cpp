@@ -23,19 +23,19 @@ String formatDateTime(DateTime dateTime, DateTimeFormat format)
     String formatString = nullString;
 
     switch (format) {
-    case DateTime_ShortDate: {
+    case DateTimeFormat::ShortDate: {
         formatString = getText("date_format_short_date"_s);
     } break;
 
-    case DateTime_LongDate: {
+    case DateTimeFormat::LongDate: {
         formatString = getText("date_format_long_date"_s);
     } break;
 
-    case DateTime_ShortDateTime: {
+    case DateTimeFormat::ShortDateTime: {
         formatString = getText("date_format_short_date_time"_s);
     } break;
 
-    case DateTime_LongDateTime: {
+    case DateTimeFormat::LongDateTime: {
         formatString = getText("date_format_long_date_time"_s);
     } break;
 
@@ -65,20 +65,20 @@ String formatDateTime(DateTime dateTime, DateTimeFormat format)
                 if (equals(symbol, "year"_s)) {
                     append(&stb, formatInt(dateTime.year));
                 } else if (equals(symbol, "month"_s)) {
-                    append(&stb, formatInt(dateTime.month + 1));
+                    append(&stb, formatInt(to_underlying(dateTime.month) + 1));
                 } else if (equals(symbol, "month2"_s)) {
-                    append(&stb, formatInt(dateTime.month + 1, 10, 2));
+                    append(&stb, formatInt(to_underlying(dateTime.month) + 1, 10, 2));
                 } else if (equals(symbol, "monthN"_s)) {
-                    ASSERT(dateTime.month >= 0 && dateTime.month < MonthOfYearCount);
-                    String monthName = monthNameStrings[dateTime.month];
+                    ASSERT(to_underlying(dateTime.month) >= 0 && to_underlying(dateTime.month) < to_underlying(MonthOfYear::COUNT));
+                    String monthName = monthNameStrings[to_underlying(dateTime.month)];
                     append(&stb, getText(monthName));
                 } else if (equals(symbol, "day"_s)) {
                     append(&stb, formatInt(dateTime.dayOfMonth));
                 } else if (equals(symbol, "day2"_s)) {
                     append(&stb, formatInt(dateTime.dayOfMonth, 10, 2));
                 } else if (equals(symbol, "dayN"_s)) {
-                    ASSERT(dateTime.dayOfWeek >= 0 && dateTime.dayOfWeek < DayOfWeekCount);
-                    String dayName = dayNameStrings[dateTime.dayOfWeek];
+                    ASSERT(to_underlying(dateTime.dayOfWeek) >= 0 && to_underlying(dateTime.dayOfWeek) < to_underlying(DayOfWeek::COUNT));
+                    String dayName = dayNameStrings[to_underlying(dateTime.dayOfWeek)];
                     append(&stb, getText(dayName));
                 } else if (equals(symbol, "hour"_s)) {
                     append(&stb, formatInt(dateTime.hour));

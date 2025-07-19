@@ -9,33 +9,33 @@
 #include "Basic.h"
 #include "String.h"
 
-enum DayOfWeek {
-    Day_Monday,
-    Day_Tuesday,
-    Day_Wednesday,
-    Day_Thursday,
-    Day_Friday,
-    Day_Saturday,
-    Day_Sunday,
+enum class DayOfWeek : u8 {
+    Monday,
+    Tuesday,
+    Wednesday,
+    Thursday,
+    Friday,
+    Saturday,
+    Sunday,
 
-    DayOfWeekCount
+    COUNT
 };
 
-enum MonthOfYear {
-    Month_January,
-    Month_February,
-    Month_March,
-    Month_April,
-    Month_May,
-    Month_June,
-    Month_July,
-    Month_August,
-    Month_September,
-    Month_October,
-    Month_November,
-    Month_December,
+enum class MonthOfYear : u8 {
+    January,
+    February,
+    March,
+    April,
+    May,
+    June,
+    July,
+    August,
+    September,
+    October,
+    November,
+    December,
 
-    MonthOfYearCount
+    COUNT
 };
 
 struct DateTime {
@@ -52,14 +52,14 @@ struct DateTime {
     DayOfWeek dayOfWeek;
 };
 
-enum DateTimeFormat {
-    DateTime_ShortDate,
-    DateTime_LongDate,
-    DateTime_ShortDateTime,
-    DateTime_LongDateTime,
+enum class DateTimeFormat : u8 {
+    ShortDate,
+    LongDate,
+    ShortDateTime,
+    LongDateTime,
 };
 
-String const dayNameStrings[DayOfWeekCount] = {
+String const dayNameStrings[to_underlying(DayOfWeek::COUNT)] = {
     "date_part_monday"_s,
     "date_part_tuesday"_s,
     "date_part_wednesday"_s,
@@ -69,7 +69,7 @@ String const dayNameStrings[DayOfWeekCount] = {
     "date_part_sunday"_s,
 };
 
-String const monthNameStrings[12] = {
+String const monthNameStrings[to_underlying(MonthOfYear::COUNT)] = {
     "date_part_month01"_s,
     "date_part_month02"_s,
     "date_part_month03"_s,

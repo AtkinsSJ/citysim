@@ -53,7 +53,7 @@ GameTimestamp timestampFromParts(s32 year, MonthOfYear month, s32 day)
     result += (year - 1) * DAYS_PER_YEAR;
 
     // Add days for previous months this year
-    for (s32 monthIndex = Month_January; monthIndex < month; monthIndex++) {
+    for (s32 monthIndex = to_underlying(MonthOfYear::January); monthIndex < to_underlying(month); monthIndex++) {
         result += DAYS_PER_MONTH[monthIndex];
     }
 
@@ -111,7 +111,7 @@ u8 incrementClock(GameClock* clock, f32 deltaTime)
         }
 
         if ((clockEvents & ClockEvent_NewDay)
-            && (clock->cosmeticDate.dayOfWeek == Day_Monday)) {
+            && (clock->cosmeticDate.dayOfWeek == DayOfWeek::Monday)) {
             clockEvents |= ClockEvent_NewWeek;
         }
     }
@@ -119,7 +119,7 @@ u8 incrementClock(GameClock* clock, f32 deltaTime)
     return clockEvents;
 }
 
- GameTimestamp getCurrentTimestamp()
+GameTimestamp getCurrentTimestamp()
 {
     return AppState::the().gameState->gameClock.currentDay;
 }

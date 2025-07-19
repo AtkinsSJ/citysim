@@ -123,7 +123,7 @@ FileBlob BinaryFileWriter::appendBlob(s32 length, u8* data, FileBlobCompressionS
     } break;
 
     default: {
-        logError("Called appendBlob() with an unrecognized scheme! ({0}) Defaulting to FileBlobCompressionScheme::Uncompressed."_s, { formatInt(to_underlying(scheme)) });
+        logError("Called appendBlob() with an unrecognized scheme! ({0}) Defaulting to FileBlobCompressionScheme::Uncompressed."_s, { formatInt(scheme) });
         result = appendBlob(length, data, FileBlobCompressionScheme::Uncompressed);
     } break;
     }

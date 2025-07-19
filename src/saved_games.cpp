@@ -191,7 +191,7 @@ void savedGamesWindowProc(UI::WindowContext* context, void* userData)
 
         ui->alignWidgets(ALIGN_EXPAND_H);
         ui->addLabel(selectedSavedGame->shortName);
-        ui->addLabel(myprintf("Saved {0}"_s, { formatDateTime(selectedSavedGame->saveTime, DateTime_LongDateTime) }));
+        ui->addLabel(myprintf("Saved {0}"_s, { formatDateTime(selectedSavedGame->saveTime, DateTimeFormat::LongDateTime) }));
         ui->addLabel(selectedSavedGame->cityName);
         ui->addLabel(myprintf("Mayor {0}"_s, { selectedSavedGame->playerName }));
         ui->addLabel(myprintf("£{0}"_s, { formatInt(selectedSavedGame->funds) }));

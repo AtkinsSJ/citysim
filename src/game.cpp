@@ -295,7 +295,7 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
         s32 buildingIndex = city->tileBuildingIndex.get(tilePos.x, tilePos.y);
         BuildingDef* def = getBuildingDef(building->typeID);
         ui->addLabel(myprintf("Building: {0} (ID {1}, array index {2})"_s, { getText(def->textAssetName), formatInt(building->id), formatInt(buildingIndex) }));
-        ui->addLabel(myprintf("Constructed: {0}"_s, { formatDateTime(dateTimeFromTimestamp(building->creationDate), DateTime_ShortDate) }));
+        ui->addLabel(myprintf("Constructed: {0}"_s, { formatDateTime(dateTimeFromTimestamp(building->creationDate), DateTimeFormat::ShortDate) }));
         ui->addLabel(myprintf("Variant: {0}"_s, { formatInt(building->variantIndex) }));
         ui->addLabel(myprintf("- Residents: {0} / {1}"_s, { formatInt(building->currentResidents), formatInt(def->residents) }));
         ui->addLabel(myprintf("- Jobs: {0} / {1}"_s, { formatInt(building->currentJobs), formatInt(def->jobs) }));
@@ -416,7 +416,7 @@ void updateAndRenderGameUI(GameState* gameState)
         s32 clockWidth = (speedButtonSize.x * 4) + (uiPadding * 3);
         clockBounds = irectXYWH(right - clockWidth, uiPadding, clockWidth, toolbarHeight);
 
-        String dateString = formatDateTime(clock->cosmeticDate, DateTime_ShortDate);
+        String dateString = formatDateTime(clock->cosmeticDate, DateTimeFormat::ShortDate);
         V2I dateStringSize = calculateTextSize(font, dateString, clockWidth);
 
         // Draw a progress bar for the current day
