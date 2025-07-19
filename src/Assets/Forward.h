@@ -6,6 +6,9 @@
 
 #pragma once
 
+#include <Util/Basic.h>
+
+enum class AssetType : s8;
 struct Asset;
 struct AssetID;
 struct AssetRef;

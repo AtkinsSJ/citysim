@@ -19,7 +19,7 @@ AppStatus updateAndRenderCredits(f32 /*deltaTime*/)
 
     UI::LabelStyle* labelStyle = getStyle<UI::LabelStyle>("title"_s);
 
-    Asset* creditsText = getAsset(AssetType_Misc, "credits.txt"_s);
+    Asset* creditsText = getAsset(AssetType::Misc, "credits.txt"_s);
     LineReader reader = readLines(creditsText->shortName, creditsText->data, 0);
     while (loadNextLine(&reader)) {
         String line = getLine(&reader);

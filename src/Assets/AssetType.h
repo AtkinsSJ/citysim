@@ -8,42 +8,43 @@
 
 #include <Util/String.h>
 
-enum AssetType {
-    AssetType_Misc,
+enum class AssetType : s8 {
+    Misc,
 
-    AssetType_BitmapFont,
-    AssetType_BuildingDefs,
-    AssetType_Cursor,
-    AssetType_CursorDefs,
-    AssetType_DevKeymap,
-    AssetType_Ninepatch,
-    AssetType_Palette,
-    AssetType_PaletteDefs,
-    AssetType_Shader,
-    AssetType_Sprite,
-    AssetType_SpriteDefs,
-    AssetType_TerrainDefs,
-    AssetType_Texts,
-    AssetType_Texture,
-    AssetType_UITheme,
+    BitmapFont,
+    BuildingDefs,
+    Cursor,
+    CursorDefs,
+    DevKeymap,
+    Ninepatch,
+    Palette,
+    PaletteDefs,
+    Shader,
+    Sprite,
+    SpriteDefs,
+    TerrainDefs,
+    Texts,
+    Texture,
+    UITheme,
 
-    AssetType_ButtonStyle,
-    AssetType_CheckboxStyle,
-    AssetType_ConsoleStyle,
-    AssetType_DropDownListStyle,
-    AssetType_LabelStyle,
-    AssetType_PanelStyle,
-    AssetType_RadioButtonStyle,
-    AssetType_ScrollbarStyle,
-    AssetType_SliderStyle,
-    AssetType_TextInputStyle,
-    AssetType_WindowStyle,
+    ButtonStyle,
+    CheckboxStyle,
+    ConsoleStyle,
+    DropDownListStyle,
+    LabelStyle,
+    PanelStyle,
+    RadioButtonStyle,
+    ScrollbarStyle,
+    SliderStyle,
+    TextInputStyle,
+    WindowStyle,
 
-    AssetTypeCount,
-    AssetType_Unknown = -1
+    COUNT,
+    // FIXME: Remove Unknown!
+    Unknown = -1
 };
 
-inline String assetTypeNames[AssetTypeCount] = {
+inline String assetTypeNames[to_underlying(AssetType::COUNT)] = {
     "Misc"_s,
     "BitmapFont"_s,
     "BuildingDefs"_s,

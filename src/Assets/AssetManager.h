@@ -29,15 +29,15 @@ struct AssetManager {
     HashTable<AssetType> directoryNameToType;
 
     ChunkedArray<Asset> allAssets;
-    HashTable<Asset*> assetsByType[AssetTypeCount];
+    HashTable<Asset*> assetsByType[to_underlying(AssetType::COUNT)];
 
     // If a requested asset is not found, the one here is used instead.
     // Probably most of these will be empty, but we do need a placeholder sprite at least,
     // so I figure it's better to put this in place for all types while I'm at it.
     // - Sam, 27/03/2020
-    Asset placeholderAssets[AssetTypeCount];
+    Asset placeholderAssets[to_underlying(AssetType::COUNT)];
     // The missing assets are logged here!
-    Set<String> missingAssetNames[AssetTypeCount];
+    Set<String> missingAssetNames[to_underlying(AssetType::COUNT)];
 
     // TODO: this probably belongs somewhere else? IDK.
     // It feels icky having parts of assets directly in this struct, but when there's only 1, and you
@@ -72,7 +72,7 @@ void removeAsset(AssetType type, String name);
 void removeAssets(Array<AssetID> assetsToRemove);
 
 void addAssets();
-void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType = AssetType_Unknown);
+void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType = AssetType::Unknown);
 bool haveAssetFilesChanged();
 void reloadAssets();
 
@@ -101,27 +101,27 @@ template<typename T>
 bool checkStyleMatchesType(AssetRef* reference)
 {
     switch (reference->type) {
-    case AssetType_ButtonStyle:
+    case AssetType::ButtonStyle:
         return (typeid(T*) == typeid(UI::ButtonStyle*));
-    case AssetType_CheckboxStyle:
+    case AssetType::CheckboxStyle:
         return (typeid(T*) == typeid(UI::CheckboxStyle*));
-    case AssetType_ConsoleStyle:
+    case AssetType::ConsoleStyle:
         return (typeid(T*) == typeid(UI::ConsoleStyle*));
-    case AssetType_DropDownListStyle:
+    case AssetType::DropDownListStyle:
         return (typeid(T*) == typeid(UI::DropDownListStyle*));
-    case AssetType_LabelStyle:
+    case AssetType::LabelStyle:
         return (typeid(T*) == typeid(UI::LabelStyle*));
-    case AssetType_PanelStyle:
+    case AssetType::PanelStyle:
         return (typeid(T*) == typeid(UI::PanelStyle*));
-    case AssetType_RadioButtonStyle:
+    case AssetType::RadioButtonStyle:
         return (typeid(T*) == typeid(UI::RadioButtonStyle*));
-    case AssetType_ScrollbarStyle:
+    case AssetType::ScrollbarStyle:
         return (typeid(T*) == typeid(UI::ScrollbarStyle*));
-    case AssetType_SliderStyle:
+    case AssetType::SliderStyle:
         return (typeid(T*) == typeid(UI::SliderStyle*));
-    case AssetType_TextInputStyle:
+    case AssetType::TextInputStyle:
         return (typeid(T*) == typeid(UI::TextInputStyle*));
-    case AssetType_WindowStyle:
+    case AssetType::WindowStyle:
         return (typeid(T*) == typeid(UI::WindowStyle*));
         INVALID_DEFAULT_CASE;
     }
@@ -156,29 +156,29 @@ T* getStyle(String styleName)
 {
     T* result = nullptr;
 
-    AssetType styleType = AssetType_Unknown;
+    AssetType styleType = AssetType::Unknown;
     if (typeid(T) == typeid(UI::ButtonStyle))
-        styleType = AssetType_ButtonStyle;
+        styleType = AssetType::ButtonStyle;
     else if (typeid(T) == typeid(UI::CheckboxStyle))
-        styleType = AssetType_CheckboxStyle;
+        styleType = AssetType::CheckboxStyle;
     else if (typeid(T) == typeid(UI::ConsoleStyle))
-        styleType = AssetType_ConsoleStyle;
+        styleType = AssetType::ConsoleStyle;
     else if (typeid(T) == typeid(UI::DropDownListStyle))
-        styleType = AssetType_DropDownListStyle;
+        styleType = AssetType::DropDownListStyle;
     else if (typeid(T) == typeid(UI::LabelStyle))
-        styleType = AssetType_LabelStyle;
+        styleType = AssetType::LabelStyle;
     else if (typeid(T) == typeid(UI::PanelStyle))
-        styleType = AssetType_PanelStyle;
+        styleType = AssetType::PanelStyle;
     else if (typeid(T) == typeid(UI::RadioButtonStyle))
-        styleType = AssetType_RadioButtonStyle;
+        styleType = AssetType::RadioButtonStyle;
     else if (typeid(T) == typeid(UI::ScrollbarStyle))
-        styleType = AssetType_ScrollbarStyle;
+        styleType = AssetType::ScrollbarStyle;
     else if (typeid(T) == typeid(UI::SliderStyle))
-        styleType = AssetType_SliderStyle;
+        styleType = AssetType::SliderStyle;
     else if (typeid(T) == typeid(UI::TextInputStyle))
-        styleType = AssetType_TextInputStyle;
+        styleType = AssetType::TextInputStyle;
     else if (typeid(T) == typeid(UI::WindowStyle))
-        styleType = AssetType_WindowStyle;
+        styleType = AssetType::WindowStyle;
     else
         ASSERT(false);
 

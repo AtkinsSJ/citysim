@@ -437,7 +437,7 @@ void debugTrackAssets(DebugState* debugState)
     assetData->arenaUsedSize[frameIndex] = statistics.used_size;
 
     // assetsByType HashTables
-    for (s32 assetType = 0; assetType < AssetTypeCount; assetType++) {
+    for (s32 assetType = 0; assetType < to_underlying(AssetType::COUNT); assetType++) {
         auto const& assetsByNameForType = asset_manager().assetsByType[assetType];
         assetData->assetsByNameSize[frameIndex] += assetsByNameForType.capacity * sizeof(assetsByNameForType.entries[0]);
     }

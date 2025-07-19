@@ -50,8 +50,8 @@ void updateAndRenderConsole(Console* console)
     auto& renderer = the_renderer();
 
     // Late-init the console style
-    if (console->style.type != AssetType_ConsoleStyle) {
-        console->style = getAssetRef(AssetType_ConsoleStyle, "default"_s);
+    if (console->style.type != AssetType::ConsoleStyle) {
+        console->style = getAssetRef(AssetType::ConsoleStyle, "default"_s);
     }
 
     // Keyboard shortcuts for commands

@@ -30,19 +30,19 @@ void initAssets()
     // Well, for now at least.
     // - Sam, 19/05/2019
     initHashTable(&s_assets->fileExtensionToType);
-    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "buildings"_s), AssetType_BuildingDefs);
-    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "cursors"_s), AssetType_CursorDefs);
-    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "keymap"_s), AssetType_DevKeymap);
-    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "palettes"_s), AssetType_PaletteDefs);
-    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "sprites"_s), AssetType_SpriteDefs);
-    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "terrain"_s), AssetType_TerrainDefs);
-    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "theme"_s), AssetType_UITheme);
+    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "buildings"_s), AssetType::BuildingDefs);
+    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "cursors"_s), AssetType::CursorDefs);
+    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "keymap"_s), AssetType::DevKeymap);
+    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "palettes"_s), AssetType::PaletteDefs);
+    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "sprites"_s), AssetType::SpriteDefs);
+    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "terrain"_s), AssetType::TerrainDefs);
+    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "theme"_s), AssetType::UITheme);
 
     initHashTable(&s_assets->directoryNameToType);
-    s_assets->directoryNameToType.put(intern(&s_assets->assetStrings, "fonts"_s), AssetType_BitmapFont);
-    s_assets->directoryNameToType.put(intern(&s_assets->assetStrings, "shaders"_s), AssetType_Shader);
-    s_assets->directoryNameToType.put(intern(&s_assets->assetStrings, "textures"_s), AssetType_Texture);
-    s_assets->directoryNameToType.put(intern(&s_assets->assetStrings, "locale"_s), AssetType_Texts);
+    s_assets->directoryNameToType.put(intern(&s_assets->assetStrings, "fonts"_s), AssetType::BitmapFont);
+    s_assets->directoryNameToType.put(intern(&s_assets->assetStrings, "shaders"_s), AssetType::Shader);
+    s_assets->directoryNameToType.put(intern(&s_assets->assetStrings, "textures"_s), AssetType::Texture);
+    s_assets->directoryNameToType.put(intern(&s_assets->assetStrings, "locale"_s), AssetType::Texts);
 
     // NB: The arena block size is 1MB currently, so make sure that this number * sizeof(Asset) is less than that!
     // (Otherwise, we waste a LOT of memory with almost-empty memory blocks.)
@@ -52,7 +52,7 @@ void initAssets()
 
     auto compareStrings = [](String* a, String* b) { return equals(*a, *b); };
 
-    for (s32 assetType = 0; assetType < AssetTypeCount; assetType++) {
+    for (s32 assetType = 0; assetType < to_underlying(AssetType::COUNT); assetType++) {
         initHashTable(&s_assets->assetsByType[assetType]);
 
         initSet<String>(&s_assets->missingAssetNames[assetType], &s_assets->arena, compareStrings);
@@ -72,56 +72,56 @@ void initAssets()
     // Placeholder s_assets!
     {
         // BitmapFont
-        makePlaceholderAsset(AssetType_BitmapFont);
+        makePlaceholderAsset(AssetType::BitmapFont);
 
         // BuildingDefs
-        makePlaceholderAsset(AssetType_BuildingDefs);
+        makePlaceholderAsset(AssetType::BuildingDefs);
 
         // Cursor
-        Asset* placeholderCursor = makePlaceholderAsset(AssetType_Cursor);
+        Asset* placeholderCursor = makePlaceholderAsset(AssetType::Cursor);
         placeholderCursor->cursor.sdlCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
 
         // CursorDefs
-        makePlaceholderAsset(AssetType_CursorDefs);
+        makePlaceholderAsset(AssetType::CursorDefs);
 
         // DevKeymap
-        makePlaceholderAsset(AssetType_DevKeymap);
+        makePlaceholderAsset(AssetType::DevKeymap);
 
         // Ninepatch
-        Asset* placeholderNinepatch = makePlaceholderAsset(AssetType_Ninepatch);
-        placeholderNinepatch->ninepatch.texture = &s_assets->placeholderAssets[AssetType_Texture];
+        Asset* placeholderNinepatch = makePlaceholderAsset(AssetType::Ninepatch);
+        placeholderNinepatch->ninepatch.texture = &s_assets->placeholderAssets[to_underlying(AssetType::Texture)];
 
         // Palette
-        Asset* placeholderPalette = makePlaceholderAsset(AssetType_Palette);
+        Asset* placeholderPalette = makePlaceholderAsset(AssetType::Palette);
         placeholderPalette->palette.type = Palette::Type::Fixed;
         placeholderPalette->palette.size = 0;
         placeholderPalette->palette.paletteData = makeEmptyArray<V4>();
 
         // PaletteDefs
-        makePlaceholderAsset(AssetType_PaletteDefs);
+        makePlaceholderAsset(AssetType::PaletteDefs);
 
         // Shader
-        makePlaceholderAsset(AssetType_Shader);
+        makePlaceholderAsset(AssetType::Shader);
 
         // Sprite!
-        Asset* placeholderSprite = makePlaceholderAsset(AssetType_Sprite);
+        Asset* placeholderSprite = makePlaceholderAsset(AssetType::Sprite);
         placeholderSprite->data = assetsAllocate(s_assets, 1 * sizeof(Sprite));
         placeholderSprite->spriteGroup.count = 1;
         placeholderSprite->spriteGroup.sprites = (Sprite*)placeholderSprite->data.writable_data();
-        placeholderSprite->spriteGroup.sprites[0].texture = &s_assets->placeholderAssets[AssetType_Texture];
+        placeholderSprite->spriteGroup.sprites[0].texture = &s_assets->placeholderAssets[to_underlying(AssetType::Texture)];
         placeholderSprite->spriteGroup.sprites[0].uv = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
 
         // SpriteDefs
-        makePlaceholderAsset(AssetType_SpriteDefs);
+        makePlaceholderAsset(AssetType::SpriteDefs);
 
         // TerrainDefs
-        makePlaceholderAsset(AssetType_TerrainDefs);
+        makePlaceholderAsset(AssetType::TerrainDefs);
 
         // Texts
-        makePlaceholderAsset(AssetType_Texts);
+        makePlaceholderAsset(AssetType::Texts);
 
         // Texture
-        Asset* placeholderTexture = makePlaceholderAsset(AssetType_Texture);
+        Asset* placeholderTexture = makePlaceholderAsset(AssetType::Texture);
         placeholderTexture->data = assetsAllocate(s_assets, 2 * 2 * sizeof(u32));
         u32* pixels = (u32*)placeholderTexture->data.writable_data();
         pixels[0] = pixels[3] = 0xffff00ff;
@@ -131,7 +131,7 @@ void initAssets()
         placeholderTexture->texture.isFileAlphaPremultiplied = true;
 
         // UITheme
-        makePlaceholderAsset(AssetType_UITheme);
+        makePlaceholderAsset(AssetType::UITheme);
     }
 
     // NB: This might fail, or we might be on a platform where it isn't implemented.
@@ -146,7 +146,7 @@ AssetManager& asset_manager()
 
 Asset* makePlaceholderAsset(AssetType type)
 {
-    Asset* result = &s_assets->placeholderAssets[type];
+    Asset* result = &s_assets->placeholderAssets[to_underlying(type)];
     result->type = type;
     result->shortName = nullString;
     result->fullName = nullString;
@@ -197,7 +197,7 @@ Asset* addAsset(AssetType type, String shortName, u32 flags)
     asset->data = {};
     asset->flags = flags;
 
-    s_assets->assetsByType[type].put(internedShortName, asset);
+    s_assets->assetsByType[to_underlying(type)].put(internedShortName, asset);
 
     return asset;
 }
@@ -280,17 +280,17 @@ void loadAsset(Asset* asset)
 
     // Type-specific loading
     switch (asset->type) {
-    case AssetType_BitmapFont: {
+    case AssetType::BitmapFont: {
         loadBMFont(fileData, asset);
         asset->state = Asset::State::Loaded;
     } break;
 
-    case AssetType_BuildingDefs: {
+    case AssetType::BuildingDefs: {
         loadBuildingDefs(fileData, asset);
         asset->state = Asset::State::Loaded;
     } break;
 
-    case AssetType_Cursor: {
+    case AssetType::Cursor: {
         fileData = readTempFile(asset->cursor.imageFilePath);
         SDL_Surface* cursorSurface = createSurfaceFromFileData(fileData, asset->shortName);
         asset->cursor.sdlCursor = SDL_CreateColorCursor(cursorSurface, asset->cursor.hotspot.x, asset->cursor.hotspot.y);
@@ -298,12 +298,12 @@ void loadAsset(Asset* asset)
         asset->state = Asset::State::Loaded;
     } break;
 
-    case AssetType_CursorDefs: {
+    case AssetType::CursorDefs: {
         loadCursorDefs(fileData, asset);
         asset->state = Asset::State::Loaded;
     } break;
 
-    case AssetType_DevKeymap: {
+    case AssetType::DevKeymap: {
         if (globalConsole != nullptr) {
             // NB: We keep the keymap file in the asset memory, so that the CommandShortcut.command can
             // directly refer to the string data from the file, instead of having to assetsAllocate a copy
@@ -314,7 +314,7 @@ void loadAsset(Asset* asset)
         asset->state = Asset::State::Loaded;
     } break;
 
-    case AssetType_Ninepatch: {
+    case AssetType::Ninepatch: {
         // Convert UVs from pixel space to 0-1 space
         Asset* t = asset->ninepatch.texture;
         ensureAssetIsLoaded(t);
@@ -334,7 +334,7 @@ void loadAsset(Asset* asset)
         asset->state = Asset::State::Loaded;
     } break;
 
-    case AssetType_Palette: {
+    case AssetType::Palette: {
         Palette* palette = &asset->palette;
         switch (palette->type) {
         case Palette::Type::Gradient: {
@@ -355,18 +355,18 @@ void loadAsset(Asset* asset)
         asset->state = Asset::State::Loaded;
     } break;
 
-    case AssetType_PaletteDefs: {
+    case AssetType::PaletteDefs: {
         loadPaletteDefs(fileData, asset);
         asset->state = Asset::State::Loaded;
     } break;
 
-    case AssetType_Shader: {
+    case AssetType::Shader: {
         copyFileIntoAsset(&fileData, asset);
         splitInTwo(stringFromBlob(fileData), '$', &asset->shader.vertexShader, &asset->shader.fragmentShader);
         asset->state = Asset::State::Loaded;
     } break;
 
-    case AssetType_Sprite: {
+    case AssetType::Sprite: {
         // Convert UVs from pixel space to 0-1 space
         for (s32 i = 0; i < asset->spriteGroup.count; i++) {
             Sprite* sprite = asset->spriteGroup.sprites + i;
@@ -385,23 +385,23 @@ void loadAsset(Asset* asset)
         asset->state = Asset::State::Loaded;
     } break;
 
-    case AssetType_SpriteDefs: {
+    case AssetType::SpriteDefs: {
         loadSpriteDefs(fileData, asset);
         asset->state = Asset::State::Loaded;
     } break;
 
-    case AssetType_TerrainDefs: {
+    case AssetType::TerrainDefs: {
         loadTerrainDefs(fileData, asset);
         asset->state = Asset::State::Loaded;
     } break;
 
-    case AssetType_Texts: {
+    case AssetType::Texts: {
         HashTable<String>* textsTable = (asset->texts.isFallbackLocale ? &s_assets->defaultTexts : &s_assets->texts);
         loadTexts(textsTable, asset, fileData);
         asset->state = Asset::State::Loaded;
     } break;
 
-    case AssetType_Texture: {
+    case AssetType::Texture: {
         // TODO: Emergency debug texture that's used if loading a file fails.
         // Right now, we just crash! (Not shippable)
         SDL_Surface* surface = createSurfaceFromFileData(fileData, asset->fullName);
@@ -444,7 +444,7 @@ void loadAsset(Asset* asset)
         asset->state = Asset::State::Loaded;
     } break;
 
-    case AssetType_UITheme: {
+    case AssetType::UITheme: {
         loadUITheme(fileData, asset);
         asset->state = Asset::State::Loaded;
     } break;
@@ -467,26 +467,26 @@ void unloadAsset(Asset* asset)
         return;
 
     switch (asset->type) {
-    case AssetType_BuildingDefs: {
+    case AssetType::BuildingDefs: {
         // Remove all of our terrain defs
         removeBuildingDefs(asset->buildingDefs.buildingIDs);
         asset->buildingDefs.buildingIDs = makeEmptyArray<String>();
     } break;
 
-    case AssetType_Cursor: {
+    case AssetType::Cursor: {
         if (asset->cursor.sdlCursor != nullptr) {
             SDL_FreeCursor(asset->cursor.sdlCursor);
             asset->cursor.sdlCursor = nullptr;
         }
     } break;
 
-    case AssetType_TerrainDefs: {
+    case AssetType::TerrainDefs: {
         // Remove all of our terrain defs
         removeTerrainDefs(asset->terrainDefs.terrainIDs);
         asset->terrainDefs.terrainIDs = makeEmptyArray<String>();
     } break;
 
-    case AssetType_Texts: {
+    case AssetType::Texts: {
         // Remove all of our texts from the table
         HashTable<String>* textsTable = (asset->texts.isFallbackLocale ? &s_assets->defaultTexts : &s_assets->texts);
         for (s32 keyIndex = 0; keyIndex < asset->texts.keys.count; keyIndex++) {
@@ -497,7 +497,7 @@ void unloadAsset(Asset* asset)
         asset->texts.keys = makeEmptyArray<String>();
     } break;
 
-    case AssetType_Texture: {
+    case AssetType::Texture: {
         if (asset->texture.surface != nullptr) {
             SDL_FreeSurface(asset->texture.surface);
             asset->texture.surface = nullptr;
@@ -529,7 +529,7 @@ void removeAsset(AssetType type, String name)
         logError("Attempted to remove an asset (name `{0}`, type {1}) which doesn't exist!"_s, { name, formatInt(type) });
     } else {
         unloadAsset(asset);
-        s_assets->assetsByType[type].removeKey(name);
+        s_assets->assetsByType[to_underlying(type)].removeKey(name);
     }
 }
 
@@ -545,7 +545,7 @@ Asset* addNinepatch(String name, String filename, s32 pu0, s32 pu1, s32 pu2, s32
 {
     Asset* texture = addTexture(filename, false);
 
-    Asset* asset = addAsset(AssetType_Ninepatch, name, 0);
+    Asset* asset = addAsset(AssetType::Ninepatch, name, 0);
 
     Ninepatch* ninepatch = &asset->ninepatch;
     ninepatch->texture = texture;
@@ -567,7 +567,7 @@ Asset* addSpriteGroup(String name, s32 spriteCount)
 {
     ASSERT(spriteCount > 0); // Must have a positive number of sprites in a Sprite Group!
 
-    Asset* spriteGroup = addAsset(AssetType_Sprite, name, 0);
+    Asset* spriteGroup = addAsset(AssetType::Sprite, name, 0);
     if (spriteGroup->data.size() != 0)
         DEBUG_BREAK(); // @Leak! Creating the sprite group multiple times is probably a bad idea for other reasons too.
     spriteGroup->data = assetsAllocate(s_assets, spriteCount * sizeof(Sprite));
@@ -579,7 +579,7 @@ Asset* addSpriteGroup(String name, s32 spriteCount)
 
 Asset* addTexture(String filename, bool isAlphaPremultiplied)
 {
-    Asset* asset = addAsset(AssetType_Texture, filename);
+    Asset* asset = addAsset(AssetType::Texture, filename);
     asset->texture.isFileAlphaPremultiplied = isAlphaPremultiplied;
 
     return asset;
@@ -626,10 +626,10 @@ void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType)
         AssetType assetType = manualAssetType;
 
         // Attempt to categorise the asset based on file extension
-        if (assetType == AssetType_Unknown) {
+        if (assetType == AssetType::Unknown) {
             String fileExtension = getFileExtension(filename);
             Maybe<AssetType> foundAssetType = s_assets->fileExtensionToType.findValue(fileExtension);
-            assetType = foundAssetType.orDefault(AssetType_Misc);
+            assetType = foundAssetType.orDefault(AssetType::Misc);
             // logInfo("Found asset file '{0}'. Adding as type {1}, calculated from extension '{2}'", {filename, formatInt(assetType), fileExtension});
         } else {
             // logInfo("Found asset file '{0}'. Adding as type {1}, passed in.", {filename, formatInt(assetType)});
@@ -673,7 +673,7 @@ void reloadAssets()
     }
 
     // Clear the hash tables
-    for (s32 assetType = 0; assetType < AssetTypeCount; assetType++) {
+    for (s32 assetType = 0; assetType < to_underlying(AssetType::COUNT); assetType++) {
         s_assets->assetsByType[assetType].clear();
 
         // Reset missing text warnings
@@ -698,10 +698,11 @@ Asset* getAsset(AssetType type, String shortName)
     Asset* result = getAssetIfExists(type, shortName);
 
     if (result == nullptr) {
-        if (s_assets->missingAssetNames[type].add(shortName)) {
-            logWarn("Requested {0} asset '{1}' was not found! Using placeholder."_s, { assetTypeNames[type], shortName });
+        auto type_index = to_underlying(type);
+        if (s_assets->missingAssetNames[type_index].add(shortName)) {
+            logWarn("Requested {0} asset '{1}' was not found! Using placeholder."_s, { assetTypeNames[type_index], shortName });
         }
-        result = &s_assets->placeholderAssets[type];
+        result = &s_assets->placeholderAssets[type_index];
     }
 
     return result;
@@ -709,7 +710,7 @@ Asset* getAsset(AssetType type, String shortName)
 
 Asset* getAssetIfExists(AssetType type, String shortName)
 {
-    Maybe<Asset*> result = s_assets->assetsByType[type].findValue(shortName);
+    Maybe<Asset*> result = s_assets->assetsByType[to_underlying(type)].findValue(shortName);
 
     return result.isValid ? result.value : nullptr;
 }
@@ -736,12 +737,12 @@ Asset* getAsset(AssetRef* ref)
 
 Array<V4>* getPalette(String name)
 {
-    return &getAsset(AssetType_Palette, name)->palette.paletteData;
+    return &getAsset(AssetType::Palette, name)->palette.paletteData;
 }
 
 SpriteGroup* getSpriteGroup(String name)
 {
-    return &getAsset(AssetType_Sprite, name)->spriteGroup;
+    return &getAsset(AssetType::Sprite, name)->spriteGroup;
 }
 
 Sprite* getSprite(String name, s32 offset)
@@ -788,14 +789,14 @@ Sprite* getSprite(SpriteRef* ref)
 
 Shader* getShader(String shaderName)
 {
-    return &getAsset(AssetType_Shader, shaderName)->shader;
+    return &getAsset(AssetType::Shader, shaderName)->shader;
 }
 
 BitmapFont* getFont(String fontName)
 {
     BitmapFont* result = nullptr;
 
-    Asset* fontAsset = getAsset(AssetType_BitmapFont, fontName);
+    Asset* fontAsset = getAsset(AssetType::BitmapFont, fontName);
     if (fontAsset != nullptr) {
         result = &fontAsset->bitmapFont;
     } else {
@@ -807,7 +808,7 @@ BitmapFont* getFont(String fontName)
 
 BitmapFont* getFont(AssetRef* fontRef)
 {
-    ASSERT(fontRef->type == AssetType_BitmapFont);
+    ASSERT(fontRef->type == AssetType::BitmapFont);
 
     BitmapFont* result = nullptr;
     Asset* asset = getAsset(fontRef);
@@ -880,19 +881,19 @@ String getAssetPath(AssetType type, String shortName)
     String result = shortName;
 
     switch (type) {
-    case AssetType_Cursor:
+    case AssetType::Cursor:
         result = myprintf("{0}/cursors/{1}"_s, { s_assets->assetsPath, shortName }, true);
         break;
-    case AssetType_BitmapFont:
+    case AssetType::BitmapFont:
         result = myprintf("{0}/fonts/{1}"_s, { s_assets->assetsPath, shortName }, true);
         break;
-    case AssetType_Shader:
+    case AssetType::Shader:
         result = myprintf("{0}/shaders/{1}"_s, { s_assets->assetsPath, shortName }, true);
         break;
-    case AssetType_Texts:
+    case AssetType::Texts:
         result = myprintf("{0}/locale/{1}"_s, { s_assets->assetsPath, shortName }, true);
         break;
-    case AssetType_Texture:
+    case AssetType::Texture:
         result = myprintf("{0}/textures/{1}"_s, { s_assets->assetsPath, shortName }, true);
         break;
     default:
@@ -951,8 +952,8 @@ void loadCursorDefs(Blob data, Asset* asset)
 
         if (hotX.isValid && hotY.isValid) {
             // Add the cursor
-            Asset* cursorAsset = addAsset(AssetType_Cursor, name, 0);
-            cursorAsset->cursor.imageFilePath = intern(&s_assets->assetStrings, getAssetPath(AssetType_Cursor, filename));
+            Asset* cursorAsset = addAsset(AssetType::Cursor, name, 0);
+            cursorAsset->cursor.imageFilePath = intern(&s_assets->assetStrings, getAssetPath(AssetType::Cursor, filename));
             cursorAsset->cursor.hotspot = v2i(hotX.value, hotY.value);
             addChildAsset(asset, cursorAsset);
         } else {
@@ -990,7 +991,7 @@ void loadPaletteDefs(Blob data, Asset* asset)
             command.chars++;
 
             if (equals(command, "Palette"_s)) {
-                paletteAsset = addAsset(AssetType_Palette, readToken(&reader), 0);
+                paletteAsset = addAsset(AssetType::Palette, readToken(&reader), 0);
                 addChildAsset(asset, paletteAsset);
             } else {
                 error(&reader, "Unexpected command ':{0}' in palette-definitions file. Only :Palette is allowed!"_s, { command });

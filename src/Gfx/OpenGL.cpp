@@ -431,7 +431,7 @@ void Renderer::load_assets()
     ::Renderer::load_assets();
 
     // Textures
-    for (auto it = asset_manager().assetsByType[AssetType_Texture].iterate();
+    for (auto it = asset_manager().assetsByType[to_underlying(AssetType::Texture)].iterate();
         it.hasNext();
         it.next()) {
         Asset* asset = *it.get();
@@ -443,8 +443,8 @@ void Renderer::load_assets()
 
     // Shaders
     m_shaders.clear(); // Just in case
-    ASSERT(asset_manager().assetsByType[AssetType_Shader].count <= s8Max);
-    for (auto it = asset_manager().assetsByType[AssetType_Shader].iterate();
+    ASSERT(asset_manager().assetsByType[to_underlying(AssetType::Shader)].count <= s8Max);
+    for (auto it = asset_manager().assetsByType[to_underlying(AssetType::Shader)].iterate();
         it.hasNext();
         it.next()) {
         Asset* asset = *it.get();
@@ -474,7 +474,7 @@ void Renderer::unload_assets()
     ::Renderer::unload_assets();
 
     // Textures
-    for (auto it = asset_manager().assetsByType[AssetType_Texture].iterate();
+    for (auto it = asset_manager().assetsByType[to_underlying(AssetType::Texture)].iterate();
         it.hasNext();
         it.next()) {
         Asset* asset = *it.get();

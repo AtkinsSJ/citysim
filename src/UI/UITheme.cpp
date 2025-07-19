@@ -54,7 +54,7 @@ Maybe<DrawableStyle> readDrawableStyle(LineReader* reader)
         DrawableStyle drawable = {};
         drawable.type = Drawable_Ninepatch;
         drawable.color = color.orDefault(makeWhite());
-        drawable.ninepatch = getAssetRef(AssetType_Ninepatch, ninepatchName);
+        drawable.ninepatch = getAssetRef(AssetType::Ninepatch, ninepatchName);
 
         result = makeSuccess(drawable);
     } else if (equals(typeName, "sprite"_s)) {
@@ -343,7 +343,7 @@ void loadUITheme(Blob data, Asset* asset)
                 String fontFilename = getRemainderOfLine(&reader);
 
                 if (!isEmpty(fontName) && !isEmpty(fontFilename)) {
-                    Asset* fontAsset = addAsset(AssetType_BitmapFont, fontFilename);
+                    Asset* fontAsset = addAsset(AssetType::BitmapFont, fontFilename);
                     fontNamesToAssetNames.put(fontName, fontAsset->shortName);
                 } else {
                     error(&reader, "Invalid font declaration: '{0}'"_s, { getLine(&reader) });
@@ -432,7 +432,7 @@ void loadUITheme(Blob data, Asset* asset)
                             String value = intern(&asset_manager().assetStrings, readToken(&reader));
                             Maybe<String> fontFilename = fontNamesToAssetNames.findValue(value);
                             if (fontFilename.isValid) {
-                                AssetRef fontRef = getAssetRef(AssetType_BitmapFont, fontFilename.value);
+                                AssetRef fontRef = getAssetRef(AssetType::BitmapFont, fontFilename.value);
                                 UI::setPropertyValue<AssetRef>(target, property, fontRef);
                             } else {
                                 error(&reader, "Unrecognised font name '{0}'. Make sure to declare the :Font before it is used!"_s, { value });
@@ -493,7 +493,7 @@ void loadUITheme(Blob data, Asset* asset)
     // Some default values to use
     V4 transparent = color255(0, 0, 0, 0);
     V4 white = makeWhite();
-    AssetRef defaultFont = getAssetRef(AssetType_BitmapFont, nullString);
+    AssetRef defaultFont = getAssetRef(AssetType::BitmapFont, nullString);
     String defaultStyleName = "default"_h;
 
     for (auto it = styles.iterate(); it.hasNext(); it.next()) {
@@ -504,7 +504,7 @@ void loadUITheme(Blob data, Asset* asset)
             if (style->type == sectionType) {
                 switch (style->type) {
                 case UI::Style_Button: {
-                    Asset* childAsset = addAsset(AssetType_ButtonStyle, style->name, 0);
+                    Asset* childAsset = addAsset(AssetType::ButtonStyle, style->name, 0);
                     addChildAsset(asset, childAsset);
 
                     UI::ButtonStyle* button = &childAsset->buttonStyle;
@@ -536,7 +536,7 @@ void loadUITheme(Blob data, Asset* asset)
                 } break;
 
                 case UI::Style_Checkbox: {
-                    Asset* childAsset = addAsset(AssetType_CheckboxStyle, style->name, 0);
+                    Asset* childAsset = addAsset(AssetType::CheckboxStyle, style->name, 0);
                     addChildAsset(asset, childAsset);
 
                     UI::CheckboxStyle* checkbox = &childAsset->checkboxStyle;
@@ -565,7 +565,7 @@ void loadUITheme(Blob data, Asset* asset)
                 } break;
 
                 case UI::Style_Console: {
-                    Asset* childAsset = addAsset(AssetType_ConsoleStyle, style->name, 0);
+                    Asset* childAsset = addAsset(AssetType::ConsoleStyle, style->name, 0);
                     addChildAsset(asset, childAsset);
 
                     UI::ConsoleStyle* console = &childAsset->consoleStyle;
@@ -583,23 +583,23 @@ void loadUITheme(Blob data, Asset* asset)
                     console->padding = style->padding.value;
                     console->contentPadding = style->contentPadding.value;
 
-                    console->scrollbarStyle = getAssetRef(AssetType_ScrollbarStyle, style->scrollbarStyle.orDefault(defaultStyleName));
-                    console->textInputStyle = getAssetRef(AssetType_TextInputStyle, style->textInputStyle.orDefault(defaultStyleName));
+                    console->scrollbarStyle = getAssetRef(AssetType::ScrollbarStyle, style->scrollbarStyle.orDefault(defaultStyleName));
+                    console->textInputStyle = getAssetRef(AssetType::TextInputStyle, style->textInputStyle.orDefault(defaultStyleName));
                 } break;
 
                 case UI::Style_DropDownList: {
-                    Asset* childAsset = addAsset(AssetType_DropDownListStyle, style->name, 0);
+                    Asset* childAsset = addAsset(AssetType::DropDownListStyle, style->name, 0);
                     addChildAsset(asset, childAsset);
 
                     UI::DropDownListStyle* ddl = &childAsset->dropDownListStyle;
                     ddl->name = style->name;
 
-                    ddl->buttonStyle = getAssetRef(AssetType_ButtonStyle, style->buttonStyle.orDefault(defaultStyleName));
-                    ddl->panelStyle = getAssetRef(AssetType_PanelStyle, style->panelStyle.orDefault(defaultStyleName));
+                    ddl->buttonStyle = getAssetRef(AssetType::ButtonStyle, style->buttonStyle.orDefault(defaultStyleName));
+                    ddl->panelStyle = getAssetRef(AssetType::PanelStyle, style->panelStyle.orDefault(defaultStyleName));
                 } break;
 
                 case UI::Style_Label: {
-                    Asset* childAsset = addAsset(AssetType_LabelStyle, style->name, 0);
+                    Asset* childAsset = addAsset(AssetType::LabelStyle, style->name, 0);
                     addChildAsset(asset, childAsset);
 
                     UI::LabelStyle* label = &childAsset->labelStyle;
@@ -613,7 +613,7 @@ void loadUITheme(Blob data, Asset* asset)
                 } break;
 
                 case UI::Style_Panel: {
-                    Asset* childAsset = addAsset(AssetType_PanelStyle, style->name, 0);
+                    Asset* childAsset = addAsset(AssetType::PanelStyle, style->name, 0);
                     addChildAsset(asset, childAsset);
 
                     UI::PanelStyle* panel = &childAsset->panelStyle;
@@ -624,18 +624,18 @@ void loadUITheme(Blob data, Asset* asset)
                     panel->widgetAlignment = style->widgetAlignment.orDefault(ALIGN_TOP | ALIGN_EXPAND_H);
                     panel->background = style->background.value;
 
-                    panel->buttonStyle = getAssetRef(AssetType_ButtonStyle, style->buttonStyle.orDefault(defaultStyleName));
-                    panel->checkboxStyle = getAssetRef(AssetType_CheckboxStyle, style->checkboxStyle.orDefault(defaultStyleName));
-                    panel->dropDownListStyle = getAssetRef(AssetType_DropDownListStyle, style->dropDownListStyle.orDefault(defaultStyleName));
-                    panel->labelStyle = getAssetRef(AssetType_LabelStyle, style->labelStyle.orDefault(defaultStyleName));
-                    panel->radioButtonStyle = getAssetRef(AssetType_RadioButtonStyle, style->radioButtonStyle.orDefault(defaultStyleName));
-                    panel->scrollbarStyle = getAssetRef(AssetType_ScrollbarStyle, style->scrollbarStyle.orDefault(defaultStyleName));
-                    panel->sliderStyle = getAssetRef(AssetType_SliderStyle, style->sliderStyle.orDefault(defaultStyleName));
-                    panel->textInputStyle = getAssetRef(AssetType_TextInputStyle, style->textInputStyle.orDefault(defaultStyleName));
+                    panel->buttonStyle = getAssetRef(AssetType::ButtonStyle, style->buttonStyle.orDefault(defaultStyleName));
+                    panel->checkboxStyle = getAssetRef(AssetType::CheckboxStyle, style->checkboxStyle.orDefault(defaultStyleName));
+                    panel->dropDownListStyle = getAssetRef(AssetType::DropDownListStyle, style->dropDownListStyle.orDefault(defaultStyleName));
+                    panel->labelStyle = getAssetRef(AssetType::LabelStyle, style->labelStyle.orDefault(defaultStyleName));
+                    panel->radioButtonStyle = getAssetRef(AssetType::RadioButtonStyle, style->radioButtonStyle.orDefault(defaultStyleName));
+                    panel->scrollbarStyle = getAssetRef(AssetType::ScrollbarStyle, style->scrollbarStyle.orDefault(defaultStyleName));
+                    panel->sliderStyle = getAssetRef(AssetType::SliderStyle, style->sliderStyle.orDefault(defaultStyleName));
+                    panel->textInputStyle = getAssetRef(AssetType::TextInputStyle, style->textInputStyle.orDefault(defaultStyleName));
                 } break;
 
                 case UI::Style_RadioButton: {
-                    Asset* childAsset = addAsset(AssetType_RadioButtonStyle, style->name, 0);
+                    Asset* childAsset = addAsset(AssetType::RadioButtonStyle, style->name, 0);
                     addChildAsset(asset, childAsset);
 
                     UI::RadioButtonStyle* radioButton = &childAsset->radioButtonStyle;
@@ -655,7 +655,7 @@ void loadUITheme(Blob data, Asset* asset)
                 } break;
 
                 case UI::Style_Scrollbar: {
-                    Asset* childAsset = addAsset(AssetType_ScrollbarStyle, style->name, 0);
+                    Asset* childAsset = addAsset(AssetType::ScrollbarStyle, style->name, 0);
                     addChildAsset(asset, childAsset);
 
                     UI::ScrollbarStyle* scrollbar = &childAsset->scrollbarStyle;
@@ -670,7 +670,7 @@ void loadUITheme(Blob data, Asset* asset)
                 } break;
 
                 case UI::Style_Slider: {
-                    Asset* childAsset = addAsset(AssetType_SliderStyle, style->name, 0);
+                    Asset* childAsset = addAsset(AssetType::SliderStyle, style->name, 0);
                     addChildAsset(asset, childAsset);
 
                     UI::SliderStyle* slider = &childAsset->sliderStyle;
@@ -686,7 +686,7 @@ void loadUITheme(Blob data, Asset* asset)
                 } break;
 
                 case UI::Style_TextInput: {
-                    Asset* childAsset = addAsset(AssetType_TextInputStyle, style->name, 0);
+                    Asset* childAsset = addAsset(AssetType::TextInputStyle, style->name, 0);
                     addChildAsset(asset, childAsset);
 
                     UI::TextInputStyle* textInput = &childAsset->textInputStyle;
@@ -704,7 +704,7 @@ void loadUITheme(Blob data, Asset* asset)
                 } break;
 
                 case UI::Style_Window: {
-                    Asset* childAsset = addAsset(AssetType_WindowStyle, style->name, 0);
+                    Asset* childAsset = addAsset(AssetType::WindowStyle, style->name, 0);
                     addChildAsset(asset, childAsset);
 
                     UI::WindowStyle* window = &childAsset->windowStyle;
@@ -715,11 +715,11 @@ void loadUITheme(Blob data, Asset* asset)
                     window->titleBarColorInactive = style->titleBarColorInactive.orDefault(window->titleBarColor);
                     window->titleBarButtonHoverColor = style->titleBarButtonHoverColor.orDefault(transparent);
 
-                    window->titleLabelStyle = getAssetRef(AssetType_LabelStyle, style->titleLabelStyle.orDefault(defaultStyleName));
+                    window->titleLabelStyle = getAssetRef(AssetType::LabelStyle, style->titleLabelStyle.orDefault(defaultStyleName));
 
                     window->offsetFromMouse = style->offsetFromMouse.value;
 
-                    window->panelStyle = getAssetRef(AssetType_PanelStyle, style->panelStyle.orDefault(defaultStyleName));
+                    window->panelStyle = getAssetRef(AssetType::PanelStyle, style->panelStyle.orDefault(defaultStyleName));
                 } break;
 
                     INVALID_DEFAULT_CASE;
