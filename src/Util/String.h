@@ -95,6 +95,13 @@ inline String formatInt(s32 value, u8 base = 10, s32 zeroPadWidth = 0) { return 
 inline String formatInt(s16 value, u8 base = 10, s32 zeroPadWidth = 0) { return formatInt((s64)value, base, zeroPadWidth); }
 inline String formatInt(s8 value, u8 base = 10, s32 zeroPadWidth = 0) { return formatInt((s64)value, base, zeroPadWidth); }
 
+template<typename Enum>
+requires(__is_enum(Enum))
+constexpr String formatInt(Enum e)
+{
+    return formatInt(to_underlying(e));
+}
+
 String formatFloat(f64 value, s32 decimalPlaces);
 inline String formatFloat(f32 value, s32 decimalPlaces) { return formatFloat((f64)value, decimalPlaces); }
 
