@@ -7,7 +7,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if (MSVC)
     add_compile_options(-EHsc -MD -W4 -wd4201 -Zi -Od -Oi)
 else()
-    add_compile_options(-Wall -Werror -Wno-unknown-pragmas -Wno-unqualified-std-cast-call)
+    add_compile_options(
+        -Wall
+        -Werror
+        -Wno-exceptions
+        -Wno-unknown-pragmas
+        -Wno-unqualified-std-cast-call
+    )
 endif()
 
 find_package(OpenGL REQUIRED)
