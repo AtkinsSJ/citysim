@@ -55,7 +55,7 @@ MemoryArena::~MemoryArena()
 {
     if (m_current_block) {
         // Free all but the original block
-        while (m_current_block->prevBlock) {
+        while (m_current_block->previous_block) {
             free_current_block();
         }
 
@@ -74,23 +74,23 @@ MemoryArena::Statistics MemoryArena::get_statistics() const
         statistics.total_size = m_current_block->size + m_external_tracked_memory_size;
         statistics.used_size = m_current_block->used + m_external_tracked_memory_size;
 
-        MemoryBlock const* block = m_current_block->prevBlock;
+        MemoryBlock const* block = m_current_block->previous_block;
         while (block) {
             statistics.block_count++;
             statistics.total_size += block->size;
             statistics.used_size += block->size;
 
-            block = block->prevBlock;
+            block = block->previous_block;
         }
     }
     return statistics;
 }
 
-MemoryArenaResetState MemoryArena::get_current_position() const
+MemoryArena::ResetState MemoryArena::get_current_position() const
 {
-    return MemoryArenaResetState {
-        .currentBlock = m_current_block,
-        .used = m_current_block ? m_current_block->used : 0,
+    return ResetState {
+        m_current_block,
+        m_current_block ? m_current_block->used : 0,
     };
 }
 
@@ -99,18 +99,18 @@ void MemoryArena::mark_reset_position()
     m_reset_state = get_current_position();
 }
 
-void MemoryArena::revert_to(MemoryArenaResetState const& reset_state)
+void MemoryArena::revert_to(ResetState const& reset_state)
 {
-    while (m_current_block != reset_state.currentBlock) {
+    while (m_current_block != reset_state.current_block()) {
         free_current_block();
     }
 
     if (m_current_block) {
 #if BUILD_DEBUG
         // Clear memory so we spot bugs in keeping pointers to deallocated memory.
-        fillMemory<u8>(m_current_block->memory + reset_state.used, 0xcd, m_current_block->used - reset_state.used);
+        fillMemory<u8>(m_current_block->memory + reset_state.used(), 0xcd, m_current_block->used - reset_state.used());
 #endif
-        m_current_block->used = reset_state.used;
+        m_current_block->used = reset_state.used();
     }
 }
 
@@ -137,7 +137,7 @@ bool MemoryArena::allocate_block(size_t size)
     block->used = 0;
     block->size = size;
 
-    block->prevBlock = m_current_block;
+    block->previous_block = m_current_block;
     m_current_block = block;
 
     return true;
@@ -147,7 +147,7 @@ void MemoryArena::free_current_block()
 {
     MemoryBlock* block = m_current_block;
     ASSERT(block != nullptr); // Attempting to free non-existent block
-    m_current_block = block->prevBlock;
+    m_current_block = block->previous_block;
     deallocateRaw(block);
 }
 

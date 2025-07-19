@@ -15,7 +15,7 @@
 // we only ever need one section in memory at a time.
 struct BinaryFileReader {
     MemoryArena* arena;
-    MemoryArenaResetState arenaResetState;
+    MemoryArena::ResetState arenaResetState;
 
     // Data about the file itself
     FileHandle* fileHandle;

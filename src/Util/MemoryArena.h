@@ -14,23 +14,34 @@
 #include <Util/Optional.h>
 #include <Util/String.h>
 
-// NB: MemoryBlock is positioned just before its memory pointer.
-// So when deallocating, we can just free(block)!
-struct MemoryBlock {
-    MemoryBlock* prevBlock;
-
-    smm size;
-    smm used;
-    u8* memory;
-};
-
-struct MemoryArenaResetState {
-    MemoryBlock* currentBlock { nullptr };
-    smm used { 0 };
-};
-
 class MemoryArena {
 public:
+    // NB: MemoryBlock is positioned just before its memory pointer.
+    // So when deallocating, we can just free(block)!
+    struct MemoryBlock {
+        size_t size;
+        size_t used;
+        MemoryBlock* previous_block;
+        u8* memory;
+    };
+
+    class ResetState {
+    public:
+        ResetState() = default;
+        explicit ResetState(MemoryBlock* current_block, size_t used)
+            : m_current_block(current_block)
+            , m_used(used)
+        {
+        }
+
+        MemoryBlock* current_block() const { return m_current_block; }
+        size_t used() const { return m_used; }
+
+    private:
+        MemoryBlock* m_current_block { nullptr };
+        size_t m_used { 0 };
+    };
+
     MemoryArena() = default;
     MemoryArena(String name, Optional<size_t> initial_size = {}, size_t minimum_block_size = MB(1));
     MemoryArena(MemoryArena&&);
@@ -59,9 +70,9 @@ public:
     };
     Statistics get_statistics() const;
 
-    MemoryArenaResetState get_current_position() const;
+    ResetState get_current_position() const;
     void mark_reset_position();
-    void revert_to(MemoryArenaResetState const&);
+    void revert_to(ResetState const&);
     void reset();
 
     void* allocate_deprecated(size_t size) { return allocate_internal(size); }
@@ -125,7 +136,7 @@ private:
     MemoryBlock* m_current_block { nullptr };
     size_t m_minimum_block_size { 0 };
     size_t m_external_tracked_memory_size { 0 };
-    MemoryArenaResetState m_reset_state {};
+    ResetState m_reset_state {};
 };
 
 MemoryArena& temp_arena();
