@@ -674,16 +674,16 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
             BuildingDef* buildingDef = getBuildingDef(gameState->selectedBuildingTypeID);
 
             switch (buildingDef->buildMethod) {
-            case BuildMethod_Paint: // Fallthrough
-            case BuildMethod_Plop: {
+            case BuildMethod::Paint: // Fallthrough
+            case BuildMethod::Plop: {
                 if (!mouseIsOverUI) {
                     Rect2I footprint = irectCentreSize(mouseTilePos, buildingDef->size);
                     s32 buildCost = buildingDef->buildCost;
 
                     bool canPlace = canPlaceBuilding(&gameState->city, buildingDef, footprint.x, footprint.y);
 
-                    if ((buildingDef->buildMethod == BuildMethod_Plop && mouseButtonJustReleased(MouseButton_Left))
-                        || (buildingDef->buildMethod == BuildMethod_Paint && mouseButtonPressed(MouseButton_Left))) {
+                    if ((buildingDef->buildMethod == BuildMethod::Plop && mouseButtonJustReleased(MouseButton_Left))
+                        || (buildingDef->buildMethod == BuildMethod::Paint && mouseButtonPressed(MouseButton_Left))) {
                         if (canPlace && canAfford(city, buildCost)) {
                             placeBuilding(city, buildingDef, footprint.x, footprint.y);
                             spend(city, buildCost);
@@ -699,9 +699,9 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
                 }
             } break;
 
-            case BuildMethod_DragLine: // Fallthrough
-            case BuildMethod_DragRect: {
-                DragType dragType = (buildingDef->buildMethod == BuildMethod_DragLine) ? DragLine : DragRect;
+            case BuildMethod::DragLine: // Fallthrough
+            case BuildMethod::DragRect: {
+                DragType dragType = (buildingDef->buildMethod == BuildMethod::DragLine) ? DragLine : DragRect;
 
                 DragResult dragResult = updateDragState(&gameState->worldDragState, city->bounds, mouseTilePos, mouseIsOverUI, dragType, buildingDef->size);
                 s32 buildCost = calculateBuildCost(city, buildingDef, dragResult.dragRect);

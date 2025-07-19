@@ -54,7 +54,7 @@ void _assignBuildingCategories(BuildingCatalogue* catalogue, BuildingDef* def)
 
     catalogue->overallMaxBuildingDim = max(catalogue->overallMaxBuildingDim, max(def->width, def->height));
 
-    if (def->buildMethod != BuildMethod_None) {
+    if (def->buildMethod != BuildMethod::None) {
         catalogue->constructibleBuildings.append(def);
     }
 
@@ -213,16 +213,16 @@ void loadBuildingDefs(Blob data, Asset* asset)
 
                     if (cost.isValid) {
                         if (equals(buildMethodString, "paint"_s)) {
-                            def->buildMethod = BuildMethod_Paint;
+                            def->buildMethod = BuildMethod::Paint;
                         } else if (equals(buildMethodString, "plop"_s)) {
-                            def->buildMethod = BuildMethod_Plop;
+                            def->buildMethod = BuildMethod::Plop;
                         } else if (equals(buildMethodString, "line"_s)) {
-                            def->buildMethod = BuildMethod_DragLine;
+                            def->buildMethod = BuildMethod::DragLine;
                         } else if (equals(buildMethodString, "rect"_s)) {
-                            def->buildMethod = BuildMethod_DragRect;
+                            def->buildMethod = BuildMethod::DragRect;
                         } else {
                             warn(&reader, "Couldn't parse the build method, assuming NONE."_s);
-                            def->buildMethod = BuildMethod_None;
+                            def->buildMethod = BuildMethod::None;
                         }
 
                         def->buildCost = cost.value;

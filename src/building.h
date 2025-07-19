@@ -17,12 +17,12 @@
 
 struct City;
 
-enum BuildMethod {
-    BuildMethod_None,
-    BuildMethod_Paint,
-    BuildMethod_Plop,
-    BuildMethod_DragRect,
-    BuildMethod_DragLine,
+enum class BuildMethod : u8 {
+    None,
+    Paint,
+    Plop,
+    DragRect,
+    DragLine,
 };
 
 enum BuildingFlag {
