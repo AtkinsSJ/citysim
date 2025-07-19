@@ -12,7 +12,7 @@
 #include <Util/HashTable.h>
 #include <Util/String.h>
 
-enum class SettingType {
+enum class SettingType : u8 {
     Bool,
     Enum,
     Percent,
