@@ -7,24 +7,24 @@
 #include "Interpolate.h"
 #include "Maths.h"
 
-f32 interpolate(f32 start, f32 end, f32 t, InterpolationType interpolation)
+f32 interpolate(f32 start, f32 end, f32 t, Interpolation interpolation)
 {
     f32 range = end - start;
 
     f32 interpolatedT = t;
 
     switch (interpolation) {
-    case Interpolate_Linear: {
+    case Interpolation::Linear: {
         interpolatedT = t;
     } break;
 
-    case Interpolate_Sine: {
+    case Interpolation::Sine: {
         interpolatedT = (1 - cos32(t * PI32)) * 0.5f;
     } break;
-    case Interpolate_SineIn: {
+    case Interpolation::SineIn: {
         interpolatedT = 1 - cos32(t * PI32 * 0.5f);
     } break;
-    case Interpolate_SineOut: {
+    case Interpolation::SineOut: {
         interpolatedT = sin32(t * PI32 * 0.5f);
     } break;
 

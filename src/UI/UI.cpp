@@ -924,11 +924,11 @@ void drawToast()
             if (toast->time < TOAST_APPEAR_TIME) {
                 // Animate in
                 f32 t = toast->time / TOAST_APPEAR_TIME;
-                origin.y += round_s32(interpolate(animationDistance, 0, t, Interpolate_SineOut));
+                origin.y += round_s32(interpolate(animationDistance, 0, t, Interpolation::SineOut));
             } else if (toast->time > (TOAST_APPEAR_TIME + TOAST_DISPLAY_TIME)) {
                 // Animate out
                 f32 t = (toast->time - (TOAST_APPEAR_TIME + TOAST_DISPLAY_TIME)) / TOAST_DISAPPEAR_TIME;
-                origin.y += round_s32(interpolate(0, animationDistance, t, Interpolate_SineIn));
+                origin.y += round_s32(interpolate(0, animationDistance, t, Interpolation::SineIn));
             }
             Rect2I toastBounds = irectAligned(origin, toastSize, ALIGN_BOTTOM | ALIGN_H_CENTRE);
 
