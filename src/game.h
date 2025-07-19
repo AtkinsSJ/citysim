@@ -19,32 +19,30 @@
 #include <Util/String.h>
 #include <Util/Vector.h>
 
-enum GameStatus {
-    GameStatus_Playing,
-    GameStatus_Quit,
+enum class GameStatus : u8 {
+    Playing,
+    Quit,
 };
 
-enum GameMenuID {
-    Menu_None,
-    Menu_Build,
-    Menu_Zone,
-    Menu_System,
-    Menu_DataViews,
+enum class GameMenuID : u8 {
+    None,
+    Build,
+    Zone,
+    System,
+    DataViews,
 };
 
-enum ActionMode {
-    ActionMode_None = 0,
+enum class ActionMode : u8 {
+    None = 0,
 
-    ActionMode_Build,
-    ActionMode_Demolish,
-    ActionMode_Zone,
+    Build,
+    Demolish,
+    Zone,
 
-    ActionMode_SetTerrain,
+    SetTerrain,
 
-    ActionMode_Debug_AddFire,
-    ActionMode_Debug_RemoveFire,
-
-    ActionMode_Count,
+    Debug_AddFire,
+    Debug_RemoveFire,
 };
 
 struct DragState {
@@ -53,15 +51,15 @@ struct DragState {
     V2I mouseDragEndWorldPos;
 };
 
-enum DragType {
-    DragLine,
-    DragRect
+enum class DragType : u8 {
+    Line,
+    Rect
 };
 
-enum DragResultOperation {
-    DragResult_Nothing,
-    DragResult_DoAction,
-    DragResult_ShowPreview,
+enum class DragResultOperation : u8 {
+    Nothing,
+    DoAction,
+    ShowPreview,
 };
 
 struct DragResult {
@@ -69,21 +67,21 @@ struct DragResult {
     Rect2I dragRect;
 };
 
-enum DataView {
-    DataView_None,
+enum class DataView : u8 {
+    None,
 
-    DataView_Desirability_Residential,
-    DataView_Desirability_Commercial,
-    DataView_Desirability_Industrial,
+    Desirability_Residential,
+    Desirability_Commercial,
+    Desirability_Industrial,
 
-    DataView_Crime,
-    DataView_Fire,
-    DataView_Health,
-    DataView_Pollution,
-    DataView_Power,
-    DataView_LandValue,
+    Crime,
+    Fire,
+    Health,
+    Pollution,
+    Power,
+    LandValue,
 
-    DataViewCount
+    COUNT
 };
 
 struct DataViewUI {
@@ -126,7 +124,7 @@ struct GameState {
     City city;
 
     DataView dataLayerToDraw;
-    DataViewUI dataViewUI[DataViewCount];
+    DataViewUI dataViewUI[to_underlying(DataView::COUNT)];
 
     DragState worldDragState;
     ActionMode actionMode;

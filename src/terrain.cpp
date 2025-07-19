@@ -485,7 +485,7 @@ void modifyTerrainWindowProc(UI::WindowContext* context, void*)
 {
     UI::Panel* ui = &context->windowPanel;
     GameState* gameState = AppState::the().gameState;
-    bool terrainToolIsActive = (gameState->actionMode == ActionMode_SetTerrain);
+    bool terrainToolIsActive = (gameState->actionMode == ActionMode::SetTerrain);
 
     for (auto it = s_terrain_catalogue.terrainDefs.iterate(); it.hasNext(); it.next()) {
         TerrainDef* terrain = it.get();
@@ -493,7 +493,7 @@ void modifyTerrainWindowProc(UI::WindowContext* context, void*)
             continue; // Skip the null terrain
 
         if (ui->addImageButton(getSprite(terrain->spriteName, 1), buttonIsActive(terrainToolIsActive && gameState->selectedTerrainID == terrain->typeID))) {
-            gameState->actionMode = ActionMode_SetTerrain;
+            gameState->actionMode = ActionMode::SetTerrain;
             gameState->selectedTerrainID = terrain->typeID;
         }
     }

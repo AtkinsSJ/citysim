@@ -23,8 +23,8 @@ GameState* newGameState()
     GameState* gameState = MemoryArena::bootstrap<GameState>("Game"_s);
     initRandom(&gameState->gameRandom, RandomType::MT, 12345);
 
-    gameState->status = GameStatus_Playing;
-    gameState->actionMode = ActionMode_None;
+    gameState->status = GameStatus::Playing;
+    gameState->actionMode = ActionMode::None;
     initFlags(&gameState->inspectTileDebugFlags, InspectTileDebugFlagCount);
     initDataViewUI(gameState);
 
@@ -119,7 +119,7 @@ Rect2I getDragArea(DragState* dragState, Rect2I cityBounds, DragType dragType, V
 
     if (dragState->isDragging) {
         switch (dragType) {
-        case DragRect: {
+        case DragType::Rect: {
             // This is more complicated than a simple rectangle covering both points.
             // If the user is dragging a 3x3 building, then the drag area must cover that 3x3 footprint
             // even if they drag right-to-left, and in the case where the rectangle is not an even multiple
@@ -164,7 +164,7 @@ Rect2I getDragArea(DragState* dragState, Rect2I cityBounds, DragType dragType, V
 
         } break;
 
-        case DragLine: {
+        case DragType::Line: {
             // Axis-aligned straight line, in one dimension.
             // So, if you drag a diagonal line, it picks which direction has greater length and uses that.
 
@@ -232,7 +232,7 @@ DragResult updateDragState(DragState* dragState, Rect2I cityBounds, V2I mouseTil
     DragResult result = {};
 
     if (dragState->isDragging && mouseButtonJustReleased(MouseButton_Left)) {
-        result.operation = DragResult_DoAction;
+        result.operation = DragResultOperation::DoAction;
         result.dragRect = getDragArea(dragState, cityBounds, dragType, itemSize);
 
         dragState->isDragging = false;
@@ -252,7 +252,7 @@ DragResult updateDragState(DragState* dragState, Rect2I cityBounds, V2I mouseTil
 
         // Preview
         if (!mouseIsOverUI || dragState->isDragging) {
-            result.operation = DragResult_ShowPreview;
+            result.operation = DragResultOperation::ShowPreview;
         }
     }
 
@@ -367,7 +367,7 @@ void pauseMenuWindowProc(UI::WindowContext* context, void* /*userData*/)
     }
 
     if (ui->addTextButton(getText("button_exit"_s))) {
-        AppState::the().gameState->status = GameStatus_Quit;
+        AppState::the().gameState->status = GameStatus::Quit;
         // NB: We don't close the window here, because doing so makes the window disappear one frame
         // before the main menu appears, so we get a flash of the game world.
         // All windows are closed when switching GameStatus so it's fine.
@@ -480,21 +480,21 @@ void updateAndRenderGameUI(GameState* gameState)
         // The "ZONE" menu
         String zoneButtonText = getText("button_zone"_s);
         buttonRect.size = UI::calculateButtonSize(zoneButtonText, buttonStyle);
-        if (UI::putTextButton(zoneButtonText, buttonRect, buttonStyle, buttonIsActive(UI::isMenuVisible(Menu_Zone)))) {
-            UI::toggleMenuVisible(Menu_Zone);
+        if (UI::putTextButton(zoneButtonText, buttonRect, buttonStyle, buttonIsActive(UI::isMenuVisible(to_underlying(GameMenuID::Zone))))) {
+            UI::toggleMenuVisible(to_underlying(GameMenuID::Zone));
         }
 
-        if (UI::isMenuVisible(Menu_Zone)) {
+        if (UI::isMenuVisible(to_underlying(GameMenuID::Zone))) {
             s32 popupMenuWidth = 150;
             s32 popupMenuMaxHeight = UI::windowSize.y - (buttonRect.y + buttonRect.h);
 
             UI::Panel menu = UI::Panel(irectXYWH(buttonRect.x - popupMenuPanelStyle->padding.left, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight), popupMenuPanelStyle);
             for (s32 zoneIndex = 0; zoneIndex < ZoneTypeCount; zoneIndex++) {
                 if (menu.addTextButton(getText(getZoneDef(zoneIndex).textAssetName),
-                        buttonIsActive((gameState->actionMode == ActionMode_Zone) && (gameState->selectedZoneID == zoneIndex)))) {
+                        buttonIsActive((gameState->actionMode == ActionMode::Zone) && (gameState->selectedZoneID == zoneIndex)))) {
                     UI::hideMenus();
                     gameState->selectedZoneID = (ZoneType)zoneIndex;
-                    gameState->actionMode = ActionMode_Zone;
+                    gameState->actionMode = ActionMode::Zone;
                     renderer.set_cursor("build"_s);
                 }
             }
@@ -506,11 +506,11 @@ void updateAndRenderGameUI(GameState* gameState)
         // The "BUILD" menu
         String buildButtonText = getText("button_build"_s);
         buttonRect.size = UI::calculateButtonSize(buildButtonText, buttonStyle);
-        if (UI::putTextButton(buildButtonText, buttonRect, buttonStyle, buttonIsActive(UI::isMenuVisible(Menu_Build)))) {
-            UI::toggleMenuVisible(Menu_Build);
+        if (UI::putTextButton(buildButtonText, buttonRect, buttonStyle, buttonIsActive(UI::isMenuVisible(to_underlying(GameMenuID::Build))))) {
+            UI::toggleMenuVisible(to_underlying(GameMenuID::Build));
         }
 
-        if (UI::isMenuVisible(Menu_Build)) {
+        if (UI::isMenuVisible(to_underlying(GameMenuID::Build))) {
             ChunkedArray<BuildingDef*>* constructibleBuildings = getConstructibleBuildings();
 
             s32 popupMenuWidth = 150;
@@ -524,10 +524,10 @@ void updateAndRenderGameUI(GameState* gameState)
                 BuildingDef* buildingDef = it.getValue();
 
                 if (menu.addTextButton(getText(buildingDef->textAssetName),
-                        buttonIsActive((gameState->actionMode == ActionMode_Build) && (gameState->selectedBuildingTypeID == buildingDef->typeID)))) {
+                        buttonIsActive((gameState->actionMode == ActionMode::Build) && (gameState->selectedBuildingTypeID == buildingDef->typeID)))) {
                     UI::hideMenus();
                     gameState->selectedBuildingTypeID = buildingDef->typeID;
-                    gameState->actionMode = ActionMode_Build;
+                    gameState->actionMode = ActionMode::Build;
                     renderer.set_cursor("build"_s);
                 }
             }
@@ -553,8 +553,8 @@ void updateAndRenderGameUI(GameState* gameState)
         String demolishButtonText = getText("button_demolish"_s);
         buttonRect.size = UI::calculateButtonSize(demolishButtonText, buttonStyle);
         if (UI::putTextButton(demolishButtonText, buttonRect, buttonStyle,
-                buttonIsActive(gameState->actionMode == ActionMode_Demolish))) {
-            gameState->actionMode = ActionMode_Demolish;
+                buttonIsActive(gameState->actionMode == ActionMode::Demolish))) {
+            gameState->actionMode = ActionMode::Demolish;
             renderer.set_cursor("demolish"_s);
         }
         buttonRect.x += buttonRect.w + uiPadding;
@@ -592,11 +592,11 @@ void debugToolsWindowProc(UI::WindowContext* context, void* userData)
     if (ui->addTextButton("Inspect fire info"_s, buttonIsActive(gameState->inspectTileDebugFlags & DebugInspect_Fire))) {
         gameState->inspectTileDebugFlags ^= DebugInspect_Fire;
     }
-    if (ui->addTextButton("Add Fire"_s, buttonIsActive(gameState->actionMode == ActionMode_Debug_AddFire))) {
-        gameState->actionMode = ActionMode_Debug_AddFire;
+    if (ui->addTextButton("Add Fire"_s, buttonIsActive(gameState->actionMode == ActionMode::Debug_AddFire))) {
+        gameState->actionMode = ActionMode::Debug_AddFire;
     }
-    if (ui->addTextButton("Remove Fire"_s, buttonIsActive(gameState->actionMode == ActionMode_Debug_RemoveFire))) {
-        gameState->actionMode = ActionMode_Debug_RemoveFire;
+    if (ui->addTextButton("Remove Fire"_s, buttonIsActive(gameState->actionMode == ActionMode::Debug_RemoveFire))) {
+        gameState->actionMode = ActionMode::Debug_RemoveFire;
     }
 
     if (ui->addTextButton("Inspect power info"_s, buttonIsActive(gameState->inspectTileDebugFlags & DebugInspect_Power))) {
@@ -657,7 +657,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
     // CAMERA!
     Camera& world_camera = renderer.world_camera();
     Camera& ui_camera = renderer.ui_camera();
-    if (gameState->status == GameStatus_Playing) {
+    if (gameState->status == GameStatus::Playing) {
         inputMoveCamera(&world_camera, ui_camera.size(), ui_camera.mouse_position(), gameState->city.bounds.w, gameState->city.bounds.h);
     }
 
@@ -670,7 +670,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
         DEBUG_BLOCK_T("ActionMode update", DCDT_GameUpdate);
 
         switch (gameState->actionMode) {
-        case ActionMode_Build: {
+        case ActionMode::Build: {
             BuildingDef* buildingDef = getBuildingDef(gameState->selectedBuildingTypeID);
 
             switch (buildingDef->buildMethod) {
@@ -701,13 +701,13 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
 
             case BuildMethod::DragLine: // Fallthrough
             case BuildMethod::DragRect: {
-                DragType dragType = (buildingDef->buildMethod == BuildMethod::DragLine) ? DragLine : DragRect;
+                DragType dragType = (buildingDef->buildMethod == BuildMethod::DragLine) ? DragType::Line : DragType::Rect;
 
                 DragResult dragResult = updateDragState(&gameState->worldDragState, city->bounds, mouseTilePos, mouseIsOverUI, dragType, buildingDef->size);
                 s32 buildCost = calculateBuildCost(city, buildingDef, dragResult.dragRect);
 
                 switch (dragResult.operation) {
-                case DragResult_DoAction: {
+                case DragResultOperation::DoAction: {
                     if (canAfford(city, buildCost)) {
                         placeBuildingRect(city, buildingDef, dragResult.dragRect);
                         spend(city, buildCost);
@@ -716,7 +716,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
                     }
                 } break;
 
-                case DragResult_ShowPreview: {
+                case DragResultOperation::ShowPreview: {
                     if (!mouseIsOverUI)
                         showCostTooltip(buildCost);
 
@@ -752,21 +752,21 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
             }
         } break;
 
-        case ActionMode_Zone: {
-            DragResult dragResult = updateDragState(&gameState->worldDragState, city->bounds, mouseTilePos, mouseIsOverUI, DragRect);
+        case ActionMode::Zone: {
+            DragResult dragResult = updateDragState(&gameState->worldDragState, city->bounds, mouseTilePos, mouseIsOverUI, DragType::Rect);
 
             CanZoneQuery* canZoneQuery = queryCanZoneTiles(city, gameState->selectedZoneID, dragResult.dragRect);
             s32 zoneCost = calculateZoneCost(canZoneQuery);
 
             switch (dragResult.operation) {
-            case DragResult_DoAction: {
+            case DragResultOperation::DoAction: {
                 if (canAfford(city, zoneCost)) {
                     placeZone(city, gameState->selectedZoneID, dragResult.dragRect);
                     spend(city, zoneCost);
                 }
             } break;
 
-            case DragResult_ShowPreview: {
+            case DragResultOperation::ShowPreview: {
                 if (!mouseIsOverUI)
                     showCostTooltip(zoneCost);
                 if (canAfford(city, zoneCost)) {
@@ -785,13 +785,13 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
             }
         } break;
 
-        case ActionMode_Demolish: {
-            DragResult dragResult = updateDragState(&gameState->worldDragState, city->bounds, mouseTilePos, mouseIsOverUI, DragRect);
+        case ActionMode::Demolish: {
+            DragResult dragResult = updateDragState(&gameState->worldDragState, city->bounds, mouseTilePos, mouseIsOverUI, DragType::Rect);
             s32 demolishCost = calculateDemolitionCost(city, dragResult.dragRect);
             city->demolitionRect = dragResult.dragRect;
 
             switch (dragResult.operation) {
-            case DragResult_DoAction: {
+            case DragResultOperation::DoAction: {
                 if (canAfford(city, demolishCost)) {
                     demolishRect(city, dragResult.dragRect);
                     spend(city, demolishCost);
@@ -800,7 +800,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
                 }
             } break;
 
-            case DragResult_ShowPreview: {
+            case DragResultOperation::ShowPreview: {
                 if (!mouseIsOverUI)
                     showCostTooltip(demolishCost);
 
@@ -817,7 +817,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
             }
         } break;
 
-        case ActionMode_SetTerrain: {
+        case ActionMode::SetTerrain: {
             // Temporary click-and-drag, no-cost terrain editing
             // We probably want to make this better in several ways, and add a cost to it, and such
             if (!mouseIsOverUI
@@ -827,7 +827,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
             }
         } break;
 
-        case ActionMode_Debug_AddFire: {
+        case ActionMode::Debug_AddFire: {
             if (!mouseIsOverUI
                 && mouseButtonJustPressed(MouseButton_Left)
                 && tileExists(city, mouseTilePos.x, mouseTilePos.y)) {
@@ -835,7 +835,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
             }
         } break;
 
-        case ActionMode_Debug_RemoveFire: {
+        case ActionMode::Debug_RemoveFire: {
             if (!mouseIsOverUI
                 && mouseButtonJustPressed(MouseButton_Left)
                 && tileExists(city, mouseTilePos.x, mouseTilePos.y)) {
@@ -843,7 +843,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
             }
         } break;
 
-        case ActionMode_None: {
+        case ActionMode::None: {
             if (!mouseIsOverUI && mouseButtonJustPressed(MouseButton_Left)) {
                 if (tileExists(city, mouseTilePos.x, mouseTilePos.y)) {
                     gameState->inspectedTilePosition = mouseTilePos;
@@ -868,7 +868,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
 
     if (mouseButtonJustPressed(MouseButton_Right)) {
         // Unselect current thing
-        gameState->actionMode = ActionMode_None;
+        gameState->actionMode = ActionMode::None;
         renderer.set_cursor("default"_s);
     }
 
@@ -884,11 +884,11 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
     drawCity(city, visibleTileBounds);
 
     // Data layer rendering
-    if (gameState->dataLayerToDraw) {
+    if (gameState->dataLayerToDraw != DataView::None) {
         drawDataViewOverlay(gameState, visibleTileBounds);
     }
 
-    if (gameState->status == GameStatus_Quit) {
+    if (gameState->status == GameStatus::Quit) {
         result = AppStatus::MainMenu;
     }
 
@@ -900,50 +900,50 @@ void initDataViewUI(GameState* gameState)
     DataViewUI* dataViewUI = gameState->dataViewUI;
     City* city = &gameState->city;
 
-    dataViewUI[DataView_None].title = "data_view_none"_s;
+    dataViewUI[to_underlying(DataView::None)].title = "data_view_none"_s;
 
-    dataViewUI[DataView_Desirability_Residential].title = "data_view_desirability_residential"_s;
-    setGradient(&dataViewUI[DataView_Desirability_Residential], "desirability"_s);
-    setTileOverlay(&dataViewUI[DataView_Desirability_Residential], &city->zoneLayer.tileDesirability[Zone_Residential].items, "desirability"_s);
+    dataViewUI[to_underlying(DataView::Desirability_Residential)].title = "data_view_desirability_residential"_s;
+    setGradient(&dataViewUI[to_underlying(DataView::Desirability_Residential)], "desirability"_s);
+    setTileOverlay(&dataViewUI[to_underlying(DataView::Desirability_Residential)], &city->zoneLayer.tileDesirability[Zone_Residential].items, "desirability"_s);
 
-    dataViewUI[DataView_Desirability_Commercial].title = "data_view_desirability_commercial"_s;
-    setGradient(&dataViewUI[DataView_Desirability_Commercial], "desirability"_s);
-    setTileOverlay(&dataViewUI[DataView_Desirability_Commercial], &city->zoneLayer.tileDesirability[Zone_Commercial].items, "desirability"_s);
+    dataViewUI[to_underlying(DataView::Desirability_Commercial)].title = "data_view_desirability_commercial"_s;
+    setGradient(&dataViewUI[to_underlying(DataView::Desirability_Commercial)], "desirability"_s);
+    setTileOverlay(&dataViewUI[to_underlying(DataView::Desirability_Commercial)], &city->zoneLayer.tileDesirability[Zone_Commercial].items, "desirability"_s);
 
-    dataViewUI[DataView_Desirability_Industrial].title = "data_view_desirability_industrial"_s;
-    setGradient(&dataViewUI[DataView_Desirability_Industrial], "desirability"_s);
-    setTileOverlay(&dataViewUI[DataView_Desirability_Industrial], &city->zoneLayer.tileDesirability[Zone_Industrial].items, "desirability"_s);
+    dataViewUI[to_underlying(DataView::Desirability_Industrial)].title = "data_view_desirability_industrial"_s;
+    setGradient(&dataViewUI[to_underlying(DataView::Desirability_Industrial)], "desirability"_s);
+    setTileOverlay(&dataViewUI[to_underlying(DataView::Desirability_Industrial)], &city->zoneLayer.tileDesirability[Zone_Industrial].items, "desirability"_s);
 
-    dataViewUI[DataView_Crime].title = "data_view_crime"_s;
-    setGradient(&dataViewUI[DataView_Crime], "service_coverage"_s);
-    setFixedColors(&dataViewUI[DataView_Crime], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s });
-    setHighlightedBuildings(&dataViewUI[DataView_Crime], &city->crimeLayer.policeBuildings, &BuildingDef::policeEffect);
-    setTileOverlay(&dataViewUI[DataView_Crime], &city->crimeLayer.tilePoliceCoverage.items, "service_coverage"_s);
+    dataViewUI[to_underlying(DataView::Crime)].title = "data_view_crime"_s;
+    setGradient(&dataViewUI[to_underlying(DataView::Crime)], "service_coverage"_s);
+    setFixedColors(&dataViewUI[to_underlying(DataView::Crime)], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s });
+    setHighlightedBuildings(&dataViewUI[to_underlying(DataView::Crime)], &city->crimeLayer.policeBuildings, &BuildingDef::policeEffect);
+    setTileOverlay(&dataViewUI[to_underlying(DataView::Crime)], &city->crimeLayer.tilePoliceCoverage.items, "service_coverage"_s);
 
-    dataViewUI[DataView_Fire].title = "data_view_fire"_s;
-    setGradient(&dataViewUI[DataView_Fire], "risk"_s);
-    setFixedColors(&dataViewUI[DataView_Fire], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s });
-    setHighlightedBuildings(&dataViewUI[DataView_Fire], &city->fireLayer.fireProtectionBuildings, &BuildingDef::fireProtection);
-    setTileOverlay(&dataViewUI[DataView_Fire], &city->fireLayer.tileOverallFireRisk.items, "risk"_s);
+    dataViewUI[to_underlying(DataView::Fire)].title = "data_view_fire"_s;
+    setGradient(&dataViewUI[to_underlying(DataView::Fire)], "risk"_s);
+    setFixedColors(&dataViewUI[to_underlying(DataView::Fire)], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s });
+    setHighlightedBuildings(&dataViewUI[to_underlying(DataView::Fire)], &city->fireLayer.fireProtectionBuildings, &BuildingDef::fireProtection);
+    setTileOverlay(&dataViewUI[to_underlying(DataView::Fire)], &city->fireLayer.tileOverallFireRisk.items, "risk"_s);
 
-    dataViewUI[DataView_Health].title = "data_view_health"_s;
-    setGradient(&dataViewUI[DataView_Health], "service_coverage"_s);
-    setFixedColors(&dataViewUI[DataView_Health], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s });
-    setHighlightedBuildings(&dataViewUI[DataView_Health], &city->healthLayer.healthBuildings, &BuildingDef::healthEffect);
-    setTileOverlay(&dataViewUI[DataView_Health], &city->healthLayer.tileHealthCoverage.items, "service_coverage"_s);
+    dataViewUI[to_underlying(DataView::Health)].title = "data_view_health"_s;
+    setGradient(&dataViewUI[to_underlying(DataView::Health)], "service_coverage"_s);
+    setFixedColors(&dataViewUI[to_underlying(DataView::Health)], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s });
+    setHighlightedBuildings(&dataViewUI[to_underlying(DataView::Health)], &city->healthLayer.healthBuildings, &BuildingDef::healthEffect);
+    setTileOverlay(&dataViewUI[to_underlying(DataView::Health)], &city->healthLayer.tileHealthCoverage.items, "service_coverage"_s);
 
-    dataViewUI[DataView_LandValue].title = "data_view_landvalue"_s;
-    setGradient(&dataViewUI[DataView_LandValue], "land_value"_s);
-    setTileOverlay(&dataViewUI[DataView_LandValue], &city->landValueLayer.tileLandValue.items, "land_value"_s);
+    dataViewUI[to_underlying(DataView::LandValue)].title = "data_view_landvalue"_s;
+    setGradient(&dataViewUI[to_underlying(DataView::LandValue)], "land_value"_s);
+    setTileOverlay(&dataViewUI[to_underlying(DataView::LandValue)], &city->landValueLayer.tileLandValue.items, "land_value"_s);
 
-    dataViewUI[DataView_Pollution].title = "data_view_pollution"_s;
-    setGradient(&dataViewUI[DataView_Pollution], "pollution"_s);
-    setTileOverlay(&dataViewUI[DataView_Pollution], &city->pollutionLayer.tilePollution.items, "pollution"_s);
+    dataViewUI[to_underlying(DataView::Pollution)].title = "data_view_pollution"_s;
+    setGradient(&dataViewUI[to_underlying(DataView::Pollution)], "pollution"_s);
+    setTileOverlay(&dataViewUI[to_underlying(DataView::Pollution)], &city->pollutionLayer.tilePollution.items, "pollution"_s);
 
-    dataViewUI[DataView_Power].title = "data_view_power"_s;
-    setFixedColors(&dataViewUI[DataView_Power], "power"_s, { "data_view_power_powered"_s, "data_view_power_brownout"_s, "data_view_power_blackout"_s });
-    setHighlightedBuildings(&dataViewUI[DataView_Power], &city->powerLayer.powerBuildings);
-    setTileOverlayCallback(&dataViewUI[DataView_Power], calculatePowerOverlayForTile, "power"_s);
+    dataViewUI[to_underlying(DataView::Power)].title = "data_view_power"_s;
+    setFixedColors(&dataViewUI[to_underlying(DataView::Power)], "power"_s, { "data_view_power_powered"_s, "data_view_power_brownout"_s, "data_view_power_blackout"_s });
+    setHighlightedBuildings(&dataViewUI[to_underlying(DataView::Power)], &city->powerLayer.powerBuildings);
+    setTileOverlayCallback(&dataViewUI[to_underlying(DataView::Power)], calculatePowerOverlayForTile, "power"_s);
 }
 
 void setGradient(DataViewUI* dataView, String paletteName)
@@ -1062,13 +1062,13 @@ void drawDataViewOverlay(GameState* gameState, Rect2I visibleTileBounds)
 {
     DEBUG_FUNCTION_T(DCDT_GameUpdate);
 
-    if (gameState->dataLayerToDraw == DataView_None)
+    if (gameState->dataLayerToDraw == DataView::None)
         return;
-    ASSERT(gameState->dataLayerToDraw < DataViewCount);
+    ASSERT(to_underlying(gameState->dataLayerToDraw) < to_underlying(DataView::COUNT));
     auto& renderer = the_renderer();
 
     City* city = &gameState->city;
-    DataViewUI* dataView = &gameState->dataViewUI[gameState->dataLayerToDraw];
+    DataViewUI* dataView = &gameState->dataViewUI[to_underlying(gameState->dataLayerToDraw)];
 
     if (dataView->overlayTileData) {
         // TODO: Use the visible tile bounds for rendering instead. We have two paths, one is just to output
@@ -1130,15 +1130,15 @@ void drawDataViewUI(GameState* gameState)
     UI::addUIRect(dataViewUIBounds);
 
     if (UI::putTextButton(dataViewButtonText, dataViewButtonBounds, buttonStyle)) {
-        UI::toggleMenuVisible(Menu_DataViews);
+        UI::toggleMenuVisible(to_underlying(GameMenuID::DataViews));
     }
 
-    if (UI::isMenuVisible(Menu_DataViews)) {
+    if (UI::isMenuVisible(to_underlying(GameMenuID::DataViews))) {
         // Measure the menu contents
         UI::ButtonStyle* popupButtonStyle = getStyle<UI::ButtonStyle>(&popupMenuPanelStyle->buttonStyle);
         s32 buttonMaxWidth = 0;
         s32 buttonMaxHeight = 0;
-        for (DataView dataViewID = DataView_None; dataViewID < DataViewCount; dataViewID = (DataView)(dataViewID + 1)) {
+        for (auto dataViewID = to_underlying(DataView::None); dataViewID < to_underlying(DataView::COUNT); dataViewID++) {
             String buttonText = getText(gameState->dataViewUI[dataViewID].title);
             V2I buttonSize = UI::calculateButtonSize(buttonText, popupButtonStyle);
             buttonMaxWidth = max(buttonMaxWidth, buttonSize.x);
@@ -1146,8 +1146,8 @@ void drawDataViewUI(GameState* gameState)
         }
         s32 popupMenuWidth = buttonMaxWidth + popupMenuPanelStyle->padding.left + popupMenuPanelStyle->padding.right;
         s32 popupMenuMaxHeight = UI::windowSize.y - 128;
-        s32 estimatedMenuHeight = (DataViewCount * buttonMaxHeight)
-            + ((DataViewCount - 1) * popupMenuPanelStyle->contentPadding)
+        s32 estimatedMenuHeight = (to_underlying(DataView::COUNT) * buttonMaxHeight)
+            + ((to_underlying(DataView::COUNT) - 1) * popupMenuPanelStyle->contentPadding)
             + (popupMenuPanelStyle->padding.top + popupMenuPanelStyle->padding.bottom);
 
         UI::Panel menu = UI::Panel(irectAligned(dataViewButtonBounds.x - popupMenuPanelStyle->padding.left, dataViewButtonBounds.y, popupMenuWidth, popupMenuMaxHeight, ALIGN_BOTTOM | ALIGN_LEFT), popupMenuPanelStyle, UI::PanelFlags::LayoutBottomToTop);
@@ -1157,12 +1157,13 @@ void drawDataViewUI(GameState* gameState)
             menu.enableVerticalScrolling(UI::getMenuScrollbar(), true);
         }
 
-        for (s32 dataViewID = DataViewCount - 1; dataViewID >= 0; dataViewID = dataViewID - 1) {
+        for (s32 dataViewID = to_underlying(DataView::COUNT) - 1; dataViewID >= 0; dataViewID = dataViewID - 1) {
             String buttonText = getText(gameState->dataViewUI[dataViewID].title);
+            auto data_view = static_cast<DataView>(dataViewID);
 
-            if (menu.addTextButton(buttonText, buttonIsActive(gameState->dataLayerToDraw == dataViewID))) {
+            if (menu.addTextButton(buttonText, buttonIsActive(gameState->dataLayerToDraw == data_view))) {
                 UI::hideMenus();
-                gameState->dataLayerToDraw = (DataView)dataViewID;
+                gameState->dataLayerToDraw = data_view;
             }
         }
 
@@ -1170,12 +1171,12 @@ void drawDataViewUI(GameState* gameState)
     }
 
     // Data-view info
-    if (!UI::isMenuVisible(Menu_DataViews)
-        && gameState->dataLayerToDraw != DataView_None) {
+    if (!UI::isMenuVisible(to_underlying(GameMenuID::DataViews))
+        && gameState->dataLayerToDraw != DataView::None) {
         V2I uiPos = dataViewButtonBounds.pos;
         uiPos.y -= uiPadding;
 
-        DataViewUI* dataView = &gameState->dataViewUI[gameState->dataLayerToDraw];
+        DataViewUI* dataView = &gameState->dataViewUI[to_underlying(gameState->dataLayerToDraw)];
 
         s32 paletteBlockSize = font->lineHeight;
 
@@ -1234,7 +1235,7 @@ void drawDataViewUI(GameState* gameState)
 
             ui.alignWidgets(ALIGN_RIGHT);
             if (ui.addTextButton("X"_s)) {
-                gameState->dataLayerToDraw = DataView_None;
+                gameState->dataLayerToDraw = DataView::None;
             }
         }
         ui.end(true);

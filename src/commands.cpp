@@ -136,36 +136,36 @@ ConsoleCommand(show_layer)
 
     if (argumentsCount == 0) {
         // Hide layers
-        app_state.gameState->dataLayerToDraw = DataView_None;
+        app_state.gameState->dataLayerToDraw = DataView::None;
         consoleWriteLine("Hiding data layers"_s, CLS_Success);
     } else if (argumentsCount == 1) {
         String layerName = nextToken(remainder, &remainder);
         if (equals(layerName, "crime"_s)) {
-            app_state.gameState->dataLayerToDraw = DataView_Crime;
+            app_state.gameState->dataLayerToDraw = DataView::Crime;
             consoleWriteLine("Showing crime layer"_s, CLS_Success);
         } else if (equals(layerName, "des_res"_s)) {
-            app_state.gameState->dataLayerToDraw = DataView_Desirability_Residential;
+            app_state.gameState->dataLayerToDraw = DataView::Desirability_Residential;
             consoleWriteLine("Showing residential desirability"_s, CLS_Success);
         } else if (equals(layerName, "des_com"_s)) {
-            app_state.gameState->dataLayerToDraw = DataView_Desirability_Commercial;
+            app_state.gameState->dataLayerToDraw = DataView::Desirability_Commercial;
             consoleWriteLine("Showing commercial desirability"_s, CLS_Success);
         } else if (equals(layerName, "des_ind"_s)) {
-            app_state.gameState->dataLayerToDraw = DataView_Desirability_Industrial;
+            app_state.gameState->dataLayerToDraw = DataView::Desirability_Industrial;
             consoleWriteLine("Showing industrial desirability"_s, CLS_Success);
         } else if (equals(layerName, "fire"_s)) {
-            app_state.gameState->dataLayerToDraw = DataView_Fire;
+            app_state.gameState->dataLayerToDraw = DataView::Fire;
             consoleWriteLine("Showing fire layer"_s, CLS_Success);
         } else if (equals(layerName, "health"_s)) {
-            app_state.gameState->dataLayerToDraw = DataView_Health;
+            app_state.gameState->dataLayerToDraw = DataView::Health;
             consoleWriteLine("Showing health layer"_s, CLS_Success);
         } else if (equals(layerName, "land_value"_s)) {
-            app_state.gameState->dataLayerToDraw = DataView_LandValue;
+            app_state.gameState->dataLayerToDraw = DataView::LandValue;
             consoleWriteLine("Showing land value layer"_s, CLS_Success);
         } else if (equals(layerName, "pollution"_s)) {
-            app_state.gameState->dataLayerToDraw = DataView_Pollution;
+            app_state.gameState->dataLayerToDraw = DataView::Pollution;
             consoleWriteLine("Showing pollution layer"_s, CLS_Success);
         } else if (equals(layerName, "power"_s)) {
-            app_state.gameState->dataLayerToDraw = DataView_Power;
+            app_state.gameState->dataLayerToDraw = DataView::Power;
             consoleWriteLine("Showing power layer"_s, CLS_Success);
         } else {
             consoleWriteLine("Usage: show_layer (layer_name), or with no argument to hide the data layer. Layer names are: crime, des_res, des_com, des_ind, fire, health, land_value, pollution, power"_s, CLS_Error);
