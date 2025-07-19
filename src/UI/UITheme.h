@@ -58,20 +58,20 @@ struct DrawableStyle {
 };
 Maybe<DrawableStyle> readDrawableStyle(LineReader* reader);
 
-enum StyleType {
-    Style_None = 0,
-    Style_Button = 1,
-    Style_Checkbox,
-    Style_Console,
-    Style_DropDownList,
-    Style_Label,
-    Style_Panel,
-    Style_RadioButton,
-    Style_Scrollbar,
-    Style_Slider,
-    Style_TextInput,
-    Style_Window,
-    StyleTypeCount
+enum class StyleType : u8 {
+    None,
+    Button,
+    Checkbox,
+    Console,
+    DropDownList,
+    Label,
+    Panel,
+    RadioButton,
+    Scrollbar,
+    Slider,
+    TextInput,
+    Window,
+    COUNT
 };
 
 struct ButtonStyle {
@@ -264,7 +264,7 @@ enum class PropType {
 struct Property {
     PropType type;
     smm offsetInStyleStruct;
-    bool existsInStyle[StyleTypeCount];
+    bool existsInStyle[to_underlying(StyleType::COUNT)];
 };
 
 struct Style {

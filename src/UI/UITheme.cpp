@@ -167,139 +167,139 @@ void initStyleConstants()
 
 #undef PROP
 
-    assignStyleProperties(Style_Button, {
-                                            "background"_s,
-                                            "backgroundDisabled"_s,
-                                            "backgroundHover"_s,
-                                            "backgroundPressed"_s,
-                                            "contentPadding"_s,
-                                            "endIcon"_s,
-                                            "endIconAlignment"_s,
-                                            "font"_s,
-                                            "padding"_s,
-                                            "startIcon"_s,
-                                            "startIconAlignment"_s,
-                                            "textAlignment"_s,
-                                            "textColor"_s,
-                                        });
-    assignStyleProperties(Style_Checkbox, {
-                                              "background"_s,
-                                              "backgroundDisabled"_s,
-                                              "backgroundHover"_s,
-                                              "backgroundPressed"_s,
-                                              "check"_s,
-                                              "checkDisabled"_s,
-                                              "checkHover"_s,
-                                              "checkSize"_s,
-                                              "checkPressed"_s,
-                                              "dropDownListStyle"_s,
-                                              "padding"_s,
-                                          });
-    assignStyleProperties(Style_Console, {
-                                             "background"_s,
-                                             "font"_s,
-                                             "outputTextColor"_s,
-                                             "outputTextColorInputEcho"_s,
-                                             "outputTextColorError"_s,
-                                             "outputTextColorSuccess"_s,
-                                             "outputTextColorWarning"_s,
-                                             "padding"_s,
-                                             "contentPadding"_s,
-                                             "scrollbarStyle"_s,
-                                             "textInputStyle"_s,
-                                         });
-    assignStyleProperties(Style_DropDownList, {
-                                                  "buttonStyle"_s,
-                                                  "panelStyle"_s,
-                                              });
-    assignStyleProperties(Style_Label, {
-                                           "background"_s,
-                                           "font"_s,
-                                           "padding"_s,
-                                           "textColor"_s,
-                                           "textAlignment"_s,
-                                       });
-    assignStyleProperties(Style_Panel, {
-                                           "background"_s,
-                                           "buttonStyle"_s,
-                                           "checkboxStyle"_s,
-                                           "contentPadding"_s,
-                                           "dropDownListStyle"_s,
-                                           "labelStyle"_s,
-                                           "padding"_s,
-                                           "radioButtonStyle"_s,
-                                           "scrollbarStyle"_s,
-                                           "sliderStyle"_s,
-                                           "textInputStyle"_s,
-                                           "widgetAlignment"_s,
-                                       });
-    assignStyleProperties(Style_RadioButton, {
+    assignStyleProperties(StyleType::Button, {
                                                  "background"_s,
                                                  "backgroundDisabled"_s,
                                                  "backgroundHover"_s,
                                                  "backgroundPressed"_s,
-                                                 "dot"_s,
-                                                 "dotDisabled"_s,
-                                                 "dotHover"_s,
-                                                 "dotPressed"_s,
-                                                 "dotSize"_s,
-                                                 "size"_s,
+                                                 "contentPadding"_s,
+                                                 "endIcon"_s,
+                                                 "endIconAlignment"_s,
+                                                 "font"_s,
+                                                 "padding"_s,
+                                                 "startIcon"_s,
+                                                 "startIconAlignment"_s,
+                                                 "textAlignment"_s,
+                                                 "textColor"_s,
                                              });
-    assignStyleProperties(Style_Scrollbar, {
-                                               "background"_s,
-                                               "thumb"_s,
-                                               "thumbDisabled"_s,
-                                               "thumbHover"_s,
-                                               "thumbPressed"_s,
-                                               "width"_s,
-                                           });
-    assignStyleProperties(Style_Slider, {
-                                            "track"_s,
-                                            "trackThickness"_s,
-                                            "thumb"_s,
-                                            "thumbDisabled"_s,
-                                            "thumbHover"_s,
-                                            "thumbPressed"_s,
-                                            "thumbSize"_s,
-                                        });
-    assignStyleProperties(Style_TextInput, {
-                                               "background"_s,
-                                               "caretFlashCycleDuration"_s,
-                                               "font"_s,
-                                               "padding"_s,
-                                               "showCaret"_s,
-                                               "textAlignment"_s,
-                                               "textColor"_s,
-                                           });
-    assignStyleProperties(Style_Window, {
-                                            "offsetFromMouse"_s,
-                                            "panelStyle"_s,
-                                            "titleBarButtonHoverColor"_s,
-                                            "titleBarColor"_s,
-                                            "titleBarColorInactive"_s,
-                                            "titleBarHeight"_s,
-                                            "titleLabelStyle"_s,
-                                        });
+    assignStyleProperties(StyleType::Checkbox, {
+                                                   "background"_s,
+                                                   "backgroundDisabled"_s,
+                                                   "backgroundHover"_s,
+                                                   "backgroundPressed"_s,
+                                                   "check"_s,
+                                                   "checkDisabled"_s,
+                                                   "checkHover"_s,
+                                                   "checkSize"_s,
+                                                   "checkPressed"_s,
+                                                   "dropDownListStyle"_s,
+                                                   "padding"_s,
+                                               });
+    assignStyleProperties(StyleType::Console, {
+                                                  "background"_s,
+                                                  "font"_s,
+                                                  "outputTextColor"_s,
+                                                  "outputTextColorInputEcho"_s,
+                                                  "outputTextColorError"_s,
+                                                  "outputTextColorSuccess"_s,
+                                                  "outputTextColorWarning"_s,
+                                                  "padding"_s,
+                                                  "contentPadding"_s,
+                                                  "scrollbarStyle"_s,
+                                                  "textInputStyle"_s,
+                                              });
+    assignStyleProperties(StyleType::DropDownList, {
+                                                       "buttonStyle"_s,
+                                                       "panelStyle"_s,
+                                                   });
+    assignStyleProperties(StyleType::Label, {
+                                                "background"_s,
+                                                "font"_s,
+                                                "padding"_s,
+                                                "textColor"_s,
+                                                "textAlignment"_s,
+                                            });
+    assignStyleProperties(StyleType::Panel, {
+                                                "background"_s,
+                                                "buttonStyle"_s,
+                                                "checkboxStyle"_s,
+                                                "contentPadding"_s,
+                                                "dropDownListStyle"_s,
+                                                "labelStyle"_s,
+                                                "padding"_s,
+                                                "radioButtonStyle"_s,
+                                                "scrollbarStyle"_s,
+                                                "sliderStyle"_s,
+                                                "textInputStyle"_s,
+                                                "widgetAlignment"_s,
+                                            });
+    assignStyleProperties(StyleType::RadioButton, {
+                                                      "background"_s,
+                                                      "backgroundDisabled"_s,
+                                                      "backgroundHover"_s,
+                                                      "backgroundPressed"_s,
+                                                      "dot"_s,
+                                                      "dotDisabled"_s,
+                                                      "dotHover"_s,
+                                                      "dotPressed"_s,
+                                                      "dotSize"_s,
+                                                      "size"_s,
+                                                  });
+    assignStyleProperties(StyleType::Scrollbar, {
+                                                    "background"_s,
+                                                    "thumb"_s,
+                                                    "thumbDisabled"_s,
+                                                    "thumbHover"_s,
+                                                    "thumbPressed"_s,
+                                                    "width"_s,
+                                                });
+    assignStyleProperties(StyleType::Slider, {
+                                                 "track"_s,
+                                                 "trackThickness"_s,
+                                                 "thumb"_s,
+                                                 "thumbDisabled"_s,
+                                                 "thumbHover"_s,
+                                                 "thumbPressed"_s,
+                                                 "thumbSize"_s,
+                                             });
+    assignStyleProperties(StyleType::TextInput, {
+                                                    "background"_s,
+                                                    "caretFlashCycleDuration"_s,
+                                                    "font"_s,
+                                                    "padding"_s,
+                                                    "showCaret"_s,
+                                                    "textAlignment"_s,
+                                                    "textColor"_s,
+                                                });
+    assignStyleProperties(StyleType::Window, {
+                                                 "offsetFromMouse"_s,
+                                                 "panelStyle"_s,
+                                                 "titleBarButtonHoverColor"_s,
+                                                 "titleBarColor"_s,
+                                                 "titleBarColorInactive"_s,
+                                                 "titleBarHeight"_s,
+                                                 "titleLabelStyle"_s,
+                                             });
 
     initHashTable(&styleTypesByName, 0.75f, 256);
-    styleTypesByName.put("Button"_s, Style_Button);
-    styleTypesByName.put("Checkbox"_s, Style_Checkbox);
-    styleTypesByName.put("Console"_s, Style_Console);
-    styleTypesByName.put("DropDownList"_s, Style_DropDownList);
-    styleTypesByName.put("Label"_s, Style_Label);
-    styleTypesByName.put("Panel"_s, Style_Panel);
-    styleTypesByName.put("RadioButton"_s, Style_RadioButton);
-    styleTypesByName.put("Scrollbar"_s, Style_Scrollbar);
-    styleTypesByName.put("Slider"_s, Style_Slider);
-    styleTypesByName.put("TextInput"_s, Style_TextInput);
-    styleTypesByName.put("Window"_s, Style_Window);
+    styleTypesByName.put("Button"_s, StyleType::Button);
+    styleTypesByName.put("Checkbox"_s, StyleType::Checkbox);
+    styleTypesByName.put("Console"_s, StyleType::Console);
+    styleTypesByName.put("DropDownList"_s, StyleType::DropDownList);
+    styleTypesByName.put("Label"_s, StyleType::Label);
+    styleTypesByName.put("Panel"_s, StyleType::Panel);
+    styleTypesByName.put("RadioButton"_s, StyleType::RadioButton);
+    styleTypesByName.put("Scrollbar"_s, StyleType::Scrollbar);
+    styleTypesByName.put("Slider"_s, StyleType::Slider);
+    styleTypesByName.put("TextInput"_s, StyleType::TextInput);
+    styleTypesByName.put("Window"_s, StyleType::Window);
 }
 
 void assignStyleProperties(StyleType type, std::initializer_list<String> properties)
 {
     for (String* propName = (String*)properties.begin(); propName < properties.end(); propName++) {
         Property* property = styleProperties.find(*propName).orDefault(nullptr);
-        property->existsInStyle[type] = true;
+        property->existsInStyle[to_underlying(type)] = true;
     }
 }
 
@@ -310,7 +310,7 @@ void loadUITheme(Blob data, Asset* asset)
     LineReader reader = readLines(asset->shortName, data);
 
     struct StylePack {
-        UI::Style styleByType[UI::StyleTypeCount];
+        UI::Style styleByType[to_underlying(UI::StyleType::COUNT)];
     };
     HashTable<StylePack> styles;
     initHashTable(&styles);
@@ -323,7 +323,7 @@ void loadUITheme(Blob data, Asset* asset)
         freeHashTable(&fontNamesToAssetNames);
     };
 
-    s32 styleCount[UI::StyleTypeCount] = {};
+    s32 styleCount[to_underlying(UI::StyleType::COUNT)] = {};
 
     String currentSection = nullString;
     UI::Style* target = nullptr;
@@ -362,7 +362,7 @@ void loadUITheme(Blob data, Asset* asset)
                     target->name = name;
                     target->type = styleType;
 
-                    styleCount[styleType]++;
+                    styleCount[to_underlying(styleType)]++;
                 } else {
                     error(&reader, "Unrecognized command: '{0}'"_s, { firstWord });
                 }
@@ -377,13 +377,13 @@ void loadUITheme(Blob data, Asset* asset)
                 if (!parentPack.isValid) {
                     error(&reader, "Unable to find style named '{0}'"_s, { parentStyle });
                 } else {
-                    UI::Style* parent = parentPack.value->styleByType + target->type;
+                    UI::Style const& parent = parentPack.value->styleByType[to_underlying(target->type)];
                     // For undefined styles, the parent struct will be all nulls, so the type will not match
-                    if (parent->type != target->type) {
+                    if (parent.type != target->type) {
                         error(&reader, "Attempting to extend a style of the wrong type."_s);
                     } else {
                         String name = target->name;
-                        *target = *parent;
+                        *target = parent;
                         target->name = name;
                     }
                 }
@@ -391,7 +391,7 @@ void loadUITheme(Blob data, Asset* asset)
                 // Check our properties map for a match
                 UI::Property* property = UI::styleProperties.find(firstWord).orDefault(nullptr);
                 if (property) {
-                    if (property->existsInStyle[target->type]) {
+                    if (property->existsInStyle[to_underlying(target->type)]) {
                         switch (property->type) {
                         case UI::PropType::Alignment: {
                             Maybe<u32> value = readAlignment(&reader);
@@ -485,7 +485,7 @@ void loadUITheme(Blob data, Asset* asset)
     // Actually write out the styles into the UITheme
 
     s32 totalStyleCount = 0;
-    for (s32 i = 0; i < UI::StyleTypeCount; i++) {
+    for (s32 i = 0; i < to_underlying(UI::StyleType::COUNT); i++) {
         totalStyleCount += styleCount[i];
     }
     allocateChildren(asset, totalStyleCount);
@@ -498,12 +498,13 @@ void loadUITheme(Blob data, Asset* asset)
 
     for (auto it = styles.iterate(); it.hasNext(); it.next()) {
         StylePack* stylePack = it.get();
-        for (s32 sectionType = 1; sectionType < UI::StyleTypeCount; sectionType++) {
+        for (s32 sectionType = 1; sectionType < to_underlying(UI::StyleType::COUNT); sectionType++) {
             UI::Style* style = stylePack->styleByType + sectionType;
             // For undefined styles, the parent struct will be all nulls, so the type will not match
-            if (style->type == sectionType) {
+            // FIXME: This seems really sketchy.
+            if (to_underlying(style->type) == sectionType) {
                 switch (style->type) {
-                case UI::Style_Button: {
+                case UI::StyleType::Button: {
                     Asset* childAsset = addAsset(AssetType::ButtonStyle, style->name, 0);
                     addChildAsset(asset, childAsset);
 
@@ -535,7 +536,7 @@ void loadUITheme(Blob data, Asset* asset)
                     }
                 } break;
 
-                case UI::Style_Checkbox: {
+                case UI::StyleType::Checkbox: {
                     Asset* childAsset = addAsset(AssetType::CheckboxStyle, style->name, 0);
                     addChildAsset(asset, childAsset);
 
@@ -564,7 +565,7 @@ void loadUITheme(Blob data, Asset* asset)
                     }
                 } break;
 
-                case UI::Style_Console: {
+                case UI::StyleType::Console: {
                     Asset* childAsset = addAsset(AssetType::ConsoleStyle, style->name, 0);
                     addChildAsset(asset, childAsset);
 
@@ -587,7 +588,7 @@ void loadUITheme(Blob data, Asset* asset)
                     console->textInputStyle = getAssetRef(AssetType::TextInputStyle, style->textInputStyle.orDefault(defaultStyleName));
                 } break;
 
-                case UI::Style_DropDownList: {
+                case UI::StyleType::DropDownList: {
                     Asset* childAsset = addAsset(AssetType::DropDownListStyle, style->name, 0);
                     addChildAsset(asset, childAsset);
 
@@ -598,7 +599,7 @@ void loadUITheme(Blob data, Asset* asset)
                     ddl->panelStyle = getAssetRef(AssetType::PanelStyle, style->panelStyle.orDefault(defaultStyleName));
                 } break;
 
-                case UI::Style_Label: {
+                case UI::StyleType::Label: {
                     Asset* childAsset = addAsset(AssetType::LabelStyle, style->name, 0);
                     addChildAsset(asset, childAsset);
 
@@ -612,7 +613,7 @@ void loadUITheme(Blob data, Asset* asset)
                     label->textAlignment = style->textAlignment.orDefault(ALIGN_TOP | ALIGN_LEFT);
                 } break;
 
-                case UI::Style_Panel: {
+                case UI::StyleType::Panel: {
                     Asset* childAsset = addAsset(AssetType::PanelStyle, style->name, 0);
                     addChildAsset(asset, childAsset);
 
@@ -634,7 +635,7 @@ void loadUITheme(Blob data, Asset* asset)
                     panel->textInputStyle = getAssetRef(AssetType::TextInputStyle, style->textInputStyle.orDefault(defaultStyleName));
                 } break;
 
-                case UI::Style_RadioButton: {
+                case UI::StyleType::RadioButton: {
                     Asset* childAsset = addAsset(AssetType::RadioButtonStyle, style->name, 0);
                     addChildAsset(asset, childAsset);
 
@@ -654,7 +655,7 @@ void loadUITheme(Blob data, Asset* asset)
                     radioButton->dotPressed = style->dotPressed.orDefault(radioButton->dot);
                 } break;
 
-                case UI::Style_Scrollbar: {
+                case UI::StyleType::Scrollbar: {
                     Asset* childAsset = addAsset(AssetType::ScrollbarStyle, style->name, 0);
                     addChildAsset(asset, childAsset);
 
@@ -669,7 +670,7 @@ void loadUITheme(Blob data, Asset* asset)
                     scrollbar->width = style->width.orDefault(8);
                 } break;
 
-                case UI::Style_Slider: {
+                case UI::StyleType::Slider: {
                     Asset* childAsset = addAsset(AssetType::SliderStyle, style->name, 0);
                     addChildAsset(asset, childAsset);
 
@@ -685,7 +686,7 @@ void loadUITheme(Blob data, Asset* asset)
                     slider->thumbSize = style->thumbSize.orDefault(v2i(8, 8));
                 } break;
 
-                case UI::Style_TextInput: {
+                case UI::StyleType::TextInput: {
                     Asset* childAsset = addAsset(AssetType::TextInputStyle, style->name, 0);
                     addChildAsset(asset, childAsset);
 
@@ -703,7 +704,7 @@ void loadUITheme(Blob data, Asset* asset)
                     textInput->caretFlashCycleDuration = style->caretFlashCycleDuration.orDefault(1.0f);
                 } break;
 
-                case UI::Style_Window: {
+                case UI::StyleType::Window: {
                     Asset* childAsset = addAsset(AssetType::WindowStyle, style->name, 0);
                     addChildAsset(asset, childAsset);
 
