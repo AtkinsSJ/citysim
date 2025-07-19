@@ -72,7 +72,7 @@ void removeAsset(AssetType type, String name);
 void removeAssets(Array<AssetID> assetsToRemove);
 
 void addAssets();
-void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType = AssetType::Unknown);
+void addAssetsFromDirectory(String subDirectory, Optional<AssetType> manualAssetType = {});
 bool haveAssetFilesChanged();
 void reloadAssets();
 
@@ -156,31 +156,32 @@ T* getStyle(String styleName)
 {
     T* result = nullptr;
 
-    AssetType styleType = AssetType::Unknown;
-    if (typeid(T) == typeid(UI::ButtonStyle))
-        styleType = AssetType::ButtonStyle;
-    else if (typeid(T) == typeid(UI::CheckboxStyle))
-        styleType = AssetType::CheckboxStyle;
-    else if (typeid(T) == typeid(UI::ConsoleStyle))
-        styleType = AssetType::ConsoleStyle;
-    else if (typeid(T) == typeid(UI::DropDownListStyle))
-        styleType = AssetType::DropDownListStyle;
-    else if (typeid(T) == typeid(UI::LabelStyle))
-        styleType = AssetType::LabelStyle;
-    else if (typeid(T) == typeid(UI::PanelStyle))
-        styleType = AssetType::PanelStyle;
-    else if (typeid(T) == typeid(UI::RadioButtonStyle))
-        styleType = AssetType::RadioButtonStyle;
-    else if (typeid(T) == typeid(UI::ScrollbarStyle))
-        styleType = AssetType::ScrollbarStyle;
-    else if (typeid(T) == typeid(UI::SliderStyle))
-        styleType = AssetType::SliderStyle;
-    else if (typeid(T) == typeid(UI::TextInputStyle))
-        styleType = AssetType::TextInputStyle;
-    else if (typeid(T) == typeid(UI::WindowStyle))
-        styleType = AssetType::WindowStyle;
-    else
-        ASSERT(false);
+    AssetType styleType = [] {
+        if constexpr (typeid(T) == typeid(UI::ButtonStyle))
+            return AssetType::ButtonStyle;
+        else if constexpr (typeid(T) == typeid(UI::CheckboxStyle))
+            return AssetType::CheckboxStyle;
+        else if constexpr (typeid(T) == typeid(UI::ConsoleStyle))
+            return AssetType::ConsoleStyle;
+        else if constexpr (typeid(T) == typeid(UI::DropDownListStyle))
+            return AssetType::DropDownListStyle;
+        else if constexpr (typeid(T) == typeid(UI::LabelStyle))
+            return AssetType::LabelStyle;
+        else if constexpr (typeid(T) == typeid(UI::PanelStyle))
+            return AssetType::PanelStyle;
+        else if constexpr (typeid(T) == typeid(UI::RadioButtonStyle))
+            return AssetType::RadioButtonStyle;
+        else if constexpr (typeid(T) == typeid(UI::ScrollbarStyle))
+            return AssetType::ScrollbarStyle;
+        else if constexpr (typeid(T) == typeid(UI::SliderStyle))
+            return AssetType::SliderStyle;
+        else if constexpr (typeid(T) == typeid(UI::TextInputStyle))
+            return AssetType::TextInputStyle;
+        else if constexpr (typeid(T) == typeid(UI::WindowStyle))
+            return AssetType::WindowStyle;
+        else
+            static_assert(false);
+    }();
 
     Asset* asset = getAsset(styleType, styleName);
     if (asset != nullptr) {

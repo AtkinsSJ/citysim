@@ -598,7 +598,7 @@ void loadAssets()
     s_assets->assetReloadHasJustHappened = true;
 }
 
-void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType)
+void addAssetsFromDirectory(String subDirectory, Optional<AssetType> manualAssetType)
 {
     String pathToScan;
     if (isEmpty(subDirectory)) {
@@ -623,17 +623,14 @@ void addAssetsFromDirectory(String subDirectory, AssetType manualAssetType)
         }
 
         String filename = intern(&s_assets->assetStrings, fileInfo->filename);
-        AssetType assetType = manualAssetType;
-
-        // Attempt to categorise the asset based on file extension
-        if (assetType == AssetType::Unknown) {
+        AssetType assetType = [&manualAssetType, &filename]() {
+            // Attempt to categorise the asset based on file extension
+            if (manualAssetType.has_value())
+                return manualAssetType.value();
             String fileExtension = getFileExtension(filename);
             Maybe<AssetType> foundAssetType = s_assets->fileExtensionToType.findValue(fileExtension);
-            assetType = foundAssetType.orDefault(AssetType::Misc);
-            // logInfo("Found asset file '{0}'. Adding as type {1}, calculated from extension '{2}'", {filename, formatInt(assetType), fileExtension});
-        } else {
-            // logInfo("Found asset file '{0}'. Adding as type {1}, passed in.", {filename, formatInt(assetType)});
-        }
+            return foundAssetType.orDefault(AssetType::Misc);
+        }();
 
         addAsset(assetType, filename, assetFlags);
     }

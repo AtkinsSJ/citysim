@@ -8,7 +8,7 @@
 
 #include <Util/String.h>
 
-enum class AssetType : s8 {
+enum class AssetType : u8 {
     Misc,
 
     BitmapFont,
@@ -40,8 +40,6 @@ enum class AssetType : s8 {
     WindowStyle,
 
     COUNT,
-    // FIXME: Remove Unknown!
-    Unknown = -1
 };
 
 inline String assetTypeNames[to_underlying(AssetType::COUNT)] = {

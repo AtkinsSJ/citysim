@@ -8,7 +8,7 @@
 
 #include <Util/Basic.h>
 
-enum class AssetType : s8;
+enum class AssetType : u8;
 struct Asset;
 struct AssetID;
 struct AssetRef;
