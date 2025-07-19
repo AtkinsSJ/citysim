@@ -130,36 +130,3 @@ MemoryArena& temp_arena();
         containerName->arenaVarName = move(bootstrap);                                        \
         containerName->arenaVarName.mark_reset_position();                                    \
     }
-
-//
-// Tools for 2D arrays
-//
-
-template<typename T>
-T* copyRegion(T* sourceArray, s32 sourceArrayWidth, s32 sourceArrayHeight, Rect2I region, MemoryArena* arena)
-{
-    ASSERT(contains(irectXYWH(0, 0, sourceArrayWidth, sourceArrayHeight), region));
-
-    T* result = arena->allocate_multiple<T>(areaOf(region));
-
-    T* pos = result;
-
-    for (s32 y = region.y; y < region.y + region.h; y++) {
-        // Copy whole rows at a time
-        copyMemory(sourceArray + (y * sourceArrayWidth) + region.x, pos, region.w);
-        pos += region.w;
-    }
-
-    return result;
-}
-
-template<typename T>
-void setRegion(T* array, s32 arrayWidth, s32 arrayHeight, Rect2I region, T value)
-{
-    ASSERT(contains(irectXYWH(0, 0, arrayWidth, arrayHeight), region));
-
-    for (s32 y = region.y; y < region.y + region.h; y++) {
-        // Set whole rows at a time
-        fillMemory<T>(array + (y * arrayWidth) + region.x, value, region.w);
-    }
-}
