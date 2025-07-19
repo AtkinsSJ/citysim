@@ -523,13 +523,13 @@ void saveTerrainLayer(TerrainLayer* layer, BinaryFileWriter* writer)
     terrainSection.terrainTypeTable = writer->writeArray<SAVTerrainTypeEntry>(terrainTypeTable, terrainTypeTableLoc);
 
     // Tile terrain type (u8)
-    terrainSection.tileTerrainType = writer->appendBlob(&layer->tileTerrainType, Blob_RLE_S8);
+    terrainSection.tileTerrainType = writer->appendBlob(&layer->tileTerrainType, FileBlobCompressionScheme::RLE_S8);
 
     // Tile height (u8)
-    terrainSection.tileHeight = writer->appendBlob(&layer->tileHeight, Blob_RLE_S8);
+    terrainSection.tileHeight = writer->appendBlob(&layer->tileHeight, FileBlobCompressionScheme::RLE_S8);
 
     // Tile sprite offset (u8)
-    terrainSection.tileSpriteOffset = writer->appendBlob(&layer->tileSpriteOffset, Blob_Uncompressed);
+    terrainSection.tileSpriteOffset = writer->appendBlob(&layer->tileSpriteOffset, FileBlobCompressionScheme::Uncompressed);
 
     writer->endSection<SAVSection_Terrain>(&terrainSection);
 }

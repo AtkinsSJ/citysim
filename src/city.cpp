@@ -571,7 +571,7 @@ void saveBuildings(City* city, struct BinaryFileWriter* writer)
 
         tempBuildingIndex++;
     }
-    buildingSection.buildings = writer->appendBlob(buildingSection.buildingCount * sizeof(SAVBuilding), (u8*)tempBuildings, Blob_Uncompressed);
+    buildingSection.buildings = writer->appendBlob(buildingSection.buildingCount * sizeof(SAVBuilding), (u8*)tempBuildings, FileBlobCompressionScheme::Uncompressed);
 
     writer->endSection<SAVSection_Buildings>(&buildingSection);
 }

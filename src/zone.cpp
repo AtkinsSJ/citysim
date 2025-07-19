@@ -681,7 +681,7 @@ void saveZoneLayer(ZoneLayer* layer, struct BinaryFileWriter* writer)
     SAVSection_Zone zoneSection = {};
 
     // Tile zones
-    zoneSection.tileZone = writer->appendBlob(&layer->tileZone, Blob_RLE_S8);
+    zoneSection.tileZone = writer->appendBlob(&layer->tileZone, FileBlobCompressionScheme::RLE_S8);
 
     writer->endSection<SAVSection_Zone>(&zoneSection);
 }

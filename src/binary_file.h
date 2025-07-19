@@ -81,9 +81,10 @@ struct FileBlob {
     leU32 compressionScheme; // FileBlobCompressionScheme
 };
 
-enum FileBlobCompressionScheme {
-    Blob_Uncompressed = 0,
-    Blob_RLE_S8 = 1, // Negative numbers are literal lengths, positive are run lengths
+// FIXME: Make this smaller? We'd change the file format though.
+enum class FileBlobCompressionScheme : u32 {
+    Uncompressed = 0,
+    RLE_S8 = 1, // Negative numbers are literal lengths, positive are run lengths
 
     //
     // TODO: Several per-tile-data arrays here are stored as u8s, but they only have a small number

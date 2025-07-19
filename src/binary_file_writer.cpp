@@ -57,17 +57,17 @@ s32 BinaryFileWriter::getSectionRelativeOffset()
 FileBlob BinaryFileWriter::appendBlob(s32 length, u8* data, FileBlobCompressionScheme scheme)
 {
     FileBlob result = {};
-    result.compressionScheme = scheme;
+    result.compressionScheme = to_underlying(scheme);
     result.relativeOffset = getSectionRelativeOffset();
     result.decompressedLength = length;
 
     switch (scheme) {
-    case Blob_Uncompressed: {
+    case FileBlobCompressionScheme::Uncompressed: {
         buffer.appendBytes(length, data);
         result.length = length;
     } break;
 
-    case Blob_RLE_S8: {
+    case FileBlobCompressionScheme::RLE_S8: {
 
         // Our scheme is, (s8 length, u8...data)
         // Positive length = repeat the next byte `length` times.
@@ -123,8 +123,8 @@ FileBlob BinaryFileWriter::appendBlob(s32 length, u8* data, FileBlobCompressionS
     } break;
 
     default: {
-        logError("Called appendBlob() with an unrecognized scheme! ({0}) Defaulting to Blob_Uncompressed."_s, { formatInt(scheme) });
-        result = appendBlob(length, data, Blob_Uncompressed);
+        logError("Called appendBlob() with an unrecognized scheme! ({0}) Defaulting to FileBlobCompressionScheme::Uncompressed."_s, { formatInt(to_underlying(scheme)) });
+        result = appendBlob(length, data, FileBlobCompressionScheme::Uncompressed);
     } break;
     }
 

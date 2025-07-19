@@ -116,13 +116,13 @@ bool BinaryFileReader::readBlob(FileBlob source, u8* dest, smm destSize)
             logWarn("Destination passed to readBlob() is larger than needed. (Need {0}, got {1})"_s, { formatInt(source.decompressedLength), formatInt(destSize) });
         }
 
-        switch (source.compressionScheme) {
-        case Blob_Uncompressed: {
+        switch (static_cast<FileBlobCompressionScheme>(source.compressionScheme.value())) {
+        case FileBlobCompressionScheme::Uncompressed: {
             copyMemory(sectionMemoryAt(source.relativeOffset), dest, source.length);
             succeeded = true;
         } break;
 
-        case Blob_RLE_S8: {
+        case FileBlobCompressionScheme::RLE_S8: {
             rleDecode(sectionMemoryAt(source.relativeOffset), dest, destSize);
             succeeded = true;
         } break;
