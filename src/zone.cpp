@@ -14,13 +14,13 @@
 
 void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena)
 {
-    zoneLayer->tileZone = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
+    zoneLayer->tileZone = gameArena->allocate_array_2d<ZoneType>(city->bounds.w, city->bounds.h);
 
     initSectorGrid(&zoneLayer->sectors, gameArena, city->bounds.w, city->bounds.h, 16, 8);
     s32 sectorCount = getSectorCount(&zoneLayer->sectors);
 
     // NB: Element 0 is empty because tracking spots with no zone is not useful
-    for (s32 zoneType = FirstZoneType; zoneType < ZoneTypeCount; zoneType++) {
+    for (s32 zoneType = to_underlying(FirstZoneType); zoneType < to_underlying(ZoneType::COUNT); zoneType++) {
         initBitArray(&zoneLayer->sectorsWithZones[zoneType], gameArena, sectorCount);
         initBitArray(&zoneLayer->sectorsWithEmptyZones[zoneType], gameArena, sectorCount);
 
@@ -40,15 +40,9 @@ void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena)
     }
 }
 
-ZoneDef getZoneDef(s32 zoneType)
-{
-    ASSERT(zoneType >= 0 && zoneType < ZoneTypeCount);
-    return zoneDefs[zoneType];
-}
-
 ZoneType getZoneAt(City* city, s32 x, s32 y)
 {
-    return (ZoneType)city->zoneLayer.tileZone.getIfExists(x, y, Zone_None);
+    return (ZoneType)city->zoneLayer.tileZone.getIfExists(x, y, ZoneType::None);
 }
 
 s32 calculateZoneCost(CanZoneQuery* query)
@@ -67,9 +61,9 @@ CanZoneQuery* queryCanZoneTiles(City* city, ZoneType zoneType, Rect2I bounds)
     smm structSize = sizeof(CanZoneQuery) + (tileCount * sizeof(query->tileCanBeZoned[0]));
     u8* memory = static_cast<u8*>(temp_arena().allocate_deprecated(structSize));
     query = (CanZoneQuery*)memory;
-    query->tileCanBeZoned = (u8*)(memory + sizeof(CanZoneQuery));
+    query->tileCanBeZoned = memory + sizeof(CanZoneQuery);
     query->bounds = bounds;
-    query->zoneDef = &zoneDefs[zoneType];
+    query->zoneDef = &ZONE_DEFS[zoneType];
 
     // Actually do the calculation
 
@@ -130,7 +124,7 @@ void drawZones(City* city, Rect2I visibleTileBounds, s8 shaderID)
 
     auto& renderer = the_renderer();
     Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
-    s32 zoneType = -1;
+    Optional<ZoneType> current_zone_type;
     V4 zoneColor = {};
 
     // TODO: @Speed: Use a drawGrid() call for this somehow!
@@ -146,11 +140,11 @@ void drawZones(City* city, Rect2I visibleTileBounds, s8 shaderID)
         for (s32 x = visibleTileBounds.x;
             x < visibleTileBounds.x + visibleTileBounds.w;
             x++) {
-            ZoneType zone = getZoneAt(city, x, y);
-            if (zone != Zone_None) {
-                if (zone != zoneType) {
-                    zoneType = zone;
-                    zoneColor = getZoneDef(zoneType).color;
+            ZoneType tile_zone = getZoneAt(city, x, y);
+            if (tile_zone != ZoneType::None) {
+                if (tile_zone != current_zone_type) {
+                    current_zone_type = tile_zone;
+                    zoneColor = ZONE_DEFS[current_zone_type.value()].color;
                 }
 
                 spriteBounds.x = (f32)x;
@@ -181,7 +175,7 @@ void placeZone(City* city, ZoneType zoneType, Rect2I area)
                 // @Speed: URGH this terrain lookup for every tile is nasty!
                 && (getTerrainAt(city, x, y)->canBuildOn)
                 && (!buildingExistsAt(city, x, y))) {
-                zoneLayer->tileZone.set(x, y, (u8)zoneType);
+                zoneLayer->tileZone.set(x, y, zoneType);
             }
         }
     }
@@ -212,7 +206,7 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
         {
             DEBUG_BLOCK_T("updateZoneLayer: zone contents", DebugCodeDataTag::Simulation);
 
-            for (s32 zoneType = FirstZoneType; zoneType < ZoneTypeCount; zoneType++) {
+            for (s32 zoneType = to_underlying(FirstZoneType); zoneType < to_underlying(ZoneType::COUNT); zoneType++) {
                 layer->sectorsWithZones[zoneType].unsetBit(sectorIndex);
                 layer->sectorsWithEmptyZones[zoneType].unsetBit(sectorIndex);
             }
@@ -222,24 +216,24 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
             for (s32 y = sector->bounds.y; y < sector->bounds.y + sector->bounds.h; y++) {
                 for (s32 x = sector->bounds.x; x < sector->bounds.x + sector->bounds.w; x++) {
                     ZoneType zone = getZoneAt(city, x, y);
-                    if (zone == Zone_None)
+                    if (zone == ZoneType::None)
                         continue;
 
                     bool isFilled = buildingExistsAt(city, x, y);
                     switch (zone) {
-                    case Zone_Residential: {
+                    case ZoneType::Residential: {
                         sector->zoneSectorFlags |= ZoneSector_HasResZones;
                         if (!isFilled)
                             sector->zoneSectorFlags |= ZoneSector_HasEmptyResZones;
                     } break;
 
-                    case Zone_Commercial: {
+                    case ZoneType::Commercial: {
                         sector->zoneSectorFlags |= ZoneSector_HasComZones;
                         if (!isFilled)
                             sector->zoneSectorFlags |= ZoneSector_HasEmptyComZones;
                     } break;
 
-                    case Zone_Industrial: {
+                    case ZoneType::Industrial: {
                         sector->zoneSectorFlags |= ZoneSector_HasIndZones;
                         if (!isFilled)
                             sector->zoneSectorFlags |= ZoneSector_HasEmptyIndZones;
@@ -251,22 +245,22 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
             }
 
             if (sector->zoneSectorFlags & ZoneSector_HasResZones) {
-                layer->sectorsWithZones[Zone_Residential].setBit(sectorIndex);
+                layer->sectorsWithZones[ZoneType::Residential].setBit(sectorIndex);
             }
             if (sector->zoneSectorFlags & ZoneSector_HasEmptyResZones) {
-                layer->sectorsWithEmptyZones[Zone_Residential].setBit(sectorIndex);
+                layer->sectorsWithEmptyZones[ZoneType::Residential].setBit(sectorIndex);
             }
             if (sector->zoneSectorFlags & ZoneSector_HasComZones) {
-                layer->sectorsWithZones[Zone_Commercial].setBit(sectorIndex);
+                layer->sectorsWithZones[ZoneType::Commercial].setBit(sectorIndex);
             }
             if (sector->zoneSectorFlags & ZoneSector_HasEmptyComZones) {
-                layer->sectorsWithEmptyZones[Zone_Commercial].setBit(sectorIndex);
+                layer->sectorsWithEmptyZones[ZoneType::Commercial].setBit(sectorIndex);
             }
             if (sector->zoneSectorFlags & ZoneSector_HasIndZones) {
-                layer->sectorsWithZones[Zone_Industrial].setBit(sectorIndex);
+                layer->sectorsWithZones[ZoneType::Industrial].setBit(sectorIndex);
             }
             if (sector->zoneSectorFlags & ZoneSector_HasEmptyIndZones) {
-                layer->sectorsWithEmptyZones[Zone_Industrial].setBit(sectorIndex);
+                layer->sectorsWithEmptyZones[ZoneType::Industrial].setBit(sectorIndex);
             }
         }
 
@@ -297,7 +291,7 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
                         // pollution = bad
                         desirability -= getPollutionPercentAt(city, x, y) * 0.4f;
 
-                        layer->tileDesirability[Zone_Residential].set(x, y, clamp01AndMap_u8(desirability));
+                        layer->tileDesirability[ZoneType::Residential].set(x, y, clamp01AndMap_u8(desirability));
 
                         totalResDesirability += desirability;
                     }
@@ -316,7 +310,7 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
                         // pollution = bad
                         desirability -= getPollutionPercentAt(city, x, y) * 0.2f;
 
-                        layer->tileDesirability[Zone_Commercial].set(x, y, clamp01AndMap_u8(desirability));
+                        layer->tileDesirability[ZoneType::Commercial].set(x, y, clamp01AndMap_u8(desirability));
 
                         totalComDesirability += desirability;
                     }
@@ -335,7 +329,7 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
                         // pollution = slightly bad
                         desirability -= getPollutionPercentAt(city, x, y) * 0.15f;
 
-                        layer->tileDesirability[Zone_Industrial].set(x, y, clamp01AndMap_u8(desirability));
+                        layer->tileDesirability[ZoneType::Industrial].set(x, y, clamp01AndMap_u8(desirability));
 
                         totalIndDesirability += desirability;
                     }
@@ -344,14 +338,14 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
 
             s32 sectorArea = areaOf(sector->bounds);
             f32 invSectorArea = 1.0f / (f32)sectorArea;
-            sector->averageDesirability[Zone_Residential] = totalResDesirability * invSectorArea;
-            sector->averageDesirability[Zone_Commercial] = totalComDesirability * invSectorArea;
-            sector->averageDesirability[Zone_Industrial] = totalIndDesirability * invSectorArea;
+            sector->averageDesirability[ZoneType::Residential] = totalResDesirability * invSectorArea;
+            sector->averageDesirability[ZoneType::Commercial] = totalComDesirability * invSectorArea;
+            sector->averageDesirability[ZoneType::Industrial] = totalIndDesirability * invSectorArea;
         }
     }
 
     // Sort the mostDesirableSectors array
-    for (s32 zoneType = FirstZoneType; zoneType < ZoneTypeCount; zoneType++) {
+    for (s32 zoneType = to_underlying(FirstZoneType); zoneType < to_underlying(ZoneType::COUNT); zoneType++) {
         layer->mostDesirableSectors[zoneType].sort([&](s32 sectorIndexA, s32 sectorIndexB) {
             return layer->sectors[sectorIndexA].averageDesirability[zoneType] > layer->sectors[sectorIndexB].averageDesirability[zoneType];
         });
@@ -385,36 +379,33 @@ void calculateDemand(City* city, ZoneLayer* layer)
     s32 totalJobs = getTotalJobs(city);
 
     // Residential
-    layer->demand[Zone_Residential] = (totalJobs * 3) - totalResidents + 100;
+    layer->demand[ZoneType::Residential] = (totalJobs * 3) - totalResidents + 100;
 
     s32 totalJobsNeeded = (totalResidents / 3);
 
     // Commercial
-    layer->demand[Zone_Commercial] = floor_s32(totalJobsNeeded * 0.2f) - layer->population[Zone_Commercial] + 20;
+    layer->demand[ZoneType::Commercial] = floor_s32(totalJobsNeeded * 0.2f) - layer->population[ZoneType::Commercial] + 20;
 
     // Industrial
-    layer->demand[Zone_Industrial] = floor_s32(totalJobsNeeded * 0.8f) - layer->population[Zone_Industrial] + 50;
+    layer->demand[ZoneType::Industrial] = floor_s32(totalJobsNeeded * 0.8f) - layer->population[ZoneType::Industrial] + 50;
 }
 
 bool isZoneAcceptable(City* city, ZoneType zoneType, s32 x, s32 y)
 {
     DEBUG_FUNCTION();
 
-    ZoneDef def = getZoneDef(zoneType);
+    ZoneDef const& def = ZONE_DEFS[zoneType];
 
-    bool isAcceptable = true;
-
-    if (getZoneAt(city, x, y) != zoneType) {
-        isAcceptable = false;
-    } else if (buildingExistsAt(city, x, y)) {
-        isAcceptable = false;
-    } else if (getDistanceToTransport(city, x, y, Transport_Road) > def.maximumDistanceToRoad) {
-        isAcceptable = false;
-    }
+    if (getZoneAt(city, x, y) != zoneType)
+        return false;
+    if (buildingExistsAt(city, x, y))
+        return false;
+    if (getDistanceToTransport(city, x, y, Transport_Road) > def.maximumDistanceToRoad)
+        return false;
 
     // TODO: Power requirements!
 
-    return isAcceptable;
+    return true;
 }
 
 template<typename Filter>
@@ -425,13 +416,13 @@ static BuildingDef* findRandomZoneBuilding(ZoneType zoneType, Random* random, Fi
     // Choose a random building, then carry on checking buildings until one is acceptable
     ChunkedArray<BuildingDef*>* buildings = nullptr;
     switch (zoneType) {
-    case Zone_Residential:
+    case ZoneType::Residential:
         buildings = &buildingCatalogue.rGrowableBuildings;
         break;
-    case Zone_Commercial:
+    case ZoneType::Commercial:
         buildings = &buildingCatalogue.cGrowableBuildings;
         break;
-    case Zone_Industrial:
+    case ZoneType::Industrial:
         buildings = &buildingCatalogue.iGrowableBuildings;
         break;
 
@@ -467,17 +458,18 @@ void growSomeZoneBuildings(City* city)
     ZoneLayer* layer = &city->zoneLayer;
     Random* random = &AppState::the().gameState->gameRandom;
 
-    for (ZoneType zoneType = FirstZoneType; zoneType < ZoneTypeCount; zoneType = (ZoneType)(zoneType + 1)) {
-        if (layer->demand[zoneType] > 0) {
+    for (auto zone_type_index = to_underlying(FirstZoneType); zone_type_index < to_underlying(ZoneType::COUNT); zone_type_index++) {
+        auto zone_type = static_cast<ZoneType>(zone_type_index);
+        if (layer->demand[zone_type] > 0) {
             s32 remainingBuildingCount = 8; // How many buildings can be constructed at once TODO: Tweak this number!
-            s32 remainingDemand = layer->demand[zoneType];
-            s32 minimumDemand = layer->demand[zoneType] / 20; // Stop when we're below 20% of the original demand
+            s32 remainingDemand = layer->demand[zone_type];
+            s32 minimumDemand = layer->demand[zone_type] / 20; // Stop when we're below 20% of the original demand
 
-            s32 maxRBuildingDim = getMaxBuildingSize(zoneType);
+            s32 maxRBuildingDim = getMaxBuildingSize(zone_type);
             s32 savedPositionInMostDesirableSectorsTable = 0;
 
             while ((remainingBuildingCount > 0)
-                && (layer->sectorsWithEmptyZones[zoneType].setBitCount > 0)
+                && (layer->sectorsWithEmptyZones[zone_type].setBitCount > 0)
                 && (remainingDemand > minimumDemand)) {
                 bool foundAZone = false;
                 s32 randomXOffset = randomNext(random);
@@ -489,11 +481,11 @@ void growSomeZoneBuildings(City* city)
 
                     // Go through sectors from most desirable to least
                     for (s32 position = savedPositionInMostDesirableSectorsTable; position < getSectorCount(&layer->sectors); position++) {
-                        s32 sectorIndex = layer->mostDesirableSectors[zoneType][position];
+                        s32 sectorIndex = layer->mostDesirableSectors[zone_type][position];
 
                         // Skip if it doesn't have any available zones
                         // TODO: We want to penalise redevelopment, but still allow it
-                        if (!layer->sectorsWithEmptyZones[zoneType][sectorIndex])
+                        if (!layer->sectorsWithEmptyZones[zone_type][sectorIndex])
                             continue;
 
                         ZoneSector* sector = &layer->sectors.sectors[sectorIndex];
@@ -509,7 +501,7 @@ void growSomeZoneBuildings(City* city)
                                 s32 x = sector->bounds.x + tileX;
                                 s32 y = sector->bounds.y + tileY;
 
-                                if (isZoneAcceptable(city, zoneType, x, y)) {
+                                if (isZoneAcceptable(city, zone_type, x, y)) {
                                     zonePos = v2i(x, y);
                                     foundAZone = true;
 
@@ -553,7 +545,7 @@ void growSomeZoneBuildings(City* city)
                             s32 x = positive ? (zoneFootprint.x + zoneFootprint.w) : (zoneFootprint.x - 1);
 
                             for (s32 y = zoneFootprint.y; y < zoneFootprint.y + zoneFootprint.h; y++) {
-                                if (!isZoneAcceptable(city, zoneType, x, y)) {
+                                if (!isZoneAcceptable(city, zone_type, x, y)) {
                                     canExpand = false;
                                     break;
                                 }
@@ -567,7 +559,7 @@ void growSomeZoneBuildings(City* city)
                                 x = positive ? (zoneFootprint.x + zoneFootprint.w) : (zoneFootprint.x - 1);
 
                                 for (s32 y = zoneFootprint.y; y < zoneFootprint.y + zoneFootprint.h; y++) {
-                                    if (!isZoneAcceptable(city, zoneType, x, y)) {
+                                    if (!isZoneAcceptable(city, zone_type, x, y)) {
                                         canExpand = false;
                                         break;
                                     }
@@ -584,7 +576,7 @@ void growSomeZoneBuildings(City* city)
                             s32 y = positive ? (zoneFootprint.y + zoneFootprint.h) : (zoneFootprint.y - 1);
 
                             for (s32 x = zoneFootprint.x; x < zoneFootprint.x + zoneFootprint.w; x++) {
-                                if (!isZoneAcceptable(city, zoneType, x, y)) {
+                                if (!isZoneAcceptable(city, zone_type, x, y)) {
                                     canExpand = false;
                                     break;
                                 }
@@ -598,7 +590,7 @@ void growSomeZoneBuildings(City* city)
                                 y = positive ? (zoneFootprint.y + zoneFootprint.h) : (zoneFootprint.y - 1);
 
                                 for (s32 x = zoneFootprint.x; x < zoneFootprint.x + zoneFootprint.w; x++) {
-                                    if (!isZoneAcceptable(city, zoneType, x, y)) {
+                                    if (!isZoneAcceptable(city, zone_type, x, y)) {
                                         canExpand = false;
                                         break;
                                     }
@@ -629,11 +621,11 @@ void growSomeZoneBuildings(City* city)
 
                 // Pick a building def that fits the space and is not more than 10% more than the remaining demand
                 s32 maxPopulation = (s32)((f32)remainingDemand * 1.1f);
-                BuildingDef* buildingDef = findRandomZoneBuilding(zoneType, random, [=](BuildingDef* it) -> bool {
+                BuildingDef* buildingDef = findRandomZoneBuilding(zone_type, random, [=](BuildingDef* it) -> bool {
                     if ((it->width > zoneFootprint.w) || (it->height > zoneFootprint.h))
                         return false;
 
-                    if (it->growsInZone == Zone_Residential) {
+                    if (it->growsInZone == ZoneType::Residential) {
                         return (it->residents > 0) && (it->residents <= maxPopulation);
                     } else {
                         return (it->jobs > 0) && (it->jobs <= maxPopulation);
@@ -646,7 +638,7 @@ void growSomeZoneBuildings(City* city)
                     Rect2I footprint = randomlyPlaceRectangle(random, buildingDef->size, zoneFootprint);
 
                     Building* building = addBuilding(city, buildingDef, footprint);
-                    layer->population[zoneType] += building->currentResidents + building->currentJobs;
+                    layer->population[zone_type] += building->currentResidents + building->currentJobs;
                     updateBuildingVariant(city, building, buildingDef);
 
                     markAreaDirty(city, footprint);
@@ -667,26 +659,26 @@ void growSomeZoneBuildings(City* city)
 
 s32 getTotalResidents(City* city)
 {
-    return city->zoneLayer.population[Zone_Residential];
+    return city->zoneLayer.population[ZoneType::Residential];
 }
 
 s32 getTotalJobs(City* city)
 {
-    return city->zoneLayer.population[Zone_Commercial] + city->zoneLayer.population[Zone_Industrial] + city->zoneLayer.population[Zone_None];
+    return city->zoneLayer.population[ZoneType::Commercial] + city->zoneLayer.population[ZoneType::Industrial] + city->zoneLayer.population[ZoneType::None];
 }
 
-void saveZoneLayer(ZoneLayer* layer, struct BinaryFileWriter* writer)
+void saveZoneLayer(ZoneLayer* layer, BinaryFileWriter* writer)
 {
     writer->startSection<SAVSection_Zone>(SAV_ZONE_ID, SAV_ZONE_VERSION);
     SAVSection_Zone zoneSection = {};
 
     // Tile zones
-    zoneSection.tileZone = writer->appendBlob(&layer->tileZone, FileBlobCompressionScheme::RLE_S8);
+    zoneSection.tileZone = writer->appendBlob(layer->tileZone, FileBlobCompressionScheme::RLE_S8);
 
     writer->endSection<SAVSection_Zone>(&zoneSection);
 }
 
-bool loadZoneLayer(ZoneLayer* layer, City* /*city*/, struct BinaryFileReader* reader)
+bool loadZoneLayer(ZoneLayer* layer, City* /*city*/, BinaryFileReader* reader)
 {
     bool succeeded = false;
     while (reader->startSection(SAV_ZONE_ID, SAV_ZONE_VERSION)) {

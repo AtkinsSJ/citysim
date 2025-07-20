@@ -12,16 +12,16 @@
 
 struct City;
 
-enum ZoneType : u8 {
-    Zone_None = 0,
+enum class ZoneType : u8 {
+    None,
 
-    Zone_Residential,
-    Zone_Commercial,
-    Zone_Industrial,
+    Residential,
+    Commercial,
+    Industrial,
 
-    ZoneTypeCount,
-    FirstZoneType = Zone_Residential
+    COUNT,
 };
+constexpr ZoneType FirstZoneType = ZoneType::Residential;
 
 struct ZoneDef {
     ZoneType typeID;
@@ -32,11 +32,11 @@ struct ZoneDef {
     s32 maximumDistanceToRoad;
 };
 
-inline ZoneDef zoneDefs[] = {
-    { Zone_None, "zone_none"_s, color255(255, 255, 255, 128), 10, false, 0 },
-    { Zone_Residential, "zone_residential"_s, color255(0, 255, 0, 128), 10, true, 3 },
-    { Zone_Commercial, "zone_commercial"_s, color255(0, 0, 255, 128), 10, true, 2 },
-    { Zone_Industrial, "zone_industrial"_s, color255(255, 255, 0, 128), 20, true, 4 },
+EnumMap<ZoneType, ZoneDef> const ZONE_DEFS {
+    { ZoneType::None, "zone_none"_s, color255(255, 255, 255, 128), 10, false, 0 },
+    { ZoneType::Residential, "zone_residential"_s, color255(0, 255, 0, 128), 10, true, 3 },
+    { ZoneType::Commercial, "zone_commercial"_s, color255(0, 0, 255, 128), 10, true, 2 },
+    { ZoneType::Industrial, "zone_industrial"_s, color255(255, 255, 0, 128), 20, true, 4 },
 };
 
 enum ZoneSectorFlags {
@@ -52,29 +52,29 @@ struct ZoneSector {
     Rect2I bounds;
     u32 zoneSectorFlags;
 
-    f32 averageDesirability[ZoneTypeCount];
+    EnumMap<ZoneType, f32> averageDesirability;
 };
 
 struct ZoneLayer {
-    Array2<u8> tileZone;
-    Array2<u8> tileDesirability[ZoneTypeCount];
+    Array2<ZoneType> tileZone;
+    EnumMap<ZoneType, Array2<u8>> tileDesirability;
 
     SectorGrid<ZoneSector> sectors;
 
-    BitArray sectorsWithZones[ZoneTypeCount];
-    BitArray sectorsWithEmptyZones[ZoneTypeCount];
+    EnumMap<ZoneType, BitArray> sectorsWithZones;
+    EnumMap<ZoneType, BitArray> sectorsWithEmptyZones;
 
-    Array<s32> mostDesirableSectors[ZoneTypeCount];
+    EnumMap<ZoneType, Array<s32>> mostDesirableSectors;
 
-    s32 population[ZoneTypeCount]; // NB: Zone_None is used for jobs provided by non-zone, city buildings
+    EnumMap<ZoneType, s32> population; // NB: ZoneType::None is used for jobs provided by non-zone, city buildings
 
     // Calculated every so often
-    s32 demand[ZoneTypeCount];
+    EnumMap<ZoneType, s32> demand;
 };
 
 struct CanZoneQuery {
     Rect2I bounds;
-    ZoneDef* zoneDef;
+    ZoneDef const* zoneDef;
 
     s32 zoneableTilesCount;
     u8* tileCanBeZoned; // NB: is either 0 or 1
@@ -83,8 +83,6 @@ struct CanZoneQuery {
 void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena);
 void updateZoneLayer(City* city, ZoneLayer* layer);
 void calculateDemand(City* city, ZoneLayer* layer);
-
-ZoneDef getZoneDef(s32 zoneType);
 
 CanZoneQuery* queryCanZoneTiles(City* city, ZoneType zoneType, Rect2I bounds);
 bool canZoneTile(CanZoneQuery* query, s32 x, s32 y);

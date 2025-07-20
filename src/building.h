@@ -60,7 +60,8 @@ struct BuildingVariant {
     String spriteName;
 };
 
-enum ZoneType : u8;
+// FIXME: Move this to a forward header
+enum class ZoneType : u8;
 
 struct BuildingDef {
     String name;

@@ -248,7 +248,7 @@ void placeBuilding(City* city, BuildingDef* def, s32 left, s32 top, bool markAre
         city->zoneLayer.population[oldDef->growsInZone] -= building->currentResidents + building->currentJobs;
     } else {
         // Remove zones
-        placeZone(city, Zone_None, footprint);
+        placeZone(city, ZoneType::None, footprint);
 
         building = addBuilding(city, def, footprint);
     }

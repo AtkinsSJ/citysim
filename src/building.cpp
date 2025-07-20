@@ -59,22 +59,22 @@ void _assignBuildingCategories(BuildingCatalogue* catalogue, BuildingDef* def)
     }
 
     switch (def->growsInZone) {
-    case Zone_Residential: {
+    case ZoneType::Residential: {
         catalogue->rGrowableBuildings.append(def);
         catalogue->maxRBuildingDim = max(catalogue->maxRBuildingDim, max(def->width, def->height));
     } break;
 
-    case Zone_Commercial: {
+    case ZoneType::Commercial: {
         catalogue->cGrowableBuildings.append(def);
         catalogue->maxCBuildingDim = max(catalogue->maxCBuildingDim, max(def->width, def->height));
     } break;
 
-    case Zone_Industrial: {
+    case ZoneType::Industrial: {
         catalogue->iGrowableBuildings.append(def);
         catalogue->maxIBuildingDim = max(catalogue->maxIBuildingDim, max(def->width, def->height));
     } break;
 
-    case Zone_None:
+    case ZoneType::None:
         break;
 
     default: {
@@ -302,11 +302,11 @@ void loadBuildingDefs(Blob data, Asset* asset)
                 } else if (equals(firstWord, "grows_in"_s)) {
                     String zoneName = readToken(&reader);
                     if (equals(zoneName, "r"_s)) {
-                        def->growsInZone = Zone_Residential;
+                        def->growsInZone = ZoneType::Residential;
                     } else if (equals(zoneName, "c"_s)) {
-                        def->growsInZone = Zone_Commercial;
+                        def->growsInZone = ZoneType::Commercial;
                     } else if (equals(zoneName, "i"_s)) {
-                        def->growsInZone = Zone_Industrial;
+                        def->growsInZone = ZoneType::Industrial;
                     } else {
                         error(&reader, "Couldn't parse grows_in. Expected use:\"grows_in r/c/i\""_s);
                         return;
@@ -549,13 +549,13 @@ s32 getMaxBuildingSize(ZoneType zoneType)
     s32 result = 0;
 
     switch (zoneType) {
-    case Zone_Residential:
+    case ZoneType::Residential:
         result = buildingCatalogue.maxRBuildingDim;
         break;
-    case Zone_Commercial:
+    case ZoneType::Commercial:
         result = buildingCatalogue.maxCBuildingDim;
         break;
-    case Zone_Industrial:
+    case ZoneType::Industrial:
         result = buildingCatalogue.maxIBuildingDim;
         break;
 
@@ -770,7 +770,7 @@ void updateBuilding(City* city, Building* building)
 
     // Distance to road
     // TODO: Replace with access to any transport types, instead of just road? Not sure what we want with that.
-    if ((def->flags & Building_RequiresTransportConnection) || (def->growsInZone != Zone_None)) {
+    if ((def->flags & Building_RequiresTransportConnection) || (def->growsInZone != ZoneType::None)) {
         s32 distanceToRoad = s32Max;
         // TODO: @Speed: We only actually need to check the boundary tiles, because they're guaranteed to be less than
         // the inner tiles... unless we allow multiple buildings per tile. Actually maybe we do? I'm not sure how that
@@ -782,9 +782,9 @@ void updateBuilding(City* city, Building* building)
             }
         }
 
-        if (def->growsInZone != Zone_None) {
+        if (def->growsInZone != ZoneType::None) {
             // Zoned buildings inherit their zone's max distance to road.
-            if (distanceToRoad > getZoneDef(def->growsInZone).maximumDistanceToRoad) {
+            if (distanceToRoad > ZONE_DEFS[def->growsInZone].maximumDistanceToRoad) {
                 addProblem(building, BuildingProblem_NoTransportAccess);
             } else {
                 removeProblem(building, BuildingProblem_NoTransportAccess);

@@ -50,12 +50,12 @@ void freePowerNetwork(PowerNetwork* network)
     network->groups.clear();
 }
 
- u8 getPowerGroupID(PowerSector* sector, s32 relX, s32 relY)
+u8 getPowerGroupID(PowerSector* sector, s32 relX, s32 relY)
 {
     return sector->tilePowerGroup.get(relX, relY);
 }
 
- void setPowerGroupID(PowerSector* sector, s32 relX, s32 relY, u8 value)
+void setPowerGroupID(PowerSector* sector, s32 relX, s32 relY, u8 value)
 {
     sector->tilePowerGroup.set(relX, relY, value);
 }
@@ -217,7 +217,7 @@ void floodFillSectorPowerGroup(PowerSector* sector, s32 x, s32 y, u8 fillValue)
     }
 }
 
- void setRectPowerGroupUnknown(PowerSector* sector, Rect2I area)
+void setRectPowerGroupUnknown(PowerSector* sector, Rect2I area)
 {
     DEBUG_FUNCTION();
 
@@ -567,7 +567,7 @@ void updatePowerLayer(City* city, PowerLayer* layer)
 
                     if (def != nullptr && def->flags & Building_CarriesPower) {
                         layer->tilePowerDistance.set(x, y, 0);
-                    } else if (getZoneDef(getZoneAt(city, x, y)).carriesPower) {
+                    } else if (ZONE_DEFS[getZoneAt(city, x, y)].carriesPower) {
                         layer->tilePowerDistance.set(x, y, 0);
                     } else {
                         layer->tilePowerDistance.set(x, y, 255);

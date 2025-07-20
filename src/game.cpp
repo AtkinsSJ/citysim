@@ -287,7 +287,7 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
 
     // Zone
     ZoneType zone = getZoneAt(city, tilePos.x, tilePos.y);
-    ui->addLabel(myprintf("Zone: {0}"_s, { zone ? getText(getZoneDef(zone).textAssetName) : "None"_s }));
+    ui->addLabel(myprintf("Zone: {0}"_s, { zone == ZoneType::None ? "None"_s : getText(ZONE_DEFS[zone].textAssetName) }));
 
     // Building
     Building* building = getBuildingAt(city, tilePos.x, tilePos.y);
@@ -459,7 +459,7 @@ void updateAndRenderGameUI(GameState* gameState)
                    irectXYWH(right - width3, uiPadding, width3, rowHeight), labelStyle);
     */
 
-    UI::putLabel(myprintf("R: {0}\nC: {1}\nI: {2}"_s, { formatInt(city->zoneLayer.demand[Zone_Residential]), formatInt(city->zoneLayer.demand[Zone_Commercial]), formatInt(city->zoneLayer.demand[Zone_Industrial]) }),
+    UI::putLabel(myprintf("R: {0}\nC: {1}\nI: {2}"_s, { formatInt(city->zoneLayer.demand[ZoneType::Residential]), formatInt(city->zoneLayer.demand[ZoneType::Commercial]), formatInt(city->zoneLayer.demand[ZoneType::Industrial]) }),
         irectXYWH(clockBounds.x - 100, uiPadding, 100, toolbarHeight), labelStyle);
 
     UI::ButtonStyle* buttonStyle = getStyle<UI::ButtonStyle>("default"_s);
@@ -489,11 +489,11 @@ void updateAndRenderGameUI(GameState* gameState)
             s32 popupMenuMaxHeight = UI::windowSize.y - (buttonRect.y + buttonRect.h);
 
             UI::Panel menu = UI::Panel(irectXYWH(buttonRect.x - popupMenuPanelStyle->padding.left, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight), popupMenuPanelStyle);
-            for (s32 zoneIndex = 0; zoneIndex < ZoneTypeCount; zoneIndex++) {
-                if (menu.addTextButton(getText(getZoneDef(zoneIndex).textAssetName),
-                        buttonIsActive((gameState->actionMode == ActionMode::Zone) && (gameState->selectedZoneID == zoneIndex)))) {
+            for (s32 zoneIndex = 0; zoneIndex < to_underlying(ZoneType::COUNT); zoneIndex++) {
+                if (menu.addTextButton(getText(ZONE_DEFS[zoneIndex].textAssetName),
+                        buttonIsActive((gameState->actionMode == ActionMode::Zone) && (to_underlying(gameState->selectedZoneID) == zoneIndex)))) {
                     UI::hideMenus();
-                    gameState->selectedZoneID = (ZoneType)zoneIndex;
+                    gameState->selectedZoneID = static_cast<ZoneType>(zoneIndex);
                     gameState->actionMode = ActionMode::Zone;
                     renderer.set_cursor("build"_s);
                 }
@@ -772,7 +772,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
                 if (canAfford(city, zoneCost)) {
                     V4 palette[] = {
                         color255(255, 0, 0, 16),
-                        getZoneDef(gameState->selectedZoneID).color
+                        ZONE_DEFS[gameState->selectedZoneID].color
                     };
                     drawGrid(&renderer.world_overlay_buffer(), rect2(canZoneQuery->bounds), canZoneQuery->bounds.w, canZoneQuery->bounds.h, canZoneQuery->tileCanBeZoned, 2, palette);
                 } else {
@@ -904,15 +904,15 @@ void initDataViewUI(GameState* gameState)
 
     dataViewUI[DataView::Desirability_Residential].title = "data_view_desirability_residential"_s;
     setGradient(&dataViewUI[DataView::Desirability_Residential], "desirability"_s);
-    setTileOverlay(&dataViewUI[DataView::Desirability_Residential], &city->zoneLayer.tileDesirability[Zone_Residential].items, "desirability"_s);
+    setTileOverlay(&dataViewUI[DataView::Desirability_Residential], &city->zoneLayer.tileDesirability[ZoneType::Residential].items, "desirability"_s);
 
     dataViewUI[DataView::Desirability_Commercial].title = "data_view_desirability_commercial"_s;
     setGradient(&dataViewUI[DataView::Desirability_Commercial], "desirability"_s);
-    setTileOverlay(&dataViewUI[DataView::Desirability_Commercial], &city->zoneLayer.tileDesirability[Zone_Commercial].items, "desirability"_s);
+    setTileOverlay(&dataViewUI[DataView::Desirability_Commercial], &city->zoneLayer.tileDesirability[ZoneType::Commercial].items, "desirability"_s);
 
     dataViewUI[DataView::Desirability_Industrial].title = "data_view_desirability_industrial"_s;
     setGradient(&dataViewUI[DataView::Desirability_Industrial], "desirability"_s);
-    setTileOverlay(&dataViewUI[DataView::Desirability_Industrial], &city->zoneLayer.tileDesirability[Zone_Industrial].items, "desirability"_s);
+    setTileOverlay(&dataViewUI[DataView::Desirability_Industrial], &city->zoneLayer.tileDesirability[ZoneType::Industrial].items, "desirability"_s);
 
     dataViewUI[DataView::Crime].title = "data_view_crime"_s;
     setGradient(&dataViewUI[DataView::Crime], "service_coverage"_s);
