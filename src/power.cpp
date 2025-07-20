@@ -545,7 +545,7 @@ void recalculatePowerConnectivity(PowerLayer* layer)
 
 void updatePowerLayer(City* city, PowerLayer* layer)
 {
-    DEBUG_FUNCTION_T(DCDT_Simulation);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
     if (isDirty(&layer->dirtyRects)) {
         Set<PowerSector*> touchedSectors;

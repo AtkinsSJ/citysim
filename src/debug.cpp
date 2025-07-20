@@ -34,7 +34,7 @@ void debugInit()
 
 void processDebugData(DebugState* debugState)
 {
-    DEBUG_FUNCTION_T(DCDT_Debug);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Debug);
 
     u32 oldWritingFrameIndex = debugState->writingFrameIndex;
     debugState->frameEndCycle[debugState->writingFrameIndex] = SDL_GetPerformanceCounter();
@@ -194,7 +194,7 @@ void initDebugTextState(DebugTextState* textState, BitmapFont* font, V4 textColo
     textState->untexturedShaderID = renderer.shaderIds.untextured;
 }
 
-void debugTextOut(DebugTextState* textState, String text, bool doHighlight = false, V4* color = nullptr)
+void debugTextOut(DebugTextState* textState, String text, bool doHighlight = false, V4 const* color = nullptr)
 {
     s32 align = textState->hAlign;
     if (textState->progressUpwards)
@@ -226,7 +226,7 @@ void debugTextOut(DebugTextState* textState, String text, bool doHighlight = fal
 
 void renderDebugData(DebugState* debugState)
 {
-    DEBUG_FUNCTION_T(DCDT_Debug);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Debug);
     auto& renderer = the_renderer();
 
     // This is the only usage of getFont(String). Ideally we'd replace it with an
@@ -330,17 +330,19 @@ void renderDebugData(DebugState* debugState)
             DebugCodeData* code = topBlock->data;
             f32 totalCycles = (f32)code->totalCycleCount[rfi];
             f32 averageCycles = totalCycles / (f32)code->callCount[rfi];
-            debugTextOut(&textState, myprintf("{0}| {1} ({2}ms)| {3}| {4} ({5}ms)| {6} ({7}ms)"_s, {
-                                                                                                       formatString(code->name, 60),
-                                                                                                       formatString(formatInt(code->totalCycleCount[rfi]), 10, false),
-                                                                                                       formatString(formatFloat((f32)totalCycles * msPerCycle, 2), 5, false),
-                                                                                                       formatString(formatInt(code->callCount[rfi]), 10, false),
-                                                                                                       formatString(formatInt((s32)averageCycles), 10, false),
-                                                                                                       formatString(formatFloat(averageCycles * msPerCycle, 2), 5, false),
-                                                                                                       formatString(formatInt(code->averageTotalCycleCount), 10, false),
-                                                                                                       formatString(formatFloat(code->averageTotalCycleCount * msPerCycle, 2), 5, false),
-                                                                                                   }),
-                true, debugCodeDataTagColors + code->tag);
+            debugTextOut(&textState,
+                myprintf("{0}| {1} ({2}ms)| {3}| {4} ({5}ms)| {6} ({7}ms)"_s,
+                    {
+                        formatString(code->name, 60),
+                        formatString(formatInt(code->totalCycleCount[rfi]), 10, false),
+                        formatString(formatFloat((f32)totalCycles * msPerCycle, 2), 5, false),
+                        formatString(formatInt(code->callCount[rfi]), 10, false),
+                        formatString(formatInt((s32)averageCycles), 10, false),
+                        formatString(formatFloat(averageCycles * msPerCycle, 2), 5, false),
+                        formatString(formatInt(code->averageTotalCycleCount), 10, false),
+                        formatString(formatFloat(code->averageTotalCycleCount * msPerCycle, 2), 5, false),
+                    }),
+                true, &debugCodeDataTagColors[code->tag]);
             topBlock = topBlock->nextNode;
         }
     }
@@ -361,7 +363,7 @@ void renderDebugData(DebugState* debugState)
 
 void updateAndRenderDebugData(DebugState* debugState)
 {
-    DEBUG_FUNCTION_T(DCDT_Debug);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Debug);
     if (keyJustPressed(SDLK_F2)) {
         debugState->showDebugData = !debugState->showDebugData;
     }
@@ -478,7 +480,7 @@ void debugEndTrackingRenderBuffer(DebugState* debugState)
         u32 frameIndex = debugState->writingFrameIndex;
 
         debugState->currentRenderBuffer->endTime[frameIndex] = SDL_GetPerformanceCounter();
-        debugTrackProfile(debugState->currentRenderBuffer->renderProfileName, debugState->currentRenderBuffer->endTime[frameIndex] - debugState->currentRenderBuffer->startTime[frameIndex], DCDT_Renderer);
+        debugTrackProfile(debugState->currentRenderBuffer->renderProfileName, debugState->currentRenderBuffer->endTime[frameIndex] - debugState->currentRenderBuffer->startTime[frameIndex], DebugCodeDataTag::Renderer);
 
         debugState->currentRenderBuffer = nullptr;
     }

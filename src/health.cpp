@@ -31,10 +31,10 @@ void initHealthLayer(HealthLayer* layer, City* city, MemoryArena* gameArena)
 
 void updateHealthLayer(City* city, HealthLayer* layer)
 {
-    DEBUG_FUNCTION_T(DCDT_Simulation);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
     if (isDirty(&layer->dirtyRects)) {
-        DEBUG_BLOCK_T("updateHealthLayer: dirty rects", DCDT_Simulation);
+        DEBUG_BLOCK_T("updateHealthLayer: dirty rects", DebugCodeDataTag::Simulation);
 
         // TODO: do we actually need dirty rects? I can't think of anything, unless we move the "register building" stuff to that.
 
@@ -42,13 +42,13 @@ void updateHealthLayer(City* city, HealthLayer* layer)
     }
 
     {
-        DEBUG_BLOCK_T("updateHealthLayer: sector updates", DCDT_Simulation);
+        DEBUG_BLOCK_T("updateHealthLayer: sector updates", DebugCodeDataTag::Simulation);
 
         for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++) {
             BasicSector* sector = getNextSector(&layer->sectors);
 
             {
-                DEBUG_BLOCK_T("updateHealthLayer: building health coverage", DCDT_Simulation);
+                DEBUG_BLOCK_T("updateHealthLayer: building health coverage", DebugCodeDataTag::Simulation);
                 fillRegion<u8>(&layer->tileHealthCoverage, sector->bounds, 0);
                 for (auto it = layer->healthBuildings.iterate(); it.hasNext(); it.next()) {
                     Building* building = getBuilding(city, it.getValue());

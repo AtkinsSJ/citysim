@@ -67,7 +67,7 @@ struct Panel {
     template<typename T>
     void addDropDownList(Array<T>* listOptions, s32* currentSelection, String (*getDisplayName)(T* data), String styleName = nullString)
     {
-        DEBUG_FUNCTION_T(DCDT_UI);
+        DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
         prepareForWidgets();
 
@@ -91,7 +91,7 @@ struct Panel {
     template<typename T>
     void addRadioButtonGroup(Array<T>* listOptions, s32* currentSelection, String (*getDisplayName)(T* data), String styleName = nullString, String labelStyleName = nullString)
     {
-        DEBUG_FUNCTION_T(DCDT_UI);
+        DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
         prepareForWidgets();
 
@@ -151,7 +151,7 @@ struct Panel {
     template<typename T>
     void addSlider(T* currentValue, T minValue, T maxValue, String styleName = nullString)
     {
-        DEBUG_FUNCTION_T(DCDT_UI);
+        DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
         prepareForWidgets();
 

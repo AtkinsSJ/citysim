@@ -278,7 +278,7 @@ Rect2I calculateButtonContentBounds(Rect2I bounds, ButtonStyle* style)
 
 bool putButton(Rect2I bounds, ButtonStyle* style, ButtonState state, RenderBuffer* renderBuffer, String tooltip)
 {
-    DEBUG_FUNCTION_T(DCDT_UI);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     if (style == nullptr)
         style = getStyle<ButtonStyle>("default"_s);
@@ -375,7 +375,7 @@ V2I calculateCheckboxSize(CheckboxStyle* style)
 
 void putCheckbox(bool* checked, Rect2I bounds, CheckboxStyle* style, bool isDisabled, RenderBuffer* renderBuffer)
 {
-    DEBUG_FUNCTION_T(DCDT_UI);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     if (style == nullptr)
         style = getStyle<CheckboxStyle>("default"_s);
@@ -459,7 +459,7 @@ V2I calculateLabelSize(String text, LabelStyle* style, s32 maxWidth, bool fillWi
 
 void putLabel(String text, Rect2I bounds, LabelStyle* style, RenderBuffer* renderBuffer)
 {
-    DEBUG_FUNCTION_T(DCDT_UI);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     auto& renderer = the_renderer();
     if (style == nullptr)
@@ -517,7 +517,7 @@ V2I calculateRadioButtonSize(RadioButtonStyle* style)
 
 void putRadioButton(s32* selectedValue, s32 value, Rect2I bounds, RadioButtonStyle* style, bool isDisabled, RenderBuffer* renderBuffer)
 {
-    DEBUG_FUNCTION_T(DCDT_UI);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     auto& renderer = the_renderer();
     if (style == nullptr)
@@ -611,7 +611,7 @@ Maybe<Rect2I> getScrollbarThumbBounds(ScrollbarState* state, Rect2I scrollbarBou
 
 void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, ScrollbarStyle* style, bool isDisabled, RenderBuffer* renderBuffer)
 {
-    DEBUG_FUNCTION_T(DCDT_UI);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     ASSERT(hasPositiveArea(bounds));
 
@@ -733,7 +733,7 @@ V2I calculateSliderSize(Orientation orientation, SliderStyle* style, V2I availab
 
 void putSlider(f32* currentValue, f32 minValue, f32 maxValue, Orientation orientation, Rect2I bounds, SliderStyle* style, bool isDisabled, RenderBuffer* renderBuffer, bool snapToWholeNumbers)
 {
-    DEBUG_FUNCTION_T(DCDT_UI);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
     ASSERT(maxValue > minValue);
 
     auto& renderer = the_renderer();
@@ -897,7 +897,7 @@ void pushToast(String message)
 
 void drawToast()
 {
-    DEBUG_FUNCTION_T(DCDT_UI);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     Maybe<Toast*> currentToast = uiState.toasts.peek();
     if (currentToast.isValid) {

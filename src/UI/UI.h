@@ -190,7 +190,7 @@ bool isDropDownListOpen(void* pointer);
 template<typename T>
 void putDropDownList(Array<T>* listOptions, s32* currentSelection, String (*getDisplayName)(T* data), Rect2I bounds, DropDownListStyle* style = nullptr, RenderBuffer* renderBuffer = nullptr)
 {
-    DEBUG_FUNCTION_T(DCDT_UI);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     if (style == nullptr)
         style = getStyle<DropDownListStyle>("default"_s);

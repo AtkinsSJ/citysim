@@ -371,7 +371,7 @@ V2I calculateTextInputSize(TextInput* textInput, TextInputStyle* style, s32 maxW
 
 Rect2I drawTextInput(RenderBuffer* renderBuffer, TextInput* textInput, TextInputStyle* style, Rect2I bounds)
 {
-    DEBUG_FUNCTION_T(DCDT_UI);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     auto& renderer = the_renderer();
     String text = textInput->toString();

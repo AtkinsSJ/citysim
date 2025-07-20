@@ -26,12 +26,12 @@ void initPollutionLayer(PollutionLayer* layer, City* city, MemoryArena* gameAren
 
 void updatePollutionLayer(City* city, PollutionLayer* layer)
 {
-    DEBUG_FUNCTION_T(DCDT_Simulation);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
     if (isDirty(&layer->dirtyRects)) {
         // @Copypasta from updateLandValueLayer()
         {
-            DEBUG_BLOCK_T("updatePollutionLayer: building effects", DCDT_Simulation);
+            DEBUG_BLOCK_T("updatePollutionLayer: building effects", DebugCodeDataTag::Simulation);
 
             // Recalculate the building contributions
             for (auto rectIt = layer->dirtyRects.rects.iterate();
@@ -75,7 +75,7 @@ void updatePollutionLayer(City* city, PollutionLayer* layer)
 
         // Recalculate overall value
         {
-            DEBUG_BLOCK_T("updatePollutionLayer: combine", DCDT_Simulation);
+            DEBUG_BLOCK_T("updatePollutionLayer: combine", DebugCodeDataTag::Simulation);
 
             for (auto rectIt = layer->dirtyRects.rects.iterate();
                 rectIt.hasNext();

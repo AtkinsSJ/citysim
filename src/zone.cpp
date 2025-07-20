@@ -58,7 +58,7 @@ s32 calculateZoneCost(CanZoneQuery* query)
 
 CanZoneQuery* queryCanZoneTiles(City* city, ZoneType zoneType, Rect2I bounds)
 {
-    DEBUG_FUNCTION_T(DCDT_Highlight);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Highlight);
     // Assumption made: `bounds` is a valid rectangle within the city's bounds
 
     // Allocate the Query struct
@@ -126,7 +126,7 @@ bool canZoneTile(CanZoneQuery* query, s32 x, s32 y)
 
 void drawZones(City* city, Rect2I visibleTileBounds, s8 shaderID)
 {
-    DEBUG_FUNCTION_T(DCDT_GameUpdate);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
 
     auto& renderer = the_renderer();
     Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
@@ -201,7 +201,7 @@ void markZonesAsEmpty(City* /*city*/, Rect2I /*footprint*/)
 
 void updateZoneLayer(City* city, ZoneLayer* layer)
 {
-    DEBUG_FUNCTION_T(DCDT_Simulation);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
     for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++) {
         Indexed<ZoneSector*> sectorWithIndex = getNextSectorWithIndex(&layer->sectors);
@@ -210,7 +210,7 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
 
         // What zones does it contain?
         {
-            DEBUG_BLOCK_T("updateZoneLayer: zone contents", DCDT_Simulation);
+            DEBUG_BLOCK_T("updateZoneLayer: zone contents", DebugCodeDataTag::Simulation);
 
             for (s32 zoneType = FirstZoneType; zoneType < ZoneTypeCount; zoneType++) {
                 layer->sectorsWithZones[zoneType].unsetBit(sectorIndex);
@@ -272,7 +272,7 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
 
         // What's the desirability?
         {
-            DEBUG_BLOCK_T("updateZoneLayer: desirability", DCDT_Simulation);
+            DEBUG_BLOCK_T("updateZoneLayer: desirability", DebugCodeDataTag::Simulation);
 
             f32 totalResDesirability = 0.0f;
             f32 totalComDesirability = 0.0f;
@@ -374,7 +374,7 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
 
 void calculateDemand(City* city, ZoneLayer* layer)
 {
-    DEBUG_FUNCTION_T(DCDT_Simulation);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
     // Ratio of residents to job should be roughly 3 : 1
 
@@ -462,7 +462,7 @@ static BuildingDef* findRandomZoneBuilding(ZoneType zoneType, Random* random, Fi
 
 void growSomeZoneBuildings(City* city)
 {
-    DEBUG_FUNCTION_T(DCDT_Simulation);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
     ZoneLayer* layer = &city->zoneLayer;
     Random* random = &AppState::the().gameState->gameRandom;
@@ -485,7 +485,7 @@ void growSomeZoneBuildings(City* city)
 
                 V2I zonePos = {};
                 {
-                    DEBUG_BLOCK_T("growSomeZoneBuildings - find a valid zone", DCDT_Simulation);
+                    DEBUG_BLOCK_T("growSomeZoneBuildings - find a valid zone", DebugCodeDataTag::Simulation);
 
                     // Go through sectors from most desirable to least
                     for (s32 position = savedPositionInMostDesirableSectorsTable; position < getSectorCount(&layer->sectors); position++) {
@@ -541,7 +541,7 @@ void growSomeZoneBuildings(City* city)
                 // so we can fit larger buildings there if possible.
                 Rect2I zoneFootprint = irectXYWH(zonePos.x, zonePos.y, 1, 1);
                 {
-                    DEBUG_BLOCK_T("growSomeZoneBuildings - expand rect", DCDT_Simulation);
+                    DEBUG_BLOCK_T("growSomeZoneBuildings - expand rect", DebugCodeDataTag::Simulation);
                     // Gradually expand from zonePos outwards, checking if there is available, zoned space
 
                     bool tryX = randomBool(random);

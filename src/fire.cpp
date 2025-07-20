@@ -49,10 +49,10 @@ void markFireLayerDirty(FireLayer* layer, Rect2I bounds)
 
 void updateFireLayer(City* city, FireLayer* layer)
 {
-    DEBUG_FUNCTION_T(DCDT_Simulation);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
     if (isDirty(&layer->dirtyRects)) {
-        DEBUG_BLOCK_T("updateFireLayer: building effects", DCDT_Simulation);
+        DEBUG_BLOCK_T("updateFireLayer: building effects", DebugCodeDataTag::Simulation);
 
         // Recalculate fire distances
         for (auto rectIt = layer->dirtyRects.rects.iterate();
@@ -88,13 +88,13 @@ void updateFireLayer(City* city, FireLayer* layer)
     }
 
     {
-        DEBUG_BLOCK_T("updateFireLayer: overall calculation", DCDT_Simulation);
+        DEBUG_BLOCK_T("updateFireLayer: overall calculation", DebugCodeDataTag::Simulation);
 
         for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++) {
             FireSector* sector = getNextSector(&layer->sectors);
 
             {
-                DEBUG_BLOCK_T("updateFireLayer: building fire protection", DCDT_Simulation);
+                DEBUG_BLOCK_T("updateFireLayer: building fire protection", DebugCodeDataTag::Simulation);
                 // Building fire protection
                 fillRegion<u8>(&layer->tileFireProtection, sector->bounds, 0);
                 for (auto it = layer->fireProtectionBuildings.iterate(); it.hasNext(); it.next()) {

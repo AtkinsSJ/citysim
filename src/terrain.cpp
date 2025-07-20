@@ -231,7 +231,7 @@ u8 findTerrainTypeByName(String name)
 
 void drawTerrain(City* city, Rect2I visibleArea, s8 shaderID)
 {
-    DEBUG_FUNCTION_T(DCDT_GameUpdate);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
 
     TerrainLayer* layer = &city->terrainLayer;
     auto& renderer = the_renderer();

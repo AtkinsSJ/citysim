@@ -26,7 +26,7 @@ void initTransportLayer(TransportLayer* layer, City* city, MemoryArena* gameAren
 
 void updateTransportLayer(City* city, TransportLayer* layer)
 {
-    DEBUG_FUNCTION_T(DCDT_Simulation);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
     if (isDirty(&layer->dirtyRects)) {
         // Calculate transport types on each tile

@@ -165,7 +165,7 @@ void closeAllWindows()
 
 void updateAndRenderWindows()
 {
-    DEBUG_FUNCTION_T(DCDT_UI);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
     auto& renderer = the_renderer();
 
     // This is weird, the UI camera should always be positioned with 0,0 being the bottom-left I thought?

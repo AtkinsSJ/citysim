@@ -13,7 +13,7 @@ namespace UI {
 
 Panel::Panel(Rect2I bounds, PanelStyle* panelStyle, u32 flags, RenderBuffer* renderBuffer)
 {
-    DEBUG_FUNCTION_T(DCDT_UI);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     if (panelStyle == nullptr) {
         this->style = getStyle<PanelStyle>("default"_s);
@@ -88,7 +88,7 @@ void Panel::enableVerticalScrolling(ScrollbarState* scrollbarState, bool expandW
 
 bool Panel::addTextButton(String text, ButtonState state, String styleName)
 {
-    DEBUG_FUNCTION_T(DCDT_UI);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     prepareForWidgets();
 
@@ -111,7 +111,7 @@ bool Panel::addTextButton(String text, ButtonState state, String styleName)
 
 bool Panel::addImageButton(Sprite* sprite, ButtonState state, String styleName)
 {
-    DEBUG_FUNCTION_T(DCDT_UI);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     prepareForWidgets();
 
@@ -135,7 +135,7 @@ bool Panel::addImageButton(Sprite* sprite, ButtonState state, String styleName)
 
 void Panel::addCheckbox(bool* checked, String styleName)
 {
-    DEBUG_FUNCTION_T(DCDT_UI);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     prepareForWidgets();
 
@@ -154,7 +154,7 @@ void Panel::addCheckbox(bool* checked, String styleName)
 
 void Panel::addLabel(String text, String styleName)
 {
-    DEBUG_FUNCTION_T(DCDT_UI);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     prepareForWidgets();
 
@@ -173,7 +173,7 @@ void Panel::addLabel(String text, String styleName)
 
 void Panel::addRadioButton(s32* currentValue, s32 myValue, String styleName)
 {
-    DEBUG_FUNCTION_T(DCDT_UI);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     prepareForWidgets();
 
@@ -192,7 +192,7 @@ void Panel::addRadioButton(s32* currentValue, s32 myValue, String styleName)
 
 void Panel::addSprite(Sprite* sprite, s32 width, s32 height)
 {
-    DEBUG_FUNCTION_T(DCDT_UI);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     prepareForWidgets();
 
@@ -217,7 +217,7 @@ void Panel::addSprite(Sprite* sprite, s32 width, s32 height)
 
 bool Panel::addTextInput(TextInput* textInput, String styleName)
 {
-    DEBUG_FUNCTION_T(DCDT_UI);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     prepareForWidgets();
 
@@ -240,7 +240,7 @@ bool Panel::addTextInput(TextInput* textInput, String styleName)
 
 Rect2I Panel::addBlank(s32 width, s32 height)
 {
-    DEBUG_FUNCTION_T(DCDT_UI);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     prepareForWidgets();
 
@@ -258,7 +258,7 @@ void Panel::alignWidgets(u32 alignment)
 
 void Panel::startNewLine(u32 hAlignment)
 {
-    DEBUG_FUNCTION_T(DCDT_UI);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     s32 lineWidth = (widgetAlignment & ALIGN_RIGHT) ? currentRight : currentLeft;
     largestLineWidth = max(largestLineWidth, lineWidth);
@@ -284,7 +284,7 @@ void Panel::startNewLine(u32 hAlignment)
 
 Panel Panel::row(s32 height, Alignment vAlignment, String styleName)
 {
-    DEBUG_FUNCTION_T(DCDT_UI);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
     ASSERT(vAlignment == ALIGN_TOP || vAlignment == ALIGN_BOTTOM);
 
     prepareForWidgets();
@@ -327,7 +327,7 @@ Panel Panel::row(s32 height, Alignment vAlignment, String styleName)
 
 Panel Panel::column(s32 width, Alignment hAlignment, String styleName)
 {
-    DEBUG_FUNCTION_T(DCDT_UI);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
     ASSERT(hAlignment == ALIGN_LEFT || hAlignment == ALIGN_RIGHT);
 
     prepareForWidgets();
@@ -360,7 +360,7 @@ Panel Panel::column(s32 width, Alignment hAlignment, String styleName)
 
 void Panel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 {
-    DEBUG_FUNCTION_T(DCDT_UI);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     // Make sure the current line's height is taken into account
     startNewLine();
@@ -490,7 +490,7 @@ Rect2I Panel::calculateWidgetBounds(V2I size)
 
 void Panel::completeWidget(V2I widgetSize)
 {
-    DEBUG_FUNCTION_T(DCDT_UI);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     bool lineIsFull = false;
 

@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include "Util/EnumMap.h"
+
 #include <SDL2/SDL_timer.h>
 #include <Util/DeprecatedLinkedList.h>
 #include <Util/HashTable.h>
@@ -18,8 +20,8 @@
         DebugBlock GLUE(debugBlock____, __LINE__)(GLUE(debugBlockData____, __LINE__))
 #    define DEBUG_FUNCTION_T(tag) DEBUG_BLOCK_T(__FUNCTION__, tag)
 
-#    define DEBUG_BLOCK(name) DEBUG_BLOCK_T(name, DCDT_Misc)
-#    define DEBUG_FUNCTION() DEBUG_FUNCTION_T(DCDT_Misc)
+#    define DEBUG_BLOCK(name) DEBUG_BLOCK_T(name, DebugCodeDataTag::Misc)
+#    define DEBUG_FUNCTION() DEBUG_FUNCTION_T(DebugCodeDataTag::Misc)
 
 #    define DEBUG_ARENA(arena, name)                                               \
         static String GLUE(debugArenaName____, __LINE__) = makeString(name, true); \
@@ -72,19 +74,19 @@ struct DebugPoolData : DeprecatedLinkedListNode<DebugPoolData> {
     smm totalItemCount[DEBUG_FRAMES_COUNT];
 };
 
-enum DebugCodeDataTag {
-    DCDT_Misc,
-    DCDT_Highlight,
-    DCDT_Debug,
-    DCDT_Renderer,
-    DCDT_GameUpdate,
-    DCDT_Input,
-    DCDT_Simulation,
-    DCDT_UI,
+enum class DebugCodeDataTag : u8 {
+    Misc,
+    Highlight,
+    Debug,
+    Renderer,
+    GameUpdate,
+    Input,
+    Simulation,
+    UI,
 
-    DebugCodeDataTagCount
+    COUNT
 };
-inline V4 debugCodeDataTagColors[DebugCodeDataTagCount] = {
+EnumMap<DebugCodeDataTag, V4> const debugCodeDataTagColors {
     color255(255, 255, 255, 255), // White
     color255(255, 0, 255, 255),   // Magenta
     color255(128, 128, 128, 255), // Grey
@@ -215,7 +217,7 @@ void debugStartTrackingRenderBuffer(DebugState* debugState, String renderBufferN
 void debugTrackDrawCall(DebugState* debugState, String shaderName, String textureName, u32 itemsDrawn);
 void debugTrackRenderBufferChunk(DebugState* debugState);
 void debugEndTrackingRenderBuffer(DebugState* debugState);
-void debugTrackProfile(String name, u64 cycleCount, DebugCodeDataTag tag = DCDT_Misc);
+void debugTrackProfile(String name, u64 cycleCount, DebugCodeDataTag tag = DebugCodeDataTag::Misc);
 
 inline DebugCodeData* debugFindOrAddCodeData(String name, DebugCodeDataTag tag)
 {

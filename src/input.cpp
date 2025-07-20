@@ -59,7 +59,7 @@ InputState& input_state()
 
 void updateInput()
 {
-    DEBUG_FUNCTION_T(DCDT_Input);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Input);
 
     // Clear mouse state
     s_input_state.wheelX = 0;
@@ -78,12 +78,12 @@ void updateInput()
     s_input_state.receivedQuitSignal = false;
 
     {
-        DEBUG_BLOCK_T("updateInput: Pump", DCDT_Input);
+        DEBUG_BLOCK_T("updateInput: Pump", DebugCodeDataTag::Input);
         SDL_PumpEvents();
     }
     SDL_Event event;
     while (SDL_PeepEvents(&event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT) > 0) {
-        DEBUG_BLOCK_T("updateInput: Event", DCDT_Input);
+        DEBUG_BLOCK_T("updateInput: Event", DebugCodeDataTag::Input);
 
         switch (event.type) {
         // WINDOW EVENTS

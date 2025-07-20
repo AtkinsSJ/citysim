@@ -30,11 +30,11 @@ void initLandValueLayer(LandValueLayer* layer, City* city, MemoryArena* gameAren
 
 void updateLandValueLayer(City* city, LandValueLayer* layer)
 {
-    DEBUG_FUNCTION_T(DCDT_Simulation);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
     if (isDirty(&layer->dirtyRects)) {
         {
-            DEBUG_BLOCK_T("updateLandValueLayer: building effects", DCDT_Simulation);
+            DEBUG_BLOCK_T("updateLandValueLayer: building effects", DebugCodeDataTag::Simulation);
 
             // Recalculate the building contributions
             for (auto rectIt = layer->dirtyRects.rects.iterate();
@@ -82,7 +82,7 @@ void updateLandValueLayer(City* city, LandValueLayer* layer)
 
     // Recalculate overall value
     {
-        DEBUG_BLOCK_T("updateLandValueLayer: overall calculation", DCDT_Simulation);
+        DEBUG_BLOCK_T("updateLandValueLayer: overall calculation", DebugCodeDataTag::Simulation);
 
         for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++) {
             BasicSector* sector = getNextSector(&layer->sectors);

@@ -610,7 +610,7 @@ void debugToolsWindowProc(UI::WindowContext* context, void* userData)
 
 AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
 {
-    DEBUG_FUNCTION_T(DCDT_GameUpdate);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
 
     auto& renderer = the_renderer();
     AppStatus result = AppStatus::Game;
@@ -623,7 +623,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
 
     // Update the simulation... need a smarter way of doing this!
     if (!UI::hasPauseWindowOpen()) {
-        DEBUG_BLOCK_T("Update simulation", DCDT_Simulation);
+        DEBUG_BLOCK_T("Update simulation", DebugCodeDataTag::Simulation);
 
         u8 clockEvents = incrementClock(&gameState->gameClock, deltaTime);
         if (clockEvents & ClockEvent_NewWeek) {
@@ -667,7 +667,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
     city->demolitionRect = irectNegativeInfinity();
 
     {
-        DEBUG_BLOCK_T("ActionMode update", DCDT_GameUpdate);
+        DEBUG_BLOCK_T("ActionMode update", DebugCodeDataTag::GameUpdate);
 
         switch (gameState->actionMode) {
         case ActionMode::Build: {
@@ -984,7 +984,7 @@ void setTileOverlayCallback(DataViewUI* dataView, u8 (*calculateTileValue)(City*
 template<typename Iterable>
 static void drawBuildingHighlights(City* city, Iterable* buildingRefs)
 {
-    DEBUG_FUNCTION_T(DCDT_GameUpdate);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
     auto& renderer = the_renderer();
 
     if (buildingRefs->count > 0) {
@@ -1031,7 +1031,7 @@ static void drawBuildingEffectRadii(City* city, Iterable* buildingRefs, EffectRa
     // - Sam, 18/09/2019
     //
 
-    DEBUG_FUNCTION_T(DCDT_GameUpdate);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
 
     if (buildingRefs->count > 0) {
         Array<V4>* ringsPalette = getPalette("coverage_radius"_s);
@@ -1060,7 +1060,7 @@ static void drawBuildingEffectRadii(City* city, Iterable* buildingRefs, EffectRa
 
 void drawDataViewOverlay(GameState* gameState, Rect2I visibleTileBounds)
 {
-    DEBUG_FUNCTION_T(DCDT_GameUpdate);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
 
     if (gameState->dataLayerToDraw == DataView::None)
         return;

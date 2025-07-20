@@ -720,7 +720,7 @@ void addSpriteRect(DrawRectsGroup* group, Sprite* sprite, Rect2 bounds, V4 color
 
 void offsetRange(DrawRectsGroup* group, s32 startIndex, s32 endIndexInclusive, f32 offsetX, f32 offsetY)
 {
-    DEBUG_FUNCTION_T(DCDT_Renderer);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Renderer);
 
     ASSERT(startIndex >= 0 && startIndex < group->count);
     ASSERT(endIndexInclusive >= 0 && endIndexInclusive < group->count);
@@ -764,7 +764,7 @@ void endRectsGroup(DrawRectsGroup* group)
 
 void drawGrid(RenderBuffer* buffer, Rect2 bounds, s32 gridW, s32 gridH, u8* grid, u16 paletteSize, V4* palette)
 {
-    DEBUG_FUNCTION_T(DCDT_Renderer);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Renderer);
 
     addSetShader(buffer, s_renderer->shaderIds.paletted);
 

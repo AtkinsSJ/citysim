@@ -31,10 +31,10 @@ void initCrimeLayer(CrimeLayer* layer, City* city, MemoryArena* gameArena)
 
 void updateCrimeLayer(City* city, CrimeLayer* layer)
 {
-    DEBUG_FUNCTION_T(DCDT_Simulation);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
     if (isDirty(&layer->dirtyRects)) {
-        DEBUG_BLOCK_T("updateCrimeLayer: dirty rects", DCDT_Simulation);
+        DEBUG_BLOCK_T("updateCrimeLayer: dirty rects", DebugCodeDataTag::Simulation);
         clearDirtyRects(&layer->dirtyRects);
     }
 
@@ -53,13 +53,13 @@ void updateCrimeLayer(City* city, CrimeLayer* layer)
     }
 
     {
-        DEBUG_BLOCK_T("updateCrimeLayer: sector updates", DCDT_Simulation);
+        DEBUG_BLOCK_T("updateCrimeLayer: sector updates", DebugCodeDataTag::Simulation);
 
         for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++) {
             BasicSector* sector = getNextSector(&layer->sectors);
 
             {
-                DEBUG_BLOCK_T("updateCrimeLayer: building police coverage", DCDT_Simulation);
+                DEBUG_BLOCK_T("updateCrimeLayer: building police coverage", DebugCodeDataTag::Simulation);
                 fillRegion<u8>(&layer->tilePoliceCoverage, sector->bounds, 0);
                 for (auto it = layer->policeBuildings.iterate(); it.hasNext(); it.next()) {
                     Building* building = getBuilding(city, it.getValue());

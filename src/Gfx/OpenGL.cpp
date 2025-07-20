@@ -130,7 +130,7 @@ void Renderer::on_window_resized(s32 newWidth, s32 newHeight)
 
 void Renderer::render_internal()
 {
-    DEBUG_FUNCTION_T(DCDT_Renderer);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Renderer);
 
     ShaderProgram* activeShader = nullptr;
     Camera* currentCamera = nullptr;
@@ -148,20 +148,20 @@ void Renderer::render_internal()
 
             switch (itemType) {
             case RenderItemType::NextMemoryChunk: {
-                DEBUG_BLOCK_T("render: RenderItemType::NextMemoryChunk", DCDT_Renderer);
+                DEBUG_BLOCK_T("render: RenderItemType::NextMemoryChunk", DebugCodeDataTag::Renderer);
                 DEBUG_TRACK_RENDER_BUFFER_CHUNK();
                 renderBufferChunk = renderBufferChunk->nextChunk;
                 pos = 0;
             } break;
 
             case RenderItemType::SetCamera: {
-                DEBUG_BLOCK_T("render: RenderItemType::SetCamera", DCDT_Renderer);
+                DEBUG_BLOCK_T("render: RenderItemType::SetCamera", DebugCodeDataTag::Renderer);
                 RenderItem_SetCamera* header = readRenderItem<RenderItem_SetCamera>(renderBufferChunk, &pos);
                 currentCamera = header->camera;
             } break;
 
             case RenderItemType::SetPalette: {
-                DEBUG_BLOCK_T("render: RenderItemType::SetPalette", DCDT_Renderer);
+                DEBUG_BLOCK_T("render: RenderItemType::SetPalette", DebugCodeDataTag::Renderer);
                 RenderItem_SetPalette* header = readRenderItem<RenderItem_SetPalette>(renderBufferChunk, &pos);
 
                 if (m_vertex_count > 0) {
@@ -190,7 +190,7 @@ void Renderer::render_internal()
             } break;
 
             case RenderItemType::SetShader: {
-                DEBUG_BLOCK_T("render: RenderItemType::SetShader", DCDT_Renderer);
+                DEBUG_BLOCK_T("render: RenderItemType::SetShader", DebugCodeDataTag::Renderer);
                 RenderItem_SetShader* header = readRenderItem<RenderItem_SetShader>(renderBufferChunk, &pos);
 
                 if (m_vertex_count > 0) {
@@ -203,7 +203,7 @@ void Renderer::render_internal()
             } break;
 
             case RenderItemType::SetTexture: {
-                DEBUG_BLOCK_T("render: RenderItemType::SetTexture", DCDT_Renderer);
+                DEBUG_BLOCK_T("render: RenderItemType::SetTexture", DebugCodeDataTag::Renderer);
                 RenderItem_SetTexture* header = readRenderItem<RenderItem_SetTexture>(renderBufferChunk, &pos);
 
                 if (m_vertex_count > 0) {
@@ -267,7 +267,7 @@ void Renderer::render_internal()
             } break;
 
             case RenderItemType::Clear: {
-                DEBUG_BLOCK_T("render: RenderItemType::Clear", DCDT_Renderer);
+                DEBUG_BLOCK_T("render: RenderItemType::Clear", DebugCodeDataTag::Renderer);
                 RenderItem_Clear* header = readRenderItem<RenderItem_Clear>(renderBufferChunk, &pos);
 
                 // NB: We MUST flush here, otherwise we could render some things after the clear instead of before it!
@@ -280,7 +280,7 @@ void Renderer::render_internal()
             } break;
 
             case RenderItemType::BeginScissor: {
-                DEBUG_BLOCK_T("render: RenderItemType::BeginScissor", DCDT_Renderer);
+                DEBUG_BLOCK_T("render: RenderItemType::BeginScissor", DebugCodeDataTag::Renderer);
                 RenderItem_BeginScissor* header = readRenderItem<RenderItem_BeginScissor>(renderBufferChunk, &pos);
 
                 // NB: We MUST flush here, otherwise we could render some things after the scissor instead of before it!
@@ -298,7 +298,7 @@ void Renderer::render_internal()
             } break;
 
             case RenderItemType::EndScissor: {
-                DEBUG_BLOCK_T("render: RenderItemType::EndScissor", DCDT_Renderer);
+                DEBUG_BLOCK_T("render: RenderItemType::EndScissor", DebugCodeDataTag::Renderer);
                 [[maybe_unused]] RenderItem_EndScissor* header = readRenderItem<RenderItem_EndScissor>(renderBufferChunk, &pos);
 
                 // NB: We MUST flush here, otherwise we could render some things after the scissor is removed!
@@ -319,7 +319,7 @@ void Renderer::render_internal()
             } break;
 
             case RenderItemType::DrawRects: {
-                DEBUG_BLOCK_T("render: RenderItemType::DrawRects", DCDT_Renderer);
+                DEBUG_BLOCK_T("render: RenderItemType::DrawRects", DebugCodeDataTag::Renderer);
                 RenderItem_DrawRects* header = readRenderItem<RenderItem_DrawRects>(renderBufferChunk, &pos);
 
                 for (s32 itemIndex = 0; itemIndex < header->count; itemIndex++) {
@@ -333,7 +333,7 @@ void Renderer::render_internal()
             } break;
 
             case RenderItemType::DrawSingleRect: {
-                DEBUG_BLOCK_T("render: RenderItemType::DrawSingleRect", DCDT_Renderer);
+                DEBUG_BLOCK_T("render: RenderItemType::DrawSingleRect", DebugCodeDataTag::Renderer);
                 RenderItem_DrawSingleRect* item = readRenderItem<RenderItem_DrawSingleRect>(renderBufferChunk, &pos);
 
                 if (m_vertex_count + 4 > RENDER_BATCH_VERTEX_COUNT) {
@@ -344,7 +344,7 @@ void Renderer::render_internal()
             } break;
 
             case RenderItemType::DrawRings: {
-                DEBUG_BLOCK_T("render: RenderItemType::DrawRings", DCDT_Renderer);
+                DEBUG_BLOCK_T("render: RenderItemType::DrawRings", DebugCodeDataTag::Renderer);
                 RenderItem_DrawRings* header = readRenderItem<RenderItem_DrawRings>(renderBufferChunk, &pos);
 
                 for (s32 itemIndex = 0; itemIndex < header->count; itemIndex++) {
@@ -426,7 +426,7 @@ void Renderer::render_internal()
 
 void Renderer::load_assets()
 {
-    DEBUG_FUNCTION_T(DCDT_Renderer);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Renderer);
 
     ::Renderer::load_assets();
 
@@ -469,7 +469,7 @@ void Renderer::load_assets()
 
 void Renderer::unload_assets()
 {
-    DEBUG_FUNCTION_T(DCDT_Renderer);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Renderer);
 
     ::Renderer::unload_assets();
 
@@ -561,7 +561,7 @@ void GLAPIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum seve
 
 bool compileShader(ShaderProgram* glShader, String shaderName, Shader* shaderProgram, ShaderPart shaderPart)
 {
-    DEBUG_FUNCTION_T(DCDT_Renderer);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Renderer);
 
     bool result = false;
 
@@ -611,7 +611,7 @@ bool compileShader(ShaderProgram* glShader, String shaderName, Shader* shaderPro
 
 void loadShaderAttrib(ShaderProgram* glShader, char const* attribName, int* attribLocation)
 {
-    DEBUG_FUNCTION_T(DCDT_Renderer);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Renderer);
 
     *attribLocation = glGetAttribLocation(glShader->shaderProgramID, attribName);
     if (*attribLocation == -1) {
@@ -621,7 +621,7 @@ void loadShaderAttrib(ShaderProgram* glShader, char const* attribName, int* attr
 
 void loadShaderUniform(ShaderProgram* glShader, char const* uniformName, int* uniformLocation)
 {
-    DEBUG_FUNCTION_T(DCDT_Renderer);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Renderer);
 
     *uniformLocation = glGetUniformLocation(glShader->shaderProgramID, uniformName);
     if (*uniformLocation == -1) {
@@ -631,7 +631,7 @@ void loadShaderUniform(ShaderProgram* glShader, char const* uniformName, int* un
 
 void loadShaderProgram(Asset* asset, ShaderProgram* glShader)
 {
-    DEBUG_FUNCTION_T(DCDT_Renderer);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Renderer);
 
     glShader->shaderProgramID = glCreateProgram();
 
@@ -755,7 +755,7 @@ void Renderer::upload_texture_2d(GLenum pixelFormat, s32 width, s32 height, void
 
 void Renderer::push_quad(Rect2 bounds, V4 color)
 {
-    DEBUG_FUNCTION_T(DCDT_Renderer);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Renderer);
     [[maybe_unused]] s32 firstVertex = m_vertex_count;
 
     VertexData* vertex = m_vertices + m_vertex_count;
@@ -807,7 +807,7 @@ void Renderer::push_quad_with_uv(Rect2 bounds, V4 color, Rect2 uv)
 
 void Renderer::push_quad_with_uv_multicolor(Rect2 bounds, V4 color00, V4 color01, V4 color10, V4 color11, Rect2 uv)
 {
-    DEBUG_FUNCTION_T(DCDT_Renderer);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Renderer);
     [[maybe_unused]] s32 firstVertex = m_vertex_count;
 
     VertexData* vertex = m_vertices + m_vertex_count;
@@ -867,11 +867,11 @@ void Renderer::push_quad_with_uv_multicolor(Rect2 bounds, V4 color00, V4 color01
 
 void Renderer::flush_vertices()
 {
-    DEBUG_FUNCTION_T(DCDT_Renderer);
+    DEBUG_FUNCTION_T(DebugCodeDataTag::Renderer);
 
     // Fill VBO
     {
-        // DEBUG_BLOCK_T("flushVertices - Fill VBO", DCDT_Renderer);
+        // DEBUG_BLOCK_T("flushVertices - Fill VBO", DebugCodeDataTag::Renderer);
         ASSERT(m_vertex_count <= RENDER_BATCH_VERTEX_COUNT); // Tried to render too many vertices at once!
         GLint vBufferSizeNeeded = m_vertex_count * sizeof(m_vertices[0]);
         glBufferSubData(GL_ARRAY_BUFFER, 0, vBufferSizeNeeded, m_vertices);
@@ -882,7 +882,7 @@ void Renderer::flush_vertices()
     // always, as long as we only render quads.
 #if !OPTIMIZE_IBO
     {
-        DEBUG_BLOCK_T("flushVertices - Fill IBO", DCDT_Renderer);
+        DEBUG_BLOCK_T("flushVertices - Fill IBO", DebugCodeDataTag::Renderer);
         ASSERT(m_index_count <= RENDER_BATCH_INDEX_COUNT); // Tried to render too many indices at once!
         GLint iBufferSizeNeeded = m_index_count * sizeof(m_indices[0]);
         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, iBufferSizeNeeded, m_indices);
@@ -890,7 +890,7 @@ void Renderer::flush_vertices()
 #endif
 
     {
-        // DEBUG_BLOCK_T("flushVertices - glDrawElements", DCDT_Renderer);
+        // DEBUG_BLOCK_T("flushVertices - glDrawElements", DebugCodeDataTag::Renderer);
         glDrawElements(GL_TRIANGLES, m_index_count, GL_UNSIGNED_INT, nullptr);
     }
 
