@@ -207,7 +207,7 @@ void updateAndRenderConsole(Console* console)
             it.hasNext();
             it.next()) {
             ConsoleOutputLine* line = it.get();
-            V4 outputTextColor = consoleStyle->outputTextColors[to_underlying(line->style)];
+            V4 outputTextColor = consoleStyle->outputTextColors[line->style];
 
             V2I textSize = calculateTextSize(consoleFont, line->text, textMaxWidth);
             Rect2I textBounds = irectAligned(textPos, textSize, outputLinesAlign);

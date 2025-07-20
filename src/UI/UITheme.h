@@ -118,7 +118,7 @@ struct ConsoleStyle {
 
     AssetRef font;
     union {
-        V4 outputTextColors[to_underlying(ConsoleLineStyle::COUNT)];
+        EnumMap<ConsoleLineStyle, V4> outputTextColors;
 
         struct {
             // Must match the order in ConsoleLineStyle!
