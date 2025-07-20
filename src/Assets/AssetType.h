@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <Util/EnumMap.h>
 #include <Util/String.h>
 
 enum class AssetType : u8 {
@@ -42,7 +43,7 @@ enum class AssetType : u8 {
     COUNT,
 };
 
-inline String assetTypeNames[to_underlying(AssetType::COUNT)] = {
+EnumMap<AssetType, String> const asset_type_names {
     "Misc"_s,
     "BitmapFont"_s,
     "BuildingDefs"_s,

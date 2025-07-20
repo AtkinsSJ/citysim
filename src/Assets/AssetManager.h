@@ -9,6 +9,7 @@
 #include "file.h"
 #include <Assets/Asset.h>
 #include <Util/ChunkedArray.h>
+#include <Util/EnumMap.h>
 #include <Util/Set.h>
 #include <Util/StringTable.h>
 
@@ -29,15 +30,15 @@ struct AssetManager {
     HashTable<AssetType> directoryNameToType;
 
     ChunkedArray<Asset> allAssets;
-    HashTable<Asset*> assetsByType[to_underlying(AssetType::COUNT)];
+    EnumMap<AssetType, HashTable<Asset*>> assetsByType;
 
     // If a requested asset is not found, the one here is used instead.
     // Probably most of these will be empty, but we do need a placeholder sprite at least,
     // so I figure it's better to put this in place for all types while I'm at it.
     // - Sam, 27/03/2020
-    Asset placeholderAssets[to_underlying(AssetType::COUNT)];
+    EnumMap<AssetType, Asset> placeholderAssets;
     // The missing assets are logged here!
-    Set<String> missingAssetNames[to_underlying(AssetType::COUNT)];
+    EnumMap<AssetType, Set<String>> missingAssetNames;
 
     // TODO: this probably belongs somewhere else? IDK.
     // It feels icky having parts of assets directly in this struct, but when there's only 1, and you

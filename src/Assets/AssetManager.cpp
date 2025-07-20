@@ -89,7 +89,7 @@ void initAssets()
 
         // Ninepatch
         Asset* placeholderNinepatch = makePlaceholderAsset(AssetType::Ninepatch);
-        placeholderNinepatch->ninepatch.texture = &s_assets->placeholderAssets[to_underlying(AssetType::Texture)];
+        placeholderNinepatch->ninepatch.texture = &s_assets->placeholderAssets[AssetType::Texture];
 
         // Palette
         Asset* placeholderPalette = makePlaceholderAsset(AssetType::Palette);
@@ -108,7 +108,7 @@ void initAssets()
         placeholderSprite->data = assetsAllocate(s_assets, 1 * sizeof(Sprite));
         placeholderSprite->spriteGroup.count = 1;
         placeholderSprite->spriteGroup.sprites = (Sprite*)placeholderSprite->data.writable_data();
-        placeholderSprite->spriteGroup.sprites[0].texture = &s_assets->placeholderAssets[to_underlying(AssetType::Texture)];
+        placeholderSprite->spriteGroup.sprites[0].texture = &s_assets->placeholderAssets[AssetType::Texture];
         placeholderSprite->spriteGroup.sprites[0].uv = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
 
         // SpriteDefs
@@ -146,7 +146,7 @@ AssetManager& asset_manager()
 
 Asset* makePlaceholderAsset(AssetType type)
 {
-    Asset* result = &s_assets->placeholderAssets[to_underlying(type)];
+    Asset* result = &s_assets->placeholderAssets[type];
     result->type = type;
     result->shortName = nullString;
     result->fullName = nullString;
@@ -197,7 +197,7 @@ Asset* addAsset(AssetType type, String shortName, u32 flags)
     asset->data = {};
     asset->flags = flags;
 
-    s_assets->assetsByType[to_underlying(type)].put(internedShortName, asset);
+    s_assets->assetsByType[type].put(internedShortName, asset);
 
     return asset;
 }
@@ -529,7 +529,7 @@ void removeAsset(AssetType type, String name)
         logError("Attempted to remove an asset (name `{0}`, type {1}) which doesn't exist!"_s, { name, formatInt(type) });
     } else {
         unloadAsset(asset);
-        s_assets->assetsByType[to_underlying(type)].removeKey(name);
+        s_assets->assetsByType[type].removeKey(name);
     }
 }
 
@@ -695,11 +695,10 @@ Asset* getAsset(AssetType type, String shortName)
     Asset* result = getAssetIfExists(type, shortName);
 
     if (result == nullptr) {
-        auto type_index = to_underlying(type);
-        if (s_assets->missingAssetNames[type_index].add(shortName)) {
-            logWarn("Requested {0} asset '{1}' was not found! Using placeholder."_s, { assetTypeNames[type_index], shortName });
+        if (s_assets->missingAssetNames[type].add(shortName)) {
+            logWarn("Requested {0} asset '{1}' was not found! Using placeholder."_s, { asset_type_names[type], shortName });
         }
-        result = &s_assets->placeholderAssets[type_index];
+        result = &s_assets->placeholderAssets[type];
     }
 
     return result;
@@ -707,7 +706,7 @@ Asset* getAsset(AssetType type, String shortName)
 
 Asset* getAssetIfExists(AssetType type, String shortName)
 {
-    Maybe<Asset*> result = s_assets->assetsByType[to_underlying(type)].findValue(shortName);
+    Maybe<Asset*> result = s_assets->assetsByType[type].findValue(shortName);
 
     return result.isValid ? result.value : nullptr;
 }
