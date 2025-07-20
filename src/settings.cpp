@@ -55,7 +55,7 @@ SettingsState makeDefaultSettings()
 
     result.windowed = true;
     result.resolution = v2i(1024, 600);
-    result.locale = Locale_en;
+    result.locale = Locale::En;
     result.musicVolume = 0.5f;
     result.soundVolume = 0.5f;
 
@@ -195,7 +195,13 @@ void loadSettings()
         loadSettingsFile(userSettingsFile.name, userSettingsFile.data);
     }
 
-    logInfo("Settings loaded: windowed={0}, resolution={1}x{2}, locale={3}"_s, { formatBool(s_settings->settings.windowed), formatInt(s_settings->settings.resolution.x), formatInt(s_settings->settings.resolution.y), localeData[s_settings->settings.locale].id });
+    logInfo("Settings loaded: windowed={0}, resolution={1}x{2}, locale={3}"_s,
+        {
+            formatBool(s_settings->settings.windowed),
+            formatInt(s_settings->settings.resolution.x),
+            formatInt(s_settings->settings.resolution.y),
+            localeData[to_underlying(s_settings->settings.locale)].id,
+        });
 }
 
 void applySettings()
@@ -288,7 +294,7 @@ WindowSettings getWindowSettings()
 
 String getLocale()
 {
-    return localeData[s_settings->settings.locale].id;
+    return localeData[to_underlying(s_settings->settings.locale)].id;
 }
 
 void showSettingsWindow()
