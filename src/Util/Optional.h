@@ -42,6 +42,13 @@ public:
         return move(m_value);
     }
 
+    T value_or(T alternative) const
+    {
+        if (has_value())
+            return value();
+        return alternative;
+    }
+
     bool operator==(Optional const& other) const
     {
         if (m_has_value != other.m_has_value)
