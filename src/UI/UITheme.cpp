@@ -299,7 +299,7 @@ void assignStyleProperties(StyleType type, std::initializer_list<String> propert
 {
     for (String* propName = (String*)properties.begin(); propName < properties.end(); propName++) {
         Property* property = styleProperties.find(*propName).orDefault(nullptr);
-        property->existsInStyle[to_underlying(type)] = true;
+        property->existsInStyle[type] = true;
     }
 }
 
@@ -309,10 +309,7 @@ void loadUITheme(Blob data, Asset* asset)
 {
     LineReader reader = readLines(asset->shortName, data);
 
-    struct StylePack {
-        UI::Style styleByType[to_underlying(UI::StyleType::COUNT)];
-    };
-    HashTable<StylePack> styles;
+    HashTable<EnumMap<UI::StyleType, UI::Style>> styles;
     initHashTable(&styles);
 
     HashTable<String> fontNamesToAssetNames;
@@ -323,7 +320,7 @@ void loadUITheme(Blob data, Asset* asset)
         freeHashTable(&fontNamesToAssetNames);
     };
 
-    s32 styleCount[to_underlying(UI::StyleType::COUNT)] = {};
+    EnumMap<UI::StyleType, s32> style_count;
 
     String currentSection = nullString;
     UI::Style* target = nullptr;
@@ -356,13 +353,13 @@ void loadUITheme(Blob data, Asset* asset)
 
                     String name = intern(&asset_manager().assetStrings, readToken(&reader));
 
-                    StylePack* pack = styles.findOrAdd(name);
-                    target = &pack->styleByType[(s32)styleType];
+                    auto& pack = *styles.findOrAdd(name);
+                    target = &pack[styleType];
                     *target = {};
                     target->name = name;
                     target->type = styleType;
 
-                    styleCount[to_underlying(styleType)]++;
+                    style_count[styleType]++;
                 } else {
                     error(&reader, "Unrecognized command: '{0}'"_s, { firstWord });
                 }
@@ -373,11 +370,11 @@ void loadUITheme(Blob data, Asset* asset)
             if (equals(firstWord, "extends"_s)) {
                 // Clones an existing style
                 String parentStyle = readToken(&reader);
-                Maybe<StylePack*> parentPack = styles.find(parentStyle);
+                auto parentPack = styles.find(parentStyle);
                 if (!parentPack.isValid) {
                     error(&reader, "Unable to find style named '{0}'"_s, { parentStyle });
                 } else {
-                    UI::Style const& parent = parentPack.value->styleByType[to_underlying(target->type)];
+                    UI::Style const& parent = (*parentPack.value)[target->type];
                     // For undefined styles, the parent struct will be all nulls, so the type will not match
                     if (parent.type != target->type) {
                         error(&reader, "Attempting to extend a style of the wrong type."_s);
@@ -391,7 +388,7 @@ void loadUITheme(Blob data, Asset* asset)
                 // Check our properties map for a match
                 UI::Property* property = UI::styleProperties.find(firstWord).orDefault(nullptr);
                 if (property) {
-                    if (property->existsInStyle[to_underlying(target->type)]) {
+                    if (property->existsInStyle[target->type]) {
                         switch (property->type) {
                         case UI::PropType::Alignment: {
                             Maybe<u32> value = readAlignment(&reader);
@@ -486,7 +483,7 @@ void loadUITheme(Blob data, Asset* asset)
 
     s32 totalStyleCount = 0;
     for (s32 i = 0; i < to_underlying(UI::StyleType::COUNT); i++) {
-        totalStyleCount += styleCount[i];
+        totalStyleCount += style_count[i];
     }
     allocateChildren(asset, totalStyleCount);
 
@@ -497,9 +494,9 @@ void loadUITheme(Blob data, Asset* asset)
     String defaultStyleName = "default"_h;
 
     for (auto it = styles.iterate(); it.hasNext(); it.next()) {
-        StylePack* stylePack = it.get();
+        auto* stylePack = it.get();
         for (s32 sectionType = 1; sectionType < to_underlying(UI::StyleType::COUNT); sectionType++) {
-            UI::Style* style = stylePack->styleByType + sectionType;
+            UI::Style* style = &(*stylePack)[sectionType];
             // For undefined styles, the parent struct will be all nulls, so the type will not match
             // FIXME: This seems really sketchy.
             if (to_underlying(style->type) == sectionType) {

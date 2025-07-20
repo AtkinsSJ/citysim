@@ -264,7 +264,7 @@ enum class PropType {
 struct Property {
     PropType type;
     smm offsetInStyleStruct;
-    bool existsInStyle[to_underlying(StyleType::COUNT)];
+    EnumMap<StyleType, bool> existsInStyle;
 };
 
 struct Style {
