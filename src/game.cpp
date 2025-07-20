@@ -431,20 +431,20 @@ void updateAndRenderGameUI(GameState* gameState)
         // Speed control buttons
         Rect2I speedButtonRect = irectXYWH(right - speedButtonSize.x, toolbarHeight - (uiPadding + speedButtonSize.y), speedButtonSize.x, speedButtonSize.y);
 
-        if (UI::putTextButton(">>>"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->speed == Speed_Fast))) {
-            clock->speed = Speed_Fast;
+        if (UI::putTextButton(">>>"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->speed == GameClockSpeed::Fast))) {
+            clock->speed = GameClockSpeed::Fast;
             clock->isPaused = false;
         }
         speedButtonRect.x -= speedButtonRect.w + uiPadding;
 
-        if (UI::putTextButton(">>"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->speed == Speed_Medium))) {
-            clock->speed = Speed_Medium;
+        if (UI::putTextButton(">>"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->speed == GameClockSpeed::Medium))) {
+            clock->speed = GameClockSpeed::Medium;
             clock->isPaused = false;
         }
         speedButtonRect.x -= speedButtonRect.w + uiPadding;
 
-        if (UI::putTextButton(">"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->speed == Speed_Slow))) {
-            clock->speed = Speed_Slow;
+        if (UI::putTextButton(">"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->speed == GameClockSpeed::Slow))) {
+            clock->speed = GameClockSpeed::Slow;
             clock->isPaused = false;
         }
         speedButtonRect.x -= speedButtonRect.w + uiPadding;

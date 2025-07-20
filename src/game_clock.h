@@ -7,14 +7,21 @@
 #pragma once
 
 #include <Util/Basic.h>
+#include <Util/EnumMap.h>
 #include <Util/Time.h>
 
-enum GameClockSpeed {
-    Speed_Slow,
-    Speed_Medium,
-    Speed_Fast,
+enum class GameClockSpeed : u8 {
+    Slow,
+    Medium,
+    Fast,
 
-    GameClockSpeedCount
+    COUNT
+};
+
+EnumMap<GameClockSpeed, f32> const GAME_DAYS_PER_SECOND {
+    1.0f / 5.0f, // Slow
+    1.0f / 1.0f, // Medium
+    3.0f / 1.0f  // Fast
 };
 
 // Starting at 1st Jan year 1.
@@ -33,12 +40,6 @@ struct GameClock {
 
     GameClockSpeed speed;
     bool isPaused;
-};
-
-f32 const GAME_DAYS_PER_SECOND[GameClockSpeedCount] = {
-    1.0f / 5.0f, // Slow
-    1.0f / 1.0f, // Medium
-    3.0f / 1.0f  // Fast
 };
 
 void initGameClock(GameClock* clock, GameTimestamp date = 0, f32 timeOfDay = 0.0f);

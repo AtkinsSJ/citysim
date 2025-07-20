@@ -22,7 +22,7 @@ void initGameClock(GameClock* clock, GameTimestamp date, f32 timeOfDay)
     clock->currentDay = date;
     clock->timeWithinDay = clamp01(timeOfDay);
 
-    clock->speed = Speed_Slow;
+    clock->speed = GameClockSpeed::Slow;
     clock->isPaused = true;
 
     updateCosmeticDate(clock);
