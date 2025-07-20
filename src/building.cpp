@@ -665,14 +665,14 @@ void updateBuildingVariant(City* city, Building* building, BuildingDef* passedDe
         if (!foundVariant) {
             if (!isEmpty(def->spriteName)) {
                 logWarn("Unable to find a matching variant for building '{0}'. Defaulting to the building's defined sprite, '{1}'."_s, { def->name, def->spriteName });
-                building->variantIndex = NO_VARIANT;
+                building->variantIndex = {};
             } else {
                 logWarn("Unable to find a matching variant for building '{0}'. Defaulting to variant #0."_s, { def->name });
                 building->variantIndex = 0;
             }
         }
     } else {
-        building->variantIndex = NO_VARIANT;
+        building->variantIndex = {};
     }
 
     // Update the entity sprite
@@ -749,7 +749,7 @@ void initBuilding(Building* building, s32 id, BuildingDef* def, Rect2I footprint
     building->typeID = def->typeID;
     building->creationDate = creationDate;
     building->footprint = footprint;
-    building->variantIndex = NO_VARIANT;
+    building->variantIndex = {};
 }
 
 void updateBuilding(City* city, Building* building)
@@ -849,8 +849,8 @@ void loadBuildingSprite(Building* building)
 {
     BuildingDef* def = getBuildingDef(building->typeID);
 
-    if (building->variantIndex != NO_VARIANT) {
-        building->entity->sprite = getSpriteRef(def->variants[building->variantIndex].spriteName, building->spriteOffset);
+    if (building->variantIndex.has_value()) {
+        building->entity->sprite = getSpriteRef(def->variants[building->variantIndex.value()].spriteName, building->spriteOffset);
     } else {
         building->entity->sprite = getSpriteRef(def->spriteName, building->spriteOffset);
     }

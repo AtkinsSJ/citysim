@@ -169,13 +169,12 @@ EnumMap<BuildingProblem::Type, String> const buildingProblemNames {
     "building_problem_no_transport"_s
 };
 
-s32 const NO_VARIANT = -1;
 struct Building {
     u32 id;
     s32 typeID;
     GameTimestamp creationDate;
     Rect2I footprint;
-    s32 variantIndex;
+    Optional<s16> variantIndex;
 
     Entity* entity;
     s32 spriteOffset; // used as the offset for getSprite

@@ -567,7 +567,7 @@ void saveBuildings(City* city, struct BinaryFileWriter* writer)
         sb->spriteOffset = (u16)building->spriteOffset;
         sb->currentResidents = (u16)building->currentResidents;
         sb->currentJobs = (u16)building->currentJobs;
-        sb->variantIndex = (u16)building->variantIndex;
+        sb->variantIndex = static_cast<s16>(building->variantIndex.value_or(-1));
 
         tempBuildingIndex++;
     }
@@ -636,7 +636,7 @@ bool loadBuildings(City* city, struct BinaryFileReader* reader)
             Rect2I footprint = irectXYWH(savBuilding->x, savBuilding->y, savBuilding->w, savBuilding->h);
             BuildingDef* def = getBuildingDef(oldTypeToNewType[savBuilding->typeID]);
             Building* building = addBuildingDirect(city, savBuilding->id, def, footprint, savBuilding->creationDate);
-            building->variantIndex = savBuilding->variantIndex;
+            building->variantIndex = savBuilding->variantIndex == -1 ? Optional<s16> {} : Optional<s16> { savBuilding->variantIndex.value() };
             building->spriteOffset = savBuilding->spriteOffset;
             building->currentResidents = savBuilding->currentResidents;
             building->currentJobs = savBuilding->currentJobs;
