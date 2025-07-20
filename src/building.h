@@ -57,13 +57,11 @@ EnumMap<ConnectionDirection, V2I> const connection_offsets {
     v2i(-1, -1),
 };
 
-enum ConnectionType {
-    ConnectionType_Nothing,
-    ConnectionType_Building1,
-    ConnectionType_Building2,
-    ConnectionType_Anything,
-
-    ConnectionType_Invalid = -1
+enum class ConnectionType : u8 {
+    Nothing,
+    Building1,
+    Building2,
+    Anything,
 };
 
 struct BuildingVariant {
@@ -213,7 +211,7 @@ bool hasProblem(Building* building, BuildingProblem::Type problem);
 
 void loadBuildingSprite(Building* building);
 
-ConnectionType connectionTypeOf(char c);
+Optional<ConnectionType> connectionTypeOf(char c);
 char asChar(ConnectionType connectionType);
 bool matchesVariant(BuildingDef* def, BuildingVariant* variant, BuildingDef** neighbourDefs);
 

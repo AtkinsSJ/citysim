@@ -409,38 +409,36 @@ void loadBuildingDefs(Blob data, Asset* asset)
                         String directionFlags = readToken(&reader);
                         String spriteName = intern(&asset_manager().assetStrings, readToken(&reader));
 
+                        // Check the values are valid first, because that's less verbose than checking each one individually.
+                        for (auto i = 0; i < directionFlags.length; i++) {
+                            if (!connectionTypeOf(directionFlags[i]).has_value()) {
+                                error(&reader, "Unrecognized connection type character '{0}', valid values: '012*'"_s, { repeatChar(directionFlags[i], 1) });
+                            }
+                        }
+
                         if (directionFlags.length == 8) {
-                            variant->connections[ConnectionDirection::N] = connectionTypeOf(directionFlags[0]);
-                            variant->connections[ConnectionDirection::NE] = connectionTypeOf(directionFlags[1]);
-                            variant->connections[ConnectionDirection::E] = connectionTypeOf(directionFlags[2]);
-                            variant->connections[ConnectionDirection::SE] = connectionTypeOf(directionFlags[3]);
-                            variant->connections[ConnectionDirection::S] = connectionTypeOf(directionFlags[4]);
-                            variant->connections[ConnectionDirection::SW] = connectionTypeOf(directionFlags[5]);
-                            variant->connections[ConnectionDirection::W] = connectionTypeOf(directionFlags[6]);
-                            variant->connections[ConnectionDirection::NW] = connectionTypeOf(directionFlags[7]);
+                            variant->connections[ConnectionDirection::N] = connectionTypeOf(directionFlags[0]).value();
+                            variant->connections[ConnectionDirection::NE] = connectionTypeOf(directionFlags[1]).value();
+                            variant->connections[ConnectionDirection::E] = connectionTypeOf(directionFlags[2]).value();
+                            variant->connections[ConnectionDirection::SE] = connectionTypeOf(directionFlags[3]).value();
+                            variant->connections[ConnectionDirection::S] = connectionTypeOf(directionFlags[4]).value();
+                            variant->connections[ConnectionDirection::SW] = connectionTypeOf(directionFlags[5]).value();
+                            variant->connections[ConnectionDirection::W] = connectionTypeOf(directionFlags[6]).value();
+                            variant->connections[ConnectionDirection::NW] = connectionTypeOf(directionFlags[7]).value();
                         } else if (directionFlags.length == 4) {
                             // The 4 other directions don't matter
-                            variant->connections[ConnectionDirection::NE] = ConnectionType_Anything;
-                            variant->connections[ConnectionDirection::SE] = ConnectionType_Anything;
-                            variant->connections[ConnectionDirection::SW] = ConnectionType_Anything;
-                            variant->connections[ConnectionDirection::NW] = ConnectionType_Anything;
+                            variant->connections[ConnectionDirection::NE] = ConnectionType::Anything;
+                            variant->connections[ConnectionDirection::SE] = ConnectionType::Anything;
+                            variant->connections[ConnectionDirection::SW] = ConnectionType::Anything;
+                            variant->connections[ConnectionDirection::NW] = ConnectionType::Anything;
 
-                            variant->connections[ConnectionDirection::N] = connectionTypeOf(directionFlags[0]);
-                            variant->connections[ConnectionDirection::E] = connectionTypeOf(directionFlags[1]);
-                            variant->connections[ConnectionDirection::S] = connectionTypeOf(directionFlags[2]);
-                            variant->connections[ConnectionDirection::W] = connectionTypeOf(directionFlags[3]);
+                            variant->connections[ConnectionDirection::N] = connectionTypeOf(directionFlags[0]).value();
+                            variant->connections[ConnectionDirection::E] = connectionTypeOf(directionFlags[1]).value();
+                            variant->connections[ConnectionDirection::S] = connectionTypeOf(directionFlags[2]).value();
+                            variant->connections[ConnectionDirection::W] = connectionTypeOf(directionFlags[3]).value();
                         } else {
                             error(&reader, "First argument for a building 'variant' should be a 4 or 8 character string consisting of 0/1/2/* flags (meaning nothing/part1/part2/anything) for N/E/S/W or N/NE/E/SE/S/SW/W/NW connectivity. eg, 101012**"_s);
                             return;
-                        }
-
-                        String connectionsString = repeatChar(' ', to_underlying(ConnectionDirection::COUNT));
-                        for (s32 connectionIndex = 0; connectionIndex < to_underlying(ConnectionDirection::COUNT); connectionIndex++) {
-                            if (variant->connections[connectionIndex] == ConnectionType_Invalid) {
-                                error(&reader, "Unrecognized connection type character, valid values: '012*'"_s);
-                            }
-
-                            connectionsString[connectionIndex] = asChar(variant->connections[connectionIndex]);
                         }
 
                         variant->spriteName = spriteName;
@@ -577,10 +575,10 @@ bool matchesVariant(BuildingDef* def, BuildingVariant* variant, EnumMap<Connecti
         BuildingDef* neighbourDef = neighbourDefs[directionIndex];
 
         if (neighbourDef == nullptr) {
-            matchedDirection = (connectionType == ConnectionType_Nothing) || (connectionType == ConnectionType_Anything);
+            matchedDirection = (connectionType == ConnectionType::Nothing) || (connectionType == ConnectionType::Anything);
         } else {
             switch (connectionType) {
-            case ConnectionType_Nothing: {
+            case ConnectionType::Nothing: {
                 if (def->isIntersection) {
                     matchedDirection = !buildingDefHasType(neighbourDef, def->intersectionPart1TypeID)
                         && !buildingDefHasType(neighbourDef, def->intersectionPart2TypeID);
@@ -589,7 +587,7 @@ bool matchesVariant(BuildingDef* def, BuildingVariant* variant, EnumMap<Connecti
                 }
             } break;
 
-            case ConnectionType_Building1: {
+            case ConnectionType::Building1: {
                 if (def->isIntersection) {
                     matchedDirection = buildingDefHasType(neighbourDef, def->intersectionPart1TypeID);
                 } else {
@@ -597,7 +595,7 @@ bool matchesVariant(BuildingDef* def, BuildingVariant* variant, EnumMap<Connecti
                 }
             } break;
 
-            case ConnectionType_Building2: {
+            case ConnectionType::Building2: {
                 if (def->isIntersection) {
                     matchedDirection = buildingDefHasType(neighbourDef, def->intersectionPart2TypeID);
                 } else {
@@ -605,11 +603,10 @@ bool matchesVariant(BuildingDef* def, BuildingVariant* variant, EnumMap<Connecti
                 }
             } break;
 
-            case ConnectionType_Anything: {
+            case ConnectionType::Anything: {
                 matchedDirection = true;
             } break;
 
-            case ConnectionType_Invalid:
             default: {
                 matchedDirection = false;
             } break;
@@ -859,30 +856,20 @@ void loadBuildingSprite(Building* building)
     }
 }
 
-ConnectionType connectionTypeOf(char c)
+Optional<ConnectionType> connectionTypeOf(char c)
 {
-    ConnectionType result;
-
     switch (c) {
     case '0':
-        result = ConnectionType_Nothing;
-        break;
+        return ConnectionType::Nothing;
     case '1':
-        result = ConnectionType_Building1;
-        break;
+        return ConnectionType::Building1;
     case '2':
-        result = ConnectionType_Building2;
-        break;
+        return ConnectionType::Building2;
     case '*':
-        result = ConnectionType_Anything;
-        break;
-
+        return ConnectionType::Anything;
     default:
-        result = ConnectionType_Invalid;
-        break;
+        return {};
     }
-
-    return result;
 }
 
 char asChar(ConnectionType connectionType)
@@ -890,21 +877,21 @@ char asChar(ConnectionType connectionType)
     char result;
 
     switch (connectionType) {
-    case ConnectionType_Nothing:
+    case ConnectionType::Nothing:
         result = '0';
         break;
-    case ConnectionType_Building1:
+    case ConnectionType::Building1:
         result = '1';
         break;
-    case ConnectionType_Building2:
+    case ConnectionType::Building2:
         result = '2';
         break;
-    case ConnectionType_Anything:
+    case ConnectionType::Anything:
         result = '*';
         break;
 
     default:
-        result = '@';
+        result = '?';
         break;
     }
 
