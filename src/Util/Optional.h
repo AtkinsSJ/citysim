@@ -42,6 +42,22 @@ public:
         return move(m_value);
     }
 
+    bool operator==(Optional const& other) const
+    {
+        if (m_has_value != other.m_has_value)
+            return false;
+        if (m_has_value && other.m_has_value)
+            return m_value == other.m_value;
+        return true;
+    }
+
+    bool operator==(T const& other) const
+    {
+        if (!m_has_value)
+            return false;
+        return m_value == other;
+    }
+
 private:
     bool m_has_value { false };
     T m_value {};
