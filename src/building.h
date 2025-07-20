@@ -151,21 +151,21 @@ struct BuildingCatalogue {
 
 inline BuildingCatalogue buildingCatalogue = {};
 
-enum BuildingProblemType {
-    BuildingProblem_Fire,
-    BuildingProblem_NoPower,
-    BuildingProblem_NoTransportAccess,
-
-    BuildingProblemCount
-};
-
 struct BuildingProblem {
+    enum class Type : u8 {
+        Fire,
+        NoPower,
+        NoTransportAccess,
+
+        COUNT
+    };
+
     bool isActive;
-    BuildingProblemType type;
+    Type type;
     GameTimestamp startDate;
 };
 
-inline String buildingProblemNames[BuildingProblemCount] = {
+EnumMap<BuildingProblem::Type, String> const buildingProblemNames {
     "building_problem_fire"_s,
     "building_problem_no_power"_s,
     "building_problem_no_transport"_s
@@ -187,7 +187,7 @@ struct Building {
 
     s32 allocatedPower;
 
-    BuildingProblem problems[BuildingProblemCount];
+    EnumMap<BuildingProblem::Type, BuildingProblem> problems;
 };
 
 void initBuildingCatalogue();
@@ -207,9 +207,9 @@ bool buildingHasPower(Building* building);
 void initBuilding(Building* building);
 void initBuilding(Building* building, s32 id, BuildingDef* def, Rect2I footprint, GameTimestamp creationDate);
 void updateBuilding(City* city, Building* building);
-void addProblem(Building* building, BuildingProblemType problem);
-void removeProblem(Building* building, BuildingProblemType problem);
-bool hasProblem(Building* building, BuildingProblemType problem);
+void addProblem(Building* building, BuildingProblem::Type problem);
+void removeProblem(Building* building, BuildingProblem::Type problem);
+bool hasProblem(Building* building, BuildingProblem::Type problem);
 
 void loadBuildingSprite(Building* building);
 

@@ -779,33 +779,33 @@ void updateBuilding(City* city, Building* building)
         if (def->growsInZone != ZoneType::None) {
             // Zoned buildings inherit their zone's max distance to road.
             if (distanceToRoad > ZONE_DEFS[def->growsInZone].maximumDistanceToRoad) {
-                addProblem(building, BuildingProblem_NoTransportAccess);
+                addProblem(building, BuildingProblem::Type::NoTransportAccess);
             } else {
-                removeProblem(building, BuildingProblem_NoTransportAccess);
+                removeProblem(building, BuildingProblem::Type::NoTransportAccess);
             }
         } else if (def->flags & Building_RequiresTransportConnection) {
             // Other buildings require direct contact
             if (distanceToRoad > 1) {
-                addProblem(building, BuildingProblem_NoTransportAccess);
+                addProblem(building, BuildingProblem::Type::NoTransportAccess);
             } else {
-                removeProblem(building, BuildingProblem_NoTransportAccess);
+                removeProblem(building, BuildingProblem::Type::NoTransportAccess);
             }
         }
     }
 
     // Fire!
     if (doesAreaContainFire(city, building->footprint)) {
-        addProblem(building, BuildingProblem_Fire);
+        addProblem(building, BuildingProblem::Type::Fire);
     } else {
-        removeProblem(building, BuildingProblem_Fire);
+        removeProblem(building, BuildingProblem::Type::Fire);
     }
 
     // Power!
     if (def->power < 0) {
         if (-def->power > building->allocatedPower) {
-            addProblem(building, BuildingProblem_NoPower);
+            addProblem(building, BuildingProblem::Type::NoPower);
         } else {
-            removeProblem(building, BuildingProblem_NoPower);
+            removeProblem(building, BuildingProblem::Type::NoPower);
         }
     }
 
@@ -820,7 +820,7 @@ void updateBuilding(City* city, Building* building)
     }
 }
 
-void addProblem(Building* building, BuildingProblemType problem)
+void addProblem(Building* building, BuildingProblem::Type problem)
 {
     BuildingProblem* bp = &building->problems[problem];
     if (!bp->isActive) {
@@ -832,7 +832,7 @@ void addProblem(Building* building, BuildingProblemType problem)
     // TODO: Update zots!
 }
 
-void removeProblem(Building* building, BuildingProblemType problem)
+void removeProblem(Building* building, BuildingProblem::Type problem)
 {
     if (building->problems[problem].isActive) {
         building->problems[problem].isActive = false;
@@ -841,7 +841,7 @@ void removeProblem(Building* building, BuildingProblemType problem)
     }
 }
 
-bool hasProblem(Building* building, BuildingProblemType problem)
+bool hasProblem(Building* building, BuildingProblem::Type problem)
 {
     bool result = building->problems[problem].isActive;
 
@@ -925,7 +925,7 @@ s32 getRequiredPower(Building* building)
 
 bool buildingHasPower(Building* building)
 {
-    return !hasProblem(building, BuildingProblem_NoPower);
+    return !hasProblem(building, BuildingProblem::Type::NoPower);
 }
 
 void saveBuildingTypes()
