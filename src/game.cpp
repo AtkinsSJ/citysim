@@ -80,10 +80,10 @@ void inputMoveCamera(Camera* camera, V2 windowSize, V2 windowMousePos, s32 cityW
     f32 scrollSpeed = (CAMERA_PAN_SPEED * sqrt(camera->zoom())) * AppState::the().deltaTime;
     f32 cameraEdgeScrollPixelMargin = 8.0f;
 
-    if (mouseButtonPressed(MouseButton_Middle)) {
+    if (mouseButtonPressed(MouseButton::Middle)) {
         // Click-panning!
         float scale = scrollSpeed * 1.0f;
-        V2 clickStartPos = getClickStartPos(MouseButton_Middle, camera);
+        V2 clickStartPos = getClickStartPos(MouseButton::Middle, camera);
         camera->move_by((camera->mouse_position() - clickStartPos) * scale);
     } else if (!isInputCaptured()) {
         if (keyIsPressed(SDLK_LEFT)
@@ -231,19 +231,19 @@ DragResult updateDragState(DragState* dragState, Rect2I cityBounds, V2I mouseTil
 
     DragResult result = {};
 
-    if (dragState->isDragging && mouseButtonJustReleased(MouseButton_Left)) {
+    if (dragState->isDragging && mouseButtonJustReleased(MouseButton::Left)) {
         result.operation = DragResultOperation::DoAction;
         result.dragRect = getDragArea(dragState, cityBounds, dragType, itemSize);
 
         dragState->isDragging = false;
     } else {
         // Update the dragging state
-        if (!mouseIsOverUI && mouseButtonJustPressed(MouseButton_Left)) {
+        if (!mouseIsOverUI && mouseButtonJustPressed(MouseButton::Left)) {
             dragState->isDragging = true;
             dragState->mouseDragStartWorldPos = dragState->mouseDragEndWorldPos = mouseTilePos;
         }
 
-        if (mouseButtonPressed(MouseButton_Left) && dragState->isDragging) {
+        if (mouseButtonPressed(MouseButton::Left) && dragState->isDragging) {
             dragState->mouseDragEndWorldPos = mouseTilePos;
             result.dragRect = getDragArea(dragState, cityBounds, dragType, itemSize);
         } else {
@@ -682,8 +682,8 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
 
                     bool canPlace = canPlaceBuilding(&gameState->city, buildingDef, footprint.x, footprint.y);
 
-                    if ((buildingDef->buildMethod == BuildMethod::Plop && mouseButtonJustReleased(MouseButton_Left))
-                        || (buildingDef->buildMethod == BuildMethod::Paint && mouseButtonPressed(MouseButton_Left))) {
+                    if ((buildingDef->buildMethod == BuildMethod::Plop && mouseButtonJustReleased(MouseButton::Left))
+                        || (buildingDef->buildMethod == BuildMethod::Paint && mouseButtonPressed(MouseButton::Left))) {
                         if (canPlace && canAfford(city, buildCost)) {
                             placeBuilding(city, buildingDef, footprint.x, footprint.y);
                             spend(city, buildCost);
@@ -821,7 +821,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
             // Temporary click-and-drag, no-cost terrain editing
             // We probably want to make this better in several ways, and add a cost to it, and such
             if (!mouseIsOverUI
-                && mouseButtonPressed(MouseButton_Left)
+                && mouseButtonPressed(MouseButton::Left)
                 && tileExists(city, mouseTilePos.x, mouseTilePos.y)) {
                 setTerrainAt(city, mouseTilePos.x, mouseTilePos.y, gameState->selectedTerrainID);
             }
@@ -829,7 +829,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
 
         case ActionMode::Debug_AddFire: {
             if (!mouseIsOverUI
-                && mouseButtonJustPressed(MouseButton_Left)
+                && mouseButtonJustPressed(MouseButton::Left)
                 && tileExists(city, mouseTilePos.x, mouseTilePos.y)) {
                 startFireAt(city, mouseTilePos.x, mouseTilePos.y);
             }
@@ -837,14 +837,14 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
 
         case ActionMode::Debug_RemoveFire: {
             if (!mouseIsOverUI
-                && mouseButtonJustPressed(MouseButton_Left)
+                && mouseButtonJustPressed(MouseButton::Left)
                 && tileExists(city, mouseTilePos.x, mouseTilePos.y)) {
                 removeFireAt(city, mouseTilePos.x, mouseTilePos.y);
             }
         } break;
 
         case ActionMode::None: {
-            if (!mouseIsOverUI && mouseButtonJustPressed(MouseButton_Left)) {
+            if (!mouseIsOverUI && mouseButtonJustPressed(MouseButton::Left)) {
                 if (tileExists(city, mouseTilePos.x, mouseTilePos.y)) {
                     gameState->inspectedTilePosition = mouseTilePos;
                     V2I windowPos = v2i(ui_camera.mouse_position()) + v2i(16, 16);
@@ -861,12 +861,12 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
         }
     }
 
-    if (gameState->worldDragState.isDragging && mouseIsOverUI && mouseButtonJustReleased(MouseButton_Left)) {
+    if (gameState->worldDragState.isDragging && mouseIsOverUI && mouseButtonJustReleased(MouseButton::Left)) {
         // Not sure if this is the best idea, but it's the best I can come up with.
         gameState->worldDragState.isDragging = false;
     }
 
-    if (mouseButtonJustPressed(MouseButton_Right)) {
+    if (mouseButtonJustPressed(MouseButton::Right)) {
         // Unselect current thing
         gameState->actionMode = ActionMode::None;
         renderer.set_cursor("default"_s);

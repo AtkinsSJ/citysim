@@ -126,7 +126,7 @@ WidgetMouseState getWidgetMouseState(Rect2I bounds);
 // clamp the position yourself before using it.
 // The *object pointer can be anything that uniquely identifies what you want to drag.
 // (eg, in Sliders, we are using the *currentValue pointer.)
-// NB: The drag is automatically ended as soon as MouseButton_Left is released, hence
+// NB: The drag is automatically ended as soon as MouseButton::Left is released, hence
 // there is no stopDragging() function.
 bool isDragging(void* object);
 void startDragging(void* object, V2I objectPos);
@@ -235,7 +235,7 @@ void putDropDownList(Array<T>* listOptions, s32* currentSelection, String (*getD
 
         // If we clicked somewhere outside of the panel, close it
         if (isOpen && !clicked
-            && mouseButtonJustReleased(MouseButton_Left)
+            && mouseButtonJustReleased(MouseButton::Left)
             && !contains(panel.bounds, mouseClickStartPos)) {
             closeDropDownList();
         }

@@ -12,23 +12,24 @@
 #include <SDL2/SDL_mouse.h>
 #include <SDL2/SDL_scancode.h>
 #include <Util/Basic.h>
+#include <Util/EnumMap.h>
 #include <Util/HashTable.h>
 #include <Util/String.h>
 #include <Util/Vector.h>
 
 int const KEYBOARD_KEY_COUNT = SDL_NUM_SCANCODES;
 
-enum MouseButton {
-    // NB: There is no button for 0, so any arrays of foo[MouseButtonCount] never use the first element.
+enum class MouseButton : u8 {
+    // NB: There is no button for 0, so any arrays of foo[MouseButton::COUNT] never use the first element.
     // I figure this is more straightforward than having to remember to subtract 1 from the button index,
     // or using different values than SDL does. "Wasting" one element is no big deal.
     // - Sam, 27/06/2019
-    MouseButton_Left = SDL_BUTTON_LEFT,
-    MouseButton_Middle = SDL_BUTTON_MIDDLE,
-    MouseButton_Right = SDL_BUTTON_RIGHT,
-    MouseButton_X1 = SDL_BUTTON_X1,
-    MouseButton_X2 = SDL_BUTTON_X2,
-    MouseButtonCount
+    Left = SDL_BUTTON_LEFT,
+    Middle = SDL_BUTTON_MIDDLE,
+    Right = SDL_BUTTON_RIGHT,
+    X1 = SDL_BUTTON_X1,
+    X2 = SDL_BUTTON_X2,
+    COUNT
 };
 
 enum ModifierKey {
@@ -47,9 +48,9 @@ struct InputState {
     // Mouse
     V2I mousePosRaw;
     V2 mousePosNormalised; // In normalised (-1 to 1) coordinates
-    bool mouseDown[MouseButtonCount];
-    bool mouseWasDown[MouseButtonCount];
-    V2 clickStartPosNormalised[MouseButtonCount]; // In normalised (-1 to 1) coordinates
+    EnumMap<MouseButton, bool> mouseDown;
+    EnumMap<MouseButton, bool> mouseWasDown;
+    EnumMap<MouseButton, V2> clickStartPosNormalised; // In normalised (-1 to 1) coordinates
     s32 wheelX, wheelY;
 
     // Keyboard

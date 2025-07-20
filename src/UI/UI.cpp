@@ -46,14 +46,14 @@ void startFrame()
     uiState.mouseInputHandled = false;
 
     // Clear the drag if the mouse button isn't pressed
-    if (!mouseButtonPressed(MouseButton_Left)) {
+    if (!mouseButtonPressed(MouseButton::Left)) {
         uiState.currentDragObject = nullptr;
     }
 
     windowSize = v2i(ui_camera.size());
     mousePos = v2i(ui_camera.mouse_position());
-    if (mouseButtonPressed(MouseButton_Left)) {
-        mouseClickStartPos = v2i(getClickStartPos(MouseButton_Left, &ui_camera));
+    if (mouseButtonPressed(MouseButton::Left)) {
+        mouseClickStartPos = v2i(getClickStartPos(MouseButton::Left, &ui_camera));
     }
 }
 
@@ -104,7 +104,7 @@ bool justClickedOnUI(Rect2I bounds)
 
     bool result = !isMouseInputHandled()
         && contains(clippedBounds, mousePos)
-        && mouseButtonJustReleased(MouseButton_Left)
+        && mouseButtonJustReleased(MouseButton::Left)
         && contains(clippedBounds, mouseClickStartPos);
 
     return result;
@@ -119,7 +119,7 @@ WidgetMouseState getWidgetMouseState(Rect2I widgetBounds)
 
         // Mouse pressed: must have started and currently be inside the bounds to show anything
         // Mouse unpressed: show hover if in bounds
-        if (mouseButtonPressed(MouseButton_Left)
+        if (mouseButtonPressed(MouseButton::Left)
             && isMouseInUIBounds(widgetBounds, mouseClickStartPos)) {
             result.isPressed = true;
         }
@@ -673,7 +673,7 @@ void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, Scrollb
                 } else if (isMouseInUIBounds(bounds)) {
                     bool inThumbBounds = isMouseInUIBounds(thumbBounds);
 
-                    if (mouseButtonJustPressed(MouseButton_Left)) {
+                    if (mouseButtonJustPressed(MouseButton::Left)) {
                         // If we're not on the thumb, jump the thumb to where we are!
                         if (!inThumbBounds) {
                             if (isHorizontal) {
@@ -788,7 +788,7 @@ void putSlider(f32* currentValue, f32 minValue, f32 maxValue, Orientation orient
     } else if (isMouseInUIBounds(bounds)) {
         bool inThumbBounds = isMouseInUIBounds(thumbBounds);
 
-        if (mouseButtonJustPressed(MouseButton_Left)) {
+        if (mouseButtonJustPressed(MouseButton::Left)) {
             // If we're not on the thumb, jump the thumb to where we are!
             if (!inThumbBounds) {
 

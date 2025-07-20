@@ -66,7 +66,7 @@ void updateInput()
     s_input_state.wheelY = 0;
 
     // Fill-in "was down" info.
-    copyMemory(s_input_state.mouseDown, s_input_state.mouseWasDown, MouseButtonCount);
+    s_input_state.mouseWasDown = s_input_state.mouseDown;
     // NB: We don't want to simply ping-pong buffers here, because keyDown records whether it's down NOW,
     // and NOT whether it changed! I wasted some time doing ping-pong and being confused about it. /fp
     // - Sam, 10/07/2019
@@ -151,8 +151,8 @@ void updateInput()
     s_input_state.mousePosNormalised.x = ((s_input_state.mousePosRaw.x * 2.0f) / window_size.x) - 1.0f;
     s_input_state.mousePosNormalised.y = ((s_input_state.mousePosRaw.y * -2.0f) + window_size.y) / window_size.y;
 
-    for (s32 i = 1; i < MouseButtonCount; i++) {
-        MouseButton button = MouseButton(i);
+    for (s32 i = 1; i < to_underlying(MouseButton::COUNT); i++) {
+        MouseButton button = static_cast<MouseButton>(i);
         if (mouseButtonJustPressed(button)) {
             // Store the initial click position
             s_input_state.clickStartPosNormalised[button] = s_input_state.mousePosNormalised;

@@ -312,7 +312,7 @@ void updateAndRenderWindows()
 
             if ((!isMouseInputHandled() || windowIndex == 0)
                 && contains(wholeWindowArea, mousePos)
-                && mouseButtonJustPressed(MouseButton_Left)) {
+                && mouseButtonJustPressed(MouseButton::Left)) {
                 if (hoveringOverCloseButton) {
                     // If we're inside the X, close it!
                     uiState.windowsToClose.add(windowIndex);
