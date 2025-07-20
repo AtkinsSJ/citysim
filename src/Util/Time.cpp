@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "Time.h"
 #include "../debug.h"
 #include "../platform.h"
 #include <Assets/AssetManager.h>
 #include <Util/Log.h>
 #include <Util/StringBuilder.h>
+#include <Util/Time.h>
 
 DateTime getLocalTimeFromTimestamp(u64 unixTimestamp)
 {
@@ -70,16 +70,14 @@ String formatDateTime(DateTime dateTime, DateTimeFormat format)
                     append(&stb, formatInt(to_underlying(dateTime.month) + 1, 10, 2));
                 } else if (equals(symbol, "monthN"_s)) {
                     ASSERT(to_underlying(dateTime.month) >= 0 && to_underlying(dateTime.month) < to_underlying(MonthOfYear::COUNT));
-                    String monthName = monthNameStrings[to_underlying(dateTime.month)];
-                    append(&stb, getText(monthName));
+                    append(&stb, getText(month_names[dateTime.month]));
                 } else if (equals(symbol, "day"_s)) {
                     append(&stb, formatInt(dateTime.dayOfMonth));
                 } else if (equals(symbol, "day2"_s)) {
                     append(&stb, formatInt(dateTime.dayOfMonth, 10, 2));
                 } else if (equals(symbol, "dayN"_s)) {
                     ASSERT(to_underlying(dateTime.dayOfWeek) >= 0 && to_underlying(dateTime.dayOfWeek) < to_underlying(DayOfWeek::COUNT));
-                    String dayName = dayNameStrings[to_underlying(dateTime.dayOfWeek)];
-                    append(&stb, getText(dayName));
+                    append(&stb, getText(day_names[dateTime.dayOfWeek]));
                 } else if (equals(symbol, "hour"_s)) {
                     append(&stb, formatInt(dateTime.hour));
                 } else if (equals(symbol, "hour2"_s)) {

@@ -6,8 +6,9 @@
 
 #pragma once
 
-#include "Basic.h"
-#include "String.h"
+#include <Util/Basic.h>
+#include <Util/EnumMap.h>
+#include <Util/String.h>
 
 enum class DayOfWeek : u8 {
     Monday,
@@ -59,7 +60,7 @@ enum class DateTimeFormat : u8 {
     LongDateTime,
 };
 
-String const dayNameStrings[to_underlying(DayOfWeek::COUNT)] = {
+EnumMap<DayOfWeek, String> const day_names {
     "date_part_monday"_s,
     "date_part_tuesday"_s,
     "date_part_wednesday"_s,
@@ -69,7 +70,7 @@ String const dayNameStrings[to_underlying(DayOfWeek::COUNT)] = {
     "date_part_sunday"_s,
 };
 
-String const monthNameStrings[to_underlying(MonthOfYear::COUNT)] = {
+EnumMap<MonthOfYear, String> const month_names {
     "date_part_month01"_s,
     "date_part_month02"_s,
     "date_part_month03"_s,
