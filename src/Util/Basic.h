@@ -8,6 +8,9 @@
 
 #include <cfloat>
 #include <cstdint>
+#include <utility>
+
+using std::move, std::forward;
 
 typedef int8_t s8;
 typedef int16_t s16;

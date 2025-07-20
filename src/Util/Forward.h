@@ -7,9 +7,6 @@
 #pragma once
 
 #include "Assert.h"
-#include <utility>
-
-using std::move, std::forward;
 
 struct BitArray;
 struct BitArrayIterator;
