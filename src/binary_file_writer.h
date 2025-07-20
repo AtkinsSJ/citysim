@@ -92,6 +92,15 @@ struct BinaryFileWriter {
 
     FileBlob appendBlob(s32 length, u8* data, FileBlobCompressionScheme scheme);
     FileBlob appendBlob(Array2<u8>* data, FileBlobCompressionScheme scheme);
+    template<typename Enum>
+    requires(__is_enum(Enum))
+    FileBlob appendBlob(Array2<Enum> const& data, FileBlobCompressionScheme scheme)
+    {
+        // FIXME: Allow non-u8. Theoretically it'll work right now, but our compression scheme goes by individual bytes
+        //        so we should do something smarter for larger types.
+        static_assert(sizeof(Enum) == 1);
+        return appendBlob(data.w * data.h, reinterpret_cast<__underlying_type(Enum)*>(data.items), scheme);
+    }
 
     FileString appendString(String s);
 
