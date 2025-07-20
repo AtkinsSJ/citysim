@@ -410,32 +410,32 @@ void loadBuildingDefs(Blob data, Asset* asset)
                         String spriteName = intern(&asset_manager().assetStrings, readToken(&reader));
 
                         if (directionFlags.length == 8) {
-                            variant->connections[Connect_N] = connectionTypeOf(directionFlags[0]);
-                            variant->connections[Connect_NE] = connectionTypeOf(directionFlags[1]);
-                            variant->connections[Connect_E] = connectionTypeOf(directionFlags[2]);
-                            variant->connections[Connect_SE] = connectionTypeOf(directionFlags[3]);
-                            variant->connections[Connect_S] = connectionTypeOf(directionFlags[4]);
-                            variant->connections[Connect_SW] = connectionTypeOf(directionFlags[5]);
-                            variant->connections[Connect_W] = connectionTypeOf(directionFlags[6]);
-                            variant->connections[Connect_NW] = connectionTypeOf(directionFlags[7]);
+                            variant->connections[ConnectionDirection::N] = connectionTypeOf(directionFlags[0]);
+                            variant->connections[ConnectionDirection::NE] = connectionTypeOf(directionFlags[1]);
+                            variant->connections[ConnectionDirection::E] = connectionTypeOf(directionFlags[2]);
+                            variant->connections[ConnectionDirection::SE] = connectionTypeOf(directionFlags[3]);
+                            variant->connections[ConnectionDirection::S] = connectionTypeOf(directionFlags[4]);
+                            variant->connections[ConnectionDirection::SW] = connectionTypeOf(directionFlags[5]);
+                            variant->connections[ConnectionDirection::W] = connectionTypeOf(directionFlags[6]);
+                            variant->connections[ConnectionDirection::NW] = connectionTypeOf(directionFlags[7]);
                         } else if (directionFlags.length == 4) {
                             // The 4 other directions don't matter
-                            variant->connections[Connect_NE] = ConnectionType_Anything;
-                            variant->connections[Connect_SE] = ConnectionType_Anything;
-                            variant->connections[Connect_SW] = ConnectionType_Anything;
-                            variant->connections[Connect_NW] = ConnectionType_Anything;
+                            variant->connections[ConnectionDirection::NE] = ConnectionType_Anything;
+                            variant->connections[ConnectionDirection::SE] = ConnectionType_Anything;
+                            variant->connections[ConnectionDirection::SW] = ConnectionType_Anything;
+                            variant->connections[ConnectionDirection::NW] = ConnectionType_Anything;
 
-                            variant->connections[Connect_N] = connectionTypeOf(directionFlags[0]);
-                            variant->connections[Connect_E] = connectionTypeOf(directionFlags[1]);
-                            variant->connections[Connect_S] = connectionTypeOf(directionFlags[2]);
-                            variant->connections[Connect_W] = connectionTypeOf(directionFlags[3]);
+                            variant->connections[ConnectionDirection::N] = connectionTypeOf(directionFlags[0]);
+                            variant->connections[ConnectionDirection::E] = connectionTypeOf(directionFlags[1]);
+                            variant->connections[ConnectionDirection::S] = connectionTypeOf(directionFlags[2]);
+                            variant->connections[ConnectionDirection::W] = connectionTypeOf(directionFlags[3]);
                         } else {
                             error(&reader, "First argument for a building 'variant' should be a 4 or 8 character string consisting of 0/1/2/* flags (meaning nothing/part1/part2/anything) for N/E/S/W or N/NE/E/SE/S/SW/W/NW connectivity. eg, 101012**"_s);
                             return;
                         }
 
-                        String connectionsString = repeatChar(' ', ConnectionDirectionCount);
-                        for (s32 connectionIndex = 0; connectionIndex < ConnectionDirectionCount; connectionIndex++) {
+                        String connectionsString = repeatChar(' ', to_underlying(ConnectionDirection::COUNT));
+                        for (s32 connectionIndex = 0; connectionIndex < to_underlying(ConnectionDirection::COUNT); connectionIndex++) {
                             if (variant->connections[connectionIndex] == ConnectionType_Invalid) {
                                 error(&reader, "Unrecognized connection type character, valid values: '012*'"_s);
                             }
@@ -565,13 +565,13 @@ s32 getMaxBuildingSize(ZoneType zoneType)
     return result;
 }
 
-bool matchesVariant(BuildingDef* def, BuildingVariant* variant, BuildingDef** neighbourDefs)
+bool matchesVariant(BuildingDef* def, BuildingVariant* variant, EnumMap<ConnectionDirection, BuildingDef*> const& neighbourDefs)
 {
     DEBUG_FUNCTION();
 
     bool result = true;
 
-    for (s32 directionIndex = 0; directionIndex < ConnectionDirectionCount; directionIndex++) {
+    for (s32 directionIndex = 0; directionIndex < to_underlying(ConnectionDirection::COUNT); directionIndex++) {
         bool matchedDirection = false;
         ConnectionType connectionType = variant->connections[directionIndex];
         BuildingDef* neighbourDef = neighbourDefs[directionIndex];
@@ -646,17 +646,11 @@ void updateBuildingVariant(City* city, Building* building, BuildingDef* passedDe
         s32 x = building->footprint.x;
         s32 y = building->footprint.y;
 
-        static_assert(ConnectionDirectionCount == 8, "updateBuildingVariant() assumes ConnectionDirectionCount == 8");
-        BuildingDef* neighbourDefs[ConnectionDirectionCount] = {
-            getBuildingDef(getBuildingAt(city, x, y - 1)),
-            getBuildingDef(getBuildingAt(city, x + 1, y - 1)),
-            getBuildingDef(getBuildingAt(city, x + 1, y)),
-            getBuildingDef(getBuildingAt(city, x + 1, y + 1)),
-            getBuildingDef(getBuildingAt(city, x, y + 1)),
-            getBuildingDef(getBuildingAt(city, x - 1, y + 1)),
-            getBuildingDef(getBuildingAt(city, x - 1, y)),
-            getBuildingDef(getBuildingAt(city, x - 1, y - 1))
-        };
+        static_assert(to_underlying(ConnectionDirection::COUNT) == 8, "updateBuildingVariant() assumes ConnectionDirectionCount == 8");
+        EnumMap<ConnectionDirection, BuildingDef*> neighbourDefs;
+        for (auto i = 0; i < to_underlying(ConnectionDirection::COUNT); i++) {
+            neighbourDefs[i] = getBuildingDef(getBuildingAt(city, x + connection_offsets[i].x, y + connection_offsets[i].y));
+        }
 
         // Search for a matching variant
         // Right now... YAY LINEAR SEARCH! @Speed

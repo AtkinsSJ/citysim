@@ -11,6 +11,7 @@
 #include "tile_utils.h"
 #include "transport.h"
 #include <Sim/BuildingRef.h>
+#include <Util/EnumMap.h>
 #include <Util/Flags.h>
 #include <Util/OccupancyArray.h>
 #include <Util/StringTable.h>
@@ -32,17 +33,28 @@ enum BuildingFlag {
     BuildingFlagCount
 };
 
-enum ConnectionDirection {
-    Connect_N = 0,
-    Connect_NE = 1,
-    Connect_E = 2,
-    Connect_SE = 3,
-    Connect_S = 4,
-    Connect_SW = 5,
-    Connect_W = 6,
-    Connect_NW = 7,
+enum class ConnectionDirection : u8 {
+    N,
+    NE,
+    E,
+    SE,
+    S,
+    SW,
+    W,
+    NW,
 
-    ConnectionDirectionCount
+    COUNT
+};
+
+EnumMap<ConnectionDirection, V2I> const connection_offsets {
+    v2i(0, -1),
+    v2i(1, -1),
+    v2i(1, 0),
+    v2i(1, 1),
+    v2i(0, 1),
+    v2i(-1, 1),
+    v2i(-1, 0),
+    v2i(-1, -1),
 };
 
 enum ConnectionType {
@@ -55,8 +67,7 @@ enum ConnectionType {
 };
 
 struct BuildingVariant {
-    ConnectionType connections[ConnectionDirectionCount];
-
+    EnumMap<ConnectionDirection, ConnectionType> connections;
     String spriteName;
 };
 
