@@ -14,6 +14,7 @@
 #include <Sim/BuildingRef.h>
 #include <Util/Basic.h>
 #include <Util/ChunkedArray.h>
+#include <Util/EnumMap.h>
 #include <Util/Flags.h>
 #include <Util/Random.h>
 #include <Util/String.h>
@@ -124,7 +125,7 @@ struct GameState {
     City city;
 
     DataView dataLayerToDraw;
-    DataViewUI dataViewUI[to_underlying(DataView::COUNT)];
+    EnumMap<DataView, DataViewUI> dataViewUI;
 
     DragState worldDragState;
     ActionMode actionMode;
