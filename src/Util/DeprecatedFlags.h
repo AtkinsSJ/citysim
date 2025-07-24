@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "Basic.h"
+#include <Util/Basic.h>
 
 //
 // I've repeatedly found I want an enum that can be used as a set of flags, but also be usable as indices into an array.
@@ -28,7 +28,7 @@
 //
 
 template<typename Enum, typename Storage>
-struct Flags {
+struct DeprecatedFlags {
     s32 flagCount;
     Storage data;
 
@@ -47,14 +47,14 @@ struct Flags {
     }
 
     // Add the flag
-    Flags<Enum, Storage>* operator+=(Enum flag)
+    DeprecatedFlags<Enum, Storage>* operator+=(Enum flag)
     {
         this->data |= ((u64)1 << flag);
         return this;
     }
 
     // Remove the flag
-    Flags<Enum, Storage>* operator-=(Enum flag)
+    DeprecatedFlags<Enum, Storage>* operator-=(Enum flag)
     {
         u64 mask = ((u64)1 << flag);
         this->data &= ~mask;
@@ -62,36 +62,36 @@ struct Flags {
     }
 
     // Toggle the flag
-    Flags<Enum, Storage>* operator^=(Enum flag)
+    DeprecatedFlags<Enum, Storage>* operator^=(Enum flag)
     {
         this->data ^= ((u64)1 << flag);
         return this;
     }
 
     // Comparison
-    bool operator==(Flags<Enum, Storage>& other)
+    bool operator==(DeprecatedFlags<Enum, Storage>& other)
     {
         return this->data == other.data;
     }
 
     // Comparison
-    bool operator!=(Flags<Enum, Storage>& other)
+    bool operator!=(DeprecatedFlags<Enum, Storage>& other)
     {
         return !(*this == other);
     }
 };
 
 template<typename Enum>
-using Flags8 = Flags<Enum, u8>;
+using Flags8 = DeprecatedFlags<Enum, u8>;
 template<typename Enum>
-using Flags16 = Flags<Enum, u16>;
+using Flags16 = DeprecatedFlags<Enum, u16>;
 template<typename Enum>
-using Flags32 = Flags<Enum, u32>;
+using Flags32 = DeprecatedFlags<Enum, u32>;
 template<typename Enum>
-using Flags64 = Flags<Enum, u64>;
+using Flags64 = DeprecatedFlags<Enum, u64>;
 
 template<typename Enum, typename Storage>
-void initFlags(Flags<Enum, Storage>* flags, Enum flagCount)
+void initFlags(DeprecatedFlags<Enum, Storage>* flags, Enum flagCount)
 {
     ASSERT(flagCount <= (8 * sizeof(Storage)));
 
@@ -100,13 +100,13 @@ void initFlags(Flags<Enum, Storage>* flags, Enum flagCount)
 }
 
 template<typename Enum, typename Storage>
-bool isEmpty(Flags<Enum, Storage>* flags)
+bool isEmpty(DeprecatedFlags<Enum, Storage>* flags)
 {
     return (flags->data == 0);
 }
 
 template<typename Enum, typename Storage>
-Storage getAll(Flags<Enum, Storage>* flags)
+Storage getAll(DeprecatedFlags<Enum, Storage>* flags)
 {
     return flags->data;
 }

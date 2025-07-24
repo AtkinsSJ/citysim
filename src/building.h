@@ -11,8 +11,8 @@
 #include "tile_utils.h"
 #include "transport.h"
 #include <Sim/BuildingRef.h>
+#include <Util/DeprecatedFlags.h>
 #include <Util/EnumMap.h>
-#include <Util/Flags.h>
 #include <Util/OccupancyArray.h>
 #include <Util/StringTable.h>
 

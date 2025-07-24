@@ -10,7 +10,7 @@
 #include "sector.h"
 #include <Sim/Forward.h>
 #include <UI/Forward.h>
-#include <Util/Flags.h>
+#include <Util/DeprecatedFlags.h>
 
 enum TransportType {
     Transport_Road,
@@ -27,7 +27,7 @@ struct TransportLayer {
     Array2<u8> tileTransportDistance[TransportTypeCount];
 };
 
-using Flags_TransportType = Flags<TransportType, u8>;
+using Flags_TransportType = DeprecatedFlags<TransportType, u8>;
 
 void initTransportLayer(TransportLayer* layer, City* city, MemoryArena* gameArena);
 void updateTransportLayer(City* city, TransportLayer* layer);

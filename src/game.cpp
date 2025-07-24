@@ -9,7 +9,7 @@
 #include "AppState.h"
 #include "Assets/AssetManager.h"
 #include "UI/Window.h"
-#include "Util/Flags.h"
+#include "Util/DeprecatedFlags.h"
 #include "Util/Random.h"
 #include "about.h"
 #include "city.h"

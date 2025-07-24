@@ -14,8 +14,8 @@
 #include <Sim/BuildingRef.h>
 #include <Util/Basic.h>
 #include <Util/ChunkedArray.h>
+#include <Util/DeprecatedFlags.h>
 #include <Util/EnumMap.h>
-#include <Util/Flags.h>
 #include <Util/Random.h>
 #include <Util/String.h>
 #include <Util/Vector.h>
@@ -140,7 +140,7 @@ struct GameState {
     // Honestly, I'd like to do that now anyway, but I can't think of a good way to do so.
     // - Sam, 11/2/2019
     V2I inspectedTilePosition;
-    Flags<InspectTileDebugFlags, u8> inspectTileDebugFlags;
+    DeprecatedFlags<InspectTileDebugFlags, u8> inspectTileDebugFlags;
 };
 
 GameState* newGameState(); // A blank game state with no city
