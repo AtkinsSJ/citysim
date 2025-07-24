@@ -77,7 +77,7 @@ void updateFireLayer(City* city, FireLayer* layer)
                             fireEffect.outerValue = 20;
                             fireEffect.radius = layer->maxFireRadius;
 
-                            applyEffect(&fireEffect, v2(fire->pos), Effect_Add, &layer->tileFireProximityEffect, dirtyRect);
+                            applyEffect(&fireEffect, v2(fire->pos), EffectType::Add, &layer->tileFireProximityEffect, dirtyRect);
                         }
                     }
                 }
@@ -108,7 +108,7 @@ void updateFireLayer(City* city, FireLayer* layer)
                             effectiveness *= 0.4f; // @Balance
                         }
 
-                        applyEffect(&def->fireProtection, centreOf(building->footprint), Effect_Max, &layer->tileFireProtection, sector->bounds, effectiveness);
+                        applyEffect(&def->fireProtection, centreOf(building->footprint), EffectType::Max, &layer->tileFireProtection, sector->bounds, effectiveness);
                     }
                 }
             }

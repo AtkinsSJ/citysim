@@ -51,7 +51,7 @@ void updateLandValueLayer(City* city, LandValueLayer* layer)
                     Building* building = buildingIt.getValue();
                     BuildingDef* def = getBuildingDef(building);
                     if (hasEffect(&def->landValueEffect)) {
-                        applyEffect(&def->landValueEffect, centreOf(building->footprint), Effect_Add, &layer->tileBuildingContributions, dirtyRect);
+                        applyEffect(&def->landValueEffect, centreOf(building->footprint), EffectType::Add, &layer->tileBuildingContributions, dirtyRect);
                     }
                 }
 

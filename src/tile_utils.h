@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include <Gfx/Renderer.h>
 #include "dirty.h"
 #include <Assets/AssetManager.h>
+#include <Gfx/Renderer.h>
 #include <Util/Array2.h>
 #include <Util/Basic.h>
 #include <Util/Vector.h>
@@ -22,9 +22,9 @@ struct EffectRadius {
 };
 inline bool hasEffect(EffectRadius* effectRadius) { return effectRadius->radius > 0; }
 
-enum EffectType {
-    Effect_Add,
-    Effect_Max,
+enum class EffectType : u8 {
+    Add,
+    Max,
 };
 template<typename T>
 void applyEffect(EffectRadius* effectRadius, V2 effectCentre, EffectType type, Array2<T>* tileValues, Rect2I region, f32 scale = 1.0f)
@@ -51,7 +51,7 @@ void applyEffect(EffectRadius* effectRadius, V2 effectCentre, EffectType type, A
                     continue;
 
                 switch (type) {
-                case Effect_Add: {
+                case EffectType::Add: {
                     T originalValue = tileValues->get(x, y);
 
                     // This clamp is probably unnecessary but just in case.
@@ -59,7 +59,7 @@ void applyEffect(EffectRadius* effectRadius, V2 effectCentre, EffectType type, A
                     tileValues->set(x, y, newValue);
                 } break;
 
-                case Effect_Max: {
+                case EffectType::Max: {
                     T originalValue = tileValues->get(x, y);
                     T newValue = max(originalValue, contribution);
                     tileValues->set(x, y, newValue);

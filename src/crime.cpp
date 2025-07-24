@@ -76,7 +76,7 @@ void updateCrimeLayer(City* city, CrimeLayer* layer)
                                 // TODO: Consider water access too
                             }
 
-                            applyEffect(&def->policeEffect, centreOf(building->footprint), Effect_Add, &layer->tilePoliceCoverage, sector->bounds, effectiveness);
+                            applyEffect(&def->policeEffect, centreOf(building->footprint), EffectType::Add, &layer->tilePoliceCoverage, sector->bounds, effectiveness);
                         }
                     }
                 }
