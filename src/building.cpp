@@ -563,10 +563,10 @@ bool matchesVariant(BuildingDef* def, BuildingVariant* variant, EnumMap<Connecti
 
     bool result = true;
 
-    for (s32 directionIndex = 0; directionIndex < to_underlying(ConnectionDirection::COUNT); directionIndex++) {
+    for (auto direction : enum_values<ConnectionDirection>()) {
         bool matchedDirection = false;
-        ConnectionType connectionType = variant->connections[directionIndex];
-        BuildingDef* neighbourDef = neighbourDefs[directionIndex];
+        ConnectionType connectionType = variant->connections[direction];
+        BuildingDef* neighbourDef = neighbourDefs[direction];
 
         if (neighbourDef == nullptr) {
             matchedDirection = (connectionType == ConnectionType::Nothing) || (connectionType == ConnectionType::Anything);
@@ -639,8 +639,8 @@ void updateBuildingVariant(City* city, Building* building, BuildingDef* passedDe
 
         static_assert(to_underlying(ConnectionDirection::COUNT) == 8, "updateBuildingVariant() assumes ConnectionDirectionCount == 8");
         EnumMap<ConnectionDirection, BuildingDef*> neighbourDefs;
-        for (auto i = 0; i < to_underlying(ConnectionDirection::COUNT); i++) {
-            neighbourDefs[i] = getBuildingDef(getBuildingAt(city, x + connection_offsets[i].x, y + connection_offsets[i].y));
+        for (auto direction : enum_values<ConnectionDirection>()) {
+            neighbourDefs[direction] = getBuildingDef(getBuildingAt(city, x + connection_offsets[direction].x, y + connection_offsets[direction].y));
         }
 
         // Search for a matching variant
