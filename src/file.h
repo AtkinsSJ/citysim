@@ -9,6 +9,7 @@
 #include "debug.h"
 #include <SDL2/SDL_rwops.h>
 #include <Util/Basic.h>
+#include <Util/Flags.h>
 #include <Util/Log.h>
 #include <Util/Memory.h>
 #include <Util/MemoryArena.h>
@@ -58,15 +59,16 @@ struct DirectoryListingHandle {
 #endif
 };
 
-enum FileFlags {
-    FileFlag_Directory = 1 << 0,
-    FileFlag_Hidden = 1 << 1,
-    FileFlag_ReadOnly = 1 << 2,
+enum class FileFlags : u8 {
+    Directory,
+    Hidden,
+    ReadOnly,
+    COUNT,
 };
 
 struct FileInfo {
     String filename;
-    u32 flags;
+    Flags<FileFlags> flags;
     smm size;
 };
 

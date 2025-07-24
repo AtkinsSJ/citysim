@@ -179,11 +179,11 @@ String platform_constructPath(std::initializer_list<String> parts, bool appendWi
 
     result->flags = 0;
     if (findFileData->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-        result->flags |= FileFlag_Directory;
+        result->flags |= FileFlags::Directory;
     if (findFileData->dwFileAttributes & FILE_ATTRIBUTE_HIDDEN)
-        result->flags |= FileFlag_Hidden;
+        result->flags |= FileFlags::Hidden;
     if (findFileData->dwFileAttributes & FILE_ATTRIBUTE_READONLY)
-        result->flags |= FileFlag_ReadOnly;
+        result->flags |= FileFlags::ReadOnly;
 }
 
 DirectoryListingHandle platform_beginDirectoryListing(String path, FileInfo* result)

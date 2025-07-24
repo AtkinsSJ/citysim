@@ -67,7 +67,7 @@ void readSavedGamesInfo(SavedGamesCatalogue* catalogue)
         hasNextFile(&it);
         findNextFile(&it)) {
         FileInfo* fileInfo = getFileInfo(&it);
-        if (fileInfo->flags & (FileFlag_Directory | FileFlag_Hidden))
+        if (fileInfo->flags.has(FileFlags::Directory) || fileInfo->flags.has(FileFlags::Hidden))
             continue;
 
         SavedGameInfo* savedGame = catalogue->savedGames.appendBlank();

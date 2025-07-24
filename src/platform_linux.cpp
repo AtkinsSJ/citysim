@@ -153,7 +153,7 @@ static void fillFileInfo(DirectoryListingHandle const& handle, dirent const& ent
     struct stat statBuffer {};
     result = {
         .filename = makeString(entry.d_name),
-        .flags = 0,
+        .flags = {},
         .size = 0,
     };
 
@@ -162,11 +162,10 @@ static void fillFileInfo(DirectoryListingHandle const& handle, dirent const& ent
         return;
     }
 
-    result.flags = 0;
     if (statBuffer.st_mode & S_IFDIR)
-        result.flags |= FileFlag_Directory;
+        result.flags.add(FileFlags::Directory);
     if (findIndexOfChar(result.filename, '.', false).orDefault(-1) == 0)
-        result.flags |= FileFlag_Hidden;
+        result.flags.add(FileFlags::Hidden);
     // TODO: ReadOnly flag, which... we never use!
 
     result.size = statBuffer.st_size;

@@ -616,7 +616,7 @@ void addAssetsFromDirectory(String subDirectory, Optional<AssetType> manualAsset
         findNextFile(&it)) {
         FileInfo* fileInfo = getFileInfo(&it);
 
-        if ((fileInfo->flags & (FileFlag_Hidden | FileFlag_Directory))
+        if (fileInfo->flags.has(FileFlags::Directory) || fileInfo->flags.has(FileFlags::Hidden)
             || (fileInfo->filename[0] == '.')) {
             continue;
         }
