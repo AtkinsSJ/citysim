@@ -8,19 +8,28 @@
 
 #include "binary_file.h"
 #include "file.h"
+#include <Util/Flags.h>
 #include <Util/MemoryArena.h>
 
 // TODO: @Size Maybe we keep a buffer the size of the largest section in the
 // file, to reduce how much memory we have to allocate. Though, that assumes
 // we only ever need one section in memory at a time.
 struct BinaryFileReader {
+    enum class Problems : u8 {
+        InvalidFormat,
+        WrongIdentifier,
+        VersionTooNew,
+        CorruptTOC,
+        COUNT,
+    };
+
     MemoryArena* arena;
     MemoryArena::ResetState arenaResetState;
 
     // Data about the file itself
     FileHandle* fileHandle;
     bool isValidFile;
-    u32 problems;
+    Flags<Problems> problems;
 
     // TOC
     Array<FileTOCEntry> toc;
@@ -97,13 +106,6 @@ struct BinaryFileReader {
 
     // Internal
     u8* sectionMemoryAt(smm relativeOffset);
-};
-
-enum BinaryFileProblems {
-    BFP_InvalidFormat = 1 << 0,
-    BFP_WrongIdentifier = 1 << 1,
-    BFP_VersionTooNew = 1 << 2,
-    BFP_CorruptTOC = 1 << 3,
 };
 
 BinaryFileReader readBinaryFile(FileHandle* handle, FileIdentifier identifier, MemoryArena* arena);

@@ -13,7 +13,6 @@ BinaryFileReader readBinaryFile(FileHandle* handle, FileIdentifier identifier, M
     reader.arena = arena;
     reader.fileHandle = handle;
     reader.isValidFile = false;
-    reader.problems = 0;
 
     // Check this file is our format!
     FileHeader header;
@@ -23,17 +22,17 @@ BinaryFileReader readBinaryFile(FileHandle* handle, FileIdentifier identifier, M
         if ((header.unixNewline != 0x0A)
             || (header.dosNewline[0] != 0x0D) || (header.dosNewline[1] != 0x0A)) {
             logError("Binary file '{0}' has corrupted newline characters. This probably means the saving or loading code is incorrect."_s, { handle->path });
-            reader.problems |= BFP_InvalidFormat;
+            reader.problems.add(BinaryFileReader::Problems::InvalidFormat);
         } else if (header.identifier != identifier) {
             logError("Binary file '{0}' does not begin with the expected 4-byte sequence. Expected '{1}', got '{2}'"_s, { handle->path, makeString((char*)(&identifier), 4), makeString((char*)(&header.identifier), 4) });
-            reader.problems |= BFP_WrongIdentifier;
+            reader.problems.add(BinaryFileReader::Problems::WrongIdentifier);
         } else if (header.version > BINARY_FILE_FORMAT_VERSION) {
             logError("Binary file '{0}' was created with a newer file format than we understand. File version is '{1}', maximum we support is '{2}'"_s, {
                                                                                                                                                             handle->path,
                                                                                                                                                             formatInt(header.version),
                                                                                                                                                             formatInt(BINARY_FILE_FORMAT_VERSION),
                                                                                                                                                         });
-            reader.problems |= BFP_VersionTooNew;
+            reader.problems.add(BinaryFileReader::Problems::VersionTooNew);
         } else {
             // Read the TOC in
             Array<FileTOCEntry> toc = arena->allocate_array<FileTOCEntry>(header.toc.count, false);
@@ -41,7 +40,7 @@ BinaryFileReader readBinaryFile(FileHandle* handle, FileIdentifier identifier, M
                 reader.toc = toc;
                 reader.isValidFile = true;
             } else {
-                reader.problems |= BFP_CorruptTOC;
+                reader.problems.add(BinaryFileReader::Problems::CorruptTOC);
             }
         }
     }

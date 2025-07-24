@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include "binary_file_reader.h"
 #include "file.h"
 #include <UI/TextInput.h>
 #include <UI/UI.h>
@@ -22,7 +23,7 @@ struct SavedGameInfo {
     String fullPath;
     DateTime saveTime;
 
-    u32 problems; // BinaryFileProblems
+    Flags<BinaryFileReader::Problems> problems;
 
     // City properties
     String cityName;

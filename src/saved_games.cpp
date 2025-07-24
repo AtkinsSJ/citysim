@@ -197,7 +197,7 @@ void savedGamesWindowProc(UI::WindowContext* context, void* userData)
         ui->addLabel(myprintf("£{0}"_s, { formatInt(selectedSavedGame->funds) }));
         ui->addLabel(myprintf("{0} population"_s, { formatInt(selectedSavedGame->population) }));
 
-        if (selectedSavedGame->problems & BFP_VersionTooNew) {
+        if (selectedSavedGame->problems.has(BinaryFileReader::Problems::VersionTooNew)) {
             ui->addLabel(getText("msg_load_version_too_new"_s));
         }
     }
