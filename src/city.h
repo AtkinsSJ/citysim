@@ -87,10 +87,11 @@ bool buildingExistsAt(City* city, s32 x, s32 y);
 Building* getBuildingAt(City* city, s32 x, s32 y);
 // Returns a TEMPORARY-allocated list of buildings that are overlapping `area`, guaranteeing that
 // each building is only listed once. No guarantees are made about the order.
-enum BuildingQueryFlags {
-    BQF_RequireOriginInArea = 1 << 0, // Only return buildings whose origin (top-left corner) is within the given area.
+enum class BuildingQueryFlag : u8 {
+    RequireOriginInArea, // Only return buildings whose origin (top-left corner) is within the given area.
+    COUNT,
 };
-ChunkedArray<Building*> findBuildingsOverlappingArea(City* city, Rect2I area, u32 flags = 0);
+ChunkedArray<Building*> findBuildingsOverlappingArea(City* city, Rect2I area, Flags<BuildingQueryFlag> flags = {});
 bool canPlaceBuilding(City* city, BuildingDef* def, s32 left, s32 top);
 s32 calculateBuildCost(City* city, BuildingDef* def, Rect2I area);
 void placeBuilding(City* city, BuildingDef* def, s32 left, s32 top, bool markAreasDirty = true);

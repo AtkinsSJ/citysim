@@ -116,7 +116,7 @@ void updateSectorPowerValues(City* city, PowerSector* sector)
     }
 
     // Count power from buildings
-    ChunkedArray<Building*> sectorBuildings = findBuildingsOverlappingArea(city, sector->bounds, BQF_RequireOriginInArea);
+    ChunkedArray<Building*> sectorBuildings = findBuildingsOverlappingArea(city, sector->bounds, BuildingQueryFlag::RequireOriginInArea);
     for (auto it = sectorBuildings.iterate();
         it.hasNext();
         it.next()) {

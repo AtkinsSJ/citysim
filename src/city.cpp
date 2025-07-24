@@ -405,18 +405,16 @@ void demolishRect(City* city, Rect2I area)
     updateAdjacentBuildingVariants(city, area);
 }
 
-ChunkedArray<Building*> findBuildingsOverlappingArea(City* city, Rect2I area, u32 flags)
+ChunkedArray<Building*> findBuildingsOverlappingArea(City* city, Rect2I area, Flags<BuildingQueryFlag> flags)
 {
     DEBUG_FUNCTION();
 
     ChunkedArray<Building*> result = {};
     initChunkedArray(&result, &temp_arena(), 64);
 
-    bool requireOriginInArea = (flags & BQF_RequireOriginInArea) != 0;
-
     // Expand the area to account for buildings to the left or up from it
     // (but don't do that if we only care about origins)
-    s32 expansion = requireOriginInArea ? 0 : buildingCatalogue.overallMaxBuildingDim;
+    s32 expansion = flags.has(BuildingQueryFlag::RequireOriginInArea) ? 0 : buildingCatalogue.overallMaxBuildingDim;
     Rect2I expandedArea = expand(area, expansion, 0, 0, expansion);
     Rect2I sectorsArea = getSectorsCovered(&city->sectors, expandedArea);
 

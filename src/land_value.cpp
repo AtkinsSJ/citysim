@@ -23,7 +23,7 @@ void initLandValueLayer(LandValueLayer* layer, City* city, MemoryArena* gameAren
     initDirtyRects(&layer->dirtyRects, gameArena, maxLandValueEffectDistance, city->bounds);
 }
 
- void markLandValueLayerDirty(LandValueLayer* layer, Rect2I bounds)
+void markLandValueLayerDirty(LandValueLayer* layer, Rect2I bounds)
 {
     markRectAsDirty(&layer->dirtyRects, bounds);
 }
@@ -44,7 +44,7 @@ void updateLandValueLayer(City* city, LandValueLayer* layer)
 
                 fillRegion<s16>(&layer->tileBuildingContributions, dirtyRect, 0);
 
-                ChunkedArray<Building*> contributingBuildings = findBuildingsOverlappingArea(city, expand(dirtyRect, maxLandValueEffectDistance), 0);
+                ChunkedArray<Building*> contributingBuildings = findBuildingsOverlappingArea(city, expand(dirtyRect, maxLandValueEffectDistance));
                 for (auto buildingIt = contributingBuildings.iterate();
                     buildingIt.hasNext();
                     buildingIt.next()) {
@@ -134,7 +134,7 @@ void updateLandValueLayer(City* city, LandValueLayer* layer)
     }
 }
 
- f32 getLandValuePercentAt(City* city, s32 x, s32 y)
+f32 getLandValuePercentAt(City* city, s32 x, s32 y)
 {
     return city->landValueLayer.tileLandValue.get(x, y) / 255.0f;
 }

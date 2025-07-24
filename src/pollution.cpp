@@ -41,7 +41,7 @@ void updatePollutionLayer(City* city, PollutionLayer* layer)
 
                 fillRegion<s16>(&layer->tileBuildingContributions, dirtyRect, 0);
 
-                ChunkedArray<Building*> contributingBuildings = findBuildingsOverlappingArea(city, expand(dirtyRect, maxLandValueEffectDistance), 0);
+                ChunkedArray<Building*> contributingBuildings = findBuildingsOverlappingArea(city, expand(dirtyRect, maxLandValueEffectDistance));
                 for (auto buildingIt = contributingBuildings.iterate();
                     buildingIt.hasNext();
                     buildingIt.next()) {
