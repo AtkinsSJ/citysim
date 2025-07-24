@@ -16,6 +16,10 @@ public:
     using StorageT = EnumFlagStorageType<EnumT>;
 
     Flags() = default;
+    Flags(EnumT flag)
+    {
+        add(flag);
+    }
     constexpr Flags(std::initializer_list<EnumT> initial_flags)
     {
         for (auto flag : initial_flags)
