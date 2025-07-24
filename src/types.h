@@ -12,8 +12,6 @@
 
 #define GLUE_(a, b) a##b
 #define GLUE(a, b) GLUE_(a, b)
-#define STRVAL_(a) #a
-#define STRVAL(a) STRVAL_(a)
 
 #include "Util/Basic.h"
 
