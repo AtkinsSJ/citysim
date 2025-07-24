@@ -63,3 +63,39 @@ struct EnumFlagStorageType<T> {
 
 template<CountedEnum T>
 using EnumFlagStorageType = typename Details::EnumFlagStorageType<T>::Type;
+
+template<CountedEnum T>
+class EnumIterator {
+public:
+    explicit EnumIterator(T start)
+        : m_value(start)
+    {
+    }
+
+    static EnumIterator begin()
+    {
+        return EnumIterator { static_cast<T>(0) };
+    }
+
+    static EnumIterator end()
+    {
+        return EnumIterator { T::COUNT };
+    }
+
+    bool operator==(EnumIterator const&) const = default;
+    T operator*() const { return m_value; }
+    EnumIterator& operator++()
+    {
+        m_value = static_cast<T>(to_underlying(m_value) + 1);
+        return *this;
+    }
+
+private:
+    T m_value;
+};
+
+template<CountedEnum T>
+EnumIterator<T> enum_values()
+{
+    return EnumIterator<T>::begin();
+}
