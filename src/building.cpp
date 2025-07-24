@@ -31,7 +31,6 @@ void initBuildingCatalogue()
     // Update 18/02/2020: We now use the null building def when failing to match an intersection part name.
     Indexed<BuildingDef*> nullBuildingDef = catalogue->allBuildings.append();
     *nullBuildingDef.value = {};
-    initFlags(&nullBuildingDef.value->transportTypes, TransportTypeCount);
 
     initHashTable(&catalogue->buildingsByName, 0.75f, 128);
     initStringTable(&catalogue->buildingNames);
@@ -95,7 +94,6 @@ BuildingDef* appendNewBuildingDef(String name)
     BuildingDef* result = newDef.value;
     result->name = intern(&buildingCatalogue.buildingNames, name);
     result->typeID = newDef.index;
-    initFlags(&result->transportTypes, TransportTypeCount);
 
     result->fireRisk = 1.0f;
     buildingCatalogue.buildingsByName.put(result->name, result);
@@ -186,7 +184,6 @@ void loadBuildingDefs(Blob data, Asset* asset)
                 }
 
                 def = templates.put(pushString(&temp_arena(), name));
-                initFlags(&def->transportTypes, TransportTypeCount);
             } else {
                 warn(&reader, "Only :Building, :Intersection or :Template definitions are supported right now."_s);
             }
@@ -242,9 +239,9 @@ void loadBuildingDefs(Blob data, Asset* asset)
                         String transportName = readToken(&reader);
 
                         if (equals(transportName, "road"_s)) {
-                            def->transportTypes += Transport_Road;
+                            def->transportTypes.add(TransportType::Road);
                         } else if (equals(transportName, "rail"_s)) {
-                            def->transportTypes += Transport_Rail;
+                            def->transportTypes.add(TransportType::Rail);
                         } else {
                             warn(&reader, "Unrecognised transport type \"{0}\"."_s, { transportName });
                         }
@@ -766,7 +763,7 @@ void updateBuilding(City* city, Building* building)
         // - Sam, 30/08/2019
         for (s32 y = building->footprint.y; y < building->footprint.y + building->footprint.h; y++) {
             for (s32 x = building->footprint.x; x < building->footprint.x + building->footprint.w; x++) {
-                distanceToRoad = min(distanceToRoad, getDistanceToTransport(city, x, y, Transport_Road));
+                distanceToRoad = min(distanceToRoad, getDistanceToTransport(city, x, y, TransportType::Road));
             }
         }
 

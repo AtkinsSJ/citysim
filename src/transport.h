@@ -10,33 +10,31 @@
 #include "sector.h"
 #include <Sim/Forward.h>
 #include <UI/Forward.h>
-#include <Util/DeprecatedFlags.h>
+#include <Util/Flags.h>
 
-enum TransportType {
-    Transport_Road,
-    Transport_Rail,
-    TransportTypeCount
+enum class TransportType : u8 {
+    Road,
+    Rail,
+    COUNT
 };
 
 struct TransportLayer {
     DirtyRects dirtyRects;
 
-    Array2<u8> tileTransportTypes;
+    Array2<Flags<TransportType>> tileTransportTypes;
 
     u8 transportMaxDistance;
-    Array2<u8> tileTransportDistance[TransportTypeCount];
+    EnumMap<TransportType, Array2<u8>> tileTransportDistance;
 };
-
-using Flags_TransportType = DeprecatedFlags<TransportType, u8>;
 
 void initTransportLayer(TransportLayer* layer, City* city, MemoryArena* gameArena);
 void updateTransportLayer(City* city, TransportLayer* layer);
 void markTransportLayerDirty(TransportLayer* layer, Rect2I bounds);
 
 void addTransportToTile(City* city, s32 x, s32 y, TransportType type);
-void addTransportToTile(City* city, s32 x, s32 y, Flags_TransportType types);
+void addTransportToTile(City* city, s32 x, s32 y, Flags<TransportType> types);
 bool doesTileHaveTransport(City* city, s32 x, s32 y, TransportType type);
-bool doesTileHaveTransport(City* city, s32 x, s32 y, Flags_TransportType types);
+bool doesTileHaveTransport(City* city, s32 x, s32 y, Flags<TransportType> types);
 s32 getDistanceToTransport(City* city, s32 x, s32 y, TransportType type);
 
 void debugInspectTransport(UI::Panel* panel, City* city, s32 x, s32 y);

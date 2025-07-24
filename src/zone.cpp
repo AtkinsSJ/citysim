@@ -400,7 +400,7 @@ bool isZoneAcceptable(City* city, ZoneType zoneType, s32 x, s32 y)
         return false;
     if (buildingExistsAt(city, x, y))
         return false;
-    if (getDistanceToTransport(city, x, y, Transport_Road) > def.maximumDistanceToRoad)
+    if (getDistanceToTransport(city, x, y, TransportType::Road) > def.maximumDistanceToRoad)
         return false;
 
     // TODO: Power requirements!

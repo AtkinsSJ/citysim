@@ -13,12 +13,12 @@
 
 void initTransportLayer(TransportLayer* layer, City* city, MemoryArena* gameArena)
 {
-    layer->tileTransportTypes = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
+    layer->tileTransportTypes = gameArena->allocate_array_2d<Flags<TransportType>>(city->bounds.w, city->bounds.h);
 
     layer->transportMaxDistance = 8;
     initDirtyRects(&layer->dirtyRects, gameArena, layer->transportMaxDistance, city->bounds);
 
-    for (s32 type = 0; type < TransportTypeCount; type++) {
+    for (s32 type = 0; type < to_underlying(TransportType::COUNT); type++) {
         layer->tileTransportDistance[type] = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
         fill<u8>(&layer->tileTransportDistance[type], 255);
     }
@@ -50,9 +50,9 @@ void updateTransportLayer(City* city, TransportLayer* layer)
                     Building* building = getBuildingAt(city, x, y);
                     if (building != nullptr) {
                         BuildingDef* def = getBuildingDef(building->typeID);
-                        layer->tileTransportTypes.set(x, y, getAll(&def->transportTypes));
+                        layer->tileTransportTypes.set(x, y, def->transportTypes);
                     } else {
-                        layer->tileTransportTypes.set(x, y, 0);
+                        layer->tileTransportTypes.set(x, y, {});
                     }
                 }
             }
@@ -60,7 +60,7 @@ void updateTransportLayer(City* city, TransportLayer* layer)
             // Clear the surrounding "distance to road" stuff from the rectangle
             for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.h; y++) {
                 for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.w; x++) {
-                    for (s32 type = 0; type < TransportTypeCount; type++) {
+                    for (s32 type = 0; type < to_underlying(TransportType::COUNT); type++) {
                         u8 distance = doesTileHaveTransport(city, x, y, (TransportType)type) ? 0 : 255;
                         layer->tileTransportDistance[type].set(x, y, distance);
                     }
@@ -69,7 +69,7 @@ void updateTransportLayer(City* city, TransportLayer* layer)
         }
 
         // Transport distance recalculation
-        for (s32 type = 0; type < TransportTypeCount; type++) {
+        for (s32 type = 0; type < to_underlying(TransportType::COUNT); type++) {
             updateDistances(&layer->tileTransportDistance[type], &layer->dirtyRects, layer->transportMaxDistance);
         }
 
@@ -84,40 +84,28 @@ void markTransportLayerDirty(TransportLayer* layer, Rect2I bounds)
 
 bool doesTileHaveTransport(City* city, s32 x, s32 y, TransportType type)
 {
-    bool result = false;
+    if (!tileExists(city, x, y))
+        return false;
 
-    if (tileExists(city, x, y)) {
-        u8 transportTypesAtTile = city->transportLayer.tileTransportTypes.get(x, y);
-        result = (transportTypesAtTile & (1 << type)) != 0;
-    }
-
-    return result;
+    return city->transportLayer.tileTransportTypes.get(x, y).has(type);
 }
 
-bool doesTileHaveTransport(City* city, s32 x, s32 y, Flags_TransportType types)
+bool doesTileHaveTransport(City* city, s32 x, s32 y, Flags<TransportType> types)
 {
-    bool result = false;
+    if (!tileExists(city, x, y))
+        return false;
 
-    if (tileExists(city, x, y)) {
-        u8 transportTypesAtTile = city->transportLayer.tileTransportTypes.get(x, y);
-        result = (transportTypesAtTile & getAll(&types)) != 0;
-    }
-
-    return result;
+    return city->transportLayer.tileTransportTypes.get(x, y).has_any(types);
 }
 
 void addTransportToTile(City* city, s32 x, s32 y, TransportType type)
 {
-    u8 oldValue = city->transportLayer.tileTransportTypes.get(x, y);
-    u8 newValue = oldValue | (1 << type);
-    city->transportLayer.tileTransportTypes.set(x, y, newValue);
+    city->transportLayer.tileTransportTypes.get(x, y).add(type);
 }
 
-void addTransportToTile(City* city, s32 x, s32 y, Flags_TransportType types)
+void addTransportToTile(City* city, s32 x, s32 y, Flags<TransportType> types)
 {
-    u8 oldValue = city->transportLayer.tileTransportTypes.get(x, y);
-    u8 newValue = oldValue | getAll(&types);
-    city->transportLayer.tileTransportTypes.set(x, y, newValue);
+    city->transportLayer.tileTransportTypes.get(x, y).add_all(types);
 }
 
 s32 getDistanceToTransport(City* city, s32 x, s32 y, TransportType type)
@@ -130,7 +118,7 @@ void debugInspectTransport(UI::Panel* panel, City* city, s32 x, s32 y)
     panel->addLabel("*** TRANSPORT INFO ***"_s);
 
     // Transport
-    for (s32 transportType = 0; transportType < TransportTypeCount; transportType++) {
+    for (s32 transportType = 0; transportType < to_underlying(TransportType::COUNT); transportType++) {
         panel->addLabel(myprintf("Distance to transport #{0}: {1}"_s, { formatInt(transportType), formatInt(getDistanceToTransport(city, x, y, (TransportType)transportType)) }));
     }
 }
