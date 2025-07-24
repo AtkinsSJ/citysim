@@ -10,7 +10,7 @@
 #include "unicode.h"
 #include <Util/Log.h>
 
-LineReader readLines(String filename, Blob data, u32 flags, char commentChar)
+LineReader readLines(String filename, Blob data, Flags<LineReaderFlags> flags, char commentChar)
 {
     LineReader result = {};
 
@@ -19,8 +19,8 @@ LineReader readLines(String filename, Blob data, u32 flags, char commentChar)
 
     result.position = {};
 
-    result.skipBlankLines = (flags & LineReader_SkipBlankLines) != 0;
-    result.removeComments = (flags & LineReader_RemoveTrailingComments) != 0;
+    result.skipBlankLines = flags.has(LineReaderFlags::SkipBlankLines);
+    result.removeComments = flags.has(LineReaderFlags::RemoveTrailingComments);
     result.commentChar = commentChar;
 
     return result;

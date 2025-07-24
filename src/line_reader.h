@@ -7,6 +7,7 @@
 #pragma once
 
 #include <Util/Basic.h>
+#include <Util/Flags.h>
 #include <Util/Memory.h>
 #include <Util/String.h>
 
@@ -29,13 +30,14 @@ struct LineReader {
     char commentChar;
 };
 
-enum LineReaderFlags {
-    LineReader_SkipBlankLines = 1 << 0,
-    LineReader_RemoveTrailingComments = 1 << 1,
-    DefaultLineReaderFlags = LineReader_SkipBlankLines | LineReader_RemoveTrailingComments,
+enum class LineReaderFlags : u8 {
+    SkipBlankLines,
+    RemoveTrailingComments,
+    COUNT,
 };
+constexpr Flags DefaultLineReaderFlags { LineReaderFlags::SkipBlankLines, LineReaderFlags::RemoveTrailingComments };
 
-LineReader readLines(String filename, Blob data, u32 flags = DefaultLineReaderFlags, char commentChar = '#');
+LineReader readLines(String filename, Blob data, Flags<LineReaderFlags> flags = DefaultLineReaderFlags, char commentChar = '#');
 LineReaderPosition savePosition(LineReader* reader);
 void restorePosition(LineReader* reader, LineReaderPosition position);
 void restart(LineReader* reader);
