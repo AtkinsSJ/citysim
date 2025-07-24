@@ -13,6 +13,7 @@
 #include <SDL2/SDL_mouse.h>
 #include <UI/UITheme.h>
 #include <Util/Array.h>
+#include <Util/Flags.h>
 #include <Util/Memory.h>
 #include <Util/Vector.h>
 
@@ -110,12 +111,14 @@ struct Texture {
     };
 };
 
-enum AssetFlags {
-    Asset_IsAFile = 1 << 0,          // The file at Asset.fullName should be loaded into memory when loading this Asset
-    Asset_IsLocaleSpecific = 1 << 1, // File path has a {0} in it which should be filled in with the current locale
+enum class AssetFlags : u8 {
+    IsAFile,          // The file at Asset.fullName should be loaded into memory when loading this Asset
+    IsLocaleSpecific, // File path has a {0} in it which should be filled in with the current locale
 
-    AssetDefaultFlags = Asset_IsAFile,
+    COUNT,
 };
+
+constexpr Flags<AssetFlags> default_asset_flags { AssetFlags::IsAFile };
 
 struct Asset {
     AssetType type;
@@ -124,7 +127,7 @@ struct Asset {
     String shortName;
     String fullName;
 
-    u32 flags; // AssetFlags
+    Flags<AssetFlags> flags;
 
     enum class State : u8 {
         Unloaded,

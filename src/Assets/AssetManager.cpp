@@ -149,7 +149,7 @@ Asset* makePlaceholderAsset(AssetType type)
     result->type = type;
     result->shortName = nullString;
     result->fullName = nullString;
-    result->flags = 0;
+    result->flags = {};
     result->state = Asset::State::Loaded;
     result->children = makeEmptyArray<AssetID>();
     result->data = {};
@@ -178,7 +178,7 @@ void addChildAsset(Asset* parent, Asset* child)
     parent->children.append(makeAssetID(child->type, child->shortName));
 }
 
-Asset* addAsset(AssetType type, String shortName, u32 flags)
+Asset* addAsset(AssetType type, String shortName, Flags<AssetFlags> flags)
 {
     String internedShortName = intern(&s_assets->assetStrings, shortName);
 
@@ -189,7 +189,7 @@ Asset* addAsset(AssetType type, String shortName, u32 flags)
     Asset* asset = s_assets->allAssets.appendBlank();
     asset->type = type;
     asset->shortName = internedShortName;
-    if (flags & Asset_IsAFile) {
+    if (flags.has(AssetFlags::IsAFile)) {
         asset->fullName = intern(&s_assets->assetStrings, getAssetPath(asset->type, internedShortName));
     }
     asset->state = Asset::State::Unloaded;
@@ -253,7 +253,7 @@ void loadAsset(Asset* asset)
     if (asset->state != Asset::State::Unloaded)
         return;
 
-    if (asset->flags & Asset_IsLocaleSpecific) {
+    if (asset->flags.has(AssetFlags::IsLocaleSpecific)) {
         // Only load s_assets that match our locale
         String assetLocale = getFileLocale(asset->fullName);
 
@@ -273,7 +273,7 @@ void loadAsset(Asset* asset)
     Blob fileData = {};
     // Some s_assets (meta-s_assets?) have no file associated with them, because they are composed of other s_assets.
     // eg, ShaderPrograms are made of several ShaderParts.
-    if (asset->flags & Asset_IsAFile) {
+    if (asset->flags.has(AssetFlags::IsAFile)) {
         fileData = readTempFile(asset->fullName);
     }
 
@@ -449,7 +449,7 @@ void loadAsset(Asset* asset)
     } break;
 
     default: {
-        if (asset->flags & Asset_IsAFile) {
+        if (asset->flags.has(AssetFlags::IsAFile)) {
             copyFileIntoAsset(&fileData, asset);
         }
 
@@ -544,7 +544,7 @@ Asset* addNinepatch(String name, String filename, s32 pu0, s32 pu1, s32 pu2, s32
 {
     Asset* texture = addTexture(filename, false);
 
-    Asset* asset = addAsset(AssetType::Ninepatch, name, 0);
+    Asset* asset = addAsset(AssetType::Ninepatch, name, {});
 
     Ninepatch* ninepatch = &asset->ninepatch;
     ninepatch->texture = texture;
@@ -566,7 +566,7 @@ Asset* addSpriteGroup(String name, s32 spriteCount)
 {
     ASSERT(spriteCount > 0); // Must have a positive number of sprites in a Sprite Group!
 
-    Asset* spriteGroup = addAsset(AssetType::Sprite, name, 0);
+    Asset* spriteGroup = addAsset(AssetType::Sprite, name, {});
     if (spriteGroup->data.size() != 0)
         DEBUG_BREAK(); // @Leak! Creating the sprite group multiple times is probably a bad idea for other reasons too.
     spriteGroup->data = assetsAllocate(s_assets, spriteCount * sizeof(Sprite));
@@ -607,9 +607,9 @@ void addAssetsFromDirectory(String subDirectory, Optional<AssetType> manualAsset
     }
 
     bool isLocaleSpecific = equals(subDirectory, "locale"_s);
-    u32 assetFlags = AssetDefaultFlags;
+    auto assetFlags = default_asset_flags;
     if (isLocaleSpecific)
-        assetFlags |= Asset_IsLocaleSpecific;
+        assetFlags.add(AssetFlags::IsLocaleSpecific);
 
     for (auto it = iterateDirectoryListing(pathToScan);
         hasNextFile(&it);
@@ -906,14 +906,14 @@ void reloadLocaleSpecificAssets()
 
     for (auto it = s_assets->allAssets.iterate(); it.hasNext(); it.next()) {
         Asset* asset = it.get();
-        if (asset->flags & Asset_IsLocaleSpecific) {
+        if (asset->flags.has(AssetFlags::IsLocaleSpecific)) {
             unloadAsset(asset);
         }
     }
 
     for (auto it = s_assets->allAssets.iterate(); it.hasNext(); it.next()) {
         Asset* asset = it.get();
-        if (asset->flags & Asset_IsLocaleSpecific) {
+        if (asset->flags.has(AssetFlags::IsLocaleSpecific)) {
             loadAsset(asset);
         }
     }
@@ -947,7 +947,7 @@ void loadCursorDefs(Blob data, Asset* asset)
 
         if (hotX.isValid && hotY.isValid) {
             // Add the cursor
-            Asset* cursorAsset = addAsset(AssetType::Cursor, name, 0);
+            Asset* cursorAsset = addAsset(AssetType::Cursor, name, {});
             cursorAsset->cursor.imageFilePath = intern(&s_assets->assetStrings, getAssetPath(AssetType::Cursor, filename));
             cursorAsset->cursor.hotspot = v2i(hotX.value, hotY.value);
             addChildAsset(asset, cursorAsset);
@@ -986,7 +986,7 @@ void loadPaletteDefs(Blob data, Asset* asset)
             command.chars++;
 
             if (equals(command, "Palette"_s)) {
-                paletteAsset = addAsset(AssetType::Palette, readToken(&reader), 0);
+                paletteAsset = addAsset(AssetType::Palette, readToken(&reader), {});
                 addChildAsset(asset, paletteAsset);
             } else {
                 error(&reader, "Unexpected command ':{0}' in palette-definitions file. Only :Palette is allowed!"_s, { command });

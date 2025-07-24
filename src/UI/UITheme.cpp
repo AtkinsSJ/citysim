@@ -505,7 +505,7 @@ void loadUITheme(Blob data, Asset* asset)
             if (style->type == style_type) {
                 switch (style->type) {
                 case UI::StyleType::Button: {
-                    Asset* childAsset = addAsset(AssetType::ButtonStyle, style->name, 0);
+                    Asset* childAsset = addAsset(AssetType::ButtonStyle, style->name, {});
                     addChildAsset(asset, childAsset);
 
                     UI::ButtonStyle* button = &childAsset->buttonStyle;
@@ -537,7 +537,7 @@ void loadUITheme(Blob data, Asset* asset)
                 } break;
 
                 case UI::StyleType::Checkbox: {
-                    Asset* childAsset = addAsset(AssetType::CheckboxStyle, style->name, 0);
+                    Asset* childAsset = addAsset(AssetType::CheckboxStyle, style->name, {});
                     addChildAsset(asset, childAsset);
 
                     UI::CheckboxStyle* checkbox = &childAsset->checkboxStyle;
@@ -566,7 +566,7 @@ void loadUITheme(Blob data, Asset* asset)
                 } break;
 
                 case UI::StyleType::Console: {
-                    Asset* childAsset = addAsset(AssetType::ConsoleStyle, style->name, 0);
+                    Asset* childAsset = addAsset(AssetType::ConsoleStyle, style->name, {});
                     addChildAsset(asset, childAsset);
 
                     UI::ConsoleStyle* console = &childAsset->consoleStyle;
@@ -589,7 +589,7 @@ void loadUITheme(Blob data, Asset* asset)
                 } break;
 
                 case UI::StyleType::DropDownList: {
-                    Asset* childAsset = addAsset(AssetType::DropDownListStyle, style->name, 0);
+                    Asset* childAsset = addAsset(AssetType::DropDownListStyle, style->name, {});
                     addChildAsset(asset, childAsset);
 
                     UI::DropDownListStyle* ddl = &childAsset->dropDownListStyle;
@@ -600,7 +600,7 @@ void loadUITheme(Blob data, Asset* asset)
                 } break;
 
                 case UI::StyleType::Label: {
-                    Asset* childAsset = addAsset(AssetType::LabelStyle, style->name, 0);
+                    Asset* childAsset = addAsset(AssetType::LabelStyle, style->name, {});
                     addChildAsset(asset, childAsset);
 
                     UI::LabelStyle* label = &childAsset->labelStyle;
@@ -614,7 +614,7 @@ void loadUITheme(Blob data, Asset* asset)
                 } break;
 
                 case UI::StyleType::Panel: {
-                    Asset* childAsset = addAsset(AssetType::PanelStyle, style->name, 0);
+                    Asset* childAsset = addAsset(AssetType::PanelStyle, style->name, {});
                     addChildAsset(asset, childAsset);
 
                     UI::PanelStyle* panel = &childAsset->panelStyle;
@@ -636,7 +636,7 @@ void loadUITheme(Blob data, Asset* asset)
                 } break;
 
                 case UI::StyleType::RadioButton: {
-                    Asset* childAsset = addAsset(AssetType::RadioButtonStyle, style->name, 0);
+                    Asset* childAsset = addAsset(AssetType::RadioButtonStyle, style->name, {});
                     addChildAsset(asset, childAsset);
 
                     UI::RadioButtonStyle* radioButton = &childAsset->radioButtonStyle;
@@ -656,7 +656,7 @@ void loadUITheme(Blob data, Asset* asset)
                 } break;
 
                 case UI::StyleType::Scrollbar: {
-                    Asset* childAsset = addAsset(AssetType::ScrollbarStyle, style->name, 0);
+                    Asset* childAsset = addAsset(AssetType::ScrollbarStyle, style->name, {});
                     addChildAsset(asset, childAsset);
 
                     UI::ScrollbarStyle* scrollbar = &childAsset->scrollbarStyle;
@@ -671,7 +671,7 @@ void loadUITheme(Blob data, Asset* asset)
                 } break;
 
                 case UI::StyleType::Slider: {
-                    Asset* childAsset = addAsset(AssetType::SliderStyle, style->name, 0);
+                    Asset* childAsset = addAsset(AssetType::SliderStyle, style->name, {});
                     addChildAsset(asset, childAsset);
 
                     UI::SliderStyle* slider = &childAsset->sliderStyle;
@@ -687,7 +687,7 @@ void loadUITheme(Blob data, Asset* asset)
                 } break;
 
                 case UI::StyleType::TextInput: {
-                    Asset* childAsset = addAsset(AssetType::TextInputStyle, style->name, 0);
+                    Asset* childAsset = addAsset(AssetType::TextInputStyle, style->name, {});
                     addChildAsset(asset, childAsset);
 
                     UI::TextInputStyle* textInput = &childAsset->textInputStyle;
@@ -705,7 +705,7 @@ void loadUITheme(Blob data, Asset* asset)
                 } break;
 
                 case UI::StyleType::Window: {
-                    Asset* childAsset = addAsset(AssetType::WindowStyle, style->name, 0);
+                    Asset* childAsset = addAsset(AssetType::WindowStyle, style->name, {});
                     addChildAsset(asset, childAsset);
 
                     UI::WindowStyle* window = &childAsset->windowStyle;
