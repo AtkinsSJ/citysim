@@ -36,7 +36,7 @@ void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena)
     for (s32 sectorIndex = 0; sectorIndex < sectorCount; sectorIndex++) {
         ZoneSector* sector = &zoneLayer->sectors.sectors[sectorIndex];
 
-        sector->zoneSectorFlags = 0;
+        sector->zoneSectorFlags = {};
     }
 }
 
@@ -211,7 +211,7 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
                 layer->sectorsWithEmptyZones[zone_type].unsetBit(sectorIndex);
             }
 
-            sector->zoneSectorFlags = 0;
+            sector->zoneSectorFlags = {};
 
             for (s32 y = sector->bounds.y; y < sector->bounds.y + sector->bounds.h; y++) {
                 for (s32 x = sector->bounds.x; x < sector->bounds.x + sector->bounds.w; x++) {
@@ -222,21 +222,21 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
                     bool isFilled = buildingExistsAt(city, x, y);
                     switch (zone) {
                     case ZoneType::Residential: {
-                        sector->zoneSectorFlags |= ZoneSector_HasResZones;
+                        sector->zoneSectorFlags.add(ZoneSectorFlags::HasResZones);
                         if (!isFilled)
-                            sector->zoneSectorFlags |= ZoneSector_HasEmptyResZones;
+                            sector->zoneSectorFlags.add(ZoneSectorFlags::HasEmptyResZones);
                     } break;
 
                     case ZoneType::Commercial: {
-                        sector->zoneSectorFlags |= ZoneSector_HasComZones;
+                        sector->zoneSectorFlags.add(ZoneSectorFlags::HasComZones);
                         if (!isFilled)
-                            sector->zoneSectorFlags |= ZoneSector_HasEmptyComZones;
+                            sector->zoneSectorFlags.add(ZoneSectorFlags::HasEmptyComZones);
                     } break;
 
                     case ZoneType::Industrial: {
-                        sector->zoneSectorFlags |= ZoneSector_HasIndZones;
+                        sector->zoneSectorFlags.add(ZoneSectorFlags::HasIndZones);
                         if (!isFilled)
-                            sector->zoneSectorFlags |= ZoneSector_HasEmptyIndZones;
+                            sector->zoneSectorFlags.add(ZoneSectorFlags::HasEmptyIndZones);
                     } break;
 
                         INVALID_DEFAULT_CASE;
@@ -244,22 +244,22 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
                 }
             }
 
-            if (sector->zoneSectorFlags & ZoneSector_HasResZones) {
+            if (sector->zoneSectorFlags.has(ZoneSectorFlags::HasResZones)) {
                 layer->sectorsWithZones[ZoneType::Residential].setBit(sectorIndex);
             }
-            if (sector->zoneSectorFlags & ZoneSector_HasEmptyResZones) {
+            if (sector->zoneSectorFlags.has(ZoneSectorFlags::HasEmptyResZones)) {
                 layer->sectorsWithEmptyZones[ZoneType::Residential].setBit(sectorIndex);
             }
-            if (sector->zoneSectorFlags & ZoneSector_HasComZones) {
+            if (sector->zoneSectorFlags.has(ZoneSectorFlags::HasComZones)) {
                 layer->sectorsWithZones[ZoneType::Commercial].setBit(sectorIndex);
             }
-            if (sector->zoneSectorFlags & ZoneSector_HasEmptyComZones) {
+            if (sector->zoneSectorFlags.has(ZoneSectorFlags::HasEmptyComZones)) {
                 layer->sectorsWithEmptyZones[ZoneType::Commercial].setBit(sectorIndex);
             }
-            if (sector->zoneSectorFlags & ZoneSector_HasIndZones) {
+            if (sector->zoneSectorFlags.has(ZoneSectorFlags::HasIndZones)) {
                 layer->sectorsWithZones[ZoneType::Industrial].setBit(sectorIndex);
             }
-            if (sector->zoneSectorFlags & ZoneSector_HasEmptyIndZones) {
+            if (sector->zoneSectorFlags.has(ZoneSectorFlags::HasEmptyIndZones)) {
                 layer->sectorsWithEmptyZones[ZoneType::Industrial].setBit(sectorIndex);
             }
         }

@@ -9,6 +9,7 @@
 #include "dirty.h"
 #include "sector.h"
 #include <Util/BitArray.h>
+#include <Util/Flags.h>
 
 struct City;
 
@@ -39,18 +40,19 @@ EnumMap<ZoneType, ZoneDef> const ZONE_DEFS {
     { ZoneType::Industrial, "zone_industrial"_s, color255(255, 255, 0, 128), 20, true, 4 },
 };
 
-enum ZoneSectorFlags {
-    ZoneSector_HasResZones = 1 << 0,
-    ZoneSector_HasComZones = 1 << 1,
-    ZoneSector_HasIndZones = 1 << 2,
-    ZoneSector_HasEmptyResZones = 1 << 3,
-    ZoneSector_HasEmptyComZones = 1 << 4,
-    ZoneSector_HasEmptyIndZones = 1 << 5,
+enum class ZoneSectorFlags : u8 {
+    HasResZones,
+    HasComZones,
+    HasIndZones,
+    HasEmptyResZones,
+    HasEmptyComZones,
+    HasEmptyIndZones,
+    COUNT,
 };
 
 struct ZoneSector {
     Rect2I bounds;
-    u32 zoneSectorFlags;
+    Flags<ZoneSectorFlags> zoneSectorFlags;
 
     EnumMap<ZoneType, f32> averageDesirability;
 };
