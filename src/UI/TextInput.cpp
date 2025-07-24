@@ -259,7 +259,7 @@ bool updateTextInput(TextInput* textInput)
     bool pressedReturn = false;
 
     if (hasCapturedInput(textInput)) {
-        if (keyJustPressed(SDLK_BACKSPACE, KeyMod_Ctrl)) {
+        if (keyJustPressed(SDLK_BACKSPACE, ModifierKey::Ctrl)) {
             textInput->backspaceWholeWord();
             textInput->caretFlashCounter = 0;
         } else if (keyJustPressed(SDLK_BACKSPACE)) {
@@ -267,7 +267,7 @@ bool updateTextInput(TextInput* textInput)
             textInput->caretFlashCounter = 0;
         }
 
-        if (keyJustPressed(SDLK_DELETE, KeyMod_Ctrl)) {
+        if (keyJustPressed(SDLK_DELETE, ModifierKey::Ctrl)) {
             textInput->deleteWholeWord();
             textInput->caretFlashCounter = 0;
         } else if (keyJustPressed(SDLK_DELETE)) {
@@ -281,14 +281,14 @@ bool updateTextInput(TextInput* textInput)
         }
 
         if (keyJustPressed(SDLK_LEFT)) {
-            if (modifierKeyIsPressed(KeyMod_Ctrl)) {
+            if (modifierKeyIsPressed(ModifierKey::Ctrl)) {
                 textInput->moveCaretLeftWholeWord();
             } else {
                 textInput->moveCaretLeft(1);
             }
             textInput->caretFlashCounter = 0;
         } else if (keyJustPressed(SDLK_RIGHT)) {
-            if (modifierKeyIsPressed(KeyMod_Ctrl)) {
+            if (modifierKeyIsPressed(ModifierKey::Ctrl)) {
                 textInput->moveCaretRightWholeWord();
             } else {
                 textInput->moveCaretRight(1);
@@ -321,7 +321,7 @@ bool updateTextInput(TextInput* textInput)
             textInput->caretFlashCounter = 0;
         }
 
-        if (keyJustPressed(SDLK_v, KeyMod_Ctrl)) {
+        if (keyJustPressed(SDLK_v, ModifierKey::Ctrl)) {
             // Filter the input to remove any blacklisted characters
             String enteredText = getClipboardText();
             for (s32 charIndex = 0; charIndex < enteredText.length; charIndex++) {

@@ -68,7 +68,7 @@ void updateAndRenderConsole(Console* console)
 
     // Show/hide the console
     if (keyJustPressed(SDLK_BACKQUOTE)) {
-        if (modifierKeyIsPressed(KeyMod_Ctrl)) {
+        if (modifierKeyIsPressed(ModifierKey::Ctrl)) {
             if (console->targetHeight == console->maximisedHeight) {
                 console->targetHeight = console->openHeight;
             } else {

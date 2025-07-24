@@ -186,57 +186,57 @@ V2 getClickStartPos(MouseButton mouseButton, Camera* camera)
 
 bool modifierKeyIsPressed(ModifierKey modifier)
 {
-    bool result = false;
-
     switch (modifier) {
-    case KeyMod_Alt:
-        result = (s_input_state._keyDown[keycodeToIndex(SDLK_LALT)] || s_input_state._keyDown[keycodeToIndex(SDLK_RALT)]);
-        break;
-    case KeyMod_Ctrl:
-        result = (s_input_state._keyDown[keycodeToIndex(SDLK_LCTRL)] || s_input_state._keyDown[keycodeToIndex(SDLK_RCTRL)]);
-        break;
-    case KeyMod_Shift:
-        result = (s_input_state._keyDown[keycodeToIndex(SDLK_LSHIFT)] || s_input_state._keyDown[keycodeToIndex(SDLK_RSHIFT)]);
-        break;
-    case KeyMod_Super:
-        result = (s_input_state._keyDown[keycodeToIndex(SDLK_LGUI)] || s_input_state._keyDown[keycodeToIndex(SDLK_RGUI)]);
+    case ModifierKey::Alt:
+        return s_input_state._keyDown[keycodeToIndex(SDLK_LALT)]
+            || s_input_state._keyDown[keycodeToIndex(SDLK_RALT)];
+    case ModifierKey::Ctrl:
+        return s_input_state._keyDown[keycodeToIndex(SDLK_LCTRL)]
+            || s_input_state._keyDown[keycodeToIndex(SDLK_RCTRL)];
+    case ModifierKey::Shift:
+        return s_input_state._keyDown[keycodeToIndex(SDLK_LSHIFT)]
+            || s_input_state._keyDown[keycodeToIndex(SDLK_RSHIFT)];
+    case ModifierKey::Super:
+        return s_input_state._keyDown[keycodeToIndex(SDLK_LGUI)]
+            || s_input_state._keyDown[keycodeToIndex(SDLK_RGUI)];
+    case ModifierKey::COUNT:
         break;
     }
 
-    return result;
+    VERIFY_NOT_REACHED();
 }
 
-u8 getPressedModifierKeys()
+Flags<ModifierKey> getPressedModifierKeys()
 {
-    u8 result = 0;
+    Flags<ModifierKey> result;
 
-    if (modifierKeyIsPressed(KeyMod_Alt))
-        result |= KeyMod_Alt;
-    if (modifierKeyIsPressed(KeyMod_Ctrl))
-        result |= KeyMod_Ctrl;
-    if (modifierKeyIsPressed(KeyMod_Shift))
-        result |= KeyMod_Shift;
-    if (modifierKeyIsPressed(KeyMod_Super))
-        result |= KeyMod_Super;
+    if (modifierKeyIsPressed(ModifierKey::Alt))
+        result.add(ModifierKey::Alt);
+    if (modifierKeyIsPressed(ModifierKey::Ctrl))
+        result.add(ModifierKey::Ctrl);
+    if (modifierKeyIsPressed(ModifierKey::Shift))
+        result.add(ModifierKey::Shift);
+    if (modifierKeyIsPressed(ModifierKey::Super))
+        result.add(ModifierKey::Super);
 
     return result;
 }
 
-bool modifierKeysArePressed(u8 modifiers)
+bool modifierKeysArePressed(Flags<ModifierKey> modifiers)
 {
     bool result = true;
 
     if (modifiers) {
-        if (modifiers & KeyMod_Alt) {
+        if (modifiers.has(ModifierKey::Alt)) {
             result = result && (s_input_state._keyDown[keycodeToIndex(SDLK_LALT)] || s_input_state._keyDown[keycodeToIndex(SDLK_RALT)]);
         }
-        if (modifiers & KeyMod_Ctrl) {
+        if (modifiers.has(ModifierKey::Ctrl)) {
             result = result && (s_input_state._keyDown[keycodeToIndex(SDLK_LCTRL)] || s_input_state._keyDown[keycodeToIndex(SDLK_RCTRL)]);
         }
-        if (modifiers & KeyMod_Shift) {
+        if (modifiers.has(ModifierKey::Shift)) {
             result = result && (s_input_state._keyDown[keycodeToIndex(SDLK_LSHIFT)] || s_input_state._keyDown[keycodeToIndex(SDLK_RSHIFT)]);
         }
-        if (modifiers & KeyMod_Super) {
+        if (modifiers.has(ModifierKey::Super)) {
             result = result && (s_input_state._keyDown[keycodeToIndex(SDLK_LGUI)] || s_input_state._keyDown[keycodeToIndex(SDLK_RGUI)]);
         }
     }
@@ -244,7 +244,7 @@ bool modifierKeysArePressed(u8 modifiers)
     return result;
 }
 
-bool keyIsPressed(SDL_Keycode key, u8 modifiers)
+bool keyIsPressed(SDL_Keycode key, Flags<ModifierKey> modifiers)
 {
     s32 keycode = keycodeToIndex(key);
 
@@ -257,23 +257,23 @@ bool keyIsPressed(SDL_Keycode key, u8 modifiers)
     return result;
 }
 
-bool keyWasPressed(SDL_Keycode key, u8 modifiers)
+bool keyWasPressed(SDL_Keycode key, Flags<ModifierKey> modifiers)
 {
     s32 keycode = keycodeToIndex(key);
 
     bool result = s_input_state._keyWasDown[keycode];
 
     if (modifiers) {
-        if (modifiers & KeyMod_Alt) {
+        if (modifiers.has(ModifierKey::Alt)) {
             result = result && (keyWasPressed(SDLK_LALT) || keyWasPressed(SDLK_RALT));
         }
-        if (modifiers & KeyMod_Ctrl) {
+        if (modifiers.has(ModifierKey::Ctrl)) {
             result = result && (keyWasPressed(SDLK_LCTRL) || keyWasPressed(SDLK_RCTRL));
         }
-        if (modifiers & KeyMod_Shift) {
+        if (modifiers.has(ModifierKey::Shift)) {
             result = result && (keyWasPressed(SDLK_LSHIFT) || keyWasPressed(SDLK_RSHIFT));
         }
-        if (modifiers & KeyMod_Super) {
+        if (modifiers.has(ModifierKey::Super)) {
             result = result && (keyWasPressed(SDLK_LGUI) || keyWasPressed(SDLK_RGUI));
         }
     }
@@ -281,7 +281,7 @@ bool keyWasPressed(SDL_Keycode key, u8 modifiers)
     return result;
 }
 
-bool keyJustPressed(SDL_Keycode key, u8 modifiers, bool ignoreRepeats)
+bool keyJustPressed(SDL_Keycode key, Flags<ModifierKey> modifiers, bool ignoreRepeats)
 {
     bool result = keyIsPressed(key, modifiers) && !keyWasPressed(key);
 
@@ -296,7 +296,7 @@ bool keyJustPressed(SDL_Keycode key, u8 modifiers, bool ignoreRepeats)
     return result;
 }
 
-bool wasShortcutJustPressed(KeyboardShortcut shortcut)
+bool wasShortcutJustPressed(KeyboardShortcut const& shortcut)
 {
     return keyJustPressed(shortcut.key, shortcut.modifiers, true);
 }
@@ -355,13 +355,13 @@ KeyboardShortcut parseKeyboardShortcut(String shortcutString)
         // MODIFIERS
         //
         if (equals(keyName, "Alt"_s)) {
-            result.modifiers |= KeyMod_Alt;
+            result.modifiers.add(ModifierKey::Alt);
         } else if (equals(keyName, "Ctrl"_s)) {
-            result.modifiers |= KeyMod_Ctrl;
+            result.modifiers.add(ModifierKey::Ctrl);
         } else if (equals(keyName, "Shift"_s)) {
-            result.modifiers |= KeyMod_Shift;
+            result.modifiers.add(ModifierKey::Shift);
         } else if (equals(keyName, "Super"_s)) {
-            result.modifiers |= KeyMod_Super;
+            result.modifiers.add(ModifierKey::Super);
         } else {
             Maybe<SDL_Keycode> found = s_input_state.keyNames.findValue(keyName);
             if (found.isValid) {

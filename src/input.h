@@ -13,6 +13,7 @@
 #include <SDL2/SDL_scancode.h>
 #include <Util/Basic.h>
 #include <Util/EnumMap.h>
+#include <Util/Flags.h>
 #include <Util/HashTable.h>
 #include <Util/String.h>
 #include <Util/Vector.h>
@@ -32,16 +33,17 @@ enum class MouseButton : u8 {
     COUNT
 };
 
-enum ModifierKey {
-    KeyMod_Alt = 1 << 0,
-    KeyMod_Ctrl = 1 << 1,
-    KeyMod_Shift = 1 << 2,
-    KeyMod_Super = 1 << 3,
+enum class ModifierKey : u8 {
+    Alt,
+    Ctrl,
+    Shift,
+    Super,
+    COUNT,
 };
 
 struct KeyboardShortcut {
     SDL_Keycode key;
-    u8 modifiers;
+    Flags<ModifierKey> modifiers;
 };
 
 struct InputState {
@@ -84,12 +86,12 @@ bool mouseButtonPressed(MouseButton mouseButton);
 V2 getClickStartPos(MouseButton mouseButton, Camera* camera);
 
 bool modifierKeyIsPressed(ModifierKey modifier);
-bool keyIsPressed(SDL_Keycode key, u8 modifiers = 0);
-bool keyWasPressed(SDL_Keycode key, u8 modifiers = 0);
-bool keyJustPressed(SDL_Keycode key, u8 modifiers = 0, bool ignoreRepeats = false);
+bool keyIsPressed(SDL_Keycode key, Flags<ModifierKey> modifiers = {});
+bool keyWasPressed(SDL_Keycode key, Flags<ModifierKey> modifiers = {});
+bool keyJustPressed(SDL_Keycode key, Flags<ModifierKey> modifiers = {}, bool ignoreRepeats = false);
 
 KeyboardShortcut parseKeyboardShortcut(String shortcutString);
-bool wasShortcutJustPressed(KeyboardShortcut shortcut);
+bool wasShortcutJustPressed(KeyboardShortcut const& shortcut);
 
 bool wasTextEntered();
 String getEnteredText();
@@ -107,5 +109,5 @@ bool isInputCaptured();
 //
 
 u32 keycodeToIndex(u32 key);
-u8 getPressedModifierKeys();
-bool modifierKeysArePressed(u8 modifiers);
+Flags<ModifierKey> getPressedModifierKeys();
+bool modifierKeysArePressed(Flags<ModifierKey> modifiers);
