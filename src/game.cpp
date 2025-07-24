@@ -1136,8 +1136,8 @@ void drawDataViewUI(GameState* gameState)
         UI::ButtonStyle* popupButtonStyle = getStyle<UI::ButtonStyle>(&popupMenuPanelStyle->buttonStyle);
         s32 buttonMaxWidth = 0;
         s32 buttonMaxHeight = 0;
-        for (auto dataViewID = to_underlying(DataView::None); dataViewID < to_underlying(DataView::COUNT); dataViewID++) {
-            String buttonText = getText(gameState->dataViewUI[dataViewID].title);
+        for (auto data_view : enum_values<DataView>()) {
+            String buttonText = getText(gameState->dataViewUI[data_view].title);
             V2I buttonSize = UI::calculateButtonSize(buttonText, popupButtonStyle);
             buttonMaxWidth = max(buttonMaxWidth, buttonSize.x);
             buttonMaxHeight = max(buttonMaxHeight, buttonSize.y);
@@ -1155,8 +1155,8 @@ void drawDataViewUI(GameState* gameState)
             menu.enableVerticalScrolling(UI::getMenuScrollbar(), true);
         }
 
-        for (s32 dataViewID = to_underlying(DataView::COUNT) - 1; dataViewID >= 0; dataViewID = dataViewID - 1) {
-            auto data_view = static_cast<DataView>(dataViewID);
+        // FIXME: Reversed iteration somehow
+        for (auto data_view : enum_values<DataView>()) {
             String buttonText = getText(gameState->dataViewUI[data_view].title);
 
             if (menu.addTextButton(buttonText, buttonIsActive(gameState->dataLayerToDraw == data_view))) {
