@@ -31,14 +31,15 @@ struct File {
     Blob data;
 };
 
-enum FileAccessMode {
-    FileAccess_Read,
-    FileAccess_Write
+enum class FileAccessMode : u8 {
+    Read,
+    Write,
+    COUNT,
 };
 
-inline char const* fileAccessModeStrings[] = {
-    "rb",
-    "wb"
+static EnumMap<FileAccessMode, String> file_access_mode_strings {
+    "rb"_s,
+    "wb"_s,
 };
 
 struct DirectoryListingHandle {

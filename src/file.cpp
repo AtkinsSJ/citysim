@@ -78,7 +78,7 @@ FileHandle openFile(String path, FileAccessMode mode)
     FileHandle result = {};
 
     result.path = path;
-    result.sdl_file = SDL_RWFromFile(path.chars, fileAccessModeStrings[mode]);
+    result.sdl_file = SDL_RWFromFile(path.chars, file_access_mode_strings[mode].chars);
     result.isOpen = (result.sdl_file != nullptr);
 
     return result;
@@ -188,7 +188,7 @@ File readFile(MemoryArena* memoryArena, String filePath)
 {
     DEBUG_FUNCTION();
 
-    FileHandle handle = openFile(filePath, FileAccess_Read);
+    FileHandle handle = openFile(filePath, FileAccessMode::Read);
     File result = readFile(&handle, memoryArena);
     closeFile(&handle);
 
@@ -201,7 +201,7 @@ bool writeFile(String filePath, String contents)
 
     bool succeeded = false;
 
-    FileHandle file = openFile(filePath, FileAccess_Write);
+    FileHandle file = openFile(filePath, FileAccessMode::Write);
 
     if (file.isOpen) {
         smm bytesWritten = SDL_RWwrite(file.sdl_file, contents.chars, 1, contents.length);

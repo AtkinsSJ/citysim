@@ -76,7 +76,7 @@ void readSavedGamesInfo(SavedGamesCatalogue* catalogue)
         savedGame->fullPath = intern(&catalogue->stringsTable, constructPath({ catalogue->savedGamesPath, fileInfo->filename }));
         savedGame->isReadable = false;
 
-        FileHandle savedFile = openFile(savedGame->fullPath, FileAccess_Read);
+        FileHandle savedFile = openFile(savedGame->fullPath, FileAccessMode::Read);
         if (savedFile.isOpen) {
             BinaryFileReader reader = readBinaryFile(&savedFile, SAV_FILE_ID, &temp_arena());
             savedGame->problems = reader.problems;
@@ -312,7 +312,7 @@ void loadGame(SavedGameInfo* savedGame)
 
     u32 startTicks = SDL_GetTicks();
 
-    FileHandle saveFile = openFile(savedGame->fullPath, FileAccess_Read);
+    FileHandle saveFile = openFile(savedGame->fullPath, FileAccessMode::Read);
     bool loadSucceeded = loadSaveFile(&saveFile, gameState);
     closeFile(&saveFile);
 
@@ -343,7 +343,7 @@ bool saveGame(String saveName)
     }
 
     String savePath = constructPath({ catalogue->savedGamesPath, saveFilename });
-    FileHandle saveFile = openFile(savePath, FileAccess_Write);
+    FileHandle saveFile = openFile(savePath, FileAccessMode::Write);
     bool saveSucceeded = writeSaveFile(&saveFile, AppState::the().gameState);
     closeFile(&saveFile);
 
