@@ -5,6 +5,7 @@
  */
 
 #include "binary_file_writer.h"
+#include <Util/Enum.h>
 #include <Util/Log.h>
 
 BinaryFileWriter startWritingFile(FileIdentifier identifier, u8 version, MemoryArena* arena)

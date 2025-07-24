@@ -49,10 +49,3 @@ typedef intptr_t smm;
 
 #include <uchar.h>
 typedef char32_t unichar;
-
-template<typename T>
-requires(__is_enum(T))
-constexpr auto to_underlying(T enum_type)
-{
-    return static_cast<__underlying_type(T)>(enum_type);
-}

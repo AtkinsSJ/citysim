@@ -12,40 +12,48 @@ template<typename T>
 inline constexpr bool IsEnum = __is_enum(T);
 
 template<typename T>
-concept Enum = IsEnum<T> && requires { T::COUNT; };
-
+concept Enum = IsEnum<T>;
 template<Enum T>
 using EnumUnderlyingType = __underlying_type(T);
 
 template<Enum T>
+constexpr auto to_underlying(T enum_type)
+{
+    return static_cast<__underlying_type(T)>(enum_type);
+}
+
+template<typename T>
+concept CountedEnum = IsEnum<T> && requires { T::COUNT; };
+
+template<CountedEnum T>
 inline constexpr u64 EnumCount = to_underlying(T::COUNT);
 
 namespace Details {
 
-template<Enum>
+template<CountedEnum>
 struct EnumFlagStorageType {
     using Type = void;
 };
 
-template<Enum T>
+template<CountedEnum T>
 requires(EnumCount<T> < 8)
 struct EnumFlagStorageType<T> {
     using Type = u8;
 };
 
-template<Enum T>
+template<CountedEnum T>
 requires(EnumCount<T> >= 8 && EnumCount<T> < 16)
 struct EnumFlagStorageType<T> {
     using Type = u16;
 };
 
-template<Enum T>
+template<CountedEnum T>
 requires(EnumCount<T> >= 16 && EnumCount<T> < 32)
 struct EnumFlagStorageType<T> {
     using Type = u32;
 };
 
-template<Enum T>
+template<CountedEnum T>
 requires(EnumCount<T> >= 32 && EnumCount<T> < 64)
 struct EnumFlagStorageType<T> {
     using Type = u64;
@@ -53,5 +61,5 @@ struct EnumFlagStorageType<T> {
 
 }
 
-template<Enum T>
+template<CountedEnum T>
 using EnumFlagStorageType = typename Details::EnumFlagStorageType<T>::Type;
