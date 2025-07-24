@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <Util/Assert.h>
 #include <Util/Basic.h>
 #include <Util/Enum.h>
 
