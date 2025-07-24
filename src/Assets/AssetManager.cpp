@@ -52,10 +52,9 @@ void initAssets()
 
     auto compareStrings = [](String* a, String* b) { return equals(*a, *b); };
 
-    for (s32 assetType = 0; assetType < to_underlying(AssetType::COUNT); assetType++) {
-        initHashTable(&s_assets->assetsByType[assetType]);
-
-        initSet<String>(&s_assets->missingAssetNames[assetType], &s_assets->arena, compareStrings);
+    for (auto asset_type : enum_values<AssetType>()) {
+        initHashTable(&s_assets->assetsByType[asset_type]);
+        initSet<String>(&s_assets->missingAssetNames[asset_type], &s_assets->arena, compareStrings);
     }
 
     UI::initStyleConstants();
@@ -670,11 +669,11 @@ void reloadAssets()
     }
 
     // Clear the hash tables
-    for (s32 assetType = 0; assetType < to_underlying(AssetType::COUNT); assetType++) {
-        s_assets->assetsByType[assetType].clear();
+    for (auto asset_type : enum_values<AssetType>()) {
+        s_assets->assetsByType[asset_type].clear();
 
         // Reset missing text warnings
-        s_assets->missingAssetNames[assetType].clear();
+        s_assets->missingAssetNames[asset_type].clear();
     }
 
     s_assets->missingTextIDs.clear();
