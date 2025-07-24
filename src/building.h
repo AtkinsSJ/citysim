@@ -13,6 +13,7 @@
 #include <Sim/BuildingRef.h>
 #include <Util/DeprecatedFlags.h>
 #include <Util/EnumMap.h>
+#include <Util/Flags.h>
 #include <Util/OccupancyArray.h>
 #include <Util/StringTable.h>
 
@@ -26,11 +27,11 @@ enum class BuildMethod : u8 {
     DragLine,
 };
 
-enum BuildingFlag {
-    Building_CarriesPower,
-    Building_RequiresTransportConnection,
+enum class BuildingFlags : u8 {
+    CarriesPower,
+    RequiresTransportConnection,
 
-    BuildingFlagCount
+    COUNT
 };
 
 enum class ConnectionDirection : u8 {
@@ -78,7 +79,7 @@ struct BuildingDef {
 
     String textAssetName;
 
-    Flags8<BuildingFlag> flags;
+    Flags<BuildingFlags> flags;
 
     union {
         V2I size;

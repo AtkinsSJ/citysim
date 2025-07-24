@@ -31,7 +31,6 @@ void initBuildingCatalogue()
     // Update 18/02/2020: We now use the null building def when failing to match an intersection part name.
     Indexed<BuildingDef*> nullBuildingDef = catalogue->allBuildings.append();
     *nullBuildingDef.value = {};
-    initFlags(&nullBuildingDef.value->flags, BuildingFlagCount);
     initFlags(&nullBuildingDef.value->transportTypes, TransportTypeCount);
 
     initHashTable(&catalogue->buildingsByName, 0.75f, 128);
@@ -96,7 +95,6 @@ BuildingDef* appendNewBuildingDef(String name)
     BuildingDef* result = newDef.value;
     result->name = intern(&buildingCatalogue.buildingNames, name);
     result->typeID = newDef.index;
-    initFlags(&result->flags, BuildingFlagCount);
     initFlags(&result->transportTypes, TransportTypeCount);
 
     result->fireRisk = 1.0f;
@@ -188,7 +186,6 @@ void loadBuildingDefs(Blob data, Asset* asset)
                 }
 
                 def = templates.put(pushString(&temp_arena(), name));
-                initFlags(&def->flags, BuildingFlagCount);
                 initFlags(&def->transportTypes, TransportTypeCount);
             } else {
                 warn(&reader, "Only :Building, :Intersection or :Template definitions are supported right now."_s);
@@ -234,9 +231,9 @@ void loadBuildingDefs(Blob data, Asset* asset)
                     Maybe<bool> boolRead = readBool(&reader);
                     if (boolRead.isValid) {
                         if (boolRead.value) {
-                            def->flags += Building_CarriesPower;
+                            def->flags.add(BuildingFlags::CarriesPower);
                         } else {
-                            def->flags -= Building_CarriesPower;
+                            def->flags.remove(BuildingFlags::CarriesPower);
                         }
                     }
                 } else if (equals(firstWord, "carries_transport"_s)) {
@@ -352,9 +349,9 @@ void loadBuildingDefs(Blob data, Asset* asset)
                     Maybe<bool> requires_transport_connection = readBool(&reader);
                     if (requires_transport_connection.isValid) {
                         if (requires_transport_connection.value) {
-                            def->flags += Building_RequiresTransportConnection;
+                            def->flags.add(BuildingFlags::RequiresTransportConnection);
                         } else {
-                            def->flags -= Building_RequiresTransportConnection;
+                            def->flags.remove(BuildingFlags::RequiresTransportConnection);
                         }
                     }
                 } else if (equals(firstWord, "residents"_s)) {
@@ -761,7 +758,7 @@ void updateBuilding(City* city, Building* building)
 
     // Distance to road
     // TODO: Replace with access to any transport types, instead of just road? Not sure what we want with that.
-    if ((def->flags & Building_RequiresTransportConnection) || (def->growsInZone != ZoneType::None)) {
+    if ((def->flags.has(BuildingFlags::RequiresTransportConnection)) || (def->growsInZone != ZoneType::None)) {
         s32 distanceToRoad = s32Max;
         // TODO: @Speed: We only actually need to check the boundary tiles, because they're guaranteed to be less than
         // the inner tiles... unless we allow multiple buildings per tile. Actually maybe we do? I'm not sure how that
@@ -780,7 +777,7 @@ void updateBuilding(City* city, Building* building)
             } else {
                 removeProblem(building, BuildingProblem::Type::NoTransportAccess);
             }
-        } else if (def->flags & Building_RequiresTransportConnection) {
+        } else if (def->flags.has(BuildingFlags::RequiresTransportConnection)) {
             // Other buildings require direct contact
             if (distanceToRoad > 1) {
                 addProblem(building, BuildingProblem::Type::NoTransportAccess);
