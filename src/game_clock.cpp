@@ -10,8 +10,8 @@
 
 // We don't bother with leap years, so the month lengths are hard-coded
 u32 const DAYS_PER_YEAR = 365;
-u32 const DAYS_PER_MONTH[] = {
-    //   J   F   M   A   M   J   J   A   S   O   N   D
+EnumMap<MonthOfYear, u8> const DAYS_PER_MONTH {
+    //  F   M   A   M   J   J   A   S   O   N   D
     31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
 };
 
@@ -53,8 +53,8 @@ GameTimestamp timestampFromParts(s32 year, MonthOfYear month, s32 day)
     result += (year - 1) * DAYS_PER_YEAR;
 
     // Add days for previous months this year
-    for (s32 monthIndex = to_underlying(MonthOfYear::January); monthIndex < to_underlying(month); monthIndex++) {
-        result += DAYS_PER_MONTH[monthIndex];
+    for (auto monthIndex = enum_values<MonthOfYear>(); monthIndex != month; ++monthIndex) {
+        result += DAYS_PER_MONTH[*monthIndex];
     }
 
     // Add day within month
