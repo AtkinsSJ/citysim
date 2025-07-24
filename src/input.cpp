@@ -151,8 +151,7 @@ void updateInput()
     s_input_state.mousePosNormalised.x = ((s_input_state.mousePosRaw.x * 2.0f) / window_size.x) - 1.0f;
     s_input_state.mousePosNormalised.y = ((s_input_state.mousePosRaw.y * -2.0f) + window_size.y) / window_size.y;
 
-    for (s32 i = 1; i < to_underlying(MouseButton::COUNT); i++) {
-        MouseButton button = static_cast<MouseButton>(i);
+    for (auto button : enum_values<MouseButton>()) {
         if (mouseButtonJustPressed(button)) {
             // Store the initial click position
             s_input_state.clickStartPosNormalised[button] = s_input_state.mousePosNormalised;
