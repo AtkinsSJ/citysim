@@ -14,6 +14,13 @@ class Flags {
 public:
     using StorageT = EnumFlagStorageType<EnumT>;
 
+    Flags() = default;
+    constexpr Flags(std::initializer_list<EnumT> initial_flags)
+    {
+        for (auto flag : initial_flags)
+            m_data |= 1u << to_underlying(flag);
+    }
+
     bool flag_is_valid(EnumT flag) const
     {
         return to_underlying(flag) >= 0 && to_underlying(flag) < EnumCount<EnumT>;
