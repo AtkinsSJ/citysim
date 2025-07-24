@@ -637,7 +637,7 @@ void updatePowerLayer(City* city, PowerLayer* layer)
         PowerNetwork* network = networkIt.get();
 
         // Figure out which mode this network is in.
-        enum NetworkMode {
+        enum class NetworkMode : u8 {
             Blackout,    // No production
             Brownout,    // Not enough production
             FullCoverage // Enough
@@ -645,12 +645,13 @@ void updatePowerLayer(City* city, PowerLayer* layer)
         if (network->cachedConsumption == 0) {
             // No iteration of buildings is necessary!
             continue;
-        } else if (network->cachedProduction == 0) {
-            networkMode = Blackout;
+        }
+        if (network->cachedProduction == 0) {
+            networkMode = NetworkMode::Blackout;
         } else if (network->cachedProduction < network->cachedConsumption) {
-            networkMode = Brownout;
+            networkMode = NetworkMode::Brownout;
         } else {
-            networkMode = FullCoverage;
+            networkMode = NetworkMode::FullCoverage;
         }
 
         // Now, iterate the buildings and give them power based on that mode.
@@ -668,11 +669,11 @@ void updatePowerLayer(City* city, PowerLayer* layer)
 
                 if (building != nullptr) {
                     switch (networkMode) {
-                    case Blackout: {
+                    case NetworkMode::Blackout: {
                         building->allocatedPower = 0;
                     } break;
 
-                    case Brownout: {
+                    case NetworkMode::Brownout: {
                         // Supply power to buildings if we can, and mark the rest as unpowered.
                         // TODO: Implement some kind of "rolling brownout" system where buildings get powered
                         // and unpowered over time to even things out, instead of it always being first-come-first-served.
@@ -685,7 +686,7 @@ void updatePowerLayer(City* city, PowerLayer* layer)
                         }
                     } break;
 
-                    case FullCoverage: {
+                    case NetworkMode::FullCoverage: {
                         building->allocatedPower = getRequiredPower(building);
                     } break;
                     }
