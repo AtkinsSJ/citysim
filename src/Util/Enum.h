@@ -83,6 +83,7 @@ public:
     }
 
     bool operator==(EnumIterator const&) const = default;
+    bool operator==(T const& other) const { return m_value == other; }
     T operator*() const { return m_value; }
     EnumIterator& operator++()
     {
