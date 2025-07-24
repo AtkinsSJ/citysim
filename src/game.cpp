@@ -300,9 +300,9 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
         ui->addLabel(myprintf("- Power: {0}"_s, { formatInt(def->power) }));
 
         // Problems
-        for (s32 problemIndex = 0; problemIndex < to_underlying(BuildingProblem::Type::COUNT); problemIndex++) {
-            if (hasProblem(building, static_cast<BuildingProblem::Type>(problemIndex))) {
-                ui->addLabel(myprintf("- PROBLEM: {0}"_s, { getText(buildingProblemNames[problemIndex]) }));
+        for (auto problem_type : enum_values<BuildingProblem::Type>()) {
+            if (hasProblem(building, problem_type)) {
+                ui->addLabel(myprintf("- PROBLEM: {0}"_s, { getText(buildingProblemNames[problem_type]) }));
             }
         }
     } else {
