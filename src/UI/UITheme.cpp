@@ -482,8 +482,8 @@ void loadUITheme(Blob data, Asset* asset)
     // Actually write out the styles into the UITheme
 
     s32 totalStyleCount = 0;
-    for (s32 i = 0; i < to_underlying(UI::StyleType::COUNT); i++) {
-        totalStyleCount += style_count[i];
+    for (auto style_type : enum_values<UI::StyleType>()) {
+        totalStyleCount += style_count[style_type];
     }
     allocateChildren(asset, totalStyleCount);
 
@@ -495,11 +495,14 @@ void loadUITheme(Blob data, Asset* asset)
 
     for (auto it = styles.iterate(); it.hasNext(); it.next()) {
         auto* stylePack = it.get();
-        for (s32 sectionType = 1; sectionType < to_underlying(UI::StyleType::COUNT); sectionType++) {
-            UI::Style* style = &(*stylePack)[sectionType];
+        for (auto style_type : enum_values<UI::StyleType>()) {
+            if (style_type == UI::StyleType::None)
+                continue;
+
+            UI::Style* style = &(*stylePack)[style_type];
             // For undefined styles, the parent struct will be all nulls, so the type will not match
             // FIXME: This seems really sketchy.
-            if (to_underlying(style->type) == sectionType) {
+            if (style->type == style_type) {
                 switch (style->type) {
                 case UI::StyleType::Button: {
                     Asset* childAsset = addAsset(AssetType::ButtonStyle, style->name, 0);
