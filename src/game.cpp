@@ -623,14 +623,14 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
     if (!UI::hasPauseWindowOpen()) {
         DEBUG_BLOCK_T("Update simulation", DebugCodeDataTag::Simulation);
 
-        u8 clockEvents = incrementClock(&gameState->gameClock, deltaTime);
-        if (clockEvents & ClockEvent_NewWeek) {
+        auto clockEvents = incrementClock(&gameState->gameClock, deltaTime);
+        if (clockEvents.has(ClockEvents::NewWeek)) {
             logInfo("New week!"_s);
         }
-        if (clockEvents & ClockEvent_NewMonth) {
+        if (clockEvents.has(ClockEvents::NewMonth)) {
             logInfo("New month, a budget tick should happen here!"_s);
         }
-        if (clockEvents & ClockEvent_NewYear) {
+        if (clockEvents.has(ClockEvents::NewYear)) {
             logInfo("New year!"_s);
         }
 

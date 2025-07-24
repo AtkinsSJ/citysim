@@ -82,9 +82,9 @@ DateTime dateTimeFromTimestamp(GameTimestamp timestamp)
     return dateTime;
 }
 
-u8 incrementClock(GameClock* clock, f32 deltaTime)
+Flags<ClockEvents> incrementClock(GameClock* clock, f32 deltaTime)
 {
-    u8 clockEvents = 0;
+    Flags<ClockEvents> clockEvents;
 
     if (!clock->isPaused) {
         clock->timeWithinDay += (deltaTime * GAME_DAYS_PER_SECOND[clock->speed]);
@@ -93,7 +93,7 @@ u8 incrementClock(GameClock* clock, f32 deltaTime)
             // Next day!
             clock->currentDay++;
             clock->timeWithinDay -= 1.0f;
-            clockEvents |= ClockEvent_NewDay;
+            clockEvents.add(ClockEvents::NewDay);
         }
 
         // We should never be able to increase by more than one day in a single frame!
@@ -103,16 +103,16 @@ u8 incrementClock(GameClock* clock, f32 deltaTime)
         updateCosmeticDate(clock);
 
         if (oldCosmeticDate.year != clock->cosmeticDate.year) {
-            clockEvents |= ClockEvent_NewYear;
+            clockEvents.add(ClockEvents::NewYear);
         }
 
         if (oldCosmeticDate.month != clock->cosmeticDate.month) {
-            clockEvents |= ClockEvent_NewMonth;
+            clockEvents.add(ClockEvents::NewMonth);
         }
 
-        if ((clockEvents & ClockEvent_NewDay)
-            && (clock->cosmeticDate.dayOfWeek == DayOfWeek::Monday)) {
-            clockEvents |= ClockEvent_NewWeek;
+        if (clockEvents.has(ClockEvents::NewDay)
+            && clock->cosmeticDate.dayOfWeek == DayOfWeek::Monday) {
+            clockEvents.add(ClockEvents::NewWeek);
         }
     }
 

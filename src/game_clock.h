@@ -8,6 +8,7 @@
 
 #include <Util/Basic.h>
 #include <Util/EnumMap.h>
+#include <Util/Flags.h>
 #include <Util/Time.h>
 
 enum class GameClockSpeed : u8 {
@@ -46,14 +47,15 @@ void initGameClock(GameClock* clock, GameTimestamp date = 0, f32 timeOfDay = 0.0
 
 void updateCosmeticDate(GameClock* clock);
 
-enum ClockEvents {
-    ClockEvent_NewDay = 1 << 0,
-    ClockEvent_NewWeek = 1 << 1,
-    ClockEvent_NewMonth = 1 << 2,
-    ClockEvent_NewYear = 1 << 3,
+enum class ClockEvents : u8 {
+    NewDay,
+    NewWeek,
+    NewMonth,
+    NewYear,
+    COUNT,
 };
 // Returns a set of ClockEvents for events that occur
-u8 incrementClock(GameClock* clock, f32 deltaTime);
+Flags<ClockEvents> incrementClock(GameClock* clock, f32 deltaTime);
 
 GameTimestamp getCurrentTimestamp();
 GameTimestamp timestampFromParts(s32 year, MonthOfYear month, s32 day);
