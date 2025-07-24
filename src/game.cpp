@@ -9,7 +9,6 @@
 #include "AppState.h"
 #include "Assets/AssetManager.h"
 #include "UI/Window.h"
-#include "Util/DeprecatedFlags.h"
 #include "Util/Random.h"
 #include "about.h"
 #include "city.h"
@@ -25,7 +24,6 @@ GameState* newGameState()
 
     gameState->status = GameStatus::Playing;
     gameState->actionMode = ActionMode::None;
-    initFlags(&gameState->inspectTileDebugFlags, InspectTileDebugFlagCount);
     initDataViewUI(gameState);
 
     return gameState;
@@ -315,14 +313,14 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
     ui->addLabel(myprintf("Land value: {0}%"_s, { formatFloat(getLandValuePercentAt(city, tilePos.x, tilePos.y) * 100.0f, 0) }));
 
     // Debug info
-    if (!isEmpty(&gameState->inspectTileDebugFlags)) {
-        if (gameState->inspectTileDebugFlags & DebugInspect_Fire) {
+    if (!gameState->inspectTileDebugFlags.is_empty()) {
+        if (gameState->inspectTileDebugFlags.has(InspectTileDebugFlags::Fire)) {
             debugInspectFire(ui, city, tilePos.x, tilePos.y);
         }
-        if (gameState->inspectTileDebugFlags & DebugInspect_Power) {
+        if (gameState->inspectTileDebugFlags.has(InspectTileDebugFlags::Power)) {
             debugInspectPower(ui, city, tilePos.x, tilePos.y);
         }
-        if (gameState->inspectTileDebugFlags & DebugInspect_Transport) {
+        if (gameState->inspectTileDebugFlags.has(InspectTileDebugFlags::Transport)) {
             debugInspectTransport(ui, city, tilePos.x, tilePos.y);
         }
     }
@@ -589,8 +587,8 @@ void debugToolsWindowProc(UI::WindowContext* context, void* userData)
     UI::Panel* ui = &context->windowPanel;
     ui->alignWidgets(ALIGN_EXPAND_H);
 
-    if (ui->addTextButton("Inspect fire info"_s, buttonIsActive(gameState->inspectTileDebugFlags & DebugInspect_Fire))) {
-        gameState->inspectTileDebugFlags ^= DebugInspect_Fire;
+    if (ui->addTextButton("Inspect fire info"_s, buttonIsActive(gameState->inspectTileDebugFlags.has(InspectTileDebugFlags::Fire)))) {
+        gameState->inspectTileDebugFlags.toggle(InspectTileDebugFlags::Fire);
     }
     if (ui->addTextButton("Add Fire"_s, buttonIsActive(gameState->actionMode == ActionMode::Debug_AddFire))) {
         gameState->actionMode = ActionMode::Debug_AddFire;
@@ -599,12 +597,12 @@ void debugToolsWindowProc(UI::WindowContext* context, void* userData)
         gameState->actionMode = ActionMode::Debug_RemoveFire;
     }
 
-    if (ui->addTextButton("Inspect power info"_s, buttonIsActive(gameState->inspectTileDebugFlags & DebugInspect_Power))) {
-        gameState->inspectTileDebugFlags ^= DebugInspect_Power;
+    if (ui->addTextButton("Inspect power info"_s, buttonIsActive(gameState->inspectTileDebugFlags.has(InspectTileDebugFlags::Power)))) {
+        gameState->inspectTileDebugFlags.toggle(InspectTileDebugFlags::Power);
     }
 
-    if (ui->addTextButton("Inspect transport info"_s, buttonIsActive(gameState->inspectTileDebugFlags & DebugInspect_Transport))) {
-        gameState->inspectTileDebugFlags ^= DebugInspect_Transport;
+    if (ui->addTextButton("Inspect transport info"_s, buttonIsActive(gameState->inspectTileDebugFlags.has(InspectTileDebugFlags::Transport)))) {
+        gameState->inspectTileDebugFlags.toggle(InspectTileDebugFlags::Transport);
     }
 }
 

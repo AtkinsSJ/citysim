@@ -14,8 +14,8 @@
 #include <Sim/BuildingRef.h>
 #include <Util/Basic.h>
 #include <Util/ChunkedArray.h>
-#include <Util/DeprecatedFlags.h>
 #include <Util/EnumMap.h>
+#include <Util/Flags.h>
 #include <Util/Random.h>
 #include <Util/String.h>
 #include <Util/Vector.h>
@@ -109,12 +109,12 @@ struct DataViewUI {
     u8 (*calculateTileValue)(City* city, s32 x, s32 y);
 };
 
-enum InspectTileDebugFlags {
-    DebugInspect_Fire,
-    DebugInspect_Power,
-    DebugInspect_Transport,
+enum class InspectTileDebugFlags : u8 {
+    Fire,
+    Power,
+    Transport,
 
-    InspectTileDebugFlagCount,
+    COUNT,
 };
 
 struct GameState {
@@ -140,7 +140,7 @@ struct GameState {
     // Honestly, I'd like to do that now anyway, but I can't think of a good way to do so.
     // - Sam, 11/2/2019
     V2I inspectedTilePosition;
-    DeprecatedFlags<InspectTileDebugFlags, u8> inspectTileDebugFlags;
+    Flags<InspectTileDebugFlags> inspectTileDebugFlags;
 };
 
 GameState* newGameState(); // A blank game state with no city
