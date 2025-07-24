@@ -487,11 +487,11 @@ void updateAndRenderGameUI(GameState* gameState)
             s32 popupMenuMaxHeight = UI::windowSize.y - (buttonRect.y + buttonRect.h);
 
             UI::Panel menu = UI::Panel(irectXYWH(buttonRect.x - popupMenuPanelStyle->padding.left, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight), popupMenuPanelStyle);
-            for (s32 zoneIndex = 0; zoneIndex < to_underlying(ZoneType::COUNT); zoneIndex++) {
-                if (menu.addTextButton(getText(ZONE_DEFS[zoneIndex].textAssetName),
-                        buttonIsActive((gameState->actionMode == ActionMode::Zone) && (to_underlying(gameState->selectedZoneID) == zoneIndex)))) {
+            for (auto zone_type : enum_values<ZoneType>()) {
+                if (menu.addTextButton(getText(ZONE_DEFS[zone_type].textAssetName),
+                        buttonIsActive((gameState->actionMode == ActionMode::Zone) && gameState->selectedZoneID == zone_type))) {
                     UI::hideMenus();
-                    gameState->selectedZoneID = static_cast<ZoneType>(zoneIndex);
+                    gameState->selectedZoneID = zone_type;
                     gameState->actionMode = ActionMode::Zone;
                     renderer.set_cursor("build"_s);
                 }

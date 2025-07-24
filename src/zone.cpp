@@ -20,16 +20,16 @@ void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena)
     s32 sectorCount = getSectorCount(&zoneLayer->sectors);
 
     // NB: Element 0 is empty because tracking spots with no zone is not useful
-    for (s32 zoneType = to_underlying(FirstZoneType); zoneType < to_underlying(ZoneType::COUNT); zoneType++) {
-        initBitArray(&zoneLayer->sectorsWithZones[zoneType], gameArena, sectorCount);
-        initBitArray(&zoneLayer->sectorsWithEmptyZones[zoneType], gameArena, sectorCount);
+    for (auto zone_type : enum_values<ZoneType>()) {
+        initBitArray(&zoneLayer->sectorsWithZones[zone_type], gameArena, sectorCount);
+        initBitArray(&zoneLayer->sectorsWithEmptyZones[zone_type], gameArena, sectorCount);
 
-        zoneLayer->tileDesirability[zoneType] = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
+        zoneLayer->tileDesirability[zone_type] = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
 
-        zoneLayer->mostDesirableSectors[zoneType] = gameArena->allocate_array<s32>(sectorCount, true);
+        zoneLayer->mostDesirableSectors[zone_type] = gameArena->allocate_array<s32>(sectorCount, true);
         for (s32 sectorIndex = 0; sectorIndex < sectorCount; sectorIndex++) {
             // To start with, we just fill the array 0-to-N because we don't know what's the most desirable.
-            zoneLayer->mostDesirableSectors[zoneType][sectorIndex] = sectorIndex;
+            zoneLayer->mostDesirableSectors[zone_type][sectorIndex] = sectorIndex;
         }
     }
 
@@ -206,9 +206,9 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
         {
             DEBUG_BLOCK_T("updateZoneLayer: zone contents", DebugCodeDataTag::Simulation);
 
-            for (s32 zoneType = to_underlying(FirstZoneType); zoneType < to_underlying(ZoneType::COUNT); zoneType++) {
-                layer->sectorsWithZones[zoneType].unsetBit(sectorIndex);
-                layer->sectorsWithEmptyZones[zoneType].unsetBit(sectorIndex);
+            for (auto zone_type : enum_values<ZoneType>()) {
+                layer->sectorsWithZones[zone_type].unsetBit(sectorIndex);
+                layer->sectorsWithEmptyZones[zone_type].unsetBit(sectorIndex);
             }
 
             sector->zoneSectorFlags = 0;
@@ -345,9 +345,9 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
     }
 
     // Sort the mostDesirableSectors array
-    for (s32 zoneType = to_underlying(FirstZoneType); zoneType < to_underlying(ZoneType::COUNT); zoneType++) {
-        layer->mostDesirableSectors[zoneType].sort([&](s32 sectorIndexA, s32 sectorIndexB) {
-            return layer->sectors[sectorIndexA].averageDesirability[zoneType] > layer->sectors[sectorIndexB].averageDesirability[zoneType];
+    for (auto zone_type : enum_values<ZoneType>()) {
+        layer->mostDesirableSectors[zone_type].sort([&](s32 sectorIndexA, s32 sectorIndexB) {
+            return layer->sectors[sectorIndexA].averageDesirability[zone_type] > layer->sectors[sectorIndexB].averageDesirability[zone_type];
         });
 
 // TEST
@@ -458,8 +458,7 @@ void growSomeZoneBuildings(City* city)
     ZoneLayer* layer = &city->zoneLayer;
     Random* random = &AppState::the().gameState->gameRandom;
 
-    for (auto zone_type_index = to_underlying(FirstZoneType); zone_type_index < to_underlying(ZoneType::COUNT); zone_type_index++) {
-        auto zone_type = static_cast<ZoneType>(zone_type_index);
+    for (auto zone_type : enum_values<ZoneType>()) {
         if (layer->demand[zone_type] > 0) {
             s32 remainingBuildingCount = 8; // How many buildings can be constructed at once TODO: Tweak this number!
             s32 remainingDemand = layer->demand[zone_type];
