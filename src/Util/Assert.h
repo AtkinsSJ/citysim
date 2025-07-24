@@ -22,3 +22,7 @@
     default:                 \
         ASSERT(false);       \
         break;
+
+#define VERIFY_NOT_REACHED() \
+    ASSERT_RELEASE(false);   \
+    __builtin_unreachable();
