@@ -101,7 +101,7 @@ s32 calculateDemolitionCost(City* city, Rect2I area);
 void demolishRect(City* city, Rect2I area);
 
 template<typename T>
-Entity* addEntity(City* city, EntityType type, T* entityData)
+Entity* addEntity(City* city, Entity::Type type, T* entityData)
 {
     Indexed<Entity*> entityRecord = city->entities.append();
     // logInfo("Adding entity #{0}"_s, {formatInt(entityRecord.index)});

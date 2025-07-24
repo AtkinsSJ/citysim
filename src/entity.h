@@ -11,16 +11,16 @@
 #include <Util/Rectangle.h>
 #include <Util/Vector.h>
 
-enum EntityType {
-    EntityType_None,
-    EntityType_Building,
-    EntityType_Fire,
-    EntityTypeCount
-};
-
 struct Entity {
+    enum class Type : u8 {
+        None,
+        Building,
+        Fire,
+        COUNT,
+    };
+
     s32 index;
-    EntityType type;
+    Type type;
     void* dataPointer; // Type-checked to match the `type`, see checkEntityMatchesType()
 
     // Drawing data
@@ -40,12 +40,12 @@ inline bool checkEntityMatchesType(Entity* entity)
     return true;
 
     /*
-            // I'm expecting typos where the EntityType and data pointer provided or requested don't match,
+            // I'm expecting typos where the Entity::Type and data pointer provided or requested don't match,
             // so here's a little function to check that.
             switch (entity->type)
             {
-                    case EntityType_Building: return (typeid(T) == typeid(struct Building));
-                    case EntityType_Fire: 	  return (typeid(T) == typeid(struct Fire));
+                    case Entity::Type::Building: return (typeid(T) == typeid(struct Building));
+                    case Entity::Type::Fire: 	  return (typeid(T) == typeid(struct Fire));
                     INVALID_DEFAULT_CASE;
             }
 

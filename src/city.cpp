@@ -117,7 +117,7 @@ Building* addBuildingDirect(City* city, s32 id, BuildingDef* def, Rect2I footpri
     // Random sprite!
     building->spriteOffset = randomNext(&AppState::the().cosmeticRandom);
 
-    building->entity = addEntity(city, EntityType_Building, building);
+    building->entity = addEntity(city, Entity::Type::Building, building);
     building->entity->bounds = rect2(footprint);
     loadBuildingSprite(building);
     building->entity->canBeDemolished = true;
