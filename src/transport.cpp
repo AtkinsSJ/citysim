@@ -18,7 +18,7 @@ void initTransportLayer(TransportLayer* layer, City* city, MemoryArena* gameAren
     layer->transportMaxDistance = 8;
     initDirtyRects(&layer->dirtyRects, gameArena, layer->transportMaxDistance, city->bounds);
 
-    for (s32 type = 0; type < to_underlying(TransportType::COUNT); type++) {
+    for (auto type : enum_values<TransportType>()) {
         layer->tileTransportDistance[type] = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
         fill<u8>(&layer->tileTransportDistance[type], 255);
     }
@@ -60,8 +60,8 @@ void updateTransportLayer(City* city, TransportLayer* layer)
             // Clear the surrounding "distance to road" stuff from the rectangle
             for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.h; y++) {
                 for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.w; x++) {
-                    for (s32 type = 0; type < to_underlying(TransportType::COUNT); type++) {
-                        u8 distance = doesTileHaveTransport(city, x, y, (TransportType)type) ? 0 : 255;
+                    for (auto type : enum_values<TransportType>()) {
+                        u8 distance = doesTileHaveTransport(city, x, y, type) ? 0 : 255;
                         layer->tileTransportDistance[type].set(x, y, distance);
                     }
                 }
@@ -69,7 +69,7 @@ void updateTransportLayer(City* city, TransportLayer* layer)
         }
 
         // Transport distance recalculation
-        for (s32 type = 0; type < to_underlying(TransportType::COUNT); type++) {
+        for (auto type : enum_values<TransportType>()) {
             updateDistances(&layer->tileTransportDistance[type], &layer->dirtyRects, layer->transportMaxDistance);
         }
 
@@ -118,8 +118,8 @@ void debugInspectTransport(UI::Panel* panel, City* city, s32 x, s32 y)
     panel->addLabel("*** TRANSPORT INFO ***"_s);
 
     // Transport
-    for (s32 transportType = 0; transportType < to_underlying(TransportType::COUNT); transportType++) {
-        panel->addLabel(myprintf("Distance to transport #{0}: {1}"_s, { formatInt(transportType), formatInt(getDistanceToTransport(city, x, y, (TransportType)transportType)) }));
+    for (auto type : enum_values<TransportType>()) {
+        panel->addLabel(myprintf("Distance to transport #{0}: {1}"_s, { formatInt(type), formatInt(getDistanceToTransport(city, x, y, type)) }));
     }
 }
 
