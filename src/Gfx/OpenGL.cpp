@@ -182,7 +182,7 @@ void Renderer::render_internal()
                 glTexParameterfv(GL_TEXTURE_1D, GL_TEXTURE_BORDER_COLOR, borderColor);
                 glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 
-                V4* paletteData = readRenderData<V4>(renderBufferChunk, &pos, header->paletteSize);
+                Colour* paletteData = readRenderData<Colour>(renderBufferChunk, &pos, header->paletteSize);
 
                 glTexImage1D(GL_TEXTURE_1D, 0, GL_RGBA, header->paletteSize, 0, GL_RGBA, GL_FLOAT, paletteData);
 
@@ -275,7 +275,7 @@ void Renderer::render_internal()
                     flush_vertices();
                 }
 
-                glClearColor(header->clearColor.r, header->clearColor.g, header->clearColor.b, header->clearColor.a);
+                glClearColor(header->clearColor.r(), header->clearColor.g(), header->clearColor.b(), header->clearColor.a());
                 glClear(GL_COLOR_BUFFER_BIT);
             } break;
 
@@ -753,7 +753,7 @@ void Renderer::upload_texture_2d(GLenum pixelFormat, s32 width, s32 height, void
     }
 }
 
-void Renderer::push_quad(Rect2 bounds, V4 color)
+void Renderer::push_quad(Rect2 bounds, Colour color)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Renderer);
     [[maybe_unused]] s32 firstVertex = m_vertex_count;
@@ -800,12 +800,12 @@ void Renderer::push_quad(Rect2 bounds, V4 color)
     m_index_count += 6;
 }
 
-void Renderer::push_quad_with_uv(Rect2 bounds, V4 color, Rect2 uv)
+void Renderer::push_quad_with_uv(Rect2 bounds, Colour color, Rect2 uv)
 {
     return push_quad_with_uv_multicolor(bounds, color, color, color, color, uv);
 }
 
-void Renderer::push_quad_with_uv_multicolor(Rect2 bounds, V4 color00, V4 color01, V4 color10, V4 color11, Rect2 uv)
+void Renderer::push_quad_with_uv_multicolor(Rect2 bounds, Colour color00, Colour color01, Colour color10, Colour color11, Rect2 uv)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Renderer);
     [[maybe_unused]] s32 firstVertex = m_vertex_count;

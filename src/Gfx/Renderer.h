@@ -179,33 +179,33 @@ void addSetShader(RenderBuffer* buffer, s8 shaderID);
 void addSetTexture(RenderBuffer* buffer, Asset* texture);
 void addSetTextureRaw(RenderBuffer* buffer, s32 width, s32 height, u8 bytesPerPixel, u8* pixels);
 
-void addClear(RenderBuffer* buffer, V4 clearColor = {});
+void addClear(RenderBuffer* buffer, Colour clearColor = {});
 
 // Scissors are a stack, so you can nest them. Note that nested scissors don't crop to each other!
 // NB: bounds rectangle is in window pixels, with the origin at the top-left
 void addBeginScissor(RenderBuffer* buffer, Rect2I bounds);
 void addEndScissor(RenderBuffer* buffer);
 
-void drawSingleSprite(RenderBuffer* buffer, Sprite* sprite, Rect2 bounds, s8 shaderID, V4 color);
-void drawSingleRect(RenderBuffer* buffer, Rect2 bounds, s8 shaderID, V4 color);
-void drawSingleRect(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, V4 color);
-void drawSingleRect(RenderBuffer* buffer, Rect2 bounds, s8 shaderID, V4 color00, V4 color01, V4 color10, V4 color11);
-void drawSingleRect(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, V4 color00, V4 color01, V4 color10, V4 color11);
+void drawSingleSprite(RenderBuffer* buffer, Sprite* sprite, Rect2 bounds, s8 shaderID, Colour color);
+void drawSingleRect(RenderBuffer* buffer, Rect2 bounds, s8 shaderID, Colour color);
+void drawSingleRect(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, Colour color);
+void drawSingleRect(RenderBuffer* buffer, Rect2 bounds, s8 shaderID, Colour color00, Colour color01, Colour color10, Colour color11);
+void drawSingleRect(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, Colour color00, Colour color01, Colour color10, Colour color11);
 
 // For when you want something to appear NOW in the render-order, but you don't know its details until later
 DrawRectPlaceholder appendDrawRectPlaceholder(RenderBuffer* buffer, s8 shaderID, bool hasTexture);
-void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2 bounds, V4 color);
-void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2I bounds, V4 color);
-void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2 bounds, V4 color00, V4 color01, V4 color10, V4 color11);
-void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2I bounds, V4 color00, V4 color01, V4 color10, V4 color11);
-void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2 bounds, Sprite* sprite, V4 color);
+void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2 bounds, Colour color);
+void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2I bounds, Colour color);
+void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2 bounds, Colour color00, Colour color01, Colour color10, Colour color11);
+void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2I bounds, Colour color00, Colour color01, Colour color10, Colour color11);
+void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2 bounds, Sprite* sprite, Colour color);
 
 struct DrawNinepatchPlaceholder {
     RenderItem_DrawRects_Item* firstRect;
 };
-void drawNinepatch(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, Ninepatch* ninepatch, V4 color = Colour::white());
+void drawNinepatch(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, Ninepatch* ninepatch, Colour color = Colour::white());
 DrawNinepatchPlaceholder appendDrawNinepatchPlaceholder(RenderBuffer* buffer, Asset* texture, s8 shaderID);
-void fillDrawNinepatchPlaceholder(DrawNinepatchPlaceholder* placeholder, Rect2I bounds, Ninepatch* ninepatch, V4 color = Colour::white());
+void fillDrawNinepatchPlaceholder(DrawNinepatchPlaceholder* placeholder, Rect2I bounds, Ninepatch* ninepatch, Colour color = Colour::white());
 
 // NB: The Rects drawn must all have the same Texture!
 DrawRectsGroup* beginRectsGroupInternal(RenderBuffer* buffer, Asset* texture, s8 shaderID, s32 maxCount);
@@ -220,10 +220,10 @@ DrawRectsGroup* beginRectsGroupForText(RenderBuffer* buffer, BitmapFont* font, s
 // group's current sub-group.
 // Basically, call this before adding anything, with count <= 255, and you'll be fine.
 RenderItem_DrawRects_Item* reserve(DrawRectsGroup* group, s32 count);
-void addRectInternal(DrawRectsGroup* group, Rect2 bounds, V4 color, Rect2 uv);
-void addGlyphRect(DrawRectsGroup* state, BitmapFontGlyph* glyph, V2 position, V4 color);
-void addSpriteRect(DrawRectsGroup* state, Sprite* sprite, Rect2 bounds, V4 color);
-void addUntexturedRect(DrawRectsGroup* group, Rect2 bounds, V4 color);
+void addRectInternal(DrawRectsGroup* group, Rect2 bounds, Colour color, Rect2 uv);
+void addGlyphRect(DrawRectsGroup* state, BitmapFontGlyph* glyph, V2 position, Colour color);
+void addSpriteRect(DrawRectsGroup* state, Sprite* sprite, Rect2 bounds, Colour color);
+void addUntexturedRect(DrawRectsGroup* group, Rect2 bounds, Colour color);
 void offsetRange(DrawRectsGroup* state, s32 startIndex, s32 endIndexInclusive, f32 offsetX, f32 offsetY);
 void endRectsGroup(DrawRectsGroup* group);
 
@@ -234,5 +234,5 @@ void drawGrid(RenderBuffer* buffer, Rect2 bounds, s32 gridW, s32 gridH, u8* grid
 
 DrawRingsGroup* beginRingsGroup(RenderBuffer* buffer, s32 maxCount);
 DrawRingsSubGroup beginRingsSubGroup(DrawRingsGroup* group);
-void addRing(DrawRingsGroup* group, V2 centre, f32 radius, f32 thickness, V4 color);
+void addRing(DrawRingsGroup* group, V2 centre, f32 radius, f32 thickness, Colour color);
 void endRingsGroup(DrawRingsGroup* group);

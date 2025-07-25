@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <Gfx/Colour.h>
 #include <Gfx/Forward.h>
 #include <Util/Basic.h>
 #include <Util/Rectangle.h>
@@ -34,7 +35,7 @@ struct RenderItem_SetCamera {
 
 struct RenderItem_SetPalette {
     s32 paletteSize;
-    // Palette as a series of V4s follows this struct
+    // Palette as a series of Colours follows this struct
 };
 
 struct RenderItem_SetShader {
@@ -52,7 +53,7 @@ struct RenderItem_SetTexture {
 };
 
 struct RenderItem_Clear {
-    V4 clearColor;
+    Colour clearColor;
 };
 
 struct RenderItem_BeginScissor {
@@ -63,10 +64,10 @@ struct RenderItem_EndScissor {
 
 struct RenderItem_DrawSingleRect {
     Rect2 bounds;
-    V4 color00;
-    V4 color01;
-    V4 color10;
-    V4 color11;
+    Colour color00;
+    Colour color01;
+    Colour color10;
+    Colour color11;
     Rect2 uv; // in (0 to 1) space
 };
 
@@ -81,7 +82,7 @@ struct RenderItem_DrawRects {
 };
 struct RenderItem_DrawRects_Item {
     Rect2 bounds;
-    V4 color;
+    Colour color;
     Rect2 uv;
 };
 
@@ -114,5 +115,5 @@ struct RenderItem_DrawRings_Item {
     V2 centre;
     f32 radius;
     f32 thickness;
-    V4 color;
+    Colour color;
 };

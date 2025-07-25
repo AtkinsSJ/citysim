@@ -22,7 +22,7 @@ namespace GL {
 
 struct VertexData {
     V2 pos;
-    V4 color;
+    Colour color;
     V2 uv;
 };
 
@@ -74,9 +74,9 @@ public:
 
 private:
     void upload_texture_2d(GLenum pixelFormat, s32 width, s32 height, void* pixelData);
-    void push_quad(Rect2 bounds, V4 color);
-    void push_quad_with_uv(Rect2 bounds, V4 color, Rect2 uv);
-    void push_quad_with_uv_multicolor(Rect2 bounds, V4 color00, V4 color01, V4 color10, V4 color11, Rect2 uv);
+    void push_quad(Rect2 bounds, Colour color);
+    void push_quad_with_uv(Rect2 bounds, Colour color, Rect2 uv);
+    void push_quad_with_uv_multicolor(Rect2 bounds, Colour color00, Colour color01, Colour color10, Colour color11, Rect2 uv);
     void flush_vertices();
 
     SDL_GLContext m_context {};
