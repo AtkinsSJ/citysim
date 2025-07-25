@@ -43,8 +43,3 @@ enum class Orientation {
     Horizontal,
     Vertical
 };
-
-//
-// Colours
-//
-V4 asOpaque(V4 color);

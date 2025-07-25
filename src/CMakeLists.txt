@@ -36,7 +36,6 @@ target_sources(CitySim PRIVATE
     terrain.cpp
     tile_utils.cpp
     transport.cpp
-    types.cpp
     unicode.cpp
     write_buffer.cpp
     zone.cpp

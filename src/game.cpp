@@ -1189,7 +1189,7 @@ void drawDataViewUI(GameState* gameState)
 
                 for (s32 fixedColorIndex = dataView->fixedColorNames.count - 1; fixedColorIndex >= 0; fixedColorIndex--) {
                     Rect2I paletteBlockBounds = ui.addBlank(paletteBlockSize, paletteBlockSize);
-                    drawSingleRect(uiBuffer, paletteBlockBounds, renderer.shaderIds.untextured, asOpaque((*fixedPalette)[fixedColorIndex]));
+                    drawSingleRect(uiBuffer, paletteBlockBounds, renderer.shaderIds.untextured, (*fixedPalette)[fixedColorIndex].as_opaque());
 
                     ui.addLabel(getText(dataView->fixedColorNames[fixedColorIndex]));
                     ui.startNewLine();
@@ -1207,8 +1207,8 @@ void drawDataViewUI(GameState* gameState)
                     Rect2I gradientBounds = gradientColumn.addBlank(paletteBlockSize, gradientHeight);
 
                     auto* gradientPalette = getPalette(dataView->gradientPaletteName);
-                    auto minColor = asOpaque(*gradientPalette->first());
-                    auto maxColor = asOpaque(*gradientPalette->last());
+                    auto minColor = gradientPalette->first()->as_opaque();
+                    auto maxColor = gradientPalette->last()->as_opaque();
 
                     drawSingleRect(uiBuffer, rect2(gradientBounds), renderer.shaderIds.untextured, maxColor, maxColor, minColor, minColor);
                 }
