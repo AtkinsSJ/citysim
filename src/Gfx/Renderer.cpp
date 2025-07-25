@@ -773,10 +773,10 @@ void drawGrid(RenderBuffer* buffer, Rect2 bounds, s32 gridW, s32 gridH, u8* grid
 
     RenderItem_DrawSingleRect* rect = appendRenderItem<RenderItem_DrawSingleRect>(buffer, RenderItemType::DrawSingleRect);
     rect->bounds = bounds;
-    rect->color00 = makeWhite();
-    rect->color01 = makeWhite();
-    rect->color10 = makeWhite();
-    rect->color11 = makeWhite();
+    rect->color00 = Colour::white();
+    rect->color01 = Colour::white();
+    rect->color10 = Colour::white();
+    rect->color11 = Colour::white();
     rect->uv = rectXYWH(0, 0, 1, 1);
 }
 

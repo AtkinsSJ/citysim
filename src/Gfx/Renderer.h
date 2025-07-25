@@ -11,6 +11,7 @@
 #include "types.h"
 #include <Assets/Forward.h>
 #include <Gfx/Camera.h>
+#include <Gfx/Colour.h>
 #include <Gfx/Forward.h>
 #include <Gfx/RenderBuffer.h>
 #include <SDL2/SDL_events.h>
@@ -202,9 +203,9 @@ void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2 bounds, Spr
 struct DrawNinepatchPlaceholder {
     RenderItem_DrawRects_Item* firstRect;
 };
-void drawNinepatch(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, Ninepatch* ninepatch, V4 color = makeWhite());
+void drawNinepatch(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, Ninepatch* ninepatch, V4 color = Colour::white());
 DrawNinepatchPlaceholder appendDrawNinepatchPlaceholder(RenderBuffer* buffer, Asset* texture, s8 shaderID);
-void fillDrawNinepatchPlaceholder(DrawNinepatchPlaceholder* placeholder, Rect2I bounds, Ninepatch* ninepatch, V4 color = makeWhite());
+void fillDrawNinepatchPlaceholder(DrawNinepatchPlaceholder* placeholder, Rect2I bounds, Ninepatch* ninepatch, V4 color = Colour::white());
 
 // NB: The Rects drawn must all have the same Texture!
 DrawRectsGroup* beginRectsGroupInternal(RenderBuffer* buffer, Asset* texture, s8 shaderID, s32 maxCount);

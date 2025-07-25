@@ -359,7 +359,7 @@ bool putImageButton(Sprite* sprite, Rect2I bounds, ButtonStyle* style, ButtonSta
 
     Rect2I contentBounds = calculateButtonContentBounds(bounds, style);
     Rect2 spriteBounds = rect2(contentBounds);
-    drawSingleSprite(renderBuffer, sprite, spriteBounds, renderer.shaderIds.textured, makeWhite());
+    drawSingleSprite(renderBuffer, sprite, spriteBounds, renderer.shaderIds.textured, Colour::white());
 
     return result;
 }

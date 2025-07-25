@@ -114,7 +114,7 @@ Entity* addEntity(City* city, Entity::Type type, T* entityData)
     ASSERT(checkEntityMatchesType<T>(entity));
     entity->dataPointer = entityData;
 
-    entity->color = makeWhite();
+    entity->color = Colour::white();
     entity->depth = 0;
 
     entity->canBeDemolished = false;

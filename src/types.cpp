@@ -11,11 +11,6 @@
     Colours
  **********************************************/
 
-V4 makeWhite()
-{
-    return v4(1.0f, 1.0f, 1.0f, 1.0f);
-}
-
 V4 asOpaque(V4 color)
 {
     // Colors are always stored with premultiplied alpha, so in order to set the alpha

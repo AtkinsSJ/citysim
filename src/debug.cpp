@@ -267,7 +267,7 @@ void renderDebugData(DebugState* debugState)
     }
 
     DebugTextState textState;
-    initDebugTextState(&textState, font, makeWhite(), 16, false, true);
+    initDebugTextState(&textState, font, Colour::white(), 16, false, true);
 
     u32 framesAgo = wrap<u32>(debugState->writingFrameIndex - rfi, DEBUG_FRAMES_COUNT);
     debugTextOut(&textState, myprintf("Examining {0} frames ago"_s, { formatInt(framesAgo) }));
@@ -348,7 +348,7 @@ void renderDebugData(DebugState* debugState)
     }
 
     // Put FPS in top right
-    initDebugTextState(&textState, font, makeWhite(), 16, false, false);
+    initDebugTextState(&textState, font, Colour::white(), 16, false, false);
     {
         String smsForFrame = "???"_s;
         String sfps = "???"_s;

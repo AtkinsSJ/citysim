@@ -53,7 +53,7 @@ Maybe<DrawableStyle> readDrawableStyle(LineReader* reader)
 
         DrawableStyle drawable = {};
         drawable.type = DrawableType::Ninepatch;
-        drawable.color = color.orDefault(makeWhite());
+        drawable.color = color.orDefault(Colour::white());
         drawable.ninepatch = getAssetRef(AssetType::Ninepatch, ninepatchName);
 
         result = makeSuccess(drawable);
@@ -64,7 +64,7 @@ Maybe<DrawableStyle> readDrawableStyle(LineReader* reader)
 
         DrawableStyle drawable = {};
         drawable.type = DrawableType::Sprite;
-        drawable.color = color.orDefault(makeWhite());
+        drawable.color = color.orDefault(Colour::white());
         drawable.sprite = getSpriteRef(spriteName, 0);
 
         result = makeSuccess(drawable);
@@ -489,7 +489,7 @@ void loadUITheme(Blob data, Asset* asset)
 
     // Some default values to use
     V4 transparent = Colour::from_rgb_255(0, 0, 0, 0);
-    V4 white = makeWhite();
+    V4 white = Colour::white();
     AssetRef defaultFont = getAssetRef(AssetType::BitmapFont, nullString);
     String defaultStyleName = "default"_h;
 
