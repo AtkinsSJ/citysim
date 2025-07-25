@@ -230,7 +230,7 @@ void endRectsGroup(DrawRectsGroup* group);
 DrawRectsSubGroup beginRectsSubGroup(DrawRectsGroup* group);
 void endCurrentSubGroup(DrawRectsGroup* group);
 
-void drawGrid(RenderBuffer* buffer, Rect2 bounds, s32 gridW, s32 gridH, u8* grid, u16 paletteSize, V4* palette);
+void drawGrid(RenderBuffer* buffer, Rect2 bounds, s32 gridW, s32 gridH, u8* grid, u16 paletteSize, Colour* palette);
 
 DrawRingsGroup* beginRingsGroup(RenderBuffer* buffer, s32 maxCount);
 DrawRingsSubGroup beginRingsSubGroup(DrawRingsGroup* group);

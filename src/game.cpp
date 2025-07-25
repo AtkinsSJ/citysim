@@ -768,7 +768,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
                 if (!mouseIsOverUI)
                     showCostTooltip(zoneCost);
                 if (canAfford(city, zoneCost)) {
-                    V4 palette[] = {
+                    Colour palette[] = {
                         Colour::from_rgb_255(255, 0, 0, 16),
                         ZONE_DEFS[gameState->selectedZoneID].color
                     };
@@ -986,7 +986,7 @@ static void drawBuildingHighlights(City* city, Iterable* buildingRefs)
     auto& renderer = the_renderer();
 
     if (buildingRefs->count > 0) {
-        Array<V4>* buildingsPalette = getPalette("service_buildings"_s);
+        auto* buildingsPalette = getPalette("service_buildings"_s);
         s32 paletteIndexPowered = 0;
         s32 paletteIndexUnpowered = 1;
 
@@ -1032,7 +1032,7 @@ static void drawBuildingEffectRadii(City* city, Iterable* buildingRefs, EffectRa
     DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
 
     if (buildingRefs->count > 0) {
-        Array<V4>* ringsPalette = getPalette("coverage_radius"_s);
+        auto* ringsPalette = getPalette("coverage_radius"_s);
         s32 paletteIndexPowered = 0;
         s32 paletteIndexUnpowered = 1;
 
@@ -1079,7 +1079,7 @@ void drawDataViewOverlay(GameState* gameState, Rect2I visibleTileBounds)
         // - Sam, 28/03/2020
         Rect2I bounds = city->bounds;
 
-        Array<V4>* overlayPalette = getPalette(dataView->overlayPaletteName);
+        auto* overlayPalette = getPalette(dataView->overlayPaletteName);
         drawGrid(&renderer.world_overlay_buffer(), rect2(bounds), bounds.w, bounds.h, *dataView->overlayTileData, (u16)overlayPalette->count, overlayPalette->items);
     } else if (dataView->calculateTileValue) {
         // The per-tile overlay data is generated
@@ -1092,7 +1092,7 @@ void drawDataViewOverlay(GameState* gameState, Rect2I visibleTileBounds)
             }
         }
 
-        Array<V4>* overlayPalette = getPalette(dataView->overlayPaletteName);
+        auto* overlayPalette = getPalette(dataView->overlayPaletteName);
         drawGrid(&renderer.world_overlay_buffer(), rect2(visibleTileBounds), overlayTileData.w, overlayTileData.h, overlayTileData.items, (u16)overlayPalette->count, overlayPalette->items);
     }
 
@@ -1184,7 +1184,7 @@ void drawDataViewUI(GameState* gameState)
 
             // First, the named colors
             if (dataView->hasFixedColors) {
-                Array<V4>* fixedPalette = getPalette(dataView->fixedPaletteName);
+                auto* fixedPalette = getPalette(dataView->fixedPaletteName);
                 ASSERT(fixedPalette->count >= dataView->fixedColorNames.count);
 
                 for (s32 fixedColorIndex = dataView->fixedColorNames.count - 1; fixedColorIndex >= 0; fixedColorIndex--) {
@@ -1206,7 +1206,7 @@ void drawDataViewUI(GameState* gameState)
                 {
                     Rect2I gradientBounds = gradientColumn.addBlank(paletteBlockSize, gradientHeight);
 
-                    Array<V4>* gradientPalette = getPalette(dataView->gradientPaletteName);
+                    auto* gradientPalette = getPalette(dataView->gradientPaletteName);
                     V4 minColor = asOpaque(*gradientPalette->first());
                     V4 maxColor = asOpaque(*gradientPalette->last());
 

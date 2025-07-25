@@ -94,7 +94,7 @@ void initAssets()
         Asset* placeholderPalette = makePlaceholderAsset(AssetType::Palette);
         placeholderPalette->palette.type = Palette::Type::Fixed;
         placeholderPalette->palette.size = 0;
-        placeholderPalette->palette.paletteData = makeEmptyArray<V4>();
+        placeholderPalette->palette.paletteData = makeEmptyArray<Colour>();
 
         // PaletteDefs
         makePlaceholderAsset(AssetType::PaletteDefs);
@@ -338,7 +338,7 @@ void loadAsset(Asset* asset)
         switch (palette->type) {
         case Palette::Type::Gradient: {
             asset->data = assetsAllocate(s_assets, palette->size * sizeof(V4));
-            palette->paletteData = makeArray<V4>(palette->size, (V4*)asset->data.writable_data(), palette->size);
+            palette->paletteData = makeArray<Colour>(palette->size, reinterpret_cast<Colour*>(asset->data.writable_data()), palette->size);
 
             f32 ratio = 1.0f / (f32)(palette->size);
             for (s32 i = 0; i < palette->size; i++) {
@@ -730,7 +730,7 @@ Asset* getAsset(AssetRef* ref)
     return ref->pointer;
 }
 
-Array<V4>* getPalette(String name)
+Array<Colour>* getPalette(String name)
 {
     return &getAsset(AssetType::Palette, name)->palette.paletteData;
 }
@@ -1019,7 +1019,7 @@ void loadPaletteDefs(Blob data, Asset* asset)
                     if (paletteAsset->palette.type == Palette::Type::Fixed) {
                         if (!paletteAsset->palette.paletteData.isInitialised()) {
                             paletteAsset->data = assetsAllocate(s_assets, paletteAsset->palette.size * sizeof(V4));
-                            paletteAsset->palette.paletteData = makeArray<V4>(paletteAsset->palette.size, (V4*)paletteAsset->data.writable_data());
+                            paletteAsset->palette.paletteData = makeArray<Colour>(paletteAsset->palette.size, reinterpret_cast<Colour*>(paletteAsset->data.writable_data()));
                         }
 
                         s32 colorIndex = paletteAsset->palette.paletteData.count;

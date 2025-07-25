@@ -321,13 +321,13 @@ void addSetTextureRaw(RenderBuffer* buffer, s32 width, s32 height, u8 bytesPerPi
     copyMemory(pixels, itemAndData.data, pixelDataSize);
 }
 
-void addSetPalette(RenderBuffer* buffer, s32 paletteSize, V4* palette)
+void addSetPalette(RenderBuffer* buffer, s32 paletteSize, Colour* palette)
 {
-    auto itemAndData = appendRenderItem<RenderItem_SetPalette>(buffer, RenderItemType::SetPalette, sizeof(V4) * paletteSize);
+    auto itemAndData = appendRenderItem<RenderItem_SetPalette>(buffer, RenderItemType::SetPalette, sizeof(Colour) * paletteSize);
 
     itemAndData.item->paletteSize = paletteSize;
 
-    copyMemory(palette, (V4*)itemAndData.data, paletteSize);
+    copyMemory(palette, (Colour*)itemAndData.data, paletteSize);
 }
 
 void addClear(RenderBuffer* buffer, V4 clearColor)
@@ -762,7 +762,7 @@ void endRectsGroup(DrawRectsGroup* group)
     endCurrentSubGroup(group);
 }
 
-void drawGrid(RenderBuffer* buffer, Rect2 bounds, s32 gridW, s32 gridH, u8* grid, u16 paletteSize, V4* palette)
+void drawGrid(RenderBuffer* buffer, Rect2 bounds, s32 gridW, s32 gridH, u8* grid, u16 paletteSize, Colour* palette)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Renderer);
 

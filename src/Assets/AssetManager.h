@@ -87,7 +87,7 @@ Asset* getAsset(AssetRef* ref);
 BitmapFont* getFont(String fontName);
 BitmapFont* getFont(AssetRef* fontRef);
 
-Array<V4>* getPalette(String name);
+Array<Colour>* getPalette(String name);
 Shader* getShader(String shaderName);
 Sprite* getSprite(String name, s32 offset = 0);
 SpriteGroup* getSpriteGroup(String name);

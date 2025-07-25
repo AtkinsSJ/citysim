@@ -10,6 +10,7 @@
 #include <Assets/AssetType.h>
 #include <Assets/Forward.h>
 #include <Assets/Sprite.h>
+#include <Gfx/Colour.h>
 #include <SDL2/SDL_mouse.h>
 #include <UI/UITheme.h>
 #include <Util/Array.h>
@@ -83,12 +84,12 @@ struct Palette {
     union {
         struct
         {
-            V4 from;
-            V4 to;
+            Colour from;
+            Colour to;
         } gradient;
     };
 
-    Array<V4> paletteData;
+    Array<Colour> paletteData;
 };
 
 struct Shader {
