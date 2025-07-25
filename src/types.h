@@ -47,6 +47,5 @@ enum class Orientation {
 //
 // Colours
 //
-V4 color255(u8 r, u8 g, u8 b, u8 a);
 V4 makeWhite();
 V4 asOpaque(V4 color);

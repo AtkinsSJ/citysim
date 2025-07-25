@@ -11,21 +11,6 @@
     Colours
  **********************************************/
 
-V4 color255(u8 r, u8 g, u8 b, u8 a)
-{
-    static f32 const inv255 = 1.0f / 255.0f;
-
-    V4 v;
-    v.a = (f32)a * inv255;
-
-    // NB: Premultiplied alpha!
-    v.r = v.a * ((f32)r * inv255);
-    v.g = v.a * ((f32)g * inv255);
-    v.b = v.a * ((f32)b * inv255);
-
-    return v;
-}
-
 V4 makeWhite()
 {
     return v4(1.0f, 1.0f, 1.0f, 1.0f);

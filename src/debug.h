@@ -6,10 +6,10 @@
 
 #pragma once
 
-#include "Util/EnumMap.h"
-
+#include <Gfx/Colour.h>
 #include <SDL2/SDL_timer.h>
 #include <Util/DeprecatedLinkedList.h>
+#include <Util/EnumMap.h>
 #include <Util/HashTable.h>
 #include <Util/Pool.h>
 
@@ -87,14 +87,14 @@ enum class DebugCodeDataTag : u8 {
     COUNT
 };
 EnumMap<DebugCodeDataTag, V4> const debugCodeDataTagColors {
-    color255(255, 255, 255, 255), // White
-    color255(255, 0, 255, 255),   // Magenta
-    color255(128, 128, 128, 255), // Grey
-    color255(64, 255, 64, 255),   // Green
-    color255(32, 64, 255, 255),   // Blue
-    color255(255, 0, 0, 255),     // Red
-    color255(255, 64, 64, 255),   // Pink
-    color255(255, 128, 0, 255),   // Orange
+    Colour::from_rgb_255(255, 255, 255, 255), // White
+    Colour::from_rgb_255(255, 0, 255, 255),   // Magenta
+    Colour::from_rgb_255(128, 128, 128, 255), // Grey
+    Colour::from_rgb_255(64, 255, 64, 255),   // Green
+    Colour::from_rgb_255(32, 64, 255, 255),   // Blue
+    Colour::from_rgb_255(255, 0, 0, 255),     // Red
+    Colour::from_rgb_255(255, 64, 64, 255),   // Pink
+    Colour::from_rgb_255(255, 128, 0, 255),   // Orange
 };
 
 struct DebugCodeData {

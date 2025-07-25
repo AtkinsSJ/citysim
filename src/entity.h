@@ -7,9 +7,9 @@
 #pragma once
 
 #include <Assets/Sprite.h>
+#include <Gfx/Colour.h>
 #include <Util/Basic.h>
 #include <Util/Rectangle.h>
-#include <Util/Vector.h>
 
 struct Entity {
     enum class Type : u8 {

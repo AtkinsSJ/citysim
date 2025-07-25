@@ -212,7 +212,7 @@ void debugTextOut(DebugTextState* textState, String text, bool doHighlight = fal
 
     if (doHighlight && contains(bounds, textState->camera->mouse_position())) {
         drawSingleRect(textState->renderBuffer, bounds, textState->untexturedShaderID, textColor * 0.5f);
-        drawText(textState->renderBuffer, textState->font, text, bounds, align, color255(0, 0, 0, 255), textState->textShaderID);
+        drawText(textState->renderBuffer, textState->font, text, bounds, align, Colour::from_rgb_255(0, 0, 0, 255), textState->textShaderID);
     } else {
         drawText(textState->renderBuffer, textState->font, text, bounds, align, textColor, textState->textShaderID);
     }
@@ -242,18 +242,18 @@ void renderDebugData(DebugState* debugState)
 
     u64 cyclesPerSecond = SDL_GetPerformanceFrequency();
     u32 rfi = debugState->readingFrameIndex;
-    drawSingleRect(renderBuffer, rectXYWH(0, 0, ui_camera.size().x, ui_camera.size().y), renderer.shaderIds.untextured, color255(0, 0, 0, 128));
+    drawSingleRect(renderBuffer, rectXYWH(0, 0, ui_camera.size().x, ui_camera.size().y), renderer.shaderIds.untextured, Colour::from_rgb_255(0, 0, 0, 128));
 
     // Draw a "nice" chart!
     {
         f32 graphHeight = 150.0f;
-        drawSingleRect(renderBuffer, rectXYWH(0, ui_camera.size().y - graphHeight, ui_camera.size().x, 1), renderer.shaderIds.untextured, color255(255, 255, 255, 128));
-        drawSingleRect(renderBuffer, rectXYWH(0, ui_camera.size().y - graphHeight * 2, ui_camera.size().x, 1), renderer.shaderIds.untextured, color255(255, 255, 255, 128));
+        drawSingleRect(renderBuffer, rectXYWH(0, ui_camera.size().y - graphHeight, ui_camera.size().x, 1), renderer.shaderIds.untextured, Colour::from_rgb_255(255, 255, 255, 128));
+        drawSingleRect(renderBuffer, rectXYWH(0, ui_camera.size().y - graphHeight * 2, ui_camera.size().x, 1), renderer.shaderIds.untextured, Colour::from_rgb_255(255, 255, 255, 128));
         f32 targetCyclesPerFrame = cyclesPerSecond / 60.0f;
         f32 barWidth = ui_camera.size().x / (f32)DEBUG_FRAMES_COUNT;
         f32 barHeightPerCycle = graphHeight / targetCyclesPerFrame;
-        V4 barColor = color255(255, 0, 0, 128);
-        V4 activeBarColor = color255(255, 255, 0, 128);
+        V4 barColor = Colour::from_rgb_255(255, 0, 0, 128);
+        V4 activeBarColor = Colour::from_rgb_255(255, 255, 0, 128);
         u32 barIndex = 0;
         DrawRectsGroup* rectsGroup = beginRectsGroupUntextured(renderBuffer, renderer.shaderIds.untextured, DEBUG_FRAMES_COUNT);
         for (u32 fi = debugState->writingFrameIndex + 1;

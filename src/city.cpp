@@ -82,7 +82,7 @@ void drawEntities(City* city, Rect2I visibleTileBounds)
     auto shaderID = the_renderer().shaderIds.pixelArt;
 
     bool isDemolitionHappening = (areaOf(city->demolitionRect) > 0);
-    V4 drawColorDemolish = color255(255, 128, 128, 255);
+    V4 drawColorDemolish = Colour::from_rgb_255(255, 128, 128, 255);
     Rect2 demolitionRect = rect2(city->demolitionRect);
 
     for (auto it = city->entities.iterate(); it.hasNext(); it.next()) {
@@ -454,7 +454,7 @@ void drawCity(City* city, Rect2I visibleTileBounds)
     if (false) {
         Rect2I visibleSectors = getSectorsCovered(&city->sectors, visibleTileBounds);
         DrawRectsGroup* group = beginRectsGroupUntextured(&renderer.world_overlay_buffer(), renderer.shaderIds.untextured, areaOf(visibleSectors));
-        V4 sectorColor = color255(255, 255, 255, 40);
+        V4 sectorColor = Colour::from_rgb_255(255, 255, 255, 40);
         for (s32 sy = visibleSectors.y;
             sy < visibleSectors.y + visibleSectors.h;
             sy++) {

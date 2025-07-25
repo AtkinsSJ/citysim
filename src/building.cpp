@@ -9,6 +9,7 @@
 #include "city.h"
 #include "line_reader.h"
 #include <Assets/AssetManager.h>
+#include <Gfx/Colour.h>
 #include <Util/Deferred.h>
 
 void initBuildingCatalogue()
@@ -802,7 +803,7 @@ void updateBuilding(City* city, Building* building)
 
     // Now, colour the building based on its problems
     V4 drawColorNormal = makeWhite();
-    V4 drawColorNoPower = color255(32, 32, 64, 255);
+    V4 drawColorNoPower = Colour::from_rgb_255(32, 32, 64, 255);
 
     if (!buildingHasPower(building)) {
         building->entity->color = drawColorNoPower;

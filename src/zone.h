@@ -34,10 +34,10 @@ struct ZoneDef {
 };
 
 EnumMap<ZoneType, ZoneDef> const ZONE_DEFS {
-    { ZoneType::None, "zone_none"_s, color255(255, 255, 255, 128), 10, false, 0 },
-    { ZoneType::Residential, "zone_residential"_s, color255(0, 255, 0, 128), 10, true, 3 },
-    { ZoneType::Commercial, "zone_commercial"_s, color255(0, 0, 255, 128), 10, true, 2 },
-    { ZoneType::Industrial, "zone_industrial"_s, color255(255, 255, 0, 128), 20, true, 4 },
+    { ZoneType::None, "zone_none"_s, Colour::from_rgb_255(255, 255, 255, 128), 10, false, 0 },
+    { ZoneType::Residential, "zone_residential"_s, Colour::from_rgb_255(0, 255, 0, 128), 10, true, 3 },
+    { ZoneType::Commercial, "zone_commercial"_s, Colour::from_rgb_255(0, 0, 255, 128), 10, true, 2 },
+    { ZoneType::Industrial, "zone_industrial"_s, Colour::from_rgb_255(255, 255, 0, 128), 20, true, 4 },
 };
 
 enum class ZoneSectorFlags : u8 {

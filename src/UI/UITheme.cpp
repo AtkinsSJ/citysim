@@ -488,7 +488,7 @@ void loadUITheme(Blob data, Asset* asset)
     allocateChildren(asset, totalStyleCount);
 
     // Some default values to use
-    V4 transparent = color255(0, 0, 0, 0);
+    V4 transparent = Colour::from_rgb_255(0, 0, 0, 0);
     V4 white = makeWhite();
     AssetRef defaultFont = getAssetRef(AssetType::BitmapFont, nullString);
     String defaultStyleName = "default"_h;
@@ -712,7 +712,7 @@ void loadUITheme(Blob data, Asset* asset)
                     window->name = style->name;
 
                     window->titleBarHeight = style->titleBarHeight.orDefault(16);
-                    window->titleBarColor = style->titleBarColor.orDefault(color255(128, 128, 128, 255));
+                    window->titleBarColor = style->titleBarColor.orDefault(Colour::from_rgb_255(128, 128, 128, 255));
                     window->titleBarColorInactive = style->titleBarColorInactive.orDefault(window->titleBarColor);
                     window->titleBarButtonHoverColor = style->titleBarButtonHoverColor.orDefault(transparent);
 

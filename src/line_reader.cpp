@@ -320,7 +320,7 @@ Maybe<V4> readColor(LineReader* reader, bool isOptional)
             // NB: We default to fully opaque if no alpha is provided
             Maybe<u8> a = readInt<u8>(reader, true);
 
-            result = makeSuccess(color255(r.value, g.value, b.value, a.orDefault(255)));
+            result = makeSuccess((V4)Colour::from_rgb_255(r.value, g.value, b.value, a.orDefault(255)));
         } else {
             error(reader, "Couldn't parse '{0}' as a color. Expected 3 or 4 integers from 0 to 255, for R G B and optional A."_s, { allArguments });
             result = makeFailure<V4>();

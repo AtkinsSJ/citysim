@@ -333,7 +333,7 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
     // as highlighted, so maybe this won't work and I'll have to delete this comment in 30 seconds' time!
     // - Sam, 28/08/2019
 
-    V4 tileHighlightColor = color255(196, 196, 255, 64);
+    V4 tileHighlightColor = Colour::from_rgb_255(196, 196, 255, 64);
     auto& renderer = the_renderer();
     drawSingleRect(&renderer.world_overlay_buffer(), rectXYWHi(tilePos.x, tilePos.y, 1, 1), renderer.shaderIds.untextured, tileHighlightColor);
 }
@@ -393,7 +393,7 @@ void updateAndRenderGameUI(GameState* gameState)
 
     Rect2I uiRect = irectXYWH(0, 0, UI::windowSize.x, toolbarHeight);
     UI::addUIRect(uiRect);
-    drawSingleRect(uiBuffer, uiRect, renderer.shaderIds.untextured, color255(0, 0, 0, 128));
+    drawSingleRect(uiBuffer, uiRect, renderer.shaderIds.untextured, Colour::from_rgb_255(0, 0, 0, 128));
 
     UI::putLabel(city->name, irectXYWH(left, uiPadding, width3, rowHeight), labelStyle);
 
@@ -419,10 +419,10 @@ void updateAndRenderGameUI(GameState* gameState)
 
         // Draw a progress bar for the current day
         Rect2I dateRect = irectXYWH(right - clockWidth, uiPadding, clockWidth, dateStringSize.y);
-        drawSingleRect(uiBuffer, dateRect, renderer.shaderIds.untextured, color255(0, 0, 0, 128));
+        drawSingleRect(uiBuffer, dateRect, renderer.shaderIds.untextured, Colour::from_rgb_255(0, 0, 0, 128));
         Rect2I dateProgressRect = dateRect;
         dateProgressRect.w = round_s32(dateProgressRect.w * clock->timeWithinDay);
-        drawSingleRect(uiBuffer, dateProgressRect, renderer.shaderIds.untextured, color255(64, 255, 64, 128));
+        drawSingleRect(uiBuffer, dateProgressRect, renderer.shaderIds.untextured, Colour::from_rgb_255(64, 255, 64, 128));
 
         UI::putLabel(dateString, dateRect, labelStyle);
 
@@ -649,8 +649,8 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
     // UI!
     updateAndRenderGameUI(gameState);
 
-    V4 ghostColorValid = color255(128, 255, 128, 255);
-    V4 ghostColorInvalid = color255(255, 0, 0, 128);
+    V4 ghostColorValid = Colour::from_rgb_255(128, 255, 128, 255);
+    V4 ghostColorInvalid = Colour::from_rgb_255(255, 0, 0, 128);
 
     // CAMERA!
     Camera& world_camera = renderer.world_camera();
@@ -737,7 +737,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
                         }
                         endRectsGroup(rectsGroup);
                     } else {
-                        drawSingleRect(&renderer.world_overlay_buffer(), dragResult.dragRect, renderer.shaderIds.untextured, color255(255, 64, 64, 128));
+                        drawSingleRect(&renderer.world_overlay_buffer(), dragResult.dragRect, renderer.shaderIds.untextured, Colour::from_rgb_255(255, 64, 64, 128));
                     }
                 } break;
 
@@ -769,12 +769,12 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
                     showCostTooltip(zoneCost);
                 if (canAfford(city, zoneCost)) {
                     V4 palette[] = {
-                        color255(255, 0, 0, 16),
+                        Colour::from_rgb_255(255, 0, 0, 16),
                         ZONE_DEFS[gameState->selectedZoneID].color
                     };
                     drawGrid(&renderer.world_overlay_buffer(), rect2(canZoneQuery->bounds), canZoneQuery->bounds.w, canZoneQuery->bounds.h, canZoneQuery->tileCanBeZoned, 2, palette);
                 } else {
-                    drawSingleRect(&renderer.world_overlay_buffer(), dragResult.dragRect, renderer.shaderIds.untextured, color255(255, 64, 64, 128));
+                    drawSingleRect(&renderer.world_overlay_buffer(), dragResult.dragRect, renderer.shaderIds.untextured, Colour::from_rgb_255(255, 64, 64, 128));
                 }
             } break;
 
@@ -804,9 +804,9 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
 
                 if (canAfford(city, demolishCost)) {
                     // Demolition outline
-                    drawSingleRect(&renderer.world_overlay_buffer(), dragResult.dragRect, renderer.shaderIds.untextured, color255(128, 0, 0, 128));
+                    drawSingleRect(&renderer.world_overlay_buffer(), dragResult.dragRect, renderer.shaderIds.untextured, Colour::from_rgb_255(128, 0, 0, 128));
                 } else {
-                    drawSingleRect(&renderer.world_overlay_buffer(), dragResult.dragRect, renderer.shaderIds.untextured, color255(255, 64, 64, 128));
+                    drawSingleRect(&renderer.world_overlay_buffer(), dragResult.dragRect, renderer.shaderIds.untextured, Colour::from_rgb_255(255, 64, 64, 128));
                 }
             } break;
 
@@ -1124,7 +1124,7 @@ void drawDataViewUI(GameState* gameState)
     Rect2I dataViewButtonBounds = irectXYWH(uiPadding, UI::windowSize.y - uiPadding - dataViewButtonSize.y, dataViewButtonSize.x, dataViewButtonSize.y);
 
     Rect2I dataViewUIBounds = expand(dataViewButtonBounds, uiPadding);
-    drawSingleRect(uiBuffer, dataViewUIBounds, renderer.shaderIds.untextured, color255(0, 0, 0, 128));
+    drawSingleRect(uiBuffer, dataViewUIBounds, renderer.shaderIds.untextured, Colour::from_rgb_255(0, 0, 0, 128));
     UI::addUIRect(dataViewUIBounds);
 
     if (UI::putTextButton(dataViewButtonText, dataViewButtonBounds, buttonStyle)) {
