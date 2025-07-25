@@ -8,6 +8,7 @@
 
 #include <Assets/AssetRef.h>
 #include <Assets/Sprite.h>
+#include <Gfx/Colour.h>
 #include <Util/HashTable.h>
 #include <Util/Vector.h>
 
@@ -37,15 +38,15 @@ enum class DrawableType : u8 {
 
 struct DrawableStyle {
     DrawableType type;
-    V4 color;
+    Colour color;
 
     union {
         struct {
-            V4 color00;
-            V4 color01;
-            V4 color10;
-            V4 color11;
-        } gradient;
+            Colour color00;
+            Colour color01;
+            Colour color10;
+            Colour color11;
+        } gradient {};
 
         AssetRef ninepatch;
 
@@ -78,7 +79,7 @@ struct ButtonStyle {
     String name;
 
     AssetRef font;
-    V4 textColor;
+    Colour textColor;
     u32 textAlignment;
 
     Padding padding;
@@ -118,15 +119,15 @@ struct ConsoleStyle {
 
     AssetRef font;
     union {
-        EnumMap<ConsoleLineStyle, V4> outputTextColors;
+        EnumMap<ConsoleLineStyle, Colour> outputTextColors;
 
         struct {
             // Must match the order in ConsoleLineStyle!
-            V4 outputTextColor;
-            V4 outputTextColorInputEcho;
-            V4 outputTextColorError;
-            V4 outputTextColorSuccess;
-            V4 outputTextColorWarning;
+            Colour outputTextColor;
+            Colour outputTextColorInputEcho;
+            Colour outputTextColorError;
+            Colour outputTextColorSuccess;
+            Colour outputTextColorWarning;
         };
     };
 
@@ -153,7 +154,7 @@ struct LabelStyle {
     DrawableStyle background;
 
     AssetRef font;
-    V4 textColor;
+    Colour textColor;
     u32 textAlignment;
 };
 
@@ -222,7 +223,7 @@ struct TextInputStyle {
     String name;
 
     AssetRef font;
-    V4 textColor;
+    Colour textColor;
     u32 textAlignment;
 
     DrawableStyle background;
@@ -237,9 +238,9 @@ struct WindowStyle {
 
     AssetRef titleLabelStyle;
     s32 titleBarHeight;
-    V4 titleBarColor;
-    V4 titleBarColorInactive;
-    V4 titleBarButtonHoverColor;
+    Colour titleBarColor;
+    Colour titleBarColorInactive;
+    Colour titleBarButtonHoverColor;
 
     V2I offsetFromMouse;
 
@@ -311,17 +312,17 @@ struct Style {
     Maybe<DrawableStyle> thumbDisabled;
     Maybe<V2I> thumbSize;
 
-    Maybe<V4> overlayColor;
+    Maybe<Colour> overlayColor;
 
     Maybe<AssetRef> font;
     Maybe<u32> textAlignment;
-    Maybe<V4> textColor;
+    Maybe<Colour> textColor;
 
     // Window
     Maybe<String> titleLabelStyle;
-    Maybe<V4> titleBarButtonHoverColor;
-    Maybe<V4> titleBarColor;
-    Maybe<V4> titleBarColorInactive;
+    Maybe<Colour> titleBarButtonHoverColor;
+    Maybe<Colour> titleBarColor;
+    Maybe<Colour> titleBarColorInactive;
     Maybe<s32> titleBarHeight;
 
     // Checkbox specific
@@ -332,11 +333,11 @@ struct Style {
     Maybe<DrawableStyle> checkDisabled;
 
     // Console
-    Maybe<V4> outputTextColor;
-    Maybe<V4> outputTextColorInputEcho;
-    Maybe<V4> outputTextColorError;
-    Maybe<V4> outputTextColorSuccess;
-    Maybe<V4> outputTextColorWarning;
+    Maybe<Colour> outputTextColor;
+    Maybe<Colour> outputTextColorInputEcho;
+    Maybe<Colour> outputTextColorError;
+    Maybe<Colour> outputTextColorSuccess;
+    Maybe<Colour> outputTextColorWarning;
 
     // Radio button
     Maybe<V2I> dotSize;

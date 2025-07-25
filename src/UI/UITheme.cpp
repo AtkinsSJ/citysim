@@ -407,7 +407,7 @@ void loadUITheme(Blob data, Asset* asset)
                         case UI::PropType::Color: {
                             auto value = readColor(&reader);
                             if (value.isValid) {
-                                UI::setPropertyValue<V4>(target, property, value.value);
+                                UI::setPropertyValue<Colour>(target, property, value.value);
                             }
                         } break;
 
@@ -488,8 +488,8 @@ void loadUITheme(Blob data, Asset* asset)
     allocateChildren(asset, totalStyleCount);
 
     // Some default values to use
-    V4 transparent = Colour::from_rgb_255(0, 0, 0, 0);
-    V4 white = Colour::white();
+    auto transparent = Colour::from_rgb_255(0, 0, 0, 0);
+    auto white = Colour::white();
     AssetRef defaultFont = getAssetRef(AssetType::BitmapFont, nullString);
     String defaultStyleName = "default"_h;
 

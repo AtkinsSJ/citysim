@@ -125,7 +125,7 @@ void drawZones(City* city, Rect2I visibleTileBounds, s8 shaderID)
     auto& renderer = the_renderer();
     Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
     Optional<ZoneType> current_zone_type;
-    V4 zoneColor = {};
+    Colour zoneColor = {};
 
     // TODO: @Speed: Use a drawGrid() call for this somehow!
 

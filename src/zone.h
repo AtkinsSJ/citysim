@@ -27,7 +27,7 @@ constexpr ZoneType FirstZoneType = ZoneType::Residential;
 struct ZoneDef {
     ZoneType typeID;
     String textAssetName;
-    V4 color;
+    Colour color;
     s32 costPerTile;
     bool carriesPower;
     s32 maximumDistanceToRoad;

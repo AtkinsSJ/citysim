@@ -337,7 +337,7 @@ void loadAsset(Asset* asset)
         Palette* palette = &asset->palette;
         switch (palette->type) {
         case Palette::Type::Gradient: {
-            asset->data = assetsAllocate(s_assets, palette->size * sizeof(V4));
+            asset->data = assetsAllocate(s_assets, palette->size * sizeof(Colour));
             palette->paletteData = makeArray<Colour>(palette->size, reinterpret_cast<Colour*>(asset->data.writable_data()), palette->size);
 
             f32 ratio = 1.0f / (f32)(palette->size);
@@ -1018,7 +1018,7 @@ void loadPaletteDefs(Blob data, Asset* asset)
                 if (color.isValid) {
                     if (paletteAsset->palette.type == Palette::Type::Fixed) {
                         if (!paletteAsset->palette.paletteData.isInitialised()) {
-                            paletteAsset->data = assetsAllocate(s_assets, paletteAsset->palette.size * sizeof(V4));
+                            paletteAsset->data = assetsAllocate(s_assets, paletteAsset->palette.size * sizeof(Colour));
                             paletteAsset->palette.paletteData = makeArray<Colour>(paletteAsset->palette.size, reinterpret_cast<Colour*>(paletteAsset->data.writable_data()));
                         }
 

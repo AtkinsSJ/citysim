@@ -287,10 +287,10 @@ void updateAndRenderWindows()
         if (hasTitleBar) {
             bool hoveringOverCloseButton = contains(closeButtonRect, mousePos);
 
-            V4 barColor = (isActive ? windowStyle->titleBarColor : windowStyle->titleBarColorInactive);
+            auto barColor = (isActive ? windowStyle->titleBarColor : windowStyle->titleBarColorInactive);
 
             String closeButtonString = "X"_s;
-            V4 closeButtonColorHover = windowStyle->titleBarButtonHoverColor;
+            auto closeButtonColorHover = windowStyle->titleBarButtonHoverColor;
 
             drawSingleRect(window->renderBuffer, barArea, renderer.shaderIds.untextured, barColor);
             String titleString = window->title.getString();
