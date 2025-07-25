@@ -7,5 +7,6 @@
 #pragma once
 
 class Camera;
+class Colour;
 struct RenderBuffer;
 class Renderer;
