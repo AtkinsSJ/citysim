@@ -7,7 +7,6 @@
 #pragma once
 
 #include <Util/Basic.h>
-#include <Util/Vector.h>
 
 class Colour {
 public:
@@ -18,20 +17,6 @@ public:
         , m_b(b)
         , m_a(a)
     {
-    }
-
-    // FIXME: Temporary conversion
-    Colour(V4 source)
-        : m_r(source.r)
-        , m_g(source.g)
-        , m_b(source.b)
-        , m_a(source.a)
-    {
-    }
-
-    operator V4() const
-    {
-        return v4(m_r, m_g, m_b, m_a);
     }
 
     static Colour from_rgb_255(u8 r, u8 g, u8 b, u8 a)
@@ -77,7 +62,7 @@ private:
     float m_a { 0 };
 };
 
-inline Colour lerp(Colour const& a, Colour const& b, f32 position)
+inline Colour lerp(Colour const& a, Colour const& b, float position)
 {
     return Colour {
         (a.r() + ((b.r() - a.r()) * position)),
