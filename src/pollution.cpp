@@ -112,7 +112,7 @@ u8 getPollutionAt(City* city, s32 x, s32 y)
     return city->pollutionLayer.tilePollution.get(x, y);
 }
 
-f32 getPollutionPercentAt(City* city, s32 x, s32 y)
+float getPollutionPercentAt(City* city, s32 x, s32 y)
 {
     return city->pollutionLayer.tilePollution.get(x, y) / 255.0f;
 }

@@ -54,7 +54,7 @@ struct ZoneSector {
     Rect2I bounds;
     Flags<ZoneSectorFlags> zoneSectorFlags;
 
-    EnumMap<ZoneType, f32> averageDesirability;
+    EnumMap<ZoneType, float> averageDesirability;
 };
 
 struct ZoneLayer {

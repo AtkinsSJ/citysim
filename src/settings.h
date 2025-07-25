@@ -65,8 +65,8 @@ struct SettingsState {
     bool windowed;
     V2I resolution;
     Locale locale;
-    f32 musicVolume;
-    f32 soundVolume;
+    float musicVolume;
+    float soundVolume;
     s32 widgetCount;
 };
 
@@ -127,7 +127,7 @@ T* getSettingDataRaw(SettingsState* state, SettingDef* def)
         ASSERT(typeid(T*) == typeid(s32*));
         break;
     case SettingType::Percent:
-        ASSERT(typeid(T*) == typeid(f32*));
+        ASSERT(typeid(T*) == typeid(float*));
         break;
     case SettingType::S32:
         ASSERT(typeid(T*) == typeid(s32*));

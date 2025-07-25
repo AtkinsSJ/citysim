@@ -11,9 +11,9 @@
 
 static Renderer* s_renderer;
 
-f32 snapZoomLevel(f32 zoom)
+float snapZoomLevel(float zoom)
 {
-    return (f32)clamp(round_f32(10 * zoom) * 0.1f, 0.1f, 10.0f);
+    return (float)clamp(round_float(10 * zoom) * 0.1f, 0.1f, 10.0f);
 }
 
 Renderer::Renderer(SDL_Window* window)
@@ -39,7 +39,7 @@ Renderer::Renderer(SDL_Window* window)
 
     // Init cameras
     V2 camera_size = v2(m_window_size);
-    f32 const TILE_SIZE = 16.0f;
+    float const TILE_SIZE = 16.0f;
     m_world_camera = Camera(camera_size, 1.0f / TILE_SIZE, 10000.0f, -10000.0f);
     m_ui_camera = Camera(camera_size, 1.0f, 10000.0f, -10000.0f, camera_size * 0.5f);
 
@@ -479,15 +479,15 @@ void drawNinepatch(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, Ninepatch* 
     // NB: See comments in the Ninepatch struct for how we could avoid doing the  UV calculations repeatedly,
     // and why we haven't done so.
 
-    f32 x0 = (f32)(bounds.x);
-    f32 x1 = (f32)(bounds.x + ninepatch->pu1 - ninepatch->pu0);
-    f32 x2 = (f32)(bounds.x + bounds.w - (ninepatch->pu3 - ninepatch->pu2));
-    f32 x3 = (f32)(bounds.x + bounds.w);
+    float x0 = (float)(bounds.x);
+    float x1 = (float)(bounds.x + ninepatch->pu1 - ninepatch->pu0);
+    float x2 = (float)(bounds.x + bounds.w - (ninepatch->pu3 - ninepatch->pu2));
+    float x3 = (float)(bounds.x + bounds.w);
 
-    f32 y0 = (f32)(bounds.y);
-    f32 y1 = (f32)(bounds.y + ninepatch->pv1 - ninepatch->pv0);
-    f32 y2 = (f32)(bounds.y + bounds.h - (ninepatch->pv3 - ninepatch->pv2));
-    f32 y3 = (f32)(bounds.y + bounds.h);
+    float y0 = (float)(bounds.y);
+    float y1 = (float)(bounds.y + ninepatch->pv1 - ninepatch->pv0);
+    float y2 = (float)(bounds.y + bounds.h - (ninepatch->pv3 - ninepatch->pv2));
+    float y3 = (float)(bounds.y + bounds.h);
 
     // top left
     addRectInternal(group, rectMinMax(x0, y0, x1, y1), color, rectMinMax(ninepatch->u0, ninepatch->v0, ninepatch->u1, ninepatch->v1));
@@ -536,15 +536,15 @@ void fillDrawNinepatchPlaceholder(DrawNinepatchPlaceholder* placeholder, Rect2I 
     // NB: See comments in the Ninepatch struct for how we could avoid doing the  UV calculations repeatedly,
     // and why we haven't done so.
 
-    f32 x0 = (f32)(bounds.x);
-    f32 x1 = (f32)(bounds.x + ninepatch->pu1 - ninepatch->pu0);
-    f32 x2 = (f32)(bounds.x + bounds.w - (ninepatch->pu3 - ninepatch->pu2));
-    f32 x3 = (f32)(bounds.x + bounds.w);
+    float x0 = (float)(bounds.x);
+    float x1 = (float)(bounds.x + ninepatch->pu1 - ninepatch->pu0);
+    float x2 = (float)(bounds.x + bounds.w - (ninepatch->pu3 - ninepatch->pu2));
+    float x3 = (float)(bounds.x + bounds.w);
 
-    f32 y0 = (f32)(bounds.y);
-    f32 y1 = (f32)(bounds.y + ninepatch->pv1 - ninepatch->pv0);
-    f32 y2 = (f32)(bounds.y + bounds.h - (ninepatch->pv3 - ninepatch->pv2));
-    f32 y3 = (f32)(bounds.y + bounds.h);
+    float y0 = (float)(bounds.y);
+    float y1 = (float)(bounds.y + ninepatch->pv1 - ninepatch->pv0);
+    float y2 = (float)(bounds.y + bounds.h - (ninepatch->pv3 - ninepatch->pv2));
+    float y3 = (float)(bounds.y + bounds.h);
 
     RenderItem_DrawRects_Item* rect = placeholder->firstRect;
 
@@ -718,7 +718,7 @@ void addSpriteRect(DrawRectsGroup* group, Sprite* sprite, Rect2 bounds, Colour c
     addRectInternal(group, bounds, color, sprite->uv);
 }
 
-void offsetRange(DrawRectsGroup* group, s32 startIndex, s32 endIndexInclusive, f32 offsetX, f32 offsetY)
+void offsetRange(DrawRectsGroup* group, s32 startIndex, s32 endIndexInclusive, float offsetX, float offsetY)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Renderer);
 
@@ -829,7 +829,7 @@ void endCurrentSubGroup(DrawRingsGroup* group)
     group->buffer->currentChunk->used += group->currentSubGroup->header->count * sizeof(RenderItem_DrawRings_Item);
 }
 
-void addRing(DrawRingsGroup* group, V2 centre, f32 radius, f32 thickness, Colour color)
+void addRing(DrawRingsGroup* group, V2 centre, float radius, float thickness, Colour color)
 {
     // @Copypasta addRectInternal() - maybe factor out common "grouped render items" code?
     ASSERT(group->count < group->maxCount);

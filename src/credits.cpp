@@ -10,7 +10,7 @@
 #include <UI/UI.h>
 #include <Util/Vector.h>
 
-AppStatus updateAndRenderCredits(f32 /*deltaTime*/)
+AppStatus updateAndRenderCredits(float /*deltaTime*/)
 {
     AppStatus result = AppStatus::Credits;
 

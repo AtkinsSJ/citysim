@@ -25,7 +25,7 @@ struct Entity {
 
     // Drawing data
     Rect2 bounds;
-    f32 depth;
+    float depth;
     SpriteRef sprite;
     Colour color;
 

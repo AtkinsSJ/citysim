@@ -20,17 +20,17 @@
 //
 struct Matrix4 {
     union {
-        f32 v[4][4]; // Column-major order, so [COLUMN][ROW]
-        f32 flat[4 * 4];
+        float v[4][4]; // Column-major order, so [COLUMN][ROW]
+        float flat[4 * 4];
     };
 };
 
 Matrix4 identityMatrix4();
-Matrix4 orthographicMatrix4(f32 left, f32 right, f32 top, f32 bottom, f32 nearClip, f32 farClip);
+Matrix4 orthographicMatrix4(float left, float right, float top, float bottom, float nearClip, float farClip);
 Matrix4 inverse(Matrix4* source);
 void translate(Matrix4* matrix, V3 translation);
 void scale(Matrix4* matrix, V3 scale);
-void rotateZ(Matrix4* matrix, f32 radians);
+void rotateZ(Matrix4* matrix, float radians);
 
 Matrix4 operator*(Matrix4 a, Matrix4 b);
 Matrix4 operator*=(Matrix4& a, Matrix4 b);

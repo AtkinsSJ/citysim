@@ -68,17 +68,17 @@ bool randomBool(Random* random)
     return (randomNext(random) % 2) != 0;
 }
 
-f32 randomFloatBetween(Random* random, f32 minInclusive, f32 maxExclusive)
+float randomFloatBetween(Random* random, float minInclusive, float maxExclusive)
 {
-    f32 zeroToOne = randomFloat01(random);
+    float zeroToOne = randomFloat01(random);
 
     return (zeroToOne * (maxExclusive - minInclusive)) + minInclusive;
 }
 
-f32 randomFloat01(Random* random)
+float randomFloat01(Random* random)
 {
     s32 intValue = randomNext(random);
-    f32 result = abs_f32(((f32)intValue) / ((f32)s32Max));
+    float result = abs_float(((float)intValue) / ((float)s32Max));
     return result;
 }
 
@@ -94,7 +94,7 @@ Rect2I randomlyPlaceRectangle(Random* random, V2I size, Rect2I boundary)
 //
 // Noise
 //
-void generate1DNoise(Random* random, Array<f32>* destination, s32 smoothingPasses, bool wrap)
+void generate1DNoise(Random* random, Array<float>* destination, s32 smoothingPasses, bool wrap)
 {
     for (s32 i = 0; i < destination->count; i++) {
         (*destination)[i] = randomFloat01(random);

@@ -43,14 +43,14 @@ T randomInRange(Random* random)
 }
 
 bool randomBool(Random* random);
-f32 randomFloatBetween(Random* random, f32 minInclusive, f32 maxExclusive);
-f32 randomFloat01(Random* random);
+float randomFloatBetween(Random* random, float minInclusive, float maxExclusive);
+float randomFloat01(Random* random);
 Rect2I randomlyPlaceRectangle(Random* random, V2I size, Rect2I boundary);
 
 //
 // Noise
 //
-void generate1DNoise(Random* random, Array<f32>* destination, s32 smoothingPasses, bool wrap = false);
+void generate1DNoise(Random* random, Array<float>* destination, s32 smoothingPasses, bool wrap = false);
 
 //
 // Internal

@@ -12,7 +12,7 @@
     Rect2
  **********************************************/
 
-Rect2 rectXYWH(f32 x, f32 y, f32 w, f32 h)
+Rect2 rectXYWH(float x, float y, float w, float h)
 {
     Rect2 rect;
     rect.x = x;
@@ -24,7 +24,7 @@ Rect2 rectXYWH(f32 x, f32 y, f32 w, f32 h)
 
 Rect2 rectXYWHi(s32 x, s32 y, s32 w, s32 h)
 {
-    return rectXYWH((f32)x, (f32)y, (f32)w, (f32)h);
+    return rectXYWH((float)x, (float)y, (float)w, (float)h);
 }
 
 Rect2 rectPosSize(V2 pos, V2 size)
@@ -45,7 +45,7 @@ Rect2 rect2(Rect2I source)
     return rectXYWHi(source.x, source.y, source.w, source.h);
 }
 
-Rect2 rectMinMax(f32 minX, f32 minY, f32 maxX, f32 maxY)
+Rect2 rectMinMax(float minX, float minY, float maxX, float maxY)
 {
     Rect2 rect;
 
@@ -64,7 +64,7 @@ Rect2 rectAligned(V2 origin, V2 size, u32 alignment)
 
     switch (alignment & ALIGN_H) {
     case ALIGN_H_CENTRE:
-        rect.x = origin.x - round_f32(size.x / 2.0f);
+        rect.x = origin.x - round_float(size.x / 2.0f);
         break;
     case ALIGN_RIGHT:
         rect.x = origin.x - size.x;
@@ -78,7 +78,7 @@ Rect2 rectAligned(V2 origin, V2 size, u32 alignment)
 
     switch (alignment & ALIGN_V) {
     case ALIGN_V_CENTRE:
-        rect.y = origin.y - round_f32(size.y / 2.0f);
+        rect.y = origin.y - round_float(size.y / 2.0f);
         break;
     case ALIGN_BOTTOM:
         rect.y = origin.y - size.y;
@@ -93,7 +93,7 @@ Rect2 rectAligned(V2 origin, V2 size, u32 alignment)
     return rect;
 }
 
-bool contains(Rect2 rect, f32 x, f32 y)
+bool contains(Rect2 rect, float x, float y)
 {
     return x >= rect.x
         && x < (rect.x + rect.w)
@@ -119,7 +119,7 @@ bool overlaps(Rect2 a, Rect2 b)
         && (b.y < a.y + a.h);
 }
 
-Rect2 expand(Rect2 rect, f32 radius)
+Rect2 expand(Rect2 rect, float radius)
 {
     return rectXYWH(
         rect.x - radius,
@@ -128,7 +128,7 @@ Rect2 expand(Rect2 rect, f32 radius)
         rect.h + (radius * 2.0f));
 }
 
-Rect2 expand(Rect2 rect, f32 top, f32 right, f32 bottom, f32 left)
+Rect2 expand(Rect2 rect, float top, float right, float bottom, float left)
 {
     return rectXYWH(
         rect.x - left,
@@ -142,23 +142,23 @@ Rect2 intersect(Rect2 inner, Rect2 outer)
     Rect2 result = inner;
 
     // X
-    f32 rightExtension = (result.x + result.w) - (outer.x + outer.w);
+    float rightExtension = (result.x + result.w) - (outer.x + outer.w);
     if (rightExtension > 0) {
         result.w -= rightExtension;
     }
     if (result.x < outer.x) {
-        f32 leftExtension = outer.x - result.x;
+        float leftExtension = outer.x - result.x;
         result.x += leftExtension;
         result.w -= leftExtension;
     }
 
     // Y
-    f32 bottomExtension = (result.y + result.h) - (outer.y + outer.h);
+    float bottomExtension = (result.y + result.h) - (outer.y + outer.h);
     if (bottomExtension > 0) {
         result.h -= bottomExtension;
     }
     if (result.y < outer.y) {
-        f32 topExtension = outer.y - result.y;
+        float topExtension = outer.y - result.y;
         result.y += topExtension;
         result.h -= topExtension;
     }
@@ -193,9 +193,9 @@ V2I centreOfI(Rect2I rect)
         round_s32(rect.y + rect.h / 2.0f));
 }
 
-f32 areaOf(Rect2 rect)
+float areaOf(Rect2 rect)
 {
-    return abs_f32(rect.w * rect.h);
+    return abs_float(rect.w * rect.h);
 }
 
 bool hasPositiveArea(Rect2 rect)

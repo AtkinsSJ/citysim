@@ -62,15 +62,15 @@ struct Ninepatch {
     // these 8 floats is the best option. If creating the UV rects every time
     // becomes a bottleneck, we can switch over.
     // - Sam, 16/02/2021
-    f32 u0;
-    f32 u1;
-    f32 u2;
-    f32 u3;
+    float u0;
+    float u1;
+    float u2;
+    float u3;
 
-    f32 v0;
-    f32 v1;
-    f32 v2;
-    f32 v3;
+    float v0;
+    float v1;
+    float v2;
+    float v3;
 };
 
 struct Palette {

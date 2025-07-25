@@ -22,9 +22,6 @@ typedef uint16_t u16;
 typedef uint32_t u32;
 typedef uint64_t u64;
 
-typedef float f32;
-typedef double f64;
-
 s8 constexpr s8Min = INT8_MIN;
 s8 constexpr s8Max = INT8_MAX;
 s16 constexpr s16Min = INT16_MIN;
@@ -39,10 +36,10 @@ u16 constexpr u16Max = UINT16_MAX;
 u32 constexpr u32Max = UINT32_MAX;
 u64 constexpr u64Max = UINT64_MAX;
 
-f32 constexpr f32Min = -FLT_MAX;
-f32 constexpr f32Max = FLT_MAX;
-f64 constexpr f64Min = -DBL_MAX;
-f64 constexpr f64Max = DBL_MAX;
+float constexpr floatMin = -FLT_MAX;
+float constexpr floatMax = FLT_MAX;
+double constexpr f64Min = -DBL_MAX;
+double constexpr f64Max = DBL_MAX;
 
 typedef intptr_t smm;
 // typedef uintptr_t umm; // Turned this off because I don't think there's a good reason for using it?

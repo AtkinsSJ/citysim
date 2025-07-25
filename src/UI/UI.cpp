@@ -648,7 +648,7 @@ void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, Scrollb
                     s32 oldScrollOffset = getScrollbarContentOffset(state, gutterSize);
                     s32 scrollOffset = oldScrollOffset + (state->mouseWheelStepSize * mouseWheelDelta);
 
-                    state->scrollPercent = clamp01((f32)scrollOffset / (f32)overflowSize);
+                    state->scrollPercent = clamp01((float)scrollOffset / (float)overflowSize);
                 }
 
                 // Mouse stuff
@@ -663,10 +663,10 @@ void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, Scrollb
                     // the new thumb position. It's really awkward but I don't know how to pull the logic out.
                     if (isHorizontal) {
                         thumbBounds.x = clamp(thumbPos.x, bounds.x, bounds.x + thumbRange);
-                        state->scrollPercent = clamp01((f32)(thumbBounds.x - bounds.x) / (f32)thumbRange);
+                        state->scrollPercent = clamp01((float)(thumbBounds.x - bounds.x) / (float)thumbRange);
                     } else {
                         thumbBounds.y = clamp(thumbPos.y, bounds.y, bounds.y + thumbRange);
-                        state->scrollPercent = clamp01((f32)(thumbBounds.y - bounds.y) / (f32)thumbRange);
+                        state->scrollPercent = clamp01((float)(thumbBounds.y - bounds.y) / (float)thumbRange);
                     }
 
                     thumbStyle = &style->thumbPressed;
@@ -678,10 +678,10 @@ void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, Scrollb
                         if (!inThumbBounds) {
                             if (isHorizontal) {
                                 thumbBounds.x = clamp(mousePos.x - (thumbBounds.w / 2), bounds.x, bounds.x + thumbRange);
-                                state->scrollPercent = clamp01((f32)(thumbBounds.x - bounds.x) / (f32)thumbRange);
+                                state->scrollPercent = clamp01((float)(thumbBounds.x - bounds.x) / (float)thumbRange);
                             } else {
                                 thumbBounds.y = clamp(mousePos.y - (thumbBounds.h / 2), bounds.y, bounds.y + thumbRange);
-                                state->scrollPercent = clamp01((f32)(thumbBounds.y - bounds.y) / (f32)thumbRange);
+                                state->scrollPercent = clamp01((float)(thumbBounds.y - bounds.y) / (float)thumbRange);
                             }
                         }
 
@@ -731,7 +731,7 @@ V2I calculateSliderSize(Orientation orientation, SliderStyle* style, V2I availab
     return result;
 }
 
-void putSlider(f32* currentValue, f32 minValue, f32 maxValue, Orientation orientation, Rect2I bounds, SliderStyle* style, bool isDisabled, RenderBuffer* renderBuffer, bool snapToWholeNumbers)
+void putSlider(float* currentValue, float minValue, float maxValue, Orientation orientation, Rect2I bounds, SliderStyle* style, bool isDisabled, RenderBuffer* renderBuffer, bool snapToWholeNumbers)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
     ASSERT(maxValue > minValue);
@@ -744,22 +744,22 @@ void putSlider(f32* currentValue, f32 minValue, f32 maxValue, Orientation orient
 
     // Value ranges
     *currentValue = clamp(*currentValue, minValue, maxValue);
-    f32 valueRange = maxValue - minValue;
-    f32 currentPercent = (*currentValue - minValue) / valueRange;
+    float valueRange = maxValue - minValue;
+    float currentPercent = (*currentValue - minValue) / valueRange;
 
     // Calculate where the thumb is initially
     s32 travel; // Space available for the thumb to move in
     V2I thumbPos;
     if (orientation == Orientation::Horizontal) {
         travel = (bounds.w - style->thumbSize.x);
-        thumbPos.x = bounds.x + round_s32((f32)travel * currentPercent);
+        thumbPos.x = bounds.x + round_s32((float)travel * currentPercent);
         thumbPos.y = bounds.y + ((bounds.h - style->thumbSize.y) / 2);
     } else {
         ASSERT(orientation == Orientation::Vertical);
 
         travel = (bounds.h - style->thumbSize.y);
         thumbPos.x = bounds.x + ((bounds.w - style->thumbSize.x) / 2);
-        thumbPos.y = bounds.y + bounds.h - style->thumbSize.y - round_s32((f32)travel * currentPercent);
+        thumbPos.y = bounds.y + bounds.h - style->thumbSize.y - round_s32((float)travel * currentPercent);
     }
     Rect2I thumbBounds = irectPosSize(thumbPos, style->thumbSize);
 
@@ -770,15 +770,15 @@ void putSlider(f32* currentValue, f32 minValue, f32 maxValue, Orientation orient
     } else if (isDragging(currentValue)) {
         // Move
         V2I draggedPos = getDraggingObjectPos();
-        f32 positionPercent;
+        float positionPercent;
         if (orientation == Orientation::Horizontal) {
             thumbBounds.x = clamp(draggedPos.x, bounds.x, bounds.x + travel);
-            positionPercent = (f32)(thumbBounds.x - bounds.x) / (f32)travel;
+            positionPercent = (float)(thumbBounds.x - bounds.x) / (float)travel;
         } else {
             ASSERT(orientation == Orientation::Vertical);
 
             thumbBounds.y = clamp(draggedPos.y, bounds.y, bounds.y + travel);
-            positionPercent = 1.0f - (f32)(thumbBounds.y - bounds.y) / (f32)travel;
+            positionPercent = 1.0f - (float)(thumbBounds.y - bounds.y) / (float)travel;
         }
 
         // Apply that to the currentValue
@@ -792,15 +792,15 @@ void putSlider(f32* currentValue, f32 minValue, f32 maxValue, Orientation orient
             // If we're not on the thumb, jump the thumb to where we are!
             if (!inThumbBounds) {
 
-                f32 positionPercent;
+                float positionPercent;
                 if (orientation == Orientation::Horizontal) {
                     thumbBounds.x = clamp(mousePos.x - (thumbBounds.w / 2), bounds.x, bounds.x + travel);
-                    positionPercent = (f32)(thumbBounds.x - bounds.x) / (f32)travel;
+                    positionPercent = (float)(thumbBounds.x - bounds.x) / (float)travel;
                 } else {
                     ASSERT(orientation == Orientation::Vertical);
 
                     thumbBounds.y = clamp(mousePos.y - (thumbBounds.h / 2), bounds.y, bounds.y + travel);
-                    positionPercent = 1.0f - (f32)(thumbBounds.y - bounds.y) / (f32)travel;
+                    positionPercent = 1.0f - (float)(thumbBounds.y - bounds.y) / (float)travel;
                 }
 
                 // Apply that to the currentValue
@@ -822,15 +822,15 @@ void putSlider(f32* currentValue, f32 minValue, f32 maxValue, Orientation orient
     // calculation that it shouldn't matter that we're doing it every frame regardless of if the value did
     // change.
     if (snapToWholeNumbers) {
-        *currentValue = round_f32(*currentValue);
+        *currentValue = round_float(*currentValue);
         currentPercent = (*currentValue - minValue) / valueRange;
 
         if (orientation == Orientation::Horizontal) {
-            thumbBounds.x = bounds.x + round_s32((f32)travel * currentPercent);
+            thumbBounds.x = bounds.x + round_s32((float)travel * currentPercent);
         } else {
             ASSERT(orientation == Orientation::Vertical);
 
-            thumbBounds.y = bounds.y + bounds.h - thumbBounds.h - round_s32((f32)travel * currentPercent);
+            thumbBounds.y = bounds.y + bounds.h - thumbBounds.h - round_s32((float)travel * currentPercent);
         }
     }
 
@@ -852,9 +852,9 @@ void putSlider(f32* currentValue, f32 minValue, f32 maxValue, Orientation orient
 
 void putSlider(s32* currentValue, s32 minValue, s32 maxValue, Orientation orientation, Rect2I bounds, SliderStyle* style, bool isDisabled, RenderBuffer* renderBuffer)
 {
-    f32 currentValueF = (f32)*currentValue;
-    f32 minValueF = (f32)minValue;
-    f32 maxValueF = (f32)maxValue;
+    float currentValueF = (float)*currentValue;
+    float minValueF = (float)minValue;
+    float maxValueF = (float)maxValue;
 
     putSlider(&currentValueF, minValueF, maxValueF, orientation, bounds, style, isDisabled, renderBuffer, true);
 
@@ -919,15 +919,15 @@ void drawToast()
                 textSize.x + (style->padding.left + style->padding.right),
                 textSize.y + (style->padding.top + style->padding.bottom));
 
-            f32 animationDistance = toastSize.y + 16.0f;
+            float animationDistance = toastSize.y + 16.0f;
 
             if (toast->time < TOAST_APPEAR_TIME) {
                 // Animate in
-                f32 t = toast->time / TOAST_APPEAR_TIME;
+                float t = toast->time / TOAST_APPEAR_TIME;
                 origin.y += round_s32(interpolate(animationDistance, 0, t, Interpolation::SineOut));
             } else if (toast->time > (TOAST_APPEAR_TIME + TOAST_DISPLAY_TIME)) {
                 // Animate out
-                f32 t = (toast->time - (TOAST_APPEAR_TIME + TOAST_DISPLAY_TIME)) / TOAST_DISAPPEAR_TIME;
+                float t = (toast->time - (TOAST_APPEAR_TIME + TOAST_DISPLAY_TIME)) / TOAST_DISAPPEAR_TIME;
                 origin.y += round_s32(interpolate(0, animationDistance, t, Interpolation::SineIn));
             }
             Rect2I toastBounds = irectAligned(origin, toastSize, ALIGN_BOTTOM | ALIGN_H_CENTRE);

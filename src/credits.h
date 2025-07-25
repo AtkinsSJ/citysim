@@ -9,4 +9,4 @@
 #include "AppStatus.h"
 #include <Util/Basic.h>
 
-AppStatus updateAndRenderCredits(f32 deltaTime);
+AppStatus updateAndRenderCredits(float deltaTime);

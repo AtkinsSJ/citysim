@@ -21,45 +21,45 @@ struct Rect2 {
         V2 pos;
         struct
         {
-            f32 x;
-            f32 y;
+            float x;
+            float y;
         };
     };
     union {
         V2 size;
         struct
         {
-            f32 w;
-            f32 h;
+            float w;
+            float h;
         };
     };
 
-    f32 left() const { return x; }
-    f32 right() const { return x + w; }
-    f32 top() const { return y; }
-    f32 bottom() const { return y + h; }
+    float left() const { return x; }
+    float right() const { return x + w; }
+    float top() const { return y; }
+    float bottom() const { return y + h; }
 };
 
-Rect2 rectXYWH(f32 x, f32 y, f32 w, f32 h);
+Rect2 rectXYWH(float x, float y, float w, float h);
 Rect2 rectXYWHi(s32 x, s32 y, s32 w, s32 h);
 Rect2 rectPosSize(V2 pos, V2 size);
 Rect2 rectCentreSize(V2 centre, V2 size);
-Rect2 rectMinMax(f32 minX, f32 minY, f32 maxX, f32 maxY);
+Rect2 rectMinMax(float minX, float minY, float maxX, float maxY);
 Rect2 rectAligned(V2 origin, V2 size, u32 alignment);
 Rect2 rect2(Rect2I source);
 
-bool contains(Rect2 rect, f32 x, f32 y);
+bool contains(Rect2 rect, float x, float y);
 bool contains(Rect2 rect, V2 pos);
 bool contains(Rect2 outer, Rect2 inner);
 bool overlaps(Rect2 a, Rect2 b);
 
-Rect2 expand(Rect2 rect, f32 radius);
-Rect2 expand(Rect2 rect, f32 top, f32 right, f32 bottom, f32 left);
+Rect2 expand(Rect2 rect, float radius);
+Rect2 expand(Rect2 rect, float top, float right, float bottom, float left);
 Rect2 intersect(Rect2 a, Rect2 b);
 Rect2 intersectRelative(Rect2 outer, Rect2 inner);
 
 V2 centreOf(Rect2 rect);
-f32 areaOf(Rect2 rect); // Always positive, even if the rect has negative dimensions
+float areaOf(Rect2 rect); // Always positive, even if the rect has negative dimensions
 bool hasPositiveArea(Rect2 rect);
 
 struct Rect2I {

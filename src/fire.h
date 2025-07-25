@@ -51,7 +51,7 @@ struct FireLayer {
     ArrayChunkPool<Fire> firePool;
     s32 activeFireCount;
 
-    f32 fundingLevel; // @Budget
+    float fundingLevel; // @Budget
 
     // Debug stuff
     V2I debugTileInspectionPos;
@@ -73,7 +73,7 @@ void removeFireAt(City* city, s32 x, s32 y);
 
 u8 getFireRiskAt(City* city, s32 x, s32 y);
 u8 getFireProtectionAt(City* city, s32 x, s32 y);
-f32 getFireProtectionPercentAt(City* city, s32 x, s32 y);
+float getFireProtectionPercentAt(City* city, s32 x, s32 y);
 
 void debugInspectFire(UI::Panel* panel, City* city, s32 x, s32 y);
 

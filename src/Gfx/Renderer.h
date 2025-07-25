@@ -24,7 +24,7 @@
 
 // General rendering code.
 
-f32 const SECONDS_PER_FRAME = 1.0f / 60.0f;
+float const SECONDS_PER_FRAME = 1.0f / 60.0f;
 
 struct DrawRingsSubGroup {
     RenderItem_DrawRings* header;
@@ -224,7 +224,7 @@ void addRectInternal(DrawRectsGroup* group, Rect2 bounds, Colour color, Rect2 uv
 void addGlyphRect(DrawRectsGroup* state, BitmapFontGlyph* glyph, V2 position, Colour color);
 void addSpriteRect(DrawRectsGroup* state, Sprite* sprite, Rect2 bounds, Colour color);
 void addUntexturedRect(DrawRectsGroup* group, Rect2 bounds, Colour color);
-void offsetRange(DrawRectsGroup* state, s32 startIndex, s32 endIndexInclusive, f32 offsetX, f32 offsetY);
+void offsetRange(DrawRectsGroup* state, s32 startIndex, s32 endIndexInclusive, float offsetX, float offsetY);
 void endRectsGroup(DrawRectsGroup* group);
 
 DrawRectsSubGroup beginRectsSubGroup(DrawRectsGroup* group);
@@ -234,5 +234,5 @@ void drawGrid(RenderBuffer* buffer, Rect2 bounds, s32 gridW, s32 gridH, u8* grid
 
 DrawRingsGroup* beginRingsGroup(RenderBuffer* buffer, s32 maxCount);
 DrawRingsSubGroup beginRingsSubGroup(DrawRingsGroup* group);
-void addRing(DrawRingsGroup* group, V2 centre, f32 radius, f32 thickness, Colour color);
+void addRing(DrawRingsGroup* group, V2 centre, float radius, float thickness, Colour color);
 void endRingsGroup(DrawRingsGroup* group);

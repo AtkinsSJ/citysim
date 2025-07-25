@@ -5,9 +5,9 @@
  */
 
 #include "font.h"
-#include <Gfx/Renderer.h>
 #include "debug.h"
 #include "unicode.h"
+#include <Gfx/Renderer.h>
 #include <Util/Log.h>
 
 BitmapFontGlyphEntry* findGlyphInternal(BitmapFont* font, unichar targetChar)
@@ -204,12 +204,12 @@ void _alignText(DrawRectsGroup* state, s32 startIndex, s32 endIndexInclusive, s3
     switch (align & ALIGN_H) {
     case ALIGN_RIGHT: {
         s32 offsetX = boundsWidth - lineWidth;
-        offsetRange(state, startIndex, endIndexInclusive, (f32)offsetX, 0);
+        offsetRange(state, startIndex, endIndexInclusive, (float)offsetX, 0);
     } break;
 
     case ALIGN_H_CENTRE: {
         s32 offsetX = (boundsWidth - lineWidth) / 2;
-        offsetRange(state, startIndex, endIndexInclusive, (f32)offsetX, 0);
+        offsetRange(state, startIndex, endIndexInclusive, (float)offsetX, 0);
     } break;
 
     case ALIGN_LEFT: {
@@ -364,8 +364,8 @@ void drawText(RenderBuffer* renderBuffer, BitmapFont* font, String text, Rect2I 
                             // Wrap the whole word onto a new line
 
                             // Offset from where the word was, to its new position
-                            f32 offsetX = (f32) - (currentLineWidth + whitespaceWidthBeforeCurrentWord);
-                            f32 offsetY = (f32)font->lineHeight;
+                            float offsetX = (float)-(currentLineWidth + whitespaceWidthBeforeCurrentWord);
+                            float offsetY = (float)font->lineHeight;
                             offsetRange(group, startOfCurrentWord, glyphCount - 1, offsetX, offsetY);
 
                             // Set the current position to where the next word will start

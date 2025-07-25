@@ -27,24 +27,24 @@ enum class EffectType : u8 {
     Max,
 };
 template<typename T>
-void applyEffect(EffectRadius* effectRadius, V2 effectCentre, EffectType type, Array2<T>* tileValues, Rect2I region, f32 scale = 1.0f)
+void applyEffect(EffectRadius* effectRadius, V2 effectCentre, EffectType type, Array2<T>* tileValues, Rect2I region, float scale = 1.0f)
 {
     DEBUG_FUNCTION();
 
-    f32 radius = (f32)effectRadius->radius;
-    f32 invRadius = 1.0f / radius;
-    f32 radius2 = (f32)(radius * radius);
+    float radius = (float)effectRadius->radius;
+    float invRadius = 1.0f / radius;
+    float radius2 = (float)(radius * radius);
 
-    f32 centreValue = effectRadius->centreValue * scale;
-    f32 outerValue = effectRadius->outerValue * scale;
+    float centreValue = effectRadius->centreValue * scale;
+    float outerValue = effectRadius->outerValue * scale;
 
     Rect2I possibleEffectArea = irectXYWH(floor_s32(effectCentre.x - radius), floor_s32(effectCentre.y - radius), ceil_s32(radius + radius), ceil_s32(radius + radius));
     possibleEffectArea = intersect(possibleEffectArea, region);
     for (s32 y = possibleEffectArea.y; y < possibleEffectArea.y + possibleEffectArea.h; y++) {
         for (s32 x = possibleEffectArea.x; x < possibleEffectArea.x + possibleEffectArea.w; x++) {
-            f32 distance2FromSource = lengthSquaredOf(x - effectCentre.x, y - effectCentre.y);
+            float distance2FromSource = lengthSquaredOf(x - effectCentre.x, y - effectCentre.y);
             if (distance2FromSource <= radius2) {
-                f32 contributionF = lerp(centreValue, outerValue, sqrt_f32(distance2FromSource) * invRadius);
+                float contributionF = lerp(centreValue, outerValue, sqrt_float(distance2FromSource) * invRadius);
                 T contribution = (T)floor_s32(contributionF);
 
                 if (contribution == 0)

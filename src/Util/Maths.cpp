@@ -13,17 +13,17 @@
 #include <cmath>
 
 // Standard rounding functions return doubles, so here's some int ones.
-s32 round_s32(f32 in)
+s32 round_s32(float in)
 {
     return (s32)round(in);
 }
 
-s32 floor_s32(f32 in)
+s32 floor_s32(float in)
 {
     return (s32)floor(in);
 }
 
-s32 ceil_s32(f32 in)
+s32 ceil_s32(float in)
 {
     return (s32)ceil(in);
 }
@@ -33,52 +33,52 @@ s32 abs_s32(s32 in)
     return (in < 0) ? -in : in;
 }
 
-f32 round_f32(f32 in)
+float round_float(float in)
 {
-    return (f32)round(in);
+    return (float)round(in);
 }
 
-f32 floor_f32(f32 in)
+float floor_float(float in)
 {
-    return (f32)floor(in);
+    return (float)floor(in);
 }
 
-f32 ceil_f32(f32 in)
+float ceil_float(float in)
 {
-    return (f32)ceil(in);
+    return (float)ceil(in);
 }
 
-f32 sqrt_f32(f32 in)
+float sqrt_float(float in)
 {
-    return (f32)sqrt(in);
+    return (float)sqrt(in);
 }
 
-f32 abs_f32(f32 in)
+float abs_float(float in)
 {
     return (in < 0.0f) ? -in : in;
 }
 
-f32 fraction_f32(f32 in)
+float fraction_float(float in)
 {
-    return (f32)fmod(in, 1.0f);
+    return (float)fmod(in, 1.0f);
 }
 
-f32 sin32(f32 radians)
+float sin32(float radians)
 {
-    return (f32)sin(radians);
+    return (float)sin(radians);
 }
 
-f32 cos32(f32 radians)
+float cos32(float radians)
 {
-    return (f32)cos(radians);
+    return (float)cos(radians);
 }
 
-f32 tan32(f32 radians)
+float tan32(float radians)
 {
-    return (f32)tan(radians);
+    return (float)tan(radians);
 }
 
-f32 atan2_f32(f32 y, f32 x)
+float atan2_float(float y, float x)
 {
     return atan2(y, x);
 }
@@ -94,12 +94,12 @@ s32 truncate32(s64 in)
     return (s32)in;
 }
 
-f32 clamp01(f32 in)
+float clamp01(float in)
 {
     return clamp(in, 0.0f, 1.0f);
 }
 
-u8 clamp01AndMap_u8(f32 in)
+u8 clamp01AndMap_u8(float in)
 {
     return (u8)(clamp01(in) * 255.0f);
 }
@@ -143,7 +143,7 @@ s32 manhattanDistance(Rect2I a, Rect2I b)
     return result;
 }
 
-bool equals(f32 a, f32 b, f32 epsilon)
+bool equals(float a, float b, float epsilon)
 {
-    return (abs_f32(a - b) < epsilon);
+    return (abs_float(a - b) < epsilon);
 }

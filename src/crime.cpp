@@ -68,7 +68,7 @@ void updateCrimeLayer(City* city, CrimeLayer* layer)
 
                         if (hasEffect(&def->policeEffect)) {
                             // Budget
-                            f32 effectiveness = layer->fundingLevel;
+                            float effectiveness = layer->fundingLevel;
 
                             if (!buildingHasPower(building)) {
                                 effectiveness *= 0.4f; // @Balance
@@ -100,7 +100,7 @@ void notifyBuildingDemolished(CrimeLayer* layer, BuildingDef* def, Building* bui
     }
 }
 
-f32 getPoliceCoveragePercentAt(City* city, s32 x, s32 y)
+float getPoliceCoveragePercentAt(City* city, s32 x, s32 y)
 {
     return city->crimeLayer.tilePoliceCoverage.get(x, y) / 255.0f;
 }

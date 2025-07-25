@@ -29,7 +29,7 @@ struct TextInput {
     s32 maxByteLength;
 
     TextInputPos caret;
-    f32 caretFlashCounter;
+    float caretFlashCounter;
 
     String characterBlacklist;
 

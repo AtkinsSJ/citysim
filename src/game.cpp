@@ -55,8 +55,8 @@ void inputMoveCamera(Camera* camera, V2 windowSize, V2 windowMousePos, s32 cityW
 {
     DEBUG_FUNCTION();
 
-    s32 const CAMERA_MARGIN = 1;        // How many tiles beyond the map can the camera scroll to show?
-    f32 const CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second
+    s32 const CAMERA_MARGIN = 1;          // How many tiles beyond the map can the camera scroll to show?
+    float const CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second
 
     // Zooming
     s32 zoomDelta = input_state().wheelY;
@@ -75,8 +75,8 @@ void inputMoveCamera(Camera* camera, V2 windowSize, V2 windowMousePos, s32 cityW
     }
 
     // Panning
-    f32 scrollSpeed = (CAMERA_PAN_SPEED * sqrt(camera->zoom())) * AppState::the().deltaTime;
-    f32 cameraEdgeScrollPixelMargin = 8.0f;
+    float scrollSpeed = (CAMERA_PAN_SPEED * sqrt(camera->zoom())) * AppState::the().deltaTime;
+    float cameraEdgeScrollPixelMargin = 8.0f;
 
     if (mouseButtonPressed(MouseButton::Middle)) {
         // Click-panning!
@@ -606,7 +606,7 @@ void debugToolsWindowProc(UI::WindowContext* context, void* userData)
     }
 }
 
-AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
+AppStatus updateAndRenderGame(GameState* gameState, float deltaTime)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
 
@@ -1047,7 +1047,7 @@ static void drawBuildingEffectRadii(City* city, Iterable* buildingRefs, EffectRa
                 EffectRadius* effect = &(def->*effectMember);
                 if (hasEffect(effect)) {
                     s32 paletteIndex = (buildingHasPower(building) ? paletteIndexPowered : paletteIndexUnpowered);
-                    addRing(buildingRadii, centreOf(building->footprint), (f32)effect->radius, 0.5f, (*ringsPalette)[paletteIndex]);
+                    addRing(buildingRadii, centreOf(building->footprint), (float)effect->radius, 0.5f, (*ringsPalette)[paletteIndex]);
                 }
             }
         }

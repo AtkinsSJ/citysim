@@ -10,7 +10,7 @@
 #include "city.h"
 #include "save_file.h"
 
-f32 getHealthCoveragePercentAt(City* city, s32 x, s32 y)
+float getHealthCoveragePercentAt(City* city, s32 x, s32 y)
 {
     return city->healthLayer.tileHealthCoverage.get(x, y) * 0.01f;
 }
@@ -56,7 +56,7 @@ void updateHealthLayer(City* city, HealthLayer* layer)
                         BuildingDef* def = getBuildingDef(building);
 
                         // Budget
-                        f32 effectiveness = layer->fundingLevel;
+                        float effectiveness = layer->fundingLevel;
 
                         // Power
                         if (!buildingHasPower(building)) {

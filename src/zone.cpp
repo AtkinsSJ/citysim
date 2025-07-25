@@ -136,7 +136,7 @@ void drawZones(City* city, Rect2I visibleTileBounds, s8 shaderID)
     for (s32 y = visibleTileBounds.y;
         y < visibleTileBounds.y + visibleTileBounds.h;
         y++) {
-        spriteBounds.y = (f32)y;
+        spriteBounds.y = (float)y;
         for (s32 x = visibleTileBounds.x;
             x < visibleTileBounds.x + visibleTileBounds.w;
             x++) {
@@ -147,7 +147,7 @@ void drawZones(City* city, Rect2I visibleTileBounds, s8 shaderID)
                     zoneColor = ZONE_DEFS[current_zone_type.value()].color;
                 }
 
-                spriteBounds.x = (f32)x;
+                spriteBounds.x = (float)x;
 
                 addUntexturedRect(group, spriteBounds, zoneColor);
             }
@@ -268,16 +268,16 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
         {
             DEBUG_BLOCK_T("updateZoneLayer: desirability", DebugCodeDataTag::Simulation);
 
-            f32 totalResDesirability = 0.0f;
-            f32 totalComDesirability = 0.0f;
-            f32 totalIndDesirability = 0.0f;
+            float totalResDesirability = 0.0f;
+            float totalComDesirability = 0.0f;
+            float totalIndDesirability = 0.0f;
 
             for (s32 y = sector->bounds.y; y < sector->bounds.y + sector->bounds.h; y++) {
                 for (s32 x = sector->bounds.x; x < sector->bounds.x + sector->bounds.w; x++) {
                     // Residential
                     {
                         // Land value = good
-                        f32 desirability = getLandValuePercentAt(city, x, y);
+                        float desirability = getLandValuePercentAt(city, x, y);
 
                         // Health coverage = good
                         desirability += getHealthCoveragePercentAt(city, x, y) * 0.3f;
@@ -299,7 +299,7 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
                     // Commercial
                     {
                         // Land value = very good
-                        f32 desirability = getLandValuePercentAt(city, x, y) * 2.0f;
+                        float desirability = getLandValuePercentAt(city, x, y) * 2.0f;
 
                         // Fire protection = good
                         desirability += getFireProtectionPercentAt(city, x, y) * 0.2f;
@@ -318,7 +318,7 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
                     // Industrial
                     {
                         // Lower land value is better
-                        f32 desirability = 1.0f - getLandValuePercentAt(city, x, y);
+                        float desirability = 1.0f - getLandValuePercentAt(city, x, y);
 
                         // Fire protection = good
                         desirability += getFireProtectionPercentAt(city, x, y) * 0.2f;
@@ -337,7 +337,7 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
             }
 
             s32 sectorArea = areaOf(sector->bounds);
-            f32 invSectorArea = 1.0f / (f32)sectorArea;
+            float invSectorArea = 1.0f / (float)sectorArea;
             sector->averageDesirability[ZoneType::Residential] = totalResDesirability * invSectorArea;
             sector->averageDesirability[ZoneType::Commercial] = totalComDesirability * invSectorArea;
             sector->averageDesirability[ZoneType::Industrial] = totalIndDesirability * invSectorArea;
@@ -356,7 +356,7 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
 		for (s32 position = 0; position < getSectorCount(&layer->sectors); position++)
 		{
 			s32 sectorIndex = layer->mostDesirableSectors[zoneType][position];
-			f32 averageDesirability = layer->sectors[sectorIndex].averageDesirability[zoneType];
+			float averageDesirability = layer->sectors[sectorIndex].averageDesirability[zoneType];
 			logInfo("#{0}: sector {1}, desirability {2}", {formatInt(position), formatInt(sectorIndex), formatFloat(averageDesirability, 3)});
 		}
 #endif
@@ -619,7 +619,7 @@ void growSomeZoneBuildings(City* city)
                 }
 
                 // Pick a building def that fits the space and is not more than 10% more than the remaining demand
-                s32 maxPopulation = (s32)((f32)remainingDemand * 1.1f);
+                s32 maxPopulation = (s32)((float)remainingDemand * 1.1f);
                 BuildingDef* buildingDef = findRandomZoneBuilding(zone_type, random, [=](BuildingDef* it) -> bool {
                     if ((it->width > zoneFootprint.w) || (it->height > zoneFootprint.h))
                         return false;

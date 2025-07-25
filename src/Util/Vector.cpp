@@ -12,7 +12,7 @@
     V2
  **********************************************/
 
-V2 v2(f32 x, f32 y)
+V2 v2(float x, float y)
 {
     V2 result;
     result.x = x;
@@ -22,7 +22,7 @@ V2 v2(f32 x, f32 y)
 
 V2 v2(s32 x, s32 y)
 {
-    return v2((f32)x, (f32)y);
+    return v2((float)x, (float)y);
 }
 
 V2 v2(V2I source)
@@ -30,26 +30,26 @@ V2 v2(V2I source)
     return v2(source.x, source.y);
 }
 
-f32 lengthOf(V2 v)
+float lengthOf(V2 v)
 {
-    return (f32)sqrt(v.x * v.x + v.y * v.y);
+    return (float)sqrt(v.x * v.x + v.y * v.y);
 }
 
-f32 lengthSquaredOf(f32 x, f32 y)
+float lengthSquaredOf(float x, float y)
 {
-    return (f32)(x * x + y * y);
+    return (float)(x * x + y * y);
 }
 
-V2 limit(V2 vector, f32 maxLength)
+V2 limit(V2 vector, float maxLength)
 {
-    f32 length = lengthOf(vector);
+    float length = lengthOf(vector);
     if (length > maxLength) {
         vector *= maxLength / length;
     }
     return vector;
 }
 
-V2 lerp(V2 a, V2 b, f32 position)
+V2 lerp(V2 a, V2 b, float position)
 {
     return a + (b - a) * position;
 }
@@ -71,26 +71,26 @@ V2I v2i(V2 source)
     return v2i(floor_s32(source.x), floor_s32(source.y));
 }
 
-f32 lengthOf(V2I v)
+float lengthOf(V2I v)
 {
-    return (f32)sqrt(v.x * v.x + v.y * v.y);
+    return (float)sqrt(v.x * v.x + v.y * v.y);
 }
 
-f32 lengthOf(s32 x, s32 y)
+float lengthOf(s32 x, s32 y)
 {
-    return (f32)sqrt(x * x + y * y);
+    return (float)sqrt(x * x + y * y);
 }
 
-f32 angleOf(s32 x, s32 y)
+float angleOf(s32 x, s32 y)
 {
-    return (f32)fmod((atan2(y, x) * radToDeg) + 360.0f, 360.0f);
+    return (float)fmod((atan2(y, x) * radToDeg) + 360.0f, 360.0f);
 }
 
 /**********************************************
     V3
  **********************************************/
 
-V3 v3(f32 x, f32 y, f32 z)
+V3 v3(float x, float y, float z)
 {
     V3 v;
     v.x = x;
@@ -102,19 +102,19 @@ V3 v3(f32 x, f32 y, f32 z)
 
 V3 v3(s32 x, s32 y, s32 z)
 {
-    return v3((f32)x, (f32)y, (f32)z);
+    return v3((float)x, (float)y, (float)z);
 }
 
-f32 lengthOf(V3 v)
+float lengthOf(V3 v)
 {
-    return (f32)sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+    return (float)sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
 }
 
 /**********************************************
     V4
  **********************************************/
 
-V4 v4(f32 x, f32 y, f32 z, f32 w)
+V4 v4(float x, float y, float z, float w)
 {
     V4 v;
     v.x = x;
@@ -127,10 +127,10 @@ V4 v4(f32 x, f32 y, f32 z, f32 w)
 
 V4 v4(s32 x, s32 y, s32 z, s32 w)
 {
-    return v4((f32)x, (f32)y, (f32)z, (f32)w);
+    return v4((float)x, (float)y, (float)z, (float)w);
 }
 
-f32 lengthOf(V4 v)
+float lengthOf(V4 v)
 {
-    return (f32)sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+    return (float)sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
 }

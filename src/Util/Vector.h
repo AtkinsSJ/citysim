@@ -14,18 +14,18 @@
  **********************************************/
 
 struct V2 {
-    f32 x;
-    f32 y;
+    float x;
+    float y;
 };
 
-V2 v2(f32 x, f32 y);
+V2 v2(float x, float y);
 V2 v2(s32 x, s32 y);
 V2 v2(V2I source);
 
-f32 lengthOf(V2 v);
-f32 lengthSquaredOf(f32 x, f32 y);
-V2 limit(V2 vector, f32 maxLength);
-V2 lerp(V2 a, V2 b, f32 position);
+float lengthOf(V2 v);
+float lengthSquaredOf(float x, float y);
+V2 limit(V2 vector, float maxLength);
+V2 lerp(V2 a, V2 b, float position);
 
 inline V2 operator+(V2 lhs, V2 rhs)
 {
@@ -49,23 +49,23 @@ inline V2 operator-=(V2& lhs, V2 rhs)
     return lhs;
 }
 
-inline V2 operator*(V2 v, f32 s)
+inline V2 operator*(V2 v, float s)
 {
     return v2(v.x * s, v.y * s);
 }
 
-inline V2 operator*=(V2& v, f32 s)
+inline V2 operator*=(V2& v, float s)
 {
     v = v * s;
     return v;
 }
 
-inline V2 operator/(V2 v, f32 s)
+inline V2 operator/(V2 v, float s)
 {
     return v2(v.x / s, v.y / s);
 }
 
-inline V2 operator/=(V2& v, f32 s)
+inline V2 operator/=(V2& v, float s)
 {
     v = v / s;
     return v;
@@ -83,11 +83,11 @@ struct V2I {
 V2I v2i(s32 x, s32 y);
 V2I v2i(V2 source);
 
-f32 lengthOf(s32 x, s32 y);
-f32 lengthOf(V2I v);
+float lengthOf(s32 x, s32 y);
+float lengthOf(V2I v);
 
 // Degrees!
-f32 angleOf(s32 x, s32 y);
+float angleOf(s32 x, s32 y);
 
 inline V2I operator+(V2I lhs, V2I rhs)
 {
@@ -141,9 +141,9 @@ struct V3 {
     union {
         struct
         {
-            f32 x;
-            f32 y;
-            f32 z;
+            float x;
+            float y;
+            float z;
         };
         struct
         {
@@ -152,10 +152,10 @@ struct V3 {
     };
 };
 
-V3 v3(f32 x, f32 y, f32 z);
+V3 v3(float x, float y, float z);
 V3 v3(s32 x, s32 y, s32 z);
 
-f32 lengthOf(V3 v);
+float lengthOf(V3 v);
 
 inline V3 operator+(V3 lhs, V3 rhs)
 {
@@ -179,23 +179,23 @@ inline V3 operator-=(V3& lhs, V3 rhs)
     return lhs;
 }
 
-inline V3 operator*(V3 v, f32 s)
+inline V3 operator*(V3 v, float s)
 {
     return v3(v.x * s, v.y * s, v.z * s);
 }
 
-inline V3 operator*=(V3& v, f32 s)
+inline V3 operator*=(V3& v, float s)
 {
     v = v * s;
     return v;
 }
 
-inline V3 operator/(V3 v, f32 s)
+inline V3 operator/(V3 v, float s)
 {
     return v3(v.x / s, v.y / s, v.z / s);
 }
 
-inline V3 operator/=(V3& v, f32 s)
+inline V3 operator/=(V3& v, float s)
 {
     v = v / s;
     return v;
@@ -209,17 +209,17 @@ struct V4 {
     union {
         struct
         {
-            f32 x;
-            f32 y;
-            f32 z;
-            f32 w;
+            float x;
+            float y;
+            float z;
+            float w;
         };
         struct
         {
-            f32 r;
-            f32 g;
-            f32 b;
-            f32 a;
+            float r;
+            float g;
+            float b;
+            float a;
         };
         struct
         {
@@ -232,10 +232,10 @@ struct V4 {
     };
 };
 
-V4 v4(f32 x, f32 y, f32 z, f32 w);
+V4 v4(float x, float y, float z, float w);
 V4 v4(s32 x, s32 y, s32 z, s32 w);
 
-f32 lengthOf(V4 v);
+float lengthOf(V4 v);
 
 inline V4 operator+(V4 lhs, V4 rhs)
 {
@@ -282,23 +282,23 @@ inline V4 operator*=(V4& lhs, V4 rhs)
     return lhs;
 }
 
-inline V4 operator*(V4 v, f32 s)
+inline V4 operator*(V4 v, float s)
 {
     return v4(v.x * s, v.y * s, v.z * s, v.w * s);
 }
 
-inline V4 operator*=(V4& v, f32 s)
+inline V4 operator*=(V4& v, float s)
 {
     v = v * s;
     return v;
 }
 
-inline V4 operator/(V4 v, f32 s)
+inline V4 operator/(V4 v, float s)
 {
     return v4(v.x / s, v.y / s, v.z / s, v.w / s);
 }
 
-inline V4 operator/=(V4& v, f32 s)
+inline V4 operator/=(V4& v, float s)
 {
     v = v / s;
     return v;

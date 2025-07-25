@@ -15,7 +15,7 @@ EnumMap<MonthOfYear, u8> const DAYS_PER_MONTH {
     31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
 };
 
-void initGameClock(GameClock* clock, GameTimestamp date, f32 timeOfDay)
+void initGameClock(GameClock* clock, GameTimestamp date, float timeOfDay)
 {
     *clock = {};
 
@@ -33,13 +33,13 @@ void updateCosmeticDate(GameClock* clock)
     DateTime dateTime = dateTimeFromTimestamp(clock->currentDay);
 
     // Time as a percentage
-    f32 fractionalHours = clamp01(clock->timeWithinDay) * 24.0f;
+    float fractionalHours = clamp01(clock->timeWithinDay) * 24.0f;
     dateTime.hour = floor_s32(fractionalHours);
-    f32 fractionalMinutes = fraction_f32(fractionalHours) * 60.0f;
+    float fractionalMinutes = fraction_float(fractionalHours) * 60.0f;
     dateTime.minute = floor_s32(fractionalMinutes);
-    f32 fractionalSeconds = fraction_f32(fractionalMinutes) * 60.0f;
+    float fractionalSeconds = fraction_float(fractionalMinutes) * 60.0f;
     dateTime.second = floor_s32(fractionalSeconds);
-    dateTime.millisecond = floor_s32(fraction_f32(fractionalSeconds) * 1000.0f);
+    dateTime.millisecond = floor_s32(fraction_float(fractionalSeconds) * 1000.0f);
 
     clock->cosmeticDate = dateTime;
 }
@@ -82,7 +82,7 @@ DateTime dateTimeFromTimestamp(GameTimestamp timestamp)
     return dateTime;
 }
 
-Flags<ClockEvents> incrementClock(GameClock* clock, f32 deltaTime)
+Flags<ClockEvents> incrementClock(GameClock* clock, float deltaTime)
 {
     Flags<ClockEvents> clockEvents;
 

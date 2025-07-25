@@ -290,9 +290,9 @@ void loadBuildingDefs(Blob data, Asset* asset)
                         def->fireProtection = fire_protection.value;
                     }
                 } else if (equals(firstWord, "fire_risk"_s)) {
-                    Maybe<f64> fire_risk = readFloat(&reader);
+                    Maybe<double> fire_risk = readFloat(&reader);
                     if (fire_risk.isValid) {
-                        def->fireRisk = (f32)fire_risk.value;
+                        def->fireRisk = (float)fire_risk.value;
                     }
                 } else if (equals(firstWord, "grows_in"_s)) {
                     String zoneName = readToken(&reader);

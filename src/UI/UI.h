@@ -40,18 +40,18 @@ namespace UI {
 struct ScrollbarState {
     Orientation orientation;
     s32 contentSize;
-    f32 scrollPercent;
+    float scrollPercent;
 
     s32 mouseWheelStepSize;
 };
 
-f32 const TOAST_APPEAR_TIME = 0.2f;
-f32 const TOAST_DISPLAY_TIME = 2.0f;
-f32 const TOAST_DISAPPEAR_TIME = 0.2f;
+float const TOAST_APPEAR_TIME = 0.2f;
+float const TOAST_DISPLAY_TIME = 2.0f;
+float const TOAST_DISAPPEAR_TIME = 0.2f;
 s32 const MAX_TOAST_LENGTH = 1024;
 struct Toast {
-    f32 duration;
-    f32 time; // In seconds, from 0 to duration
+    float duration;
+    float time; // In seconds, from 0 to duration
 
     String text;
     char _chars[MAX_TOAST_LENGTH];
@@ -268,7 +268,7 @@ s32 getScrollbarContentOffset(ScrollbarState* state, s32 scrollbarSize);
 // Sliders
 // NB: fillSpace only applies to the "length" of the slider, not its "thickness"
 V2I calculateSliderSize(Orientation orientation, SliderStyle* style = nullptr, V2I availableSpace = {}, bool fillSpace = false);
-void putSlider(f32* currentValue, f32 minValue, f32 maxValue, Orientation orientation, Rect2I bounds, SliderStyle* style = nullptr, bool isDisabled = false, RenderBuffer* renderBuffer = nullptr, bool snapToWholeNumbers = false);
+void putSlider(float* currentValue, float minValue, float maxValue, Orientation orientation, Rect2I bounds, SliderStyle* style = nullptr, bool isDisabled = false, RenderBuffer* renderBuffer = nullptr, bool snapToWholeNumbers = false);
 void putSlider(s32* currentValue, s32 minValue, s32 maxValue, Orientation orientation, Rect2I bounds, SliderStyle* style = nullptr, bool isDisabled = false, RenderBuffer* renderBuffer = nullptr);
 
 // TextInputs

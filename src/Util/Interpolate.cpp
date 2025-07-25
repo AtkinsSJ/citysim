@@ -7,11 +7,11 @@
 #include "Interpolate.h"
 #include "Maths.h"
 
-f32 interpolate(f32 start, f32 end, f32 t, Interpolation interpolation)
+float interpolate(float start, float end, float t, Interpolation interpolation)
 {
-    f32 range = end - start;
+    float range = end - start;
 
-    f32 interpolatedT = t;
+    float interpolatedT = t;
 
     switch (interpolation) {
     case Interpolation::Linear: {

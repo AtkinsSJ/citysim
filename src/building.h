@@ -115,7 +115,7 @@ struct BuildingDef {
 
     EffectRadius pollutionEffect;
 
-    f32 fireRisk; // Defaults to 1.0
+    float fireRisk; // Defaults to 1.0
     EffectRadius fireProtection;
 
     EffectRadius healthEffect;

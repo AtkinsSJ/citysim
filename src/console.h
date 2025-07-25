@@ -42,11 +42,11 @@ struct Command {
 struct Console {
     AssetRef style;
 
-    f32 currentHeight;
-    f32 targetHeight;
-    f32 openHeight;      // % of screen height
-    f32 maximisedHeight; // % of screen height
-    f32 openSpeed;       // % per second
+    float currentHeight;
+    float targetHeight;
+    float openHeight;      // % of screen height
+    float maximisedHeight; // % of screen height
+    float openSpeed;       // % per second
 
     UI::TextInput input;
     ChunkedArray<String> inputHistory;
@@ -62,7 +62,7 @@ struct Console {
 inline Console* globalConsole;
 s32 const consoleLineLength = 255;
 
-void initConsole(MemoryArena* debugArena, f32 openHeight, f32 maximisedHeight, f32 openSpeed);
+void initConsole(MemoryArena* debugArena, float openHeight, float maximisedHeight, float openSpeed);
 void updateAndRenderConsole(Console* console);
 
 void initCommands(Console* console); // Implementation in commands.cpp

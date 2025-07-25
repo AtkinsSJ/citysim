@@ -146,7 +146,7 @@ struct GameState {
 GameState* newGameState(); // A blank game state with no city
 void beginNewGame();       // A game state for a new map
 
-AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime);
+AppStatus updateAndRenderGame(GameState* gameState, float deltaTime);
 void freeGameState(GameState* gameState);
 
 void inputMoveCamera(Camera* camera, V2 windowSize, V2 windowMousePos, s32 cityWidth, s32 cityHeight);

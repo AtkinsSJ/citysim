@@ -19,7 +19,7 @@ struct HealthLayer {
 
     ChunkedArray<BuildingRef> healthBuildings;
 
-    f32 fundingLevel; // @Budget
+    float fundingLevel; // @Budget
 };
 
 void initHealthLayer(HealthLayer* layer, City* city, MemoryArena* gameArena);
@@ -29,7 +29,7 @@ void markHealthLayerDirty(HealthLayer* layer, Rect2I bounds);
 void notifyNewBuilding(HealthLayer* layer, BuildingDef* def, Building* building);
 void notifyBuildingDemolished(HealthLayer* layer, BuildingDef* def, Building* building);
 
-f32 getHealthCoveragePercentAt(City* city, s32 x, s32 y);
+float getHealthCoveragePercentAt(City* city, s32 x, s32 y);
 
 void saveHealthLayer(HealthLayer* layer, struct BinaryFileWriter* writer);
 bool loadHealthLayer(HealthLayer* layer, City* city, struct BinaryFileReader* reader);

@@ -113,7 +113,7 @@ struct RenderItem_DrawRings {
 };
 struct RenderItem_DrawRings_Item {
     V2 centre;
-    f32 radius;
-    f32 thickness;
+    float radius;
+    float thickness;
     Colour color;
 };

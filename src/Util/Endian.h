@@ -99,5 +99,5 @@ typedef LittleEndian<s16> leS16;
 typedef LittleEndian<s32> leS32;
 typedef LittleEndian<s64> leS64;
 
-typedef LittleEndian<f32> leF32;
-typedef LittleEndian<f64> leF64;
+typedef LittleEndian<float> leF32;
+typedef LittleEndian<double> leF64;

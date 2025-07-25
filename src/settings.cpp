@@ -143,10 +143,10 @@ void loadSettingsFile(String name, Blob settingsData)
             } break;
 
             case SettingType::Percent: {
-                Maybe<f64> value = readFloat(&reader);
+                Maybe<double> value = readFloat(&reader);
                 if (value.isValid) {
-                    f32 clampedValue = clamp01((f32)value.value);
-                    setSettingData<f32>(&s_settings->settings, def, clampedValue);
+                    float clampedValue = clamp01((float)value.value);
+                    setSettingData<float>(&s_settings->settings, def, clampedValue);
                 }
             } break;
 
@@ -226,7 +226,7 @@ String settingToString(SettingsState* state, SettingDef* def)
     } break;
 
     case SettingType::Percent: {
-        append(&stb, formatFloat(getSettingData<f32>(state, def), 2));
+        append(&stb, formatFloat(getSettingData<float>(state, def), 2));
     } break;
 
     case SettingType::S32:
@@ -329,7 +329,7 @@ void settingsWindowProc(UI::WindowContext* context, void*)
         } break;
 
         case SettingType::Percent: {
-            f32* percent = getSettingDataRaw<f32>(&s_settings->workingState, def);
+            float* percent = getSettingDataRaw<float>(&s_settings->workingState, def);
             s32 intPercent = round_s32(*percent * 100.0f);
             ui->addLabel(myprintf("{0}%"_s, { formatInt(intPercent) }));
             ui->addSlider(percent, 0.0f, 1.0f);

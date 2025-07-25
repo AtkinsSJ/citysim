@@ -236,7 +236,7 @@ int main(int argc, char* argv[])
             SDL_GL_SwapWindow(renderer.sdl_window());
 
             u64 now = SDL_GetPerformanceCounter();
-            f32 deltaTime = (f32)(((f64)(now - frameStartTime)) / ((f64)(SDL_GetPerformanceFrequency())));
+            float deltaTime = (float)(((double)(now - frameStartTime)) / ((double)(SDL_GetPerformanceFrequency())));
             app_state.setDeltaTimeFromLastFrame(deltaTime);
             frameStartTime = now;
         }

@@ -246,12 +246,12 @@ void renderDebugData(DebugState* debugState)
 
     // Draw a "nice" chart!
     {
-        f32 graphHeight = 150.0f;
+        float graphHeight = 150.0f;
         drawSingleRect(renderBuffer, rectXYWH(0, ui_camera.size().y - graphHeight, ui_camera.size().x, 1), renderer.shaderIds.untextured, Colour::from_rgb_255(255, 255, 255, 128));
         drawSingleRect(renderBuffer, rectXYWH(0, ui_camera.size().y - graphHeight * 2, ui_camera.size().x, 1), renderer.shaderIds.untextured, Colour::from_rgb_255(255, 255, 255, 128));
-        f32 targetCyclesPerFrame = cyclesPerSecond / 60.0f;
-        f32 barWidth = ui_camera.size().x / (f32)DEBUG_FRAMES_COUNT;
-        f32 barHeightPerCycle = graphHeight / targetCyclesPerFrame;
+        float targetCyclesPerFrame = cyclesPerSecond / 60.0f;
+        float barWidth = ui_camera.size().x / (float)DEBUG_FRAMES_COUNT;
+        float barHeightPerCycle = graphHeight / targetCyclesPerFrame;
         Colour barColor = Colour::from_rgb_255(255, 0, 0, 128);
         Colour activeBarColor = Colour::from_rgb_255(255, 255, 0, 128);
         u32 barIndex = 0;
@@ -260,7 +260,7 @@ void renderDebugData(DebugState* debugState)
             fi != debugState->writingFrameIndex;
             fi = wrap<u32>(fi + 1, DEBUG_FRAMES_COUNT)) {
             u64 frameCycles = debugState->frameEndCycle[fi] - debugState->frameStartCycle[fi];
-            f32 barHeight = barHeightPerCycle * (f32)frameCycles;
+            float barHeight = barHeightPerCycle * (float)frameCycles;
             addUntexturedRect(rectsGroup, rectXYWH(barWidth * barIndex++, ui_camera.size().y - barHeight, barWidth, barHeight), fi == rfi ? activeBarColor : barColor);
         }
         endRectsGroup(rectsGroup);
@@ -286,7 +286,7 @@ void renderDebugData(DebugState* debugState)
     {
         DebugArenaData* arena = debugState->arenaDataSentinel.nextNode;
         while (arena != &debugState->arenaDataSentinel) {
-            debugTextOut(&textState, myprintf("Memory arena {0}: {1} blocks, {2} used / {3} allocated ({4}%)"_s, { arena->name, formatInt(arena->blockCount[rfi]), formatInt(arena->usedSize[rfi]), formatInt(arena->totalSize[rfi]), formatFloat(100.0f * (f32)arena->usedSize[rfi] / (f32)arena->totalSize[rfi], 1) }));
+            debugTextOut(&textState, myprintf("Memory arena {0}: {1} blocks, {2} used / {3} allocated ({4}%)"_s, { arena->name, formatInt(arena->blockCount[rfi]), formatInt(arena->usedSize[rfi]), formatInt(arena->totalSize[rfi]), formatFloat(100.0f * (float)arena->usedSize[rfi] / (float)arena->totalSize[rfi], 1) }));
             arena = arena->nextNode;
         }
     }
@@ -325,17 +325,17 @@ void renderDebugData(DebugState* debugState)
 
         debugTextOut(&textState, repeatChar('-', textState.charsLastPrinted));
         DebugCodeDataWrapper* topBlock = debugState->topCodeBlocksSentinel.nextNode;
-        f32 msPerCycle = 1000.0f / (f32)cyclesPerSecond;
+        float msPerCycle = 1000.0f / (float)cyclesPerSecond;
         while (topBlock != &debugState->topCodeBlocksSentinel) {
             DebugCodeData* code = topBlock->data;
-            f32 totalCycles = (f32)code->totalCycleCount[rfi];
-            f32 averageCycles = totalCycles / (f32)code->callCount[rfi];
+            float totalCycles = (float)code->totalCycleCount[rfi];
+            float averageCycles = totalCycles / (float)code->callCount[rfi];
             debugTextOut(&textState,
                 myprintf("{0}| {1} ({2}ms)| {3}| {4} ({5}ms)| {6} ({7}ms)"_s,
                     {
                         formatString(code->name, 60),
                         formatString(formatInt(code->totalCycleCount[rfi]), 10, false),
-                        formatString(formatFloat((f32)totalCycles * msPerCycle, 2), 5, false),
+                        formatString(formatFloat((float)totalCycles * msPerCycle, 2), 5, false),
                         formatString(formatInt(code->callCount[rfi]), 10, false),
                         formatString(formatInt((s32)averageCycles), 10, false),
                         formatString(formatFloat(averageCycles * msPerCycle, 2), 5, false),
@@ -353,7 +353,7 @@ void renderDebugData(DebugState* debugState)
         String smsForFrame = "???"_s;
         String sfps = "???"_s;
         if (rfi != debugState->writingFrameIndex) {
-            f32 msForFrame = (f32)(debugState->frameEndCycle[rfi] - debugState->frameStartCycle[rfi]) / (f32)(cyclesPerSecond / 1000);
+            float msForFrame = (float)(debugState->frameEndCycle[rfi] - debugState->frameStartCycle[rfi]) / (float)(cyclesPerSecond / 1000);
             smsForFrame = formatFloat(msForFrame, 2);
             sfps = formatFloat(1000.0f / max(msForFrame, 1.0f), 2);
         }

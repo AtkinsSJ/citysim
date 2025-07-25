@@ -13,7 +13,7 @@
 #include <Gfx/Renderer.h>
 #include <UI/Panel.h>
 
-AppStatus updateAndRenderMainMenu(f32 /*deltaTime*/)
+AppStatus updateAndRenderMainMenu(float /*deltaTime*/)
 {
     DEBUG_FUNCTION();
 

@@ -20,17 +20,17 @@ struct AppState {
     GameState* gameState;
     Random cosmeticRandom; // Appropriate for when you need a random number and don't care if it's consistent!
 
-    f32 rawDeltaTime;
-    f32 speedMultiplier;
-    f32 deltaTime;
+    float rawDeltaTime;
+    float speedMultiplier;
+    float deltaTime;
 
-    inline void setDeltaTimeFromLastFrame(f32 lastFrameTime)
+    inline void setDeltaTimeFromLastFrame(float lastFrameTime)
     {
         rawDeltaTime = lastFrameTime;
         deltaTime = rawDeltaTime * speedMultiplier;
     }
 
-    inline void setSpeedMultiplier(f32 multiplier)
+    inline void setSpeedMultiplier(float multiplier)
     {
         speedMultiplier = multiplier;
         deltaTime = rawDeltaTime * speedMultiplier;

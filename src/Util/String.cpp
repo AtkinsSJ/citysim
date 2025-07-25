@@ -212,9 +212,9 @@ Maybe<s64> asInt(String input)
     return result;
 }
 
-Maybe<f64> asFloat(String input)
+Maybe<double> asFloat(String input)
 {
-    Maybe<f64> result;
+    Maybe<double> result;
 
     // TODO: Implement this properly!
     // (c runtime functions atof / strtod don't tell you if they failed, they just return 0 which is a valid value!
@@ -223,7 +223,7 @@ Maybe<f64> asFloat(String input)
     nullTerminatedInput.length++;
     nullTerminatedInput[input.length] = '\0';
 
-    f64 doubleValue = atof(nullTerminatedInput.chars);
+    double doubleValue = atof(nullTerminatedInput.chars);
     if (doubleValue == 0.0) {
         // @Hack: 0.0 is returned by atof() if it fails. So, we see if the input really began with a '0' or not.
         // If it didn't, we assume it failed. If it did, we assume it succeeded.
@@ -233,7 +233,7 @@ Maybe<f64> asFloat(String input)
         if (input[0] == '0') {
             result = makeSuccess(doubleValue);
         } else {
-            result = makeFailure<f64>();
+            result = makeFailure<double>();
         }
     } else {
         result = makeSuccess(doubleValue);
@@ -623,7 +623,7 @@ String formatInt(s64 value, u8 base, s32 zeroPadWidth)
 // Whether we use our own float-to-string routine or not, we definitely don't want to
 // continue calling myprintf() to produce a string for snprintf() and then pass that
 // on to myprintf() again! Like, that's super dumb.
-String formatFloat(f64 value, s32 decimalPlaces)
+String formatFloat(double value, s32 decimalPlaces)
 {
     String formatString = myprintf("%.{0}f"_s, { formatInt(decimalPlaces) }, true);
 

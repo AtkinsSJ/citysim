@@ -419,9 +419,9 @@ void loadUITheme(Blob data, Asset* asset)
                         } break;
 
                         case UI::PropType::Float: {
-                            Maybe<f64> value = readFloat(&reader);
+                            Maybe<double> value = readFloat(&reader);
                             if (value.isValid) {
-                                UI::setPropertyValue<f32>(target, property, (f32)value.value);
+                                UI::setPropertyValue<float>(target, property, (float)value.value);
                             }
                         } break;
 

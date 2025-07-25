@@ -317,8 +317,8 @@ void loadAsset(Asset* asset)
         // Convert UVs from pixel space to 0-1 space
         Asset* t = asset->ninepatch.texture;
         ensureAssetIsLoaded(t);
-        f32 textureWidth = (f32)t->texture.surface->w;
-        f32 textureHeight = (f32)t->texture.surface->h;
+        float textureWidth = (float)t->texture.surface->w;
+        float textureHeight = (float)t->texture.surface->h;
 
         asset->ninepatch.u0 = asset->ninepatch.pu0 / textureWidth;
         asset->ninepatch.u1 = asset->ninepatch.pu1 / textureWidth;
@@ -340,7 +340,7 @@ void loadAsset(Asset* asset)
             asset->data = assetsAllocate(s_assets, palette->size * sizeof(Colour));
             palette->paletteData = makeArray<Colour>(palette->size, reinterpret_cast<Colour*>(asset->data.writable_data()), palette->size);
 
-            f32 ratio = 1.0f / (f32)(palette->size);
+            float ratio = 1.0f / (float)(palette->size);
             for (s32 i = 0; i < palette->size; i++) {
                 palette->paletteData[i] = lerp(palette->gradient.from, palette->gradient.to, i * ratio);
             }
@@ -371,8 +371,8 @@ void loadAsset(Asset* asset)
             Sprite* sprite = asset->spriteGroup.sprites + i;
             Asset* t = sprite->texture;
             ensureAssetIsLoaded(t);
-            f32 textureWidth = (f32)t->texture.surface->w;
-            f32 textureHeight = (f32)t->texture.surface->h;
+            float textureWidth = (float)t->texture.surface->w;
+            float textureHeight = (float)t->texture.surface->h;
 
             sprite->uv = rectXYWH(
                 sprite->uv.x / textureWidth,
@@ -415,20 +415,20 @@ void loadAsset(Asset* asset)
                 Gmask = surface->format->Gmask,
                 Bmask = surface->format->Bmask,
                 Amask = surface->format->Amask;
-            f32 rRmask = (f32)Rmask,
-                rGmask = (f32)Gmask,
-                rBmask = (f32)Bmask,
-                rAmask = (f32)Amask;
+            float rRmask = (float)Rmask,
+                rGmask = (float)Gmask,
+                rBmask = (float)Bmask,
+                rAmask = (float)Amask;
 
             u32 pixelCount = surface->w * surface->h;
             for (u32 pixelIndex = 0;
                 pixelIndex < pixelCount;
                 pixelIndex++) {
                 u32 pixel = ((u32*)surface->pixels)[pixelIndex];
-                f32 rr = (f32)(pixel & Rmask) / rRmask;
-                f32 rg = (f32)(pixel & Gmask) / rGmask;
-                f32 rb = (f32)(pixel & Bmask) / rBmask;
-                f32 ra = (f32)(pixel & Amask) / rAmask;
+                float rr = (float)(pixel & Rmask) / rRmask;
+                float rg = (float)(pixel & Gmask) / rGmask;
+                float rb = (float)(pixel & Bmask) / rBmask;
+                float ra = (float)(pixel & Amask) / rAmask;
 
                 u32 r = (u32)(rr * ra * rRmask) & Rmask;
                 u32 g = (u32)(rg * ra * rGmask) & Gmask;

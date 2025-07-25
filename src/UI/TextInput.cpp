@@ -387,7 +387,7 @@ Rect2I drawTextInput(RenderBuffer* renderBuffer, TextInput* textInput, TextInput
     DrawTextResult drawTextResult = {};
     drawText(renderBuffer, font, text, textBounds, style->textAlignment, style->textColor, renderer.shaderIds.text, textInput->caret.glyphPos, &drawTextResult);
 
-    textInput->caretFlashCounter = (f32)fmod(textInput->caretFlashCounter + AppState::the().deltaTime, style->caretFlashCycleDuration);
+    textInput->caretFlashCounter = (float)fmod(textInput->caretFlashCounter + AppState::the().deltaTime, style->caretFlashCycleDuration);
 
     if (showCaret) {
         Rect2 caretRect = rectXYWHi(textBounds.x, textBounds.y, 2, font->lineHeight);

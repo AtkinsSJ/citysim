@@ -246,13 +246,13 @@ void drawTerrain(City* city, Rect2I visibleArea, s8 shaderID)
     for (s32 y = visibleArea.y;
         y < visibleArea.y + visibleArea.h;
         y++) {
-        spriteBounds.y = (f32)y;
+        spriteBounds.y = (float)y;
 
         for (s32 x = visibleArea.x;
             x < visibleArea.x + visibleArea.w;
             x++) {
             Sprite* sprite = getSprite(&layer->tileSprite.get(x, y));
-            spriteBounds.x = (f32)x;
+            spriteBounds.x = (float)x;
             drawSingleSprite(&renderer.world_buffer(), sprite, spriteBounds, shaderID, white);
             // addSpriteRect(group, sprite, spriteBounds, white);
 
@@ -291,14 +291,14 @@ void generateTerrain(City* city, Random* gameRandom)
     }
 
     // Generate a river
-    Array<f32> riverOffset = temp_arena().allocate_array<f32>(city->bounds.h, true);
+    Array<float> riverOffset = temp_arena().allocate_array<float>(city->bounds.h, true);
     generate1DNoise(&terrainRandom, &riverOffset, 10);
-    f32 riverMaxWidth = randomFloatBetween(&terrainRandom, 12, 16);
-    f32 riverMinWidth = randomFloatBetween(&terrainRandom, 6, riverMaxWidth);
-    f32 riverWaviness = 16.0f;
+    float riverMaxWidth = randomFloatBetween(&terrainRandom, 12, 16);
+    float riverMinWidth = randomFloatBetween(&terrainRandom, 6, riverMaxWidth);
+    float riverWaviness = 16.0f;
     s32 riverCentreBase = randomBetween(&terrainRandom, ceil_s32(city->bounds.w * 0.4f), floor_s32(city->bounds.w * 0.6f));
     for (s32 y = 0; y < city->bounds.h; y++) {
-        s32 riverWidth = ceil_s32(lerp(riverMinWidth, riverMaxWidth, ((f32)y / (f32)city->bounds.h)));
+        s32 riverWidth = ceil_s32(lerp(riverMinWidth, riverMaxWidth, ((float)y / (float)city->bounds.h)));
         s32 riverCentre = riverCentreBase - round_s32((riverWaviness * 0.5f) + (riverWaviness * riverOffset[y]));
         s32 riverLeft = riverCentre - (riverWidth / 2);
 
@@ -308,7 +308,7 @@ void generateTerrain(City* city, Random* gameRandom)
     }
 
     // Coastline
-    Array<f32> coastlineOffset = temp_arena().allocate_array<f32>(city->bounds.w, true);
+    Array<float> coastlineOffset = temp_arena().allocate_array<float>(city->bounds.w, true);
     generate1DNoise(&terrainRandom, &coastlineOffset, 10);
     for (s32 x = 0; x < city->bounds.w; x++) {
         s32 coastDepth = 8 + round_s32(coastlineOffset[x] * 16.0f);
@@ -326,8 +326,8 @@ void generateTerrain(City* city, Random* gameRandom)
         s32 pondCentreX = randomBetween(&terrainRandom, 0, city->bounds.w);
         s32 pondCentreY = randomBetween(&terrainRandom, 0, city->bounds.h);
 
-        f32 pondMinRadius = randomFloatBetween(&terrainRandom, 3.0f, 5.0f);
-        f32 pondMaxRadius = randomFloatBetween(&terrainRandom, pondMinRadius + 3.0f, 20.0f);
+        float pondMinRadius = randomFloatBetween(&terrainRandom, 3.0f, 5.0f);
+        float pondMaxRadius = randomFloatBetween(&terrainRandom, pondMinRadius + 3.0f, 20.0f);
 
         Splat pondSplat = createRandomSplat(pondCentreX, pondCentreY, pondMinRadius, pondMaxRadius, 36, &terrainRandom);
 
@@ -350,8 +350,8 @@ void generateTerrain(City* city, Random* gameRandom)
             s32 centreX = randomBetween(&terrainRandom, 0, city->bounds.w);
             s32 centreY = randomBetween(&terrainRandom, 0, city->bounds.h);
 
-            f32 minRadius = randomFloatBetween(&terrainRandom, 2.0f, 8.0f);
-            f32 maxRadius = randomFloatBetween(&terrainRandom, minRadius + 1.0f, 30.0f);
+            float minRadius = randomFloatBetween(&terrainRandom, 2.0f, 8.0f);
+            float maxRadius = randomFloatBetween(&terrainRandom, minRadius + 1.0f, 30.0f);
 
             Splat forestSplat = createRandomSplat(centreX, centreY, minRadius, maxRadius, 36, &terrainRandom);
 

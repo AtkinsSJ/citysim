@@ -19,7 +19,7 @@ enum class GameClockSpeed : u8 {
     COUNT
 };
 
-EnumMap<GameClockSpeed, f32> const GAME_DAYS_PER_SECOND {
+EnumMap<GameClockSpeed, float> const GAME_DAYS_PER_SECOND {
     1.0f / 5.0f, // Slow
     1.0f / 1.0f, // Medium
     3.0f / 1.0f  // Fast
@@ -32,7 +32,7 @@ typedef u32 GameTimestamp;
 struct GameClock {
     // Internal values
     GameTimestamp currentDay;
-    f32 timeWithinDay; // 0 to 1
+    float timeWithinDay; // 0 to 1
 
     // "Cosmetic" values generated from the internal values
     DateTime cosmeticDate;
@@ -43,7 +43,7 @@ struct GameClock {
     bool isPaused;
 };
 
-void initGameClock(GameClock* clock, GameTimestamp date = 0, f32 timeOfDay = 0.0f);
+void initGameClock(GameClock* clock, GameTimestamp date = 0, float timeOfDay = 0.0f);
 
 void updateCosmeticDate(GameClock* clock);
 
@@ -55,7 +55,7 @@ enum class ClockEvents : u8 {
     COUNT,
 };
 // Returns a set of ClockEvents for events that occur
-Flags<ClockEvents> incrementClock(GameClock* clock, f32 deltaTime);
+Flags<ClockEvents> incrementClock(GameClock* clock, float deltaTime);
 
 GameTimestamp getCurrentTimestamp();
 GameTimestamp timestampFromParts(s32 year, MonthOfYear month, s32 day);

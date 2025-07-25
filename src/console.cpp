@@ -15,7 +15,7 @@
 
 static Console theConsole;
 
-void initConsole(MemoryArena* debugArena, f32 openHeight, f32 maximisedHeight, f32 openSpeed)
+void initConsole(MemoryArena* debugArena, float openHeight, float maximisedHeight, float openSpeed)
 {
     Console* console = &theConsole;
 
@@ -163,7 +163,7 @@ void updateAndRenderConsole(Console* console)
     // Display the console
     if (console->currentHeight > 0) {
         RenderBuffer* renderBuffer = &renderer.debug_buffer();
-        s32 actualConsoleHeight = floor_s32(console->currentHeight * (f32)UI::windowSize.y);
+        s32 actualConsoleHeight = floor_s32(console->currentHeight * (float)UI::windowSize.y);
         s32 screenWidth = renderer.window_width();
 
         UI::ConsoleStyle* consoleStyle = getStyle<UI::ConsoleStyle>(&console->style);

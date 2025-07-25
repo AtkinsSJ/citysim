@@ -9,31 +9,31 @@
 #include "Basic.h"
 #include "Forward.h"
 
-f32 const PI32 = 3.14159265358979323846f;
-f32 const radToDeg = 180.0f / PI32;
-f32 const degToRad = PI32 / 180.0f;
+float const PI32 = 3.14159265358979323846f;
+float const radToDeg = 180.0f / PI32;
+float const degToRad = PI32 / 180.0f;
 
 // Standard rounding functions return doubles, so here's some int ones.
-s32 round_s32(f32 in);
-s32 floor_s32(f32 in);
-s32 ceil_s32(f32 in);
+s32 round_s32(float in);
+s32 floor_s32(float in);
+s32 ceil_s32(float in);
 s32 abs_s32(s32 in);
-f32 round_f32(f32 in);
-f32 floor_f32(f32 in);
-f32 ceil_f32(f32 in);
-f32 sqrt_f32(f32 in);
-f32 abs_f32(f32 in);
-f32 fraction_f32(f32 in);
-f32 clamp01(f32 in);
-f32 sin32(f32 radians);
-f32 cos32(f32 radians);
-f32 tan32(f32 radians);
+float round_float(float in);
+float floor_float(float in);
+float ceil_float(float in);
+float sqrt_float(float in);
+float abs_float(float in);
+float fraction_float(float in);
+float clamp01(float in);
+float sin32(float radians);
+float cos32(float radians);
+float tan32(float radians);
 
 s32 divideCeil(s32 numerator, s32 denominator);
 
 s32 truncate32(s64 in);
 
-u8 clamp01AndMap_u8(f32 in);
+u8 clamp01AndMap_u8(float in);
 
 template<typename T>
 T clamp(T value, T min, T max)
@@ -85,7 +85,7 @@ T wrap(T value, T max)
 }
 
 template<typename T>
-T lerp(T a, T b, f32 position)
+T lerp(T a, T b, float position)
 {
     return (T)(a + (b - a) * position);
 }
@@ -108,7 +108,7 @@ T approach(T currentValue, T targetValue, T distance)
 s32 manhattanDistance(Rect2I rect, V2I point);
 s32 manhattanDistance(Rect2I a, Rect2I b);
 
-bool equals(f32 a, f32 b, f32 epsilon);
+bool equals(float a, float b, float epsilon);
 
 //
 // All this mess is just so we can access a type's min/max values from a template.
@@ -153,13 +153,13 @@ template<>
 inline s64 const maxPossibleValue<s64>() { return s64Max; }
 
 template<>
-inline f32 const minPossibleValue<f32>() { return f32Min; }
+inline float const minPossibleValue<float>() { return floatMin; }
 template<>
-inline f32 const maxPossibleValue<f32>() { return f32Max; }
+inline float const maxPossibleValue<float>() { return floatMax; }
 template<>
-inline f64 const minPossibleValue<f64>() { return f64Min; }
+inline double const minPossibleValue<double>() { return f64Min; }
 template<>
-inline f64 const maxPossibleValue<f64>() { return f64Max; }
+inline double const maxPossibleValue<double>() { return f64Max; }
 
 template<typename T>
 bool canCastIntTo(s64 input)

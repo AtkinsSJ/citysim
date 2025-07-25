@@ -187,17 +187,17 @@ s32 countRemainingTokens(LineReader* reader, char splitChar)
     return countTokens(reader->position.lineRemainder, splitChar);
 }
 
-Maybe<f64> readFloat(LineReader* reader, bool isOptional, char splitChar)
+Maybe<double> readFloat(LineReader* reader, bool isOptional, char splitChar)
 {
     String token = readToken(reader, splitChar);
-    Maybe<f64> result = makeFailure<f64>();
+    Maybe<double> result = makeFailure<double>();
 
     if (!(isOptional && isEmpty(token))) // If it's optional, don't print errors
     {
         if (token[token.length - 1] == '%') {
             token.length--;
 
-            Maybe<f64> percent = asFloat(token);
+            Maybe<double> percent = asFloat(token);
 
             if (!percent.isValid) {
                 error(reader, "Couldn't parse '{0}%' as a percentage."_s, { token });
@@ -205,7 +205,7 @@ Maybe<f64> readFloat(LineReader* reader, bool isOptional, char splitChar)
                 result = makeSuccess(percent.value * 0.01f);
             }
         } else {
-            Maybe<f64> floatValue = asFloat(token);
+            Maybe<double> floatValue = asFloat(token);
 
             if (!floatValue.isValid) {
                 error(reader, "Couldn't parse '{0}' as a float."_s, { token });

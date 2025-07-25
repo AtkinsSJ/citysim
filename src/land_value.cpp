@@ -103,7 +103,7 @@ void updateLandValueLayer(City* city, LandValueLayer* layer)
                     // At some point it'd probably be sensible to cache some of the factors in intermediate arrays,
                     // eg the effects of buildings, or distance to water, so we don't have to do a search for them for each tile.
 
-                    f32 landValue = 0.1f;
+                    float landValue = 0.1f;
 
                     // Waterfront = valuable
                     s32 distanceToWater = getDistanceToWaterAt(city, x, y);
@@ -112,19 +112,19 @@ void updateLandValueLayer(City* city, LandValueLayer* layer)
                     }
 
                     // Building effects
-                    f32 buildingEffect = layer->tileBuildingContributions.get(x, y) / 255.0f;
+                    float buildingEffect = layer->tileBuildingContributions.get(x, y) / 255.0f;
                     landValue += buildingEffect;
 
                     // Fire protection = good
-                    f32 fireProtection = getFireProtectionPercentAt(city, x, y);
+                    float fireProtection = getFireProtectionPercentAt(city, x, y);
                     landValue += fireProtection * 0.2f;
 
                     // Police protection = good
-                    f32 policeCoverage = getPoliceCoveragePercentAt(city, x, y);
+                    float policeCoverage = getPoliceCoveragePercentAt(city, x, y);
                     landValue += policeCoverage * 0.2f;
 
                     // Pollution = bad
-                    f32 pollutionEffect = getPollutionPercentAt(city, x, y) * 0.1f;
+                    float pollutionEffect = getPollutionPercentAt(city, x, y) * 0.1f;
                     landValue -= pollutionEffect;
 
                     layer->tileLandValue.set(x, y, clamp01AndMap_u8(landValue));
@@ -134,7 +134,7 @@ void updateLandValueLayer(City* city, LandValueLayer* layer)
     }
 }
 
-f32 getLandValuePercentAt(City* city, s32 x, s32 y)
+float getLandValuePercentAt(City* city, s32 x, s32 y)
 {
     return city->landValueLayer.tileLandValue.get(x, y) / 255.0f;
 }

@@ -67,7 +67,7 @@ String trimStart(String input);
 String trimEnd(String input);
 
 Maybe<s64> asInt(String input);
-Maybe<f64> asFloat(String input);
+Maybe<double> asFloat(String input);
 Maybe<bool> asBool(String input);
 
 bool isNullTerminated(String s);
@@ -102,8 +102,8 @@ constexpr String formatInt(T e)
     return formatInt(to_underlying(e));
 }
 
-String formatFloat(f64 value, s32 decimalPlaces);
-inline String formatFloat(f32 value, s32 decimalPlaces) { return formatFloat((f64)value, decimalPlaces); }
+String formatFloat(double value, s32 decimalPlaces);
+inline String formatFloat(float value, s32 decimalPlaces) { return formatFloat((double)value, decimalPlaces); }
 
 String formatString(String value, s32 length = -1, bool alignLeft = true, char paddingChar = ' ');
 inline String formatString(char const* value, s32 length = -1, bool alignLeft = true, char paddingChar = ' ')

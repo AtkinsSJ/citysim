@@ -178,7 +178,7 @@ void Renderer::render_internal()
                 // Having a transparent border color which we clamp outside m_indices to, means that any parts of the
                 // texture that specify a palette color that doesn't exist, will be fully transparent.
                 // This is a bit of a hack... but it's a useful one!
-                f32 borderColor[4] = { 0, 0, 0, 0 };
+                float borderColor[4] = { 0, 0, 0, 0 };
                 glTexParameterfv(GL_TEXTURE_1D, GL_TEXTURE_BORDER_COLOR, borderColor);
                 glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 
@@ -362,16 +362,16 @@ void Renderer::render_internal()
                         flush_vertices();
                     }
 
-                    f32 minRadius = item->radius - (item->thickness * 0.5f);
-                    f32 maxRadius = minRadius + item->thickness;
-                    f32 radPerSegment = (2.0f * PI32) / (f32)ringSegmentsCount;
+                    float minRadius = item->radius - (item->thickness * 0.5f);
+                    float maxRadius = minRadius + item->thickness;
+                    float radPerSegment = (2.0f * PI32) / (float)ringSegmentsCount;
 
                     for (s32 segmentIndex = 0; segmentIndex < ringSegmentsCount; segmentIndex++) {
                         VertexData* vertex = m_vertices + m_vertex_count;
                         [[maybe_unused]] s32 firstVertex = m_vertex_count;
 
-                        f32 startAngle = segmentIndex * radPerSegment;
-                        f32 endAngle = (segmentIndex + 1) * radPerSegment;
+                        float startAngle = segmentIndex * radPerSegment;
+                        float endAngle = (segmentIndex + 1) * radPerSegment;
 
                         vertex->pos.x = item->centre.x + (minRadius * cos32(startAngle));
                         vertex->pos.y = item->centre.y + (minRadius * sin32(startAngle));
@@ -760,10 +760,10 @@ void Renderer::push_quad(Rect2 bounds, Colour color)
 
     VertexData* vertex = m_vertices + m_vertex_count;
 
-    f32 minX = bounds.x;
-    f32 maxX = bounds.x + bounds.w;
-    f32 minY = bounds.y;
-    f32 maxY = bounds.y + bounds.h;
+    float minX = bounds.x;
+    float maxX = bounds.x + bounds.w;
+    float minY = bounds.y;
+    float maxY = bounds.y + bounds.h;
 
     vertex->pos.x = minX;
     vertex->pos.y = minY;
@@ -812,15 +812,15 @@ void Renderer::push_quad_with_uv_multicolor(Rect2 bounds, Colour color00, Colour
 
     VertexData* vertex = m_vertices + m_vertex_count;
 
-    f32 minX = bounds.x;
-    f32 maxX = bounds.x + bounds.w;
-    f32 minY = bounds.y;
-    f32 maxY = bounds.y + bounds.h;
+    float minX = bounds.x;
+    float maxX = bounds.x + bounds.w;
+    float minY = bounds.y;
+    float maxY = bounds.y + bounds.h;
 
-    f32 minU = uv.x;
-    f32 maxU = uv.x + uv.w;
-    f32 minV = uv.y;
-    f32 maxV = uv.y + uv.h;
+    float minU = uv.x;
+    float maxU = uv.x + uv.w;
+    float minV = uv.y;
+    float maxV = uv.y + uv.h;
 
     vertex->pos.x = minX;
     vertex->pos.y = minY;

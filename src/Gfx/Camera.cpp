@@ -8,7 +8,7 @@
 #include <Util/Maths.h>
 #include <Util/Rectangle.h>
 
-Camera::Camera(V2 size, f32 size_ratio, f32 near_clipping_plane, f32 far_clipping_plane, V2 position)
+Camera::Camera(V2 size, float size_ratio, float near_clipping_plane, float far_clipping_plane, V2 position)
     : m_position(position)
     , m_size(size * size_ratio)
     , m_size_ratio(size_ratio)
@@ -37,7 +37,7 @@ void Camera::snap_to_rectangle(Rect2 const bounds)
         // City smaller than camera, so centre on it
         m_position.x = bounds.w * 0.5f;
     } else {
-        f32 minX = (cameraSize.x * 0.5f);
+        float minX = (cameraSize.x * 0.5f);
         m_position.x = clamp(m_position.x, minX, bounds.right() - minX);
     }
 
@@ -45,7 +45,7 @@ void Camera::snap_to_rectangle(Rect2 const bounds)
         // City smaller than camera, so centre on it
         m_position.y = bounds.h * 0.5f;
     } else {
-        f32 minY = (cameraSize.y * 0.5f);
+        float minY = (cameraSize.y * 0.5f);
         m_position.y = clamp(m_position.y, minY, bounds.bottom() - minY);
     }
 }
@@ -55,19 +55,19 @@ void Camera::set_size(V2 new_size)
     m_size = new_size * m_size_ratio;
 }
 
-void Camera::set_zoom(f32 new_zoom)
+void Camera::set_zoom(float new_zoom)
 {
     m_zoom = snap_zoom(new_zoom);
 }
 
-void Camera::zoom_by(f32 delta)
+void Camera::zoom_by(float delta)
 {
     m_zoom = snap_zoom(m_zoom + delta);
 }
 
-f32 Camera::snap_zoom(f32 zoom)
+float Camera::snap_zoom(float zoom)
 {
-    return clamp(round_f32(10 * (zoom)) * 0.1f, 0.1f, 10.0f);
+    return clamp(round_float(10 * (zoom)) * 0.1f, 0.1f, 10.0f);
 }
 
 void Camera::update_mouse_position(V2 input_mouse_position)
@@ -77,8 +77,8 @@ void Camera::update_mouse_position(V2 input_mouse_position)
 
 void Camera::update_projection_matrix()
 {
-    f32 half_camera_width = m_size.x * 0.5f / m_zoom;
-    f32 half_camera_height = m_size.y * 0.5f / m_zoom;
+    float half_camera_width = m_size.x * 0.5f / m_zoom;
+    float half_camera_height = m_size.y * 0.5f / m_zoom;
     m_projection_matrix = orthographicMatrix4(
         m_position.x - half_camera_width, m_position.x + half_camera_width,
         m_position.y - half_camera_height, m_position.y + half_camera_height,

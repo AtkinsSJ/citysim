@@ -40,7 +40,7 @@ template<typename T>
 struct HashTable {
     s32 count;
     s32 capacity;
-    f32 maxLoadFactor;
+    float maxLoadFactor;
     bool hasFixedMemory; // Fixed-memory HashTables don't expand in size
     HashTableEntry<T>* entries;
 
@@ -290,7 +290,7 @@ struct HashTable {
 };
 
 template<typename T>
-void initHashTable(HashTable<T>* table, f32 maxLoadFactor = 0.75f, s32 initialCapacity = 0)
+void initHashTable(HashTable<T>* table, float maxLoadFactor = 0.75f, s32 initialCapacity = 0)
 {
     *table = {};
 
@@ -316,15 +316,15 @@ void freeHashTable(HashTable<T>* table)
 }
 
 template<typename T>
-smm calculateHashTableDataSize(s32 capacity, f32 maxLoadFactor)
+smm calculateHashTableDataSize(s32 capacity, float maxLoadFactor)
 {
-    s32 desiredCapacity = ceil_s32((f32)capacity / maxLoadFactor);
+    s32 desiredCapacity = ceil_s32((float)capacity / maxLoadFactor);
 
     return desiredCapacity * sizeof(HashTableEntry<T>);
 }
 
 template<typename T>
-HashTable<T> allocateFixedSizeHashTable(MemoryArena* arena, s32 capacity, f32 maxLoadFactor = 0.75f)
+HashTable<T> allocateFixedSizeHashTable(MemoryArena* arena, s32 capacity, float maxLoadFactor = 0.75f)
 {
     HashTable<T> result;
 
@@ -336,13 +336,13 @@ HashTable<T> allocateFixedSizeHashTable(MemoryArena* arena, s32 capacity, f32 ma
 }
 
 template<typename T>
-void initFixedSizeHashTable(HashTable<T>* table, s32 capacity, f32 maxLoadFactor, Blob entryData)
+void initFixedSizeHashTable(HashTable<T>* table, s32 capacity, float maxLoadFactor, Blob entryData)
 {
     ASSERT(maxLoadFactor < 1.0f);
 
     *table = {};
     table->maxLoadFactor = maxLoadFactor;
-    table->capacity = ceil_s32((f32)capacity / maxLoadFactor);
+    table->capacity = ceil_s32((float)capacity / maxLoadFactor);
     table->hasFixedMemory = true;
 
     smm requiredSize = calculateHashTableDataSize<T>(capacity, maxLoadFactor);

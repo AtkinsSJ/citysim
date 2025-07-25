@@ -230,7 +230,7 @@ struct TextInputStyle {
     Padding padding;
 
     bool showCaret;
-    f32 caretFlashCycleDuration;
+    float caretFlashCycleDuration;
 };
 
 struct WindowStyle {
@@ -302,7 +302,7 @@ struct Style {
     Maybe<u32> endIconAlignment;
 
     Maybe<bool> showCaret;
-    Maybe<f32> caretFlashCycleDuration;
+    Maybe<float> caretFlashCycleDuration;
 
     Maybe<DrawableStyle> track;
     Maybe<s32> trackThickness;

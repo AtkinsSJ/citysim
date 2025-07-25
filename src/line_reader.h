@@ -57,7 +57,7 @@ String readToken(LineReader* reader, char splitChar = 0);
 String peekToken(LineReader* reader, char splitChar = 0);
 s32 countRemainingTokens(LineReader* reader, char splitChar = 0);
 
-Maybe<f64> readFloat(LineReader* reader, bool isOptional = false, char splitChar = 0);
+Maybe<double> readFloat(LineReader* reader, bool isOptional = false, char splitChar = 0);
 Maybe<bool> readBool(LineReader* reader, bool isOptional = false, char splitChar = 0);
 
 Maybe<u32> readAlignment(LineReader* reader);

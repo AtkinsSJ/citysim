@@ -182,10 +182,10 @@ ConsoleCommand(speed)
     } else {
         String remainder = arguments;
 
-        Maybe<f64> speedMultiplier = asFloat(nextToken(remainder, &remainder));
+        Maybe<double> speedMultiplier = asFloat(nextToken(remainder, &remainder));
 
         if (speedMultiplier.isValid) {
-            f32 multiplier = (f32)speedMultiplier.value;
+            float multiplier = (float)speedMultiplier.value;
             app_state.setSpeedMultiplier(multiplier);
             consoleWriteLine(myprintf("Set speed to {0}"_s, { formatFloat(multiplier, 3) }), ConsoleLineStyle::Success);
         } else {
@@ -232,13 +232,13 @@ ConsoleCommand(zoom)
 
     if (argumentsCount == 0) {
         // list the zoom
-        f32 zoom = renderer.world_camera().zoom();
+        float zoom = renderer.world_camera().zoom();
         consoleWriteLine(myprintf("Current zoom is {0}"_s, { formatFloat(zoom, 3) }), ConsoleLineStyle::Success);
     } else if (argumentsCount == 1) {
         // set the zoom
-        Maybe<f64> requestedZoom = asFloat(nextToken(remainder, &remainder));
+        Maybe<double> requestedZoom = asFloat(nextToken(remainder, &remainder));
         if (requestedZoom.isValid) {
-            f32 newZoom = (f32)requestedZoom.value;
+            float newZoom = (float)requestedZoom.value;
             renderer.world_camera().set_zoom(newZoom);
             consoleWriteLine(myprintf("Set zoom to {0}"_s, { formatFloat(newZoom, 3) }), ConsoleLineStyle::Success);
         } else {

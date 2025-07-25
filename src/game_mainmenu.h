@@ -9,4 +9,4 @@
 #include "AppStatus.h"
 #include <Util/Basic.h>
 
-AppStatus updateAndRenderMainMenu(f32 deltaTime);
+AppStatus updateAndRenderMainMenu(float deltaTime);

@@ -83,8 +83,8 @@ void loadBMFont(Blob data, Asset* asset)
             font->texture = addTexture(textureName, false);
             ensureAssetIsLoaded(font->texture);
 
-            f32 textureWidth = (f32)font->texture->texture.surface->w;
-            f32 textureHeight = (f32)font->texture->texture.surface->h;
+            float textureWidth = (float)font->texture->texture.surface->w;
+            float textureHeight = (float)font->texture->texture.surface->h;
 
             for (u32 charIndex = 0;
                 charIndex < charCount;
@@ -100,10 +100,10 @@ void loadBMFont(Blob data, Asset* asset)
                 dest->yOffset = src->yOffset;
                 dest->xAdvance = src->xAdvance;
                 dest->uv = rectXYWH(
-                    (f32)src->x / textureWidth,
-                    (f32)src->y / textureHeight,
-                    (f32)src->w / textureWidth,
-                    (f32)src->h / textureHeight);
+                    (float)src->x / textureWidth,
+                    (float)src->y / textureHeight,
+                    (float)src->w / textureWidth,
+                    (float)src->h / textureHeight);
             }
         }
     }

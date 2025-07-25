@@ -37,16 +37,16 @@
 struct Splat {
     V2I centre;
 
-    f32 minRadius;
-    f32 maxRadius;
-    f32 radiusRange;
-    Array<f32> radius;
-    f32 degreesToIndex;
+    float minRadius;
+    float maxRadius;
+    float radiusRange;
+    Array<float> radius;
+    float degreesToIndex;
 };
 
 // `resolution` is how many radius values are generated. eg, if it's 36, we get 1 value for every 10 degrees.
-Splat createRandomSplat(s32 centreX, s32 centreY, f32 minRadius, f32 maxRadius, s32 resolution, Random* random, s32 smoothness = 4, MemoryArena* memoryArena = &temp_arena());
+Splat createRandomSplat(s32 centreX, s32 centreY, float minRadius, float maxRadius, s32 resolution, Random* random, s32 smoothness = 4, MemoryArena* memoryArena = &temp_arena());
 
-f32 getRadiusAtAngle(Splat* splat, f32 degrees);
+float getRadiusAtAngle(Splat* splat, float degrees);
 Rect2I getBoundingBox(Splat* splat);
 bool contains(Splat* splat, s32 x, s32 y);

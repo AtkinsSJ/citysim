@@ -102,7 +102,7 @@ void updateFireLayer(City* city, FireLayer* layer)
                     if (building != nullptr) {
                         BuildingDef* def = getBuildingDef(building);
 
-                        f32 effectiveness = layer->fundingLevel;
+                        float effectiveness = layer->fundingLevel;
 
                         if (!buildingHasPower(building)) {
                             effectiveness *= 0.4f; // @Balance
@@ -115,7 +115,7 @@ void updateFireLayer(City* city, FireLayer* layer)
 
             for (s32 y = sector->bounds.y; y < sector->bounds.y + sector->bounds.h; y++) {
                 for (s32 x = sector->bounds.x; x < sector->bounds.x + sector->bounds.w; x++) {
-                    f32 tileFireRisk = 0.0f;
+                    float tileFireRisk = 0.0f;
 
                     Building* building = getBuildingAt(city, x, y);
                     if (building) {
@@ -137,7 +137,7 @@ void updateFireLayer(City* city, FireLayer* layer)
 
                     // TODO: Balance this! It feels over-powered, even at 50%.
                     // Possibly fire stations shouldn't affect risk from active fires?
-                    f32 protectionPercent = layer->tileFireProtection.get(x, y) * 0.01f;
+                    float protectionPercent = layer->tileFireProtection.get(x, y) * 0.01f;
                     u8 result = lerp<u8>(totalRisk, 0, protectionPercent * 0.5f);
                     layer->tileOverallFireRisk.set(x, y, result);
                 }
@@ -271,7 +271,7 @@ u8 getFireRiskAt(City* city, s32 x, s32 y)
     return city->fireLayer.tileTotalFireRisk.get(x, y);
 }
 
-f32 getFireProtectionPercentAt(City* city, s32 x, s32 y)
+float getFireProtectionPercentAt(City* city, s32 x, s32 y)
 {
     return city->fireLayer.tileFireProtection.get(x, y) * 0.01f;
 }
@@ -285,7 +285,7 @@ void debugInspectFire(UI::Panel* panel, City* city, s32 x, s32 y)
     panel->addLabel(myprintf("There are {0} fire protection buildings and {1} active fires in the city."_s, { formatInt(layer->fireProtectionBuildings.count), formatInt(layer->activeFireCount) }));
 
     Building* buildingAtPos = getBuildingAt(city, x, y);
-    f32 buildingFireRisk = 100.0f * ((buildingAtPos == nullptr) ? 0.0f : getBuildingDef(buildingAtPos)->fireRisk);
+    float buildingFireRisk = 100.0f * ((buildingAtPos == nullptr) ? 0.0f : getBuildingDef(buildingAtPos)->fireRisk);
 
     panel->addLabel(myprintf("Fire risk: {0}, from:\n- Building: {1}%\n- Nearby fires: {2}"_s, {
                                                                                                    formatInt(getFireRiskAt(city, x, y)),
