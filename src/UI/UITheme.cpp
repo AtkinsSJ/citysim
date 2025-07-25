@@ -22,7 +22,7 @@ Maybe<DrawableStyle> readDrawableStyle(LineReader* reader)
 
         result = makeSuccess(drawable);
     } else if (equals(typeName, "color"_s)) {
-        Maybe<V4> color = readColor(reader);
+        auto color = readColor(reader);
         if (color.isValid) {
             DrawableStyle drawable = {};
             drawable.type = DrawableType::Color;
@@ -31,10 +31,10 @@ Maybe<DrawableStyle> readDrawableStyle(LineReader* reader)
             result = makeSuccess(drawable);
         }
     } else if (equals(typeName, "gradient"_s)) {
-        Maybe<V4> color00 = readColor(reader);
-        Maybe<V4> color01 = readColor(reader);
-        Maybe<V4> color10 = readColor(reader);
-        Maybe<V4> color11 = readColor(reader);
+        auto color00 = readColor(reader);
+        auto color01 = readColor(reader);
+        auto color10 = readColor(reader);
+        auto color11 = readColor(reader);
 
         if (color00.isValid && color01.isValid && color10.isValid && color11.isValid) {
             DrawableStyle drawable = {};
@@ -49,7 +49,7 @@ Maybe<DrawableStyle> readDrawableStyle(LineReader* reader)
     } else if (equals(typeName, "ninepatch"_s)) {
         String ninepatchName = readToken(reader);
 
-        Maybe<V4> color = readColor(reader, true);
+        auto color = readColor(reader, true);
 
         DrawableStyle drawable = {};
         drawable.type = DrawableType::Ninepatch;
@@ -60,7 +60,7 @@ Maybe<DrawableStyle> readDrawableStyle(LineReader* reader)
     } else if (equals(typeName, "sprite"_s)) {
         String spriteName = readToken(reader);
 
-        Maybe<V4> color = readColor(reader, true);
+        auto color = readColor(reader, true);
 
         DrawableStyle drawable = {};
         drawable.type = DrawableType::Sprite;
@@ -405,7 +405,7 @@ void loadUITheme(Blob data, Asset* asset)
                         } break;
 
                         case UI::PropType::Color: {
-                            Maybe<V4> value = readColor(&reader);
+                            auto value = readColor(&reader);
                             if (value.isValid) {
                                 UI::setPropertyValue<V4>(target, property, value.value);
                             }

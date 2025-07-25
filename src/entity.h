@@ -27,7 +27,7 @@ struct Entity {
     Rect2 bounds;
     f32 depth;
     SpriteRef sprite;
-    V4 color;
+    Colour color;
 
     // Misc
     bool canBeDemolished; // TODO: make this be flags?

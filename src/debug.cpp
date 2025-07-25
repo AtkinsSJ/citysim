@@ -152,7 +152,7 @@ struct DebugTextState {
     Alignment hAlign;
     char buffer[1024];
     BitmapFont* font;
-    V4 color;
+    Colour color;
     s32 maxWidth;
     bool progressUpwards;
 
@@ -164,7 +164,7 @@ struct DebugTextState {
     u32 charsLastPrinted;
 };
 
-void initDebugTextState(DebugTextState* textState, BitmapFont* font, V4 textColor, s32 screenEdgePadding, bool upwards, bool alignLeft)
+void initDebugTextState(DebugTextState* textState, BitmapFont* font, Colour textColor, s32 screenEdgePadding, bool upwards, bool alignLeft)
 {
     auto& renderer = the_renderer();
     *textState = {};
@@ -194,7 +194,7 @@ void initDebugTextState(DebugTextState* textState, BitmapFont* font, V4 textColo
     textState->untexturedShaderID = renderer.shaderIds.untextured;
 }
 
-void debugTextOut(DebugTextState* textState, String text, bool doHighlight = false, V4 const* color = nullptr)
+void debugTextOut(DebugTextState* textState, String text, bool doHighlight = false, Colour const* color = nullptr)
 {
     s32 align = textState->hAlign;
     if (textState->progressUpwards)
@@ -203,7 +203,7 @@ void debugTextOut(DebugTextState* textState, String text, bool doHighlight = fal
         align |= ALIGN_TOP;
 
     textState->charsLastPrinted = text.length;
-    V4 textColor = (color != nullptr) ? *color : textState->color;
+    Colour textColor = (color != nullptr) ? *color : textState->color;
 
     V2I textSize = calculateTextSize(textState->font, text, textState->maxWidth);
     V2I topLeft = calculateTextPosition(textState->pos, textSize, align);
@@ -252,8 +252,8 @@ void renderDebugData(DebugState* debugState)
         f32 targetCyclesPerFrame = cyclesPerSecond / 60.0f;
         f32 barWidth = ui_camera.size().x / (f32)DEBUG_FRAMES_COUNT;
         f32 barHeightPerCycle = graphHeight / targetCyclesPerFrame;
-        V4 barColor = Colour::from_rgb_255(255, 0, 0, 128);
-        V4 activeBarColor = Colour::from_rgb_255(255, 255, 0, 128);
+        Colour barColor = Colour::from_rgb_255(255, 0, 0, 128);
+        Colour activeBarColor = Colour::from_rgb_255(255, 255, 0, 128);
         u32 barIndex = 0;
         DrawRectsGroup* rectsGroup = beginRectsGroupUntextured(renderBuffer, renderer.shaderIds.untextured, DEBUG_FRAMES_COUNT);
         for (u32 fi = debugState->writingFrameIndex + 1;

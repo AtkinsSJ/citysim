@@ -333,7 +333,7 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
     // as highlighted, so maybe this won't work and I'll have to delete this comment in 30 seconds' time!
     // - Sam, 28/08/2019
 
-    V4 tileHighlightColor = Colour::from_rgb_255(196, 196, 255, 64);
+    auto tileHighlightColor = Colour::from_rgb_255(196, 196, 255, 64);
     auto& renderer = the_renderer();
     drawSingleRect(&renderer.world_overlay_buffer(), rectXYWHi(tilePos.x, tilePos.y, 1, 1), renderer.shaderIds.untextured, tileHighlightColor);
 }
@@ -649,8 +649,8 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
     // UI!
     updateAndRenderGameUI(gameState);
 
-    V4 ghostColorValid = Colour::from_rgb_255(128, 255, 128, 255);
-    V4 ghostColorInvalid = Colour::from_rgb_255(255, 0, 0, 128);
+    auto ghostColorValid = Colour::from_rgb_255(128, 255, 128, 255);
+    auto ghostColorInvalid = Colour::from_rgb_255(255, 0, 0, 128);
 
     // CAMERA!
     Camera& world_camera = renderer.world_camera();
@@ -692,7 +692,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
                         showCostTooltip(buildCost);
 
                     Sprite* sprite = getSprite(buildingDef->spriteName, 0);
-                    V4 color = canPlace ? ghostColorValid : ghostColorInvalid;
+                    auto color = canPlace ? ghostColorValid : ghostColorInvalid;
                     drawSingleSprite(&renderer.world_overlay_buffer(), sprite, rect2(footprint), renderer.shaderIds.pixelArt, color);
                 }
             } break;
@@ -729,7 +729,7 @@ AppStatus updateAndRenderGame(GameState* gameState, f32 deltaTime)
 
                                 Rect2 rect = rectXYWHi(dragResult.dragRect.x + x, dragResult.dragRect.y + y, buildingDef->width, buildingDef->height);
 
-                                V4 color = canPlace ? ghostColorValid : ghostColorInvalid;
+                                auto color = canPlace ? ghostColorValid : ghostColorInvalid;
                                 // TODO: All the sprites are the same, so we could optimise this!
                                 // Then again, eventually we might want ghosts to not be identical, eg ghost roads that visually connect.
                                 addSpriteRect(rectsGroup, sprite, rect, color);
@@ -1207,8 +1207,8 @@ void drawDataViewUI(GameState* gameState)
                     Rect2I gradientBounds = gradientColumn.addBlank(paletteBlockSize, gradientHeight);
 
                     auto* gradientPalette = getPalette(dataView->gradientPaletteName);
-                    V4 minColor = asOpaque(*gradientPalette->first());
-                    V4 maxColor = asOpaque(*gradientPalette->last());
+                    auto minColor = asOpaque(*gradientPalette->first());
+                    auto maxColor = asOpaque(*gradientPalette->last());
 
                     drawSingleRect(uiBuffer, rect2(gradientBounds), renderer.shaderIds.untextured, maxColor, maxColor, minColor, minColor);
                 }

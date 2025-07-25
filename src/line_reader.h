@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <Gfx/Colour.h>
 #include <Util/Basic.h>
 #include <Util/Flags.h>
 #include <Util/Memory.h>
@@ -60,7 +61,7 @@ Maybe<f64> readFloat(LineReader* reader, bool isOptional = false, char splitChar
 Maybe<bool> readBool(LineReader* reader, bool isOptional = false, char splitChar = 0);
 
 Maybe<u32> readAlignment(LineReader* reader);
-Maybe<V4> readColor(LineReader* reader, bool isOptional = false);
+Maybe<Colour> readColor(LineReader* reader, bool isOptional = false);
 Maybe<struct EffectRadius> readEffectRadius(LineReader* reader);
 Maybe<Padding> readPadding(LineReader* reader);
 Maybe<V2I> readV2I(LineReader* reader);

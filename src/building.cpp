@@ -802,8 +802,8 @@ void updateBuilding(City* city, Building* building)
     }
 
     // Now, colour the building based on its problems
-    V4 drawColorNormal = Colour::white();
-    V4 drawColorNoPower = Colour::from_rgb_255(32, 32, 64, 255);
+    auto drawColorNormal = Colour::white();
+    auto drawColorNoPower = Colour::from_rgb_255(32, 32, 64, 255);
 
     if (!buildingHasPower(building)) {
         building->entity->color = drawColorNoPower;

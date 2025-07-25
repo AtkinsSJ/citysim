@@ -1014,7 +1014,7 @@ void loadPaletteDefs(Blob data, Asset* asset)
                     paletteAsset->palette.size = size.value;
                 }
             } else if (equals(command, "color"_s)) {
-                Maybe<V4> color = readColor(&reader);
+                auto color = readColor(&reader);
                 if (color.isValid) {
                     if (paletteAsset->palette.type == Palette::Type::Fixed) {
                         if (!paletteAsset->palette.paletteData.isInitialised()) {
@@ -1033,7 +1033,7 @@ void loadPaletteDefs(Blob data, Asset* asset)
                     }
                 }
             } else if (equals(command, "from"_s)) {
-                Maybe<V4> from = readColor(&reader);
+                auto from = readColor(&reader);
                 if (from.isValid) {
                     if (paletteAsset->palette.type == Palette::Type::Gradient) {
                         paletteAsset->palette.gradient.from = from.value;
@@ -1042,7 +1042,7 @@ void loadPaletteDefs(Blob data, Asset* asset)
                     }
                 }
             } else if (equals(command, "to"_s)) {
-                Maybe<V4> to = readColor(&reader);
+                auto to = readColor(&reader);
                 if (to.isValid) {
                     if (paletteAsset->palette.type == Palette::Type::Gradient) {
                         paletteAsset->palette.gradient.to = to.value;

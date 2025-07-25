@@ -86,7 +86,7 @@ enum class DebugCodeDataTag : u8 {
 
     COUNT
 };
-EnumMap<DebugCodeDataTag, V4> const debugCodeDataTagColors {
+EnumMap<DebugCodeDataTag, Colour> const debugCodeDataTagColors {
     Colour::from_rgb_255(255, 255, 255, 255), // White
     Colour::from_rgb_255(255, 0, 255, 255),   // Magenta
     Colour::from_rgb_255(128, 128, 128, 255), // Grey
