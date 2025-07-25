@@ -53,7 +53,7 @@ void loadBMFont(Blob data, Asset* asset)
             } break;
 
             case BMF_Block_KerningPairs: {
-                // Ignored for now
+                // TODO: Kerning!
             } break;
             }
 
