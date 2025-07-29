@@ -6,8 +6,7 @@
 
 #pragma once
 
-#include "Basic.h"
-#include "Forward.h"
+#include <Util/Forward.h>
 
 //
 // Matrix4

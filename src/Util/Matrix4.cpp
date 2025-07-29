@@ -6,8 +6,8 @@
 
 #include "Matrix4.h"
 #include "../debug.h"
-#include "Maths.h"
-#include "Vector.h"
+#include <Util/Maths.h>
+#include <Util/Vector.h>
 
 Matrix4 identityMatrix4()
 {

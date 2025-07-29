@@ -5,9 +5,9 @@
  */
 
 #include "Log.h"
-#include "../UI/UITheme.h"
-#include "String.h"
 #include "console.h"
+#include <UI/UITheme.h>
+#include <Util/String.h>
 
 void log(SDL_LogPriority priority, String format, std::initializer_list<String> args)
 {

@@ -5,10 +5,8 @@
  */
 
 #include "Random.h"
-
-#include "../types.h"
-#include "Maths.h"
-#include "Rectangle.h"
+#include <Util/Maths.h>
+#include <Util/Rectangle.h>
 
 void initRandom(Random* random, RandomType type, s32 seed)
 {

@@ -6,10 +6,10 @@
 
 #pragma once
 
-#include "Basic.h"
-#include "Forward.h"
-#include "Memory.h"
-#include "Rectangle.h"
+#include <Util/Basic.h>
+#include <Util/Forward.h>
+#include <Util/Memory.h>
+#include <Util/Rectangle.h>
 
 template<typename T>
 struct Array2 {

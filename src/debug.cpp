@@ -5,10 +5,9 @@
  */
 
 #include "debug.h"
-
-#include "Assets/AssetManager.h"
 #include "font.h"
 #include "input.h"
+#include <Assets/AssetManager.h>
 #include <Gfx/Renderer.h>
 
 void debugInit()

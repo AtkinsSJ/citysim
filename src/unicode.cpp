@@ -5,10 +5,9 @@
  */
 
 #include "unicode.h"
+#include <Util/Log.h>
 
-#include "Util/Log.h"
-
- bool byteIsStartOfGlyph(char b)
+bool byteIsStartOfGlyph(char b)
 {
     // continuation bytes always start with 10xxxxxx
     // So if it doesn't, it must be the start byte!
@@ -20,7 +19,7 @@
 // Decodes the byte to see how long it claims to be.
 // There is no guarantee that the bytes that follow it are valid within the string, we don't check!
 // returns 0 for an invalid start byte
- s32 lengthOfGlyph(char startByte)
+s32 lengthOfGlyph(char startByte)
 {
     s32 result = 0;
 
@@ -48,7 +47,7 @@
     return result;
 }
 
- s32 lengthOfUnichar(unichar c)
+s32 lengthOfUnichar(unichar c)
 {
     if (c <= 0x7F) {
         return 1;
@@ -197,7 +196,7 @@ unichar readUnicodeChar(char* firstChar)
     return result;
 }
 
- bool isWhitespace(unichar uChar, bool countNewlines)
+bool isWhitespace(unichar uChar, bool countNewlines)
 {
     // NB: See note in isNewline() about why we use a switch. (Basically, it's faster!)
 
@@ -244,7 +243,7 @@ unichar readUnicodeChar(char* firstChar)
     return result;
 }
 
- bool isNewline(unichar uChar)
+bool isNewline(unichar uChar)
 {
     bool result = false;
 
@@ -279,7 +278,7 @@ unichar readUnicodeChar(char* firstChar)
     return result;
 }
 
- bool getNextUnichar(String string, s32* bytePos, unichar* result)
+bool getNextUnichar(String string, s32* bytePos, unichar* result)
 {
     bool foundResult = false;
 

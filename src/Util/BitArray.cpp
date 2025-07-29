@@ -6,7 +6,7 @@
 
 #include "BitArray.h"
 #include "../debug.h"
-#include "Assert.h"
+#include <Util/Assert.h>
 
 void initBitArray(BitArray* array, MemoryArena* arena, s32 size)
 {

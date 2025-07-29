@@ -6,14 +6,8 @@
 
 #pragma once
 
+#include <Util/Basic.h>
 #include <Util/Forward.h>
-
-// Note for later: variadic macros `#define(foo, ...)` expand the ... with `__VA_ARGS__`
-
-#define GLUE_(a, b) a##b
-#define GLUE(a, b) GLUE_(a, b)
-
-#include "Util/Basic.h"
 
 template<typename T>
 inline bool equals(T a, T b)

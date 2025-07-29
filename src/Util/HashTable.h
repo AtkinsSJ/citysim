@@ -6,12 +6,11 @@
 
 #pragma once
 
-#include "../types.h"
-#include "Basic.h"
-#include "Forward.h"
-#include "Maths.h"
-#include "MemoryArena.h"
-#include "String.h"
+#include <Util/Basic.h>
+#include <Util/Forward.h>
+#include <Util/Maths.h>
+#include <Util/MemoryArena.h>
+#include <Util/String.h>
 
 //
 // It's a Hash Table! Keys go in, items go out

@@ -13,6 +13,9 @@
 #include <Util/HashTable.h>
 #include <Util/Pool.h>
 
+#define GLUE_(a, b) a##b
+#define GLUE(a, b) GLUE_(a, b)
+
 #if BUILD_DEBUG
 
 #    define DEBUG_BLOCK_T(name, tag)                                                                                    \

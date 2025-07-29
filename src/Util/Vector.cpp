@@ -5,7 +5,7 @@
  */
 
 #include "Vector.h"
-#include "Maths.h"
+#include <Util/Maths.h>
 #include <cmath>
 
 /**********************************************

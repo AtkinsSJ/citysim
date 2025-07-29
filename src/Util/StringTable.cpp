@@ -5,7 +5,7 @@
  */
 
 #include "StringTable.h"
-#include "Assert.h"
+#include <Util/Assert.h>
 
 void initStringTable(StringTable* table)
 {

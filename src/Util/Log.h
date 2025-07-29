@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include "Forward.h"
 #include <SDL2/SDL_log.h>
+#include <Util/Forward.h>
 #include <initializer_list>
 
 void log(SDL_LogPriority priority, String format, std::initializer_list<String> args = {});

@@ -6,8 +6,8 @@
 
 #include "StringBuilder.h"
 #include "../debug.h"
-#include "Log.h"
-#include "Memory.h"
+#include <Util/Log.h>
+#include <Util/Memory.h>
 
 StringBuilder newStringBuilder(s32 initialSize, MemoryArena* arena)
 {

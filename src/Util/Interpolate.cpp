@@ -5,7 +5,7 @@
  */
 
 #include "Interpolate.h"
-#include "Maths.h"
+#include <Util/Maths.h>
 
 float interpolate(float start, float end, float t, Interpolation interpolation)
 {

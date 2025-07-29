@@ -5,8 +5,8 @@
  */
 
 #include "Rectangle.h"
-#include "../types.h"
-#include "Maths.h"
+#include "types.h"
+#include <Util/Maths.h>
 
 /**********************************************
     Rect2

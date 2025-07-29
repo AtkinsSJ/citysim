@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <Util/Assert.h>
 #include <cfloat>
 #include <cstdint>
 #include <utility>

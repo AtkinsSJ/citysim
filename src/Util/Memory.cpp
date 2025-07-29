@@ -5,6 +5,7 @@
  */
 
 #include "Memory.h"
+#include <Util/Assert.h>
 #include <cstdlib> // For calloc
 
 u8* allocateRaw(smm size)

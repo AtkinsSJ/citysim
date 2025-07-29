@@ -6,8 +6,6 @@
 
 #pragma once
 
-#include "Assert.h"
-
 struct BitArray;
 struct BitArrayIterator;
 class Blob;

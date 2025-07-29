@@ -5,7 +5,6 @@
  */
 
 #include "AppState.h"
-#include "Window.h"
 #include "font.h"
 #include "input.h"
 #include <Assets/AssetManager.h>
@@ -15,6 +14,7 @@
 #include <UI/TextInput.h>
 #include <UI/UI.h>
 #include <UI/UITheme.h>
+#include <UI/Window.h>
 #include <Util/Interpolate.h>
 #include <Util/Rectangle.h>
 

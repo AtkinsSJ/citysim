@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include "HashTable.h"
-#include "String.h"
+#include <Util/HashTable.h>
+#include <Util/String.h>
 
 //
 // A collection of interned Strings - it stores their character data, and deduplicates them.

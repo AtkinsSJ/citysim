@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include "Maths.h"
 #include <Util/Blob.h>
+#include <Util/Maths.h>
 #include <cstring> // For memset
 
 #define KB(x) ((x) * 1024)

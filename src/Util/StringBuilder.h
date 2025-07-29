@@ -6,10 +6,10 @@
 
 #pragma once
 
-#include "Basic.h"
-#include "Forward.h"
-#include "MemoryArena.h"
-#include "String.h"
+#include <Util/Basic.h>
+#include <Util/Forward.h>
+#include <Util/MemoryArena.h>
+#include <Util/String.h>
 
 /**
  * This is for temporary string allocation, like in myprintf().

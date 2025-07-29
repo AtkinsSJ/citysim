@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include "Assert.h"
-#include "Basic.h"
+#include <Util/Assert.h>
+#include <Util/Basic.h>
 
 /*****************************************************************
  * Somewhat less-hacky doubly-linked-list stuff using templates. *

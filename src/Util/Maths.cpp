@@ -4,12 +4,8 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-
-
 #include "Maths.h"
-
-#include "Rectangle.h"
-
+#include <Util/Rectangle.h>
 #include <cmath>
 
 // Standard rounding functions return doubles, so here's some int ones.

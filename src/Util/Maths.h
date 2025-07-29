@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include "Basic.h"
-#include "Forward.h"
+#include <Util/Basic.h>
+#include <Util/Forward.h>
 
 float const PI32 = 3.14159265358979323846f;
 float const radToDeg = 180.0f / PI32;

@@ -5,9 +5,8 @@
  */
 
 #include "Panel.h"
-#include "../Util/String.h"
-#include "TextInput.h"
-#include "UI.h"
+#include <UI/TextInput.h>
+#include <Util/String.h>
 
 namespace UI {
 
