@@ -9,6 +9,7 @@
 #include "settings.h"
 #include "terrain.h"
 #include <Assets/AssetManager.h>
+#include <Gfx/BMFont.h>
 #include <Gfx/Renderer.h>
 #include <IO/File.h>
 #include <IO/LineReader.h>

@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include "bmfont.h"
 #include "font.h"
 #include "types.h"
 #include <Assets/Forward.h>

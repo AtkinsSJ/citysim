@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "bmfont.h"
+#include "BMFont.h"
 #include <Assets/Asset.h>
 #include <Assets/AssetManager.h>
 #include <Util/Memory.h>

@@ -1,4 +1,5 @@
 target_sources(CitySim PRIVATE
+    BMFont.cpp
     Camera.cpp
     Colour.cpp
     OpenGL.cpp

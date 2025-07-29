@@ -1,7 +1,6 @@
 target_sources(CitySim PRIVATE
     AppState.cpp
     about.cpp
-    bmfont.cpp
     budget.cpp
     building.cpp
     city.cpp
