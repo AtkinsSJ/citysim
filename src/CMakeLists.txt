@@ -1,9 +1,6 @@
 target_sources(CitySim PRIVATE
     AppState.cpp
     about.cpp
-    IO/BinaryFile.cpp
-    IO/BinaryFileReader.cpp
-    IO/BinaryFileWriter.cpp
     bmfont.cpp
     budget.cpp
     building.cpp
@@ -15,7 +12,6 @@ target_sources(CitySim PRIVATE
     debug.cpp
     dirty.cpp
     education.cpp
-    IO/File.cpp
     fire.cpp
     font.cpp
     game.cpp
@@ -24,7 +20,6 @@ target_sources(CitySim PRIVATE
     health.cpp
     input.cpp
     land_value.cpp
-    IO/LineReader.cpp
     main.cpp
     # PLATFORM?
     pollution.cpp
@@ -37,7 +32,6 @@ target_sources(CitySim PRIVATE
     tile_utils.cpp
     transport.cpp
     unicode.cpp
-    IO/WriteBuffer.cpp
     zone.cpp
 )
 
@@ -49,6 +43,7 @@ endif ()
 
 add_subdirectory("Assets")
 add_subdirectory("Gfx")
+add_subdirectory("IO")
 add_subdirectory("Sim")
 add_subdirectory("UI")
 add_subdirectory("Util")
