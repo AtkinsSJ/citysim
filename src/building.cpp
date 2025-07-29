@@ -7,9 +7,9 @@
 #include "building.h"
 #include "AppState.h"
 #include "city.h"
-#include "line_reader.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/Colour.h>
+#include <IO/LineReader.h>
 #include <Util/Deferred.h>
 
 void initBuildingCatalogue()

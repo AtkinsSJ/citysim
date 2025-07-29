@@ -5,10 +5,9 @@
  */
 
 #include "education.h"
-
-#include "binary_file_reader.h"
-#include "binary_file_writer.h"
 #include "save_file.h"
+#include <IO/BinaryFileReader.h>
+#include <IO/BinaryFileWriter.h>
 
 void initEducationLayer(EducationLayer* layer, City* /*city*/, MemoryArena* /*gameArena*/)
 {

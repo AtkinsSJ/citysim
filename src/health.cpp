@@ -5,10 +5,10 @@
  */
 
 #include "health.h"
-#include "binary_file_reader.h"
-#include "binary_file_writer.h"
 #include "city.h"
 #include "save_file.h"
+#include <IO/BinaryFileReader.h>
+#include <IO/BinaryFileWriter.h>
 
 float getHealthCoveragePercentAt(City* city, s32 x, s32 y)
 {

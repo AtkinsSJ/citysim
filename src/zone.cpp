@@ -6,11 +6,11 @@
 
 #include "zone.h"
 #include "AppState.h"
-#include "binary_file_reader.h"
-#include "binary_file_writer.h"
 #include "city.h"
 #include "save_file.h"
 #include <Gfx/Renderer.h>
+#include <IO/BinaryFileReader.h>
+#include <IO/BinaryFileWriter.h>
 
 void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena)
 {

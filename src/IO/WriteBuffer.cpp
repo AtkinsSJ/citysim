@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "write_buffer.h"
-#include "file.h"
+#include "WriteBuffer.h"
+#include <IO/File.h>
 #include <Util/MemoryArena.h>
 
 void WriteBuffer::init(s32 chunkSize_, MemoryArena* arena_)

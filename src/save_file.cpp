@@ -5,14 +5,14 @@
  */
 
 #include "save_file.h"
-#include "binary_file_reader.h"
-#include "binary_file_writer.h"
 #include "city.h"
 #include "game.h"
 #include "platform.h"
 #include "terrain.h"
 #include "zone.h"
 #include <Gfx/Renderer.h>
+#include <IO/BinaryFileReader.h>
+#include <IO/BinaryFileWriter.h>
 
 bool writeSaveFile(FileHandle* file, GameState* gameState)
 {

@@ -6,14 +6,14 @@
 
 #include "terrain.h"
 #include "AppState.h"
-#include "binary_file_reader.h"
-#include "binary_file_writer.h"
 #include "city.h"
-#include "line_reader.h"
 #include "save_file.h"
 #include "splat.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/Renderer.h>
+#include <IO/BinaryFileReader.h>
+#include <IO/BinaryFileWriter.h>
+#include <IO/LineReader.h>
 #include <UI/Window.h>
 
 TerrainCatalogue s_terrain_catalogue = {};

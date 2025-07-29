@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "binary_file_reader.h"
+#include "BinaryFileReader.h"
 #include <Util/Log.h>
 
 BinaryFileReader readBinaryFile(FileHandle* handle, FileIdentifier identifier, MemoryArena* arena)

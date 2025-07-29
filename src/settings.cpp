@@ -5,9 +5,9 @@
  */
 
 #include "settings.h"
-#include "line_reader.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/Renderer.h>
+#include <IO/LineReader.h>
 #include <SDL2/SDL_filesystem.h>
 #include <UI/Window.h>
 #include <Util/StringBuilder.h>

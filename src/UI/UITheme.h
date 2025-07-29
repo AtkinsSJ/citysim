@@ -9,6 +9,7 @@
 #include <Assets/AssetRef.h>
 #include <Assets/Sprite.h>
 #include <Gfx/Colour.h>
+#include <IO/Forward.h>
 #include <Util/HashTable.h>
 #include <Util/Vector.h>
 
@@ -22,8 +23,6 @@ enum class ConsoleLineStyle : u8 {
 
     COUNT
 };
-
-struct LineReader;
 
 namespace UI {
 

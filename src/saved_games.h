@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include "binary_file_reader.h"
-#include "file.h"
+#include <IO/BinaryFileReader.h>
+#include <IO/File.h>
 #include <UI/TextInput.h>
 #include <UI/UI.h>
 #include <Util/ChunkedArray.h>

@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "../line_reader.h"
 #include <Assets/AssetManager.h>
+#include <IO/LineReader.h>
 #include <UI/UITheme.h>
 #include <Util/Deferred.h>
 

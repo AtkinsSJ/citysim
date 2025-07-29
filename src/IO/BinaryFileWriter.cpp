@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "binary_file_writer.h"
+#include "BinaryFileWriter.h"
 #include <Util/Enum.h>
 #include <Util/Log.h>
 

@@ -6,11 +6,10 @@
 
 #pragma once
 
-#include "binary_file.h"
 #include "game_clock.h"
+#include <IO/BinaryFile.h>
+#include <IO/Forward.h>
 #include <Util/Basic.h>
-
-struct FileHandle;
 
 //
 // A crazy, completely-unnecessary idea: we could implement a thumbnail handler so that

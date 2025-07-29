@@ -5,12 +5,12 @@
  */
 
 #include "crime.h"
-#include "binary_file_reader.h"
-#include "binary_file_writer.h"
 #include "city.h"
 #include "land_value.h"
 #include "save_file.h"
 #include "tile_utils.h"
+#include <IO/BinaryFileReader.h>
+#include <IO/BinaryFileWriter.h>
 
 void initCrimeLayer(CrimeLayer* layer, City* city, MemoryArena* gameArena)
 {
@@ -18,7 +18,7 @@ void initCrimeLayer(CrimeLayer* layer, City* city, MemoryArena* gameArena)
 
     initDirtyRects(&layer->dirtyRects, gameArena, maxLandValueEffectDistance, city->bounds);
 
-    layer->tilePoliceCoverage =  gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
+    layer->tilePoliceCoverage = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
     fill<u8>(&layer->tilePoliceCoverage, 0);
 
     layer->totalJailCapacity = 0;

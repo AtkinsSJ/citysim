@@ -5,13 +5,13 @@
  */
 
 #include "pollution.h"
-#include "binary_file.h"
-#include "binary_file_reader.h"
-#include "binary_file_writer.h"
 #include "building.h"
 #include "city.h"
 #include "land_value.h"
 #include "save_file.h"
+#include <IO/BinaryFile.h>
+#include <IO/BinaryFileReader.h>
+#include <IO/BinaryFileWriter.h>
 
 void initPollutionLayer(PollutionLayer* layer, City* city, MemoryArena* gameArena)
 {

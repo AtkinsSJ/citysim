@@ -5,8 +5,8 @@
  */
 
 #include "credits.h"
-#include "line_reader.h"
 #include <Assets/AssetManager.h>
+#include <IO/LineReader.h>
 #include <UI/UI.h>
 #include <Util/Vector.h>
 

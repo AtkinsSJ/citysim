@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "file.h"
+#include <IO/File.h>
 #include <Assets/Asset.h>
 #include <Util/ChunkedArray.h>
 #include <Util/EnumMap.h>

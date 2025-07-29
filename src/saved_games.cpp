@@ -6,7 +6,6 @@
 
 #include "saved_games.h"
 #include "AppState.h"
-#include "binary_file_reader.h"
 #include "input.h"
 #include "save_file.h"
 #include "settings.h"

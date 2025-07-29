@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include "binary_file.h"
-#include "file.h"
-#include "write_buffer.h"
+#include <IO/BinaryFile.h>
+#include <IO/File.h>
+#include <IO/WriteBuffer.h>
 #include <Util/MemoryArena.h>
 
 struct BinaryFileWriter {

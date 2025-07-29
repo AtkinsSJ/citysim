@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "binary_file.h"
+#include "BinaryFile.h"
 
 void rleDecode(u8* source, u8* dest, smm destSize)
 {

@@ -5,13 +5,12 @@
  */
 
 #include "console.h"
-
 #include "AppState.h"
-#include "Assets/AssetManager.h"
-#include "UI/Drawable.h"
-#include "UI/TextInput.h"
-#include "line_reader.h"
+#include <Assets/AssetManager.h>
 #include <Gfx/Renderer.h>
+#include <IO/LineReader.h>
+#include <UI/Drawable.h>
+#include <UI/TextInput.h>
 
 static Console theConsole;
 

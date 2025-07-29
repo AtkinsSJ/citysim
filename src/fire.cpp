@@ -6,10 +6,10 @@
 
 #include "fire.h"
 #include "AppState.h"
-#include "binary_file_reader.h"
-#include "binary_file_writer.h"
 #include "city.h"
 #include "save_file.h"
+#include <IO/BinaryFileReader.h>
+#include <IO/BinaryFileWriter.h>
 #include <UI/Panel.h>
 #include <Util/Random.h>
 

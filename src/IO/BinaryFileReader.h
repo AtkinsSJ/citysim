@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include "binary_file.h"
-#include "file.h"
+#include <IO/BinaryFile.h>
+#include <IO/File.h>
 #include <Util/Flags.h>
 #include <Util/MemoryArena.h>
 

@@ -6,12 +6,12 @@
 
 #include "building.h"
 #include "console.h"
-#include "file.h"
-#include "line_reader.h"
 #include "settings.h"
 #include "terrain.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/Renderer.h>
+#include <IO/File.h>
+#include <IO/LineReader.h>
 #include <SDL2/SDL_filesystem.h>
 #include <SDL2/SDL_image.h>
 
@@ -416,9 +416,9 @@ void loadAsset(Asset* asset)
                 Bmask = surface->format->Bmask,
                 Amask = surface->format->Amask;
             float rRmask = (float)Rmask,
-                rGmask = (float)Gmask,
-                rBmask = (float)Bmask,
-                rAmask = (float)Amask;
+                  rGmask = (float)Gmask,
+                  rBmask = (float)Bmask,
+                  rAmask = (float)Amask;
 
             u32 pixelCount = surface->w * surface->h;
             for (u32 pixelIndex = 0;

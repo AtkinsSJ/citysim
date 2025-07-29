@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "line_reader.h"
-#include "tile_utils.h"
-#include "types.h"
-#include "unicode.h"
+#include "../tile_utils.h"
+#include "../types.h"
+#include "../unicode.h"
+#include "LineReader.h"
 #include <Util/Log.h>
 
 LineReader readLines(String filename, Blob data, Flags<LineReaderFlags> flags, char commentChar)
