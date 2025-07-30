@@ -93,3 +93,15 @@ private:
         u8 m_blank[sizeof(T)];
     };
 };
+
+template<typename T>
+bool all_have_values(Optional<T> const& input)
+{
+    return input.has_value();
+}
+
+template<typename T, typename... TS>
+bool all_have_values(Optional<T> const& first, Optional<TS> const&... rest)
+{
+    return first.has_value() && all_have_values(rest...);
+}
