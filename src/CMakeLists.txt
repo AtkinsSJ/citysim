@@ -11,7 +11,6 @@ target_sources(CitySim PRIVATE
     save_file.cpp
     saved_games.cpp
     settings.cpp
-    splat.cpp
 )
 
 if (LINUX)

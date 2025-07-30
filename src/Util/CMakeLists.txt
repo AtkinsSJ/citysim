@@ -8,6 +8,7 @@ target_sources(CitySim PRIVATE
     MemoryArena.cpp
     Random.cpp
     Rectangle.cpp
+    Splat.cpp
     String.cpp
     StringBuilder.cpp
     StringTable.cpp

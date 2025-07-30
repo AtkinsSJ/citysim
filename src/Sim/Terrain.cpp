@@ -7,7 +7,6 @@
 #include "Terrain.h"
 #include "../AppState.h"
 #include "../save_file.h"
-#include "../splat.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/Renderer.h>
 #include <IO/BinaryFileReader.h>
@@ -15,6 +14,7 @@
 #include <IO/LineReader.h>
 #include <Sim/City.h>
 #include <UI/Window.h>
+#include <Util/Splat.h>
 
 TerrainCatalogue s_terrain_catalogue = {};
 
