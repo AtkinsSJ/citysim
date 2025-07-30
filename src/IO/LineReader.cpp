@@ -6,8 +6,9 @@
 
 #include "LineReader.h"
 #include "../unicode.h"
-#include <Sim/Effect.h>
 #include <Util/Log.h>
+#include <Util/Optional.h>
+#include <Util/Rectangle.h>
 
 LineReader readLines(String filename, Blob data, Flags<LineReaderFlags> flags, char commentChar)
 {
@@ -328,28 +329,6 @@ Maybe<Colour> readColor(LineReader* reader, bool isOptional)
     }
 
     return result;
-}
-
-Maybe<EffectRadius> readEffectRadius(LineReader* reader)
-{
-    Maybe<s32> radius = readInt<s32>(reader);
-
-    if (radius.isValid) {
-        Maybe<s32> centreValue = readInt<s32>(reader, true);
-        Maybe<s32> outerValue = readInt<s32>(reader, true);
-
-        EffectRadius result = {};
-
-        result.radius = radius.value;
-        result.centreValue = centreValue.orDefault(radius.value); // Default to value=radius
-        result.outerValue = outerValue.orDefault(0);
-
-        return makeSuccess(result);
-    } else {
-        error(reader, "Couldn't parse effect radius. Expected \"{0} radius [effectAtCentre] [effectAtEdge]\" where radius, effectAtCentre, and effectAtEdge are ints."_s);
-
-        return makeFailure<EffectRadius>();
-    }
 }
 
 Maybe<Padding> readPadding(LineReader* reader)

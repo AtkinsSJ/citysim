@@ -73,12 +73,8 @@ void updateFireLayer(City* city, FireLayer* layer)
                         Fire* fire = it.get();
                         if (contains(expandedRect, fire->pos)) {
                             // TODO: Different "strengths" of fire should have different effects
-                            EffectRadius fireEffect = {};
-                            fireEffect.centreValue = 255;
-                            fireEffect.outerValue = 20;
-                            fireEffect.radius = layer->maxFireRadius;
-
-                            applyEffect(&fireEffect, v2(fire->pos), EffectType::Add, &layer->tileFireProximityEffect, dirtyRect);
+                            EffectRadius fireEffect { layer->maxFireRadius, 255, 20 };
+                            fireEffect.apply(layer->tileFireProximityEffect, dirtyRect, v2(fire->pos), EffectType::Add);
                         }
                     }
                 }
@@ -109,7 +105,7 @@ void updateFireLayer(City* city, FireLayer* layer)
                             effectiveness *= 0.4f; // @Balance
                         }
 
-                        applyEffect(&def->fireProtection, centreOf(building->footprint), EffectType::Max, &layer->tileFireProtection, sector->bounds, effectiveness);
+                        def->fireProtection.apply(layer->tileFireProtection, sector->bounds, centreOf(building->footprint), EffectType::Max, effectiveness);
                     }
                 }
             }

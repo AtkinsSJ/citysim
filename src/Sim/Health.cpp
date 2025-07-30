@@ -68,7 +68,7 @@ void updateHealthLayer(City* city, HealthLayer* layer)
 
                         // TODO: Overcrowding
 
-                        applyEffect(&def->healthEffect, centreOf(building->footprint), EffectType::Max, &layer->tileHealthCoverage, sector->bounds, effectiveness);
+                        def->healthEffect.apply(layer->tileHealthCoverage, sector->bounds, centreOf(building->footprint), EffectType::Max, effectiveness);
                     }
                 }
             }

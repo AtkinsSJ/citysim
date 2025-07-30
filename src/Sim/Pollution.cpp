@@ -49,7 +49,7 @@ void updatePollutionLayer(City* city, PollutionLayer* layer)
                     Building* building = buildingIt.getValue();
                     BuildingDef* def = getBuildingDef(building);
                     if (def->pollutionEffect.has_effect()) {
-                        applyEffect(&def->pollutionEffect, centreOf(building->footprint), EffectType::Add, &layer->tileBuildingContributions, dirtyRect);
+                        def->pollutionEffect.apply(layer->tileBuildingContributions, dirtyRect, centreOf(building->footprint), EffectType::Add);
                     }
                 }
 

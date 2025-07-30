@@ -7,67 +7,78 @@
 #pragma once
 
 #include <Debug/Debug.h>
+#include <IO/Forward.h>
 #include <Util/Array2.h>
 #include <Util/Basic.h>
 #include <Util/Vector.h>
-
-struct EffectRadius {
-    s32 centreValue;
-    s32 radius;
-    s32 outerValue;
-
-    bool has_effect() const
-    {
-        return radius > 0;
-    }
-};
 
 enum class EffectType : u8 {
     Add,
     Max,
 };
-template<typename T>
-void applyEffect(EffectRadius* effectRadius, V2 effectCentre, EffectType type, Array2<T>* tileValues, Rect2I region, float scale = 1.0f)
-{
-    DEBUG_FUNCTION();
 
-    float radius = (float)effectRadius->radius;
-    float invRadius = 1.0f / radius;
-    float radius2 = (float)(radius * radius);
+class EffectRadius {
+public:
+    EffectRadius() = default;
+    EffectRadius(s32 radius, s32 centre_value, s32 outer_value)
+        : m_radius(radius)
+        , m_centre_value(centre_value)
+        , m_outer_value(outer_value)
+    {
+    }
 
-    float centreValue = effectRadius->centreValue * scale;
-    float outerValue = effectRadius->outerValue * scale;
+    static Optional<EffectRadius> read(LineReader&);
 
-    Rect2I possibleEffectArea = irectXYWH(floor_s32(effectCentre.x - radius), floor_s32(effectCentre.y - radius), ceil_s32(radius + radius), ceil_s32(radius + radius));
-    possibleEffectArea = intersect(possibleEffectArea, region);
-    for (s32 y = possibleEffectArea.y; y < possibleEffectArea.y + possibleEffectArea.h; y++) {
-        for (s32 x = possibleEffectArea.x; x < possibleEffectArea.x + possibleEffectArea.w; x++) {
-            float distance2FromSource = lengthSquaredOf(x - effectCentre.x, y - effectCentre.y);
-            if (distance2FromSource <= radius2) {
-                float contributionF = lerp(centreValue, outerValue, sqrt_float(distance2FromSource) * invRadius);
-                T contribution = (T)floor_s32(contributionF);
+    s32 radius() const { return m_radius; }
+    bool has_effect() const { return m_radius > 0; }
 
-                if (contribution == 0)
-                    continue;
+    template<typename T>
+    void apply(Array2<T>& tiles, Rect2I region, V2 effect_centre, EffectType type, float scale = 1.0f)
+    {
+        DEBUG_FUNCTION();
 
-                switch (type) {
-                case EffectType::Add: {
-                    T originalValue = tileValues->get(x, y);
+        float inverse_radius = 1.0f / m_radius;
+        float square_radius = static_cast<float>(m_radius * m_radius);
 
-                    // This clamp is probably unnecessary but just in case.
-                    T newValue = clamp<T>(originalValue + contribution, minPossibleValue<T>(), maxPossibleValue<T>());
-                    tileValues->set(x, y, newValue);
-                } break;
+        float centre_value = m_centre_value * scale;
+        float outer_value = m_outer_value * scale;
 
-                case EffectType::Max: {
-                    T originalValue = tileValues->get(x, y);
-                    T newValue = max(originalValue, contribution);
-                    tileValues->set(x, y, newValue);
-                } break;
+        Rect2I possibleEffectArea = irectXYWH(floor_s32(effect_centre.x - m_radius), floor_s32(effect_centre.y - m_radius), ceil_s32(m_radius + m_radius), ceil_s32(m_radius + m_radius));
+        possibleEffectArea = intersect(possibleEffectArea, region);
+        for (s32 y = possibleEffectArea.y; y < possibleEffectArea.y + possibleEffectArea.h; y++) {
+            for (s32 x = possibleEffectArea.x; x < possibleEffectArea.x + possibleEffectArea.w; x++) {
+                float distance2FromSource = lengthSquaredOf(x - effect_centre.x, y - effect_centre.y);
+                if (distance2FromSource <= square_radius) {
+                    float contributionF = lerp(centre_value, outer_value, sqrt_float(distance2FromSource) * inverse_radius);
+                    T contribution = static_cast<T>(floor_s32(contributionF));
 
-                    INVALID_DEFAULT_CASE;
+                    if (contribution == 0)
+                        continue;
+
+                    switch (type) {
+                    case EffectType::Add: {
+                        T originalValue = tiles.get(x, y);
+
+                        // This clamp is probably unnecessary but just in case.
+                        T newValue = clamp<T>(originalValue + contribution, minPossibleValue<T>(), maxPossibleValue<T>());
+                        tiles.set(x, y, newValue);
+                    } break;
+
+                    case EffectType::Max: {
+                        T originalValue = tiles.get(x, y);
+                        T newValue = max(originalValue, contribution);
+                        tiles.set(x, y, newValue);
+                    } break;
+
+                        INVALID_DEFAULT_CASE;
+                    }
                 }
             }
         }
     }
-}
+
+private:
+    s32 m_radius {};
+    s32 m_centre_value {};
+    s32 m_outer_value {};
+};

@@ -63,7 +63,6 @@ Maybe<bool> readBool(LineReader* reader, bool isOptional = false, char splitChar
 
 Optional<Alignment> readAlignment(LineReader* reader);
 Maybe<Colour> readColor(LineReader* reader, bool isOptional = false);
-Maybe<struct EffectRadius> readEffectRadius(LineReader* reader);
 Maybe<Padding> readPadding(LineReader* reader);
 Maybe<V2I> readV2I(LineReader* reader);
 

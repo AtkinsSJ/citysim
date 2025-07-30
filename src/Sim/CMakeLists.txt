@@ -6,6 +6,7 @@ target_sources(CitySim PRIVATE
     Crime.cpp
     DirtyRects.cpp
     Education.cpp
+    Effect.cpp
     Fire.cpp
     GameClock.cpp
     Health.cpp

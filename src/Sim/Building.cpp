@@ -248,9 +248,8 @@ void loadBuildingDefs(Blob data, Asset* asset)
                         }
                     }
                 } else if (firstWord == "crime_protection"_s) {
-                    Maybe<EffectRadius> crime_protection = readEffectRadius(&reader);
-                    if (crime_protection.isValid) {
-                        def->policeEffect = crime_protection.value;
+                    if (auto crime_protection = EffectRadius::read(reader); crime_protection.has_value()) {
+                        def->policeEffect = crime_protection.release_value();
                     }
                 } else if (firstWord == "demolish_cost"_s) {
                     Maybe<s32> demolish_cost = readInt<s32>(&reader);
@@ -285,9 +284,8 @@ void loadBuildingDefs(Blob data, Asset* asset)
                         def->fireProtection = tDef->fireProtection;
                     }
                 } else if (firstWord == "fire_protection"_s) {
-                    Maybe<EffectRadius> fire_protection = readEffectRadius(&reader);
-                    if (fire_protection.isValid) {
-                        def->fireProtection = fire_protection.value;
+                    if (auto fire_protection = EffectRadius::read(reader); fire_protection.has_value()) {
+                        def->fireProtection = fire_protection.release_value();
                     }
                 } else if (firstWord == "fire_risk"_s) {
                     Maybe<double> fire_risk = readFloat(&reader);
@@ -307,9 +305,8 @@ void loadBuildingDefs(Blob data, Asset* asset)
                         return;
                     }
                 } else if (firstWord == "health_effect"_s) {
-                    Maybe<EffectRadius> health_effect = readEffectRadius(&reader);
-                    if (health_effect.isValid) {
-                        def->healthEffect = health_effect.value;
+                    if (auto health_effect = EffectRadius::read(reader); health_effect.has_value()) {
+                        def->healthEffect = health_effect.release_value();
                     }
                 } else if (firstWord == "jail_size"_s) {
                     Maybe<s32> jail_size = readInt<s32>(&reader);
@@ -322,16 +319,14 @@ void loadBuildingDefs(Blob data, Asset* asset)
                         def->jobs = jobs.value;
                     }
                 } else if (firstWord == "land_value"_s) {
-                    Maybe<EffectRadius> land_value = readEffectRadius(&reader);
-                    if (land_value.isValid) {
-                        def->landValueEffect = land_value.value;
+                    if (auto land_value = EffectRadius::read(reader); land_value.has_value()) {
+                        def->landValueEffect = land_value.release_value();
                     }
                 } else if (firstWord == "name"_s) {
                     def->textAssetName = intern(&asset_manager().assetStrings, readToken(&reader));
                 } else if (firstWord == "pollution"_s) {
-                    Maybe<EffectRadius> pollution = readEffectRadius(&reader);
-                    if (pollution.isValid) {
-                        def->pollutionEffect = pollution.value;
+                    if (auto pollution = EffectRadius::read(reader); pollution.has_value()) {
+                        def->pollutionEffect = pollution.release_value();
                     }
                 } else if (firstWord == "power_gen"_s) {
                     Maybe<s32> power_gen = readInt<s32>(&reader);

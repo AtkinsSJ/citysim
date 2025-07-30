@@ -1046,7 +1046,7 @@ static void drawBuildingEffectRadii(City* city, Iterable* buildingRefs, EffectRa
                 EffectRadius* effect = &(def->*effectMember);
                 if (effect->has_effect()) {
                     s32 paletteIndex = (buildingHasPower(building) ? paletteIndexPowered : paletteIndexUnpowered);
-                    addRing(buildingRadii, centreOf(building->footprint), (float)effect->radius, 0.5f, (*ringsPalette)[paletteIndex]);
+                    addRing(buildingRadii, centreOf(building->footprint), static_cast<float>(effect->radius()), 0.5f, (*ringsPalette)[paletteIndex]);
                 }
             }
         }
