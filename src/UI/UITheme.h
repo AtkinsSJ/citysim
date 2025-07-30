@@ -246,7 +246,7 @@ struct WindowStyle {
     AssetRef panelStyle;
 };
 
-enum class PropType {
+enum class PropType : u8 {
     Alignment,
     Bool,
     Color,
@@ -258,7 +258,7 @@ enum class PropType {
     String,
     Style,
     V2I,
-    PropTypeCount
+    COUNT
 };
 
 struct Property {
