@@ -11,6 +11,7 @@
 #include <Gfx/Colour.h>
 #include <IO/Forward.h>
 #include <Util/HashTable.h>
+#include <Util/Optional.h>
 #include <Util/Vector.h>
 
 enum class ConsoleLineStyle : u8 {
@@ -56,7 +57,7 @@ struct DrawableStyle {
     bool hasFixedSize();
     V2I getSize(); // NB: Returns 0 for sizeless types
 };
-Maybe<DrawableStyle> readDrawableStyle(LineReader* reader);
+Optional<DrawableStyle> readDrawableStyle(LineReader* reader);
 
 enum class StyleType : u8 {
     None,
@@ -272,91 +273,84 @@ struct Style {
     String name;
 
     // PROPERTIES
-    Maybe<Padding> padding;
-    Maybe<s32> contentPadding;
-    Maybe<V2I> offsetFromMouse;
-    Maybe<s32> width;
-    Maybe<u32> widgetAlignment;
-    Maybe<V2I> size;
+    Optional<Padding> padding;
+    Optional<s32> contentPadding;
+    Optional<V2I> offsetFromMouse;
+    Optional<s32> width;
+    Optional<u32> widgetAlignment;
+    Optional<V2I> size;
 
-    Maybe<DrawableStyle> background;
-    Maybe<DrawableStyle> backgroundDisabled;
-    Maybe<DrawableStyle> backgroundHover;
-    Maybe<DrawableStyle> backgroundPressed;
+    Optional<DrawableStyle> background;
+    Optional<DrawableStyle> backgroundDisabled;
+    Optional<DrawableStyle> backgroundHover;
+    Optional<DrawableStyle> backgroundPressed;
 
-    Maybe<String> buttonStyle;
-    Maybe<String> checkboxStyle;
-    Maybe<String> dropDownListStyle;
-    Maybe<String> labelStyle;
-    Maybe<String> panelStyle;
-    Maybe<String> radioButtonStyle;
-    Maybe<String> scrollbarStyle;
-    Maybe<String> sliderStyle;
-    Maybe<String> textInputStyle;
+    Optional<String> buttonStyle;
+    Optional<String> checkboxStyle;
+    Optional<String> dropDownListStyle;
+    Optional<String> labelStyle;
+    Optional<String> panelStyle;
+    Optional<String> radioButtonStyle;
+    Optional<String> scrollbarStyle;
+    Optional<String> sliderStyle;
+    Optional<String> textInputStyle;
 
-    Maybe<DrawableStyle> startIcon;
-    Maybe<u32> startIconAlignment;
+    Optional<DrawableStyle> startIcon;
+    Optional<u32> startIconAlignment;
 
-    Maybe<DrawableStyle> endIcon;
-    Maybe<u32> endIconAlignment;
+    Optional<DrawableStyle> endIcon;
+    Optional<u32> endIconAlignment;
 
-    Maybe<bool> showCaret;
-    Maybe<float> caretFlashCycleDuration;
+    Optional<bool> showCaret;
+    Optional<float> caretFlashCycleDuration;
 
-    Maybe<DrawableStyle> track;
-    Maybe<s32> trackThickness;
-    Maybe<DrawableStyle> thumb;
-    Maybe<DrawableStyle> thumbHover;
-    Maybe<DrawableStyle> thumbPressed;
-    Maybe<DrawableStyle> thumbDisabled;
-    Maybe<V2I> thumbSize;
+    Optional<DrawableStyle> track;
+    Optional<s32> trackThickness;
+    Optional<DrawableStyle> thumb;
+    Optional<DrawableStyle> thumbHover;
+    Optional<DrawableStyle> thumbPressed;
+    Optional<DrawableStyle> thumbDisabled;
+    Optional<V2I> thumbSize;
 
-    Maybe<Colour> overlayColor;
+    Optional<Colour> overlayColor;
 
-    Maybe<AssetRef> font;
-    Maybe<u32> textAlignment;
-    Maybe<Colour> textColor;
+    Optional<AssetRef> font;
+    Optional<u32> textAlignment;
+    Optional<Colour> textColor;
 
     // Window
-    Maybe<String> titleLabelStyle;
-    Maybe<Colour> titleBarButtonHoverColor;
-    Maybe<Colour> titleBarColor;
-    Maybe<Colour> titleBarColorInactive;
-    Maybe<s32> titleBarHeight;
+    Optional<String> titleLabelStyle;
+    Optional<Colour> titleBarButtonHoverColor;
+    Optional<Colour> titleBarColor;
+    Optional<Colour> titleBarColorInactive;
+    Optional<s32> titleBarHeight;
 
     // Checkbox specific
-    Maybe<V2I> checkSize;
-    Maybe<DrawableStyle> check;
-    Maybe<DrawableStyle> checkHover;
-    Maybe<DrawableStyle> checkPressed;
-    Maybe<DrawableStyle> checkDisabled;
+    Optional<V2I> checkSize;
+    Optional<DrawableStyle> check;
+    Optional<DrawableStyle> checkHover;
+    Optional<DrawableStyle> checkPressed;
+    Optional<DrawableStyle> checkDisabled;
 
     // Console
-    Maybe<Colour> outputTextColor;
-    Maybe<Colour> outputTextColorInputEcho;
-    Maybe<Colour> outputTextColorError;
-    Maybe<Colour> outputTextColorSuccess;
-    Maybe<Colour> outputTextColorWarning;
+    Optional<Colour> outputTextColor;
+    Optional<Colour> outputTextColorInputEcho;
+    Optional<Colour> outputTextColorError;
+    Optional<Colour> outputTextColorSuccess;
+    Optional<Colour> outputTextColorWarning;
 
     // Radio button
-    Maybe<V2I> dotSize;
-    Maybe<DrawableStyle> dot;
-    Maybe<DrawableStyle> dotHover;
-    Maybe<DrawableStyle> dotPressed;
-    Maybe<DrawableStyle> dotDisabled;
+    Optional<V2I> dotSize;
+    Optional<DrawableStyle> dot;
+    Optional<DrawableStyle> dotHover;
+    Optional<DrawableStyle> dotPressed;
+    Optional<DrawableStyle> dotDisabled;
 };
 
 inline HashTable<Property> styleProperties;
 inline HashTable<StyleType> styleTypesByName;
 void initStyleConstants();
 void assignStyleProperties(StyleType type, std::initializer_list<String> properties);
-
-template<typename T>
-void setPropertyValue(Style* style, Property* property, T value)
-{
-    Maybe<T> newValue = makeSuccess(value);
-    *((Maybe<T>*)((u8*)(style) + property->offsetInStyleStruct)) = newValue;
-}
 
 }
 
