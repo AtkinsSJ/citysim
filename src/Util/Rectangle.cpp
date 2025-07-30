@@ -5,7 +5,6 @@
  */
 
 #include "Rectangle.h"
-#include "types.h"
 #include <Util/Maths.h>
 
 /**********************************************
@@ -57,34 +56,34 @@ Rect2 rectMinMax(float minX, float minY, float maxX, float maxY)
     return rect;
 }
 
-Rect2 rectAligned(V2 origin, V2 size, u32 alignment)
+Rect2 rectAligned(V2 origin, V2 size, Alignment alignment)
 {
     Rect2 rect = {};
     rect.size = size;
 
-    switch (alignment & ALIGN_H) {
-    case ALIGN_H_CENTRE:
+    switch (alignment.horizontal) {
+    case HAlign::Centre:
         rect.x = origin.x - round_float(size.x / 2.0f);
         break;
-    case ALIGN_RIGHT:
+    case HAlign::Right:
         rect.x = origin.x - size.x;
         break;
-    case ALIGN_LEFT:     // Left is default
-    case ALIGN_EXPAND_H: // Same as left
+    case HAlign::Left: // Left is default
+    case HAlign::Fill: // Same as left
     default:
         rect.x = origin.x;
         break;
     }
 
-    switch (alignment & ALIGN_V) {
-    case ALIGN_V_CENTRE:
+    switch (alignment.vertical) {
+    case VAlign::Centre:
         rect.y = origin.y - round_float(size.y / 2.0f);
         break;
-    case ALIGN_BOTTOM:
+    case VAlign::Bottom:
         rect.y = origin.y - size.y;
         break;
-    case ALIGN_TOP:      // Top is default
-    case ALIGN_EXPAND_V: // Same as top
+    case VAlign::Top:  // Top is default
+    case VAlign::Fill: // Same as top
     default:
         rect.y = origin.y;
         break;
@@ -258,35 +257,35 @@ Rect2I irectMinMax(s32 xMin, s32 yMin, s32 xMax, s32 yMax)
     return irectXYWH(xMin, yMin, (1 + xMax - xMin), (1 + yMax - yMin));
 }
 
-Rect2I irectAligned(s32 originX, s32 originY, s32 w, s32 h, u32 alignment)
+Rect2I irectAligned(s32 originX, s32 originY, s32 w, s32 h, Alignment alignment)
 {
     Rect2I rect = {};
     rect.w = w;
     rect.h = h;
 
-    switch (alignment & ALIGN_H) {
-    case ALIGN_H_CENTRE:
+    switch (alignment.horizontal) {
+    case HAlign::Centre:
         rect.x = originX - (w / 2);
         break;
-    case ALIGN_RIGHT:
+    case HAlign::Right:
         rect.x = originX - w;
         break;
-    case ALIGN_LEFT:     // Left is default
-    case ALIGN_EXPAND_H: // Meaningless here so default to left
+    case HAlign::Left: // Left is default
+    case HAlign::Fill: // Meaningless here so default to left
     default:
         rect.x = originX;
         break;
     }
 
-    switch (alignment & ALIGN_V) {
-    case ALIGN_V_CENTRE:
+    switch (alignment.vertical) {
+    case VAlign::Centre:
         rect.y = originY - (h / 2);
         break;
-    case ALIGN_BOTTOM:
+    case VAlign::Bottom:
         rect.y = originY - h;
         break;
-    case ALIGN_TOP:      // Top is default
-    case ALIGN_EXPAND_V: // Meaningless here so default to top
+    case VAlign::Top:  // Top is default
+    case VAlign::Fill: // Meaningless here so default to top
     default:
         rect.y = originY;
         break;
@@ -295,7 +294,7 @@ Rect2I irectAligned(s32 originX, s32 originY, s32 w, s32 h, u32 alignment)
     return rect;
 }
 
-Rect2I irectAligned(V2I origin, V2I size, u32 alignment)
+Rect2I irectAligned(V2I origin, V2I size, Alignment alignment)
 {
     return irectAligned(origin.x, origin.y, size.x, size.y, alignment);
 }
@@ -476,33 +475,33 @@ Rect2I centreWithin(Rect2I outer, V2I innerSize)
     return result;
 }
 
-Rect2I alignWithinRectangle(Rect2I bounds, V2I size, u32 alignment, Padding padding)
+Rect2I alignWithinRectangle(Rect2I bounds, V2I size, Alignment alignment, Padding padding)
 {
     V2I origin;
 
-    switch (alignment & ALIGN_H) {
-    case ALIGN_H_CENTRE:
+    switch (alignment.horizontal) {
+    case HAlign::Centre:
         origin.x = bounds.x + (bounds.w / 2);
         break;
-    case ALIGN_RIGHT:
+    case HAlign::Right:
         origin.x = bounds.x + bounds.w - padding.right;
         break;
-    case ALIGN_LEFT:     // Left is default
-    case ALIGN_EXPAND_H: // Meaningless here so default to left
+    case HAlign::Left: // Left is default
+    case HAlign::Fill: // Meaningless here so default to left
     default:
         origin.x = bounds.x + padding.left;
         break;
     }
 
-    switch (alignment & ALIGN_V) {
-    case ALIGN_V_CENTRE:
+    switch (alignment.vertical) {
+    case VAlign::Centre:
         origin.y = bounds.y + (bounds.h / 2);
         break;
-    case ALIGN_BOTTOM:
+    case VAlign::Bottom:
         origin.y = bounds.y + bounds.h - padding.bottom;
         break;
-    case ALIGN_TOP:      // Top is default
-    case ALIGN_EXPAND_V: // Meaningless here so default to top
+    case VAlign::Top:  // Top is default
+    case VAlign::Fill: // Meaningless here so default to top
     default:
         origin.y = bounds.y + padding.top;
         break;

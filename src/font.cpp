@@ -195,28 +195,28 @@ s32 calculateMaxTextWidth(BitmapFont* font, std::initializer_list<String> texts,
     return result;
 }
 
-void _alignText(DrawRectsGroup* state, s32 startIndex, s32 endIndexInclusive, s32 lineWidth, s32 boundsWidth, u32 align)
+void _alignText(DrawRectsGroup* state, s32 startIndex, s32 endIndexInclusive, s32 lineWidth, s32 boundsWidth, Alignment align)
 {
     if (lineWidth == 0) {
         return;
     }
 
-    switch (align & ALIGN_H) {
-    case ALIGN_RIGHT: {
+    switch (align.horizontal) {
+    case HAlign::Right: {
         s32 offsetX = boundsWidth - lineWidth;
         offsetRange(state, startIndex, endIndexInclusive, (float)offsetX, 0);
     } break;
 
-    case ALIGN_H_CENTRE: {
+    case HAlign::Centre: {
         s32 offsetX = (boundsWidth - lineWidth) / 2;
         offsetRange(state, startIndex, endIndexInclusive, (float)offsetX, 0);
     } break;
 
-    case ALIGN_LEFT: {
+    case HAlign::Left: {
         // Nothing to do!
     } break;
 
-    case ALIGN_EXPAND_H: {
+    case HAlign::Fill: {
         // Nothing to do! (I think?)
     } break;
 
@@ -226,7 +226,7 @@ void _alignText(DrawRectsGroup* state, s32 startIndex, s32 endIndexInclusive, s3
     }
 }
 
-void drawText(RenderBuffer* renderBuffer, BitmapFont* font, String text, Rect2I bounds, u32 align, Colour color, s8 shaderID, s32 caretIndex, DrawTextResult* caretInfoResult)
+void drawText(RenderBuffer* renderBuffer, BitmapFont* font, String text, Rect2I bounds, Alignment align, Colour color, s8 shaderID, s32 caretIndex, DrawTextResult* caretInfoResult)
 {
     DEBUG_FUNCTION();
 
@@ -412,40 +412,37 @@ void drawText(RenderBuffer* renderBuffer, BitmapFont* font, String text, Rect2I 
     endRectsGroup(group);
 }
 
-V2I calculateTextPosition(V2I origin, V2I size, u32 align)
+V2I calculateTextPosition(V2I origin, V2I size, Alignment align)
 {
     V2I offset;
 
-    switch (align & ALIGN_H) {
-    case ALIGN_H_CENTRE:
+    switch (align.horizontal) {
+    case HAlign::Centre:
         offset.x = origin.x - (size.x / 2);
         break;
-    case ALIGN_RIGHT:
+    case HAlign::Right:
         offset.x = origin.x - size.x;
         break;
-    case ALIGN_LEFT:     // Left is default
-    case ALIGN_EXPAND_H: // Same as left
+    case HAlign::Left: // Left is default
+    case HAlign::Fill: // Same as left
     default:
         offset.x = origin.x;
         break;
     }
 
-    switch (align & ALIGN_V) {
-    case ALIGN_V_CENTRE:
+    switch (align.vertical) {
+    case VAlign::Centre:
         offset.y = origin.y - (size.y / 2);
         break;
-    case ALIGN_BOTTOM:
+    case VAlign::Bottom:
         offset.y = origin.y - size.y;
         break;
-    case ALIGN_TOP:      // Top is default
-    case ALIGN_EXPAND_V: // Same as top
+    case VAlign::Top:  // Top is default
+    case VAlign::Fill: // Same as top
     default:
         offset.y = origin.y;
         break;
     }
-
-    offset.x = offset.x;
-    offset.y = offset.y;
 
     return offset;
 }

@@ -7,7 +7,6 @@
 #pragma once
 
 #include "font.h"
-#include "types.h"
 #include <Assets/Forward.h>
 #include <Gfx/Camera.h>
 #include <Gfx/Colour.h>

@@ -80,16 +80,16 @@ struct ButtonStyle {
 
     AssetRef font;
     Colour textColor;
-    u32 textAlignment;
+    Alignment textAlignment;
 
     Padding padding;
     s32 contentPadding; // Between icons and content
 
     DrawableStyle startIcon;
-    u32 startIconAlignment;
+    Alignment startIconAlignment;
 
     DrawableStyle endIcon;
-    u32 endIconAlignment;
+    Alignment endIconAlignment;
 
     DrawableStyle background;
     DrawableStyle backgroundHover;
@@ -155,7 +155,7 @@ struct LabelStyle {
 
     AssetRef font;
     Colour textColor;
-    u32 textAlignment;
+    Alignment textAlignment;
 };
 
 struct PanelStyle {
@@ -163,7 +163,7 @@ struct PanelStyle {
 
     Padding padding;
     s32 contentPadding;
-    u32 widgetAlignment;
+    Alignment widgetAlignment;
 
     DrawableStyle background;
 
@@ -224,7 +224,7 @@ struct TextInputStyle {
 
     AssetRef font;
     Colour textColor;
-    u32 textAlignment;
+    Alignment textAlignment;
 
     DrawableStyle background;
     Padding padding;
@@ -277,7 +277,7 @@ struct Style {
     Optional<s32> contentPadding;
     Optional<V2I> offsetFromMouse;
     Optional<s32> width;
-    Optional<u32> widgetAlignment;
+    Optional<Alignment> widgetAlignment;
     Optional<V2I> size;
 
     Optional<DrawableStyle> background;
@@ -296,10 +296,10 @@ struct Style {
     Optional<String> textInputStyle;
 
     Optional<DrawableStyle> startIcon;
-    Optional<u32> startIconAlignment;
+    Optional<Alignment> startIconAlignment;
 
     Optional<DrawableStyle> endIcon;
-    Optional<u32> endIconAlignment;
+    Optional<Alignment> endIconAlignment;
 
     Optional<bool> showCaret;
     Optional<float> caretFlashCycleDuration;
@@ -315,7 +315,7 @@ struct Style {
     Optional<Colour> overlayColor;
 
     Optional<AssetRef> font;
-    Optional<u32> textAlignment;
+    Optional<Alignment> textAlignment;
     Optional<Colour> textColor;
 
     // Window

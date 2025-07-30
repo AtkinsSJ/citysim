@@ -34,7 +34,7 @@ AppStatus updateAndRenderMainMenu(float /*deltaTime*/)
     String exitText = getText("button_exit"_s);
 
     // TODO: Some way of telling the panel to make these buttons all the same size.
-    // Maybe we just create a child panel set to ALIGN_EXPAND_H its widgets?
+    // Maybe we just create a child panel set to HAlign::Fill its widgets?
     /*
     UI::ButtonStyle *style = getStyle<UI::ButtonStyle>(&panel.style->buttonStyle);
 

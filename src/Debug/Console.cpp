@@ -202,7 +202,7 @@ void updateAndRenderConsole(Console* console)
         // print output lines
         BitmapFont* consoleFont = getFont(&consoleStyle->font);
         s32 scrollLinePos = clamp(floor_s32(console->scrollbar.scrollPercent * console->outputLines.count), 0, console->outputLines.count - 1);
-        s32 outputLinesAlign = ALIGN_LEFT | ALIGN_BOTTOM;
+        Alignment outputLinesAlign { HAlign::Left, VAlign::Bottom };
         for (auto it = console->outputLines.iterate(scrollLinePos, false, true);
             it.hasNext();
             it.next()) {

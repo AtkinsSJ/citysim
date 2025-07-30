@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <Util/Alignment.h>
 #include <Util/Basic.h>
 #include <Util/Vector.h>
 
@@ -45,7 +46,7 @@ Rect2 rectXYWHi(s32 x, s32 y, s32 w, s32 h);
 Rect2 rectPosSize(V2 pos, V2 size);
 Rect2 rectCentreSize(V2 centre, V2 size);
 Rect2 rectMinMax(float minX, float minY, float maxX, float maxY);
-Rect2 rectAligned(V2 origin, V2 size, u32 alignment);
+Rect2 rectAligned(V2 origin, V2 size, Alignment alignment);
 Rect2 rect2(Rect2I source);
 
 bool contains(Rect2 rect, float x, float y);
@@ -88,8 +89,8 @@ Rect2I irectPosSize(V2I position, V2I size);
 Rect2I irectCentreSize(s32 centreX, s32 centreY, s32 sizeX, s32 sizeY);
 Rect2I irectCentreSize(V2I position, V2I size);
 Rect2I irectMinMax(s32 xMin, s32 yMin, s32 xMax, s32 yMax);
-Rect2I irectAligned(s32 originX, s32 originY, s32 w, s32 h, u32 alignment);
-Rect2I irectAligned(V2I origin, V2I size, u32 alignment);
+Rect2I irectAligned(s32 originX, s32 originY, s32 w, s32 h, Alignment alignment);
+Rect2I irectAligned(V2I origin, V2I size, Alignment alignment);
 
 bool contains(Rect2I rect, s32 x, s32 y);
 bool contains(Rect2I rect, V2I pos);
@@ -117,4 +118,4 @@ s32 areaOf(Rect2I rect); // Always positive, even if the rect has negative dimen
 bool hasPositiveArea(Rect2I rect);
 
 Rect2I centreWithin(Rect2I outer, V2I innerSize);
-Rect2I alignWithinRectangle(Rect2I bounds, V2I size, u32 alignment, Padding padding = {});
+Rect2I alignWithinRectangle(Rect2I bounds, V2I size, Alignment alignment, Padding padding = {});

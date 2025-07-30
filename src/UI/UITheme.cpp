@@ -397,37 +397,33 @@ void loadUITheme(Blob data, Asset* asset)
                     if (property->existsInStyle[target->type]) {
                         switch (property->type) {
                         case UI::PropType::Alignment: {
-                            Optional value = readAlignment(&reader);
-                            if (value.has_value()) {
-                                UI::setPropertyValue<u32>(target, property, value.release_value());
+                            if (auto value = readAlignment(&reader); value.has_value()) {
+                                UI::setPropertyValue(target, property, value.release_value());
                             }
                         } break;
 
                         case UI::PropType::Bool: {
-                            Optional value = readBool(&reader);
-                            if (value.has_value()) {
-                                UI::setPropertyValue<bool>(target, property, value.release_value());
+                            if (Optional value = readBool(&reader); value.has_value()) {
+                                UI::setPropertyValue(target, property, value.release_value());
                             }
                         } break;
 
                         case UI::PropType::Color: {
-                            Optional value = readColor(&reader);
-                            if (value.has_value()) {
-                                UI::setPropertyValue<Colour>(target, property, value.release_value());
+                            if (Optional value = readColor(&reader); value.has_value()) {
+                                UI::setPropertyValue(target, property, value.release_value());
                             }
                         } break;
 
                         case UI::PropType::Drawable: {
                             Optional<UI::DrawableStyle> value = UI::readDrawableStyle(&reader);
                             if (value.has_value()) {
-                                UI::setPropertyValue<UI::DrawableStyle>(target, property, value.release_value());
+                                UI::setPropertyValue(target, property, value.release_value());
                             }
                         } break;
 
                         case UI::PropType::Float: {
-                            Optional value = readFloat(&reader);
-                            if (value.has_value()) {
-                                UI::setPropertyValue<float>(target, property, (float)value.release_value());
+                            if (Optional value = readFloat(&reader); value.has_value()) {
+                                UI::setPropertyValue(target, property, (float)value.release_value());
                             }
                         } break;
 
@@ -436,23 +432,21 @@ void loadUITheme(Blob data, Asset* asset)
                             Optional<String> fontFilename = fontNamesToAssetNames.findValue(value);
                             if (fontFilename.has_value()) {
                                 AssetRef fontRef = getAssetRef(AssetType::BitmapFont, fontFilename.value());
-                                UI::setPropertyValue<AssetRef>(target, property, fontRef);
+                                UI::setPropertyValue(target, property, fontRef);
                             } else {
                                 error(&reader, "Unrecognised font name '{0}'. Make sure to declare the :Font before it is used!"_s, { value });
                             }
                         } break;
 
                         case UI::PropType::Int: {
-                            Optional value = readInt<s32>(&reader);
-                            if (value.has_value()) {
-                                UI::setPropertyValue<s32>(target, property, value.release_value());
+                            if (Optional value = readInt<s32>(&reader); value.has_value()) {
+                                UI::setPropertyValue(target, property, value.release_value());
                             }
                         } break;
 
                         case UI::PropType::Padding: {
-                            Optional value = readPadding(&reader);
-                            if (value.has_value()) {
-                                UI::setPropertyValue<Padding>(target, property, value.release_value());
+                            if (Optional value = readPadding(&reader); value.has_value()) {
+                                UI::setPropertyValue(target, property, value.release_value());
                             }
                         } break;
 
@@ -460,7 +454,7 @@ void loadUITheme(Blob data, Asset* asset)
                         case UI::PropType::String: {
                             String value = intern(&asset_manager().assetStrings, readToken(&reader));
                             // Strings are read directly, so we don't need an if(valid) check
-                            UI::setPropertyValue<String>(target, property, value);
+                            UI::setPropertyValue(target, property, value);
                         } break;
 
                         case UI::PropType::V2I: {
@@ -468,7 +462,7 @@ void loadUITheme(Blob data, Asset* asset)
                             Optional offsetY = readInt<s32>(&reader);
                             if (offsetX.has_value() && offsetY.has_value()) {
                                 V2I vector = v2i(offsetX.value(), offsetY.value());
-                                UI::setPropertyValue<V2I>(target, property, vector);
+                                UI::setPropertyValue(target, property, vector);
                             }
                         } break;
 
@@ -519,15 +513,15 @@ void loadUITheme(Blob data, Asset* asset)
 
                     button->font = style->font.value_or(defaultFont);
                     button->textColor = style->textColor.value_or(white);
-                    button->textAlignment = style->textAlignment.value_or(ALIGN_TOP | ALIGN_LEFT);
+                    button->textAlignment = style->textAlignment.value_or({ HAlign::Left, VAlign::Top });
 
                     button->padding = style->padding.value_or({});
                     button->contentPadding = style->contentPadding.value_or({});
 
                     button->startIcon = style->startIcon.value_or({});
-                    button->startIconAlignment = style->startIconAlignment.value_or(ALIGN_TOP | ALIGN_LEFT);
+                    button->startIconAlignment = style->startIconAlignment.value_or({ HAlign::Left, VAlign::Top });
                     button->endIcon = style->endIcon.value_or({});
-                    button->endIconAlignment = style->endIconAlignment.value_or(ALIGN_TOP | ALIGN_RIGHT);
+                    button->endIconAlignment = style->endIconAlignment.value_or({ HAlign::Right, VAlign::Top });
 
                     button->background = style->background.value_or({});
                     button->backgroundHover = style->backgroundHover.value_or(button->background);
@@ -616,7 +610,7 @@ void loadUITheme(Blob data, Asset* asset)
                     label->background = style->background.value_or({});
                     label->font = style->font.value_or(defaultFont);
                     label->textColor = style->textColor.value_or(white);
-                    label->textAlignment = style->textAlignment.value_or(ALIGN_TOP | ALIGN_LEFT);
+                    label->textAlignment = style->textAlignment.value_or({ HAlign::Left, VAlign::Top });
                 } break;
 
                 case UI::StyleType::Panel: {
@@ -628,7 +622,7 @@ void loadUITheme(Blob data, Asset* asset)
 
                     panel->padding = style->padding.value_or({});
                     panel->contentPadding = style->contentPadding.value_or({});
-                    panel->widgetAlignment = style->widgetAlignment.value_or(ALIGN_TOP | ALIGN_EXPAND_H);
+                    panel->widgetAlignment = style->widgetAlignment.value_or({ HAlign::Fill, VAlign::Top });
                     panel->background = style->background.value_or({});
 
                     panel->buttonStyle = getAssetRef(AssetType::ButtonStyle, style->buttonStyle.value_or(defaultStyleName));
@@ -701,7 +695,7 @@ void loadUITheme(Blob data, Asset* asset)
 
                     textInput->font = style->font.value_or(defaultFont);
                     textInput->textColor = style->textColor.value_or(white);
-                    textInput->textAlignment = style->textAlignment.value_or(ALIGN_TOP | ALIGN_LEFT);
+                    textInput->textAlignment = style->textAlignment.value_or({ HAlign::Left, VAlign::Top });
 
                     textInput->background = style->background.value_or({});
                     textInput->padding = style->padding.value_or({});

@@ -9,6 +9,7 @@
 #include "../input.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/Renderer.h>
+#include <Util/Alignment.h>
 
 void debugInit()
 {
@@ -148,7 +149,7 @@ void clearNewFrameDebugData(DebugState* debugState)
 
 struct DebugTextState {
     V2I pos;
-    Alignment hAlign;
+    HAlign hAlign;
     char buffer[1024];
     BitmapFont* font;
     Colour color;
@@ -163,7 +164,7 @@ struct DebugTextState {
     u32 charsLastPrinted;
 };
 
-void initDebugTextState(DebugTextState* textState, BitmapFont* font, Colour textColor, s32 screenEdgePadding, bool upwards, bool alignLeft)
+static void initDebugTextState(DebugTextState* textState, BitmapFont* font, Colour textColor, s32 screenEdgePadding, bool upwards, HAlign horizontal_alignment)
 {
     auto& renderer = the_renderer();
     *textState = {};
@@ -172,12 +173,17 @@ void initDebugTextState(DebugTextState* textState, BitmapFont* font, Colour text
     textState->camera = &renderer.ui_camera();
 
     textState->progressUpwards = upwards;
-    if (alignLeft) {
-        textState->hAlign = ALIGN_LEFT;
-        textState->pos.x = screenEdgePadding;
-    } else {
-        textState->hAlign = ALIGN_RIGHT;
+    textState->hAlign = horizontal_alignment;
+    switch (horizontal_alignment) {
+    case HAlign::Right:
         textState->pos.x = ceil_s32(textState->camera->size().x) - screenEdgePadding;
+        break;
+    case HAlign::Left:
+        // TODO: Implement these if we care.
+    case HAlign::Centre:
+    case HAlign::Fill:
+        textState->pos.x = screenEdgePadding;
+        break;
     }
 
     if (upwards) {
@@ -195,11 +201,7 @@ void initDebugTextState(DebugTextState* textState, BitmapFont* font, Colour text
 
 void debugTextOut(DebugTextState* textState, String text, bool doHighlight = false, Colour const* color = nullptr)
 {
-    s32 align = textState->hAlign;
-    if (textState->progressUpwards)
-        align |= ALIGN_BOTTOM;
-    else
-        align |= ALIGN_TOP;
+    Alignment align { textState->hAlign, textState->progressUpwards ? VAlign::Bottom : VAlign::Top };
 
     textState->charsLastPrinted = text.length;
     Colour textColor = (color != nullptr) ? *color : textState->color;
@@ -266,7 +268,7 @@ void renderDebugData(DebugState* debugState)
     }
 
     DebugTextState textState;
-    initDebugTextState(&textState, font, Colour::white(), 16, false, true);
+    initDebugTextState(&textState, font, Colour::white(), 16, false, HAlign::Left);
 
     u32 framesAgo = wrap<u32>(debugState->writingFrameIndex - rfi, DEBUG_FRAMES_COUNT);
     debugTextOut(&textState, myprintf("Examining {0} frames ago"_s, { formatInt(framesAgo) }));
@@ -347,7 +349,7 @@ void renderDebugData(DebugState* debugState)
     }
 
     // Put FPS in top right
-    initDebugTextState(&textState, font, Colour::white(), 16, false, false);
+    initDebugTextState(&textState, font, Colour::white(), 16, false, HAlign::Right);
     {
         String smsForFrame = "???"_s;
         String sfps = "???"_s;

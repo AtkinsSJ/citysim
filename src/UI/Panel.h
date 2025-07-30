@@ -121,9 +121,9 @@ struct Panel {
             return widgetSize;
         });
 
-        Rect2I radioButtonBounds = alignWithinRectangle(buttonGroupBounds, radioButtonSize, ALIGN_TOP | ALIGN_LEFT);
+        Rect2I radioButtonBounds = alignWithinRectangle(buttonGroupBounds, radioButtonSize, { HAlign::Left, VAlign::Top });
         s32 textWidth = buttonGroupBounds.w - (radioButtonSize.x + style->contentPadding);
-        bool fillWidth = ((widgetAlignment & ALIGN_H) == ALIGN_EXPAND_H);
+        bool fillWidth = widgetAlignment.horizontal == HAlign::Fill;
 
         for (s32 optionIndex = 0; optionIndex < listOptions->count; optionIndex++) {
             if (!hideWidgets) {
@@ -178,13 +178,13 @@ struct Panel {
     Rect2I addBlank(s32 width, s32 height = 0);
 
     // Layout options
-    void alignWidgets(u32 alignment);
-    void startNewLine(u32 hAlignment = 0);
+    void alignWidgets(HAlign h_align);
+    void startNewLine(Optional<HAlign> h_align = {});
 
     // Slice the remaining content area in two, with one part being the new Panel,
     // and the rest becoming the existing panel's content area.
-    Panel row(s32 height, Alignment vAlignment, String styleName = nullString);
-    Panel column(s32 width, Alignment hAlignment, String styleName = nullString);
+    Panel row(s32 height, VAlign vAlignment, String styleName = nullString);
+    Panel column(s32 width, HAlign hAlignment, String styleName = nullString);
 
     void end(bool shinkToContentHeight = false, bool shrinkToContentWidth = false);
 
@@ -221,7 +221,7 @@ struct Panel {
         }
         ASSERT(space.w > 0);
 
-        bool fillWidth = ((widgetAlignment & ALIGN_H) == ALIGN_EXPAND_H);
+        bool fillWidth = ((widgetAlignment.horizontal) == HAlign::Fill);
 
         V2I widgetSize = calculateSize(space, fillWidth);
 
@@ -251,7 +251,7 @@ struct Panel {
 
     Rect2I bounds {};
     Rect2I contentArea {};
-    u32 widgetAlignment;
+    Alignment widgetAlignment;
 
     ScrollbarState* hScrollbar { nullptr };
     Rect2I hScrollbarBounds {};

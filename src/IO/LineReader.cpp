@@ -4,10 +4,9 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "../tile_utils.h"
-#include "../types.h"
-#include "../unicode.h"
 #include "LineReader.h"
+#include "../tile_utils.h"
+#include "../unicode.h"
 #include <Util/Log.h>
 
 LineReader readLines(String filename, Blob data, Flags<LineReaderFlags> flags, char commentChar)
@@ -236,70 +235,71 @@ Maybe<bool> readBool(LineReader* reader, bool isOptional, char splitChar)
     return result;
 }
 
-Maybe<u32> readAlignment(LineReader* reader)
+Optional<Alignment> readAlignment(LineReader* reader)
 {
-    u32 alignment = 0;
+    Optional<HAlign> h;
+    Optional<VAlign> v;
 
     String token = readToken(reader);
     while (!isEmpty(token)) {
         if (token == "LEFT"_s) {
-            if (alignment & ALIGN_H) {
+            if (h.has_value()) {
                 error(reader, "Multiple horizontal alignment keywords given!"_s);
                 break;
             }
-            alignment |= ALIGN_LEFT;
+            h = HAlign::Left;
         } else if (token == "H_CENTRE"_s) {
-            if (alignment & ALIGN_H) {
+            if (h.has_value()) {
                 error(reader, "Multiple horizontal alignment keywords given!"_s);
                 break;
             }
-            alignment |= ALIGN_H_CENTRE;
+            h = HAlign::Centre;
         } else if (token == "RIGHT"_s) {
-            if (alignment & ALIGN_H) {
+            if (h.has_value()) {
                 error(reader, "Multiple horizontal alignment keywords given!"_s);
                 break;
             }
-            alignment |= ALIGN_RIGHT;
+            h = HAlign::Right;
         } else if (token == "EXPAND_H"_s) {
-            if (alignment & ALIGN_H) {
+            if (h.has_value()) {
                 error(reader, "Multiple horizontal alignment keywords given!"_s);
                 break;
             }
-            alignment |= ALIGN_EXPAND_H;
+            h = HAlign::Fill;
         } else if (token == "TOP"_s) {
-            if (alignment & ALIGN_V) {
+            if (v.has_value()) {
                 error(reader, "Multiple vertical alignment keywords given!"_s);
                 break;
             }
-            alignment |= ALIGN_TOP;
+            v = VAlign::Top;
         } else if (token == "V_CENTRE"_s) {
-            if (alignment & ALIGN_V) {
+            if (v.has_value()) {
                 error(reader, "Multiple vertical alignment keywords given!"_s);
                 break;
             }
-            alignment |= ALIGN_V_CENTRE;
+            v = VAlign::Centre;
         } else if (token == "BOTTOM"_s) {
-            if (alignment & ALIGN_V) {
+            if (v.has_value()) {
                 error(reader, "Multiple vertical alignment keywords given!"_s);
                 break;
             }
-            alignment |= ALIGN_BOTTOM;
+            v = VAlign::Bottom;
         } else if (token == "EXPAND_V"_s) {
-            if (alignment & ALIGN_V) {
+            if (v.has_value()) {
                 error(reader, "Multiple vertical alignment keywords given!"_s);
                 break;
             }
-            alignment |= ALIGN_EXPAND_V;
+            v = VAlign::Fill;
         } else {
             error(reader, "Unrecognized alignment keyword '{0}'"_s, { token });
 
-            return makeFailure<u32>();
+            return {};
         }
 
         token = readToken(reader);
     }
 
-    return makeSuccess(alignment);
+    return Alignment { h.release_value(), v.release_value() };
 }
 
 Maybe<Colour> readColor(LineReader* reader, bool isOptional)

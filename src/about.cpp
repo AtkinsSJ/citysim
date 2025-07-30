@@ -13,17 +13,17 @@ static void aboutWindowProc(UI::WindowContext* context, void* /*userData*/)
 {
     UI::Panel* ui = &context->windowPanel;
 
-    UI::Panel leftColumn = ui->column(64, ALIGN_LEFT, "plain"_s);
-    leftColumn.alignWidgets(ALIGN_H_CENTRE);
+    UI::Panel leftColumn = ui->column(64, HAlign::Left, "plain"_s);
+    leftColumn.alignWidgets(HAlign::Centre);
     leftColumn.addSprite(getSprite("b_hospital"_s));
     leftColumn.end();
 
     ui->addLabel(getText("game_title"_s), "title"_s);
 
-    ui->startNewLine(ALIGN_RIGHT);
+    ui->startNewLine(HAlign::Right);
     ui->addLabel(getText("game_copyright"_s));
 
-    ui->startNewLine(ALIGN_EXPAND_H);
+    ui->startNewLine(HAlign::Fill);
 
     if (ui->addTextButton(getText("button_website"_s))) {
         openUrlUnsafe("http://samatkins.co.uk");

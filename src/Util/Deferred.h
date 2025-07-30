@@ -6,8 +6,6 @@
 
 #pragma once
 
-#include "../types.h"
-
 template<typename Callback>
 class Deferred {
 public:

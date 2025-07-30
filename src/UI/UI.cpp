@@ -838,12 +838,12 @@ void putSlider(float* currentValue, float minValue, float maxValue, Orientation 
     Rect2I trackBounds;
     if (orientation == Orientation::Horizontal) {
         s32 trackThickness = (style->trackThickness != 0) ? style->trackThickness : bounds.h;
-        trackBounds = irectAligned(bounds.x, bounds.y + bounds.h / 2, bounds.w, trackThickness, ALIGN_LEFT | ALIGN_V_CENTRE);
+        trackBounds = irectAligned(bounds.x, bounds.y + bounds.h / 2, bounds.w, trackThickness, { HAlign::Left, VAlign::Centre });
     } else {
         ASSERT(orientation == Orientation::Vertical);
 
         s32 trackThickness = (style->trackThickness != 0) ? style->trackThickness : bounds.w;
-        trackBounds = irectAligned(bounds.x + bounds.w / 2, bounds.y, trackThickness, bounds.h, ALIGN_TOP | ALIGN_H_CENTRE);
+        trackBounds = irectAligned(bounds.x + bounds.w / 2, bounds.y, trackThickness, bounds.h, { HAlign::Centre, VAlign::Top });
     }
 
     Drawable(&style->track).draw(renderBuffer, trackBounds);
@@ -930,7 +930,7 @@ void drawToast()
                 float t = (toast->time - (TOAST_APPEAR_TIME + TOAST_DISPLAY_TIME)) / TOAST_DISAPPEAR_TIME;
                 origin.y += round_s32(interpolate(0, animationDistance, t, Interpolation::SineIn));
             }
-            Rect2I toastBounds = irectAligned(origin, toastSize, ALIGN_BOTTOM | ALIGN_H_CENTRE);
+            Rect2I toastBounds = irectAligned(origin, toastSize, { HAlign::Centre, VAlign::Bottom });
 
             Panel panel = Panel(toastBounds, style);
             panel.addLabel(toast->text);

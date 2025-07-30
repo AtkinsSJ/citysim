@@ -314,10 +314,10 @@ void settingsWindowProc(UI::WindowContext* context, void*)
         String name = it.getValue();
         SettingDef* def = s_settings->defs.find(name).value;
 
-        ui->startNewLine(ALIGN_LEFT);
+        ui->startNewLine(HAlign::Left);
         ui->addLabel(getText(def->textAssetName));
 
-        ui->alignWidgets(ALIGN_RIGHT);
+        ui->alignWidgets(HAlign::Right);
         switch (def->type) {
         case SettingType::Bool: {
             ui->addCheckbox(getSettingDataRaw<bool>(&s_settings->workingState, def));
@@ -347,7 +347,7 @@ void settingsWindowProc(UI::WindowContext* context, void*)
         }
     }
 
-    ui->startNewLine(ALIGN_LEFT);
+    ui->startNewLine(HAlign::Left);
     if (ui->addTextButton(getText("button_cancel"_s))) {
         context->closeRequested = true;
     }

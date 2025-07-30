@@ -153,12 +153,12 @@ void savedGamesWindowProc(UI::WindowContext* context, void* userData)
     SavedGameInfo* selectedSavedGame = nullptr;
     bool justClickedSavedGame = false;
 
-    UI::Panel bottomBar = ui->row(26, ALIGN_BOTTOM, "plain"_s);
+    UI::Panel bottomBar = ui->row(26, VAlign::Bottom, "plain"_s);
 
-    UI::Panel savesList = ui->column(320, ALIGN_LEFT, "inset"_s);
+    UI::Panel savesList = ui->column(320, HAlign::Left, "inset"_s);
     {
         savesList.enableVerticalScrolling(&catalogue->savedGamesListScrollbar);
-        savesList.alignWidgets(ALIGN_EXPAND_H);
+        savesList.alignWidgets(HAlign::Fill);
 
         if (catalogue->savedGames.isEmpty()) {
             savesList.addLabel(getText("msg_no_saved_games"_s));
@@ -184,12 +184,12 @@ void savedGamesWindowProc(UI::WindowContext* context, void* userData)
 
     // Now we have the saved-game info
     if (selectedSavedGame) {
-        ui->alignWidgets(ALIGN_RIGHT);
+        ui->alignWidgets(HAlign::Right);
         if (ui->addImageButton(getSprite("icon_delete"_s), ButtonState::Normal, "delete"_s)) {
             UI::showWindow(UI::WindowTitle::fromTextAsset("title_delete_save"_s), 300, 300, v2i(0, 0), "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Modal | WindowFlags::Unique, confirmDeleteSaveWindowProc);
         }
 
-        ui->alignWidgets(ALIGN_EXPAND_H);
+        ui->alignWidgets(HAlign::Fill);
         ui->addLabel(selectedSavedGame->shortName);
         ui->addLabel(myprintf("Saved {0}"_s, { formatDateTime(selectedSavedGame->saveTime, DateTimeFormat::LongDateTime) }));
         ui->addLabel(selectedSavedGame->cityName);
@@ -206,17 +206,17 @@ void savedGamesWindowProc(UI::WindowContext* context, void* userData)
     {
         if (isSaveWindow) {
             // 'Save' buttons
-            bottomBar.alignWidgets(ALIGN_LEFT);
+            bottomBar.alignWidgets(HAlign::Left);
             if (bottomBar.addTextButton(getText("button_back"_s))) {
                 context->closeRequested = true;
             }
 
             bottomBar.addLabel("Save game name:"_s);
 
-            bottomBar.alignWidgets(ALIGN_RIGHT);
+            bottomBar.alignWidgets(HAlign::Right);
             bool pressedSave = bottomBar.addTextButton(getText("button_save"_s), catalogue->saveGameName.isEmpty() ? ButtonState::Disabled : ButtonState::Normal);
 
-            bottomBar.alignWidgets(ALIGN_EXPAND_H);
+            bottomBar.alignWidgets(HAlign::Fill);
             if (justClickedSavedGame) {
                 catalogue->saveGameName.clear();
                 catalogue->saveGameName.append(selectedSavedGame->shortName);
@@ -247,12 +247,12 @@ void savedGamesWindowProc(UI::WindowContext* context, void* userData)
                 }
             }
         } else {
-            bottomBar.alignWidgets(ALIGN_LEFT);
+            bottomBar.alignWidgets(HAlign::Left);
             if (bottomBar.addTextButton(getText("button_back"_s))) {
                 context->closeRequested = true;
             }
 
-            bottomBar.alignWidgets(ALIGN_RIGHT);
+            bottomBar.alignWidgets(HAlign::Right);
             if (bottomBar.addTextButton(getText("button_load"_s), selectedSavedGame ? ButtonState::Normal : ButtonState::Disabled)) {
                 loadGame(selectedSavedGame);
                 context->closeRequested = true;
@@ -269,7 +269,7 @@ void confirmOverwriteSaveWindowProc(UI::WindowContext* context, void* /*userData
     String inputName = trim(savedGamesCatalogue.saveGameName.toString());
 
     ui->addLabel(getText("msg_save_overwrite_confirm"_s, { inputName }));
-    ui->startNewLine(ALIGN_RIGHT);
+    ui->startNewLine(HAlign::Right);
 
     if (ui->addTextButton(getText("button_overwrite"_s), ButtonState::Normal, "delete"_s)) {
         saveGame(inputName);
@@ -288,7 +288,7 @@ void confirmDeleteSaveWindowProc(UI::WindowContext* context, void* /*userData*/)
     SavedGameInfo* savedGame = savedGamesCatalogue.savedGames.get(savedGamesCatalogue.selectedSavedGameIndex);
 
     ui->addLabel(getText("msg_delete_save_confirm"_s, { savedGame->shortName }));
-    ui->startNewLine(ALIGN_RIGHT);
+    ui->startNewLine(HAlign::Right);
 
     if (ui->addTextButton(getText("button_delete"_s), ButtonState::Normal, "delete"_s)) {
         deleteSave(savedGame);

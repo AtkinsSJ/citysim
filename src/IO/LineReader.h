@@ -7,6 +7,7 @@
 #pragma once
 
 #include <Gfx/Colour.h>
+#include <Util/Alignment.h>
 #include <Util/Basic.h>
 #include <Util/Flags.h>
 #include <Util/Memory.h>
@@ -60,7 +61,7 @@ s32 countRemainingTokens(LineReader* reader, char splitChar = 0);
 Maybe<double> readFloat(LineReader* reader, bool isOptional = false, char splitChar = 0);
 Maybe<bool> readBool(LineReader* reader, bool isOptional = false, char splitChar = 0);
 
-Maybe<u32> readAlignment(LineReader* reader);
+Optional<Alignment> readAlignment(LineReader* reader);
 Maybe<Colour> readColor(LineReader* reader, bool isOptional = false);
 Maybe<struct EffectRadius> readEffectRadius(LineReader* reader);
 Maybe<Padding> readPadding(LineReader* reader);

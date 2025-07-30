@@ -268,7 +268,7 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
     DEBUG_FUNCTION();
 
     UI::Panel* ui = &context->windowPanel;
-    ui->alignWidgets(ALIGN_EXPAND_H);
+    ui->alignWidgets(HAlign::Fill);
 
     GameState* gameState = (GameState*)userData;
     City* city = &gameState->city;
@@ -342,7 +342,7 @@ void pauseMenuWindowProc(UI::WindowContext* context, void* /*userData*/)
 {
     DEBUG_FUNCTION();
     UI::Panel* ui = &context->windowPanel;
-    ui->alignWidgets(ALIGN_EXPAND_H);
+    ui->alignWidgets(HAlign::Fill);
 
     if (ui->addTextButton(getText("button_resume"_s))) {
         context->closeRequested = true;
@@ -585,7 +585,7 @@ void debugToolsWindowProc(UI::WindowContext* context, void* userData)
 {
     GameState* gameState = (GameState*)userData;
     UI::Panel* ui = &context->windowPanel;
-    ui->alignWidgets(ALIGN_EXPAND_H);
+    ui->alignWidgets(HAlign::Fill);
 
     if (ui->addTextButton("Inspect fire info"_s, buttonIsActive(gameState->inspectTileDebugFlags.has(InspectTileDebugFlags::Fire)))) {
         gameState->inspectTileDebugFlags.toggle(InspectTileDebugFlags::Fire);
@@ -1148,7 +1148,7 @@ void drawDataViewUI(GameState* gameState)
             + ((to_underlying(DataView::COUNT) - 1) * popupMenuPanelStyle->contentPadding)
             + (popupMenuPanelStyle->padding.top + popupMenuPanelStyle->padding.bottom);
 
-        UI::Panel menu = UI::Panel(irectAligned(dataViewButtonBounds.x - popupMenuPanelStyle->padding.left, dataViewButtonBounds.y, popupMenuWidth, popupMenuMaxHeight, ALIGN_BOTTOM | ALIGN_LEFT), popupMenuPanelStyle, UI::PanelFlags::LayoutBottomToTop);
+        UI::Panel menu = UI::Panel(irectAligned(dataViewButtonBounds.x - popupMenuPanelStyle->padding.left, dataViewButtonBounds.y, popupMenuWidth, popupMenuMaxHeight, { HAlign::Left, VAlign::Bottom }), popupMenuPanelStyle, UI::PanelFlags::LayoutBottomToTop);
 
         // Enable scrolling if there's too many items to fit
         if (estimatedMenuHeight > popupMenuMaxHeight) {
@@ -1178,7 +1178,7 @@ void drawDataViewUI(GameState* gameState)
 
         s32 paletteBlockSize = font->lineHeight;
 
-        UI::Panel ui = UI::Panel(irectAligned(uiPos.x, uiPos.y, 240, 1000, ALIGN_BOTTOM | ALIGN_LEFT), nullptr, UI::PanelFlags::LayoutBottomToTop);
+        UI::Panel ui = UI::Panel(irectAligned(uiPos.x, uiPos.y, 240, 1000, { HAlign::Left, VAlign::Bottom }), nullptr, UI::PanelFlags::LayoutBottomToTop);
         {
             // We're working from bottom to top, so we start at the end.
 
@@ -1200,9 +1200,9 @@ void drawDataViewUI(GameState* gameState)
             if (dataView->hasGradient) {
                 // Arbitrarily going to make the height 4x the width
                 s32 gradientHeight = paletteBlockSize * 4;
-                UI::Panel gradientPanel = ui.row(gradientHeight, ALIGN_BOTTOM, "plain"_s);
+                UI::Panel gradientPanel = ui.row(gradientHeight, VAlign::Bottom, "plain"_s);
 
-                UI::Panel gradientColumn = gradientPanel.column(paletteBlockSize, ALIGN_LEFT, "plain"_s);
+                UI::Panel gradientColumn = gradientPanel.column(paletteBlockSize, HAlign::Left, "plain"_s);
                 {
                     Rect2I gradientBounds = gradientColumn.addBlank(paletteBlockSize, gradientHeight);
 
@@ -1231,7 +1231,7 @@ void drawDataViewUI(GameState* gameState)
             // TODO: Probably want to make this a Window that can't be moved?
             ui.addLabel(getText(dataView->title), "title"_s);
 
-            ui.alignWidgets(ALIGN_RIGHT);
+            ui.alignWidgets(HAlign::Right);
             if (ui.addTextButton("X"_s)) {
                 gameState->dataLayerToDraw = DataView::None;
             }

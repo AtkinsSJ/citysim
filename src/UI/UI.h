@@ -7,7 +7,6 @@
 #pragma once
 
 #include "input.h"
-#include "types.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/Forward.h>
 #include <UI/Forward.h>

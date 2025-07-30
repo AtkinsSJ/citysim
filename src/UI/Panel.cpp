@@ -19,7 +19,7 @@ Panel::Panel(Rect2I bounds, PanelStyle* panelStyle, u32 flags, RenderBuffer* ren
     , renderBuffer(renderBuffer)
     , bounds(bounds)
     , contentArea(shrink(bounds, this->style->padding))
-    , widgetAlignment((style->widgetAlignment & ALIGN_H) | (layoutBottomToTop ? ALIGN_BOTTOM : ALIGN_TOP))
+    , widgetAlignment({ style->widgetAlignment.horizontal, layoutBottomToTop ? VAlign::Bottom : VAlign::Top })
     , currentLeft(0)
     , currentRight(this->contentArea.w)
     , currentTop(0)
@@ -224,16 +224,16 @@ Rect2I Panel::addBlank(s32 width, s32 height)
     return widgetBounds;
 }
 
-void Panel::alignWidgets(u32 alignment)
+void Panel::alignWidgets(HAlign h_alignment)
 {
-    widgetAlignment = (widgetAlignment & ALIGN_V) | (alignment & ALIGN_H);
+    widgetAlignment.horizontal = h_alignment;
 }
 
-void Panel::startNewLine(u32 hAlignment)
+void Panel::startNewLine(Optional<HAlign> h_align)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
-    s32 lineWidth = (widgetAlignment & ALIGN_RIGHT) ? currentRight : currentLeft;
+    s32 lineWidth = widgetAlignment.horizontal == HAlign::Right ? currentRight : currentLeft;
     largestLineWidth = max(largestLineWidth, lineWidth);
 
     currentLeft = 0;
@@ -250,15 +250,14 @@ void Panel::startNewLine(u32 hAlignment)
     largestItemHeightOnLine = 0;
 
     // Only change alignment if we passed one
-    if (hAlignment != 0) {
-        widgetAlignment = (widgetAlignment & ALIGN_V) | (hAlignment & ALIGN_H);
-    }
+    if (h_align.has_value())
+        widgetAlignment.horizontal = h_align.release_value();
 }
 
-Panel Panel::row(s32 height, Alignment vAlignment, String styleName)
+Panel Panel::row(s32 height, VAlign vAlignment, String styleName)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
-    ASSERT(vAlignment == ALIGN_TOP || vAlignment == ALIGN_BOTTOM);
+    ASSERT(vAlignment == VAlign::Top || vAlignment == VAlign::Bottom);
 
     prepareForWidgets();
 
@@ -266,7 +265,7 @@ Panel Panel::row(s32 height, Alignment vAlignment, String styleName)
 
     PanelStyle* rowStyle = getPanelStyle(styleName);
 
-    if (vAlignment == ALIGN_TOP) {
+    if (vAlignment == VAlign::Top) {
         Rect2I rowBounds = irectXYWH(
             contentArea.x, contentArea.y + currentTop,
             contentArea.w, height);
@@ -298,10 +297,10 @@ Panel Panel::row(s32 height, Alignment vAlignment, String styleName)
     }
 }
 
-Panel Panel::column(s32 width, Alignment hAlignment, String styleName)
+Panel Panel::column(s32 width, HAlign hAlignment, String styleName)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
-    ASSERT(hAlignment == ALIGN_LEFT || hAlignment == ALIGN_RIGHT);
+    ASSERT(hAlignment == HAlign::Left || hAlignment == HAlign::Right);
 
     prepareForWidgets();
 
@@ -309,7 +308,7 @@ Panel Panel::column(s32 width, Alignment hAlignment, String styleName)
 
     PanelStyle* columnStyle = getPanelStyle(styleName);
 
-    if (hAlignment == ALIGN_LEFT) {
+    if (hAlignment == HAlign::Left) {
         Rect2I columnBounds = irectXYWH(
             contentArea.x, contentArea.y + currentTop,
             width, contentArea.h);
@@ -349,7 +348,7 @@ void Panel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
     bool boundsChanged = false;
 
     if (shrinkToContentWidth) {
-        if (widgetAlignment & ALIGN_LEFT) {
+        if (widgetAlignment.horizontal == HAlign::Left) {
             s32 widthDifference = contentArea.w - largestLineWidth;
             if (widthDifference > 0) {
                 bounds.w -= widthDifference;
@@ -469,8 +468,8 @@ void Panel::completeWidget(V2I widgetSize)
 
     s32 lineWidth = 0;
 
-    switch (widgetAlignment & ALIGN_H) {
-    case ALIGN_LEFT: {
+    switch (widgetAlignment.horizontal) {
+    case HAlign::Left: {
         currentLeft += widgetSize.x + style->contentPadding;
         lineWidth = currentLeft;
 
@@ -482,7 +481,7 @@ void Panel::completeWidget(V2I widgetSize)
         }
     } break;
 
-    case ALIGN_RIGHT: {
+    case HAlign::Right: {
         currentRight -= widgetSize.x + style->contentPadding;
         lineWidth = currentRight;
 
@@ -494,8 +493,8 @@ void Panel::completeWidget(V2I widgetSize)
         }
     } break;
 
-    case ALIGN_H_CENTRE:
-    case ALIGN_EXPAND_H:
+    case HAlign::Centre:
+    case HAlign::Fill:
     default: {
         lineWidth = widgetSize.x;
 
