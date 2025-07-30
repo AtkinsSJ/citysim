@@ -175,7 +175,7 @@ struct Building {
     Optional<s16> variantIndex;
 
     Entity* entity;
-    s32 spriteOffset; // used as the offset for getSprite
+    u16 spriteOffset; // used as the offset for getSprite
 
     s32 currentResidents;
     s32 currentJobs;

@@ -18,7 +18,7 @@ struct AppState {
     MemoryArena systemArena;
 
     GameState* gameState;
-    Random cosmeticRandom; // Appropriate for when you need a random number and don't care if it's consistent!
+    Random* cosmeticRandom; // Appropriate for when you need a random number and don't care if it's consistent!
 
     float rawDeltaTime;
     float speedMultiplier;

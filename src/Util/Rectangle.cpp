@@ -6,6 +6,7 @@
 
 #include "Rectangle.h"
 #include <Util/Maths.h>
+#include <Util/Random.h>
 
 /**********************************************
     Rect2
@@ -205,6 +206,15 @@ bool hasPositiveArea(Rect2 rect)
 /**********************************************
         Rect2I
  **********************************************/
+
+Rect2I Rect2I::placed_randomly_within(Random& random, V2I size, Rect2I boundary)
+{
+    Rect2I result = irectXYWH(
+        random.random_between(boundary.x, boundary.x + boundary.w - size.x),
+        random.random_between(boundary.y, boundary.y + boundary.h - size.y),
+        size.x, size.y);
+    return result;
+}
 
 Rect2I irectXYWH(s32 x, s32 y, s32 w, s32 h)
 {

@@ -115,7 +115,7 @@ Building* addBuildingDirect(City* city, s32 id, BuildingDef* def, Rect2I footpri
     initBuilding(building, id, def, footprint, creationDate);
 
     // Random sprite!
-    building->spriteOffset = randomNext(&AppState::the().cosmeticRandom);
+    building->spriteOffset = AppState::the().cosmeticRandom->random_integer<u16>();
 
     building->entity = addEntity(city, Entity::Type::Building, building);
     building->entity->bounds = rect2(footprint);

@@ -99,7 +99,7 @@ int main(int argc, char* argv[])
         enableCustomLogger();
     }
 
-    initRandom(&app_state.cosmeticRandom, RandomType::MT, (s32)time(nullptr));
+    app_state.cosmeticRandom = Random::create();
 
     initSettings();
     loadSettings();

@@ -278,25 +278,24 @@ void generateTerrain(City* city, Random* gameRandom)
     u8 tWater = truncate<u8>(findTerrainTypeByName("water"_s));
     BuildingDef* treeDef = findBuildingDef("tree"_s);
 
-    Random terrainRandom;
-    s32 seed = randomNext(gameRandom);
+    s32 seed = gameRandom->next();
+    auto* terrainRandom = Random::create(seed);
     layer->terrainGenerationSeed = seed;
-    initRandom(&terrainRandom, RandomType::MT, seed);
     fill<u8>(&layer->tileTerrainType, tGround);
 
     for (s32 y = 0; y < city->bounds.h; y++) {
         for (s32 x = 0; x < city->bounds.w; x++) {
-            layer->tileSpriteOffset.set(x, y, randomInRange<u8>(&app_state.cosmeticRandom));
+            layer->tileSpriteOffset.set(x, y, app_state.cosmeticRandom->random_integer<u8>());
         }
     }
 
     // Generate a river
     Array<float> riverOffset = temp_arena().allocate_array<float>(city->bounds.h, true);
-    generate1DNoise(&terrainRandom, &riverOffset, 10);
-    float riverMaxWidth = randomFloatBetween(&terrainRandom, 12, 16);
-    float riverMinWidth = randomFloatBetween(&terrainRandom, 6, riverMaxWidth);
+    terrainRandom->fill_with_noise(riverOffset, 10);
+    float riverMaxWidth = terrainRandom->random_float_between(12, 16);
+    float riverMinWidth = terrainRandom->random_float_between(6, riverMaxWidth);
     float riverWaviness = 16.0f;
-    s32 riverCentreBase = randomBetween(&terrainRandom, ceil_s32(city->bounds.w * 0.4f), floor_s32(city->bounds.w * 0.6f));
+    s32 riverCentreBase = terrainRandom->random_between(ceil_s32(city->bounds.w * 0.4f), floor_s32(city->bounds.w * 0.6f));
     for (s32 y = 0; y < city->bounds.h; y++) {
         s32 riverWidth = ceil_s32(lerp(riverMinWidth, riverMaxWidth, ((float)y / (float)city->bounds.h)));
         s32 riverCentre = riverCentreBase - round_s32((riverWaviness * 0.5f) + (riverWaviness * riverOffset[y]));
@@ -309,7 +308,7 @@ void generateTerrain(City* city, Random* gameRandom)
 
     // Coastline
     Array<float> coastlineOffset = temp_arena().allocate_array<float>(city->bounds.w, true);
-    generate1DNoise(&terrainRandom, &coastlineOffset, 10);
+    terrainRandom->fill_with_noise(coastlineOffset, 10);
     for (s32 x = 0; x < city->bounds.w; x++) {
         s32 coastDepth = 8 + round_s32(coastlineOffset[x] * 16.0f);
 
@@ -321,15 +320,15 @@ void generateTerrain(City* city, Random* gameRandom)
     }
 
     // Lakes/ponds
-    s32 pondCount = randomBetween(&terrainRandom, 1, 4);
+    s32 pondCount = terrainRandom->random_between(1, 4);
     for (s32 pondIndex = 0; pondIndex < pondCount; pondIndex++) {
-        s32 pondCentreX = randomBetween(&terrainRandom, 0, city->bounds.w);
-        s32 pondCentreY = randomBetween(&terrainRandom, 0, city->bounds.h);
+        s32 pondCentreX = terrainRandom->random_between(0, city->bounds.w);
+        s32 pondCentreY = terrainRandom->random_between(0, city->bounds.h);
 
-        float pondMinRadius = randomFloatBetween(&terrainRandom, 3.0f, 5.0f);
-        float pondMaxRadius = randomFloatBetween(&terrainRandom, pondMinRadius + 3.0f, 20.0f);
+        float pondMinRadius = terrainRandom->random_float_between(3.0f, 5.0f);
+        float pondMaxRadius = terrainRandom->random_float_between(pondMinRadius + 3.0f, 20.0f);
 
-        Splat pondSplat = Splat::create_random(pondCentreX, pondCentreY, pondMinRadius, pondMaxRadius, 36, &terrainRandom);
+        Splat pondSplat = Splat::create_random(pondCentreX, pondCentreY, pondMinRadius, pondMaxRadius, 36, terrainRandom);
 
         Rect2I boundingBox = intersect(pondSplat.bounding_box(), city->bounds);
         for (s32 y = boundingBox.y; y < boundingBox.y + boundingBox.h; y++) {
@@ -345,15 +344,15 @@ void generateTerrain(City* city, Random* gameRandom)
     if (treeDef == nullptr) {
         logError("Map generator is unable to place any trees, because the 'tree' building was not found."_s);
     } else {
-        s32 forestCount = randomBetween(&terrainRandom, 10, 20);
+        s32 forestCount = terrainRandom->random_between(10, 20);
         for (s32 forestIndex = 0; forestIndex < forestCount; forestIndex++) {
-            s32 centreX = randomBetween(&terrainRandom, 0, city->bounds.w);
-            s32 centreY = randomBetween(&terrainRandom, 0, city->bounds.h);
+            s32 centreX = terrainRandom->random_between(0, city->bounds.w);
+            s32 centreY = terrainRandom->random_between(0, city->bounds.h);
 
-            float minRadius = randomFloatBetween(&terrainRandom, 2.0f, 8.0f);
-            float maxRadius = randomFloatBetween(&terrainRandom, minRadius + 1.0f, 30.0f);
+            float minRadius = terrainRandom->random_float_between(2.0f, 8.0f);
+            float maxRadius = terrainRandom->random_float_between(minRadius + 1.0f, 30.0f);
 
-            Splat forestSplat = Splat::create_random(centreX, centreY, minRadius, maxRadius, 36, &terrainRandom);
+            Splat forestSplat = Splat::create_random(centreX, centreY, minRadius, maxRadius, 36, terrainRandom);
 
             Rect2I boundingBox = intersect(forestSplat.bounding_box(), city->bounds);
             for (s32 y = boundingBox.y; y < boundingBox.y + boundingBox.h; y++) {

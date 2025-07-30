@@ -80,6 +80,8 @@ struct Rect2I {
             s32 h;
         };
     };
+
+    static Rect2I placed_randomly_within(Random& random, V2I size, Rect2I boundary);
 };
 
 Rect2I irectXYWH(s32 x, s32 y, s32 w, s32 h);

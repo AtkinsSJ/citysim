@@ -437,7 +437,7 @@ static BuildingDef* findRandomZoneBuilding(ZoneType zoneType, Random* random, Fi
     // Growing a whole "block" of a building might make more sense for residential at least.
     // Something to decide on later.
     // - Sam, 18/08/2019
-    for (auto it = buildings->iterate(randomBelow(random, truncate32(buildings->count)));
+    for (auto it = buildings->iterate(random->random_below(truncate32(buildings->count)));
         it.hasNext();
         it.next()) {
         BuildingDef* def = it.getValue();
@@ -456,7 +456,7 @@ void growSomeZoneBuildings(City* city)
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
     ZoneLayer* layer = &city->zoneLayer;
-    Random* random = &AppState::the().gameState->gameRandom;
+    Random* random = AppState::the().gameState->gameRandom;
 
     for (auto zone_type : enum_values<ZoneType>()) {
         if (layer->demand[zone_type] > 0) {
@@ -471,8 +471,8 @@ void growSomeZoneBuildings(City* city)
                 && (layer->sectorsWithEmptyZones[zone_type].setBitCount > 0)
                 && (remainingDemand > minimumDemand)) {
                 bool foundAZone = false;
-                s32 randomXOffset = randomNext(random);
-                s32 randomYOffset = randomNext(random);
+                s32 randomXOffset = random->next();
+                s32 randomYOffset = random->next();
 
                 V2I zonePos = {};
                 {
@@ -535,8 +535,8 @@ void growSomeZoneBuildings(City* city)
                     DEBUG_BLOCK_T("growSomeZoneBuildings - expand rect", DebugCodeDataTag::Simulation);
                     // Gradually expand from zonePos outwards, checking if there is available, zoned space
 
-                    bool tryX = randomBool(random);
-                    bool positive = randomBool(random);
+                    bool tryX = random->random_bool();
+                    bool positive = random->random_bool();
 
                     while (true) {
                         bool canExpand = true;
@@ -613,8 +613,8 @@ void growSomeZoneBuildings(City* city)
                         if (zoneFootprint.w >= maxRBuildingDim && zoneFootprint.h >= maxRBuildingDim)
                             break;
 
-                        tryX = !tryX;                  // Alternate x and y
-                        positive = randomBool(random); // random direction to expand in
+                        tryX = !tryX;                     // Alternate x and y
+                        positive = random->random_bool(); // random direction to expand in
                     }
                 }
 
@@ -634,7 +634,7 @@ void growSomeZoneBuildings(City* city)
                 if (buildingDef) {
                     // Place it!
                     // TODO: This picks a random spot within the zoneFootprint; we should probably pick the most desirable part? @Desirability
-                    Rect2I footprint = randomlyPlaceRectangle(random, buildingDef->size, zoneFootprint);
+                    Rect2I footprint = Rect2I::placed_randomly_within(*random, buildingDef->size, zoneFootprint);
 
                     Building* building = addBuilding(city, buildingDef, footprint);
                     layer->population[zone_type] += building->currentResidents + building->currentJobs;

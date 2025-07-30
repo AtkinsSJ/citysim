@@ -76,7 +76,7 @@ ConsoleCommand(generate)
         demolishRect(city, city->bounds);
         city->highestBuildingID = 0;
     }
-    generateTerrain(city, &app_state.gameState->gameRandom);
+    generateTerrain(city, app_state.gameState->gameRandom);
 
     consoleWriteLine("Generated new map"_s, ConsoleLineStyle::Success);
 }

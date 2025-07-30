@@ -120,7 +120,7 @@ enum class InspectTileDebugFlags : u8 {
 struct GameState {
     MemoryArena arena;
     GameStatus status;
-    Random gameRandom;
+    Random* gameRandom;
     GameClock gameClock;
     City city;
 
