@@ -11,6 +11,7 @@
 #include <IO/BinaryFileWriter.h>
 #include <Sim/Building.h>
 #include <Sim/City.h>
+#include <Sim/Effect.h>
 #include <Sim/LandValue.h>
 
 void initPollutionLayer(PollutionLayer* layer, City* city, MemoryArena* gameArena)
@@ -47,7 +48,7 @@ void updatePollutionLayer(City* city, PollutionLayer* layer)
                     buildingIt.next()) {
                     Building* building = buildingIt.getValue();
                     BuildingDef* def = getBuildingDef(building);
-                    if (hasEffect(&def->pollutionEffect)) {
+                    if (def->pollutionEffect.has_effect()) {
                         applyEffect(&def->pollutionEffect, centreOf(building->footprint), EffectType::Add, &layer->tileBuildingContributions, dirtyRect);
                     }
                 }

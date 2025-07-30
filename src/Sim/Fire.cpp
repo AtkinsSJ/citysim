@@ -10,6 +10,7 @@
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
 #include <Sim/City.h>
+#include <Sim/Effect.h>
 #include <UI/Panel.h>
 #include <Util/Random.h>
 
@@ -246,14 +247,14 @@ void removeFireAt(City* city, s32 x, s32 y)
 
 void notifyNewBuilding(FireLayer* layer, BuildingDef* def, Building* building)
 {
-    if (hasEffect(&def->fireProtection)) {
+    if (def->fireProtection.has_effect()) {
         layer->fireProtectionBuildings.append(getReferenceTo(building));
     }
 }
 
 void notifyBuildingDemolished(FireLayer* layer, BuildingDef* def, Building* building)
 {
-    if (hasEffect(&def->fireProtection)) {
+    if (def->fireProtection.has_effect()) {
         bool success = layer->fireProtectionBuildings.findAndRemove(getReferenceTo(building));
         ASSERT(success);
     }

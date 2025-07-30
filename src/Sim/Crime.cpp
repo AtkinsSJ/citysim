@@ -9,8 +9,8 @@
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
 #include <Sim/City.h>
+#include <Sim/Effect.h>
 #include <Sim/LandValue.h>
-#include <Sim/TileUtils.h>
 
 void initCrimeLayer(CrimeLayer* layer, City* city, MemoryArena* gameArena)
 {
@@ -66,7 +66,7 @@ void updateCrimeLayer(City* city, CrimeLayer* layer)
                     if (building != nullptr) {
                         BuildingDef* def = getBuildingDef(building);
 
-                        if (hasEffect(&def->policeEffect)) {
+                        if (def->policeEffect.has_effect()) {
                             // Budget
                             float effectiveness = layer->fundingLevel;
 
@@ -87,14 +87,14 @@ void updateCrimeLayer(City* city, CrimeLayer* layer)
 
 void notifyNewBuilding(CrimeLayer* layer, BuildingDef* def, Building* building)
 {
-    if (hasEffect(&def->policeEffect) || (def->jailCapacity > 0)) {
+    if (def->policeEffect.has_effect() || (def->jailCapacity > 0)) {
         layer->policeBuildings.append(getReferenceTo(building));
     }
 }
 
 void notifyBuildingDemolished(CrimeLayer* layer, BuildingDef* def, Building* building)
 {
-    if (hasEffect(&def->policeEffect) || (def->jailCapacity > 0)) {
+    if (def->policeEffect.has_effect() || (def->jailCapacity > 0)) {
         bool success = layer->policeBuildings.findAndRemove(getReferenceTo(building));
         ASSERT(success);
     }

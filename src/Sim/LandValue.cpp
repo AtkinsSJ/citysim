@@ -9,6 +9,7 @@
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
 #include <Sim/City.h>
+#include <Sim/Effect.h>
 
 void initLandValueLayer(LandValueLayer* layer, City* city, MemoryArena* gameArena)
 {
@@ -50,7 +51,7 @@ void updateLandValueLayer(City* city, LandValueLayer* layer)
                     buildingIt.next()) {
                     Building* building = buildingIt.getValue();
                     BuildingDef* def = getBuildingDef(building);
-                    if (hasEffect(&def->landValueEffect)) {
+                    if (def->landValueEffect.has_effect()) {
                         applyEffect(&def->landValueEffect, centreOf(building->footprint), EffectType::Add, &layer->tileBuildingContributions, dirtyRect);
                     }
                 }

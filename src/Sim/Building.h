@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <Sim/Effect.h>
 #include <Sim/Entity.h>
 #include <Sim/GameClock.h>
 #include <Sim/TileUtils.h>

@@ -6,7 +6,7 @@
 
 #include "LineReader.h"
 #include "../unicode.h"
-#include <Sim/TileUtils.h>
+#include <Sim/Effect.h>
 #include <Util/Log.h>
 
 LineReader readLines(String filename, Blob data, Flags<LineReaderFlags> flags, char commentChar)

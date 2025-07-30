@@ -9,6 +9,7 @@
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
 #include <Sim/City.h>
+#include <Sim/Effect.h>
 
 float getHealthCoveragePercentAt(City* city, s32 x, s32 y)
 {
@@ -82,14 +83,14 @@ void markHealthLayerDirty(HealthLayer* layer, Rect2I bounds)
 
 void notifyNewBuilding(HealthLayer* layer, BuildingDef* def, Building* building)
 {
-    if (hasEffect(&def->healthEffect)) {
+    if (def->healthEffect.has_effect()) {
         layer->healthBuildings.append(getReferenceTo(building));
     }
 }
 
 void notifyBuildingDemolished(HealthLayer* layer, BuildingDef* def, Building* building)
 {
-    if (hasEffect(&def->healthEffect)) {
+    if (def->healthEffect.has_effect()) {
         bool success = layer->healthBuildings.findAndRemove(getReferenceTo(building));
         ASSERT(success);
     }
