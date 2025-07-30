@@ -1206,8 +1206,8 @@ void drawDataViewUI(GameState* gameState)
                     Rect2I gradientBounds = gradientColumn.addBlank(paletteBlockSize, gradientHeight);
 
                     auto* gradientPalette = getPalette(dataView->gradientPaletteName);
-                    auto minColor = gradientPalette->first()->as_opaque();
-                    auto maxColor = gradientPalette->last()->as_opaque();
+                    auto minColor = gradientPalette->first().as_opaque();
+                    auto maxColor = gradientPalette->last().as_opaque();
 
                     drawSingleRect(uiBuffer, rect2(gradientBounds), renderer.shaderIds.untextured, maxColor, maxColor, minColor, minColor);
                 }

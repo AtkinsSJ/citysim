@@ -107,7 +107,7 @@ struct Panel {
             // This means addRadioButtonGroup() has to loop through everything twice, but what can you do
             V2I widgetSize = v2i(0, 0);
             for (s32 optionIndex = 0; optionIndex < listOptions->count; optionIndex++) {
-                String optionText = getDisplayName(listOptions->get(optionIndex));
+                String optionText = getDisplayName(&listOptions->get(optionIndex));
                 V2I labelSize = calculateLabelSize(optionText, labelStyle, textWidth, fillWidth);
 
                 widgetSize.x = max(widgetSize.x, radioButtonSize.x + style->contentPadding + labelSize.x);
@@ -130,7 +130,7 @@ struct Panel {
                 putRadioButton(currentSelection, optionIndex, radioButtonBounds, radioButtonStyle, false, renderBuffer);
             }
 
-            String optionText = getDisplayName(listOptions->get(optionIndex));
+            String optionText = getDisplayName(&listOptions->get(optionIndex));
             V2I labelSize = calculateLabelSize(optionText, labelStyle, textWidth, fillWidth);
             Rect2I labelBounds = irectXYWH(
                 radioButtonBounds.x + radioButtonBounds.w + style->contentPadding,

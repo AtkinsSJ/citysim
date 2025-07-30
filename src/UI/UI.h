@@ -174,7 +174,7 @@ V2I calculateDropDownListSize(Array<T>* listOptions, String (*getDisplayName)(T*
     s32 tallest = 0;
 
     for (s32 optionIndex = 0; optionIndex < listOptions->count; optionIndex++) {
-        String optionText = getDisplayName(listOptions->get(optionIndex));
+        String optionText = getDisplayName(&listOptions->get(optionIndex));
         V2I optionSize = calculateButtonSize(optionText, buttonStyle, maxWidth, fillWidth);
         widest = max(widest, optionSize.x);
         tallest = max(tallest, optionSize.y);
@@ -203,7 +203,7 @@ void putDropDownList(Array<T>* listOptions, s32* currentSelection, String (*getD
     // and then show the panel if needed.
 
     // Show the selection box
-    String selectionText = getDisplayName(listOptions->get(*currentSelection));
+    String selectionText = getDisplayName(&listOptions->get(*currentSelection));
     bool clicked = putTextButton(selectionText, bounds, getStyle<ButtonStyle>(&style->buttonStyle), buttonIsActive(isOpen), renderBuffer);
     if (clicked) {
         // Toggle things
@@ -224,7 +224,7 @@ void putDropDownList(Array<T>* listOptions, s32* currentSelection, String (*getD
         Panel panel = Panel(panelBounds, getStyle<PanelStyle>(&style->panelStyle), 0, uiState.openDropDownListRenderBuffer);
         panel.enableVerticalScrolling(&uiState.openDropDownListScrollbar, false);
         for (s32 optionIndex = 0; optionIndex < listOptions->count; optionIndex++) {
-            if (panel.addTextButton(getDisplayName(listOptions->get(optionIndex)), buttonIsActive(optionIndex == *currentSelection))) {
+            if (panel.addTextButton(getDisplayName(&listOptions->get(optionIndex)), buttonIsActive(optionIndex == *currentSelection))) {
                 *currentSelection = optionIndex;
 
                 isOpen = false;

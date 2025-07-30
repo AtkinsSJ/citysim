@@ -15,31 +15,34 @@ struct Array {
     s32 count;
     T* items;
 
-    // NB: it's a reference so you can do assignments!
     T& operator[](s32 index)
     {
         ASSERT(index >= 0 && index < count); // Index out of range!
         return items[index];
     }
+    T const& operator[](s32 index) const { return const_cast<Array&>(*this)[index]; }
 
     // Same as [] but easier when we're using an Array*
-    T* get(s32 index)
+    T& get(s32 index)
     {
         ASSERT(index >= 0 && index < count); // Index out of range!
-        return &items[index];
+        return items[index];
     }
+    T const& get(s32 index) const { return const_cast<Array&>(*this).get(index); }
 
-    T* first()
+    T& first()
     {
         ASSERT(count > 0); // Index out of range!
-        return &items[0];
+        return items[0];
     }
+    T const& first() const { return const_cast<Array&>(*this).first(); }
 
-    T* last()
+    T& last()
     {
         ASSERT(count > 0); // Index out of range!
-        return &items[count - 1];
+        return items[count - 1];
     }
+    T const& last() const { return const_cast<Array&>(*this).last(); }
 
     T* append()
     {
