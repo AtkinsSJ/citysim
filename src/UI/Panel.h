@@ -237,36 +237,37 @@ struct Panel {
     // Call after modifying the contentArea. Updates the positions fields to match.
     void updateLayoutPosition();
 
+    PanelStyle* style { nullptr };
+
     // Flags, and bool versions for easier access
-    u32 flags;
-    bool allowClickThrough;
-    bool hideWidgets; // Widgets are not updated or rendered, just laid out
-    bool layoutBottomToTop;
+    u32 flags { 0 };
+    bool allowClickThrough { false };
+    bool hideWidgets { false }; // Widgets are not updated or rendered, just laid out
+    bool layoutBottomToTop { false };
 
-    bool hasAddedWidgets;
+    bool hasAddedWidgets { false };
 
-    RenderBuffer* renderBuffer;
+    RenderBuffer* renderBuffer { nullptr };
 
-    Rect2I bounds;
-    Rect2I contentArea;
+    Rect2I bounds {};
+    Rect2I contentArea {};
     u32 widgetAlignment;
 
-    ScrollbarState* hScrollbar;
-    Rect2I hScrollbarBounds;
-    ScrollbarState* vScrollbar;
-    Rect2I vScrollbarBounds;
+    ScrollbarState* hScrollbar { nullptr };
+    Rect2I hScrollbarBounds {};
+    ScrollbarState* vScrollbar { nullptr };
+    Rect2I vScrollbarBounds {};
 
     // Relative to contentArea
-    s32 currentLeft;
-    s32 currentRight;
-    s32 currentTop;
-    s32 currentBottom;
+    s32 currentLeft { 0 };
+    s32 currentRight { 0 };
+    s32 currentTop { 0 };
+    s32 currentBottom { 0 };
 
-    s32 largestItemWidth;
-    s32 largestItemHeightOnLine;
-    s32 largestLineWidth;
+    s32 largestItemWidth { 0 };
+    s32 largestItemHeightOnLine { 0 };
+    s32 largestLineWidth { 0 };
 
-    PanelStyle* style;
     Drawable background;
 };
 

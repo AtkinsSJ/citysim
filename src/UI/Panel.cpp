@@ -11,47 +11,21 @@
 namespace UI {
 
 Panel::Panel(Rect2I bounds, PanelStyle* panelStyle, u32 flags, RenderBuffer* renderBuffer)
+    : style(panelStyle ? panelStyle : getStyle<PanelStyle>("default"_s))
+    , flags(flags)
+    , allowClickThrough((flags & PanelFlags::AllowClickThrough) != 0)
+    , hideWidgets((flags & PanelFlags::HideWidgets) != 0)
+    , layoutBottomToTop((flags & PanelFlags::LayoutBottomToTop) != 0)
+    , renderBuffer(renderBuffer)
+    , bounds(bounds)
+    , contentArea(shrink(bounds, this->style->padding))
+    , widgetAlignment((style->widgetAlignment & ALIGN_H) | (layoutBottomToTop ? ALIGN_BOTTOM : ALIGN_TOP))
+    , currentLeft(0)
+    , currentRight(this->contentArea.w)
+    , currentTop(0)
+    , currentBottom(this->contentArea.h)
+    , background(Drawable(&this->style->background))
 {
-    DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
-
-    if (panelStyle == nullptr) {
-        this->style = getStyle<PanelStyle>("default"_s);
-    } else {
-        this->style = panelStyle;
-    }
-
-    this->flags = flags;
-
-    this->hasAddedWidgets = false;
-    this->allowClickThrough = (flags & PanelFlags::AllowClickThrough) != 0;
-
-    this->hideWidgets = (flags & PanelFlags::HideWidgets) != 0;
-    this->renderBuffer = renderBuffer;
-
-    this->bounds = bounds;
-    this->contentArea = shrink(bounds, this->style->padding);
-    this->layoutBottomToTop = (flags & PanelFlags::LayoutBottomToTop) != 0;
-
-    // Default to left-aligned
-    u32 hAlignment = this->style->widgetAlignment & ALIGN_H;
-    if (hAlignment == 0)
-        hAlignment = ALIGN_LEFT;
-    this->widgetAlignment = hAlignment | (layoutBottomToTop ? ALIGN_BOTTOM : ALIGN_TOP);
-
-    this->hScrollbar = nullptr;
-    this->vScrollbar = nullptr;
-
-    // Relative to contentArea
-    this->currentLeft = 0;
-    this->currentRight = this->contentArea.w;
-    this->currentTop = 0;
-    this->currentBottom = this->contentArea.h;
-
-    this->largestItemWidth = 0;
-    this->largestItemHeightOnLine = 0;
-    this->largestLineWidth = 0;
-
-    this->background = Drawable(&this->style->background);
 }
 
 void Panel::enableHorizontalScrolling(ScrollbarState* scrollbarState)
