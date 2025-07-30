@@ -11,6 +11,7 @@
 #include <IO/LineReader.h>
 #include <UI/Drawable.h>
 #include <UI/TextInput.h>
+#include <Util/Orientation.h>
 
 static Console theConsole;
 

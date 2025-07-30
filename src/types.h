@@ -32,8 +32,3 @@ enum Alignment {
 
     ALIGN_CENTRE = ALIGN_H_CENTRE | ALIGN_V_CENTRE,
 };
-
-enum class Orientation {
-    Horizontal,
-    Vertical
-};

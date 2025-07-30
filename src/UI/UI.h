@@ -13,6 +13,7 @@
 #include <UI/Forward.h>
 #include <Util/Array.h>
 #include <Util/Basic.h>
+#include <Util/Orientation.h>
 #include <Util/Queue.h>
 #include <Util/Set.h>
 #include <Util/Stack.h>

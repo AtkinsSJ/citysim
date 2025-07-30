@@ -10,6 +10,7 @@
 #include "save_file.h"
 #include "settings.h"
 #include <UI/Window.h>
+#include <Util/Orientation.h>
 
 void initSavedGamesCatalogue()
 {
