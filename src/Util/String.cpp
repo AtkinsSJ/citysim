@@ -5,11 +5,11 @@
  */
 
 #include "String.h"
-#include "../unicode.h"
 #include <Util/Maths.h>
 #include <Util/Memory.h>
 #include <Util/MemoryArena.h>
 #include <Util/StringBuilder.h>
+#include <Util/Unicode.h>
 #include <stdio.h> // For snprintf
 
 String makeString(char* chars, s32 length, bool hash)

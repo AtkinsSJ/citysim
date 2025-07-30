@@ -5,10 +5,10 @@
  */
 
 #include "font.h"
-#include "unicode.h"
 #include <Debug/Debug.h>
 #include <Gfx/Renderer.h>
 #include <Util/Log.h>
+#include <Util/Unicode.h>
 
 BitmapFontGlyphEntry* findGlyphInternal(BitmapFont* font, unichar targetChar)
 {

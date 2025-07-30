@@ -7,13 +7,13 @@
 #include "AppState.h"
 #include "font.h"
 #include "input.h"
-#include "unicode.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/Renderer.h>
 #include <UI/Drawable.h>
 #include <UI/TextInput.h>
 #include <Util/Maths.h>
 #include <Util/MemoryArena.h>
+#include <Util/Unicode.h>
 
 namespace UI {
 

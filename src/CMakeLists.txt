@@ -12,7 +12,6 @@ target_sources(CitySim PRIVATE
     saved_games.cpp
     settings.cpp
     splat.cpp
-    unicode.cpp
 )
 
 if (LINUX)

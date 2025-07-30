@@ -12,5 +12,6 @@ target_sources(CitySim PRIVATE
     StringBuilder.cpp
     StringTable.cpp
     Time.cpp
+    Unicode.cpp
     Vector.cpp
 )

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "unicode.h"
+#include "Unicode.h"
 #include <Util/Log.h>
 
 bool byteIsStartOfGlyph(char b)
@@ -278,6 +278,7 @@ bool isNewline(unichar uChar)
     return result;
 }
 
+// FIXME: Replace with an iterator of some kind
 bool getNextUnichar(String string, s32* bytePos, unichar* result)
 {
     bool foundResult = false;

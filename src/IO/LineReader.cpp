@@ -5,10 +5,10 @@
  */
 
 #include "LineReader.h"
-#include "../unicode.h"
 #include <Util/Log.h>
 #include <Util/Optional.h>
 #include <Util/Rectangle.h>
+#include <Util/Unicode.h>
 
 LineReader readLines(String filename, Blob data, Flags<LineReaderFlags> flags, char commentChar)
 {
