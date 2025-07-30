@@ -329,12 +329,12 @@ void generateTerrain(City* city, Random* gameRandom)
         float pondMinRadius = randomFloatBetween(&terrainRandom, 3.0f, 5.0f);
         float pondMaxRadius = randomFloatBetween(&terrainRandom, pondMinRadius + 3.0f, 20.0f);
 
-        Splat pondSplat = createRandomSplat(pondCentreX, pondCentreY, pondMinRadius, pondMaxRadius, 36, &terrainRandom);
+        Splat pondSplat = Splat::create_random(pondCentreX, pondCentreY, pondMinRadius, pondMaxRadius, 36, &terrainRandom);
 
-        Rect2I boundingBox = intersect(getBoundingBox(&pondSplat), city->bounds);
+        Rect2I boundingBox = intersect(pondSplat.bounding_box(), city->bounds);
         for (s32 y = boundingBox.y; y < boundingBox.y + boundingBox.h; y++) {
             for (s32 x = boundingBox.x; x < boundingBox.x + boundingBox.w; x++) {
-                if (contains(&pondSplat, x, y)) {
+                if (pondSplat.contains(x, y)) {
                     layer->tileTerrainType.set(x, y, tWater);
                 }
             }
@@ -353,14 +353,14 @@ void generateTerrain(City* city, Random* gameRandom)
             float minRadius = randomFloatBetween(&terrainRandom, 2.0f, 8.0f);
             float maxRadius = randomFloatBetween(&terrainRandom, minRadius + 1.0f, 30.0f);
 
-            Splat forestSplat = createRandomSplat(centreX, centreY, minRadius, maxRadius, 36, &terrainRandom);
+            Splat forestSplat = Splat::create_random(centreX, centreY, minRadius, maxRadius, 36, &terrainRandom);
 
-            Rect2I boundingBox = intersect(getBoundingBox(&forestSplat), city->bounds);
+            Rect2I boundingBox = intersect(forestSplat.bounding_box(), city->bounds);
             for (s32 y = boundingBox.y; y < boundingBox.y + boundingBox.h; y++) {
                 for (s32 x = boundingBox.x; x < boundingBox.x + boundingBox.w; x++) {
                     if (getTerrainAt(city, x, y)->canBuildOn
                         && (getBuildingAt(city, x, y) == nullptr)
-                        && contains(&forestSplat, x, y)) {
+                        && forestSplat.contains(x, y)) {
                         addBuilding(city, treeDef, irectXYWH(x, y, treeDef->size.x, treeDef->size.y));
                     }
                 }

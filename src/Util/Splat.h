@@ -15,7 +15,7 @@
 // A "Splat" is basically a circle with a wobbly circumference.
 // As such, it produces roundish blob shapes.
 // (I wanted to call it a Blob but that's already taken...)
-// You can query the radius at any given angle with getRadiusAtAngle() and it'll lerp
+// You can query the radius at any given angle with radius_at_angle() and it'll lerp
 // the value based on the two nearest samples. The resolution given determines how many
 // radius samples there are. For the couple of places I've used it, 36 works fine, but
 // if you want to generate large shapes in greater detail. The smoothness value is passed
@@ -35,18 +35,26 @@
 // just compute the exact radius at any given angle. Interesting!
 //
 struct Splat {
-    V2I centre;
+    // `resolution` is how many radius values are generated. eg, if it's 36, we get 1 value for every 10 degrees.
+    static Splat create_random(s32 centre_x, s32 centre_y, float min_radius, float max_radius, s32 resolution, Random*, s32 smoothness = 4, MemoryArena* = &temp_arena());
 
-    float minRadius;
-    float maxRadius;
-    float radiusRange;
-    Array<float> radius;
-    float degreesToIndex;
+    float radius_at_angle(float degrees) const;
+    Rect2I bounding_box() const;
+    bool contains(s32 x, s32 y) const;
+
+private:
+    Splat(V2I centre, float min_radius, float max_radius, Array<float> radius, float degrees_per_index)
+        : m_centre(centre)
+        , m_min_radius(min_radius)
+        , m_max_radius(max_radius)
+        , m_radius(move(radius))
+        , m_degrees_per_index(degrees_per_index)
+    {
+    }
+
+    V2I m_centre;
+    float m_min_radius;
+    float m_max_radius;
+    Array<float> m_radius;
+    float m_degrees_per_index;
 };
-
-// `resolution` is how many radius values are generated. eg, if it's 36, we get 1 value for every 10 degrees.
-Splat createRandomSplat(s32 centreX, s32 centreY, float minRadius, float maxRadius, s32 resolution, Random* random, s32 smoothness = 4, MemoryArena* memoryArena = &temp_arena());
-
-float getRadiusAtAngle(Splat* splat, float degrees);
-Rect2I getBoundingBox(Splat* splat);
-bool contains(Splat* splat, s32 x, s32 y);
