@@ -5,7 +5,7 @@
  */
 
 #include "Matrix4.h"
-#include "../debug.h"
+#include <Debug/Debug.h>
 #include <Util/Maths.h>
 #include <Util/Vector.h>
 

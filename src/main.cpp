@@ -27,13 +27,13 @@
 #endif
 
 #include "AppState.h"
-#include "console.h"
 #include "credits.h"
 #include "game_mainmenu.h"
 #include "input.h"
 #include "saved_games.h"
 #include "settings.h"
 #include <Assets/AssetManager.h>
+#include <Debug/Console.h>
 #include <Gfx/Renderer.h>
 #include <UI/UI.h>
 #include <UI/Window.h>
@@ -42,7 +42,6 @@
 #include <Util/MemoryArena.h>
 #include <Util/Random.h>
 #include <Util/String.h>
-#include <Util/Vector.h>
 
 SDL_Window* initSDL(WindowSettings windowSettings, char const* windowTitle)
 {

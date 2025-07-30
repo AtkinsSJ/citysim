@@ -5,8 +5,8 @@
  */
 
 #include "File.h"
-#include "../debug.h"
 #include "../platform.h"
+#include <Debug/Debug.h>
 #include <Util/Log.h>
 
 // Returns the part of 'filename' after the final '.'

@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "debug.h"
-#include "font.h"
-#include "input.h"
+#include "Debug.h"
+#include "../font.h"
+#include "../input.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/Renderer.h>
 

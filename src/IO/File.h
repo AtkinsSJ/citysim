@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "../debug.h"
+#include <Debug/Debug.h>
 #include <SDL2/SDL_rwops.h>
 #include <Util/Basic.h>
 #include <Util/Flags.h>

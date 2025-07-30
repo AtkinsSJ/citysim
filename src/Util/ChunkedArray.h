@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "../debug.h"
+#include <Debug/Debug.h>
 #include <Util/Basic.h>
 #include <Util/DeprecatedPool.h>
 #include <Util/Indexed.h>

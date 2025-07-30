@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "debug.h"
 #include <Assets/AssetManager.h>
+#include <Debug/Debug.h>
 #include <Gfx/OpenGL.h>
 #include <Gfx/Renderer.h>
 

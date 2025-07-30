@@ -5,10 +5,10 @@
  */
 
 #include "building.h"
-#include "console.h"
 #include "settings.h"
 #include "terrain.h"
 #include <Assets/AssetManager.h>
+#include <Debug/Console.h>
 #include <Gfx/BMFont.h>
 #include <Gfx/Renderer.h>
 #include <IO/File.h>

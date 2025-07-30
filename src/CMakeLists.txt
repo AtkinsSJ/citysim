@@ -4,11 +4,8 @@ target_sources(CitySim PRIVATE
     budget.cpp
     building.cpp
     city.cpp
-    commands.cpp
-    console.cpp
     credits.cpp
     crime.cpp
-    debug.cpp
     dirty.cpp
     education.cpp
     fire.cpp
@@ -41,6 +38,7 @@ elseif (WIN32)
 endif ()
 
 add_subdirectory("Assets")
+add_subdirectory("Debug")
 add_subdirectory("Gfx")
 add_subdirectory("IO")
 add_subdirectory("Sim")

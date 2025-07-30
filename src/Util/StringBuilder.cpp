@@ -5,7 +5,7 @@
  */
 
 #include "StringBuilder.h"
-#include "../debug.h"
+#include <Debug/Debug.h>
 #include <Util/Log.h>
 #include <Util/Memory.h>
 

@@ -5,8 +5,8 @@
  */
 
 #include "font.h"
-#include "debug.h"
 #include "unicode.h"
+#include <Debug/Debug.h>
 #include <Gfx/Renderer.h>
 #include <Util/Log.h>
 

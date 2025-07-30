@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "console.h"
-#include "AppState.h"
+#include "Console.h"
+#include "../AppState.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/Renderer.h>
 #include <IO/LineReader.h>

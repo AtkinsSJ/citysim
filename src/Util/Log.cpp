@@ -5,7 +5,7 @@
  */
 
 #include "Log.h"
-#include "console.h"
+#include <Debug/Console.h>
 #include <UI/UITheme.h>
 #include <Util/String.h>
 

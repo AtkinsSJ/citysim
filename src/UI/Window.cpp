@@ -5,8 +5,8 @@
  */
 
 #include "Window.h"
-#include "../debug.h"
 #include "input.h"
+#include <Debug/Debug.h>
 #include <Util/String.h>
 
 namespace UI {
