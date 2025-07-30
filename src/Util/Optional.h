@@ -7,15 +7,36 @@
 #pragma once
 
 #include <Util/Assert.h>
+#include <Util/Maybe.h>
 
 template<typename T>
 class Optional {
 public:
-    Optional() = default;
+    Optional()
+        : m_has_value(false)
+        , m_blank {}
+    {
+    }
+
     Optional(T value)
         : m_has_value(true)
         , m_value(move(value))
     {
+    }
+
+    // FIXME: Temporary
+    Optional(Maybe<T> maybe)
+        : m_has_value(maybe.isValid)
+        , m_blank()
+    {
+        if (maybe.isValid)
+            m_value = maybe.value;
+    }
+
+    ~Optional()
+    {
+        if (m_has_value)
+            m_value.~T();
     }
 
     bool has_value() const { return m_has_value; }
@@ -67,5 +88,8 @@ public:
 
 private:
     bool m_has_value { false };
-    T m_value {};
+    union {
+        T m_value;
+        u8 m_blank[sizeof(T)];
+    };
 };
