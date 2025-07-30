@@ -264,7 +264,7 @@ void consoleHandleCommand(Console* console, String commandInput)
                 it.hasNext();
                 it.next()) {
                 Command* c = it.get();
-                if (equals(c->name, firstToken)) {
+                if (c->name == firstToken) {
                     command = c;
                     break;
                 }

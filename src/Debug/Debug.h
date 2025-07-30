@@ -187,7 +187,7 @@ T* findOrCreateDebugData(DebugState* debugState, String name, T* sentinel)
 
     T* data = sentinel->nextNode;
     while (data != sentinel) {
-        if (equals(data->name, name)) {
+        if (data->name == name) {
             result = data;
             break;
         }

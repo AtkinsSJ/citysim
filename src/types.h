@@ -9,12 +9,6 @@
 #include <Util/Basic.h>
 #include <Util/Forward.h>
 
-template<typename T>
-inline bool equals(T a, T b)
-{
-    return isMemoryEqual<T>(&a, &b);
-}
-
 enum Alignment {
     ALIGN_LEFT = 1,
     ALIGN_H_CENTRE = 2,

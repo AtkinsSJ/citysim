@@ -354,13 +354,13 @@ KeyboardShortcut parseKeyboardShortcut(String shortcutString)
         //
         // MODIFIERS
         //
-        if (equals(keyName, "Alt"_s)) {
+        if (keyName == "Alt"_s) {
             result.modifiers.add(ModifierKey::Alt);
-        } else if (equals(keyName, "Ctrl"_s)) {
+        } else if (keyName == "Ctrl"_s) {
             result.modifiers.add(ModifierKey::Ctrl);
-        } else if (equals(keyName, "Shift"_s)) {
+        } else if (keyName == "Shift"_s) {
             result.modifiers.add(ModifierKey::Shift);
-        } else if (equals(keyName, "Super"_s)) {
+        } else if (keyName == "Super"_s) {
             result.modifiers.add(ModifierKey::Super);
         } else {
             Maybe<SDL_Keycode> found = s_input_state.keyNames.findValue(keyName);

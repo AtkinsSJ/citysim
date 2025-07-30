@@ -21,6 +21,8 @@
 struct BuildingRef {
     u32 buildingID;
     V2I buildingPos;
+
+    bool operator==(BuildingRef const&) const = default;
 };
 BuildingRef getReferenceTo(Building* building);
 Building* getBuilding(City* city, BuildingRef ref);

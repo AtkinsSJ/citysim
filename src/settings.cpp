@@ -128,7 +128,7 @@ void loadSettingsFile(String name, Blob settingsData)
                 Array<SettingEnumData> enumData = *def->enumData;
                 bool foundValue = false;
                 for (s32 enumValueIndex = 0; enumValueIndex < enumData.count; enumValueIndex++) {
-                    if (equals(enumData[enumValueIndex].id, token)) {
+                    if (enumData[enumValueIndex].id == token) {
                         setSettingData<s32>(&s_settings->settings, def, enumValueIndex);
 
                         foundValue = true;

@@ -85,7 +85,7 @@ struct HashTable {
                 // Store the first gravestone we find, in case we fail to find the "real" option
                 if (result == nullptr)
                     result = entry;
-            } else if ((entry->isOccupied == false) || (hash == hashString(&entry->key) && equals(key, entry->key))) {
+            } else if ((entry->isOccupied == false) || (hash == hashString(&entry->key) && key == entry->key)) {
                 // If the entry is unoccupied, we'd rather re-use the gravestone we found above
                 if (entry->isOccupied || result == nullptr) {
                     result = entry;

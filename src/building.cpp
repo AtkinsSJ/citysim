@@ -117,9 +117,9 @@ void loadBuildingDefs(Blob data, Asset* asset)
     s32 totalVariantCount = 0;
     while (loadNextLine(&reader)) {
         String command = readToken(&reader);
-        if (equals(command, ":Building"_s) || equals(command, ":Intersection"_s)) {
+        if (command == ":Building"_s || command == ":Intersection"_s) {
             buildingCount++;
-        } else if (equals(command, "variant"_s)) {
+        } else if (command == "variant"_s) {
             totalVariantCount++;
         }
     }
@@ -152,7 +152,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
                 _assignBuildingCategories(catalogue, def);
             }
 
-            if (equals(firstWord, "Building"_s)) {
+            if (firstWord == "Building"_s) {
                 String name = readToken(&reader);
                 if (isEmpty(name)) {
                     error(&reader, "Couldn't parse Building. Expected: ':Building identifier'"_s);
@@ -161,7 +161,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
 
                 def = appendNewBuildingDef(name);
                 asset->buildingDefs.buildingIDs.append(def->name);
-            } else if (equals(firstWord, "Intersection"_s)) {
+            } else if (firstWord == "Intersection"_s) {
                 String name = readToken(&reader);
                 String part1Name = readToken(&reader);
                 String part2Name = readToken(&reader);
@@ -177,7 +177,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
                 def->isIntersection = true;
                 def->intersectionPart1Name = intern(&catalogue->buildingNames, part1Name);
                 def->intersectionPart2Name = intern(&catalogue->buildingNames, part2Name);
-            } else if (equals(firstWord, "Template"_s)) {
+            } else if (firstWord == "Template"_s) {
                 String name = readToken(&reader);
                 if (isEmpty(name)) {
                     error(&reader, "Couldn't parse Template. Expected: ':Template identifier'"_s);
@@ -202,18 +202,18 @@ void loadBuildingDefs(Blob data, Asset* asset)
                 error(&reader, "Found a property before starting a :Building, :Intersection or :Template!"_s);
                 return;
             } else {
-                if (equals(firstWord, "build"_s)) {
+                if (firstWord == "build"_s) {
                     String buildMethodString = readToken(&reader);
                     Maybe<s32> cost = readInt<s32>(&reader);
 
                     if (cost.isValid) {
-                        if (equals(buildMethodString, "paint"_s)) {
+                        if (buildMethodString == "paint"_s) {
                             def->buildMethod = BuildMethod::Paint;
-                        } else if (equals(buildMethodString, "plop"_s)) {
+                        } else if (buildMethodString == "plop"_s) {
                             def->buildMethod = BuildMethod::Plop;
-                        } else if (equals(buildMethodString, "line"_s)) {
+                        } else if (buildMethodString == "line"_s) {
                             def->buildMethod = BuildMethod::DragLine;
-                        } else if (equals(buildMethodString, "rect"_s)) {
+                        } else if (buildMethodString == "rect"_s) {
                             def->buildMethod = BuildMethod::DragRect;
                         } else {
                             warn(&reader, "Couldn't parse the build method, assuming NONE."_s);
@@ -225,7 +225,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
                         error(&reader, "Couldn't parse build. Expected use:\"build method cost\", where method is (plop/line/rect). If it's not buildable, just don't have a \"build\" line at all."_s);
                         return;
                     }
-                } else if (equals(firstWord, "carries_power"_s)) {
+                } else if (firstWord == "carries_power"_s) {
                     Maybe<bool> boolRead = readBool(&reader);
                     if (boolRead.isValid) {
                         if (boolRead.value) {
@@ -234,30 +234,30 @@ void loadBuildingDefs(Blob data, Asset* asset)
                             def->flags.remove(BuildingFlags::CarriesPower);
                         }
                     }
-                } else if (equals(firstWord, "carries_transport"_s)) {
+                } else if (firstWord == "carries_transport"_s) {
                     s32 tokenCount = countTokens(getRemainderOfLine(&reader));
                     for (s32 tokenIndex = 0; tokenIndex < tokenCount; tokenIndex++) {
                         String transportName = readToken(&reader);
 
-                        if (equals(transportName, "road"_s)) {
+                        if (transportName == "road"_s) {
                             def->transportTypes.add(TransportType::Road);
-                        } else if (equals(transportName, "rail"_s)) {
+                        } else if (transportName == "rail"_s) {
                             def->transportTypes.add(TransportType::Rail);
                         } else {
                             warn(&reader, "Unrecognised transport type \"{0}\"."_s, { transportName });
                         }
                     }
-                } else if (equals(firstWord, "crime_protection"_s)) {
+                } else if (firstWord == "crime_protection"_s) {
                     Maybe<EffectRadius> crime_protection = readEffectRadius(&reader);
                     if (crime_protection.isValid) {
                         def->policeEffect = crime_protection.value;
                     }
-                } else if (equals(firstWord, "demolish_cost"_s)) {
+                } else if (firstWord == "demolish_cost"_s) {
                     Maybe<s32> demolish_cost = readInt<s32>(&reader);
                     if (demolish_cost.isValid) {
                         def->demolishCost = demolish_cost.value;
                     }
-                } else if (equals(firstWord, "extends"_s)) {
+                } else if (firstWord == "extends"_s) {
                     String templateName = readToken(&reader);
 
                     Maybe<BuildingDef*> templateDef = templates.find(templateName);
@@ -284,66 +284,66 @@ void loadBuildingDefs(Blob data, Asset* asset)
                         def->fireRisk = tDef->fireRisk;
                         def->fireProtection = tDef->fireProtection;
                     }
-                } else if (equals(firstWord, "fire_protection"_s)) {
+                } else if (firstWord == "fire_protection"_s) {
                     Maybe<EffectRadius> fire_protection = readEffectRadius(&reader);
                     if (fire_protection.isValid) {
                         def->fireProtection = fire_protection.value;
                     }
-                } else if (equals(firstWord, "fire_risk"_s)) {
+                } else if (firstWord == "fire_risk"_s) {
                     Maybe<double> fire_risk = readFloat(&reader);
                     if (fire_risk.isValid) {
                         def->fireRisk = (float)fire_risk.value;
                     }
-                } else if (equals(firstWord, "grows_in"_s)) {
+                } else if (firstWord == "grows_in"_s) {
                     String zoneName = readToken(&reader);
-                    if (equals(zoneName, "r"_s)) {
+                    if (zoneName == "r"_s) {
                         def->growsInZone = ZoneType::Residential;
-                    } else if (equals(zoneName, "c"_s)) {
+                    } else if (zoneName == "c"_s) {
                         def->growsInZone = ZoneType::Commercial;
-                    } else if (equals(zoneName, "i"_s)) {
+                    } else if (zoneName == "i"_s) {
                         def->growsInZone = ZoneType::Industrial;
                     } else {
                         error(&reader, "Couldn't parse grows_in. Expected use:\"grows_in r/c/i\""_s);
                         return;
                     }
-                } else if (equals(firstWord, "health_effect"_s)) {
+                } else if (firstWord == "health_effect"_s) {
                     Maybe<EffectRadius> health_effect = readEffectRadius(&reader);
                     if (health_effect.isValid) {
                         def->healthEffect = health_effect.value;
                     }
-                } else if (equals(firstWord, "jail_size"_s)) {
+                } else if (firstWord == "jail_size"_s) {
                     Maybe<s32> jail_size = readInt<s32>(&reader);
                     if (jail_size.isValid) {
                         def->jailCapacity = jail_size.value;
                     }
-                } else if (equals(firstWord, "jobs"_s)) {
+                } else if (firstWord == "jobs"_s) {
                     Maybe<s32> jobs = readInt<s32>(&reader);
                     if (jobs.isValid) {
                         def->jobs = jobs.value;
                     }
-                } else if (equals(firstWord, "land_value"_s)) {
+                } else if (firstWord == "land_value"_s) {
                     Maybe<EffectRadius> land_value = readEffectRadius(&reader);
                     if (land_value.isValid) {
                         def->landValueEffect = land_value.value;
                     }
-                } else if (equals(firstWord, "name"_s)) {
+                } else if (firstWord == "name"_s) {
                     def->textAssetName = intern(&asset_manager().assetStrings, readToken(&reader));
-                } else if (equals(firstWord, "pollution"_s)) {
+                } else if (firstWord == "pollution"_s) {
                     Maybe<EffectRadius> pollution = readEffectRadius(&reader);
                     if (pollution.isValid) {
                         def->pollutionEffect = pollution.value;
                     }
-                } else if (equals(firstWord, "power_gen"_s)) {
+                } else if (firstWord == "power_gen"_s) {
                     Maybe<s32> power_gen = readInt<s32>(&reader);
                     if (power_gen.isValid) {
                         def->power = power_gen.value;
                     }
-                } else if (equals(firstWord, "power_use"_s)) {
+                } else if (firstWord == "power_use"_s) {
                     Maybe<s32> power_use = readInt<s32>(&reader);
                     if (power_use.isValid) {
                         def->power = -power_use.value;
                     }
-                } else if (equals(firstWord, "requires_transport_connection"_s)) {
+                } else if (firstWord == "requires_transport_connection"_s) {
                     Maybe<bool> requires_transport_connection = readBool(&reader);
                     if (requires_transport_connection.isValid) {
                         if (requires_transport_connection.value) {
@@ -352,12 +352,12 @@ void loadBuildingDefs(Blob data, Asset* asset)
                             def->flags.remove(BuildingFlags::RequiresTransportConnection);
                         }
                     }
-                } else if (equals(firstWord, "residents"_s)) {
+                } else if (firstWord == "residents"_s) {
                     Maybe<s32> residents = readInt<s32>(&reader);
                     if (residents.isValid) {
                         def->residents = residents.value;
                     }
-                } else if (equals(firstWord, "size"_s)) {
+                } else if (firstWord == "size"_s) {
                     Maybe<s32> w = readInt<s32>(&reader);
                     Maybe<s32> h = readInt<s32>(&reader);
 
@@ -373,10 +373,10 @@ void loadBuildingDefs(Blob data, Asset* asset)
                         error(&reader, "Couldn't parse size. Expected 2 ints (w,h)."_s);
                         return;
                     }
-                } else if (equals(firstWord, "sprite"_s)) {
+                } else if (firstWord == "sprite"_s) {
                     String spriteName = intern(&asset_manager().assetStrings, readToken(&reader));
                     def->spriteName = spriteName;
-                } else if (equals(firstWord, "variant"_s)) {
+                } else if (firstWord == "variant"_s) {
                     //
                     // NB: Not really related to this code but I needed somewhere to put this:
                     // Right now, we linerarly search through variants and pick the first one

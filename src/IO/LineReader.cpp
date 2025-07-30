@@ -78,7 +78,7 @@ s32 countPropertyOccurrences(LineReader* reader, String propertyName)
         if (_firstWord[0] == ':')
             break; // We've reached the next :Command
 
-        if (equals(_firstWord, propertyName))
+        if (_firstWord == propertyName)
             result++;
     }
     restorePosition(reader, savedPosition);
@@ -242,49 +242,49 @@ Maybe<u32> readAlignment(LineReader* reader)
 
     String token = readToken(reader);
     while (!isEmpty(token)) {
-        if (equals(token, "LEFT"_s)) {
+        if (token == "LEFT"_s) {
             if (alignment & ALIGN_H) {
                 error(reader, "Multiple horizontal alignment keywords given!"_s);
                 break;
             }
             alignment |= ALIGN_LEFT;
-        } else if (equals(token, "H_CENTRE"_s)) {
+        } else if (token == "H_CENTRE"_s) {
             if (alignment & ALIGN_H) {
                 error(reader, "Multiple horizontal alignment keywords given!"_s);
                 break;
             }
             alignment |= ALIGN_H_CENTRE;
-        } else if (equals(token, "RIGHT"_s)) {
+        } else if (token == "RIGHT"_s) {
             if (alignment & ALIGN_H) {
                 error(reader, "Multiple horizontal alignment keywords given!"_s);
                 break;
             }
             alignment |= ALIGN_RIGHT;
-        } else if (equals(token, "EXPAND_H"_s)) {
+        } else if (token == "EXPAND_H"_s) {
             if (alignment & ALIGN_H) {
                 error(reader, "Multiple horizontal alignment keywords given!"_s);
                 break;
             }
             alignment |= ALIGN_EXPAND_H;
-        } else if (equals(token, "TOP"_s)) {
+        } else if (token == "TOP"_s) {
             if (alignment & ALIGN_V) {
                 error(reader, "Multiple vertical alignment keywords given!"_s);
                 break;
             }
             alignment |= ALIGN_TOP;
-        } else if (equals(token, "V_CENTRE"_s)) {
+        } else if (token == "V_CENTRE"_s) {
             if (alignment & ALIGN_V) {
                 error(reader, "Multiple vertical alignment keywords given!"_s);
                 break;
             }
             alignment |= ALIGN_V_CENTRE;
-        } else if (equals(token, "BOTTOM"_s)) {
+        } else if (token == "BOTTOM"_s) {
             if (alignment & ALIGN_V) {
                 error(reader, "Multiple vertical alignment keywords given!"_s);
                 break;
             }
             alignment |= ALIGN_BOTTOM;
-        } else if (equals(token, "EXPAND_V"_s)) {
+        } else if (token == "EXPAND_V"_s) {
             if (alignment & ALIGN_V) {
                 error(reader, "Multiple vertical alignment keywords given!"_s);
                 break;

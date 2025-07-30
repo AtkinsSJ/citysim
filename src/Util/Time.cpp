@@ -62,46 +62,46 @@ String formatDateTime(DateTime dateTime, DateTimeFormat format)
             if (isReadingSymbol && endOfSymbol > startOfSymbol) {
                 String symbol = makeString(formatString.chars + startOfSymbol, (endOfSymbol - startOfSymbol), true);
 
-                if (equals(symbol, "year"_s)) {
+                if (symbol == "year"_s) {
                     append(&stb, formatInt(dateTime.year));
-                } else if (equals(symbol, "month"_s)) {
+                } else if (symbol == "month"_s) {
                     append(&stb, formatInt(to_underlying(dateTime.month) + 1));
-                } else if (equals(symbol, "month2"_s)) {
+                } else if (symbol == "month2"_s) {
                     append(&stb, formatInt(to_underlying(dateTime.month) + 1, 10, 2));
-                } else if (equals(symbol, "monthN"_s)) {
+                } else if (symbol == "monthN"_s) {
                     ASSERT(to_underlying(dateTime.month) >= 0 && to_underlying(dateTime.month) < to_underlying(MonthOfYear::COUNT));
                     append(&stb, getText(month_names[dateTime.month]));
-                } else if (equals(symbol, "day"_s)) {
+                } else if (symbol == "day"_s) {
                     append(&stb, formatInt(dateTime.dayOfMonth));
-                } else if (equals(symbol, "day2"_s)) {
+                } else if (symbol == "day2"_s) {
                     append(&stb, formatInt(dateTime.dayOfMonth, 10, 2));
-                } else if (equals(symbol, "dayN"_s)) {
+                } else if (symbol == "dayN"_s) {
                     ASSERT(to_underlying(dateTime.dayOfWeek) >= 0 && to_underlying(dateTime.dayOfWeek) < to_underlying(DayOfWeek::COUNT));
                     append(&stb, getText(day_names[dateTime.dayOfWeek]));
-                } else if (equals(symbol, "hour"_s)) {
+                } else if (symbol == "hour"_s) {
                     append(&stb, formatInt(dateTime.hour));
-                } else if (equals(symbol, "hour2"_s)) {
+                } else if (symbol == "hour2"_s) {
                     append(&stb, formatInt(dateTime.hour, 10, 2));
-                } else if (equals(symbol, "12hour"_s)) {
+                } else if (symbol == "12hour"_s) {
                     append(&stb, formatInt(dateTime.hour % 12));
-                } else if (equals(symbol, "12hour2"_s)) {
+                } else if (symbol == "12hour2"_s) {
                     append(&stb, formatInt(dateTime.hour % 12, 10, 2));
-                } else if (equals(symbol, "minute"_s)) {
+                } else if (symbol == "minute"_s) {
                     append(&stb, formatInt(dateTime.minute));
-                } else if (equals(symbol, "minute2"_s)) {
+                } else if (symbol == "minute2"_s) {
                     append(&stb, formatInt(dateTime.minute, 10, 2));
-                } else if (equals(symbol, "second"_s)) {
+                } else if (symbol == "second"_s) {
                     append(&stb, formatInt(dateTime.second));
-                } else if (equals(symbol, "second2"_s)) {
+                } else if (symbol == "second2"_s) {
                     append(&stb, formatInt(dateTime.second, 10, 2));
-                } else if (equals(symbol, "millis"_s)) {
+                } else if (symbol == "millis"_s) {
                     append(&stb, formatInt(dateTime.millisecond));
-                } else if (equals(symbol, "millis3"_s)) {
+                } else if (symbol == "millis3"_s) {
                     append(&stb, formatInt(dateTime.millisecond, 10, 3));
-                } else if (equals(symbol, "am"_s)) {
+                } else if (symbol == "am"_s) {
                     bool isPM = (dateTime.hour >= 12);
                     append(&stb, getText(isPM ? "date_part_pm"_s : "date_part_am"_s));
-                } else if (equals(symbol, "AM"_s)) {
+                } else if (symbol == "AM"_s) {
                     bool isPM = (dateTime.hour >= 12);
                     append(&stb, getText(isPM ? "date_part_pmc"_s : "date_part_amc"_s));
                 } else {

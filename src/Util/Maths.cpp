@@ -139,7 +139,7 @@ s32 manhattanDistance(Rect2I a, Rect2I b)
     return result;
 }
 
-bool equals(float a, float b, float epsilon)
+bool equals_with_epsilon(float a, float b, float epsilon)
 {
     return (abs_float(a - b) < epsilon);
 }

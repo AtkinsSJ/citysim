@@ -194,7 +194,7 @@ struct ChunkedArray {
     {
         DEBUG_FUNCTION();
 
-        s32 removed = removeAll([&](T* t) { return equals(*t, toRemove); }, 1, keepItemOrder);
+        s32 removed = removeAll([&](T* t) { return *t == toRemove; }, 1, keepItemOrder);
 
         return removed > 0;
     }

@@ -140,31 +140,31 @@ ConsoleCommand(show_layer)
         consoleWriteLine("Hiding data layers"_s, ConsoleLineStyle::Success);
     } else if (argumentsCount == 1) {
         String layerName = nextToken(remainder, &remainder);
-        if (equals(layerName, "crime"_s)) {
+        if (layerName == "crime"_s) {
             app_state.gameState->dataLayerToDraw = DataView::Crime;
             consoleWriteLine("Showing crime layer"_s, ConsoleLineStyle::Success);
-        } else if (equals(layerName, "des_res"_s)) {
+        } else if (layerName == "des_res"_s) {
             app_state.gameState->dataLayerToDraw = DataView::Desirability_Residential;
             consoleWriteLine("Showing residential desirability"_s, ConsoleLineStyle::Success);
-        } else if (equals(layerName, "des_com"_s)) {
+        } else if (layerName == "des_com"_s) {
             app_state.gameState->dataLayerToDraw = DataView::Desirability_Commercial;
             consoleWriteLine("Showing commercial desirability"_s, ConsoleLineStyle::Success);
-        } else if (equals(layerName, "des_ind"_s)) {
+        } else if (layerName == "des_ind"_s) {
             app_state.gameState->dataLayerToDraw = DataView::Desirability_Industrial;
             consoleWriteLine("Showing industrial desirability"_s, ConsoleLineStyle::Success);
-        } else if (equals(layerName, "fire"_s)) {
+        } else if (layerName == "fire"_s) {
             app_state.gameState->dataLayerToDraw = DataView::Fire;
             consoleWriteLine("Showing fire layer"_s, ConsoleLineStyle::Success);
-        } else if (equals(layerName, "health"_s)) {
+        } else if (layerName == "health"_s) {
             app_state.gameState->dataLayerToDraw = DataView::Health;
             consoleWriteLine("Showing health layer"_s, ConsoleLineStyle::Success);
-        } else if (equals(layerName, "land_value"_s)) {
+        } else if (layerName == "land_value"_s) {
             app_state.gameState->dataLayerToDraw = DataView::LandValue;
             consoleWriteLine("Showing land value layer"_s, ConsoleLineStyle::Success);
-        } else if (equals(layerName, "pollution"_s)) {
+        } else if (layerName == "pollution"_s) {
             app_state.gameState->dataLayerToDraw = DataView::Pollution;
             consoleWriteLine("Showing pollution layer"_s, ConsoleLineStyle::Success);
-        } else if (equals(layerName, "power"_s)) {
+        } else if (layerName == "power"_s) {
             app_state.gameState->dataLayerToDraw = DataView::Power;
             consoleWriteLine("Showing power layer"_s, ConsoleLineStyle::Success);
         } else {

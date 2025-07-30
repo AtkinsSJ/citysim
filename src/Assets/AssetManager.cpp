@@ -51,7 +51,7 @@ void initAssets()
     s_assets->assetMemoryAllocated = 0;
     s_assets->maxAssetMemoryAllocated = 0;
 
-    auto compareStrings = [](String* a, String* b) { return equals(*a, *b); };
+    auto compareStrings = [](String* a, String* b) { return *a == *b; };
 
     for (auto asset_type : enum_values<AssetType>()) {
         initHashTable(&s_assets->assetsByType[asset_type]);
@@ -258,10 +258,10 @@ void loadAsset(Asset* asset)
         // Only load s_assets that match our locale
         String assetLocale = getFileLocale(asset->fullName);
 
-        if (equals(assetLocale, getLocale())) {
+        if (assetLocale == getLocale()) {
             asset->texts.isFallbackLocale = false;
         } else {
-            if (equals(assetLocale, "en"_s)) {
+            if (assetLocale == "en"_s) {
                 logInfo("Loading asset {0} as a default-locale fallback. (Locale {1}, current is {2})"_s, { asset->fullName, assetLocale, getLocale() });
                 asset->texts.isFallbackLocale = true;
             } else {
@@ -607,7 +607,7 @@ void addAssetsFromDirectory(String subDirectory, Optional<AssetType> manualAsset
         pathToScan = constructPath({ s_assets->assetsPath, subDirectory });
     }
 
-    bool isLocaleSpecific = equals(subDirectory, "locale"_s);
+    bool isLocaleSpecific = subDirectory == "locale"_s;
     auto assetFlags = default_asset_flags;
     if (isLocaleSpecific)
         assetFlags.add(AssetFlags::IsLocaleSpecific);
@@ -970,7 +970,7 @@ void loadPaletteDefs(Blob data, Asset* asset)
     s32 paletteCount = 0;
     while (loadNextLine(&reader)) {
         String command = readToken(&reader);
-        if (equals(command, ":Palette"_s)) {
+        if (command == ":Palette"_s) {
             paletteCount++;
         }
     }
@@ -986,7 +986,7 @@ void loadPaletteDefs(Blob data, Asset* asset)
             command.length--;
             command.chars++;
 
-            if (equals(command, "Palette"_s)) {
+            if (command == "Palette"_s) {
                 paletteAsset = addAsset(AssetType::Palette, readToken(&reader), {});
                 addChildAsset(asset, paletteAsset);
             } else {
@@ -999,22 +999,22 @@ void loadPaletteDefs(Blob data, Asset* asset)
                 return;
             }
 
-            if (equals(command, "type"_s)) {
+            if (command == "type"_s) {
                 String type = readToken(&reader);
 
-                if (equals(type, "fixed"_s)) {
+                if (type == "fixed"_s) {
                     paletteAsset->palette.type = Palette::Type::Fixed;
-                } else if (equals(type, "gradient"_s)) {
+                } else if (type == "gradient"_s) {
                     paletteAsset->palette.type = Palette::Type::Gradient;
                 } else {
                     error(&reader, "Unrecognised palette type '{0}', allowed values are: fixed, gradient"_s, { type });
                 }
-            } else if (equals(command, "size"_s)) {
+            } else if (command == "size"_s) {
                 Maybe<s32> size = readInt<s32>(&reader);
                 if (size.isValid) {
                     paletteAsset->palette.size = size.value;
                 }
-            } else if (equals(command, "color"_s)) {
+            } else if (command == "color"_s) {
                 auto color = readColor(&reader);
                 if (color.isValid) {
                     if (paletteAsset->palette.type == Palette::Type::Fixed) {
@@ -1033,7 +1033,7 @@ void loadPaletteDefs(Blob data, Asset* asset)
                         error(&reader, "'color' is only a valid command for fixed palettes."_s);
                     }
                 }
-            } else if (equals(command, "from"_s)) {
+            } else if (command == "from"_s) {
                 auto from = readColor(&reader);
                 if (from.isValid) {
                     if (paletteAsset->palette.type == Palette::Type::Gradient) {
@@ -1042,7 +1042,7 @@ void loadPaletteDefs(Blob data, Asset* asset)
                         error(&reader, "'from' is only a valid command for gradient palettes."_s);
                     }
                 }
-            } else if (equals(command, "to"_s)) {
+            } else if (command == "to"_s) {
                 auto to = readColor(&reader);
                 if (to.isValid) {
                     if (paletteAsset->palette.type == Palette::Type::Gradient) {
@@ -1096,7 +1096,7 @@ void loadSpriteDefs(Blob data, Asset* asset)
             textureAsset = nullptr;
             spriteGroup = nullptr;
 
-            if (equals(command, "Ninepatch"_s)) {
+            if (command == "Ninepatch"_s) {
                 String name = readToken(&reader);
                 String filename = readToken(&reader);
                 Maybe<s32> pu0 = readInt<s32>(&reader);
@@ -1116,7 +1116,7 @@ void loadSpriteDefs(Blob data, Asset* asset)
                 Asset* ninepatch = addNinepatch(name, filename, pu0.value, pu1.value, pu2.value, pu3.value, pv0.value, pv1.value, pv2.value, pv3.value);
 
                 addChildAsset(asset, ninepatch);
-            } else if (equals(command, "Sprite"_s)) {
+            } else if (command == "Sprite"_s) {
                 // @Copypasta from the SpriteGroup branch, and the 'sprite' property
                 String name = readToken(&reader);
                 String filename = readToken(&reader);
@@ -1138,7 +1138,7 @@ void loadSpriteDefs(Blob data, Asset* asset)
                 sprite->pixelHeight = spriteSize.y;
 
                 addChildAsset(asset, group);
-            } else if (equals(command, "SpriteGroup"_s)) {
+            } else if (command == "SpriteGroup"_s) {
                 String name = readToken(&reader);
                 String filename = readToken(&reader);
                 Maybe<V2I> spriteSizeIn = readV2I(&reader);
@@ -1169,7 +1169,7 @@ void loadSpriteDefs(Blob data, Asset* asset)
             if (spriteGroup == nullptr) {
                 error(&reader, "Found a property outside of a :SpriteGroup!"_s);
                 return;
-            } else if (equals(command, "border"_s)) {
+            } else if (command == "border"_s) {
                 Maybe<s32> borderW = readInt<s32>(&reader);
                 Maybe<s32> borderH = readInt<s32>(&reader);
                 if (borderW.isValid && borderH.isValid) {
@@ -1178,7 +1178,7 @@ void loadSpriteDefs(Blob data, Asset* asset)
                     error(&reader, "Couldn't parse border. Expected 'border width height'."_s);
                     return;
                 }
-            } else if (equals(command, "sprite"_s)) {
+            } else if (command == "sprite"_s) {
                 Maybe<s32> mx = readInt<s32>(&reader);
                 Maybe<s32> my = readInt<s32>(&reader);
 
@@ -1269,7 +1269,7 @@ void loadTexts(HashTable<String>* texts, Asset* asset, Blob fileData)
         // If we do, one will overwrite the other, and that could be unpredictable if they're
         // in different files. Things will still work, but it would be confusing! And unintended.
         Maybe<String> existingValue = texts->findValue(key);
-        if (existingValue.isValid && !equals(existingValue.value, key)) {
+        if (existingValue.isValid && existingValue.value != key) {
             warn(&reader, "Text asset with ID '{0}' already exists in the texts table! Existing value: \"{1}\""_s, { key, existingValue.value });
         }
 

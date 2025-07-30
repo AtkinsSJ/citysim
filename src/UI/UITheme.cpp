@@ -16,12 +16,12 @@ Maybe<DrawableStyle> readDrawableStyle(LineReader* reader)
     String typeName = readToken(reader);
     Maybe<DrawableStyle> result = makeFailure<DrawableStyle>();
 
-    if (equals(typeName, "none"_s)) {
+    if (typeName == "none"_s) {
         DrawableStyle drawable = {};
         drawable.type = DrawableType::None;
 
         result = makeSuccess(drawable);
-    } else if (equals(typeName, "color"_s)) {
+    } else if (typeName == "color"_s) {
         auto color = readColor(reader);
         if (color.isValid) {
             DrawableStyle drawable = {};
@@ -30,7 +30,7 @@ Maybe<DrawableStyle> readDrawableStyle(LineReader* reader)
 
             result = makeSuccess(drawable);
         }
-    } else if (equals(typeName, "gradient"_s)) {
+    } else if (typeName == "gradient"_s) {
         auto color00 = readColor(reader);
         auto color01 = readColor(reader);
         auto color10 = readColor(reader);
@@ -46,7 +46,7 @@ Maybe<DrawableStyle> readDrawableStyle(LineReader* reader)
 
             result = makeSuccess(drawable);
         }
-    } else if (equals(typeName, "ninepatch"_s)) {
+    } else if (typeName == "ninepatch"_s) {
         String ninepatchName = readToken(reader);
 
         auto color = readColor(reader, true);
@@ -57,7 +57,7 @@ Maybe<DrawableStyle> readDrawableStyle(LineReader* reader)
         drawable.ninepatch = getAssetRef(AssetType::Ninepatch, ninepatchName);
 
         result = makeSuccess(drawable);
-    } else if (equals(typeName, "sprite"_s)) {
+    } else if (typeName == "sprite"_s) {
         String spriteName = readToken(reader);
 
         auto color = readColor(reader, true);
@@ -334,7 +334,7 @@ void loadUITheme(Blob data, Asset* asset)
             --firstWord.length;
             currentSection = firstWord;
 
-            if (equals(firstWord, "Font"_s)) {
+            if (firstWord == "Font"_s) {
                 target = nullptr;
                 String fontName = readToken(&reader);
                 String fontFilename = getRemainderOfLine(&reader);
@@ -367,7 +367,7 @@ void loadUITheme(Blob data, Asset* asset)
         } else {
             // Properties of the item
             // These are arranged alphabetically
-            if (equals(firstWord, "extends"_s)) {
+            if (firstWord == "extends"_s) {
                 // Clones an existing style
                 String parentStyle = readToken(&reader);
                 auto parentPack = styles.find(parentStyle);

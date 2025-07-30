@@ -83,19 +83,14 @@ String pushString(MemoryArena* arena, String src)
     return s;
 }
 
-bool equals(String a, String b)
+bool String::operator==(String const& other) const
 {
-    bool result = true;
+    if (length != other.length)
+        return false;
+    if (hash && other.hash && hash != other.hash)
+        return false;
 
-    if (a.length != b.length) {
-        result = false;
-    } else if (a.hash && b.hash && a.hash != b.hash) {
-        result = false;
-    } else {
-        result = isMemoryEqual(a.chars, b.chars, a.length);
-    }
-
-    return result;
+    return isMemoryEqual(chars, other.chars, length);
 }
 
 bool stringIsValid(String s)
@@ -246,9 +241,9 @@ Maybe<bool> asBool(String input)
 
     Maybe<bool> result;
 
-    if (equals(input, "true"_s)) {
+    if (input == "true"_s) {
         result = makeSuccess(true);
-    } else if (equals(input, "false"_s)) {
+    } else if (input == "false"_s) {
         result = makeSuccess(false);
     } else {
         result = makeFailure<bool>();
@@ -274,7 +269,7 @@ bool String::startsWith(String prefix)
     bool result = false;
 
     if (length == prefix.length) {
-        result = equals(*this, prefix);
+        result = *this == prefix;
     } else if (length > prefix.length) {
         result = isMemoryEqual<char>(prefix.chars, chars, prefix.length);
     } else {
@@ -290,7 +285,7 @@ bool String::endsWith(String suffix)
     bool result = false;
 
     if (length == suffix.length) {
-        result = equals(*this, suffix);
+        result = *this == suffix;
     } else if (length > suffix.length) {
         result = isMemoryEqual<char>(suffix.chars, (chars + length - suffix.length), suffix.length);
     } else {

@@ -116,7 +116,7 @@ void loadTerrainDefs(Blob data, Asset* asset)
     s32 terrainCount = 0;
     while (loadNextLine(&reader)) {
         String command = readToken(&reader);
-        if (equals(command, ":Terrain"_s)) {
+        if (command == ":Terrain"_s) {
             terrainCount++;
         }
     }
@@ -137,7 +137,7 @@ void loadTerrainDefs(Blob data, Asset* asset)
             firstWord.chars++;
             firstWord.length--;
 
-            if (equals(firstWord, "Terrain"_s)) {
+            if (firstWord == "Terrain"_s) {
                 String name = readToken(&reader);
                 if (isEmpty(name)) {
                     error(&reader, "Couldn't parse Terrain. Expected: ':Terrain identifier'"_s);
@@ -166,21 +166,21 @@ void loadTerrainDefs(Blob data, Asset* asset)
             if (def == nullptr) {
                 error(&reader, "Found a property before starting a :Terrain!"_s);
                 return;
-            } else if (equals(firstWord, "borders"_s)) {
+            } else if (firstWord == "borders"_s) {
                 def->borderSpriteNames = asset_manager().arena.allocate_array<String>(80);
-            } else if (equals(firstWord, "border"_s)) {
+            } else if (firstWord == "border"_s) {
                 def->borderSpriteNames.append(intern(&asset_manager().assetStrings, readToken(&reader)));
-            } else if (equals(firstWord, "can_build_on"_s)) {
+            } else if (firstWord == "can_build_on"_s) {
                 Maybe<bool> boolRead = readBool(&reader);
                 if (boolRead.isValid)
                     def->canBuildOn = boolRead.value;
-            } else if (equals(firstWord, "draw_borders_over"_s)) {
+            } else if (firstWord == "draw_borders_over"_s) {
                 Maybe<bool> boolRead = readBool(&reader);
                 if (boolRead.isValid)
                     def->drawBordersOver = boolRead.value;
-            } else if (equals(firstWord, "name"_s)) {
+            } else if (firstWord == "name"_s) {
                 def->textAssetName = intern(&asset_manager().assetStrings, readToken(&reader));
-            } else if (equals(firstWord, "sprite"_s)) {
+            } else if (firstWord == "sprite"_s) {
                 def->spriteName = intern(&asset_manager().assetStrings, readToken(&reader));
             } else {
                 warn(&reader, "Unrecognised property '{0}' inside command ':Terrain'"_s, { firstWord });

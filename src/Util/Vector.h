@@ -78,6 +78,8 @@ inline V2 operator/=(V2& v, float s)
 struct V2I {
     s32 x;
     s32 y;
+
+    bool operator==(V2I const&) const = default;
 };
 
 V2I v2i(s32 x, s32 y);

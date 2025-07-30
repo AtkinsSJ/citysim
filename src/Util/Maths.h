@@ -108,7 +108,7 @@ T approach(T currentValue, T targetValue, T distance)
 s32 manhattanDistance(Rect2I rect, V2I point);
 s32 manhattanDistance(Rect2I a, Rect2I b);
 
-bool equals(float a, float b, float epsilon);
+bool equals_with_epsilon(float a, float b, float epsilon);
 
 //
 // All this mess is just so we can access a type's min/max values from a template.
