@@ -9,11 +9,11 @@
 
 Optional<EffectRadius> EffectRadius::read(LineReader& reader)
 {
-    Optional radius = readInt<s32>(&reader);
+    auto radius = reader.read_int<s32>();
 
     if (radius.has_value()) {
-        Optional centre_value = readInt<s32>(&reader, true);
-        Optional outer_value = readInt<s32>(&reader, true);
+        auto centre_value = reader.read_int<s32>(LineReader::IsRequired::No);
+        auto outer_value = reader.read_int<s32>(LineReader::IsRequired::No);
 
         return EffectRadius {
             radius.value(),
@@ -22,7 +22,7 @@ Optional<EffectRadius> EffectRadius::read(LineReader& reader)
         };
     }
 
-    error(&reader, "Couldn't parse effect radius. Expected \"{0} radius [effectAtCentre] [effectAtEdge]\" where radius, effectAtCentre, and effectAtEdge are ints."_s);
+    reader.error("Couldn't parse effect radius. Expected \"{0} radius [effectAtCentre] [effectAtEdge]\" where radius, effectAtCentre, and effectAtEdge are ints."_s);
 
     return {};
 }

@@ -19,7 +19,7 @@ static void setPropertyValue(Style* style, Property* property, T value)
 
 Optional<DrawableStyle> readDrawableStyle(LineReader* reader)
 {
-    String typeName = readToken(reader);
+    String typeName = reader->next_token();
     Optional<DrawableStyle> result;
 
     if (typeName == "none"_s) {
@@ -53,7 +53,7 @@ Optional<DrawableStyle> readDrawableStyle(LineReader* reader)
             result = move(drawable);
         }
     } else if (typeName == "ninepatch"_s) {
-        String ninepatchName = readToken(reader);
+        String ninepatchName = reader->next_token();
 
         auto color = readColor(reader, true);
 
@@ -64,7 +64,7 @@ Optional<DrawableStyle> readDrawableStyle(LineReader* reader)
 
         result = move(drawable);
     } else if (typeName == "sprite"_s) {
-        String spriteName = readToken(reader);
+        String spriteName = reader->next_token();
 
         auto color = readColor(reader, true);
 
@@ -75,7 +75,7 @@ Optional<DrawableStyle> readDrawableStyle(LineReader* reader)
 
         result = move(drawable);
     } else {
-        error(reader, "Unrecognised background type '{0}'"_s, { typeName });
+        reader->error("Unrecognised background type '{0}'"_s, { typeName });
     }
 
     return result;
@@ -313,7 +313,7 @@ void assignStyleProperties(StyleType type, std::initializer_list<String> propert
 
 void loadUITheme(Blob data, Asset* asset)
 {
-    LineReader reader = readLines(asset->shortName, data);
+    LineReader reader { asset->shortName, data };
 
     HashTable<EnumMap<UI::StyleType, UI::Style>> styles;
     initHashTable(&styles);
@@ -331,8 +331,8 @@ void loadUITheme(Blob data, Asset* asset)
     String currentSection = nullString;
     UI::Style* target = nullptr;
 
-    while (loadNextLine(&reader)) {
-        String firstWord = readToken(&reader);
+    while (reader.load_next_line()) {
+        String firstWord = reader.next_token();
 
         if (firstWord.chars[0] == ':') {
             // define an item
@@ -342,14 +342,14 @@ void loadUITheme(Blob data, Asset* asset)
 
             if (firstWord == "Font"_s) {
                 target = nullptr;
-                String fontName = readToken(&reader);
-                String fontFilename = getRemainderOfLine(&reader);
+                String fontName = reader.next_token();
+                String fontFilename = reader.remainder_of_current_line();
 
                 if (!isEmpty(fontName) && !isEmpty(fontFilename)) {
                     Asset* fontAsset = addAsset(AssetType::BitmapFont, fontFilename);
                     fontNamesToAssetNames.put(fontName, fontAsset->shortName);
                 } else {
-                    error(&reader, "Invalid font declaration: '{0}'"_s, { getLine(&reader) });
+                    reader.error("Invalid font declaration: '{0}'"_s, { reader.current_line() });
                 }
             } else {
                 // Create a new style entry if the name matches a style type
@@ -357,7 +357,7 @@ void loadUITheme(Blob data, Asset* asset)
                 if (foundStyleType.has_value()) {
                     UI::StyleType styleType = foundStyleType.release_value();
 
-                    String name = intern(&asset_manager().assetStrings, readToken(&reader));
+                    String name = intern(&asset_manager().assetStrings, reader.next_token());
 
                     auto& pack = *styles.findOrAdd(name);
                     target = &pack[styleType];
@@ -367,7 +367,7 @@ void loadUITheme(Blob data, Asset* asset)
 
                     style_count[styleType]++;
                 } else {
-                    error(&reader, "Unrecognized command: '{0}'"_s, { firstWord });
+                    reader.error("Unrecognized command: '{0}'"_s, { firstWord });
                 }
             }
         } else {
@@ -375,15 +375,15 @@ void loadUITheme(Blob data, Asset* asset)
             // These are arranged alphabetically
             if (firstWord == "extends"_s) {
                 // Clones an existing style
-                String parentStyle = readToken(&reader);
+                String parentStyle = reader.next_token();
                 auto parentPack = styles.find(parentStyle);
                 if (!parentPack.isValid) {
-                    error(&reader, "Unable to find style named '{0}'"_s, { parentStyle });
+                    reader.error("Unable to find style named '{0}'"_s, { parentStyle });
                 } else {
                     UI::Style const& parent = (*parentPack.value)[target->type];
                     // For undefined styles, the parent struct will be all nulls, so the type will not match
                     if (parent.type != target->type) {
-                        error(&reader, "Attempting to extend a style of the wrong type."_s);
+                        reader.error("Attempting to extend a style of the wrong type."_s);
                     } else {
                         String name = target->name;
                         *target = parent;
@@ -403,7 +403,7 @@ void loadUITheme(Blob data, Asset* asset)
                         } break;
 
                         case UI::PropType::Bool: {
-                            if (Optional value = readBool(&reader); value.has_value()) {
+                            if (auto value = reader.read_bool(); value.has_value()) {
                                 UI::setPropertyValue(target, property, value.release_value());
                             }
                         } break;
@@ -422,24 +422,24 @@ void loadUITheme(Blob data, Asset* asset)
                         } break;
 
                         case UI::PropType::Float: {
-                            if (Optional value = readFloat(&reader); value.has_value()) {
-                                UI::setPropertyValue(target, property, (float)value.release_value());
+                            if (auto value = reader.read_float(); value.has_value()) {
+                                UI::setPropertyValue(target, property, value.release_value());
                             }
                         } break;
 
                         case UI::PropType::Font: {
-                            String value = intern(&asset_manager().assetStrings, readToken(&reader));
+                            String value = intern(&asset_manager().assetStrings, reader.next_token());
                             Optional<String> fontFilename = fontNamesToAssetNames.findValue(value);
                             if (fontFilename.has_value()) {
                                 AssetRef fontRef = getAssetRef(AssetType::BitmapFont, fontFilename.value());
                                 UI::setPropertyValue(target, property, fontRef);
                             } else {
-                                error(&reader, "Unrecognised font name '{0}'. Make sure to declare the :Font before it is used!"_s, { value });
+                                reader.error("Unrecognised font name '{0}'. Make sure to declare the :Font before it is used!"_s, { value });
                             }
                         } break;
 
                         case UI::PropType::Int: {
-                            if (Optional value = readInt<s32>(&reader); value.has_value()) {
+                            if (auto value = reader.read_int<s32>(); value.has_value()) {
                                 UI::setPropertyValue(target, property, value.release_value());
                             }
                         } break;
@@ -452,14 +452,14 @@ void loadUITheme(Blob data, Asset* asset)
 
                         case UI::PropType::Style: // NB: Style names are just Strings now
                         case UI::PropType::String: {
-                            String value = intern(&asset_manager().assetStrings, readToken(&reader));
+                            String value = intern(&asset_manager().assetStrings, reader.next_token());
                             // Strings are read directly, so we don't need an if(valid) check
                             UI::setPropertyValue(target, property, value);
                         } break;
 
                         case UI::PropType::V2I: {
-                            Optional offsetX = readInt<s32>(&reader);
-                            Optional offsetY = readInt<s32>(&reader);
+                            auto offsetX = reader.read_int<s32>();
+                            auto offsetY = reader.read_int<s32>();
                             if (offsetX.has_value() && offsetY.has_value()) {
                                 V2I vector = v2i(offsetX.value(), offsetY.value());
                                 UI::setPropertyValue(target, property, vector);
@@ -470,10 +470,10 @@ void loadUITheme(Blob data, Asset* asset)
                             logCritical("Invalid property type for '{0}'"_s, { firstWord });
                         }
                     } else {
-                        error(&reader, "Property '{0}' is not allowed in '{1}'"_s, { firstWord, currentSection });
+                        reader.error("Property '{0}' is not allowed in '{1}'"_s, { firstWord, currentSection });
                     }
                 } else {
-                    error(&reader, "Unrecognized property '{0}'"_s, { firstWord });
+                    reader.error("Unrecognized property '{0}'"_s, { firstWord });
                 }
             }
         }
@@ -529,10 +529,10 @@ void loadUITheme(Blob data, Asset* asset)
                     button->backgroundDisabled = style->backgroundDisabled.value_or(button->background);
 
                     if (!button->startIcon.hasFixedSize()) {
-                        error(&reader, "Start icon for button '{0}' has no fixed size. Defaulting to 0 x 0"_s, { button->name });
+                        reader.error("Start icon for button '{0}' has no fixed size. Defaulting to 0 x 0"_s, { button->name });
                     }
                     if (!button->endIcon.hasFixedSize()) {
-                        error(&reader, "End icon for button '{0}' has no fixed size. Defaulting to 0 x 0"_s, { button->name });
+                        reader.error("End icon for button '{0}' has no fixed size. Defaulting to 0 x 0"_s, { button->name });
                     }
                 } break;
 
@@ -561,7 +561,7 @@ void loadUITheme(Blob data, Asset* asset)
                     } else if (checkbox->check.hasFixedSize()) {
                         checkbox->checkSize = checkbox->check.getSize();
                     } else {
-                        error(&reader, "Check for checkbox '{0}' has no fixed size, and no checkSize was provided. Defaulting to 0 x 0"_s, { checkbox->name });
+                        reader.error("Check for checkbox '{0}' has no fixed size, and no checkSize was provided. Defaulting to 0 x 0"_s, { checkbox->name });
                     }
                 } break;
 

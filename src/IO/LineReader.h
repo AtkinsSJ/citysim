@@ -11,26 +11,8 @@
 #include <Util/Basic.h>
 #include <Util/Flags.h>
 #include <Util/Memory.h>
+#include <Util/Optional.h>
 #include <Util/String.h>
-
-struct LineReaderPosition {
-    String currentLine;
-    smm currentLineNumber;
-    String lineRemainder;
-    smm startOfNextLine;
-    bool atEndOfFile;
-};
-
-struct LineReader {
-    String filename;
-    Blob data;
-
-    LineReaderPosition position;
-
-    bool skipBlankLines;
-    bool removeComments;
-    char commentChar;
-};
 
 enum class LineReaderFlags : u8 {
     SkipBlankLines,
@@ -39,56 +21,88 @@ enum class LineReaderFlags : u8 {
 };
 constexpr Flags DefaultLineReaderFlags { LineReaderFlags::SkipBlankLines, LineReaderFlags::RemoveTrailingComments };
 
-LineReader readLines(String filename, Blob data, Flags<LineReaderFlags> flags = DefaultLineReaderFlags, char commentChar = '#');
-LineReaderPosition savePosition(LineReader* reader);
-void restorePosition(LineReader* reader, LineReaderPosition position);
-void restart(LineReader* reader);
+struct LineReader {
+    struct Position {
+        String currentLine;
+        smm currentLineNumber;
+        String lineRemainder;
+        smm startOfNextLine;
+        bool atEndOfFile;
+    };
 
-// How many lines are in the file?
-s32 countLines(Blob data);
+    enum class IsRequired : u8 {
+        No,
+        Yes,
+    };
 
-bool loadNextLine(LineReader* reader);
-String getLine(LineReader* reader);
-String getRemainderOfLine(LineReader* reader);
+    LineReader(String filename, Blob data, Flags<LineReaderFlags> flags = DefaultLineReaderFlags, char commentChar = '#');
 
-// How many times does the given property appear in the current :Command block?
-s32 countPropertyOccurrences(LineReader* reader, String propertyName);
+    Position save_position() const;
+    void restore_position(Position const&);
+    void restart();
 
-String readToken(LineReader* reader, char splitChar = 0);
-String peekToken(LineReader* reader, char splitChar = 0);
-s32 countRemainingTokens(LineReader* reader, char splitChar = 0);
+    // FIXME: I don't like this API. Use a "has_next() / get_next()" style instead.
+    //        Or, for_each_line() with a callback?
+    //        Or, an iterator of some sort?
+    bool load_next_line();
+    String current_line() const;
+    String remainder_of_current_line() const;
 
-Maybe<double> readFloat(LineReader* reader, bool isOptional = false, char splitChar = 0);
-Maybe<bool> readBool(LineReader* reader, bool isOptional = false, char splitChar = 0);
+    String next_token(Optional<char> split_char = {});
+    String peek_token(Optional<char> split_char = {});
+
+    s32 count_remaining_tokens_in_current_line(Optional<char> split_char = {}) const;
+    u32 count_occurrences_of_property_in_current_command(String const& property_name) const;
+
+    Optional<bool> read_bool(IsRequired = IsRequired::Yes, Optional<char> split_char = {});
+
+    Optional<double> read_double(IsRequired = IsRequired::Yes, Optional<char> split_char = {});
+    Optional<float> read_float(IsRequired is_required = IsRequired::Yes, Optional<char> split_char = {})
+    {
+        if (auto maybe_double = read_double(is_required, split_char); maybe_double.has_value())
+            return static_cast<float>(maybe_double.release_value());
+        return {};
+    }
+
+    template<typename T>
+    Optional<T> read_int(IsRequired is_required = IsRequired::Yes, Optional<char> split_char = {})
+    {
+        String token = next_token(split_char);
+
+        if (isEmpty(token)) {
+            if (is_required == IsRequired::Yes)
+                error("Expected an integer value."_s);
+            return {};
+        }
+
+        if (auto maybe_s64 = asInt(token); maybe_s64.isValid) {
+            if (canCastIntTo<T>(maybe_s64.value))
+                return static_cast<T>(maybe_s64.value);
+
+            error("Value {0} cannot fit in a {1}."_s, { token, typeNameOf<T>() });
+            return {};
+        }
+
+        error("Couldn't parse '{0}' as an integer."_s, { token });
+        return {};
+    }
+
+    void warn(String message, std::initializer_list<String> args = {}) const;
+    void error(String message, std::initializer_list<String> args = {}) const;
+
+    static u32 count_lines(Blob const& data);
+
+    String filename;
+    Blob data;
+
+    Position position {};
+
+    bool skipBlankLines;
+    bool removeComments;
+    char commentChar;
+};
 
 Optional<Alignment> readAlignment(LineReader* reader);
 Maybe<Colour> readColor(LineReader* reader, bool isOptional = false);
 Maybe<Padding> readPadding(LineReader* reader);
 Maybe<V2I> readV2I(LineReader* reader);
-
-void warn(LineReader* reader, String message, std::initializer_list<String> args = {});
-void error(LineReader* reader, String message, std::initializer_list<String> args = {});
-
-template<typename T>
-Maybe<T> readInt(LineReader* reader, bool isOptional = false, char splitChar = 0)
-{
-    String token = readToken(reader, splitChar);
-    Maybe<T> result = makeFailure<T>();
-
-    if (!(isOptional && isEmpty(token))) // If it's optional, don't print errors
-    {
-        Maybe<s64> s64Result = asInt(token);
-
-        if (!s64Result.isValid) {
-            error(reader, "Couldn't parse '{0}' as an integer."_s, { token });
-        } else {
-            if (canCastIntTo<T>(s64Result.value)) {
-                result = makeSuccess<T>((T)s64Result.value);
-            } else {
-                error(reader, "Value {0} cannot fit in a {1}."_s, { token, typeNameOf<T>() });
-            }
-        }
-    }
-
-    return result;
-}

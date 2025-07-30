@@ -926,34 +926,34 @@ void loadCursorDefs(Blob data, Asset* asset)
 {
     DEBUG_FUNCTION();
 
-    LineReader reader = readLines(asset->shortName, data);
+    LineReader reader { asset->shortName, data };
 
     // We store the cursorNames array in the defs asset
     // So, we first need to scan through the file to see how many cursors there are in it!
     s32 cursorCount = 0;
-    while (loadNextLine(&reader)) {
+    while (reader.load_next_line()) {
         cursorCount++;
     }
 
     allocateChildren(asset, cursorCount);
 
-    restart(&reader);
+    reader.restart();
 
-    while (loadNextLine(&reader)) {
-        String name = intern(&s_assets->assetStrings, readToken(&reader));
-        String filename = readToken(&reader);
+    while (reader.load_next_line()) {
+        String name = intern(&s_assets->assetStrings, reader.next_token());
+        String filename = reader.next_token();
 
-        Maybe<s32> hotX = readInt<s32>(&reader);
-        Maybe<s32> hotY = readInt<s32>(&reader);
+        auto hot_x = reader.read_int<s32>();
+        auto hot_y = reader.read_int<s32>();
 
-        if (hotX.isValid && hotY.isValid) {
+        if (hot_x.has_value() && hot_y.has_value()) {
             // Add the cursor
             Asset* cursorAsset = addAsset(AssetType::Cursor, name, {});
             cursorAsset->cursor.imageFilePath = intern(&s_assets->assetStrings, getAssetPath(AssetType::Cursor, filename));
-            cursorAsset->cursor.hotspot = v2i(hotX.value, hotY.value);
+            cursorAsset->cursor.hotspot = v2i(hot_x.release_value(), hot_y.release_value());
             addChildAsset(asset, cursorAsset);
         } else {
-            error(&reader, "Couldn't parse cursor definition. Expected 'name filename.png hot-x hot-y'."_s);
+            reader.error("Couldn't parse cursor definition. Expected 'name filename.png hot-x hot-y'."_s);
             return;
         }
     }
@@ -963,13 +963,13 @@ void loadPaletteDefs(Blob data, Asset* asset)
 {
     DEBUG_FUNCTION();
 
-    LineReader reader = readLines(asset->shortName, data);
+    LineReader reader { asset->shortName, data };
 
     // We store the paletteNames array in the defs asset
     // So, we first need to scan through the file to see how many palettes there are in it!
     s32 paletteCount = 0;
-    while (loadNextLine(&reader)) {
-        String command = readToken(&reader);
+    while (reader.load_next_line()) {
+        String command = reader.next_token();
         if (command == ":Palette"_s) {
             paletteCount++;
         }
@@ -977,42 +977,41 @@ void loadPaletteDefs(Blob data, Asset* asset)
 
     allocateChildren(asset, paletteCount);
 
-    restart(&reader);
+    reader.restart();
 
     Asset* paletteAsset = nullptr;
-    while (loadNextLine(&reader)) {
-        String command = readToken(&reader);
+    while (reader.load_next_line()) {
+        String command = reader.next_token();
         if (command[0] == ':') {
             command.length--;
             command.chars++;
 
             if (command == "Palette"_s) {
-                paletteAsset = addAsset(AssetType::Palette, readToken(&reader), {});
+                paletteAsset = addAsset(AssetType::Palette, reader.next_token(), {});
                 addChildAsset(asset, paletteAsset);
             } else {
-                error(&reader, "Unexpected command ':{0}' in palette-definitions file. Only :Palette is allowed!"_s, { command });
+                reader.error("Unexpected command ':{0}' in palette-definitions file. Only :Palette is allowed!"_s, { command });
                 return;
             }
         } else {
             if (paletteAsset == nullptr) {
-                error(&reader, "Unexpected command '{0}' before the start of a :Palette"_s, { command });
+                reader.error("Unexpected command '{0}' before the start of a :Palette"_s, { command });
                 return;
             }
 
             if (command == "type"_s) {
-                String type = readToken(&reader);
+                String type = reader.next_token();
 
                 if (type == "fixed"_s) {
                     paletteAsset->palette.type = Palette::Type::Fixed;
                 } else if (type == "gradient"_s) {
                     paletteAsset->palette.type = Palette::Type::Gradient;
                 } else {
-                    error(&reader, "Unrecognised palette type '{0}', allowed values are: fixed, gradient"_s, { type });
+                    reader.error("Unrecognised palette type '{0}', allowed values are: fixed, gradient"_s, { type });
                 }
             } else if (command == "size"_s) {
-                Maybe<s32> size = readInt<s32>(&reader);
-                if (size.isValid) {
-                    paletteAsset->palette.size = size.value;
+                if (auto size = reader.read_int<s32>(); size.has_value()) {
+                    paletteAsset->palette.size = size.release_value();
                 }
             } else if (command == "color"_s) {
                 auto color = readColor(&reader);
@@ -1025,12 +1024,12 @@ void loadPaletteDefs(Blob data, Asset* asset)
 
                         s32 colorIndex = paletteAsset->palette.paletteData.count;
                         if (colorIndex >= paletteAsset->palette.size) {
-                            error(&reader, "Too many 'color' definitions! 'size' must be large enough."_s);
+                            reader.error("Too many 'color' definitions! 'size' must be large enough."_s);
                         } else {
                             paletteAsset->palette.paletteData.append(color.value);
                         }
                     } else {
-                        error(&reader, "'color' is only a valid command for fixed palettes."_s);
+                        reader.error("'color' is only a valid command for fixed palettes."_s);
                     }
                 }
             } else if (command == "from"_s) {
@@ -1039,7 +1038,7 @@ void loadPaletteDefs(Blob data, Asset* asset)
                     if (paletteAsset->palette.type == Palette::Type::Gradient) {
                         paletteAsset->palette.gradient.from = from.value;
                     } else {
-                        error(&reader, "'from' is only a valid command for gradient palettes."_s);
+                        reader.error("'from' is only a valid command for gradient palettes."_s);
                     }
                 }
             } else if (command == "to"_s) {
@@ -1048,11 +1047,11 @@ void loadPaletteDefs(Blob data, Asset* asset)
                     if (paletteAsset->palette.type == Palette::Type::Gradient) {
                         paletteAsset->palette.gradient.to = to.value;
                     } else {
-                        error(&reader, "'to' is only a valid command for gradient palettes."_s);
+                        reader.error("'to' is only a valid command for gradient palettes."_s);
                     }
                 }
             } else {
-                error(&reader, "Unrecognised command '{0}'"_s, { command });
+                reader.error("Unrecognised command '{0}'"_s, { command });
             }
         }
     }
@@ -1062,7 +1061,7 @@ void loadSpriteDefs(Blob data, Asset* asset)
 {
     DEBUG_FUNCTION();
 
-    LineReader reader = readLines(asset->shortName, data);
+    LineReader reader { asset->shortName, data };
 
     Asset* textureAsset = nullptr;
     V2I spriteSize = v2i(0, 0);
@@ -1072,8 +1071,8 @@ void loadSpriteDefs(Blob data, Asset* asset)
 
     // Count the number of child s_assets, so we can allocate our spriteNames array
     s32 childAssetCount = 0;
-    while (loadNextLine(&reader)) {
-        String command = readToken(&reader);
+    while (reader.load_next_line()) {
+        String command = reader.next_token();
 
         if (command.chars[0] == ':') {
             childAssetCount++;
@@ -1081,11 +1080,11 @@ void loadSpriteDefs(Blob data, Asset* asset)
     }
     allocateChildren(asset, childAssetCount);
 
-    restart(&reader);
+    reader.restart();
 
     // Now, actually read things
-    while (loadNextLine(&reader)) {
-        String command = readToken(&reader);
+    while (reader.load_next_line()) {
+        String command = reader.next_token();
 
         if (command.chars[0] == ':') // Definitions
         {
@@ -1097,33 +1096,33 @@ void loadSpriteDefs(Blob data, Asset* asset)
             spriteGroup = nullptr;
 
             if (command == "Ninepatch"_s) {
-                String name = readToken(&reader);
-                String filename = readToken(&reader);
-                Maybe<s32> pu0 = readInt<s32>(&reader);
-                Maybe<s32> pu1 = readInt<s32>(&reader);
-                Maybe<s32> pu2 = readInt<s32>(&reader);
-                Maybe<s32> pu3 = readInt<s32>(&reader);
-                Maybe<s32> pv0 = readInt<s32>(&reader);
-                Maybe<s32> pv1 = readInt<s32>(&reader);
-                Maybe<s32> pv2 = readInt<s32>(&reader);
-                Maybe<s32> pv3 = readInt<s32>(&reader);
+                String name = reader.next_token();
+                String filename = reader.next_token();
+                auto pu0 = reader.read_int<s32>();
+                auto pu1 = reader.read_int<s32>();
+                auto pu2 = reader.read_int<s32>();
+                auto pu3 = reader.read_int<s32>();
+                auto pv0 = reader.read_int<s32>();
+                auto pv1 = reader.read_int<s32>();
+                auto pv2 = reader.read_int<s32>();
+                auto pv3 = reader.read_int<s32>();
 
-                if (isEmpty(name) || isEmpty(filename) || !allAreValid(pu0, pu1, pu2, pu3, pv0, pv1, pv2, pv3)) {
-                    error(&reader, "Couldn't parse Ninepatch. Expected: ':Ninepatch identifier filename.png pu0 pu1 pu2 pu3 pv0 pv1 pv2 pv3'"_s);
+                if (isEmpty(name) || isEmpty(filename) || !all_have_values(pu0, pu1, pu2, pu3, pv0, pv1, pv2, pv3)) {
+                    reader.error("Couldn't parse Ninepatch. Expected: ':Ninepatch identifier filename.png pu0 pu1 pu2 pu3 pv0 pv1 pv2 pv3'"_s);
                     return;
                 }
 
-                Asset* ninepatch = addNinepatch(name, filename, pu0.value, pu1.value, pu2.value, pu3.value, pv0.value, pv1.value, pv2.value, pv3.value);
+                Asset* ninepatch = addNinepatch(name, filename, pu0.release_value(), pu1.release_value(), pu2.release_value(), pu3.release_value(), pv0.release_value(), pv1.release_value(), pv2.release_value(), pv3.release_value());
 
                 addChildAsset(asset, ninepatch);
             } else if (command == "Sprite"_s) {
                 // @Copypasta from the SpriteGroup branch, and the 'sprite' property
-                String name = readToken(&reader);
-                String filename = readToken(&reader);
+                String name = reader.next_token();
+                String filename = reader.next_token();
                 Maybe<V2I> spriteSizeIn = readV2I(&reader);
 
                 if (isEmpty(name) || isEmpty(filename) || !spriteSizeIn.isValid) {
-                    error(&reader, "Couldn't parse Sprite. Expected: ':Sprite identifier filename.png SWxSH'"_s);
+                    reader.error("Couldn't parse Sprite. Expected: ':Sprite identifier filename.png SWxSH'"_s);
                     return;
                 }
 
@@ -1139,21 +1138,21 @@ void loadSpriteDefs(Blob data, Asset* asset)
 
                 addChildAsset(asset, group);
             } else if (command == "SpriteGroup"_s) {
-                String name = readToken(&reader);
-                String filename = readToken(&reader);
+                String name = reader.next_token();
+                String filename = reader.next_token();
                 Maybe<V2I> spriteSizeIn = readV2I(&reader);
 
                 if (isEmpty(name) || isEmpty(filename) || !spriteSizeIn.isValid) {
-                    error(&reader, "Couldn't parse SpriteGroup. Expected: ':SpriteGroup identifier filename.png SWxSH'"_s);
+                    reader.error("Couldn't parse SpriteGroup. Expected: ':SpriteGroup identifier filename.png SWxSH'"_s);
                     return;
                 }
 
                 textureAsset = addTexture(filename, false);
                 spriteSize = spriteSizeIn.value;
 
-                s32 spriteCount = countPropertyOccurrences(&reader, "sprite"_s);
+                s32 spriteCount = reader.count_occurrences_of_property_in_current_command("sprite"_s);
                 if (spriteCount < 1) {
-                    error(&reader, "SpriteGroup must contain at least 1 sprite!"_s);
+                    reader.error("SpriteGroup must contain at least 1 sprite!"_s);
                     return;
                 }
                 spriteGroup = addSpriteGroup(name, spriteCount);
@@ -1161,30 +1160,30 @@ void loadSpriteDefs(Blob data, Asset* asset)
 
                 addChildAsset(asset, spriteGroup);
             } else {
-                error(&reader, "Unrecognised command: '{0}'"_s, { command });
+                reader.error("Unrecognised command: '{0}'"_s, { command });
                 return;
             }
         } else // Properties!
         {
             if (spriteGroup == nullptr) {
-                error(&reader, "Found a property outside of a :SpriteGroup!"_s);
+                reader.error("Found a property outside of a :SpriteGroup!"_s);
                 return;
             } else if (command == "border"_s) {
-                Maybe<s32> borderW = readInt<s32>(&reader);
-                Maybe<s32> borderH = readInt<s32>(&reader);
-                if (borderW.isValid && borderH.isValid) {
-                    spriteBorder = v2i(borderW.value, borderH.value);
+                auto borderW = reader.read_int<s32>();
+                auto borderH = reader.read_int<s32>();
+                if (borderW.has_value() && borderH.has_value()) {
+                    spriteBorder = v2i(borderW.release_value(), borderH.release_value());
                 } else {
-                    error(&reader, "Couldn't parse border. Expected 'border width height'."_s);
+                    reader.error("Couldn't parse border. Expected 'border width height'."_s);
                     return;
                 }
             } else if (command == "sprite"_s) {
-                Maybe<s32> mx = readInt<s32>(&reader);
-                Maybe<s32> my = readInt<s32>(&reader);
+                auto mx = reader.read_int<s32>();
+                auto my = reader.read_int<s32>();
 
-                if (mx.isValid && my.isValid) {
-                    s32 x = mx.value;
-                    s32 y = my.value;
+                if (mx.has_value() && my.has_value()) {
+                    s32 x = mx.release_value();
+                    s32 y = my.release_value();
 
                     Sprite* sprite = spriteGroup->spriteGroup.sprites + spriteIndex;
                     sprite->texture = textureAsset;
@@ -1196,11 +1195,11 @@ void loadSpriteDefs(Blob data, Asset* asset)
 
                     spriteIndex++;
                 } else {
-                    error(&reader, "Couldn't parse {0}. Expected '{0} x y'."_s, { command });
+                    reader.error("Couldn't parse {0}. Expected '{0} x y'."_s, { command });
                     return;
                 }
             } else {
-                error(&reader, "Unrecognised command '{0}'"_s, { command });
+                reader.error("Unrecognised command '{0}'"_s, { command });
                 return;
             }
         }
@@ -1209,7 +1208,7 @@ void loadSpriteDefs(Blob data, Asset* asset)
 
 void loadTexts(HashTable<String>* texts, Asset* asset, Blob fileData)
 {
-    LineReader reader = readLines(asset->shortName, fileData);
+    LineReader reader { asset->shortName, fileData };
 
     // NB: We store the strings inside the asset data, so it's one block of memory instead of many small ones.
     // However, since we allocate before we parse the file, we need to make sure that the output texts are
@@ -1222,7 +1221,7 @@ void loadTexts(HashTable<String>* texts, Asset* asset, Blob fileData)
     // We use the number of lines in the file as a heuristic - we know it'll be slightly more than
     // the number of texts in the file, because they're 1 per line, and we don't have many blanks.
 
-    s32 lineCount = countLines(fileData);
+    s32 lineCount = LineReader::count_lines(fileData);
     smm keyArraySize = sizeof(String) * lineCount;
     asset->data = assetsAllocate(s_assets, fileData.size() + keyArraySize);
 
@@ -1231,9 +1230,9 @@ void loadTexts(HashTable<String>* texts, Asset* asset, Blob fileData)
     smm currentSize = keyArraySize;
     char* currentPos = (char*)(asset->data.writable_data() + keyArraySize);
 
-    while (loadNextLine(&reader)) {
-        String inputKey = readToken(&reader);
-        String inputText = getRemainderOfLine(&reader);
+    while (reader.load_next_line()) {
+        String inputKey = reader.next_token();
+        String inputText = reader.remainder_of_current_line();
 
         // Store the key
         ASSERT(currentSize + inputKey.length <= asset->data.size());
@@ -1270,7 +1269,7 @@ void loadTexts(HashTable<String>* texts, Asset* asset, Blob fileData)
         // in different files. Things will still work, but it would be confusing! And unintended.
         Maybe<String> existingValue = texts->findValue(key);
         if (existingValue.isValid && existingValue.value != key) {
-            warn(&reader, "Text asset with ID '{0}' already exists in the texts table! Existing value: \"{1}\""_s, { key, existingValue.value });
+            reader.warn("Text asset with ID '{0}' already exists in the texts table! Existing value: \"{1}\""_s, { key, existingValue.value });
         }
 
         asset->texts.keys.append(key);

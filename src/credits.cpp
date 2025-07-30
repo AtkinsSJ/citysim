@@ -20,9 +20,9 @@ AppStatus updateAndRenderCredits(float /*deltaTime*/)
     UI::LabelStyle* labelStyle = getStyle<UI::LabelStyle>("title"_s);
 
     Asset* creditsText = getAsset(AssetType::Misc, "credits.txt"_s);
-    LineReader reader = readLines(creditsText->shortName, creditsText->data, {});
-    while (loadNextLine(&reader)) {
-        String line = getLine(&reader);
+    LineReader reader { creditsText->shortName, creditsText->data, {} };
+    while (reader.load_next_line()) {
+        String line = reader.current_line();
         V2I labelSize = UI::calculateLabelSize(line, labelStyle, maxLabelWidth);
         Rect2I labelBounds = irectAligned(position, labelSize, labelStyle->textAlignment);
         UI::putLabel(line, labelBounds, labelStyle);

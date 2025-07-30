@@ -10,38 +10,31 @@
 #include <Util/Rectangle.h>
 #include <Util/Unicode.h>
 
-LineReader readLines(String filename, Blob data, Flags<LineReaderFlags> flags, char commentChar)
+LineReader::LineReader(String filename, Blob data, Flags<LineReaderFlags> flags, char commentChar)
+    : filename(filename)
+    , data(data)
+    , skipBlankLines(flags.has(LineReaderFlags::SkipBlankLines))
+    , removeComments(flags.has(LineReaderFlags::RemoveTrailingComments))
+    , commentChar(commentChar)
 {
-    LineReader result = {};
-
-    result.filename = filename;
-    result.data = data;
-
-    result.position = {};
-
-    result.skipBlankLines = flags.has(LineReaderFlags::SkipBlankLines);
-    result.removeComments = flags.has(LineReaderFlags::RemoveTrailingComments);
-    result.commentChar = commentChar;
-
-    return result;
 }
 
-LineReaderPosition savePosition(LineReader* reader)
+LineReader::Position LineReader::save_position() const
 {
-    return reader->position;
+    return position;
 }
 
-void restorePosition(LineReader* reader, LineReaderPosition position)
+void LineReader::restore_position(Position const& position)
 {
-    reader->position = position;
+    this->position = position;
 }
 
-void restart(LineReader* reader)
+void LineReader::restart()
 {
-    reader->position = {};
+    position = {};
 }
 
-s32 countLines(Blob data)
+u32 LineReader::count_lines(Blob const& data)
 {
     // FIXME: This should be some kind of Span type instead of Blob.
 
@@ -68,25 +61,29 @@ s32 countLines(Blob data)
     return result;
 }
 
-s32 countPropertyOccurrences(LineReader* reader, String propertyName)
+u32 LineReader::count_occurrences_of_property_in_current_command(String const& property_name) const
 {
-    s32 result = 0;
+    u32 result = 0;
 
-    LineReaderPosition savedPosition = savePosition(reader);
-    while (loadNextLine(reader)) {
-        String _firstWord = readToken(reader);
-        if (_firstWord[0] == ':')
+    // Conceptually this method is const, because the LineReader is left in the same state it was in before.
+    // However, we do need to modify its state temporarily. So, we have some const_cast nastiness.
+    auto& mutable_this = const_cast<LineReader&>(*this);
+
+    auto saved_position = save_position();
+    while (mutable_this.load_next_line()) {
+        String first_word = mutable_this.next_token();
+        if (first_word[0] == ':')
             break; // We've reached the next :Command
 
-        if (_firstWord == propertyName)
+        if (first_word == property_name)
             result++;
     }
-    restorePosition(reader, savedPosition);
+    mutable_this.restore_position(saved_position);
 
     return result;
 }
 
-bool loadNextLine(LineReader* reader)
+bool LineReader::load_next_line()
 {
     bool result = true;
 
@@ -94,26 +91,26 @@ bool loadNextLine(LineReader* reader)
 
     do {
         // Get next line
-        ++reader->position.currentLineNumber;
-        line.chars = (char*)(reader->data.data() + reader->position.startOfNextLine);
+        ++position.currentLineNumber;
+        line.chars = (char*)(data.data() + position.startOfNextLine);
         line.length = 0;
-        while ((reader->position.startOfNextLine < reader->data.size()) && !isNewline(reader->data.data()[reader->position.startOfNextLine])) {
-            ++reader->position.startOfNextLine;
+        while ((position.startOfNextLine < data.size()) && !isNewline(data.data()[position.startOfNextLine])) {
+            ++position.startOfNextLine;
             ++line.length;
         }
 
         // Handle Windows' stupid double-character newline.
-        if (reader->position.startOfNextLine < reader->data.size()) {
-            ++reader->position.startOfNextLine;
-            if (isNewline(reader->data.data()[reader->position.startOfNextLine]) && (reader->data.data()[reader->position.startOfNextLine] != reader->data.data()[reader->position.startOfNextLine - 1])) {
-                ++reader->position.startOfNextLine;
+        if (position.startOfNextLine < data.size()) {
+            ++position.startOfNextLine;
+            if (isNewline(data.data()[position.startOfNextLine]) && (data.data()[position.startOfNextLine] != data.data()[position.startOfNextLine - 1])) {
+                ++position.startOfNextLine;
             }
         }
 
         // Trim the comment
-        if (reader->removeComments) {
+        if (removeComments) {
             for (s32 p = 0; p < line.length; p++) {
-                if (line[p] == reader->commentChar) {
+                if (line[p] == commentChar) {
                     line.length = p;
                     break;
                 }
@@ -124,116 +121,107 @@ bool loadNextLine(LineReader* reader)
         line = trim(line);
 
         // This seems weird, but basically: The break means all lines get returned if we're not skipping blank ones.
-        if (!reader->skipBlankLines)
+        if (!skipBlankLines)
             break;
-    } while (isEmpty(line) && !(reader->position.startOfNextLine >= reader->data.size()));
+    } while (isEmpty(line) && !(position.startOfNextLine >= data.size()));
 
-    reader->position.currentLine = line;
-    reader->position.lineRemainder = line;
+    position.currentLine = line;
+    position.lineRemainder = line;
 
     if (isEmpty(line)) {
-        if (reader->skipBlankLines) {
+        if (skipBlankLines) {
             result = false;
-            reader->position.atEndOfFile = true;
-        } else if (reader->position.startOfNextLine >= reader->data.size()) {
+            position.atEndOfFile = true;
+        } else if (position.startOfNextLine >= data.size()) {
             result = false;
-            reader->position.atEndOfFile = true;
+            position.atEndOfFile = true;
         }
     }
 
     return result;
 }
 
-String getLine(LineReader* reader)
+String LineReader::current_line() const
 {
-    return reader->position.currentLine;
+    return position.currentLine;
 }
 
-String getRemainderOfLine(LineReader* reader)
+String LineReader::remainder_of_current_line() const
 {
-    return trim(reader->position.lineRemainder);
+    return trim(position.lineRemainder);
 }
 
-void warn(LineReader* reader, String message, std::initializer_list<String> args)
+void LineReader::warn(String message, std::initializer_list<String> args) const
 {
     String text = myprintf(message, args, false);
-    String lineNumber = reader->position.atEndOfFile ? "EOF"_s : formatInt(reader->position.currentLineNumber);
-    logWarn("{0}:{1} - {2}"_s, { reader->filename, lineNumber, text });
+    String lineNumber = position.atEndOfFile ? "EOF"_s : formatInt(position.currentLineNumber);
+    logWarn("{0}:{1} - {2}"_s, { filename, lineNumber, text });
 }
 
-void error(LineReader* reader, String message, std::initializer_list<String> args)
+void LineReader::error(String message, std::initializer_list<String> args) const
 {
     String text = myprintf(message, args, false);
-    String lineNumber = reader->position.atEndOfFile ? "EOF"_s : formatInt(reader->position.currentLineNumber);
-    logError("{0}:{1} - {2}"_s, { reader->filename, lineNumber, text });
+    String lineNumber = position.atEndOfFile ? "EOF"_s : formatInt(position.currentLineNumber);
+    logError("{0}:{1} - {2}"_s, { filename, lineNumber, text });
 }
 
-String readToken(LineReader* reader, char splitChar)
+String LineReader::next_token(Optional<char> split_char)
 {
-    String token = nextToken(reader->position.lineRemainder, &reader->position.lineRemainder, splitChar);
-
-    return token;
+    return nextToken(position.lineRemainder, &position.lineRemainder, split_char.value_or(0));
 }
 
-String peekToken(LineReader* reader, char splitChar)
+String LineReader::peek_token(Optional<char> split_char)
 {
-    String token = nextToken(reader->position.lineRemainder, nullptr, splitChar);
-
-    return token;
+    return nextToken(position.lineRemainder, nullptr, split_char.value_or(0));
 }
 
-s32 countRemainingTokens(LineReader* reader, char splitChar)
+s32 LineReader::count_remaining_tokens_in_current_line(Optional<char> split_char) const
 {
-    return countTokens(reader->position.lineRemainder, splitChar);
+    return countTokens(position.lineRemainder, split_char.value_or(0));
 }
 
-Maybe<double> readFloat(LineReader* reader, bool isOptional, char splitChar)
+Optional<bool> LineReader::read_bool(IsRequired is_required, Optional<char> split_char)
 {
-    String token = readToken(reader, splitChar);
-    Maybe<double> result = makeFailure<double>();
+    String token = next_token(split_char);
 
-    if (!(isOptional && isEmpty(token))) // If it's optional, don't print errors
-    {
-        if (token[token.length - 1] == '%') {
-            token.length--;
-
-            Maybe<double> percent = asFloat(token);
-
-            if (!percent.isValid) {
-                error(reader, "Couldn't parse '{0}%' as a percentage."_s, { token });
-            } else {
-                result = makeSuccess(percent.value * 0.01f);
-            }
-        } else {
-            Maybe<double> floatValue = asFloat(token);
-
-            if (!floatValue.isValid) {
-                error(reader, "Couldn't parse '{0}' as a float."_s, { token });
-            } else {
-                result = makeSuccess(floatValue.value);
-            }
-        }
+    if (isEmpty(token)) {
+        if (is_required == IsRequired::Yes)
+            error("Expected a boolean value."_s);
+        return {};
     }
 
-    return result;
+    if (auto maybe_bool = asBool(token); maybe_bool.isValid)
+        return maybe_bool.value;
+
+    error("Couldn't parse '{0}' as a boolean."_s, { token });
+    return {};
 }
 
-Maybe<bool> readBool(LineReader* reader, bool isOptional, char splitChar)
+Optional<double> LineReader::read_double(IsRequired is_required, Optional<char> split_char)
 {
-    String token = readToken(reader, splitChar);
+    String token = next_token(split_char);
 
-    Maybe<bool> result = makeFailure<bool>();
-
-    if (!(isOptional && isEmpty(token))) // If it's optional, don't print errors
-    {
-        result = asBool(token);
-
-        if (!result.isValid) {
-            error(reader, "Couldn't parse '{0}' as a boolean."_s, { token });
-        }
+    if (isEmpty(token)) {
+        if (is_required == IsRequired::Yes)
+            error("Expected a floating-point or percentage value."_s);
+        return {};
     }
 
-    return result;
+    if (token[token.length - 1] == '%') {
+        token.length--;
+
+        if (auto percent = asFloat(token); percent.isValid)
+            return percent.value * 0.01;
+
+        error("Couldn't parse '{0}%' as a percentage."_s, { token });
+        return {};
+    }
+
+    if (auto float_value = asFloat(token); float_value.isValid)
+        return float_value.value;
+
+    error("Couldn't parse '{0}' as a float."_s, { token });
+    return {};
 }
 
 Optional<Alignment> readAlignment(LineReader* reader)
@@ -241,63 +229,63 @@ Optional<Alignment> readAlignment(LineReader* reader)
     Optional<HAlign> h;
     Optional<VAlign> v;
 
-    String token = readToken(reader);
+    String token = reader->next_token();
     while (!isEmpty(token)) {
         if (token == "LEFT"_s) {
             if (h.has_value()) {
-                error(reader, "Multiple horizontal alignment keywords given!"_s);
+                reader->error("Multiple horizontal alignment keywords given!"_s);
                 break;
             }
             h = HAlign::Left;
         } else if (token == "H_CENTRE"_s) {
             if (h.has_value()) {
-                error(reader, "Multiple horizontal alignment keywords given!"_s);
+                reader->error("Multiple horizontal alignment keywords given!"_s);
                 break;
             }
             h = HAlign::Centre;
         } else if (token == "RIGHT"_s) {
             if (h.has_value()) {
-                error(reader, "Multiple horizontal alignment keywords given!"_s);
+                reader->error("Multiple horizontal alignment keywords given!"_s);
                 break;
             }
             h = HAlign::Right;
         } else if (token == "EXPAND_H"_s) {
             if (h.has_value()) {
-                error(reader, "Multiple horizontal alignment keywords given!"_s);
+                reader->error("Multiple horizontal alignment keywords given!"_s);
                 break;
             }
             h = HAlign::Fill;
         } else if (token == "TOP"_s) {
             if (v.has_value()) {
-                error(reader, "Multiple vertical alignment keywords given!"_s);
+                reader->error("Multiple vertical alignment keywords given!"_s);
                 break;
             }
             v = VAlign::Top;
         } else if (token == "V_CENTRE"_s) {
             if (v.has_value()) {
-                error(reader, "Multiple vertical alignment keywords given!"_s);
+                reader->error("Multiple vertical alignment keywords given!"_s);
                 break;
             }
             v = VAlign::Centre;
         } else if (token == "BOTTOM"_s) {
             if (v.has_value()) {
-                error(reader, "Multiple vertical alignment keywords given!"_s);
+                reader->error("Multiple vertical alignment keywords given!"_s);
                 break;
             }
             v = VAlign::Bottom;
         } else if (token == "EXPAND_V"_s) {
             if (v.has_value()) {
-                error(reader, "Multiple vertical alignment keywords given!"_s);
+                reader->error("Multiple vertical alignment keywords given!"_s);
                 break;
             }
             v = VAlign::Fill;
         } else {
-            error(reader, "Unrecognized alignment keyword '{0}'"_s, { token });
+            reader->error("Unrecognized alignment keyword '{0}'"_s, { token });
 
             return {};
         }
 
-        token = readToken(reader);
+        token = reader->next_token();
     }
 
     return Alignment { h.release_value(), v.release_value() };
@@ -308,22 +296,22 @@ Maybe<Colour> readColor(LineReader* reader, bool isOptional)
     // TODO: Right now this only handles a sequence of 3 or 4 0-255 values for RGB(A).
     // We might want to handle other color definitions eventually which are more friendly, eg 0-1 fractions.
 
-    String allArguments = getRemainderOfLine(reader);
+    String allArguments = reader->remainder_of_current_line();
 
     Maybe<Colour> result = makeFailure<Colour>();
 
     if (!(isOptional && isEmpty(allArguments))) {
-        Maybe<u8> r = readInt<u8>(reader);
-        Maybe<u8> g = readInt<u8>(reader);
-        Maybe<u8> b = readInt<u8>(reader);
+        auto r = reader->read_int<u8>();
+        auto g = reader->read_int<u8>();
+        auto b = reader->read_int<u8>();
 
-        if (r.isValid && g.isValid && b.isValid) {
+        if (r.has_value() && g.has_value() && b.has_value()) {
             // NB: We default to fully opaque if no alpha is provided
-            Maybe<u8> a = readInt<u8>(reader, true);
+            auto a = reader->read_int<u8>(LineReader::IsRequired::No);
 
-            result = makeSuccess(Colour::from_rgb_255(r.value, g.value, b.value, a.orDefault(255)));
+            result = makeSuccess(Colour::from_rgb_255(r.release_value(), g.release_value(), b.release_value(), a.value_or(255)));
         } else {
-            error(reader, "Couldn't parse '{0}' as a color. Expected 3 or 4 integers from 0 to 255, for R G B and optional A."_s, { allArguments });
+            reader->error("Couldn't parse '{0}' as a color. Expected 3 or 4 integers from 0 to 255, for R G B and optional A."_s, { allArguments });
             result = makeFailure<Colour>();
         }
     }
@@ -342,61 +330,60 @@ Maybe<Padding> readPadding(LineReader* reader)
 
     Maybe<Padding> result = makeFailure<Padding>();
 
-    s32 valueCount = countRemainingTokens(reader);
+    s32 valueCount = reader->count_remaining_tokens_in_current_line();
     switch (valueCount) {
     case 1: {
-        Maybe<s32> value = readInt<s32>(reader);
-        if (value.isValid) {
+        if (auto value = reader->read_int<s32>(); value.has_value()) {
             Padding padding = {};
-            padding.top = value.value;
-            padding.right = value.value;
-            padding.bottom = value.value;
-            padding.left = value.value;
+            padding.top = value.value();
+            padding.right = value.value();
+            padding.bottom = value.value();
+            padding.left = value.value();
 
             result = makeSuccess(padding);
         }
     } break;
 
     case 2: {
-        Maybe<s32> vValue = readInt<s32>(reader);
-        Maybe<s32> hValue = readInt<s32>(reader);
-        if (vValue.isValid && hValue.isValid) {
+        auto vValue = reader->read_int<s32>();
+        auto hValue = reader->read_int<s32>();
+        if (vValue.has_value() && hValue.has_value()) {
             Padding padding = {};
-            padding.top = vValue.value;
-            padding.right = hValue.value;
-            padding.bottom = vValue.value;
-            padding.left = hValue.value;
+            padding.top = vValue.value();
+            padding.right = hValue.value();
+            padding.bottom = vValue.value();
+            padding.left = hValue.value();
 
             result = makeSuccess(padding);
         }
     } break;
 
     case 3: {
-        Maybe<s32> topValue = readInt<s32>(reader);
-        Maybe<s32> hValue = readInt<s32>(reader);
-        Maybe<s32> bottomValue = readInt<s32>(reader);
-        if (topValue.isValid && hValue.isValid && bottomValue.isValid) {
+        auto topValue = reader->read_int<s32>();
+        auto hValue = reader->read_int<s32>();
+        auto bottomValue = reader->read_int<s32>();
+        if (topValue.has_value() && hValue.has_value() && bottomValue.has_value()) {
             Padding padding = {};
-            padding.top = topValue.value;
-            padding.right = hValue.value;
-            padding.bottom = bottomValue.value;
-            padding.left = hValue.value;
+            padding.top = topValue.value();
+            padding.right = hValue.value();
+            padding.bottom = bottomValue.value();
+            padding.left = hValue.value();
 
             result = makeSuccess(padding);
         }
     } break;
 
     case 4: {
-        Maybe<s32> topValue = readInt<s32>(reader);
-        Maybe<s32> rightValue = readInt<s32>(reader);
-        Maybe<s32> bottomValue = readInt<s32>(reader);
-        Maybe<s32> leftValue = readInt<s32>(reader);
-        if (topValue.isValid && rightValue.isValid && bottomValue.isValid && leftValue.isValid) {
+        auto topValue = reader->read_int<s32>();
+        auto rightValue = reader->read_int<s32>();
+        auto bottomValue = reader->read_int<s32>();
+        auto leftValue = reader->read_int<s32>();
+        if (all_have_values(topValue, rightValue, bottomValue, leftValue)) {
             Padding padding = {};
-            padding.top = topValue.value;
-            padding.right = rightValue.value;
-            padding.bottom = bottomValue.value;
-            padding.left = leftValue.value;
+            padding.top = topValue.value();
+            padding.right = rightValue.value();
+            padding.bottom = bottomValue.value();
+            padding.left = leftValue.value();
 
             result = makeSuccess(padding);
         }
@@ -410,15 +397,15 @@ Maybe<V2I> readV2I(LineReader* reader)
 {
     Maybe<V2I> result = makeFailure<V2I>();
 
-    String token = peekToken(reader);
+    String token = reader->peek_token();
 
-    Maybe<s32> x = readInt<s32>(reader, false, 'x');
-    Maybe<s32> y = readInt<s32>(reader);
+    auto x = reader->read_int<s32>(LineReader::IsRequired::Yes, 'x');
+    auto y = reader->read_int<s32>();
 
-    if (x.isValid && y.isValid) {
-        result = makeSuccess<V2I>(v2i(x.value, y.value));
+    if (x.has_value() && y.has_value()) {
+        result = makeSuccess<V2I>(v2i(x.release_value(), y.release_value()));
     } else {
-        error(reader, "Couldn't parse '{0}' as a V2I, expected 2 integers with an 'x' between, eg '8x12'"_s, { token });
+        reader->error("Couldn't parse '{0}' as a V2I, expected 2 integers with an 'x' between, eg '8x12'"_s, { token });
     }
 
     return result;

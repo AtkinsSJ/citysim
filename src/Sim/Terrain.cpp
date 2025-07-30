@@ -110,12 +110,12 @@ void loadTerrainDefs(Blob data, Asset* asset)
 {
     DEBUG_FUNCTION();
 
-    LineReader reader = readLines(asset->shortName, data);
+    LineReader reader { asset->shortName, data };
 
     // Pre scan for the number of Terrains, so we can allocate enough space in the asset.
     s32 terrainCount = 0;
-    while (loadNextLine(&reader)) {
-        String command = readToken(&reader);
+    while (reader.load_next_line()) {
+        String command = reader.next_token();
         if (command == ":Terrain"_s) {
             terrainCount++;
         }
@@ -124,12 +124,12 @@ void loadTerrainDefs(Blob data, Asset* asset)
     asset->data = assetsAllocate(&asset_manager(), sizeof(String) * terrainCount);
     asset->terrainDefs.terrainIDs = makeArray(terrainCount, (String*)asset->data.writable_data());
 
-    restart(&reader);
+    reader.restart();
 
     TerrainDef* def = nullptr;
 
-    while (loadNextLine(&reader)) {
-        String firstWord = readToken(&reader);
+    while (reader.load_next_line()) {
+        String firstWord = reader.next_token();
 
         if (firstWord.chars[0] == ':') // Definitions
         {
@@ -138,9 +138,9 @@ void loadTerrainDefs(Blob data, Asset* asset)
             firstWord.length--;
 
             if (firstWord == "Terrain"_s) {
-                String name = readToken(&reader);
+                String name = reader.next_token();
                 if (isEmpty(name)) {
-                    error(&reader, "Couldn't parse Terrain. Expected: ':Terrain identifier'"_s);
+                    reader.error("Couldn't parse Terrain. Expected: ':Terrain identifier'"_s);
                     return;
                 }
 
@@ -149,7 +149,7 @@ void loadTerrainDefs(Blob data, Asset* asset)
                 *def = {};
 
                 if (slot.index > u8Max) {
-                    error(&reader, "Too many Terrain definitions! The most we support is {0}."_s, { formatInt(u8Max) });
+                    reader.error("Too many Terrain definitions! The most we support is {0}."_s, { formatInt(u8Max) });
                     return;
                 }
                 def->typeID = (u8)slot.index;
@@ -159,31 +159,29 @@ void loadTerrainDefs(Blob data, Asset* asset)
                 s_terrain_catalogue.terrainDefsByName.put(def->name, def);
                 s_terrain_catalogue.terrainNameToType.put(def->name, def->typeID);
             } else {
-                error(&reader, "Unrecognised command: '{0}'"_s, { firstWord });
+                reader.error("Unrecognised command: '{0}'"_s, { firstWord });
             }
         } else // Properties!
         {
             if (def == nullptr) {
-                error(&reader, "Found a property before starting a :Terrain!"_s);
+                reader.error("Found a property before starting a :Terrain!"_s);
                 return;
             } else if (firstWord == "borders"_s) {
                 def->borderSpriteNames = asset_manager().arena.allocate_array<String>(80);
             } else if (firstWord == "border"_s) {
-                def->borderSpriteNames.append(intern(&asset_manager().assetStrings, readToken(&reader)));
+                def->borderSpriteNames.append(intern(&asset_manager().assetStrings, reader.next_token()));
             } else if (firstWord == "can_build_on"_s) {
-                Maybe<bool> boolRead = readBool(&reader);
-                if (boolRead.isValid)
-                    def->canBuildOn = boolRead.value;
+                if (auto maybe_bool = reader.read_bool(); maybe_bool.has_value())
+                    def->canBuildOn = maybe_bool.release_value();
             } else if (firstWord == "draw_borders_over"_s) {
-                Maybe<bool> boolRead = readBool(&reader);
-                if (boolRead.isValid)
-                    def->drawBordersOver = boolRead.value;
+                if (auto maybe_bool = reader.read_bool(); maybe_bool.has_value())
+                    def->drawBordersOver = maybe_bool.release_value();
             } else if (firstWord == "name"_s) {
-                def->textAssetName = intern(&asset_manager().assetStrings, readToken(&reader));
+                def->textAssetName = intern(&asset_manager().assetStrings, reader.next_token());
             } else if (firstWord == "sprite"_s) {
-                def->spriteName = intern(&asset_manager().assetStrings, readToken(&reader));
+                def->spriteName = intern(&asset_manager().assetStrings, reader.next_token());
             } else {
-                warn(&reader, "Unrecognised property '{0}' inside command ':Terrain'"_s, { firstWord });
+                reader.warn("Unrecognised property '{0}' inside command ':Terrain'"_s, { firstWord });
             }
         }
     }

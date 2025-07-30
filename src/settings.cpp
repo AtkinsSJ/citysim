@@ -102,28 +102,27 @@ String getUserSettingsPath()
 
 void loadSettingsFile(String name, Blob settingsData)
 {
-    LineReader reader = readLines(name, settingsData);
+    LineReader reader { name, settingsData };
 
-    while (loadNextLine(&reader)) {
-        String settingName = readToken(&reader, '=');
+    while (reader.load_next_line()) {
+        String settingName = reader.next_token('=');
 
         Maybe<SettingDef*> maybeDef = s_settings->defs.find(settingName);
 
         if (!maybeDef.isValid) {
-            error(&reader, "Unrecognized setting: {0}"_s, { settingName });
+            reader.error("Unrecognized setting: {0}"_s, { settingName });
         } else {
             SettingDef* def = maybeDef.value;
 
             switch (def->type) {
             case SettingType::Bool: {
-                Maybe<bool> value = readBool(&reader);
-                if (value.isValid) {
-                    setSettingData<bool>(&s_settings->settings, def, value.value);
+                if (auto value = reader.read_bool(); value.has_value()) {
+                    setSettingData<bool>(&s_settings->settings, def, value.release_value());
                 }
             } break;
 
             case SettingType::Enum: {
-                String token = readToken(&reader);
+                String token = reader.next_token();
                 // Look it up in the enum data
                 Array<SettingEnumData> enumData = *def->enumData;
                 bool foundValue = false;
@@ -137,36 +136,33 @@ void loadSettingsFile(String name, Blob settingsData)
                 }
 
                 if (!foundValue) {
-                    error(&reader, "Couldn't find '{0}' in the list of valid values for setting '{1}'."_s, { token, def->name });
+                    reader.error("Couldn't find '{0}' in the list of valid values for setting '{1}'."_s, { token, def->name });
                 }
 
             } break;
 
             case SettingType::Percent: {
-                Maybe<double> value = readFloat(&reader);
-                if (value.isValid) {
-                    float clampedValue = clamp01((float)value.value);
-                    setSettingData<float>(&s_settings->settings, def, clampedValue);
+                if (auto value = reader.read_float(); value.has_value()) {
+                    float clamped_value = clamp01(value.release_value());
+                    setSettingData<float>(&s_settings->settings, def, clamped_value);
                 }
             } break;
 
             case SettingType::S32: {
-                Maybe<s32> value = readInt<s32>(&reader);
-                if (value.isValid) {
-                    setSettingData<s32>(&s_settings->settings, def, value.value);
+                if (auto value = reader.read_int<s32>(); value.has_value()) {
+                    setSettingData<s32>(&s_settings->settings, def, value.release_value());
                 }
             } break;
 
             case SettingType::S32_Range: {
-                Maybe<s32> value = readInt<s32>(&reader);
-                if (value.isValid) {
-                    s32 clampedValue = clamp(value.value, def->intRange.min, def->intRange.max);
+                if (auto value = reader.read_int<s32>(); value.has_value()) {
+                    s32 clampedValue = clamp(value.release_value(), def->intRange.min, def->intRange.max);
                     setSettingData<s32>(&s_settings->settings, def, clampedValue);
                 }
             } break;
 
             case SettingType::String: {
-                String value = pushString(&s_settings->arena, readToken(&reader));
+                String value = pushString(&s_settings->arena, reader.next_token());
                 setSettingData<String>(&s_settings->settings, def, value);
             } break;
 

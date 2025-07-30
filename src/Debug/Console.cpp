@@ -224,17 +224,17 @@ void updateAndRenderConsole(Console* console)
 
 void loadConsoleKeyboardShortcuts(Console* console, Blob data, String filename)
 {
-    LineReader reader = readLines(filename, data);
+    LineReader reader { filename, data };
 
     console->commandShortcuts.clear();
 
-    while (loadNextLine(&reader)) {
-        String shortcutString = readToken(&reader);
-        String command = getRemainderOfLine(&reader);
+    while (reader.load_next_line()) {
+        String shortcutString = reader.next_token();
+        String command = reader.remainder_of_current_line();
 
         KeyboardShortcut shortcut = parseKeyboardShortcut(shortcutString);
         if (shortcut.key == SDLK_UNKNOWN) {
-            error(&reader, "Unrecognised key in keyboard shortcut sequence '{0}'"_s, { shortcutString });
+            reader.error("Unrecognised key in keyboard shortcut sequence '{0}'"_s, { shortcutString });
         } else {
             CommandShortcut* commandShortcut = console->commandShortcuts.appendBlank();
             commandShortcut->shortcut = shortcut;
