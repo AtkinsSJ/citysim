@@ -4,9 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "building.h"
 #include "settings.h"
-#include "terrain.h"
 #include <Assets/AssetManager.h>
 #include <Debug/Console.h>
 #include <Gfx/BMFont.h>
@@ -15,6 +13,8 @@
 #include <IO/LineReader.h>
 #include <SDL2/SDL_filesystem.h>
 #include <SDL2/SDL_image.h>
+#include <Sim/Building.h>
+#include <Sim/Terrain.h>
 
 AssetManager* s_assets;
 

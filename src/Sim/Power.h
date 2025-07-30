@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include "building.h"
-#include "dirty.h"
-#include "sector.h"
+#include <Sim/Building.h>
+#include <Sim/DirtyRects.h>
+#include <Sim/Sector.h>
 
 struct PowerGroup {
     s32 production;
@@ -61,7 +61,6 @@ struct PowerLayer {
 };
 
 u8 const POWER_GROUP_UNKNOWN = 255;
-struct City;
 
 // Public API
 void initPowerLayer(PowerLayer* layer, City* city, MemoryArena* gameArena);

@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "building.h"
-#include "city.h"
-#include <Sim/BuildingRef.h>
+#include "BuildingRef.h"
+#include <Sim/Building.h>
+#include <Sim/City.h>
 
 BuildingRef getReferenceTo(Building* building)
 {

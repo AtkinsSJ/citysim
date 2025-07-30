@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "land_value.h"
-#include "city.h"
-#include "save_file.h"
+#include "LandValue.h"
+#include "../save_file.h"
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
+#include <Sim/City.h>
 
 void initLandValueLayer(LandValueLayer* layer, City* city, MemoryArena* gameArena)
 {
@@ -139,7 +139,7 @@ float getLandValuePercentAt(City* city, s32 x, s32 y)
     return city->landValueLayer.tileLandValue.get(x, y) / 255.0f;
 }
 
-void saveLandValueLayer(LandValueLayer* layer, struct BinaryFileWriter* writer)
+void saveLandValueLayer(LandValueLayer* layer, BinaryFileWriter* writer)
 {
     writer->startSection<SAVSection_LandValue>(SAV_LANDVALUE_ID, SAV_LANDVALUE_VERSION);
     SAVSection_LandValue landValueSection = {};
@@ -150,7 +150,7 @@ void saveLandValueLayer(LandValueLayer* layer, struct BinaryFileWriter* writer)
     writer->endSection<SAVSection_LandValue>(&landValueSection);
 }
 
-bool loadLandValueLayer(LandValueLayer* layer, City* /*city*/, struct BinaryFileReader* reader)
+bool loadLandValueLayer(LandValueLayer* layer, City*, BinaryFileReader* reader)
 {
     bool succeeded = false;
     while (reader->startSection(SAV_LANDVALUE_ID, SAV_LANDVALUE_VERSION)) {

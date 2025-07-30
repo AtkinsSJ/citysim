@@ -6,10 +6,11 @@
 
 #pragma once
 
-#include "dirty.h"
-#include "sector.h"
+#include <IO/Forward.h>
+#include <Sim/DirtyRects.h>
+#include <Sim/Forward.h>
+#include <Sim/Sector.h>
 
-struct City;
 struct LandValueLayer {
     DirtyRects dirtyRects;
 
@@ -28,5 +29,5 @@ void markLandValueLayerDirty(LandValueLayer* layer, Rect2I bounds);
 
 float getLandValuePercentAt(City* city, s32 x, s32 y);
 
-void saveLandValueLayer(LandValueLayer* layer, struct BinaryFileWriter* writer);
-bool loadLandValueLayer(LandValueLayer* layer, City* city, struct BinaryFileReader* reader);
+void saveLandValueLayer(LandValueLayer* layer, BinaryFileWriter* writer);
+bool loadLandValueLayer(LandValueLayer* layer, City* city, BinaryFileReader* reader);

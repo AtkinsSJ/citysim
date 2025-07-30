@@ -6,9 +6,10 @@
 
 #pragma once
 
-#include "dirty.h"
-#include "sector.h"
+#include <IO/Forward.h>
+#include <Sim/DirtyRects.h>
 #include <Sim/Forward.h>
+#include <Sim/Sector.h>
 #include <UI/Forward.h>
 #include <Util/Flags.h>
 
@@ -39,5 +40,5 @@ s32 getDistanceToTransport(City* city, s32 x, s32 y, TransportType type);
 
 void debugInspectTransport(UI::Panel* panel, City* city, s32 x, s32 y);
 
-void saveTransportLayer(TransportLayer* layer, struct BinaryFileWriter* writer);
-bool loadTransportLayer(TransportLayer* layer, City* city, struct BinaryFileReader* reader);
+void saveTransportLayer(TransportLayer* layer, BinaryFileWriter* writer);
+bool loadTransportLayer(TransportLayer* layer, City* city, BinaryFileReader* reader);

@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "pollution.h"
-#include "building.h"
-#include "city.h"
-#include "land_value.h"
-#include "save_file.h"
+#include "Pollution.h"
+#include "../save_file.h"
 #include <IO/BinaryFile.h>
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
+#include <Sim/Building.h>
+#include <Sim/City.h>
+#include <Sim/LandValue.h>
 
 void initPollutionLayer(PollutionLayer* layer, City* city, MemoryArena* gameArena)
 {
@@ -117,7 +117,7 @@ float getPollutionPercentAt(City* city, s32 x, s32 y)
     return city->pollutionLayer.tilePollution.get(x, y) / 255.0f;
 }
 
-void savePollutionLayer(PollutionLayer* layer, struct BinaryFileWriter* writer)
+void savePollutionLayer(PollutionLayer* layer, BinaryFileWriter* writer)
 {
     writer->startSection<SAVSection_Pollution>(SAV_POLLUTION_ID, SAV_POLLUTION_VERSION);
     SAVSection_Pollution pollutionSection = {};
@@ -128,7 +128,7 @@ void savePollutionLayer(PollutionLayer* layer, struct BinaryFileWriter* writer)
     writer->endSection<SAVSection_Pollution>(&pollutionSection);
 }
 
-bool loadPollutionLayer(PollutionLayer* layer, City* /*city*/, struct BinaryFileReader* reader)
+bool loadPollutionLayer(PollutionLayer* layer, City*, BinaryFileReader* reader)
 {
     bool succeeded = false;
     while (reader->startSection(SAV_POLLUTION_ID, SAV_POLLUTION_VERSION)) {

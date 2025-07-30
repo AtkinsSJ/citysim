@@ -7,11 +7,11 @@
 #pragma once
 
 #include <Assets/Sprite.h>
+#include <IO/Forward.h>
+#include <Sim/Forward.h>
 #include <UI/Forward.h>
 #include <Util/OccupancyArray.h>
 #include <Util/StringTable.h>
-
-struct City;
 
 struct TerrainDef {
     String name;
@@ -76,5 +76,5 @@ u8 findTerrainTypeByName(String name);
 void showTerrainWindow();
 void modifyTerrainWindowProc(UI::WindowContext*, void*);
 
-void saveTerrainLayer(TerrainLayer* layer, struct BinaryFileWriter* writer);
-bool loadTerrainLayer(TerrainLayer* layer, City* city, struct BinaryFileReader* reader);
+void saveTerrainLayer(TerrainLayer* layer, BinaryFileWriter* writer);
+bool loadTerrainLayer(TerrainLayer* layer, City* city, BinaryFileReader* reader);

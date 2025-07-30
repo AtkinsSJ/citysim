@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "city.h"
-#include "AppState.h"
-#include "save_file.h"
+#include "City.h"
+#include "../AppState.h"
+#include "../save_file.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/Renderer.h>
 #include <IO/BinaryFileReader.h>
@@ -505,7 +505,7 @@ void updateSomeBuildings(City* city)
     }
 }
 
-void saveBuildings(City* city, struct BinaryFileWriter* writer)
+void saveBuildings(City* city, BinaryFileWriter* writer)
 {
     writer->startSection<SAVSection_Buildings>(SAV_BUILDING_ID, SAV_BUILDING_VERSION);
     SAVSection_Buildings buildingSection = {};
@@ -574,7 +574,7 @@ void saveBuildings(City* city, struct BinaryFileWriter* writer)
     writer->endSection<SAVSection_Buildings>(&buildingSection);
 }
 
-bool loadBuildings(City* city, struct BinaryFileReader* reader)
+bool loadBuildings(City* city, BinaryFileReader* reader)
 {
     bool succeeded = reader->startSection(SAV_BUILDING_ID, SAV_BUILDING_VERSION);
     while (succeeded) {

@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "health.h"
-#include "city.h"
-#include "save_file.h"
+#include "Health.h"
+#include "../save_file.h"
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
+#include <Sim/City.h>
 
 float getHealthCoveragePercentAt(City* city, s32 x, s32 y)
 {
@@ -95,7 +95,7 @@ void notifyBuildingDemolished(HealthLayer* layer, BuildingDef* def, Building* bu
     }
 }
 
-void saveHealthLayer(HealthLayer* /*layer*/, struct BinaryFileWriter* writer)
+void saveHealthLayer(HealthLayer*, BinaryFileWriter* writer)
 {
     writer->startSection<SAVSection_Health>(SAV_HEALTH_ID, SAV_HEALTH_VERSION);
     SAVSection_Health healthSection = {};
@@ -103,7 +103,7 @@ void saveHealthLayer(HealthLayer* /*layer*/, struct BinaryFileWriter* writer)
     writer->endSection<SAVSection_Health>(&healthSection);
 }
 
-bool loadHealthLayer(HealthLayer* /*layer*/, City* /*city*/, struct BinaryFileReader* reader)
+bool loadHealthLayer(HealthLayer*, City*, BinaryFileReader* reader)
 {
     bool succeeded = false;
     while (reader->startSection(SAV_HEALTH_ID, SAV_HEALTH_VERSION)) {

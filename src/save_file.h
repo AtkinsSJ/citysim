@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include "game_clock.h"
 #include <IO/BinaryFile.h>
 #include <IO/Forward.h>
+#include <Sim/GameClock.h>
 #include <Util/Basic.h>
 
 //

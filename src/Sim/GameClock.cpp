@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "game_clock.h"
-#include "AppState.h"
+#include "GameClock.h"
+#include "../AppState.h"
 #include <Util/Maths.h>
 
 // We don't bother with leap years, so the month lengths are hard-coded

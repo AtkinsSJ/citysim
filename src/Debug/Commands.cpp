@@ -5,11 +5,11 @@
  */
 
 #include "../AppState.h"
-#include "../city.h"
 #include "../settings.h"
-#include "../terrain.h"
 #include <Debug/Console.h>
 #include <Gfx/Renderer.h>
+#include <Sim/City.h>
+#include <Sim/Terrain.h>
 #include <UI/Window.h>
 
 #pragma warning(push)

@@ -6,18 +6,18 @@
 
 #pragma once
 
-#include "budget.h"
-#include "crime.h"
-#include "education.h"
-#include "entity.h"
-#include "fire.h"
-#include "health.h"
-#include "land_value.h"
-#include "pollution.h"
-#include "power.h"
-#include "sector.h"
-#include "terrain.h"
-#include "zone.h"
+#include <Sim/Sector.h>
+#include <Sim/Budget.h>
+#include <Sim/Crime.h>
+#include <Sim/Education.h>
+#include <Sim/Entity.h>
+#include <Sim/Fire.h>
+#include <Sim/Health.h>
+#include <Sim/LandValue.h>
+#include <Sim/Pollution.h>
+#include <Sim/Power.h>
+#include <Sim/Terrain.h>
+#include <Sim/Zone.h>
 #include <Util/ChunkedArray.h>
 #include <Util/OccupancyArray.h>
 #include <Util/Rectangle.h>
@@ -125,8 +125,8 @@ Entity* addEntity(City* city, Entity::Type type, T* entityData)
 void removeEntity(City* city, Entity* entity);
 void drawEntities(City* city, Rect2I visibleTileBounds);
 
-void saveBuildings(City* city, struct BinaryFileWriter* writer);
-bool loadBuildings(City* city, struct BinaryFileReader* reader);
+void saveBuildings(City* city, BinaryFileWriter* writer);
+bool loadBuildings(City* city, BinaryFileReader* reader);
 
 //
 // Private API

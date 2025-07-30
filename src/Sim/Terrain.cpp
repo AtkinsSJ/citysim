@@ -4,16 +4,16 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "terrain.h"
-#include "AppState.h"
-#include "city.h"
-#include "save_file.h"
-#include "splat.h"
+#include "Terrain.h"
+#include "../AppState.h"
+#include "../save_file.h"
+#include "../splat.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/Renderer.h>
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
 #include <IO/LineReader.h>
+#include <Sim/City.h>
 #include <UI/Window.h>
 
 TerrainCatalogue s_terrain_catalogue = {};
@@ -534,7 +534,7 @@ void saveTerrainLayer(TerrainLayer* layer, BinaryFileWriter* writer)
     writer->endSection<SAVSection_Terrain>(&terrainSection);
 }
 
-bool loadTerrainLayer(TerrainLayer* layer, City* city, struct BinaryFileReader* reader)
+bool loadTerrainLayer(TerrainLayer* layer, City* city, BinaryFileReader* reader)
 {
     bool succeeded = false;
 

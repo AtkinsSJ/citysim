@@ -4,13 +4,13 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "crime.h"
-#include "city.h"
-#include "land_value.h"
-#include "save_file.h"
-#include "tile_utils.h"
+#include "Crime.h"
+#include "../save_file.h"
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
+#include <Sim/City.h>
+#include <Sim/LandValue.h>
+#include <Sim/TileUtils.h>
 
 void initCrimeLayer(CrimeLayer* layer, City* city, MemoryArena* gameArena)
 {

@@ -4,18 +4,18 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "budget.h"
-#include "city.h"
-#include "save_file.h"
+#include "Budget.h"
+#include "../save_file.h"
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
+#include <Sim/City.h>
 
-void initBudgetLayer(BudgetLayer* layer, City* /*city*/, MemoryArena* /*gameArena*/)
+void initBudgetLayer(BudgetLayer* layer, City*, MemoryArena*)
 {
     *layer = {};
 }
 
-void saveBudgetLayer(BudgetLayer* /*layer*/, struct BinaryFileWriter* writer)
+void saveBudgetLayer(BudgetLayer*, BinaryFileWriter* writer)
 {
     writer->startSection<SAVSection_Budget>(SAV_BUDGET_ID, SAV_BUDGET_VERSION);
     SAVSection_Budget budgetSection = {};
@@ -23,7 +23,7 @@ void saveBudgetLayer(BudgetLayer* /*layer*/, struct BinaryFileWriter* writer)
     writer->endSection<SAVSection_Budget>(&budgetSection);
 }
 
-bool loadBudgetLayer(BudgetLayer* /*layer*/, City* /*city*/, struct BinaryFileReader* reader)
+bool loadBudgetLayer(BudgetLayer*, City*, BinaryFileReader* reader)
 {
     bool succeeded = false;
     while (reader->startSection(SAV_BUDGET_ID, SAV_BUDGET_VERSION)) {

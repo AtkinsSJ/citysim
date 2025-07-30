@@ -4,13 +4,13 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "zone.h"
-#include "AppState.h"
-#include "city.h"
-#include "save_file.h"
+#include "Zone.h"
+#include "../AppState.h"
+#include "../save_file.h"
 #include <Gfx/Renderer.h>
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
+#include <Sim/City.h>
 
 void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena)
 {

@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "tile_utils.h"
-#include <Gfx/Renderer.h>
-#include "building.h"
+#include "TileUtils.h"
 #include <Assets/AssetManager.h>
+#include <Gfx/Renderer.h>
+#include <Sim/Building.h>
 
 // The simplest possible algorithm is, just spread the 0s out that we marked above.
 // (If a tile is not 0, set it to the min() of its 8 neighbours, plus 1.)

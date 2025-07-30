@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "power.h"
-#include "city.h"
-#include "save_file.h"
+#include "Power.h"
+#include "../save_file.h"
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
+#include <Sim/City.h>
 #include <UI/Panel.h>
 #include <Util/Set.h>
 

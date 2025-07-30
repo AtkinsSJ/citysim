@@ -6,17 +6,14 @@
 
 #pragma once
 
-#include "entity.h"
-#include "game_clock.h"
-#include "tile_utils.h"
-#include "transport.h"
-#include <Sim/BuildingRef.h>
+#include <Sim/Entity.h>
+#include <Sim/GameClock.h>
+#include <Sim/TileUtils.h>
+#include <Sim/Transport.h>
 #include <Util/EnumMap.h>
 #include <Util/Flags.h>
 #include <Util/OccupancyArray.h>
 #include <Util/StringTable.h>
-
-struct City;
 
 enum class BuildMethod : u8 {
     None,

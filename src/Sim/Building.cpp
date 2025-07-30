@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "building.h"
-#include "AppState.h"
-#include "city.h"
+#include "Building.h"
+#include "../AppState.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/Colour.h>
 #include <IO/LineReader.h>
+#include <Sim/City.h>
 #include <Util/Deferred.h>
 
 void initBuildingCatalogue()

@@ -7,11 +7,11 @@
 #pragma once
 
 #include "AppStatus.h"
-#include "city.h"
-#include "game_clock.h"
-#include "tile_utils.h"
-#include "zone.h"
 #include <Sim/BuildingRef.h>
+#include <Sim/City.h>
+#include <Sim/GameClock.h>
+#include <Sim/TileUtils.h>
+#include <Sim/Zone.h>
 #include <Util/Basic.h>
 #include <Util/ChunkedArray.h>
 #include <Util/EnumMap.h>

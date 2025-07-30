@@ -6,9 +6,11 @@
 
 #pragma once
 
-#include "building.h"
-#include "dirty.h"
-#include "sector.h"
+#include <IO/Forward.h>
+#include <Sim/BuildingRef.h>
+#include <Sim/DirtyRects.h>
+#include <Sim/Forward.h>
+#include <Sim/Sector.h>
 
 struct HealthLayer {
     DirtyRects dirtyRects;
@@ -31,5 +33,5 @@ void notifyBuildingDemolished(HealthLayer* layer, BuildingDef* def, Building* bu
 
 float getHealthCoveragePercentAt(City* city, s32 x, s32 y);
 
-void saveHealthLayer(HealthLayer* layer, struct BinaryFileWriter* writer);
-bool loadHealthLayer(HealthLayer* layer, City* city, struct BinaryFileReader* reader);
+void saveHealthLayer(HealthLayer* layer, BinaryFileWriter* writer);
+bool loadHealthLayer(HealthLayer* layer, City* city, BinaryFileReader* reader);

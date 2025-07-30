@@ -6,13 +6,13 @@
 
 #pragma once
 
+#include <IO/Forward.h>
+#include <Sim/Forward.h>
 #include <Util/Forward.h>
-
-struct City;
 
 struct EducationLayer {
 };
 
 void initEducationLayer(EducationLayer* layer, City* city, MemoryArena* gameArena);
-void saveEducationLayer(EducationLayer* layer, struct BinaryFileWriter* writer);
-bool loadEducationLayer(EducationLayer* layer, City* city, struct BinaryFileReader* reader);
+void saveEducationLayer(EducationLayer* layer, BinaryFileWriter* writer);
+bool loadEducationLayer(EducationLayer* layer, City* city, BinaryFileReader* reader);

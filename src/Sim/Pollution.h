@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include "dirty.h"
-
-struct City;
+#include <IO/Forward.h>
+#include <Sim/DirtyRects.h>
+#include <Sim/Forward.h>
 
 struct PollutionLayer {
     DirtyRects dirtyRects;
@@ -27,5 +27,5 @@ void markPollutionLayerDirty(PollutionLayer* layer, Rect2I bounds);
 u8 getPollutionAt(City* city, s32 x, s32 y);
 float getPollutionPercentAt(City* city, s32 x, s32 y);
 
-void savePollutionLayer(PollutionLayer* layer, struct BinaryFileWriter* writer);
-bool loadPollutionLayer(PollutionLayer* layer, City* city, struct BinaryFileReader* reader);
+void savePollutionLayer(PollutionLayer* layer, BinaryFileWriter* writer);
+bool loadPollutionLayer(PollutionLayer* layer, City* city, BinaryFileReader* reader);

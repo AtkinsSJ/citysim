@@ -1,3 +1,19 @@
 target_sources(CitySim PRIVATE
+    Budget.cpp
+    Building.cpp
     BuildingRef.cpp
+    City.cpp
+    Crime.cpp
+    DirtyRects.cpp
+    Education.cpp
+    Fire.cpp
+    GameClock.cpp
+    Health.cpp
+    LandValue.cpp
+    Pollution.cpp
+    Power.cpp
+    Terrain.cpp
+    TileUtils.cpp
+    Transport.cpp
+    Zone.cpp
 )

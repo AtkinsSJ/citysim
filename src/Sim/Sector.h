@@ -10,6 +10,7 @@
 #include <Util/Basic.h>
 #include <Util/Indexed.h>
 #include <Util/Maths.h>
+#include <Util/MemoryArena.h>
 #include <Util/Rectangle.h>
 
 template<typename Sector>
@@ -23,7 +24,7 @@ struct SectorGrid {
     s32 nextSectorUpdateIndex;
     s32 sectorsToUpdatePerTick;
 
-    inline Sector& operator[](s32 index)
+    Sector& operator[](s32 index)
     {
         return this->sectors[index];
     }
@@ -93,7 +94,7 @@ Sector* getSectorByIndex(SectorGrid<Sector>* grid, s32 index)
 }
 
 template<typename Sector>
-inline s32 getSectorCount(SectorGrid<Sector>* grid)
+s32 getSectorCount(SectorGrid<Sector>* grid)
 {
     return grid->sectors.count;
 }

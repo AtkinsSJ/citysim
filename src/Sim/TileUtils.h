@@ -6,14 +6,13 @@
 
 #pragma once
 
-#include "dirty.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/Renderer.h>
+#include <Sim/DirtyRects.h>
+#include <Sim/Forward.h>
 #include <Util/Array2.h>
 #include <Util/Basic.h>
 #include <Util/Vector.h>
-
-struct City;
 
 struct EffectRadius {
     s32 centreValue;

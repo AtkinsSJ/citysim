@@ -6,9 +6,11 @@
 
 #pragma once
 
-#include "building.h"
-#include "dirty.h"
-#include "sector.h"
+#include <IO/Forward.h>
+#include <Sim/DirtyRects.h>
+#include <Sim/Forward.h>
+#include <Sim/Sector.h>
+#include <Util/Forward.h>
 
 struct CrimeLayer {
     DirtyRects dirtyRects;
@@ -32,5 +34,5 @@ void notifyBuildingDemolished(CrimeLayer* layer, BuildingDef* def, Building* bui
 
 float getPoliceCoveragePercentAt(City* city, s32 x, s32 y);
 
-void saveCrimeLayer(CrimeLayer* layer, struct BinaryFileWriter* writer);
-bool loadCrimeLayer(CrimeLayer* layer, City* city, struct BinaryFileReader* reader);
+void saveCrimeLayer(CrimeLayer* layer, BinaryFileWriter* writer);
+bool loadCrimeLayer(CrimeLayer* layer, City* city, BinaryFileReader* reader);

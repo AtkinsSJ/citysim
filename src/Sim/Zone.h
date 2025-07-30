@@ -6,12 +6,12 @@
 
 #pragma once
 
-#include "dirty.h"
-#include "sector.h"
+#include <IO/Forward.h>
+#include <Sim/DirtyRects.h>
+#include <Sim/Forward.h>
+#include <Sim/Sector.h>
 #include <Util/BitArray.h>
 #include <Util/Flags.h>
-
-struct City;
 
 enum class ZoneType : u8 {
     None,
@@ -102,5 +102,5 @@ bool isZoneAcceptable(City* city, ZoneType zoneType, s32 x, s32 y);
 s32 getTotalResidents(City* city);
 s32 getTotalJobs(City* city);
 
-void saveZoneLayer(ZoneLayer* layer, struct BinaryFileWriter* writer);
-bool loadZoneLayer(ZoneLayer* layer, City* city, struct BinaryFileReader* reader);
+void saveZoneLayer(ZoneLayer* layer, BinaryFileWriter* writer);
+bool loadZoneLayer(ZoneLayer* layer, City* city, BinaryFileReader* reader);

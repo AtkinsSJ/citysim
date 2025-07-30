@@ -1,34 +1,18 @@
 target_sources(CitySim PRIVATE
     AppState.cpp
     about.cpp
-    budget.cpp
-    building.cpp
-    city.cpp
     credits.cpp
-    crime.cpp
-    dirty.cpp
-    education.cpp
-    fire.cpp
     font.cpp
     game.cpp
-    game_clock.cpp
     game_mainmenu.cpp
-    health.cpp
     input.cpp
-    land_value.cpp
     main.cpp
     # PLATFORM?
-    pollution.cpp
-    power.cpp
     save_file.cpp
     saved_games.cpp
     settings.cpp
     splat.cpp
-    terrain.cpp
-    tile_utils.cpp
-    transport.cpp
     unicode.cpp
-    zone.cpp
 )
 
 if (LINUX)

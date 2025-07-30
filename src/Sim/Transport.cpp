@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "transport.h"
-#include "city.h"
-#include "save_file.h"
+#include "Transport.h"
+#include "../save_file.h"
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
+#include <Sim/City.h>
 #include <UI/Panel.h>
 
 void initTransportLayer(TransportLayer* layer, City* city, MemoryArena* gameArena)
@@ -123,7 +123,7 @@ void debugInspectTransport(UI::Panel* panel, City* city, s32 x, s32 y)
     }
 }
 
-void saveTransportLayer(TransportLayer* /*layer*/, struct BinaryFileWriter* writer)
+void saveTransportLayer(TransportLayer*, BinaryFileWriter* writer)
 {
     writer->startSection<SAVSection_Transport>(SAV_TRANSPORT_ID, SAV_TRANSPORT_VERSION);
     SAVSection_Transport transportSection = {};
@@ -131,7 +131,7 @@ void saveTransportLayer(TransportLayer* /*layer*/, struct BinaryFileWriter* writ
     writer->endSection<SAVSection_Transport>(&transportSection);
 }
 
-bool loadTransportLayer(TransportLayer* /*layer*/, City* /*city*/, struct BinaryFileReader* reader)
+bool loadTransportLayer(TransportLayer*, City*, BinaryFileReader* reader)
 {
     bool succeeded = false;
     while (reader->startSection(SAV_TRANSPORT_ID, SAV_TRANSPORT_VERSION)) {

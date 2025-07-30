@@ -6,5 +6,26 @@
 
 #pragma once
 
+struct BudgetLayer;
 struct Building;
+struct BuildingDef;
+struct BuildingRef;
 struct City;
+struct CrimeLayer;
+struct DirtyRects;
+struct EducationLayer;
+struct EffectRadius;
+struct Entity;
+struct Fire;
+struct FireLayer;
+struct GameClock;
+struct HealthLayer;
+struct LandValueLayer;
+struct PollutionLayer;
+struct PowerLayer;
+struct TerrainCatalogue;
+struct TerrainDef;
+struct TerrainLayer;
+struct TransportLayer;
+struct ZoneDef;
+struct ZoneLayer;

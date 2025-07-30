@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "dirty.h"
+#include "DirtyRects.h"
 
 void initDirtyRects(DirtyRects* dirtyRects, MemoryArena* arena, s32 expansionRadius, Rect2I bounds)
 {
@@ -68,7 +68,7 @@ void clearDirtyRects(DirtyRects* dirtyRects)
     dirtyRects->rects.clear();
 }
 
- bool isDirty(DirtyRects* dirtyRects)
+bool isDirty(DirtyRects* dirtyRects)
 {
     return dirtyRects->rects.count > 0;
 }

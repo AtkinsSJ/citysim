@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "fire.h"
-#include "AppState.h"
-#include "city.h"
-#include "save_file.h"
+#include "Fire.h"
+#include "../AppState.h"
+#include "../save_file.h"
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
+#include <Sim/City.h>
 #include <UI/Panel.h>
 #include <Util/Random.h>
 
@@ -198,13 +198,6 @@ void startFireAt(City* city, s32 x, s32 y)
         addFireRaw(city, x, y, getCurrentTimestamp());
     }
 }
-/*
- * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
- *
- * SPDX-License-Identifier: BSD-2-Clause
- */
-
-#include "fire.h"
 
 void addFireRaw(City* city, s32 x, s32 y, GameTimestamp startDate)
 {
@@ -298,7 +291,7 @@ void debugInspectFire(UI::Panel* panel, City* city, s32 x, s32 y)
     panel->addLabel(myprintf("Resulting chance of fire: {0}%"_s, { formatFloat(layer->tileOverallFireRisk.get(x, y) / 2.55f, 1) }));
 }
 
-void saveFireLayer(FireLayer* layer, struct BinaryFileWriter* writer)
+void saveFireLayer(FireLayer* layer, BinaryFileWriter* writer)
 {
     writer->startSection<SAVSection_Fire>(SAV_FIRE_ID, SAV_FIRE_VERSION);
     SAVSection_Fire fireSection = {};
@@ -324,7 +317,7 @@ void saveFireLayer(FireLayer* layer, struct BinaryFileWriter* writer)
     writer->endSection<SAVSection_Fire>(&fireSection);
 }
 
-bool loadFireLayer(FireLayer* layer, City* city, struct BinaryFileReader* reader)
+bool loadFireLayer(FireLayer* layer, City* city, BinaryFileReader* reader)
 {
     bool succeeded = false;
     while (reader->startSection(SAV_FIRE_ID, SAV_FIRE_VERSION)) {

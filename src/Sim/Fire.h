@@ -6,12 +6,14 @@
 
 #pragma once
 
-#include "building.h"
-#include "dirty.h"
-#include "game_clock.h"
-#include "sector.h"
+#include <IO/Forward.h>
+#include <Sim/DirtyRects.h>
+#include <Sim/Forward.h>
+#include <Sim/GameClock.h>
+#include <Sim/Sector.h>
 #include <UI/Forward.h>
 #include <Util/ChunkedArray.h>
+#include <Util/Forward.h>
 #include <Util/Rectangle.h>
 #include <Util/Vector.h>
 
@@ -77,5 +79,5 @@ float getFireProtectionPercentAt(City* city, s32 x, s32 y);
 
 void debugInspectFire(UI::Panel* panel, City* city, s32 x, s32 y);
 
-void saveFireLayer(FireLayer* layer, struct BinaryFileWriter* writer);
-bool loadFireLayer(FireLayer* layer, City* city, struct BinaryFileReader* reader);
+void saveFireLayer(FireLayer* layer, BinaryFileWriter* writer);
+bool loadFireLayer(FireLayer* layer, City* city, BinaryFileReader* reader);
