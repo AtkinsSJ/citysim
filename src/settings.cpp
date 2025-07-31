@@ -167,9 +167,8 @@ void loadSettingsFile(String name, Blob settingsData)
             } break;
 
             case SettingType::V2I: {
-                Maybe<V2I> value = readV2I(&reader);
-                if (value.isValid) {
-                    setSettingData<V2I>(&s_settings->settings, def, value.value);
+                if (auto value = V2I::read(reader); value.has_value()) {
+                    setSettingData<V2I>(&s_settings->settings, def, value.release_value());
                 }
             } break;
 

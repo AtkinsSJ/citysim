@@ -1116,14 +1116,14 @@ void loadSpriteDefs(Blob data, Asset* asset)
                 // @Copypasta from the SpriteGroup branch, and the 'sprite' property
                 String name = reader.next_token();
                 String filename = reader.next_token();
-                Maybe<V2I> spriteSizeIn = readV2I(&reader);
+                auto spriteSizeIn = V2I::read(reader);
 
-                if (isEmpty(name) || isEmpty(filename) || !spriteSizeIn.isValid) {
+                if (isEmpty(name) || isEmpty(filename) || !spriteSizeIn.has_value()) {
                     reader.error("Couldn't parse Sprite. Expected: ':Sprite identifier filename.png SWxSH'"_s);
                     return;
                 }
 
-                spriteSize = spriteSizeIn.value;
+                spriteSize = spriteSizeIn.release_value();
 
                 Asset* group = addSpriteGroup(name, 1);
 
@@ -1137,15 +1137,15 @@ void loadSpriteDefs(Blob data, Asset* asset)
             } else if (command == "SpriteGroup"_s) {
                 String name = reader.next_token();
                 String filename = reader.next_token();
-                Maybe<V2I> spriteSizeIn = readV2I(&reader);
+                auto spriteSizeIn = V2I::read(reader);
 
-                if (isEmpty(name) || isEmpty(filename) || !spriteSizeIn.isValid) {
+                if (isEmpty(name) || isEmpty(filename) || !spriteSizeIn.has_value()) {
                     reader.error("Couldn't parse SpriteGroup. Expected: ':SpriteGroup identifier filename.png SWxSH'"_s);
                     return;
                 }
 
                 textureAsset = addTexture(filename, false);
-                spriteSize = spriteSizeIn.value;
+                spriteSize = spriteSizeIn.release_value();
 
                 s32 spriteCount = reader.count_occurrences_of_property_in_current_command("sprite"_s);
                 if (spriteCount < 1) {

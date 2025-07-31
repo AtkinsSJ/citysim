@@ -101,5 +101,3 @@ private:
     bool m_remove_comments;
     char m_comment_char;
 };
-
-Maybe<V2I> readV2I(LineReader* reader);

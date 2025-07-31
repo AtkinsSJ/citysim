@@ -8,7 +8,6 @@
 #include <Util/Log.h>
 #include <Util/Optional.h>
 #include <Util/Unicode.h>
-#include <Util/Vector.h>
 
 LineReader::LineReader(String filename, Blob data, ::Flags<Flags> flags, char commentChar)
     : m_filename(filename)
@@ -222,22 +221,4 @@ Optional<double> LineReader::read_double(IsRequired is_required, Optional<char> 
 
     error("Couldn't parse '{0}' as a float."_s, { token });
     return {};
-}
-
-Maybe<V2I> readV2I(LineReader* reader)
-{
-    Maybe<V2I> result = makeFailure<V2I>();
-
-    String token = reader->peek_token();
-
-    auto x = reader->read_int<s32>(LineReader::IsRequired::Yes, 'x');
-    auto y = reader->read_int<s32>();
-
-    if (x.has_value() && y.has_value()) {
-        result = makeSuccess<V2I>(v2i(x.release_value(), y.release_value()));
-    } else {
-        reader->error("Couldn't parse '{0}' as a V2I, expected 2 integers with an 'x' between, eg '8x12'"_s, { token });
-    }
-
-    return result;
 }

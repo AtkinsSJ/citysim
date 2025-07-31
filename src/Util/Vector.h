@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <IO/Forward.h>
 #include <Util/Basic.h>
 #include <Util/Forward.h>
 
@@ -78,6 +79,8 @@ inline V2 operator/=(V2& v, float s)
 struct V2I {
     s32 x;
     s32 y;
+
+    static Optional<V2I> read(LineReader&);
 
     bool operator==(V2I const&) const = default;
 };
