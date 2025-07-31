@@ -12,13 +12,6 @@
 #include <Util/Optional.h>
 #include <Util/String.h>
 
-enum class LineReaderFlags : u8 {
-    SkipBlankLines,
-    RemoveTrailingComments,
-    COUNT,
-};
-constexpr Flags DefaultLineReaderFlags { LineReaderFlags::SkipBlankLines, LineReaderFlags::RemoveTrailingComments };
-
 class LineReader {
 public:
     struct State {
@@ -34,7 +27,14 @@ public:
         Yes,
     };
 
-    LineReader(String filename, Blob data, Flags<LineReaderFlags> flags = DefaultLineReaderFlags, char commentChar = '#');
+    enum class Flags : u8 {
+        SkipBlankLines,
+        RemoveTrailingComments,
+        COUNT,
+    };
+    static constexpr ::Flags DefaultFlags { Flags::SkipBlankLines, Flags::RemoveTrailingComments };
+
+    LineReader(String filename, Blob data, ::Flags<Flags> flags = DefaultFlags, char commentChar = '#');
 
     State save_state() const;
     void restore_state(State const&);

@@ -10,11 +10,11 @@
 #include <Util/Rectangle.h>
 #include <Util/Unicode.h>
 
-LineReader::LineReader(String filename, Blob data, Flags<LineReaderFlags> flags, char commentChar)
+LineReader::LineReader(String filename, Blob data, ::Flags<Flags> flags, char commentChar)
     : m_filename(filename)
     , m_data(data)
-    , m_skip_blank_lines(flags.has(LineReaderFlags::SkipBlankLines))
-    , m_remove_comments(flags.has(LineReaderFlags::RemoveTrailingComments))
+    , m_skip_blank_lines(flags.has(Flags::SkipBlankLines))
+    , m_remove_comments(flags.has(Flags::RemoveTrailingComments))
     , m_comment_char(commentChar)
 {
 }
