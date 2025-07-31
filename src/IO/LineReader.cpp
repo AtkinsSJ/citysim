@@ -7,8 +7,8 @@
 #include "LineReader.h"
 #include <Util/Log.h>
 #include <Util/Optional.h>
-#include <Util/Rectangle.h>
 #include <Util/Unicode.h>
+#include <Util/Vector.h>
 
 LineReader::LineReader(String filename, Blob data, ::Flags<Flags> flags, char commentChar)
     : m_filename(filename)
@@ -222,80 +222,6 @@ Optional<double> LineReader::read_double(IsRequired is_required, Optional<char> 
 
     error("Couldn't parse '{0}' as a float."_s, { token });
     return {};
-}
-
-Maybe<Padding> readPadding(LineReader* reader)
-{
-    // Padding definitions may be 1, 2, 3 or 4 values, as CSS does it:
-    //   All
-    //   Vertical Horizontal
-    //   Top Horizontal Bottom
-    //   Top Right Bottom Left
-    // So, clockwise from the top, with sensible fallbacks
-
-    Maybe<Padding> result = makeFailure<Padding>();
-
-    s32 valueCount = reader->count_remaining_tokens_in_current_line();
-    switch (valueCount) {
-    case 1: {
-        if (auto value = reader->read_int<s32>(); value.has_value()) {
-            Padding padding = {};
-            padding.top = value.value();
-            padding.right = value.value();
-            padding.bottom = value.value();
-            padding.left = value.value();
-
-            result = makeSuccess(padding);
-        }
-    } break;
-
-    case 2: {
-        auto vValue = reader->read_int<s32>();
-        auto hValue = reader->read_int<s32>();
-        if (vValue.has_value() && hValue.has_value()) {
-            Padding padding = {};
-            padding.top = vValue.value();
-            padding.right = hValue.value();
-            padding.bottom = vValue.value();
-            padding.left = hValue.value();
-
-            result = makeSuccess(padding);
-        }
-    } break;
-
-    case 3: {
-        auto topValue = reader->read_int<s32>();
-        auto hValue = reader->read_int<s32>();
-        auto bottomValue = reader->read_int<s32>();
-        if (topValue.has_value() && hValue.has_value() && bottomValue.has_value()) {
-            Padding padding = {};
-            padding.top = topValue.value();
-            padding.right = hValue.value();
-            padding.bottom = bottomValue.value();
-            padding.left = hValue.value();
-
-            result = makeSuccess(padding);
-        }
-    } break;
-
-    case 4: {
-        auto topValue = reader->read_int<s32>();
-        auto rightValue = reader->read_int<s32>();
-        auto bottomValue = reader->read_int<s32>();
-        auto leftValue = reader->read_int<s32>();
-        if (all_have_values(topValue, rightValue, bottomValue, leftValue)) {
-            Padding padding = {};
-            padding.top = topValue.value();
-            padding.right = rightValue.value();
-            padding.bottom = bottomValue.value();
-            padding.left = leftValue.value();
-
-            result = makeSuccess(padding);
-        }
-    } break;
-    }
-
-    return result;
 }
 
 Maybe<V2I> readV2I(LineReader* reader)

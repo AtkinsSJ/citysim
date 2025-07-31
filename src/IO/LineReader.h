@@ -102,5 +102,4 @@ private:
     char m_comment_char;
 };
 
-Maybe<Padding> readPadding(LineReader* reader);
 Maybe<V2I> readV2I(LineReader* reader);

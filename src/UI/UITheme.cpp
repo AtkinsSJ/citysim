@@ -445,7 +445,7 @@ void loadUITheme(Blob data, Asset* asset)
                         } break;
 
                         case UI::PropType::Padding: {
-                            if (Optional value = readPadding(&reader); value.has_value()) {
+                            if (auto value = Padding::read(reader); value.has_value()) {
                                 UI::setPropertyValue(target, property, value.release_value());
                             }
                         } break;
