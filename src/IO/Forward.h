@@ -13,5 +13,5 @@ struct DirectoryListingHandle;
 struct File;
 struct FileHandle;
 struct FileInfo;
-struct LineReader;
+class LineReader;
 struct WriteBuffer;

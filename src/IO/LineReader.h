@@ -19,7 +19,8 @@ enum class LineReaderFlags : u8 {
 };
 constexpr Flags DefaultLineReaderFlags { LineReaderFlags::SkipBlankLines, LineReaderFlags::RemoveTrailingComments };
 
-struct LineReader {
+class LineReader {
+public:
     struct Position {
         String currentLine;
         smm currentLineNumber;
@@ -90,14 +91,15 @@ struct LineReader {
 
     static u32 count_lines(Blob const& data);
 
-    String filename;
-    Blob data;
+private:
+    String m_filename;
+    Blob m_data;
 
-    Position position {};
+    Position m_position {};
 
-    bool skipBlankLines;
-    bool removeComments;
-    char commentChar;
+    bool m_skip_blank_lines;
+    bool m_remove_comments;
+    char m_comment_char;
 };
 
 Maybe<Padding> readPadding(LineReader* reader);

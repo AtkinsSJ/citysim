@@ -11,27 +11,27 @@
 #include <Util/Unicode.h>
 
 LineReader::LineReader(String filename, Blob data, Flags<LineReaderFlags> flags, char commentChar)
-    : filename(filename)
-    , data(data)
-    , skipBlankLines(flags.has(LineReaderFlags::SkipBlankLines))
-    , removeComments(flags.has(LineReaderFlags::RemoveTrailingComments))
-    , commentChar(commentChar)
+    : m_filename(filename)
+    , m_data(data)
+    , m_skip_blank_lines(flags.has(LineReaderFlags::SkipBlankLines))
+    , m_remove_comments(flags.has(LineReaderFlags::RemoveTrailingComments))
+    , m_comment_char(commentChar)
 {
 }
 
 LineReader::Position LineReader::save_position() const
 {
-    return position;
+    return m_position;
 }
 
 void LineReader::restore_position(Position const& position)
 {
-    this->position = position;
+    m_position = position;
 }
 
 void LineReader::restart()
 {
-    position = {};
+    m_position = {};
 }
 
 u32 LineReader::count_lines(Blob const& data)
@@ -91,26 +91,26 @@ bool LineReader::load_next_line()
 
     do {
         // Get next line
-        ++position.currentLineNumber;
-        line.chars = (char*)(data.data() + position.startOfNextLine);
+        ++m_position.currentLineNumber;
+        line.chars = (char*)(m_data.data() + m_position.startOfNextLine);
         line.length = 0;
-        while ((position.startOfNextLine < data.size()) && !isNewline(data.data()[position.startOfNextLine])) {
-            ++position.startOfNextLine;
+        while ((m_position.startOfNextLine < m_data.size()) && !isNewline(m_data.data()[m_position.startOfNextLine])) {
+            ++m_position.startOfNextLine;
             ++line.length;
         }
 
         // Handle Windows' stupid double-character newline.
-        if (position.startOfNextLine < data.size()) {
-            ++position.startOfNextLine;
-            if (isNewline(data.data()[position.startOfNextLine]) && (data.data()[position.startOfNextLine] != data.data()[position.startOfNextLine - 1])) {
-                ++position.startOfNextLine;
+        if (m_position.startOfNextLine < m_data.size()) {
+            ++m_position.startOfNextLine;
+            if (isNewline(m_data.data()[m_position.startOfNextLine]) && (m_data.data()[m_position.startOfNextLine] != m_data.data()[m_position.startOfNextLine - 1])) {
+                ++m_position.startOfNextLine;
             }
         }
 
         // Trim the comment
-        if (removeComments) {
+        if (m_remove_comments) {
             for (s32 p = 0; p < line.length; p++) {
-                if (line[p] == commentChar) {
+                if (line[p] == m_comment_char) {
                     line.length = p;
                     break;
                 }
@@ -121,20 +121,20 @@ bool LineReader::load_next_line()
         line = trim(line);
 
         // This seems weird, but basically: The break means all lines get returned if we're not skipping blank ones.
-        if (!skipBlankLines)
+        if (!m_skip_blank_lines)
             break;
-    } while (isEmpty(line) && !(position.startOfNextLine >= data.size()));
+    } while (isEmpty(line) && !(m_position.startOfNextLine >= m_data.size()));
 
-    position.currentLine = line;
-    position.lineRemainder = line;
+    m_position.currentLine = line;
+    m_position.lineRemainder = line;
 
     if (isEmpty(line)) {
-        if (skipBlankLines) {
+        if (m_skip_blank_lines) {
             result = false;
-            position.atEndOfFile = true;
-        } else if (position.startOfNextLine >= data.size()) {
+            m_position.atEndOfFile = true;
+        } else if (m_position.startOfNextLine >= m_data.size()) {
             result = false;
-            position.atEndOfFile = true;
+            m_position.atEndOfFile = true;
         }
     }
 
@@ -143,41 +143,41 @@ bool LineReader::load_next_line()
 
 String LineReader::current_line() const
 {
-    return position.currentLine;
+    return m_position.currentLine;
 }
 
 String LineReader::remainder_of_current_line() const
 {
-    return trim(position.lineRemainder);
+    return trim(m_position.lineRemainder);
 }
 
 void LineReader::warn(String message, std::initializer_list<String> args) const
 {
     String text = myprintf(message, args, false);
-    String lineNumber = position.atEndOfFile ? "EOF"_s : formatInt(position.currentLineNumber);
-    logWarn("{0}:{1} - {2}"_s, { filename, lineNumber, text });
+    String lineNumber = m_position.atEndOfFile ? "EOF"_s : formatInt(m_position.currentLineNumber);
+    logWarn("{0}:{1} - {2}"_s, { m_filename, lineNumber, text });
 }
 
 void LineReader::error(String message, std::initializer_list<String> args) const
 {
     String text = myprintf(message, args, false);
-    String lineNumber = position.atEndOfFile ? "EOF"_s : formatInt(position.currentLineNumber);
-    logError("{0}:{1} - {2}"_s, { filename, lineNumber, text });
+    String lineNumber = m_position.atEndOfFile ? "EOF"_s : formatInt(m_position.currentLineNumber);
+    logError("{0}:{1} - {2}"_s, { m_filename, lineNumber, text });
 }
 
 String LineReader::next_token(Optional<char> split_char)
 {
-    return nextToken(position.lineRemainder, &position.lineRemainder, split_char.value_or(0));
+    return nextToken(m_position.lineRemainder, &m_position.lineRemainder, split_char.value_or(0));
 }
 
 String LineReader::peek_token(Optional<char> split_char)
 {
-    return nextToken(position.lineRemainder, nullptr, split_char.value_or(0));
+    return nextToken(m_position.lineRemainder, nullptr, split_char.value_or(0));
 }
 
 s32 LineReader::count_remaining_tokens_in_current_line(Optional<char> split_char) const
 {
-    return countTokens(position.lineRemainder, split_char.value_or(0));
+    return countTokens(m_position.lineRemainder, split_char.value_or(0));
 }
 
 Optional<bool> LineReader::read_bool(IsRequired is_required, Optional<char> split_char)
