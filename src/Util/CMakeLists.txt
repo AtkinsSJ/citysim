@@ -7,6 +7,7 @@ target_sources(CitySim PRIVATE
     Matrix4.cpp
     Memory.cpp
     MemoryArena.cpp
+    Padding.cpp
     Random.cpp
     Rectangle.cpp
     Splat.cpp
