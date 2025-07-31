@@ -236,7 +236,7 @@ void putDropDownList(Array<T>* listOptions, s32* currentSelection, String (*getD
         // If we clicked somewhere outside of the panel, close it
         if (isOpen && !clicked
             && mouseButtonJustReleased(MouseButton::Left)
-            && !contains(panel.bounds, mouseClickStartPos)) {
+            && !panel.bounds.contains(mouseClickStartPos)) {
             closeDropDownList();
         }
     }

@@ -87,7 +87,7 @@ void drawEntities(City* city, Rect2I visibleTileBounds)
 
     for (auto it = city->entities.iterate(); it.hasNext(); it.next()) {
         auto entity = it.get();
-        if (overlaps(cropArea, entity->bounds)) {
+        if (cropArea.overlaps(entity->bounds)) {
             // TODO: Batch these together somehow? Our batching is a bit complicated.
             // OK, turns out our renderer still batches same-texture-same-shader calls into a single draw call!
             // So, the difference is just sending N x RenderItem_DrawSingleRect instead of 1 x RenderItem_DrawRects
@@ -96,7 +96,7 @@ void drawEntities(City* city, Rect2I visibleTileBounds)
 
             auto drawColor = entity->color;
 
-            if (entity->canBeDemolished && isDemolitionHappening && overlaps(entity->bounds, demolitionRect)) {
+            if (entity->canBeDemolished && isDemolitionHappening && entity->bounds.overlaps(demolitionRect)) {
                 drawColor = drawColor.multiplied_by(drawColorDemolish);
             }
 

@@ -35,11 +35,6 @@ Rect2 rectPosSize(V2 pos, V2 size)
     return rect;
 }
 
-Rect2 rectCentreSize(V2 centre, V2 size)
-{
-    return rectPosSize(centre - (size * 0.5f), size);
-}
-
 Rect2 rect2(Rect2I source)
 {
     return rectXYWHi(source.x, source.y, source.w, source.h);
@@ -93,74 +88,74 @@ Rect2 rectAligned(V2 origin, V2 size, Alignment alignment)
     return rect;
 }
 
-bool contains(Rect2 rect, float x, float y)
+bool Rect2::contains(float x, float y) const
 {
-    return x >= rect.x
-        && x < (rect.x + rect.w)
-        && y >= rect.y
-        && y < (rect.y + rect.h);
+    return left() <= x
+        && x < right()
+        && top() <= y
+        && y < bottom();
 }
 
-bool contains(Rect2 rect, V2 pos)
+bool Rect2::contains(V2 pos) const
 {
-    return contains(rect, pos.x, pos.y);
+    return contains(pos.x, pos.y);
 }
 
-bool contains(Rect2 outer, Rect2 inner)
+bool Rect2::contains(Rect2 const& inner) const
 {
-    return contains(outer, inner.pos) && contains(outer, inner.pos + inner.size);
+    return contains(inner.pos) && contains(inner.pos + inner.size);
 }
 
-bool overlaps(Rect2 a, Rect2 b)
+bool Rect2::overlaps(Rect2 const& b) const
 {
-    return (a.x < b.x + b.w)
-        && (b.x < a.x + a.w)
-        && (a.y < b.y + b.h)
-        && (b.y < a.y + a.h);
+    return left() < b.right()
+        && b.left() < right()
+        && top() < b.bottom()
+        && b.top() < bottom();
 }
 
-Rect2 expand(Rect2 rect, float radius)
+Rect2 Rect2::expanded(float radius) const
 {
     return rectXYWH(
-        rect.x - radius,
-        rect.y - radius,
-        rect.w + (radius * 2.0f),
-        rect.h + (radius * 2.0f));
+        x - radius,
+        y - radius,
+        w + (radius * 2.0f),
+        h + (radius * 2.0f));
 }
 
-Rect2 expand(Rect2 rect, float top, float right, float bottom, float left)
+Rect2 Rect2::expanded(float top, float right, float bottom, float left) const
 {
     return rectXYWH(
-        rect.x - left,
-        rect.y - top,
-        rect.w + left + right,
-        rect.h + top + bottom);
+        x - left,
+        y - top,
+        w + left + right,
+        h + top + bottom);
 }
 
-Rect2 intersect(Rect2 inner, Rect2 outer)
+Rect2 Rect2::intersected(Rect2 const& other) const
 {
-    Rect2 result = inner;
+    Rect2 result = *this;
 
     // X
-    float rightExtension = (result.x + result.w) - (outer.x + outer.w);
-    if (rightExtension > 0) {
-        result.w -= rightExtension;
+    float right_extension = (result.x + result.w) - (other.x + other.w);
+    if (right_extension > 0) {
+        result.w -= right_extension;
     }
-    if (result.x < outer.x) {
-        float leftExtension = outer.x - result.x;
-        result.x += leftExtension;
-        result.w -= leftExtension;
+    if (result.x < other.x) {
+        float left_extension = other.x - result.x;
+        result.x += left_extension;
+        result.w -= left_extension;
     }
 
     // Y
-    float bottomExtension = (result.y + result.h) - (outer.y + outer.h);
-    if (bottomExtension > 0) {
-        result.h -= bottomExtension;
+    float bottom_extension = (result.y + result.h) - (other.y + other.h);
+    if (bottom_extension > 0) {
+        result.h -= bottom_extension;
     }
-    if (result.y < outer.y) {
-        float topExtension = outer.y - result.y;
-        result.y += topExtension;
-        result.h -= topExtension;
+    if (result.y < other.y) {
+        float top_extension = other.y - result.y;
+        result.y += top_extension;
+        result.h -= top_extension;
     }
 
     result.w = max(result.w, 0.0f);
@@ -171,19 +166,19 @@ Rect2 intersect(Rect2 inner, Rect2 outer)
 
 // Takes the intersection of inner and outer, and then converts it to being relative to outer.
 // (Originally used to take a world-space rectangle and put it into a cropped, sector-space one.)
-Rect2 intersectRelative(Rect2 outer, Rect2 inner)
+Rect2 Rect2::intersected_relative(Rect2 const& inner) const
 {
-    Rect2 result = intersect(inner, outer);
-    result.pos -= outer.pos;
+    Rect2 result = intersected(inner);
+    result.pos -= pos;
 
     return result;
 }
 
-V2 centreOf(Rect2 rect)
+V2 Rect2::centre() const
 {
     return v2(
-        rect.x + rect.w / 2.0f,
-        rect.y + rect.h / 2.0f);
+        x + (w / 2.0f),
+        y + (h / 2.0f));
 }
 
 V2I centreOfI(Rect2I rect)
@@ -193,14 +188,14 @@ V2I centreOfI(Rect2I rect)
         round_s32(rect.y + rect.h / 2.0f));
 }
 
-float areaOf(Rect2 rect)
+float Rect2::area() const
 {
-    return abs_float(rect.w * rect.h);
+    return abs_float(w * h);
 }
 
-bool hasPositiveArea(Rect2 rect)
+bool Rect2::has_positive_area() const
 {
-    return (rect.w > 0 && rect.h > 0);
+    return w > 0 && h > 0;
 }
 
 /**********************************************
