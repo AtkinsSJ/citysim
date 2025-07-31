@@ -186,16 +186,12 @@ void addEndScissor(RenderBuffer* buffer);
 
 void drawSingleSprite(RenderBuffer* buffer, Sprite* sprite, Rect2 bounds, s8 shaderID, Colour color);
 void drawSingleRect(RenderBuffer* buffer, Rect2 bounds, s8 shaderID, Colour color);
-void drawSingleRect(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, Colour color);
 void drawSingleRect(RenderBuffer* buffer, Rect2 bounds, s8 shaderID, Colour color00, Colour color01, Colour color10, Colour color11);
-void drawSingleRect(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, Colour color00, Colour color01, Colour color10, Colour color11);
 
 // For when you want something to appear NOW in the render-order, but you don't know its details until later
 DrawRectPlaceholder appendDrawRectPlaceholder(RenderBuffer* buffer, s8 shaderID, bool hasTexture);
 void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2 bounds, Colour color);
-void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2I bounds, Colour color);
 void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2 bounds, Colour color00, Colour color01, Colour color10, Colour color11);
-void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2I bounds, Colour color00, Colour color01, Colour color10, Colour color11);
 void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2 bounds, Sprite* sprite, Colour color);
 
 struct DrawNinepatchPlaceholder {

@@ -109,7 +109,7 @@ void initAssets()
         placeholderSprite->spriteGroup.count = 1;
         placeholderSprite->spriteGroup.sprites = (Sprite*)placeholderSprite->data.writable_data();
         placeholderSprite->spriteGroup.sprites[0].texture = &s_assets->placeholderAssets[AssetType::Texture];
-        placeholderSprite->spriteGroup.sprites[0].uv = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
+        placeholderSprite->spriteGroup.sprites[0].uv = { 0.0f, 0.0f, 1.0f, 1.0f };
 
         // SpriteDefs
         makePlaceholderAsset(AssetType::SpriteDefs);
@@ -375,11 +375,12 @@ void loadAsset(Asset* asset)
             float textureWidth = (float)t->texture.surface->w;
             float textureHeight = (float)t->texture.surface->h;
 
-            sprite->uv = rectXYWH(
+            sprite->uv = {
                 sprite->uv.x / textureWidth,
                 sprite->uv.y / textureHeight,
                 sprite->uv.w / textureWidth,
-                sprite->uv.h / textureHeight);
+                sprite->uv.h / textureHeight
+            };
         }
 
         asset->state = Asset::State::Loaded;
@@ -1129,7 +1130,7 @@ void loadSpriteDefs(Blob data, Asset* asset)
 
                 Sprite* sprite = group->spriteGroup.sprites;
                 sprite->texture = addTexture(filename, false);
-                sprite->uv = rectXYWHi(0, 0, spriteSize.x, spriteSize.y);
+                sprite->uv = {0, 0, spriteSize.x, spriteSize.y};
                 sprite->pixelWidth = spriteSize.x;
                 sprite->pixelHeight = spriteSize.y;
 
@@ -1184,9 +1185,9 @@ void loadSpriteDefs(Blob data, Asset* asset)
 
                     Sprite* sprite = spriteGroup->spriteGroup.sprites + spriteIndex;
                     sprite->texture = textureAsset;
-                    sprite->uv = rectXYWHi(spriteBorder.x + x * (spriteSize.x + spriteBorder.x + spriteBorder.x),
+                    sprite->uv = {spriteBorder.x + x * (spriteSize.x + spriteBorder.x + spriteBorder.x),
                         spriteBorder.y + y * (spriteSize.y + spriteBorder.y + spriteBorder.y),
-                        spriteSize.x, spriteSize.y);
+                        spriteSize.x, spriteSize.y};
                     sprite->pixelWidth = spriteSize.x;
                     sprite->pixelHeight = spriteSize.y;
 

@@ -384,11 +384,6 @@ void drawSingleRect(RenderBuffer* buffer, Rect2 bounds, s8 shaderID, Colour colo
     drawSingleRect(buffer, bounds, shaderID, color, color, color, color);
 }
 
-void drawSingleRect(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, Colour color)
-{
-    drawSingleRect(buffer, rect2(bounds), shaderID, color, color, color, color);
-}
-
 void drawSingleRect(RenderBuffer* buffer, Rect2 bounds, s8 shaderID, Colour color00, Colour color01, Colour color10, Colour color11)
 {
     addSetShader(buffer, shaderID);
@@ -400,12 +395,7 @@ void drawSingleRect(RenderBuffer* buffer, Rect2 bounds, s8 shaderID, Colour colo
     rect->color01 = color01;
     rect->color10 = color10;
     rect->color11 = color11;
-    rect->uv = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
-}
-
-void drawSingleRect(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, Colour color00, Colour color01, Colour color10, Colour color11)
-{
-    drawSingleRect(buffer, rect2(bounds), shaderID, color00, color01, color10, color11);
+    rect->uv = { 0.0f, 0.0f, 1.0f, 1.0f };
 }
 
 DrawRectPlaceholder appendDrawRectPlaceholder(RenderBuffer* buffer, s8 shaderID, bool hasTexture)
@@ -435,11 +425,6 @@ void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2 bounds, Col
     fillDrawRectPlaceholder(placeholder, bounds, color, color, color, color);
 }
 
-void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2I bounds, Colour color)
-{
-    fillDrawRectPlaceholder(placeholder, rect2(bounds), color, color, color, color);
-}
-
 void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2 bounds, Colour color00, Colour color01, Colour color10, Colour color11)
 {
     RenderItem_DrawSingleRect* rect = placeholder->drawRect;
@@ -449,12 +434,7 @@ void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2 bounds, Col
     rect->color01 = color01;
     rect->color10 = color10;
     rect->color11 = color11;
-    rect->uv = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
-}
-
-void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2I bounds, Colour color00, Colour color01, Colour color10, Colour color11)
-{
-    fillDrawRectPlaceholder(placeholder, rect2(bounds), color00, color01, color10, color11);
+    rect->uv = { 0.0f, 0.0f, 1.0f, 1.0f };
 }
 
 void fillDrawRectPlaceholder(DrawRectPlaceholder* placeholder, Rect2 bounds, Sprite* sprite, Colour color)
@@ -490,31 +470,31 @@ void drawNinepatch(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, Ninepatch* 
     float y3 = (float)(bounds.y + bounds.h);
 
     // top left
-    addRectInternal(group, rectMinMax(x0, y0, x1, y1), color, rectMinMax(ninepatch->u0, ninepatch->v0, ninepatch->u1, ninepatch->v1));
+    addRectInternal(group, Rect2::create_min_max(x0, y0, x1, y1), color, Rect2::create_min_max(ninepatch->u0, ninepatch->v0, ninepatch->u1, ninepatch->v1));
 
     // top
-    addRectInternal(group, rectMinMax(x1, y0, x2, y1), color, rectMinMax(ninepatch->u1, ninepatch->v0, ninepatch->u2, ninepatch->v1));
+    addRectInternal(group, Rect2::create_min_max(x1, y0, x2, y1), color, Rect2::create_min_max(ninepatch->u1, ninepatch->v0, ninepatch->u2, ninepatch->v1));
 
     // top-right
-    addRectInternal(group, rectMinMax(x2, y0, x3, y1), color, rectMinMax(ninepatch->u2, ninepatch->v0, ninepatch->u3, ninepatch->v1));
+    addRectInternal(group, Rect2::create_min_max(x2, y0, x3, y1), color, Rect2::create_min_max(ninepatch->u2, ninepatch->v0, ninepatch->u3, ninepatch->v1));
 
     // middle left
-    addRectInternal(group, rectMinMax(x0, y1, x1, y2), color, rectMinMax(ninepatch->u0, ninepatch->v1, ninepatch->u1, ninepatch->v2));
+    addRectInternal(group, Rect2::create_min_max(x0, y1, x1, y2), color, Rect2::create_min_max(ninepatch->u0, ninepatch->v1, ninepatch->u1, ninepatch->v2));
 
     // middle
-    addRectInternal(group, rectMinMax(x1, y1, x2, y2), color, rectMinMax(ninepatch->u1, ninepatch->v1, ninepatch->u2, ninepatch->v2));
+    addRectInternal(group, Rect2::create_min_max(x1, y1, x2, y2), color, Rect2::create_min_max(ninepatch->u1, ninepatch->v1, ninepatch->u2, ninepatch->v2));
 
     // middle-right
-    addRectInternal(group, rectMinMax(x2, y1, x3, y2), color, rectMinMax(ninepatch->u2, ninepatch->v1, ninepatch->u3, ninepatch->v2));
+    addRectInternal(group, Rect2::create_min_max(x2, y1, x3, y2), color, Rect2::create_min_max(ninepatch->u2, ninepatch->v1, ninepatch->u3, ninepatch->v2));
 
     // bottom left
-    addRectInternal(group, rectMinMax(x0, y2, x1, y3), color, rectMinMax(ninepatch->u0, ninepatch->v2, ninepatch->u1, ninepatch->v3));
+    addRectInternal(group, Rect2::create_min_max(x0, y2, x1, y3), color, Rect2::create_min_max(ninepatch->u0, ninepatch->v2, ninepatch->u1, ninepatch->v3));
 
     // bottom
-    addRectInternal(group, rectMinMax(x1, y2, x2, y3), color, rectMinMax(ninepatch->u1, ninepatch->v2, ninepatch->u2, ninepatch->v3));
+    addRectInternal(group, Rect2::create_min_max(x1, y2, x2, y3), color, Rect2::create_min_max(ninepatch->u1, ninepatch->v2, ninepatch->u2, ninepatch->v3));
 
     // bottom-right
-    addRectInternal(group, rectMinMax(x2, y2, x3, y3), color, rectMinMax(ninepatch->u2, ninepatch->v2, ninepatch->u3, ninepatch->v3));
+    addRectInternal(group, Rect2::create_min_max(x2, y2, x3, y3), color, Rect2::create_min_max(ninepatch->u2, ninepatch->v2, ninepatch->u3, ninepatch->v3));
 
     endRectsGroup(group);
 }
@@ -549,57 +529,57 @@ void fillDrawNinepatchPlaceholder(DrawNinepatchPlaceholder* placeholder, Rect2I 
     RenderItem_DrawRects_Item* rect = placeholder->firstRect;
 
     // top left
-    rect->bounds = rectMinMax(x0, y0, x1, y1);
+    rect->bounds = Rect2::create_min_max(x0, y0, x1, y1);
     rect->color = color;
-    rect->uv = rectMinMax(ninepatch->u0, ninepatch->v0, ninepatch->u1, ninepatch->v1);
+    rect->uv = Rect2::create_min_max(ninepatch->u0, ninepatch->v0, ninepatch->u1, ninepatch->v1);
     rect++;
 
     // top
-    rect->bounds = rectMinMax(x1, y0, x2, y1);
+    rect->bounds = Rect2::create_min_max(x1, y0, x2, y1);
     rect->color = color;
-    rect->uv = rectMinMax(ninepatch->u1, ninepatch->v0, ninepatch->u2, ninepatch->v1);
+    rect->uv = Rect2::create_min_max(ninepatch->u1, ninepatch->v0, ninepatch->u2, ninepatch->v1);
     rect++;
 
     // top-right
-    rect->bounds = rectMinMax(x2, y0, x3, y1);
+    rect->bounds = Rect2::create_min_max(x2, y0, x3, y1);
     rect->color = color;
-    rect->uv = rectMinMax(ninepatch->u2, ninepatch->v0, ninepatch->u3, ninepatch->v1);
+    rect->uv = Rect2::create_min_max(ninepatch->u2, ninepatch->v0, ninepatch->u3, ninepatch->v1);
     rect++;
 
     // middle left
-    rect->bounds = rectMinMax(x0, y1, x1, y2);
+    rect->bounds = Rect2::create_min_max(x0, y1, x1, y2);
     rect->color = color;
-    rect->uv = rectMinMax(ninepatch->u0, ninepatch->v1, ninepatch->u1, ninepatch->v2);
+    rect->uv = Rect2::create_min_max(ninepatch->u0, ninepatch->v1, ninepatch->u1, ninepatch->v2);
     rect++;
 
     // middle
-    rect->bounds = rectMinMax(x1, y1, x2, y2);
+    rect->bounds = Rect2::create_min_max(x1, y1, x2, y2);
     rect->color = color;
-    rect->uv = rectMinMax(ninepatch->u1, ninepatch->v1, ninepatch->u2, ninepatch->v2);
+    rect->uv = Rect2::create_min_max(ninepatch->u1, ninepatch->v1, ninepatch->u2, ninepatch->v2);
     rect++;
 
     // middle-right
-    rect->bounds = rectMinMax(x2, y1, x3, y2);
+    rect->bounds = Rect2::create_min_max(x2, y1, x3, y2);
     rect->color = color;
-    rect->uv = rectMinMax(ninepatch->u2, ninepatch->v1, ninepatch->u3, ninepatch->v2);
+    rect->uv = Rect2::create_min_max(ninepatch->u2, ninepatch->v1, ninepatch->u3, ninepatch->v2);
     rect++;
 
     // bottom left
-    rect->bounds = rectMinMax(x0, y2, x1, y3);
+    rect->bounds = Rect2::create_min_max(x0, y2, x1, y3);
     rect->color = color;
-    rect->uv = rectMinMax(ninepatch->u0, ninepatch->v2, ninepatch->u1, ninepatch->v3);
+    rect->uv = Rect2::create_min_max(ninepatch->u0, ninepatch->v2, ninepatch->u1, ninepatch->v3);
     rect++;
 
     // bottom
-    rect->bounds = rectMinMax(x1, y2, x2, y3);
+    rect->bounds = Rect2::create_min_max(x1, y2, x2, y3);
     rect->color = color;
-    rect->uv = rectMinMax(ninepatch->u1, ninepatch->v2, ninepatch->u2, ninepatch->v3);
+    rect->uv = Rect2::create_min_max(ninepatch->u1, ninepatch->v2, ninepatch->u2, ninepatch->v3);
     rect++;
 
     // bottom-right
-    rect->bounds = rectMinMax(x2, y2, x3, y3);
+    rect->bounds = Rect2::create_min_max(x2, y2, x3, y3);
     rect->color = color;
-    rect->uv = rectMinMax(ninepatch->u2, ninepatch->v2, ninepatch->u3, ninepatch->v3);
+    rect->uv = Rect2::create_min_max(ninepatch->u2, ninepatch->v2, ninepatch->u3, ninepatch->v3);
 }
 
 DrawRectsGroup* beginRectsGroupInternal(RenderBuffer* buffer, Asset* texture, s8 shaderID, s32 maxCount)
@@ -702,12 +682,12 @@ void addRectInternal(DrawRectsGroup* group, Rect2 bounds, Colour color, Rect2 uv
 
 void addUntexturedRect(DrawRectsGroup* group, Rect2 bounds, Colour color)
 {
-    addRectInternal(group, bounds, color, rectXYWH(0, 0, 0, 0));
+    addRectInternal(group, bounds, color, { 0, 0, 0, 0 });
 }
 
 void addGlyphRect(DrawRectsGroup* group, BitmapFontGlyph* glyph, V2 position, Colour color)
 {
-    Rect2 bounds = rectXYWH(position.x + glyph->xOffset, position.y + glyph->yOffset, glyph->width, glyph->height);
+    Rect2 bounds { position.x + glyph->xOffset, position.y + glyph->yOffset, static_cast<float>(glyph->width), static_cast<float>(glyph->height) };
     addRectInternal(group, bounds, color, glyph->uv);
 }
 
@@ -777,7 +757,7 @@ void drawGrid(RenderBuffer* buffer, Rect2 bounds, s32 gridW, s32 gridH, u8* grid
     rect->color01 = Colour::white();
     rect->color10 = Colour::white();
     rect->color11 = Colour::white();
-    rect->uv = rectXYWH(0, 0, 1, 1);
+    rect->uv = { 0, 0, 1, 1 };
 }
 
 DrawRingsGroup* beginRingsGroup(RenderBuffer* buffer, s32 maxCount)

@@ -58,7 +58,7 @@ void Drawable::fillPlaceholder(Rect2I bounds)
     } break;
 
     case DrawableType::Sprite: {
-        fillDrawRectPlaceholder(&rectPlaceholder, rect2(bounds), getSprite(&style->sprite), style->color);
+        fillDrawRectPlaceholder(&rectPlaceholder, bounds, getSprite(&style->sprite), style->color);
     } break;
 
         INVALID_DEFAULT_CASE;
@@ -86,7 +86,7 @@ void Drawable::draw(RenderBuffer* buffer, Rect2I bounds)
     } break;
 
     case DrawableType::Sprite: {
-        drawSingleSprite(buffer, getSprite(&style->sprite), rect2(bounds), renderer.shaderIds.textured, style->color);
+        drawSingleSprite(buffer, getSprite(&style->sprite), bounds, renderer.shaderIds.textured, style->color);
     } break;
 
         INVALID_DEFAULT_CASE;

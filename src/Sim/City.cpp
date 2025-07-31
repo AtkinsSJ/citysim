@@ -78,12 +78,12 @@ void drawEntities(City* city, Rect2I visibleTileBounds)
     // TODO: Depth sorting
     // TODO: Sectors maybe? Though collecting all the visible entities into a data structure might be slower than just
     //  iterating the entities array.
-    Rect2 cropArea = rect2(visibleTileBounds);
+    Rect2 cropArea = visibleTileBounds;
     auto shaderID = the_renderer().shaderIds.pixelArt;
 
     bool isDemolitionHappening = (areaOf(city->demolitionRect) > 0);
     auto drawColorDemolish = Colour::from_rgb_255(255, 128, 128, 255);
-    Rect2 demolitionRect = rect2(city->demolitionRect);
+    Rect2 demolitionRect = city->demolitionRect;
 
     for (auto it = city->entities.iterate(); it.hasNext(); it.next()) {
         auto entity = it.get();
@@ -118,7 +118,7 @@ Building* addBuildingDirect(City* city, s32 id, BuildingDef* def, Rect2I footpri
     building->spriteOffset = AppState::the().cosmeticRandom->random_integer<u16>();
 
     building->entity = addEntity(city, Entity::Type::Building, building);
-    building->entity->bounds = rect2(footprint);
+    building->entity->bounds = footprint;
     loadBuildingSprite(building);
     building->entity->canBeDemolished = true;
 
@@ -463,7 +463,7 @@ void drawCity(City* city, Rect2I visibleTileBounds)
                 sx++) {
                 if ((sx + sy) % 2) {
                     CitySector* sector = getSector(&city->sectors, sx, sy);
-                    addUntexturedRect(group, rect2(sector->bounds), sectorColor);
+                    addUntexturedRect(group, sector->bounds, sectorColor);
                 }
             }
         }

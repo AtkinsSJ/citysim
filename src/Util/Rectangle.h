@@ -12,20 +12,51 @@
 #include <Util/Vector.h>
 
 struct Rect2 {
+    Rect2() = default;
+
+    Rect2(float x, float y, float w, float h)
+        : x(x)
+        , y(y)
+        , w(w)
+        , h(h)
+    {
+    }
+
+    Rect2(s32 x, s32 y, s32 w, s32 h)
+        : x(x)
+        , y(y)
+        , w(w)
+        , h(h)
+    {
+    }
+
+    Rect2(V2 pos, V2 size)
+        : x(pos.x)
+        , y(pos.y)
+        , w(size.x)
+        , h(size.y)
+    {
+    }
+
+    Rect2(Rect2I const& other);
+
+    static Rect2 create_min_max(float minX, float minY, float maxX, float maxY);
+    static Rect2 create_aligned(V2 origin, V2 size, Alignment alignment);
+
     union {
         V2 pos;
         struct
         {
-            float x;
-            float y;
+            float x { 0 };
+            float y { 0 };
         };
     };
     union {
         V2 size;
         struct
         {
-            float w;
-            float h;
+            float w { 0 };
+            float h { 0 };
         };
     };
 
@@ -50,13 +81,6 @@ struct Rect2 {
     Rect2 intersected(Rect2 const&) const;
     Rect2 intersected_relative(Rect2 const&) const;
 };
-
-Rect2 rectXYWH(float x, float y, float w, float h);
-Rect2 rectXYWHi(s32 x, s32 y, s32 w, s32 h);
-Rect2 rectPosSize(V2 pos, V2 size);
-Rect2 rectMinMax(float minX, float minY, float maxX, float maxY);
-Rect2 rectAligned(V2 origin, V2 size, Alignment alignment);
-Rect2 rect2(Rect2I source);
 
 struct Rect2I {
     union {

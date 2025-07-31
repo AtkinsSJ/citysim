@@ -12,47 +12,25 @@
     Rect2
  **********************************************/
 
-Rect2 rectXYWH(float x, float y, float w, float h)
+Rect2::Rect2(Rect2I const& other)
+    : x(other.x)
+    , y(other.y)
+    , w(other.w)
+    , h(other.h)
 {
-    Rect2 rect;
-    rect.x = x;
-    rect.y = y;
-    rect.w = w;
-    rect.h = h;
-    return rect;
 }
 
-Rect2 rectXYWHi(s32 x, s32 y, s32 w, s32 h)
+Rect2 Rect2::create_min_max(float minX, float minY, float maxX, float maxY)
 {
-    return rectXYWH((float)x, (float)y, (float)w, (float)h);
+    return {
+        minX,
+        minY,
+        maxX - minX,
+        maxY - minY,
+    };
 }
 
-Rect2 rectPosSize(V2 pos, V2 size)
-{
-    Rect2 rect;
-    rect.pos = pos;
-    rect.size = size;
-    return rect;
-}
-
-Rect2 rect2(Rect2I source)
-{
-    return rectXYWHi(source.x, source.y, source.w, source.h);
-}
-
-Rect2 rectMinMax(float minX, float minY, float maxX, float maxY)
-{
-    Rect2 rect;
-
-    rect.x = minX;
-    rect.y = minY;
-    rect.w = maxX - minX;
-    rect.h = maxY - minY;
-
-    return rect;
-}
-
-Rect2 rectAligned(V2 origin, V2 size, Alignment alignment)
+Rect2 Rect2::create_aligned(V2 origin, V2 size, Alignment alignment)
 {
     Rect2 rect = {};
     rect.size = size;
@@ -116,20 +94,22 @@ bool Rect2::overlaps(Rect2 const& b) const
 
 Rect2 Rect2::expanded(float radius) const
 {
-    return rectXYWH(
+    return {
         x - radius,
         y - radius,
         w + (radius * 2.0f),
-        h + (radius * 2.0f));
+        h + (radius * 2.0f)
+    };
 }
 
 Rect2 Rect2::expanded(float top, float right, float bottom, float left) const
 {
-    return rectXYWH(
+    return {
         x - left,
         y - top,
         w + left + right,
-        h + top + bottom);
+        h + top + bottom
+    };
 }
 
 Rect2 Rect2::intersected(Rect2 const& other) const

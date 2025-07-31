@@ -203,7 +203,7 @@ void updateAndRenderWindows()
 
         // Modal windows get a translucent colour over everything behind them
         if (isModal) {
-            drawSingleRect(window->renderBuffer, rectPosSize(v2(0, 0), renderer.ui_camera().size()), renderer.shaderIds.untextured, Colour::from_rgb_255(64, 64, 64, 128));
+            drawSingleRect(window->renderBuffer, Rect2 { v2(0, 0), renderer.ui_camera().size() }, renderer.shaderIds.untextured, Colour::from_rgb_255(64, 64, 64, 128));
         }
 
         // If the window is new, make sure it has a valid area by running the WindowProc once

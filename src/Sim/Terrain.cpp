@@ -234,7 +234,7 @@ void drawTerrain(City* city, Rect2I visibleArea, s8 shaderID)
     TerrainLayer* layer = &city->terrainLayer;
     auto& renderer = the_renderer();
 
-    Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
+    Rect2 spriteBounds { 0.0f, 0.0f, 1.0f, 1.0f };
     auto white = Colour::white();
 
     // s32 tilesToDraw = areaOf(visibleArea);

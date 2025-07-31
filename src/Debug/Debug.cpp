@@ -243,13 +243,13 @@ void renderDebugData(DebugState* debugState)
 
     u64 cyclesPerSecond = SDL_GetPerformanceFrequency();
     u32 rfi = debugState->readingFrameIndex;
-    drawSingleRect(renderBuffer, rectXYWH(0, 0, ui_camera.size().x, ui_camera.size().y), renderer.shaderIds.untextured, Colour::from_rgb_255(0, 0, 0, 128));
+    drawSingleRect(renderBuffer, Rect2 { 0.f, 0.f, ui_camera.size().x, ui_camera.size().y }, renderer.shaderIds.untextured, Colour::from_rgb_255(0, 0, 0, 128));
 
     // Draw a "nice" chart!
     {
         float graphHeight = 150.0f;
-        drawSingleRect(renderBuffer, rectXYWH(0, ui_camera.size().y - graphHeight, ui_camera.size().x, 1), renderer.shaderIds.untextured, Colour::from_rgb_255(255, 255, 255, 128));
-        drawSingleRect(renderBuffer, rectXYWH(0, ui_camera.size().y - graphHeight * 2, ui_camera.size().x, 1), renderer.shaderIds.untextured, Colour::from_rgb_255(255, 255, 255, 128));
+        drawSingleRect(renderBuffer, Rect2 { 0.f, ui_camera.size().y - graphHeight, ui_camera.size().x, 1.f }, renderer.shaderIds.untextured, Colour::from_rgb_255(255, 255, 255, 128));
+        drawSingleRect(renderBuffer, Rect2 { 0.f, ui_camera.size().y - graphHeight * 2, ui_camera.size().x, 1.f }, renderer.shaderIds.untextured, Colour::from_rgb_255(255, 255, 255, 128));
         float targetCyclesPerFrame = cyclesPerSecond / 60.0f;
         float barWidth = ui_camera.size().x / (float)DEBUG_FRAMES_COUNT;
         float barHeightPerCycle = graphHeight / targetCyclesPerFrame;
@@ -262,7 +262,7 @@ void renderDebugData(DebugState* debugState)
             fi = wrap<u32>(fi + 1, DEBUG_FRAMES_COUNT)) {
             u64 frameCycles = debugState->frameEndCycle[fi] - debugState->frameStartCycle[fi];
             float barHeight = barHeightPerCycle * (float)frameCycles;
-            addUntexturedRect(rectsGroup, rectXYWH(barWidth * barIndex++, ui_camera.size().y - barHeight, barWidth, barHeight), fi == rfi ? activeBarColor : barColor);
+            addUntexturedRect(rectsGroup, Rect2 { barWidth * barIndex++, ui_camera.size().y - barHeight, barWidth, barHeight }, fi == rfi ? activeBarColor : barColor);
         }
         endRectsGroup(rectsGroup);
     }

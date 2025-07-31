@@ -106,7 +106,7 @@ void inputMoveCamera(Camera* camera, V2 windowSize, V2 windowMousePos, s32 cityW
     }
 
     // Clamp camera
-    camera->snap_to_rectangle(rectXYWHi(-CAMERA_MARGIN, -CAMERA_MARGIN, cityWidth + (2 * CAMERA_MARGIN), cityHeight + (2 * CAMERA_MARGIN)));
+    camera->snap_to_rectangle({ -CAMERA_MARGIN, -CAMERA_MARGIN, cityWidth + (2 * CAMERA_MARGIN), cityHeight + (2 * CAMERA_MARGIN) });
 }
 
 Rect2I getDragArea(DragState* dragState, Rect2I cityBounds, DragType dragType, V2I itemSize)
@@ -335,7 +335,7 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
 
     auto tileHighlightColor = Colour::from_rgb_255(196, 196, 255, 64);
     auto& renderer = the_renderer();
-    drawSingleRect(&renderer.world_overlay_buffer(), rectXYWHi(tilePos.x, tilePos.y, 1, 1), renderer.shaderIds.untextured, tileHighlightColor);
+    drawSingleRect(&renderer.world_overlay_buffer(), Rect2 { tilePos.x, tilePos.y, 1, 1 }, renderer.shaderIds.untextured, tileHighlightColor);
 }
 
 void pauseMenuWindowProc(UI::WindowContext* context, void* /*userData*/)
@@ -693,7 +693,7 @@ AppStatus updateAndRenderGame(GameState* gameState, float deltaTime)
 
                     Sprite* sprite = getSprite(buildingDef->spriteName, 0);
                     auto color = canPlace ? ghostColorValid : ghostColorInvalid;
-                    drawSingleSprite(&renderer.world_overlay_buffer(), sprite, rect2(footprint), renderer.shaderIds.pixelArt, color);
+                    drawSingleSprite(&renderer.world_overlay_buffer(), sprite, footprint, renderer.shaderIds.pixelArt, color);
                 }
             } break;
 
@@ -727,7 +727,7 @@ AppStatus updateAndRenderGame(GameState* gameState, float deltaTime)
                             for (s32 x = 0; x + buildingDef->width <= dragResult.dragRect.w; x += buildingDef->width) {
                                 bool canPlace = canPlaceBuilding(city, buildingDef, dragResult.dragRect.x + x, dragResult.dragRect.y + y);
 
-                                Rect2 rect = rectXYWHi(dragResult.dragRect.x + x, dragResult.dragRect.y + y, buildingDef->width, buildingDef->height);
+                                Rect2 rect { dragResult.dragRect.x + x, dragResult.dragRect.y + y, buildingDef->width, buildingDef->height };
 
                                 auto color = canPlace ? ghostColorValid : ghostColorInvalid;
                                 // TODO: All the sprites are the same, so we could optimise this!
@@ -772,7 +772,7 @@ AppStatus updateAndRenderGame(GameState* gameState, float deltaTime)
                         Colour::from_rgb_255(255, 0, 0, 16),
                         ZONE_DEFS[gameState->selectedZoneID].color
                     };
-                    drawGrid(&renderer.world_overlay_buffer(), rect2(canZoneQuery->bounds), canZoneQuery->bounds.w, canZoneQuery->bounds.h, canZoneQuery->tileCanBeZoned, 2, palette);
+                    drawGrid(&renderer.world_overlay_buffer(), canZoneQuery->bounds, canZoneQuery->bounds.w, canZoneQuery->bounds.h, canZoneQuery->tileCanBeZoned, 2, palette);
                 } else {
                     drawSingleRect(&renderer.world_overlay_buffer(), dragResult.dragRect, renderer.shaderIds.untextured, Colour::from_rgb_255(255, 64, 64, 128));
                 }
@@ -996,7 +996,7 @@ static void drawBuildingHighlights(City* city, Iterable* buildingRefs)
             // NB: If we're doing this in a separate loop, we could crop out buildings that aren't in the visible tile bounds
             if (building != nullptr) {
                 s32 paletteIndex = (buildingHasPower(building) ? paletteIndexPowered : paletteIndexUnpowered);
-                addUntexturedRect(buildingHighlights, rect2(building->footprint), (*buildingsPalette)[paletteIndex]);
+                addUntexturedRect(buildingHighlights, building->footprint, (*buildingsPalette)[paletteIndex]);
             }
         }
         endRectsGroup(buildingHighlights);
@@ -1080,7 +1080,7 @@ void drawDataViewOverlay(GameState* gameState, Rect2I visibleTileBounds)
         Rect2I bounds = city->bounds;
 
         auto* overlayPalette = getPalette(dataView->overlayPaletteName);
-        drawGrid(&renderer.world_overlay_buffer(), rect2(bounds), bounds.w, bounds.h, *dataView->overlayTileData, (u16)overlayPalette->count, overlayPalette->items);
+        drawGrid(&renderer.world_overlay_buffer(), bounds, bounds.w, bounds.h, *dataView->overlayTileData, (u16)overlayPalette->count, overlayPalette->items);
     } else if (dataView->calculateTileValue) {
         // The per-tile overlay data is generated
         Array2<u8> overlayTileData = temp_arena().allocate_array_2d<u8>(visibleTileBounds.w, visibleTileBounds.h);
@@ -1093,7 +1093,7 @@ void drawDataViewOverlay(GameState* gameState, Rect2I visibleTileBounds)
         }
 
         auto* overlayPalette = getPalette(dataView->overlayPaletteName);
-        drawGrid(&renderer.world_overlay_buffer(), rect2(visibleTileBounds), overlayTileData.w, overlayTileData.h, overlayTileData.items, (u16)overlayPalette->count, overlayPalette->items);
+        drawGrid(&renderer.world_overlay_buffer(), visibleTileBounds, overlayTileData.w, overlayTileData.h, overlayTileData.items, (u16)overlayPalette->count, overlayPalette->items);
     }
 
     if (dataView->highlightedBuildings) {
@@ -1210,7 +1210,7 @@ void drawDataViewUI(GameState* gameState)
                     auto minColor = gradientPalette->first().as_opaque();
                     auto maxColor = gradientPalette->last().as_opaque();
 
-                    drawSingleRect(uiBuffer, rect2(gradientBounds), renderer.shaderIds.untextured, maxColor, maxColor, minColor, minColor);
+                    drawSingleRect(uiBuffer, gradientBounds, renderer.shaderIds.untextured, maxColor, maxColor, minColor, minColor);
                 }
                 gradientColumn.end();
 

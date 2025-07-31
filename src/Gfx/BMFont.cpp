@@ -99,11 +99,12 @@ void loadBMFont(Blob data, Asset* asset)
                 dest->xOffset = src->xOffset;
                 dest->yOffset = src->yOffset;
                 dest->xAdvance = src->xAdvance;
-                dest->uv = rectXYWH(
-                    (float)src->x / textureWidth,
-                    (float)src->y / textureHeight,
-                    (float)src->w / textureWidth,
-                    (float)src->h / textureHeight);
+                dest->uv = {
+                    src->x / textureWidth,
+                    src->y / textureHeight,
+                    src->w / textureWidth,
+                    src->h / textureHeight
+                };
             }
         }
     }

@@ -123,7 +123,7 @@ void drawZones(City* city, Rect2I visibleTileBounds, s8 shaderID)
     DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
 
     auto& renderer = the_renderer();
-    Rect2 spriteBounds = rectXYWH(0.0f, 0.0f, 1.0f, 1.0f);
+    Rect2 spriteBounds { 0.0f, 0.0f, 1.0f, 1.0f };
     Optional<ZoneType> current_zone_type;
     Colour zoneColor = {};
 
