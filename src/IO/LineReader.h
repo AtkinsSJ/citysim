@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include <Gfx/Colour.h>
 #include <Util/Basic.h>
 #include <Util/Flags.h>
 #include <Util/Memory.h>
@@ -101,6 +100,5 @@ struct LineReader {
     char commentChar;
 };
 
-Maybe<Colour> readColor(LineReader* reader, bool isOptional = false);
 Maybe<Padding> readPadding(LineReader* reader);
 Maybe<V2I> readV2I(LineReader* reader);

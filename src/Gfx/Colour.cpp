@@ -6,6 +6,34 @@
 
 #include "Colour.h"
 
+Optional<Colour> Colour::read(LineReader& reader, LineReader::IsRequired is_required)
+{
+    // TODO: Right now this only handles a sequence of 3 or 4 0-255 values for RGB(A).
+    // We might want to handle other color definitions eventually which are more friendly, eg 0-1 fractions.
+
+    String all_arguments = reader.remainder_of_current_line();
+
+    if (isEmpty(all_arguments)) {
+        if (is_required == LineReader::IsRequired::Yes)
+            reader.error("Expected a colour."_s);
+        return {};
+    }
+
+    auto r = reader.read_int<u8>();
+    auto g = reader.read_int<u8>();
+    auto b = reader.read_int<u8>();
+
+    if (r.has_value() && g.has_value() && b.has_value()) {
+        // NB: We default to fully opaque if no alpha is provided
+        auto a = reader.read_int<u8>(LineReader::IsRequired::No);
+
+        return Colour::from_rgb_255(r.release_value(), g.release_value(), b.release_value(), a.value_or(255));
+    }
+
+    reader.error("Couldn't parse '{0}' as a color. Expected 3 or 4 integers from 0 to 255, for R G B and optional A."_s, { all_arguments });
+    return {};
+}
+
 Colour Colour::as_opaque() const
 {
     // Colors are always stored with premultiplied alpha, so in order to set the alpha

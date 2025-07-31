@@ -28,7 +28,7 @@ Optional<DrawableStyle> readDrawableStyle(LineReader* reader)
 
         result = move(drawable);
     } else if (typeName == "color"_s) {
-        Optional color = readColor(reader);
+        Optional color = Colour::read(*reader);
         if (color.has_value()) {
             DrawableStyle drawable = {};
             drawable.type = DrawableType::Color;
@@ -37,10 +37,10 @@ Optional<DrawableStyle> readDrawableStyle(LineReader* reader)
             result = move(drawable);
         }
     } else if (typeName == "gradient"_s) {
-        Optional color00 = readColor(reader);
-        Optional color01 = readColor(reader);
-        Optional color10 = readColor(reader);
-        Optional color11 = readColor(reader);
+        Optional color00 = Colour::read(*reader);
+        Optional color01 = Colour::read(*reader);
+        Optional color10 = Colour::read(*reader);
+        Optional color11 = Colour::read(*reader);
 
         if (color00.has_value() && color01.has_value() && color10.has_value() && color11.has_value()) {
             DrawableStyle drawable = {};
@@ -55,22 +55,22 @@ Optional<DrawableStyle> readDrawableStyle(LineReader* reader)
     } else if (typeName == "ninepatch"_s) {
         String ninepatchName = reader->next_token();
 
-        auto color = readColor(reader, true);
+        auto color = Colour::read(*reader, LineReader::IsRequired::No);
 
         DrawableStyle drawable = {};
         drawable.type = DrawableType::Ninepatch;
-        drawable.color = color.orDefault(Colour::white());
+        drawable.color = color.value_or(Colour::white());
         drawable.ninepatch = getAssetRef(AssetType::Ninepatch, ninepatchName);
 
         result = move(drawable);
     } else if (typeName == "sprite"_s) {
         String spriteName = reader->next_token();
 
-        auto color = readColor(reader, true);
+        auto color = Colour::read(*reader, LineReader::IsRequired::No);
 
         DrawableStyle drawable = {};
         drawable.type = DrawableType::Sprite;
-        drawable.color = color.orDefault(Colour::white());
+        drawable.color = color.value_or(Colour::white());
         drawable.sprite = getSpriteRef(spriteName, 0);
 
         result = move(drawable);
@@ -409,7 +409,7 @@ void loadUITheme(Blob data, Asset* asset)
                         } break;
 
                         case UI::PropType::Color: {
-                            if (Optional value = readColor(&reader); value.has_value()) {
+                            if (Optional value = Colour::read(reader); value.has_value()) {
                                 UI::setPropertyValue(target, property, value.release_value());
                             }
                         } break;

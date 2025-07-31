@@ -6,7 +6,10 @@
 
 #pragma once
 
+#include <IO/Forward.h>
+#include <IO/LineReader.h>
 #include <Util/Basic.h>
+#include <Util/Optional.h>
 
 class Colour {
 public:
@@ -31,6 +34,8 @@ public:
             alpha,
         };
     }
+
+    static Optional<Colour> read(LineReader&, LineReader::IsRequired = LineReader::IsRequired::Yes);
 
     static Colour white()
     {

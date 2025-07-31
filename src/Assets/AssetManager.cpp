@@ -1014,8 +1014,7 @@ void loadPaletteDefs(Blob data, Asset* asset)
                     paletteAsset->palette.size = size.release_value();
                 }
             } else if (command == "color"_s) {
-                auto color = readColor(&reader);
-                if (color.isValid) {
+                if (auto color = Colour::read(reader); color.has_value()) {
                     if (paletteAsset->palette.type == Palette::Type::Fixed) {
                         if (!paletteAsset->palette.paletteData.isInitialised()) {
                             paletteAsset->data = assetsAllocate(s_assets, paletteAsset->palette.size * sizeof(Colour));
@@ -1026,26 +1025,24 @@ void loadPaletteDefs(Blob data, Asset* asset)
                         if (colorIndex >= paletteAsset->palette.size) {
                             reader.error("Too many 'color' definitions! 'size' must be large enough."_s);
                         } else {
-                            paletteAsset->palette.paletteData.append(color.value);
+                            paletteAsset->palette.paletteData.append(color.release_value());
                         }
                     } else {
                         reader.error("'color' is only a valid command for fixed palettes."_s);
                     }
                 }
             } else if (command == "from"_s) {
-                auto from = readColor(&reader);
-                if (from.isValid) {
+                if (auto from = Colour::read(reader); from.has_value()) {
                     if (paletteAsset->palette.type == Palette::Type::Gradient) {
-                        paletteAsset->palette.gradient.from = from.value;
+                        paletteAsset->palette.gradient.from = from.release_value();
                     } else {
                         reader.error("'from' is only a valid command for gradient palettes."_s);
                     }
                 }
             } else if (command == "to"_s) {
-                auto to = readColor(&reader);
-                if (to.isValid) {
+                if (auto to = Colour::read(reader); to.has_value()) {
                     if (paletteAsset->palette.type == Palette::Type::Gradient) {
-                        paletteAsset->palette.gradient.to = to.value;
+                        paletteAsset->palette.gradient.to = to.release_value();
                     } else {
                         reader.error("'to' is only a valid command for gradient palettes."_s);
                     }
