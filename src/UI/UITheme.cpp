@@ -397,7 +397,7 @@ void loadUITheme(Blob data, Asset* asset)
                     if (property->existsInStyle[target->type]) {
                         switch (property->type) {
                         case UI::PropType::Alignment: {
-                            if (auto value = readAlignment(&reader); value.has_value()) {
+                            if (auto value = Alignment::read(reader); value.has_value()) {
                                 UI::setPropertyValue(target, property, value.release_value());
                             }
                         } break;

@@ -6,7 +6,9 @@
 
 #pragma once
 
+#include <IO/Forward.h>
 #include <Util/Basic.h>
+#include <Util/Optional.h>
 
 enum class HAlign : u8 {
     Left,
@@ -49,6 +51,8 @@ struct Alignment {
         , vertical(v)
     {
     }
+
+    static Optional<Alignment> read(LineReader&);
 
     static Alignment centre() { return { HAlign::Centre, VAlign::Centre }; }
     static Alignment fill() { return { HAlign::Fill, VAlign::Fill }; }

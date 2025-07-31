@@ -1,4 +1,5 @@
 target_sources(CitySim PRIVATE
+    Alignment.cpp
     BitArray.cpp
     Interpolate.cpp
     Log.cpp
