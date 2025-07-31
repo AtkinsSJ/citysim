@@ -21,12 +21,12 @@ constexpr Flags DefaultLineReaderFlags { LineReaderFlags::SkipBlankLines, LineRe
 
 class LineReader {
 public:
-    struct Position {
-        String currentLine;
-        smm currentLineNumber;
-        String lineRemainder;
-        smm startOfNextLine;
-        bool atEndOfFile;
+    struct State {
+        String current_line;
+        smm current_line_number;
+        String line_remainder;
+        smm start_of_next_line;
+        bool at_end_of_file;
     };
 
     enum class IsRequired : u8 {
@@ -36,8 +36,8 @@ public:
 
     LineReader(String filename, Blob data, Flags<LineReaderFlags> flags = DefaultLineReaderFlags, char commentChar = '#');
 
-    Position save_position() const;
-    void restore_position(Position const&);
+    State save_state() const;
+    void restore_state(State const&);
     void restart();
 
     // FIXME: I don't like this API. Use a "has_next() / get_next()" style instead.
@@ -95,7 +95,7 @@ private:
     String m_filename;
     Blob m_data;
 
-    Position m_position {};
+    State m_state {};
 
     bool m_skip_blank_lines;
     bool m_remove_comments;
