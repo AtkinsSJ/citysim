@@ -349,7 +349,7 @@ void addBeginScissor(RenderBuffer* buffer, Rect2I bounds)
     bounds.y = s_renderer->window_height() - bounds.y - bounds.h;
 
     // Crop to window bounds
-    scissor->bounds = intersect(bounds, irectXYWH(0, 0, s_renderer->window_width(), s_renderer->window_height()));
+    scissor->bounds = intersect(bounds, { 0u, 0u, s_renderer->window_width(), s_renderer->window_height() });
 
     ASSERT(scissor->bounds.w >= 0);
     ASSERT(scissor->bounds.h >= 0);

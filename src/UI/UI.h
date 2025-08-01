@@ -220,7 +220,7 @@ void putDropDownList(Array<T>* listOptions, s32* currentSelection, String (*getD
     if (isOpen) {
         s32 panelTop = bounds.y + bounds.h;
         s32 panelMaxHeight = windowSize.y - panelTop;
-        Rect2I panelBounds = irectXYWH(bounds.x, panelTop, bounds.w, panelMaxHeight);
+        Rect2I panelBounds { bounds.x, panelTop, bounds.w, panelMaxHeight };
         Panel panel = Panel(panelBounds, getStyle<PanelStyle>(&style->panelStyle), 0, uiState.openDropDownListRenderBuffer);
         panel.enableVerticalScrolling(&uiState.openDropDownListScrollbar, false);
         for (s32 optionIndex = 0; optionIndex < listOptions->count; optionIndex++) {

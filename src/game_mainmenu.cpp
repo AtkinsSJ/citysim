@@ -21,7 +21,7 @@ AppStatus updateAndRenderMainMenu(float /*deltaTime*/)
     auto& renderer = the_renderer();
 
     auto window_size = renderer.window_size();
-    UI::Panel panel = UI::Panel(irectXYWH(0, window_size.y / 4, window_size.x, window_size.y), "mainMenu"_s);
+    UI::Panel panel = UI::Panel({ 0, window_size.y / 4, window_size.x, window_size.y }, "mainMenu"_s);
 
     panel.addLabel(getText("game_title"_s));
     panel.addLabel(getText("game_subtitle"_s));

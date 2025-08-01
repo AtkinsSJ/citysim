@@ -43,7 +43,7 @@ public:
         float centre_value = m_centre_value * scale;
         float outer_value = m_outer_value * scale;
 
-        Rect2I possibleEffectArea = irectXYWH(floor_s32(effect_centre.x - m_radius), floor_s32(effect_centre.y - m_radius), ceil_s32(m_radius + m_radius), ceil_s32(m_radius + m_radius));
+        Rect2I possibleEffectArea { floor_s32(effect_centre.x - m_radius), floor_s32(effect_centre.y - m_radius), ceil_s32(m_radius + m_radius), ceil_s32(m_radius + m_radius) };
         possibleEffectArea = intersect(possibleEffectArea, region);
         for (s32 y = possibleEffectArea.y; y < possibleEffectArea.y + possibleEffectArea.h; y++) {
             for (s32 x = possibleEffectArea.x; x < possibleEffectArea.x + possibleEffectArea.w; x++) {

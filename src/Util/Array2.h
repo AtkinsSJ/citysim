@@ -62,7 +62,7 @@ void fill(Array2<T>* array, T value)
 template<typename T>
 void fillRegion(Array2<T>* array, Rect2I region, T value)
 {
-    ASSERT(contains(irectXYWH(0, 0, array->w, array->h), region));
+    ASSERT(contains({ 0, 0, array->w, array->h }, region));
 
     for (s32 y = region.y; y < region.y + region.h; y++) {
         // Set whole rows at a time

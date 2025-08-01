@@ -181,13 +181,6 @@ void Rect2::translate(V2 offset)
     m_y += offset.y;
 }
 
-V2I centreOfI(Rect2I rect)
-{
-    return v2i(
-        round_s32(rect.x + rect.w / 2.0f),
-        round_s32(rect.y + rect.h / 2.0f));
-}
-
 float Rect2::area() const
 {
     return abs_float(m_width * m_height);
@@ -204,104 +197,67 @@ bool Rect2::has_positive_area() const
 
 Rect2I Rect2I::placed_randomly_within(Random& random, V2I size, Rect2I boundary)
 {
-    Rect2I result = irectXYWH(
+    return {
         random.random_between(boundary.x, boundary.x + boundary.w - size.x),
         random.random_between(boundary.y, boundary.y + boundary.h - size.y),
-        size.x, size.y);
-    return result;
+        size.x, size.y
+    };
 }
 
-Rect2I irectXYWH(s32 x, s32 y, s32 w, s32 h)
+Rect2I Rect2I::create_centre_size(s32 centre_x, s32 centre_y, s32 w, s32 h)
 {
-    Rect2I rect;
-    rect.x = x;
-    rect.y = y;
-    rect.w = w;
-    rect.h = h;
-    return rect;
+    return { centre_x - (w / 2), centre_y - (h / 2), w, h };
 }
 
-// Rectangle that SHOULD contain anything. It is the maximum size, and centred
-// on 0,0 In practice, the distance between the minimum and maximum integers
-// is double what we can store, so the min and max possible positions are
-// outside this rectangle, by a long way (0.5 * s32Max). But I cannot conceive
-// that we will ever need to deal with positions that are anywhere near that,
-// so it should be fine.
-// - Sam, 08/02/2021
-Rect2I irectInfinity()
+Rect2I Rect2I::create_centre_size(V2I position, V2I size)
 {
-    return irectXYWH(s32Min / 2, s32Min / 2, s32Max, s32Max);
+    return { position - (size / 2), size };
 }
 
-// Rectangle that is guaranteed to not contain anything, because it's inside-out
-Rect2I irectNegativeInfinity()
+Rect2I Rect2I::create_min_max(s32 min_x, s32 min_y, s32 max_x, s32 max_y)
 {
-    return irectXYWH(s32Max, s32Max, s32Min, s32Min);
+    return { min_x, min_y, (1 + max_x - min_x), (1 + max_y - min_y) };
 }
 
-Rect2I irectPosSize(V2I position, V2I size)
+Rect2I Rect2I::create_aligned(s32 origin_x, s32 origin_y, s32 w, s32 h, Alignment alignment)
 {
-    Rect2I rect;
-    rect.pos = position;
-    rect.size = size;
-    return rect;
-}
-
-Rect2I irectCentreSize(s32 centreX, s32 centreY, s32 sizeX, s32 sizeY)
-{
-    return irectXYWH(centreX - (sizeX / 2), centreY - (sizeY / 2), sizeX, sizeY);
-}
-
-Rect2I irectCentreSize(V2I position, V2I size)
-{
-    return irectPosSize(position - (size / 2), size);
-}
-
-Rect2I irectMinMax(s32 xMin, s32 yMin, s32 xMax, s32 yMax)
-{
-    return irectXYWH(xMin, yMin, (1 + xMax - xMin), (1 + yMax - yMin));
-}
-
-Rect2I irectAligned(s32 originX, s32 originY, s32 w, s32 h, Alignment alignment)
-{
-    Rect2I rect = {};
-    rect.w = w;
-    rect.h = h;
+    s32 x = 0;
+    s32 y = 0;
 
     switch (alignment.horizontal) {
     case HAlign::Centre:
-        rect.x = originX - (w / 2);
+        x = origin_x - (w / 2);
         break;
     case HAlign::Right:
-        rect.x = originX - w;
+        x = origin_x - w;
         break;
     case HAlign::Left: // Left is default
     case HAlign::Fill: // Meaningless here so default to left
     default:
-        rect.x = originX;
+        x = origin_x;
         break;
     }
 
     switch (alignment.vertical) {
     case VAlign::Centre:
-        rect.y = originY - (h / 2);
+        y = origin_y - (h / 2);
         break;
     case VAlign::Bottom:
-        rect.y = originY - h;
+        y = origin_y - h;
         break;
     case VAlign::Top:  // Top is default
     case VAlign::Fill: // Meaningless here so default to top
     default:
-        rect.y = originY;
+        y = origin_y;
         break;
     }
 
-    return rect;
+    return { x, y, w, h };
 }
 
-Rect2I irectAligned(V2I origin, V2I size, Alignment alignment)
+Rect2I Rect2I::create_aligned(V2I origin, V2I size, Alignment alignment)
 {
-    return irectAligned(origin.x, origin.y, size.x, size.y, alignment);
+    return create_aligned(origin.x, origin.y, size.x, size.y, alignment);
 }
 
 bool contains(Rect2I rect, s32 x, s32 y)
@@ -343,45 +299,49 @@ bool overlaps(Rect2I a, Rect2I b)
 
 Rect2I expand(Rect2I rect, s32 radius)
 {
-    return irectXYWH(
+    return {
         rect.x - radius,
         rect.y - radius,
         rect.w + (radius * 2),
-        rect.h + (radius * 2));
+        rect.h + (radius * 2)
+    };
 }
 
 Rect2I expand(Rect2I rect, s32 top, s32 right, s32 bottom, s32 left)
 {
-    return irectXYWH(
+    return {
         rect.x - left,
         rect.y - top,
         rect.w + left + right,
-        rect.h + top + bottom);
+        rect.h + top + bottom
+    };
 }
 
 Rect2I shrink(Rect2I rect, s32 radius)
 {
     s32 doubleRadius = radius * 2;
     if ((rect.w >= doubleRadius) && (rect.h >= doubleRadius)) {
-        return irectXYWH(
+        return {
             rect.x + radius,
             rect.y + radius,
             rect.w - doubleRadius,
-            rect.h - doubleRadius);
+            rect.h - doubleRadius
+        };
     } else {
-        V2 centre = centreOf(rect);
-        return irectCentreSize((s32)centre.x, (s32)centre.y,
+        V2 centre = rect.centre();
+        return Rect2I::create_centre_size((s32)centre.x, (s32)centre.y,
             max(rect.w - doubleRadius, 0), max(rect.h - doubleRadius, 0));
     }
 }
 
 Rect2I shrink(Rect2I rect, Padding padding)
 {
-    Rect2I result = irectXYWH(
+    Rect2I result {
         rect.x + padding.left,
         rect.y + padding.top,
         rect.w - (padding.left + padding.right),
-        rect.h - (padding.top + padding.bottom));
+        rect.h - (padding.top + padding.bottom)
+    };
 
     // NB: We do this calculation differently from the simpler shrink(rect, radius), because
     // the shrink amount might be different from one side to the other, which means the new
@@ -389,7 +349,7 @@ Rect2I shrink(Rect2I rect, Padding padding)
     // So, we create the new, possibly inside-out rectangle, and then set its dimensions
     // to 0 if they are negative, while maintaining the centre point.
 
-    V2 centre = centreOf(result);
+    V2 centre = result.centre();
 
     if (result.w < 0) {
         result.x = (s32)centre.x;
@@ -439,45 +399,44 @@ Rect2I intersect(Rect2I inner, Rect2I outer)
 Rect2I intersectRelative(Rect2I outer, Rect2I inner)
 {
     Rect2I result = intersect(inner, outer);
-    result.pos -= outer.pos;
+    result.set_position(result.position() - outer.position());
 
     return result;
 }
 
 Rect2I unionOf(Rect2I a, Rect2I b)
 {
-    s32 minX = min(a.x, b.x);
-    s32 minY = min(a.y, b.y);
-    s32 maxX = max(a.x + a.w - 1, b.x + b.w - 1);
-    s32 maxY = max(a.y + a.h - 1, b.y + b.h - 1);
+    s32 min_x = min(a.x, b.x);
+    s32 min_y = min(a.y, b.y);
+    s32 max_x = max(a.x + a.w - 1, b.x + b.w - 1);
+    s32 max_y = max(a.y + a.h - 1, b.y + b.h - 1);
 
-    return irectMinMax(minX, minY, maxX, maxY);
+    return Rect2I::create_min_max(min_x, min_y, max_x, max_y);
 }
 
-V2 centreOf(Rect2I rect)
+V2 Rect2I::centre() const
 {
-    return v2(rect.x + rect.w / 2.0f, rect.y + rect.h / 2.0f);
+    return v2(x + w / 2.0f, y + h / 2.0f);
 }
 
-s32 areaOf(Rect2I rect)
+s32 Rect2I::area() const
 {
-    return abs_s32(rect.w * rect.h);
+    return abs_s32(w * h);
 }
 
-bool hasPositiveArea(Rect2I rect)
+bool Rect2I::has_positive_area() const
 {
-    return (rect.w > 0 && rect.h > 0);
+    return w > 0 && h > 0;
 }
 
 Rect2I centreWithin(Rect2I outer, V2I innerSize)
 {
-    Rect2I result = irectXYWH(
+    return {
         outer.x - ((innerSize.x - outer.w) / 2),
         outer.y - ((innerSize.y - outer.h) / 2),
         innerSize.x,
-        innerSize.y);
-
-    return result;
+        innerSize.y
+    };
 }
 
 Rect2I alignWithinRectangle(Rect2I bounds, V2I size, Alignment alignment, Padding padding)
@@ -512,5 +471,5 @@ Rect2I alignWithinRectangle(Rect2I bounds, V2I size, Alignment alignment, Paddin
         break;
     }
 
-    return irectAligned(origin, size, alignment);
+    return Rect2I::create_aligned(origin, size, alignment);
 }

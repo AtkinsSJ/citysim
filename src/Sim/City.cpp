@@ -23,7 +23,7 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
     city->name = pushString(gameArena, name);
     city->playerName = pushString(gameArena, playerName);
     city->funds = funds;
-    city->bounds = irectXYWH(0, 0, width, height);
+    city->bounds = { 0u, 0u, width, height };
 
     city->tileBuildingIndex = gameArena->allocate_array_2d<s32>(width, height);
     initChunkPool(&city->sectorBuildingsChunkPool, gameArena, 128);
@@ -61,7 +61,7 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
     // TODO: Are we sure we want to do this?
     markAreaDirty(city, city->bounds);
 
-    the_renderer().world_camera().set_position(v2(city->bounds.size) / 2);
+    the_renderer().world_camera().set_position(v2(city->bounds.size()) / 2);
 
     saveBuildingTypes();
     saveTerrainTypes();
@@ -81,7 +81,7 @@ void drawEntities(City* city, Rect2I visibleTileBounds)
     Rect2 cropArea = visibleTileBounds;
     auto shaderID = the_renderer().shaderIds.pixelArt;
 
-    bool isDemolitionHappening = (areaOf(city->demolitionRect) > 0);
+    bool isDemolitionHappening = city->demolitionRect.has_positive_area();
     auto drawColorDemolish = Colour::from_rgb_255(255, 128, 128, 255);
     Rect2 demolitionRect = city->demolitionRect;
 
@@ -190,10 +190,10 @@ bool canPlaceBuilding(City* city, BuildingDef* def, s32 left, s32 top)
         return false;
     }
 
-    Rect2I footprint = irectXYWH(left, top, def->width, def->height);
+    Rect2I footprint { left, top, def->width, def->height };
 
     // Are we in bounds?
-    if (!contains(irectXYWH(0, 0, city->bounds.w, city->bounds.h), footprint)) {
+    if (!contains({ 0, 0, city->bounds.w, city->bounds.h }, footprint)) {
         return false;
     }
 
@@ -231,7 +231,7 @@ void placeBuilding(City* city, BuildingDef* def, s32 left, s32 top, bool markAre
 {
     DEBUG_FUNCTION();
 
-    Rect2I footprint = irectXYWH(left, top, def->width, def->height);
+    Rect2I footprint { left, top, def->width, def->height };
 
     Building* building = getBuildingAt(city, left, top);
     if (building != nullptr) {
@@ -453,7 +453,7 @@ void drawCity(City* city, Rect2I visibleTileBounds)
     // NB: this is really hacky debug code
     if (false) {
         Rect2I visibleSectors = getSectorsCovered(&city->sectors, visibleTileBounds);
-        DrawRectsGroup* group = beginRectsGroupUntextured(&renderer.world_overlay_buffer(), renderer.shaderIds.untextured, areaOf(visibleSectors));
+        DrawRectsGroup* group = beginRectsGroupUntextured(&renderer.world_overlay_buffer(), renderer.shaderIds.untextured, visibleSectors.area());
         auto sectorColor = Colour::from_rgb_255(255, 255, 255, 40);
         for (s32 sy = visibleSectors.y;
             sy < visibleSectors.y + visibleSectors.h;
@@ -631,7 +631,7 @@ bool loadBuildings(City* city, BinaryFileReader* reader)
             buildingIndex++) {
             SAVBuilding* savBuilding = &tempBuildings[buildingIndex];
 
-            Rect2I footprint = irectXYWH(savBuilding->x, savBuilding->y, savBuilding->w, savBuilding->h);
+            Rect2I footprint { savBuilding->x, savBuilding->y, savBuilding->w, savBuilding->h };
             BuildingDef* def = getBuildingDef(oldTypeToNewType[savBuilding->typeID]);
             Building* building = addBuildingDirect(city, savBuilding->id, def, footprint, savBuilding->creationDate);
             building->variantIndex = savBuilding->variantIndex == -1 ? Optional<s16> {} : Optional<s16> { savBuilding->variantIndex.value() };

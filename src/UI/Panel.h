@@ -81,7 +81,7 @@ struct Panel {
             putDropDownList(listOptions, currentSelection, getDisplayName, widgetBounds, widgetStyle, renderBuffer);
         }
 
-        completeWidget(widgetBounds.size);
+        completeWidget(widgetBounds.size());
     }
 
     void addLabel(String text, String styleName = nullString);
@@ -132,11 +132,12 @@ struct Panel {
 
             String optionText = getDisplayName(&listOptions->get(optionIndex));
             V2I labelSize = calculateLabelSize(optionText, labelStyle, textWidth, fillWidth);
-            Rect2I labelBounds = irectXYWH(
+            Rect2I labelBounds {
                 radioButtonBounds.x + radioButtonBounds.w + style->contentPadding,
                 radioButtonBounds.y,
                 labelSize.x,
-                labelSize.y);
+                labelSize.y
+            };
 
             if (!hideWidgets) {
                 putLabel(optionText, labelBounds, labelStyle, renderBuffer);
@@ -145,7 +146,7 @@ struct Panel {
             radioButtonBounds.y = labelBounds.y + labelBounds.h + style->contentPadding;
         }
 
-        completeWidget(buttonGroupBounds.size);
+        completeWidget(buttonGroupBounds.size());
     }
 
     template<typename T>
@@ -158,14 +159,14 @@ struct Panel {
         SliderStyle* widgetStyle = getStyle<SliderStyle>(styleName, &style->sliderStyle);
 
         Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
-            return calculateSliderSize(Orientation::Horizontal, widgetStyle, space.size, fillWidth);
+            return calculateSliderSize(Orientation::Horizontal, widgetStyle, space.size(), fillWidth);
         });
 
         if (!hideWidgets) {
             putSlider(currentValue, minValue, maxValue, Orientation::Horizontal, widgetBounds, widgetStyle, false, renderBuffer);
         }
 
-        completeWidget(widgetBounds.size);
+        completeWidget(widgetBounds.size());
     }
 
     void addSprite(Sprite* sprite, s32 width = -1, s32 height = -1);

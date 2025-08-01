@@ -17,11 +17,12 @@ WindowContext::WindowContext(Window* window, WindowStyle* windowStyle, bool hide
     , hideWidgets(hideWidgets)
     , renderBuffer(renderBuffer)
     , windowPanel(
-          irectXYWH(
+          Rect2I {
               window->area.x,
               window->area.y + ((window->flags & WindowFlags::Headless) ? 0 : windowStyle->titleBarHeight),
               window->area.w,
-              (window->flags & WindowFlags::AutomaticHeight) ? 10000 : (window->area.h - ((window->flags & WindowFlags::Headless) ? 0 : windowStyle->titleBarHeight))),
+              (window->flags & WindowFlags::AutomaticHeight) ? 10000 : (window->area.h - ((window->flags & WindowFlags::Headless) ? 0 : windowStyle->titleBarHeight)),
+          },
           getStyle<PanelStyle>(&windowStyle->panelStyle),
           ((window->flags & WindowFlags::Tooltip) ? PanelFlags::AllowClickThrough : 0)
               | (hideWidgets ? PanelFlags::HideWidgets : 0),
@@ -107,7 +108,7 @@ void showWindow(WindowTitle title, s32 width, s32 height, V2I position, String s
             existing_window->title = title;
             existing_window->flags = flags;
             if (!(flags & WindowFlags::UniqueKeepPosition))
-                existing_window->area = irectPosSize(position, v2i(width, height));
+                existing_window->area = { position, v2i(width, height) };
             existing_window->styleName = style_name;
             existing_window->userData = user_data;
             existing_window->onClose = on_close;
@@ -122,7 +123,7 @@ void showWindow(WindowTitle title, s32 width, s32 height, V2I position, String s
         .id = uiState.nextWindowID++,
         .title = title,
         .flags = flags,
-        .area = irectPosSize(position, v2i(width, height)),
+        .area = { position, v2i(width, height) },
         .styleName = style_name,
         .windowProc = window_proc,
         .userData = user_data,
@@ -169,7 +170,7 @@ void updateAndRenderWindows()
     auto& renderer = the_renderer();
 
     // This is weird, the UI camera should always be positioned with 0,0 being the bottom-left I thought?
-    Rect2I validWindowArea = irectCentreSize(v2i(renderer.ui_camera().position()), v2i(renderer.ui_camera().size()));
+    Rect2I validWindowArea = Rect2I::create_centre_size(v2i(renderer.ui_camera().position()), v2i(renderer.ui_camera().size()));
 
     uiState.isAPauseWindowOpen = false;
     s32 tooltipIndex = -1;
@@ -228,11 +229,11 @@ void updateAndRenderWindows()
         // Handle dragging the window
         if (isModal) {
             // Modal windows can't be moved, they just auto-centre
-            window->area = centreWithin(validWindowArea, window->area.size);
+            window->area = centreWithin(validWindowArea, window->area.size());
         } else if (isDragging((void*)window->id)) {
-            window->area.pos = getDraggingObjectPos();
+            window->area.set_position(getDraggingObjectPos());
         } else if (isTooltip) {
-            window->area.pos = mousePos + windowStyle->offsetFromMouse;
+            window->area.set_position(mousePos + windowStyle->offsetFromMouse);
         }
 
         // Keep window on screen
@@ -281,8 +282,8 @@ void updateAndRenderWindows()
         }
 
         Rect2I wholeWindowArea = window->area;
-        Rect2I barArea = irectXYWH(wholeWindowArea.x, wholeWindowArea.y, wholeWindowArea.w, barHeight);
-        Rect2I closeButtonRect = irectXYWH(wholeWindowArea.x + wholeWindowArea.w - barHeight, wholeWindowArea.y, barHeight, barHeight);
+        Rect2I barArea { wholeWindowArea.x, wholeWindowArea.y, wholeWindowArea.w, barHeight };
+        Rect2I closeButtonRect { wholeWindowArea.x + wholeWindowArea.w - barHeight, wholeWindowArea.y, barHeight, barHeight };
 
         if (hasTitleBar) {
             bool hoveringOverCloseButton = contains(closeButtonRect, mousePos);
@@ -307,7 +308,7 @@ void updateAndRenderWindows()
                 drawSingleRect(window->renderBuffer, closeButtonRect, renderer.shaderIds.untextured, closeButtonColorHover);
             }
             V2I closeTextSize = calculateTextSize(titleFont, closeButtonString);
-            Rect2I closeTextBounds = irectAligned(centreOfI(closeButtonRect), closeTextSize, Alignment::centre());
+            Rect2I closeTextBounds = Rect2I::create_aligned(v2i(closeButtonRect.centre()), closeTextSize, Alignment::centre());
             drawText(window->renderBuffer, titleFont, closeButtonString, closeTextBounds, Alignment::centre(), titleStyle->textColor, renderer.shaderIds.text);
 
             if ((!isMouseInputHandled() || windowIndex == 0)
@@ -326,7 +327,7 @@ void updateAndRenderWindows()
                         //
                         // The solution would be to either allocate windows individually, or store their order in
                         // an array that's separate abd just uses pointers.
-                        startDragging((void*)window->id, window->area.pos);
+                        startDragging((void*)window->id, window->area.position());
                     }
 
                     // Make this the active window!
@@ -428,10 +429,10 @@ void updateAndRenderWindows()
 
 Rect2I getWindowContentArea(Rect2I windowArea, s32 barHeight, s32 margin)
 {
-    return irectXYWH(windowArea.x + margin,
+    return { windowArea.x + margin,
         windowArea.y + barHeight + margin,
         windowArea.w - (margin * 2),
-        windowArea.h - barHeight - (margin * 2));
+        windowArea.h - barHeight - (margin * 2) };
 }
 
 void closeWindow(s32 windowIndex)

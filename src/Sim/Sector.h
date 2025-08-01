@@ -57,7 +57,7 @@ void initSectorGrid(SectorGrid<Sector>* grid, MemoryArena* arena, s32 cityWidth,
             Sector* sector = &grid->sectors[(grid->sectorsX * y) + x];
 
             *sector = {};
-            sector->bounds = irectXYWH(x * sectorSize, y * sectorSize, sectorSize, sectorSize);
+            sector->bounds = { x * sectorSize, y * sectorSize, sectorSize, sectorSize };
 
             if ((x == grid->sectorsX - 1) && remainderWidth > 0) {
                 sector->bounds.w = remainderWidth;
@@ -114,16 +114,14 @@ Sector* getSectorAtTilePos(SectorGrid<Sector>* grid, s32 x, s32 y)
 template<typename Sector>
 Rect2I getSectorsCovered(SectorGrid<Sector>* grid, Rect2I area)
 {
-    area = intersect(area, irectXYWH(0, 0, grid->width, grid->height));
+    auto intersected_area = intersect(area, {0, 0, grid->width, grid->height});
 
-    Rect2I result = irectMinMax(
-        area.x / grid->sectorSize,
-        area.y / grid->sectorSize,
+    return Rect2I::create_min_max(
+        intersected_area.x / grid->sectorSize,
+        intersected_area.y / grid->sectorSize,
 
-        (area.x + area.w - 1) / grid->sectorSize,
-        (area.y + area.h - 1) / grid->sectorSize);
-
-    return result;
+        (intersected_area.x + intersected_area.w - 1) / grid->sectorSize,
+        (intersected_area.y + intersected_area.h - 1) / grid->sectorSize);
 }
 
 template<typename Sector>

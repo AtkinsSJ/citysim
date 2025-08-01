@@ -209,7 +209,7 @@ void debugTextOut(DebugTextState* textState, String text, bool doHighlight = fal
     V2I textSize = calculateTextSize(textState->font, text, textState->maxWidth);
     V2I topLeft = calculateTextPosition(textState->pos, textSize, align);
 
-    Rect2I bounds = irectPosSize(topLeft, textSize);
+    Rect2I bounds { topLeft, textSize };
 
     if (doHighlight && contains(bounds, textState->camera->mouse_position())) {
         drawSingleRect(textState->renderBuffer, bounds, textState->untexturedShaderID, textColor * 0.5f);

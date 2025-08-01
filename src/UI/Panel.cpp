@@ -34,7 +34,7 @@ void Panel::enableHorizontalScrolling(ScrollbarState* scrollbarState)
     ASSERT(scrollbarStyle != nullptr);
 
     this->hScrollbar = scrollbarState;
-    this->hScrollbarBounds = irectXYWH(bounds.x, bounds.y + bounds.h - scrollbarStyle->width, bounds.w, scrollbarStyle->width);
+    this->hScrollbarBounds = { bounds.x, bounds.y + bounds.h - scrollbarStyle->width, bounds.w, scrollbarStyle->width };
 
     this->contentArea.h -= scrollbarStyle->width;
     updateLayoutPosition();
@@ -48,7 +48,7 @@ void Panel::enableVerticalScrolling(ScrollbarState* scrollbarState, bool expandW
     this->vScrollbar = scrollbarState;
 
     s32 scrollbarX = bounds.x + bounds.w - (expandWidth ? 0 : scrollbarStyle->width);
-    this->vScrollbarBounds = irectXYWH(scrollbarX, bounds.y, scrollbarStyle->width, bounds.h);
+    this->vScrollbarBounds = { scrollbarX, bounds.y, scrollbarStyle->width, bounds.h };
 
     if (expandWidth) {
         this->bounds.w += scrollbarStyle->width;
@@ -77,7 +77,7 @@ bool Panel::addTextButton(String text, ButtonState state, String styleName)
         wasClicked = putTextButton(text, widgetBounds, widgetStyle, state, renderBuffer);
     }
 
-    completeWidget(widgetBounds.size);
+    completeWidget(widgetBounds.size());
 
     return wasClicked;
 }
@@ -101,7 +101,7 @@ bool Panel::addImageButton(Sprite* sprite, ButtonState state, String styleName)
         wasClicked = putImageButton(sprite, widgetBounds, widgetStyle, state, renderBuffer);
     }
 
-    completeWidget(widgetBounds.size);
+    completeWidget(widgetBounds.size());
 
     return wasClicked;
 }
@@ -122,7 +122,7 @@ void Panel::addCheckbox(bool* checked, String styleName)
         putCheckbox(checked, widgetBounds, widgetStyle, false, renderBuffer);
     }
 
-    completeWidget(widgetBounds.size);
+    completeWidget(widgetBounds.size());
 }
 
 void Panel::addLabel(String text, String styleName)
@@ -141,7 +141,7 @@ void Panel::addLabel(String text, String styleName)
         putLabel(text, widgetBounds, widgetStyle, renderBuffer);
     }
 
-    completeWidget(widgetBounds.size);
+    completeWidget(widgetBounds.size());
 }
 
 void Panel::addRadioButton(s32* currentValue, s32 myValue, String styleName)
@@ -160,7 +160,7 @@ void Panel::addRadioButton(s32* currentValue, s32 myValue, String styleName)
         putRadioButton(currentValue, myValue, widgetBounds, widgetStyle, false, renderBuffer);
     }
 
-    completeWidget(widgetBounds.size);
+    completeWidget(widgetBounds.size());
 }
 
 void Panel::addSprite(Sprite* sprite, s32 width, s32 height)
@@ -185,7 +185,7 @@ void Panel::addSprite(Sprite* sprite, s32 width, s32 height)
         }
     }
 
-    completeWidget(widgetBounds.size);
+    completeWidget(widgetBounds.size());
 }
 
 bool Panel::addTextInput(TextInput* textInput, String styleName)
@@ -206,7 +206,7 @@ bool Panel::addTextInput(TextInput* textInput, String styleName)
         result = putTextInput(textInput, widgetBounds, widgetStyle, renderBuffer);
     }
 
-    completeWidget(widgetBounds.size);
+    completeWidget(widgetBounds.size());
 
     return result;
 }
@@ -219,7 +219,7 @@ Rect2I Panel::addBlank(s32 width, s32 height)
 
     Rect2I widgetBounds = calculateWidgetBounds(v2i(width, height));
 
-    completeWidget(widgetBounds.size);
+    completeWidget(widgetBounds.size());
 
     return widgetBounds;
 }
@@ -266,27 +266,23 @@ Panel Panel::row(s32 height, VAlign vAlignment, String styleName)
     PanelStyle* rowStyle = getPanelStyle(styleName);
 
     if (vAlignment == VAlign::Top) {
-        Rect2I rowBounds = irectXYWH(
-            contentArea.x, contentArea.y + currentTop,
-            contentArea.w, height);
+        Rect2I rowBounds { contentArea.x, contentArea.y + currentTop, contentArea.w, height };
 
         if (layoutBottomToTop) {
             contentArea.h -= height + style->contentPadding;
             contentArea.y += height + style->contentPadding;
         } else {
-            completeWidget(rowBounds.size);
+            completeWidget(rowBounds.size());
         }
 
         updateLayoutPosition();
 
         return Panel(rowBounds, rowStyle, flags, renderBuffer);
     } else {
-        Rect2I rowBounds = irectXYWH(
-            contentArea.x, contentArea.y + currentBottom - height,
-            contentArea.w, height);
+        Rect2I rowBounds { contentArea.x, contentArea.y + currentBottom - height, contentArea.w, height };
 
         if (layoutBottomToTop) {
-            completeWidget(rowBounds.size);
+            completeWidget(rowBounds.size());
         } else {
             contentArea.h -= height + style->contentPadding;
         }
@@ -309,9 +305,7 @@ Panel Panel::column(s32 width, HAlign hAlignment, String styleName)
     PanelStyle* columnStyle = getPanelStyle(styleName);
 
     if (hAlignment == HAlign::Left) {
-        Rect2I columnBounds = irectXYWH(
-            contentArea.x, contentArea.y + currentTop,
-            width, contentArea.h);
+        Rect2I columnBounds { contentArea.x, contentArea.y + currentTop, width, contentArea.h };
 
         contentArea.w -= width + style->contentPadding;
         contentArea.x += width + style->contentPadding;
@@ -319,9 +313,7 @@ Panel Panel::column(s32 width, HAlign hAlignment, String styleName)
 
         return Panel(columnBounds, columnStyle, flags, renderBuffer);
     } else {
-        Rect2I columnBounds = irectXYWH(
-            contentArea.x + contentArea.w - width, contentArea.y + currentTop,
-            width, contentArea.h);
+        Rect2I columnBounds { contentArea.x + contentArea.w - width, contentArea.y + currentTop, width, contentArea.h };
 
         contentArea.w -= width + style->contentPadding;
         updateLayoutPosition();

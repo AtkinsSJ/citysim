@@ -20,14 +20,12 @@ void markRectAsDirty(DirtyRects* dirtyRects, Rect2I rect)
 
     Rect2I rectToAdd = expand(rect, dirtyRects->expansionRadius);
 
-    if (areaOf(dirtyRects->bounds) > 0) {
+    if (dirtyRects->bounds.has_positive_area())
         rectToAdd = intersect(rectToAdd, dirtyRects->bounds);
-    }
 
     // Skip empty rects
-    if (areaOf(rectToAdd) == 0) {
+    if (!rectToAdd.has_positive_area())
         return;
-    }
 
     if (dirtyRects->rects.count > 128) {
         logWarn("Over 128 dirty rects, which is probably a bug? (Count: {0}) Skipping duplicate checks."_s, { formatInt(dirtyRects->rects.count) });
@@ -75,7 +73,7 @@ bool isDirty(DirtyRects* dirtyRects)
 
 Rect2I getOverallRect(DirtyRects* dirtyRects)
 {
-    Rect2I result = irectXYWH(0, 0, 0, 0);
+    Rect2I result { 0, 0, 0, 0 };
 
     if (dirtyRects->rects.count > 0) {
         result = *dirtyRects->rects.get(0);

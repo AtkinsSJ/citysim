@@ -57,7 +57,7 @@ CanZoneQuery* queryCanZoneTiles(City* city, ZoneType zoneType, Rect2I bounds)
 
     // Allocate the Query struct
     CanZoneQuery* query = nullptr;
-    s32 tileCount = areaOf(bounds);
+    s32 tileCount = bounds.area();
     smm structSize = sizeof(CanZoneQuery) + (tileCount * sizeof(query->tileCanBeZoned[0]));
     u8* memory = static_cast<u8*>(temp_arena().allocate_deprecated(structSize));
     query = (CanZoneQuery*)memory;
@@ -131,7 +131,7 @@ void drawZones(City* city, Rect2I visibleTileBounds, s8 shaderID)
 
     // TODO: @Speed: areaOf() is a poor heuristic! It's safely >= the actual value, but it would be better to
     // actually see how many there are. Though that'd be a double-iteration, unless we keep a cached count.
-    DrawRectsGroup* group = beginRectsGroupUntextured(&renderer.world_buffer(), shaderID, areaOf(visibleTileBounds));
+    DrawRectsGroup* group = beginRectsGroupUntextured(&renderer.world_buffer(), shaderID, visibleTileBounds.area());
 
     for (s32 y = visibleTileBounds.y;
         y < visibleTileBounds.y + visibleTileBounds.h;
@@ -336,7 +336,7 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
                 }
             }
 
-            s32 sectorArea = areaOf(sector->bounds);
+            s32 sectorArea = sector->bounds.area();
             float invSectorArea = 1.0f / (float)sectorArea;
             sector->averageDesirability[ZoneType::Residential] = totalResDesirability * invSectorArea;
             sector->averageDesirability[ZoneType::Commercial] = totalComDesirability * invSectorArea;
@@ -530,7 +530,7 @@ void growSomeZoneBuildings(City* city)
 
                 // Produce a rectangle of the contiguous empty zone area around that point,
                 // so we can fit larger buildings there if possible.
-                Rect2I zoneFootprint = irectXYWH(zonePos.x, zonePos.y, 1, 1);
+                Rect2I zoneFootprint { zonePos.x, zonePos.y, 1, 1 };
                 {
                     DEBUG_BLOCK_T("growSomeZoneBuildings - expand rect", DebugCodeDataTag::Simulation);
                     // Gradually expand from zonePos outwards, checking if there is available, zoned space

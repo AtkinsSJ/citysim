@@ -105,7 +105,7 @@ void updateFireLayer(City* city, FireLayer* layer)
                             effectiveness *= 0.4f; // @Balance
                         }
 
-                        def->fireProtection.apply(layer->tileFireProtection, sector->bounds, centreOf(building->footprint), EffectType::Max, effectiveness);
+                        def->fireProtection.apply(layer->tileFireProtection, sector->bounds, building->footprint.centre(), EffectType::Max, effectiveness);
                     }
                 }
             }
@@ -215,7 +215,7 @@ void addFireRaw(City* city, s32 x, s32 y, GameTimestamp startDate)
 
     layer->activeFireCount++;
 
-    markRectAsDirty(&layer->dirtyRects, irectXYWH(x, y, 1, 1));
+    markRectAsDirty(&layer->dirtyRects, { x, y, 1, 1 });
 }
 
 void updateFire(City* /*city*/, Fire* /*fire*/)
@@ -237,7 +237,7 @@ void removeFireAt(City* city, s32 x, s32 y)
         sectorAtPosition->activeFires.removeIndex(fireAtPosition.index);
         layer->activeFireCount--;
 
-        markRectAsDirty(&layer->dirtyRects, irectXYWH(x, y, 1, 1));
+        markRectAsDirty(&layer->dirtyRects, {x, y, 1, 1});
     }
 }
 

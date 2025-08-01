@@ -29,7 +29,7 @@ float Splat::radius_at_angle(float degrees) const
 Rect2I Splat::bounding_box() const
 {
     s32 diameter = 1 + ceil_s32(m_max_radius * 2.0f);
-    return irectCentreSize(m_centre.x, m_centre.y, diameter, diameter);
+    return Rect2I::create_centre_size(m_centre.x, m_centre.y, diameter, diameter);
 }
 
 bool Splat::contains(s32 x, s32 y) const

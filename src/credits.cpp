@@ -24,7 +24,7 @@ AppStatus updateAndRenderCredits(float /*deltaTime*/)
     while (reader.load_next_line()) {
         String line = reader.current_line();
         V2I labelSize = UI::calculateLabelSize(line, labelStyle, maxLabelWidth);
-        Rect2I labelBounds = irectAligned(position, labelSize, labelStyle->textAlignment);
+        Rect2I labelBounds = Rect2I::create_aligned(position, labelSize, labelStyle->textAlignment);
         UI::putLabel(line, labelBounds, labelStyle);
         position.y += labelBounds.h;
     }
@@ -33,7 +33,7 @@ AppStatus updateAndRenderCredits(float /*deltaTime*/)
     s32 uiBorderPadding = 8;
     String backText = getText("button_back"_s);
     V2I backSize = UI::calculateButtonSize(backText, style);
-    Rect2I buttonRect = irectXYWH(uiBorderPadding, UI::windowSize.y - uiBorderPadding - backSize.y, backSize.x, backSize.y);
+    Rect2I buttonRect { uiBorderPadding, UI::windowSize.y - uiBorderPadding - backSize.y, backSize.x, backSize.y };
     if (UI::putTextButton(getText("button_back"_s), buttonRect, style, ButtonState::Normal)) {
         result = AppStatus::MainMenu;
     }

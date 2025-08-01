@@ -320,7 +320,7 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
         if (getBuildingDef(building->typeID)->power == 0)
             continue; // We only care about powered buildings!
 
-        if (contains(sector->bounds, building->footprint.pos)) {
+        if (contains(sector->bounds, building->footprint.position())) {
             PowerGroup* group = getPowerGroupAt(sector, building->footprint.x - sector->bounds.x, building->footprint.y - sector->bounds.y);
 
             ASSERT(group != nullptr);

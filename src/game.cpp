@@ -113,7 +113,7 @@ Rect2I getDragArea(DragState* dragState, Rect2I cityBounds, DragType dragType, V
 {
     DEBUG_FUNCTION();
 
-    Rect2I result = irectXYWH(0, 0, 0, 0);
+    Rect2I result { 0, 0, 0, 0 };
 
     if (dragState->isDragging) {
         switch (dragType) {
@@ -245,7 +245,7 @@ DragResult updateDragState(DragState* dragState, Rect2I cityBounds, V2I mouseTil
             dragState->mouseDragEndWorldPos = mouseTilePos;
             result.dragRect = getDragArea(dragState, cityBounds, dragType, itemSize);
         } else {
-            result.dragRect = irectXYWH(mouseTilePos.x, mouseTilePos.y, 1, 1);
+            result.dragRect = { mouseTilePos.x, mouseTilePos.y, 1, 1 };
         }
 
         // Preview
@@ -391,15 +391,15 @@ void updateAndRenderGameUI(GameState* gameState)
     s32 toolbarHeight = uiPadding * 2 + rowHeight * 2;
     s32 width3 = (UI::windowSize.x - (uiPadding * 2)) / 3;
 
-    Rect2I uiRect = irectXYWH(0, 0, UI::windowSize.x, toolbarHeight);
+    Rect2I uiRect { 0, 0, UI::windowSize.x, toolbarHeight };
     UI::addUIRect(uiRect);
     drawSingleRect(uiBuffer, uiRect, renderer.shaderIds.untextured, Colour::from_rgb_255(0, 0, 0, 128));
 
-    UI::putLabel(city->name, irectXYWH(left, uiPadding, width3, rowHeight), labelStyle);
+    UI::putLabel(city->name, { left, uiPadding, width3, rowHeight }, labelStyle);
 
-    UI::putLabel(myprintf("£{0} (-£{1}/month)"_s, { formatInt(city->funds), formatInt(city->monthlyExpenditure) }), irectXYWH(width3, uiPadding, width3, rowHeight), labelStyle);
+    UI::putLabel(myprintf("£{0} (-£{1}/month)"_s, { formatInt(city->funds), formatInt(city->monthlyExpenditure) }), { width3, uiPadding, width3, rowHeight }, labelStyle);
 
-    UI::putLabel(myprintf("Pop: {0}, Jobs: {1}"_s, { formatInt(getTotalResidents(city)), formatInt(getTotalJobs(city)) }), irectXYWH(width3, uiPadding + rowHeight, width3, rowHeight), labelStyle);
+    UI::putLabel(myprintf("Pop: {0}, Jobs: {1}"_s, { formatInt(getTotalResidents(city)), formatInt(getTotalJobs(city)) }), { width3, uiPadding + rowHeight, width3, rowHeight }, labelStyle);
 
     // Game clock
     Rect2I clockBounds = {};
@@ -412,13 +412,13 @@ void updateAndRenderGameUI(GameState* gameState)
         UI::ButtonStyle* buttonStyle = getStyle<UI::ButtonStyle>("default"_s);
         V2I speedButtonSize = UI::calculateButtonSize(">>>"_s, buttonStyle);
         s32 clockWidth = (speedButtonSize.x * 4) + (uiPadding * 3);
-        clockBounds = irectXYWH(right - clockWidth, uiPadding, clockWidth, toolbarHeight);
+        clockBounds = { right - clockWidth, uiPadding, clockWidth, toolbarHeight };
 
         String dateString = formatDateTime(clock->cosmeticDate, DateTimeFormat::ShortDate);
         V2I dateStringSize = calculateTextSize(font, dateString, clockWidth);
 
         // Draw a progress bar for the current day
-        Rect2I dateRect = irectXYWH(right - clockWidth, uiPadding, clockWidth, dateStringSize.y);
+        Rect2I dateRect { right - clockWidth, uiPadding, clockWidth, dateStringSize.y };
         drawSingleRect(uiBuffer, dateRect, renderer.shaderIds.untextured, Colour::from_rgb_255(0, 0, 0, 128));
         Rect2I dateProgressRect = dateRect;
         dateProgressRect.w = round_s32(dateProgressRect.w * clock->timeWithinDay);
@@ -427,7 +427,7 @@ void updateAndRenderGameUI(GameState* gameState)
         UI::putLabel(dateString, dateRect, labelStyle);
 
         // Speed control buttons
-        Rect2I speedButtonRect = irectXYWH(right - speedButtonSize.x, toolbarHeight - (uiPadding + speedButtonSize.y), speedButtonSize.x, speedButtonSize.y);
+        Rect2I speedButtonRect { right - speedButtonSize.x, toolbarHeight - (uiPadding + speedButtonSize.y), speedButtonSize.x, speedButtonSize.y };
 
         if (UI::putTextButton(">>>"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->speed == GameClockSpeed::Fast))) {
             clock->speed = GameClockSpeed::Fast;
@@ -458,7 +458,7 @@ void updateAndRenderGameUI(GameState* gameState)
     */
 
     UI::putLabel(myprintf("R: {0}\nC: {1}\nI: {2}"_s, { formatInt(city->zoneLayer.demand[ZoneType::Residential]), formatInt(city->zoneLayer.demand[ZoneType::Commercial]), formatInt(city->zoneLayer.demand[ZoneType::Industrial]) }),
-        irectXYWH(clockBounds.x - 100, uiPadding, 100, toolbarHeight), labelStyle);
+        { clockBounds.x - 100, uiPadding, 100, toolbarHeight }, labelStyle);
 
     UI::ButtonStyle* buttonStyle = getStyle<UI::ButtonStyle>("default"_s);
     UI::PanelStyle* popupMenuPanelStyle = getStyle<UI::PanelStyle>("popupMenu"_s);
@@ -467,7 +467,7 @@ void updateAndRenderGameUI(GameState* gameState)
         // The, um, "MENU" menu. Hmmm.
         String menuButtonText = getText("button_menu"_s);
         V2I buttonSize = UI::calculateButtonSize(menuButtonText, buttonStyle);
-        Rect2I buttonRect = irectXYWH(uiPadding, toolbarHeight - (buttonSize.y + uiPadding), buttonSize.x, buttonSize.y);
+        Rect2I buttonRect { uiPadding, toolbarHeight - (buttonSize.y + uiPadding), buttonSize.x, buttonSize.y };
         if (UI::putTextButton(menuButtonText, buttonRect, buttonStyle)) {
             UI::showWindow(UI::WindowTitle::fromTextAsset("title_menu"_s), 200, 200, v2i(0, 0), "default"_s,
                 WindowFlags::Unique | WindowFlags::Modal | WindowFlags::AutomaticHeight | WindowFlags::Pause,
@@ -477,7 +477,7 @@ void updateAndRenderGameUI(GameState* gameState)
 
         // The "ZONE" menu
         String zoneButtonText = getText("button_zone"_s);
-        buttonRect.size = UI::calculateButtonSize(zoneButtonText, buttonStyle);
+        buttonRect.set_size(UI::calculateButtonSize(zoneButtonText, buttonStyle));
         if (UI::putTextButton(zoneButtonText, buttonRect, buttonStyle, buttonIsActive(UI::isMenuVisible(to_underlying(GameMenuID::Zone))))) {
             UI::toggleMenuVisible(to_underlying(GameMenuID::Zone));
         }
@@ -486,7 +486,7 @@ void updateAndRenderGameUI(GameState* gameState)
             s32 popupMenuWidth = 150;
             s32 popupMenuMaxHeight = UI::windowSize.y - (buttonRect.y + buttonRect.h);
 
-            UI::Panel menu = UI::Panel(irectXYWH(buttonRect.x - popupMenuPanelStyle->padding.left, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight), popupMenuPanelStyle);
+            UI::Panel menu = UI::Panel({ buttonRect.x - popupMenuPanelStyle->padding.left, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight }, popupMenuPanelStyle);
             for (auto zone_type : enum_values<ZoneType>()) {
                 if (menu.addTextButton(getText(ZONE_DEFS[zone_type].textAssetName),
                         buttonIsActive((gameState->actionMode == ActionMode::Zone) && gameState->selectedZoneID == zone_type))) {
@@ -503,7 +503,7 @@ void updateAndRenderGameUI(GameState* gameState)
 
         // The "BUILD" menu
         String buildButtonText = getText("button_build"_s);
-        buttonRect.size = UI::calculateButtonSize(buildButtonText, buttonStyle);
+        buttonRect.set_size(UI::calculateButtonSize(buildButtonText, buttonStyle));
         if (UI::putTextButton(buildButtonText, buttonRect, buttonStyle, buttonIsActive(UI::isMenuVisible(to_underlying(GameMenuID::Build))))) {
             UI::toggleMenuVisible(to_underlying(GameMenuID::Build));
         }
@@ -514,7 +514,7 @@ void updateAndRenderGameUI(GameState* gameState)
             s32 popupMenuWidth = 150;
             s32 popupMenuMaxHeight = UI::windowSize.y - (buttonRect.y + buttonRect.h);
 
-            UI::Panel menu = UI::Panel(irectXYWH(buttonRect.x - popupMenuPanelStyle->padding.left, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight), popupMenuPanelStyle);
+            UI::Panel menu = UI::Panel({ buttonRect.x - popupMenuPanelStyle->padding.left, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight }, popupMenuPanelStyle);
 
             for (auto it = constructibleBuildings->iterate();
                 it.hasNext();
@@ -536,7 +536,7 @@ void updateAndRenderGameUI(GameState* gameState)
 
         // The Terrain button
         String terrainButtonText = getText("button_terrain"_s);
-        buttonRect.size = UI::calculateButtonSize(terrainButtonText, buttonStyle);
+        buttonRect.set_size(UI::calculateButtonSize(terrainButtonText, buttonStyle));
         bool isTerrainWindowOpen = UI::isWindowOpen(modifyTerrainWindowProc);
         if (UI::putTextButton(terrainButtonText, buttonRect, buttonStyle, buttonIsActive(isTerrainWindowOpen))) {
             if (isTerrainWindowOpen) {
@@ -549,7 +549,7 @@ void updateAndRenderGameUI(GameState* gameState)
 
         // Demolish button
         String demolishButtonText = getText("button_demolish"_s);
-        buttonRect.size = UI::calculateButtonSize(demolishButtonText, buttonStyle);
+        buttonRect.set_size(UI::calculateButtonSize(demolishButtonText, buttonStyle));
         if (UI::putTextButton(demolishButtonText, buttonRect, buttonStyle,
                 buttonIsActive(gameState->actionMode == ActionMode::Demolish))) {
             gameState->actionMode = ActionMode::Demolish;
@@ -662,7 +662,7 @@ AppStatus updateAndRenderGame(GameState* gameState, float deltaTime)
     V2I mouseTilePos = v2i(world_camera.mouse_position());
     bool mouseIsOverUI = UI::isMouseInputHandled() || UI::mouseIsWithinUIRects();
 
-    city->demolitionRect = irectNegativeInfinity();
+    city->demolitionRect = Rect2I::create_negative_infinity();
 
     {
         DEBUG_BLOCK_T("ActionMode update", DebugCodeDataTag::GameUpdate);
@@ -675,7 +675,7 @@ AppStatus updateAndRenderGame(GameState* gameState, float deltaTime)
             case BuildMethod::Paint: // Fallthrough
             case BuildMethod::Plop: {
                 if (!mouseIsOverUI) {
-                    Rect2I footprint = irectCentreSize(mouseTilePos, buildingDef->size);
+                    Rect2I footprint = Rect2I::create_centre_size(mouseTilePos, buildingDef->size);
                     s32 buildCost = buildingDef->buildCost;
 
                     bool canPlace = canPlaceBuilding(&gameState->city, buildingDef, footprint.x, footprint.y);
@@ -873,7 +873,7 @@ AppStatus updateAndRenderGame(GameState* gameState, float deltaTime)
     // RENDERING
     // Pre-calculate the tile area that's visible to the player.
     // We err on the side of drawing too much, rather than risking having holes in the world.
-    Rect2I visibleTileBounds = irectCentreSize(
+    Rect2I visibleTileBounds = Rect2I::create_centre_size(
         v2i(world_camera.position()), v2i(world_camera.size() / world_camera.zoom()) + v2i(3, 3));
     visibleTileBounds = intersect(visibleTileBounds, city->bounds);
 
@@ -1047,7 +1047,7 @@ static void drawBuildingEffectRadii(City* city, Iterable* buildingRefs, EffectRa
                 EffectRadius* effect = &(def->*effectMember);
                 if (effect->has_effect()) {
                     s32 paletteIndex = (buildingHasPower(building) ? paletteIndexPowered : paletteIndexUnpowered);
-                    addRing(buildingRadii, centreOf(building->footprint), static_cast<float>(effect->radius()), 0.5f, (*ringsPalette)[paletteIndex]);
+                    addRing(buildingRadii, building->footprint.centre(), static_cast<float>(effect->radius()), 0.5f, (*ringsPalette)[paletteIndex]);
                 }
             }
         }
@@ -1121,7 +1121,7 @@ void drawDataViewUI(GameState* gameState)
     // Data-views menu
     String dataViewButtonText = getText("button_data_views"_s);
     V2I dataViewButtonSize = UI::calculateButtonSize(dataViewButtonText, buttonStyle);
-    Rect2I dataViewButtonBounds = irectXYWH(uiPadding, UI::windowSize.y - uiPadding - dataViewButtonSize.y, dataViewButtonSize.x, dataViewButtonSize.y);
+    Rect2I dataViewButtonBounds { uiPadding, UI::windowSize.y - uiPadding - dataViewButtonSize.y, dataViewButtonSize.x, dataViewButtonSize.y };
 
     Rect2I dataViewUIBounds = expand(dataViewButtonBounds, uiPadding);
     drawSingleRect(uiBuffer, dataViewUIBounds, renderer.shaderIds.untextured, Colour::from_rgb_255(0, 0, 0, 128));
@@ -1148,7 +1148,7 @@ void drawDataViewUI(GameState* gameState)
             + ((to_underlying(DataView::COUNT) - 1) * popupMenuPanelStyle->contentPadding)
             + (popupMenuPanelStyle->padding.top + popupMenuPanelStyle->padding.bottom);
 
-        UI::Panel menu = UI::Panel(irectAligned(dataViewButtonBounds.x - popupMenuPanelStyle->padding.left, dataViewButtonBounds.y, popupMenuWidth, popupMenuMaxHeight, { HAlign::Left, VAlign::Bottom }), popupMenuPanelStyle, UI::PanelFlags::LayoutBottomToTop);
+        UI::Panel menu = UI::Panel(Rect2I::create_aligned(dataViewButtonBounds.x - popupMenuPanelStyle->padding.left, dataViewButtonBounds.y, popupMenuWidth, popupMenuMaxHeight, { HAlign::Left, VAlign::Bottom }), popupMenuPanelStyle, UI::PanelFlags::LayoutBottomToTop);
 
         // Enable scrolling if there's too many items to fit
         if (estimatedMenuHeight > popupMenuMaxHeight) {
@@ -1171,14 +1171,14 @@ void drawDataViewUI(GameState* gameState)
     // Data-view info
     if (!UI::isMenuVisible(to_underlying(GameMenuID::DataViews))
         && gameState->dataLayerToDraw != DataView::None) {
-        V2I uiPos = dataViewButtonBounds.pos;
+        V2I uiPos = dataViewButtonBounds.position();
         uiPos.y -= uiPadding;
 
         DataViewUI* dataView = &gameState->dataViewUI[gameState->dataLayerToDraw];
 
         s32 paletteBlockSize = font->lineHeight;
 
-        UI::Panel ui = UI::Panel(irectAligned(uiPos.x, uiPos.y, 240, 1000, { HAlign::Left, VAlign::Bottom }), nullptr, UI::PanelFlags::LayoutBottomToTop);
+        UI::Panel ui = UI::Panel(Rect2I::create_aligned(uiPos.x, uiPos.y, 240, 1000, { HAlign::Left, VAlign::Bottom }), nullptr, UI::PanelFlags::LayoutBottomToTop);
         {
             // We're working from bottom to top, so we start at the end.
 

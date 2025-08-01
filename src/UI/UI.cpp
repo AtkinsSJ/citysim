@@ -161,15 +161,10 @@ bool isInputScissorActive()
 
 Rect2I getInputScissorRect()
 {
-    Rect2I result;
+    if (isInputScissorActive())
+        return *peek(&uiState.inputScissorRects);
 
-    if (isInputScissorActive()) {
-        result = *peek(&uiState.inputScissorRects);
-    } else {
-        result = irectInfinity();
-    }
-
-    return result;
+    return Rect2I::create_infinity();
 }
 
 void addUIRect(Rect2I bounds)
@@ -587,7 +582,7 @@ Maybe<Rect2I> getScrollbarThumbBounds(ScrollbarState* state, Rect2I scrollbarBou
 
             s32 thumbPos = round_s32(state->scrollPercent * (scrollbarBounds.w - thumbWidth));
 
-            result = makeSuccess(irectXYWH(scrollbarBounds.x + thumbPos, scrollbarBounds.y, thumbWidth, thumbHeight));
+            result = makeSuccess(Rect2I { scrollbarBounds.x + thumbPos, scrollbarBounds.y, thumbWidth, thumbHeight });
         }
     } else {
         ASSERT(state->orientation == Orientation::Vertical);
@@ -602,7 +597,7 @@ Maybe<Rect2I> getScrollbarThumbBounds(ScrollbarState* state, Rect2I scrollbarBou
 
             s32 thumbPos = round_s32(state->scrollPercent * (scrollbarBounds.h - thumbHeight));
 
-            result = makeSuccess(irectXYWH(scrollbarBounds.x, scrollbarBounds.y + thumbPos, thumbWidth, thumbHeight));
+            result = makeSuccess(Rect2I { scrollbarBounds.x, scrollbarBounds.y + thumbPos, thumbWidth, thumbHeight });
         }
     }
 
@@ -613,7 +608,7 @@ void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, Scrollb
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
-    ASSERT(hasPositiveArea(bounds));
+    ASSERT(bounds.has_positive_area());
 
     auto& renderer = the_renderer();
     if (style == nullptr)
@@ -686,7 +681,7 @@ void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, Scrollb
                         }
 
                         // Start drag
-                        startDragging(state, thumbBounds.pos);
+                        startDragging(state, thumbBounds.position());
 
                         thumbStyle = &style->thumbPressed;
                     } else if (inThumbBounds) {
@@ -761,7 +756,7 @@ void putSlider(float* currentValue, float minValue, float maxValue, Orientation 
         thumbPos.x = bounds.x + ((bounds.w - style->thumbSize.x) / 2);
         thumbPos.y = bounds.y + bounds.h - style->thumbSize.y - round_s32((float)travel * currentPercent);
     }
-    Rect2I thumbBounds = irectPosSize(thumbPos, style->thumbSize);
+    Rect2I thumbBounds { thumbPos, style->thumbSize };
 
     // Interact with mouse
     DrawableStyle* thumbStyle = &style->thumb;
@@ -808,7 +803,7 @@ void putSlider(float* currentValue, float minValue, float maxValue, Orientation 
             }
 
             // Start drag
-            startDragging(currentValue, thumbBounds.pos);
+            startDragging(currentValue, thumbBounds.position());
 
             thumbStyle = &style->thumbPressed;
         } else if (inThumbBounds) {
@@ -838,12 +833,12 @@ void putSlider(float* currentValue, float minValue, float maxValue, Orientation 
     Rect2I trackBounds;
     if (orientation == Orientation::Horizontal) {
         s32 trackThickness = (style->trackThickness != 0) ? style->trackThickness : bounds.h;
-        trackBounds = irectAligned(bounds.x, bounds.y + bounds.h / 2, bounds.w, trackThickness, { HAlign::Left, VAlign::Centre });
+        trackBounds = Rect2I::create_aligned(bounds.x, bounds.y + bounds.h / 2, bounds.w, trackThickness, { HAlign::Left, VAlign::Centre });
     } else {
         ASSERT(orientation == Orientation::Vertical);
 
         s32 trackThickness = (style->trackThickness != 0) ? style->trackThickness : bounds.w;
-        trackBounds = irectAligned(bounds.x + bounds.w / 2, bounds.y, trackThickness, bounds.h, { HAlign::Centre, VAlign::Top });
+        trackBounds = Rect2I::create_aligned(bounds.x + bounds.w / 2, bounds.y, trackThickness, bounds.h, { HAlign::Centre, VAlign::Top });
     }
 
     Drawable(&style->track).draw(renderBuffer, trackBounds);
@@ -930,7 +925,7 @@ void drawToast()
                 float t = (toast->time - (TOAST_APPEAR_TIME + TOAST_DISPLAY_TIME)) / TOAST_DISAPPEAR_TIME;
                 origin.y += round_s32(interpolate(0, animationDistance, t, Interpolation::SineIn));
             }
-            Rect2I toastBounds = irectAligned(origin, toastSize, { HAlign::Centre, VAlign::Bottom });
+            Rect2I toastBounds = Rect2I::create_aligned(origin, toastSize, { HAlign::Centre, VAlign::Bottom });
 
             Panel panel = Panel(toastBounds, style);
             panel.addLabel(toast->text);

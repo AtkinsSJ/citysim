@@ -93,35 +93,83 @@ private:
 };
 
 struct Rect2I {
-    union {
-        V2I pos;
-        struct
-        {
-            s32 x;
-            s32 y;
-        };
-    };
-    union {
-        V2I size;
-        struct
-        {
-            s32 w;
-            s32 h;
-        };
-    };
+public:
+    Rect2I() = default;
 
+    Rect2I(s32 x, s32 y, s32 w, s32 h)
+        : x(x)
+        , y(y)
+        , w(w)
+        , h(h)
+    {
+    }
+
+    template<typename U>
+    Rect2I(U x, U y, U w, U h)
+        : x(x)
+        , y(y)
+        , w(w)
+        , h(h)
+    {
+    }
+
+    Rect2I(V2I position, V2I size)
+        : x(position.x)
+        , y(position.y)
+        , w(size.x)
+        , h(size.y)
+    {
+    }
+
+    static Rect2I create_centre_size(V2I centre, V2I size);
+    static Rect2I create_centre_size(s32 centre_x, s32 centre_y, s32 w, s32 h);
+    static Rect2I create_min_max(s32 min_x, s32 min_y, s32 max_x, s32 max_y);
+    static Rect2I create_aligned(s32 origin_x, s32 origin_y, s32 w, s32 h, Alignment alignment);
+    static Rect2I create_aligned(V2I origin, V2I size, Alignment alignment);
+
+    // Rectangle that SHOULD contain anything. It is the maximum size, and centred
+    // on 0,0 In practice, the distance between the minimum and maximum integers
+    // is double what we can store, so the min and max possible positions are
+    // outside this rectangle, by a long way (0.5 * s32Max). But I cannot conceive
+    // that we will ever need to deal with positions that are anywhere near that,
+    // so it should be fine.
+    // - Sam, 08/02/2021
+    static Rect2I create_infinity()
+    {
+        return { s32Min / 2, s32Min / 2, s32Max, s32Max };
+    }
+
+    // Rectangle that is guaranteed to not contain anything, because it's inside-out
+    static Rect2I create_negative_infinity()
+    {
+        return { s32Max, s32Max, s32Min, s32Min };
+    }
+
+    s32 x;
+    s32 y;
+    s32 w;
+    s32 h;
     static Rect2I placed_randomly_within(Random& random, V2I size, Rect2I boundary);
-};
 
-Rect2I irectXYWH(s32 x, s32 y, s32 w, s32 h);
-Rect2I irectInfinity();         // Contains approximately everything...
-Rect2I irectNegativeInfinity(); // Contains nothing
-Rect2I irectPosSize(V2I position, V2I size);
-Rect2I irectCentreSize(s32 centreX, s32 centreY, s32 sizeX, s32 sizeY);
-Rect2I irectCentreSize(V2I position, V2I size);
-Rect2I irectMinMax(s32 xMin, s32 yMin, s32 xMax, s32 yMax);
-Rect2I irectAligned(s32 originX, s32 originY, s32 w, s32 h, Alignment alignment);
-Rect2I irectAligned(V2I origin, V2I size, Alignment alignment);
+    V2I size() const { return v2i(w, h); }
+    void set_size(V2I size)
+    {
+        w = size.x;
+        h = size.y;
+    }
+
+    V2 centre() const;
+
+    V2I position() const { return v2i(x, y); }
+    void set_position(V2I position)
+    {
+        x = position.x;
+        y = position.y;
+    }
+
+    s32 area() const;
+    bool has_positive_area() const;
+};
 
 bool contains(Rect2I rect, s32 x, s32 y);
 bool contains(Rect2I rect, V2I pos);
@@ -142,11 +190,6 @@ Rect2I intersect(Rect2I a, Rect2I b);
 // (Originally used to take a world-space rectangle and put it into a cropped, sector-space one.)
 Rect2I intersectRelative(Rect2I outer, Rect2I inner);
 Rect2I unionOf(Rect2I a, Rect2I b);
-
-V2 centreOf(Rect2I rect);
-V2I centreOfI(Rect2I rect);
-s32 areaOf(Rect2I rect); // Always positive, even if the rect has negative dimensions
-bool hasPositiveArea(Rect2I rect);
 
 Rect2I centreWithin(Rect2I outer, V2I innerSize);
 Rect2I alignWithinRectangle(Rect2I bounds, V2I size, Alignment alignment, Padding padding = {});

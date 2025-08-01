@@ -53,11 +53,11 @@ void setTerrainAt(City* city, s32 x, s32 y, u8 terrainType)
     city->terrainLayer.tileTerrainType.set(x, y, terrainType);
 
     // Update sprites on this and neighbouring tiles
-    Rect2I spriteUpdateBounds = intersect(irectXYWH(x - 1, y - 1, 3, 3), city->bounds);
+    Rect2I spriteUpdateBounds = intersect({x - 1, y - 1, 3, 3}, city->bounds);
     assignTerrainSprites(city, spriteUpdateBounds);
 
     // Update distance to water
-    updateDistanceToWater(city, irectXYWH(x, y, 1, 1));
+    updateDistanceToWater(city, {x, y, 1, 1});
 }
 
 u8 getDistanceToWaterAt(City* city, s32 x, s32 y)
@@ -358,7 +358,7 @@ void generateTerrain(City* city, Random* gameRandom)
                     if (getTerrainAt(city, x, y)->canBuildOn
                         && (getBuildingAt(city, x, y) == nullptr)
                         && forestSplat.contains(x, y)) {
-                        addBuilding(city, treeDef, irectXYWH(x, y, treeDef->size.x, treeDef->size.y));
+                        addBuilding(city, treeDef, {x, y, treeDef->size.x, treeDef->size.y});
                     }
                 }
             }

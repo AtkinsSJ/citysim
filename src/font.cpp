@@ -236,7 +236,7 @@ void drawText(RenderBuffer* renderBuffer, BitmapFont* font, String text, Rect2I 
     ASSERT(renderBuffer != nullptr); // RenderBuffer must be provided!
     ASSERT(font != nullptr);         // Font must be provided!
 
-    V2I topLeft = bounds.pos;
+    V2I topLeft = bounds.position();
     s32 maxWidth = (s32)bounds.w;
 
     //
@@ -265,7 +265,7 @@ void drawText(RenderBuffer* renderBuffer, BitmapFont* font, String text, Rect2I 
 
     if (caretInfoResult && caretIndex == 0) {
         caretInfoResult->isValid = true;
-        caretInfoResult->caretPosition = bounds.pos + v2i(currentX, currentY);
+        caretInfoResult->caretPosition = bounds.position() + v2i(currentX, currentY);
     }
 
     s32 startOfCurrentLine = 0;
@@ -301,7 +301,7 @@ void drawText(RenderBuffer* renderBuffer, BitmapFont* font, String text, Rect2I 
                     currentChar++;
                     if (caretInfoResult && currentChar == caretIndex) {
                         caretInfoResult->isValid = true;
-                        caretInfoResult->caretPosition = bounds.pos + v2i(currentX, currentY);
+                        caretInfoResult->caretPosition = bounds.position() + v2i(currentX, currentY);
                     }
 
                     currentY += font->lineHeight;
@@ -330,7 +330,7 @@ void drawText(RenderBuffer* renderBuffer, BitmapFont* font, String text, Rect2I 
                     currentChar++;
                     if (caretInfoResult && currentChar == caretIndex) {
                         caretInfoResult->isValid = true;
-                        caretInfoResult->caretPosition = bounds.pos + v2i(currentX + whitespaceWidthBeforeCurrentWord, currentY);
+                        caretInfoResult->caretPosition = bounds.position() + v2i(currentX + whitespaceWidthBeforeCurrentWord, currentY);
                     }
                 }
                 foundNext = getNextUnichar(text, &bytePos, &c);
@@ -384,7 +384,7 @@ void drawText(RenderBuffer* renderBuffer, BitmapFont* font, String text, Rect2I 
                     currentChar++;
                     if (caretInfoResult && currentChar == caretIndex) {
                         caretInfoResult->isValid = true;
-                        caretInfoResult->caretPosition = bounds.pos + v2i(currentX + glyph->xAdvance, currentY);
+                        caretInfoResult->caretPosition = bounds.position() + v2i(currentX + glyph->xAdvance, currentY);
                     }
 
                     currentX += glyph->xAdvance;
@@ -405,7 +405,7 @@ void drawText(RenderBuffer* renderBuffer, BitmapFont* font, String text, Rect2I 
 
     if (caretInfoResult && currentChar < caretIndex) {
         caretInfoResult->isValid = true;
-        caretInfoResult->caretPosition = bounds.pos + v2i(currentX, currentY);
+        caretInfoResult->caretPosition = bounds.position() + v2i(currentX, currentY);
     }
 
     ASSERT(glyphCount == group->count);

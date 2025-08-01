@@ -12,7 +12,7 @@ BuildingRef getReferenceTo(Building* building)
 {
     BuildingRef result = {};
     result.buildingID = building->id;
-    result.buildingPos = building->footprint.pos;
+    result.buildingPos = building->footprint.position();
 
     return result;
 }
