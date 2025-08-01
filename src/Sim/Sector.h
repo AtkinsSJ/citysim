@@ -60,10 +60,10 @@ void initSectorGrid(SectorGrid<Sector>* grid, MemoryArena* arena, V2I city_size,
             sector->bounds = { x * sectorSize, y * sectorSize, sectorSize, sectorSize };
 
             if ((x == grid->sectorsX - 1) && remainderWidth > 0) {
-                sector->bounds.w = remainderWidth;
+                sector->bounds.set_width(remainderWidth);
             }
             if ((y == grid->sectorsY - 1) && remainderHeight > 0) {
-                sector->bounds.h = remainderHeight;
+                sector->bounds.set_height(remainderHeight);
             }
         }
     }
@@ -120,8 +120,8 @@ Rect2I getSectorsCovered(SectorGrid<Sector>* grid, Rect2I area)
         intersected_area.x / grid->sectorSize,
         intersected_area.y / grid->sectorSize,
 
-        (intersected_area.x + intersected_area.w - 1) / grid->sectorSize,
-        (intersected_area.y + intersected_area.h - 1) / grid->sectorSize);
+        (intersected_area.x + intersected_area.width() - 1) / grid->sectorSize,
+        (intersected_area.y + intersected_area.height() - 1) / grid->sectorSize);
 }
 
 template<typename Sector>

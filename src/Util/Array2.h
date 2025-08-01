@@ -64,8 +64,8 @@ void fillRegion(Array2<T>* array, Rect2I region, T value)
 {
     ASSERT(Rect2I(0, 0, array->w, array->h).contains(region));
 
-    for (s32 y = region.y; y < region.y + region.h; y++) {
+    for (s32 y = region.y; y < region.y + region.height(); y++) {
         // Set whole rows at a time
-        fillMemory<T>(array->items + (y * array->w) + region.x, value, region.w);
+        fillMemory<T>(array->items + (y * array->w) + region.x, value, region.width());
     }
 }

@@ -43,8 +43,8 @@ bool writeSaveFile(FileHandle* file, GameState* gameState)
             SAVSection_Meta metaSection = {};
 
             metaSection.saveTimestamp = getCurrentUnixTimestamp();
-            metaSection.cityWidth = (u16)city->bounds.w;
-            metaSection.cityHeight = (u16)city->bounds.h;
+            metaSection.cityWidth = (u16)city->bounds.width();
+            metaSection.cityHeight = (u16)city->bounds.height();
             metaSection.funds = city->funds;
             metaSection.population = getTotalResidents(city);
             metaSection.jobs = getTotalJobs(city);

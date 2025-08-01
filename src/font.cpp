@@ -237,7 +237,7 @@ void drawText(RenderBuffer* renderBuffer, BitmapFont* font, String text, Rect2I 
     ASSERT(font != nullptr);         // Font must be provided!
 
     V2I topLeft = bounds.position();
-    s32 maxWidth = (s32)bounds.w;
+    s32 maxWidth = bounds.width();
 
     //
     // NB: We *could* just use text.length here. That will over-estimate how many RenderItems to reserve,

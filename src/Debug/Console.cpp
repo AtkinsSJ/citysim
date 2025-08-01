@@ -187,7 +187,7 @@ void updateAndRenderConsole(Console* console)
         Rect2I scrollbarBounds = getConsoleScrollbarBounds(console);
         if (scrollbarBounds.has_positive_area()) {
             s32 fontLineHeight = getFont(&consoleStyle->font)->lineHeight;
-            s32 contentHeight = ((console->outputLines.count - 1) * fontLineHeight) + scrollbarBounds.h;
+            s32 contentHeight = ((console->outputLines.count - 1) * fontLineHeight) + scrollbarBounds.height();
             if (scrollToBottom) {
                 console->scrollbar.scrollPercent = 1.0f;
             }

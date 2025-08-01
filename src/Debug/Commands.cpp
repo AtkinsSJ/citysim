@@ -106,7 +106,7 @@ ConsoleCommand(map_info)
 
     City* city = &AppState::the().gameState->city;
 
-    consoleWriteLine(myprintf("Map: {0} x {1} tiles. Seed: {2}"_s, { formatInt(city->bounds.w), formatInt(city->bounds.h), formatInt(city->terrainLayer.terrainGenerationSeed) }), ConsoleLineStyle::Success);
+    consoleWriteLine(myprintf("Map: {0} x {1} tiles. Seed: {2}"_s, { formatInt(city->bounds.width()), formatInt(city->bounds.height()), formatInt(city->terrainLayer.terrainGenerationSeed) }), ConsoleLineStyle::Success);
 }
 
 ConsoleCommand(mark_all_dirty)

@@ -126,10 +126,10 @@ Building* addBuildingDirect(City* city, s32 id, BuildingDef* def, Rect2I footpri
     ownerSector->ownedBuildings.append(building);
 
     for (s32 y = footprint.y;
-        y < footprint.y + footprint.h;
+        y < footprint.y + footprint.height();
         y++) {
         for (s32 x = footprint.x;
-            x < footprint.x + footprint.w;
+            x < footprint.x + footprint.width();
             x++) {
             city->tileBuildingIndex.set(x, y, buildingIndex);
         }
@@ -167,8 +167,8 @@ void markAreaDirty(City* city, Rect2I bounds)
 
 bool tileExists(City* city, s32 x, s32 y)
 {
-    return (x >= 0) && (x < city->bounds.w)
-        && (y >= 0) && (y < city->bounds.h);
+    return (x >= 0) && (x < city->bounds.width())
+        && (y >= 0) && (y < city->bounds.height());
 }
 
 bool canAfford(City* city, s32 cost)
@@ -191,7 +191,7 @@ bool canPlaceBuilding(City* city, BuildingDef* def, s32 left, s32 top)
     }
 
     Rect2I footprint { left, top, def->width, def->height };
-    Rect2I bounds { 0, 0, city->bounds.w, city->bounds.h };
+    Rect2I bounds { 0, 0, city->bounds.width(), city->bounds.height() };
 
     // Are we in bounds?
     if (!bounds.contains(footprint)) {
@@ -200,8 +200,8 @@ bool canPlaceBuilding(City* city, BuildingDef* def, s32 left, s32 top)
 
     // Check terrain is buildable and empty
     // TODO: Optimise this per-sector!
-    for (s32 y = footprint.y; y < footprint.y + footprint.h; y++) {
-        for (s32 x = footprint.x; x < footprint.x + footprint.w; x++) {
+    for (s32 y = footprint.y; y < footprint.y + footprint.height(); y++) {
+        for (s32 x = footprint.x; x < footprint.x + footprint.width(); x++) {
             TerrainDef* terrainDef = getTerrainAt(city, x, y);
 
             if (!terrainDef->canBuildOn) {
@@ -274,8 +274,8 @@ s32 calculateBuildCost(City* city, BuildingDef* def, Rect2I area)
 
     s32 totalCost = 0;
 
-    for (s32 y = 0; y + def->height <= area.h; y += def->height) {
-        for (s32 x = 0; x + def->width <= area.w; x += def->width) {
+    for (s32 y = 0; y + def->height <= area.height(); y += def->height) {
+        for (s32 x = 0; x + def->width <= area.width(); x += def->width) {
             if (canPlaceBuilding(city, def, area.x + x, area.y + y)) {
                 totalCost += def->buildCost;
             }
@@ -289,8 +289,8 @@ void placeBuildingRect(City* city, BuildingDef* def, Rect2I area)
 {
     DEBUG_FUNCTION();
 
-    for (s32 y = 0; y + def->height <= area.h; y += def->height) {
-        for (s32 x = 0; x + def->width <= area.w; x += def->width) {
+    for (s32 y = 0; y + def->height <= area.height(); y += def->height) {
+        for (s32 x = 0; x + def->width <= area.width(); x += def->width) {
             if (canPlaceBuilding(city, def, area.x + x, area.y + y)) {
                 placeBuilding(city, def, area.x + x, area.y + y, false);
             }
@@ -350,10 +350,10 @@ void demolishRect(City* city, Rect2I area)
         building = nullptr; // For safety, because we just deleted the Building!
 
         for (s32 y = buildingFootprint.y;
-            y < buildingFootprint.y + buildingFootprint.h;
+            y < buildingFootprint.y + buildingFootprint.height();
             y++) {
             for (s32 x = buildingFootprint.x;
-                x < buildingFootprint.x + buildingFootprint.w;
+                x < buildingFootprint.x + buildingFootprint.width();
                 x++) {
                 city->tileBuildingIndex.set(x, y, 0);
             }
@@ -371,10 +371,10 @@ void demolishRect(City* city, Rect2I area)
     Rect2I sectorsArea = getSectorsCovered(&city->sectors, expandedArea);
 
     for (s32 sY = sectorsArea.y;
-        sY < sectorsArea.y + sectorsArea.h;
+        sY < sectorsArea.y + sectorsArea.height();
         sY++) {
         for (s32 sX = sectorsArea.x;
-            sX < sectorsArea.x + sectorsArea.w;
+            sX < sectorsArea.x + sectorsArea.width();
             sX++) {
             CitySector* sector = getSector(&city->sectors, sX, sY);
 
@@ -382,10 +382,10 @@ void demolishRect(City* city, Rect2I area)
             sector->ownedBuildings.clear();
 
             for (s32 y = sector->bounds.y;
-                y < sector->bounds.y + sector->bounds.h;
+                y < sector->bounds.y + sector->bounds.height();
                 y++) {
                 for (s32 x = sector->bounds.x;
-                    x < sector->bounds.x + sector->bounds.w;
+                    x < sector->bounds.x + sector->bounds.width();
                     x++) {
                     Building* b = getBuildingAt(city, x, y);
                     if (b != nullptr) {
@@ -420,10 +420,10 @@ ChunkedArray<Building*> findBuildingsOverlappingArea(City* city, Rect2I area, Fl
     Rect2I sectorsArea = getSectorsCovered(&city->sectors, expandedArea);
 
     for (s32 sY = sectorsArea.y;
-        sY < sectorsArea.y + sectorsArea.h;
+        sY < sectorsArea.y + sectorsArea.height();
         sY++) {
         for (s32 sX = sectorsArea.x;
-            sX < sectorsArea.x + sectorsArea.w;
+            sX < sectorsArea.x + sectorsArea.width();
             sX++) {
             CitySector* sector = getSector(&city->sectors, sX, sY);
 
@@ -457,10 +457,10 @@ void drawCity(City* city, Rect2I visibleTileBounds)
         DrawRectsGroup* group = beginRectsGroupUntextured(&renderer.world_overlay_buffer(), renderer.shaderIds.untextured, visibleSectors.area());
         auto sectorColor = Colour::from_rgb_255(255, 255, 255, 40);
         for (s32 sy = visibleSectors.y;
-            sy < visibleSectors.y + visibleSectors.h;
+            sy < visibleSectors.y + visibleSectors.height();
             sy++) {
             for (s32 sx = visibleSectors.x;
-                sx < visibleSectors.x + visibleSectors.w;
+                sx < visibleSectors.x + visibleSectors.width();
                 sx++) {
                 if ((sx + sy) % 2) {
                     CitySector* sector = getSector(&city->sectors, sx, sy);
@@ -561,12 +561,12 @@ void saveBuildings(City* city, BinaryFileWriter* writer)
         sb->creationDate = building->creationDate;
         sb->x = (u16)building->footprint.x;
         sb->y = (u16)building->footprint.y;
-        sb->w = (u16)building->footprint.w;
-        sb->h = (u16)building->footprint.h;
-        sb->spriteOffset = (u16)building->spriteOffset;
+        sb->w = (u16)building->footprint.width();
+        sb->h = (u16)building->footprint.height();
+        sb->spriteOffset = building->spriteOffset;
         sb->currentResidents = (u16)building->currentResidents;
         sb->currentJobs = (u16)building->currentJobs;
-        sb->variantIndex = static_cast<s16>(building->variantIndex.value_or(-1));
+        sb->variantIndex = building->variantIndex.value_or(-1);
 
         tempBuildingIndex++;
     }

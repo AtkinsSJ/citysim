@@ -131,33 +131,27 @@ Rect2I getDragArea(DragState* dragState, Rect2I cityBounds, DragType dragType, V
             V2I endP = dragState->mouseDragEndWorldPos;
 
             if (startP.x < endP.x) {
+                auto raw_width = max(endP.x - startP.x + 1, itemSize.x);
+                s32 xRemainder = raw_width % itemSize.x;
                 result.x = startP.x;
-                result.w = max(endP.x - startP.x + 1, itemSize.x);
-
-                s32 xRemainder = result.w % itemSize.x;
-                result.w -= xRemainder;
+                result.set_width(raw_width - xRemainder);
             } else {
-                result.x = endP.x;
-                result.w = startP.x - endP.x + itemSize.x;
-
-                s32 xRemainder = result.w % itemSize.x;
-                result.x += xRemainder;
-                result.w -= xRemainder;
+                auto raw_width = startP.x - endP.x + itemSize.x;
+                s32 xRemainder = raw_width % itemSize.x;
+                result.x = endP.x + xRemainder;
+                result.set_width(raw_width - xRemainder);
             }
 
             if (startP.y < endP.y) {
+                auto raw_height = max(endP.y - startP.y + 1, itemSize.y);
+                s32 yRemainder = raw_height % itemSize.y;
                 result.y = startP.y;
-                result.h = max(endP.y - startP.y + 1, itemSize.y);
-
-                s32 yRemainder = result.w % itemSize.y;
-                result.h -= yRemainder;
+                result.set_height(raw_height - yRemainder);
             } else {
-                result.y = endP.y;
-                result.h = startP.y - endP.y + itemSize.y;
-
-                s32 yRemainder = result.h % itemSize.y;
-                result.y += yRemainder;
-                result.h -= yRemainder;
+                auto raw_height = startP.y - endP.y + itemSize.y;
+                s32 yRemainder = raw_height % itemSize.y;
+                result.y = endP.y + yRemainder;
+                result.set_height(raw_height - yRemainder);
             }
 
         } break;
@@ -176,41 +170,35 @@ Rect2I getDragArea(DragState* dragState, Rect2I cityBounds, DragType dragType, V
             if (xDiff > yDiff) {
                 // X
                 if (startP.x < endP.x) {
+                    auto raw_width = max(xDiff + 1, itemSize.x);
+                    s32 xRemainder = raw_width % itemSize.x;
                     result.x = startP.x;
-                    result.w = max(xDiff + 1, itemSize.x);
-
-                    s32 xRemainder = result.w % itemSize.x;
-                    result.w -= xRemainder;
+                    result.set_width(raw_width - xRemainder);
                 } else {
-                    result.x = endP.x;
-                    result.w = xDiff + itemSize.x;
-
-                    s32 xRemainder = result.w % itemSize.x;
-                    result.x += xRemainder;
-                    result.w -= xRemainder;
+                    auto raw_width = xDiff + itemSize.x;
+                    s32 xRemainder = raw_width % itemSize.x;
+                    result.x = endP.x + xRemainder;
+                    result.set_width(raw_width - xRemainder);
                 }
 
                 result.y = startP.y;
-                result.h = itemSize.y;
+                result.set_height(itemSize.y);
             } else {
                 // Y
                 if (startP.y < endP.y) {
+                    auto raw_height = max(yDiff + 1, itemSize.y);
+                    s32 yRemainder = raw_height % itemSize.y;
                     result.y = startP.y;
-                    result.h = max(yDiff + 1, itemSize.y);
-
-                    s32 yRemainder = result.h % itemSize.y;
-                    result.h -= yRemainder;
+                    result.set_height(raw_height - yRemainder);
                 } else {
-                    result.y = endP.y;
-                    result.h = yDiff + itemSize.y;
-
-                    s32 yRemainder = result.h % itemSize.y;
-                    result.y += yRemainder;
-                    result.h -= yRemainder;
+                    auto raw_height = yDiff + itemSize.y;
+                    s32 yRemainder = raw_height % itemSize.y;
+                    result.y = endP.y + yRemainder;
+                    result.set_height(raw_height - yRemainder);
                 }
 
                 result.x = startP.x;
-                result.w = itemSize.x;
+                result.set_width(itemSize.x);
             }
         } break;
 
@@ -255,10 +243,10 @@ DragResult updateDragState(DragState* dragState, Rect2I cityBounds, V2I mouseTil
     }
 
     // minimum size
-    if (result.dragRect.w < itemSize.x)
-        result.dragRect.w = itemSize.x;
-    if (result.dragRect.h < itemSize.y)
-        result.dragRect.h = itemSize.y;
+    if (result.dragRect.width() < itemSize.x)
+        result.dragRect.set_width(itemSize.x);
+    if (result.dragRect.height() < itemSize.y)
+        result.dragRect.set_height(itemSize.y);
 
     return result;
 }
@@ -277,7 +265,7 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
 
     // CitySector
     CitySector* sector = getSectorAtTilePos(&city->sectors, tilePos.x, tilePos.y);
-    ui->addLabel(myprintf("CitySector: x={0} y={1} w={2} h={3}"_s, { formatInt(sector->bounds.x), formatInt(sector->bounds.y), formatInt(sector->bounds.w), formatInt(sector->bounds.h) }));
+    ui->addLabel(myprintf("CitySector: x={0} y={1} w={2} h={3}"_s, { formatInt(sector->bounds.x), formatInt(sector->bounds.y), formatInt(sector->bounds.width()), formatInt(sector->bounds.height()) }));
 
     // Terrain
     TerrainDef* terrain = getTerrainAt(city, tilePos.x, tilePos.y);
@@ -421,7 +409,7 @@ void updateAndRenderGameUI(GameState* gameState)
         Rect2I dateRect { right - clockWidth, uiPadding, clockWidth, dateStringSize.y };
         drawSingleRect(uiBuffer, dateRect, renderer.shaderIds.untextured, Colour::from_rgb_255(0, 0, 0, 128));
         Rect2I dateProgressRect = dateRect;
-        dateProgressRect.w = round_s32(dateProgressRect.w * clock->timeWithinDay);
+        dateProgressRect.set_width(round_s32(dateProgressRect.width() * clock->timeWithinDay));
         drawSingleRect(uiBuffer, dateProgressRect, renderer.shaderIds.untextured, Colour::from_rgb_255(64, 255, 64, 128));
 
         UI::putLabel(dateString, dateRect, labelStyle);
@@ -433,19 +421,19 @@ void updateAndRenderGameUI(GameState* gameState)
             clock->speed = GameClockSpeed::Fast;
             clock->isPaused = false;
         }
-        speedButtonRect.x -= speedButtonRect.w + uiPadding;
+        speedButtonRect.x -= speedButtonRect.width() + uiPadding;
 
         if (UI::putTextButton(">>"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->speed == GameClockSpeed::Medium))) {
             clock->speed = GameClockSpeed::Medium;
             clock->isPaused = false;
         }
-        speedButtonRect.x -= speedButtonRect.w + uiPadding;
+        speedButtonRect.x -= speedButtonRect.width() + uiPadding;
 
         if (UI::putTextButton(">"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->speed == GameClockSpeed::Slow))) {
             clock->speed = GameClockSpeed::Slow;
             clock->isPaused = false;
         }
-        speedButtonRect.x -= speedButtonRect.w + uiPadding;
+        speedButtonRect.x -= speedButtonRect.width() + uiPadding;
 
         if (UI::putTextButton("||"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->isPaused))) {
             clock->isPaused = !clock->isPaused;
@@ -473,7 +461,7 @@ void updateAndRenderGameUI(GameState* gameState)
                 WindowFlags::Unique | WindowFlags::Modal | WindowFlags::AutomaticHeight | WindowFlags::Pause,
                 pauseMenuWindowProc);
         }
-        buttonRect.x += buttonRect.w + uiPadding;
+        buttonRect.x += buttonRect.width() + uiPadding;
 
         // The "ZONE" menu
         String zoneButtonText = getText("button_zone"_s);
@@ -484,9 +472,9 @@ void updateAndRenderGameUI(GameState* gameState)
 
         if (UI::isMenuVisible(to_underlying(GameMenuID::Zone))) {
             s32 popupMenuWidth = 150;
-            s32 popupMenuMaxHeight = UI::windowSize.y - (buttonRect.y + buttonRect.h);
+            s32 popupMenuMaxHeight = UI::windowSize.y - (buttonRect.y + buttonRect.height());
 
-            UI::Panel menu = UI::Panel({ buttonRect.x - popupMenuPanelStyle->padding.left, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight }, popupMenuPanelStyle);
+            UI::Panel menu = UI::Panel({ buttonRect.x - popupMenuPanelStyle->padding.left, buttonRect.y + buttonRect.height(), popupMenuWidth, popupMenuMaxHeight }, popupMenuPanelStyle);
             for (auto zone_type : enum_values<ZoneType>()) {
                 if (menu.addTextButton(getText(ZONE_DEFS[zone_type].textAssetName),
                         buttonIsActive((gameState->actionMode == ActionMode::Zone) && gameState->selectedZoneID == zone_type))) {
@@ -499,7 +487,7 @@ void updateAndRenderGameUI(GameState* gameState)
             menu.end(true);
         }
 
-        buttonRect.x += buttonRect.w + uiPadding;
+        buttonRect.x += buttonRect.width() + uiPadding;
 
         // The "BUILD" menu
         String buildButtonText = getText("button_build"_s);
@@ -512,9 +500,9 @@ void updateAndRenderGameUI(GameState* gameState)
             ChunkedArray<BuildingDef*>* constructibleBuildings = getConstructibleBuildings();
 
             s32 popupMenuWidth = 150;
-            s32 popupMenuMaxHeight = UI::windowSize.y - (buttonRect.y + buttonRect.h);
+            s32 popupMenuMaxHeight = UI::windowSize.y - (buttonRect.y + buttonRect.height());
 
-            UI::Panel menu = UI::Panel({ buttonRect.x - popupMenuPanelStyle->padding.left, buttonRect.y + buttonRect.h, popupMenuWidth, popupMenuMaxHeight }, popupMenuPanelStyle);
+            UI::Panel menu = UI::Panel({ buttonRect.x - popupMenuPanelStyle->padding.left, buttonRect.y + buttonRect.height(), popupMenuWidth, popupMenuMaxHeight }, popupMenuPanelStyle);
 
             for (auto it = constructibleBuildings->iterate();
                 it.hasNext();
@@ -532,7 +520,7 @@ void updateAndRenderGameUI(GameState* gameState)
 
             menu.end(true);
         }
-        buttonRect.x += buttonRect.w + uiPadding;
+        buttonRect.x += buttonRect.width() + uiPadding;
 
         // The Terrain button
         String terrainButtonText = getText("button_terrain"_s);
@@ -545,7 +533,7 @@ void updateAndRenderGameUI(GameState* gameState)
                 showTerrainWindow();
             }
         }
-        buttonRect.x += buttonRect.w + uiPadding;
+        buttonRect.x += buttonRect.width() + uiPadding;
 
         // Demolish button
         String demolishButtonText = getText("button_demolish"_s);
@@ -555,7 +543,7 @@ void updateAndRenderGameUI(GameState* gameState)
             gameState->actionMode = ActionMode::Demolish;
             renderer.set_cursor("demolish"_s);
         }
-        buttonRect.x += buttonRect.w + uiPadding;
+        buttonRect.x += buttonRect.width() + uiPadding;
     }
 
     drawDataViewUI(gameState);
@@ -656,7 +644,7 @@ AppStatus updateAndRenderGame(GameState* gameState, float deltaTime)
     Camera& world_camera = renderer.world_camera();
     Camera& ui_camera = renderer.ui_camera();
     if (gameState->status == GameStatus::Playing) {
-        inputMoveCamera(&world_camera, ui_camera.size(), ui_camera.mouse_position(), gameState->city.bounds.w, gameState->city.bounds.h);
+        inputMoveCamera(&world_camera, ui_camera.size(), ui_camera.mouse_position(), gameState->city.bounds.width(), gameState->city.bounds.height());
     }
 
     V2I mouseTilePos = v2i(world_camera.mouse_position());
@@ -720,11 +708,11 @@ AppStatus updateAndRenderGame(GameState* gameState, float deltaTime)
 
                     if (canAfford(city, buildCost)) {
                         Sprite* sprite = getSprite(buildingDef->spriteName, 0);
-                        s32 maxGhosts = (dragResult.dragRect.w / buildingDef->width) * (dragResult.dragRect.h / buildingDef->height);
+                        s32 maxGhosts = (dragResult.dragRect.width() / buildingDef->width) * (dragResult.dragRect.height() / buildingDef->height);
                         // TODO: If maxGhosts is 1, just draw 1!
                         DrawRectsGroup* rectsGroup = beginRectsGroupTextured(&renderer.world_overlay_buffer(), sprite->texture, renderer.shaderIds.pixelArt, maxGhosts);
-                        for (s32 y = 0; y + buildingDef->height <= dragResult.dragRect.h; y += buildingDef->height) {
-                            for (s32 x = 0; x + buildingDef->width <= dragResult.dragRect.w; x += buildingDef->width) {
+                        for (s32 y = 0; y + buildingDef->height <= dragResult.dragRect.height(); y += buildingDef->height) {
+                            for (s32 x = 0; x + buildingDef->width <= dragResult.dragRect.width(); x += buildingDef->width) {
                                 bool canPlace = canPlaceBuilding(city, buildingDef, dragResult.dragRect.x + x, dragResult.dragRect.y + y);
 
                                 Rect2 rect { dragResult.dragRect.x + x, dragResult.dragRect.y + y, buildingDef->width, buildingDef->height };
@@ -772,7 +760,7 @@ AppStatus updateAndRenderGame(GameState* gameState, float deltaTime)
                         Colour::from_rgb_255(255, 0, 0, 16),
                         ZONE_DEFS[gameState->selectedZoneID].color
                     };
-                    drawGrid(&renderer.world_overlay_buffer(), canZoneQuery->bounds, canZoneQuery->bounds.w, canZoneQuery->bounds.h, canZoneQuery->tileCanBeZoned, 2, palette);
+                    drawGrid(&renderer.world_overlay_buffer(), canZoneQuery->bounds, canZoneQuery->bounds.width(), canZoneQuery->bounds.height(), canZoneQuery->tileCanBeZoned, 2, palette);
                 } else {
                     drawSingleRect(&renderer.world_overlay_buffer(), dragResult.dragRect, renderer.shaderIds.untextured, Colour::from_rgb_255(255, 64, 64, 128));
                 }
@@ -1080,13 +1068,13 @@ void drawDataViewOverlay(GameState* gameState, Rect2I visibleTileBounds)
         Rect2I bounds = city->bounds;
 
         auto* overlayPalette = getPalette(dataView->overlayPaletteName);
-        drawGrid(&renderer.world_overlay_buffer(), bounds, bounds.w, bounds.h, *dataView->overlayTileData, (u16)overlayPalette->count, overlayPalette->items);
+        drawGrid(&renderer.world_overlay_buffer(), bounds, bounds.width(), bounds.height(), *dataView->overlayTileData, (u16)overlayPalette->count, overlayPalette->items);
     } else if (dataView->calculateTileValue) {
         // The per-tile overlay data is generated
         Array2<u8> overlayTileData = temp_arena().allocate_array_2d<u8>(visibleTileBounds.size());
 
-        for (s32 gridY = 0; gridY < visibleTileBounds.h; gridY++) {
-            for (s32 gridX = 0; gridX < visibleTileBounds.w; gridX++) {
+        for (s32 gridY = 0; gridY < visibleTileBounds.height(); gridY++) {
+            for (s32 gridX = 0; gridX < visibleTileBounds.width(); gridX++) {
                 u8 tileValue = dataView->calculateTileValue(city, visibleTileBounds.x + gridX, visibleTileBounds.y + gridY);
                 overlayTileData.set(gridX, gridY, tileValue);
             }

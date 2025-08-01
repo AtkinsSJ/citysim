@@ -260,12 +260,12 @@ Rect2I calculateButtonContentBounds(Rect2I bounds, ButtonStyle* style)
     V2I startIconSize = style->startIcon.getSize();
     if (startIconSize.x > 0) {
         contentBounds.x += startIconSize.x + style->contentPadding;
-        contentBounds.w -= startIconSize.x + style->contentPadding;
+        contentBounds.set_width(contentBounds.width() - (startIconSize.x + style->contentPadding));
     }
 
     V2I endIconSize = style->endIcon.getSize();
     if (endIconSize.x > 0) {
-        contentBounds.w -= endIconSize.x + style->contentPadding;
+        contentBounds.set_width(contentBounds.width() - (endIconSize.x + style->contentPadding));
     }
 
     return contentBounds;
@@ -573,14 +573,14 @@ Maybe<Rect2I> getScrollbarThumbBounds(ScrollbarState* state, Rect2I scrollbarBou
     // - Sam, 01/04/2021
     if (state->orientation == Orientation::Horizontal) {
         s32 thumbHeight = style->width;
-        s32 viewportSize = scrollbarBounds.w;
+        s32 viewportSize = scrollbarBounds.width();
 
         if (viewportSize < state->contentSize) {
-            s32 trackSize = scrollbarBounds.w;
+            s32 trackSize = scrollbarBounds.width();
             s32 desiredThumbSize = trackSize * viewportSize / (state->contentSize + viewportSize);
-            s32 thumbWidth = clamp(desiredThumbSize, style->width, scrollbarBounds.w);
+            s32 thumbWidth = clamp(desiredThumbSize, style->width, scrollbarBounds.width());
 
-            s32 thumbPos = round_s32(state->scrollPercent * (scrollbarBounds.w - thumbWidth));
+            s32 thumbPos = round_s32(state->scrollPercent * (scrollbarBounds.width() - thumbWidth));
 
             result = makeSuccess(Rect2I { scrollbarBounds.x + thumbPos, scrollbarBounds.y, thumbWidth, thumbHeight });
         }
@@ -588,14 +588,14 @@ Maybe<Rect2I> getScrollbarThumbBounds(ScrollbarState* state, Rect2I scrollbarBou
         ASSERT(state->orientation == Orientation::Vertical);
 
         s32 thumbWidth = style->width;
-        s32 viewportSize = scrollbarBounds.h;
+        s32 viewportSize = scrollbarBounds.height();
 
         if (viewportSize < state->contentSize) {
-            s32 trackSize = scrollbarBounds.h;
+            s32 trackSize = scrollbarBounds.height();
             s32 desiredThumbSize = trackSize * viewportSize / (state->contentSize + viewportSize);
-            s32 thumbHeight = clamp(desiredThumbSize, style->width, scrollbarBounds.h);
+            s32 thumbHeight = clamp(desiredThumbSize, style->width, scrollbarBounds.height());
 
-            s32 thumbPos = round_s32(state->scrollPercent * (scrollbarBounds.h - thumbHeight));
+            s32 thumbPos = round_s32(state->scrollPercent * (scrollbarBounds.height() - thumbHeight));
 
             result = makeSuccess(Rect2I { scrollbarBounds.x, scrollbarBounds.y + thumbPos, thumbWidth, thumbHeight });
         }
@@ -621,7 +621,7 @@ void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, Scrollb
     state->contentSize = contentSize;
 
     // If the content is smaller than the scrollbar, then snap it to position 0 and don't allow interaction.
-    if (bounds.h > state->contentSize) {
+    if (bounds.height() > state->contentSize) {
         state->scrollPercent = 0.0f;
     } else {
         if (!isMouseInputHandled()) {
@@ -630,10 +630,10 @@ void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, Scrollb
 
             Maybe<Rect2I> thumb = getScrollbarThumbBounds(state, bounds, style);
             if (thumb.isValid) {
-                s32 overflowSize = state->contentSize - (isHorizontal ? bounds.w : bounds.h);
+                s32 overflowSize = state->contentSize - (isHorizontal ? bounds.width() : bounds.height());
                 Rect2I thumbBounds = thumb.value;
-                s32 thumbSize = isHorizontal ? thumbBounds.w : thumbBounds.h;
-                s32 gutterSize = isHorizontal ? bounds.w : bounds.h;
+                s32 thumbSize = isHorizontal ? thumbBounds.width() : thumbBounds.height();
+                s32 gutterSize = isHorizontal ? bounds.width() : bounds.height();
                 s32 thumbRange = gutterSize - thumbSize;
 
                 // Scrollwheel stuff
@@ -672,10 +672,10 @@ void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, Scrollb
                         // If we're not on the thumb, jump the thumb to where we are!
                         if (!inThumbBounds) {
                             if (isHorizontal) {
-                                thumbBounds.x = clamp(mousePos.x - (thumbBounds.w / 2), bounds.x, bounds.x + thumbRange);
+                                thumbBounds.x = clamp(mousePos.x - (thumbBounds.width() / 2), bounds.x, bounds.x + thumbRange);
                                 state->scrollPercent = clamp01((float)(thumbBounds.x - bounds.x) / (float)thumbRange);
                             } else {
-                                thumbBounds.y = clamp(mousePos.y - (thumbBounds.h / 2), bounds.y, bounds.y + thumbRange);
+                                thumbBounds.y = clamp(mousePos.y - (thumbBounds.height() / 2), bounds.y, bounds.y + thumbRange);
                                 state->scrollPercent = clamp01((float)(thumbBounds.y - bounds.y) / (float)thumbRange);
                             }
                         }
@@ -746,15 +746,15 @@ void putSlider(float* currentValue, float minValue, float maxValue, Orientation 
     s32 travel; // Space available for the thumb to move in
     V2I thumbPos;
     if (orientation == Orientation::Horizontal) {
-        travel = (bounds.w - style->thumbSize.x);
+        travel = (bounds.width() - style->thumbSize.x);
         thumbPos.x = bounds.x + round_s32((float)travel * currentPercent);
-        thumbPos.y = bounds.y + ((bounds.h - style->thumbSize.y) / 2);
+        thumbPos.y = bounds.y + ((bounds.height() - style->thumbSize.y) / 2);
     } else {
         ASSERT(orientation == Orientation::Vertical);
 
-        travel = (bounds.h - style->thumbSize.y);
-        thumbPos.x = bounds.x + ((bounds.w - style->thumbSize.x) / 2);
-        thumbPos.y = bounds.y + bounds.h - style->thumbSize.y - round_s32((float)travel * currentPercent);
+        travel = (bounds.height() - style->thumbSize.y);
+        thumbPos.x = bounds.x + ((bounds.width() - style->thumbSize.x) / 2);
+        thumbPos.y = bounds.y + bounds.height() - style->thumbSize.y - round_s32((float)travel * currentPercent);
     }
     Rect2I thumbBounds { thumbPos, style->thumbSize };
 
@@ -789,12 +789,12 @@ void putSlider(float* currentValue, float minValue, float maxValue, Orientation 
 
                 float positionPercent;
                 if (orientation == Orientation::Horizontal) {
-                    thumbBounds.x = clamp(mousePos.x - (thumbBounds.w / 2), bounds.x, bounds.x + travel);
+                    thumbBounds.x = clamp(mousePos.x - (thumbBounds.width() / 2), bounds.x, bounds.x + travel);
                     positionPercent = (float)(thumbBounds.x - bounds.x) / (float)travel;
                 } else {
                     ASSERT(orientation == Orientation::Vertical);
 
-                    thumbBounds.y = clamp(mousePos.y - (thumbBounds.h / 2), bounds.y, bounds.y + travel);
+                    thumbBounds.y = clamp(mousePos.y - (thumbBounds.height() / 2), bounds.y, bounds.y + travel);
                     positionPercent = 1.0f - (float)(thumbBounds.y - bounds.y) / (float)travel;
                 }
 
@@ -825,20 +825,20 @@ void putSlider(float* currentValue, float minValue, float maxValue, Orientation 
         } else {
             ASSERT(orientation == Orientation::Vertical);
 
-            thumbBounds.y = bounds.y + bounds.h - thumbBounds.h - round_s32((float)travel * currentPercent);
+            thumbBounds.y = bounds.y + bounds.height() - thumbBounds.height() - round_s32((float)travel * currentPercent);
         }
     }
 
     // Draw things
     Rect2I trackBounds;
     if (orientation == Orientation::Horizontal) {
-        s32 trackThickness = (style->trackThickness != 0) ? style->trackThickness : bounds.h;
-        trackBounds = Rect2I::create_aligned(bounds.x, bounds.y + bounds.h / 2, bounds.w, trackThickness, { HAlign::Left, VAlign::Centre });
+        s32 trackThickness = (style->trackThickness != 0) ? style->trackThickness : bounds.height();
+        trackBounds = Rect2I::create_aligned(bounds.x, bounds.y + bounds.height() / 2, bounds.width(), trackThickness, { HAlign::Left, VAlign::Centre });
     } else {
         ASSERT(orientation == Orientation::Vertical);
 
-        s32 trackThickness = (style->trackThickness != 0) ? style->trackThickness : bounds.w;
-        trackBounds = Rect2I::create_aligned(bounds.x + bounds.w / 2, bounds.y, trackThickness, bounds.h, { HAlign::Centre, VAlign::Top });
+        s32 trackThickness = (style->trackThickness != 0) ? style->trackThickness : bounds.width();
+        trackBounds = Rect2I::create_aligned(bounds.x + bounds.width() / 2, bounds.y, trackThickness, bounds.height(), { HAlign::Centre, VAlign::Top });
     }
 
     Drawable(&style->track).draw(renderBuffer, trackBounds);

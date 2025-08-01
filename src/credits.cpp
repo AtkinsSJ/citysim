@@ -26,7 +26,7 @@ AppStatus updateAndRenderCredits(float /*deltaTime*/)
         V2I labelSize = UI::calculateLabelSize(line, labelStyle, maxLabelWidth);
         Rect2I labelBounds = Rect2I::create_aligned(position, labelSize, labelStyle->textAlignment);
         UI::putLabel(line, labelBounds, labelStyle);
-        position.y += labelBounds.h;
+        position.y += labelBounds.height();
     }
 
     UI::ButtonStyle* style = getStyle<UI::ButtonStyle>("default"_s);

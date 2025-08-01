@@ -45,8 +45,8 @@ void updateTransportLayer(City* city, TransportLayer* layer)
             Rect2I dirtyRect = it.getValue();
 
             // Transport types on tile, based on what buildings are present
-            for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.h; y++) {
-                for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.w; x++) {
+            for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.height(); y++) {
+                for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.width(); x++) {
                     Building* building = getBuildingAt(city, x, y);
                     if (building != nullptr) {
                         BuildingDef* def = getBuildingDef(building->typeID);
@@ -58,8 +58,8 @@ void updateTransportLayer(City* city, TransportLayer* layer)
             }
 
             // Clear the surrounding "distance to road" stuff from the rectangle
-            for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.h; y++) {
-                for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.w; x++) {
+            for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.height(); y++) {
+                for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.width(); x++) {
                     for (auto type : enum_values<TransportType>()) {
                         u8 distance = doesTileHaveTransport(city, x, y, type) ? 0 : 255;
                         layer->tileTransportDistance[type].set(x, y, distance);

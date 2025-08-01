@@ -74,7 +74,7 @@ struct Panel {
         DropDownListStyle* widgetStyle = getStyle<DropDownListStyle>(styleName, &style->dropDownListStyle);
 
         Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
-            return calculateDropDownListSize(listOptions, getDisplayName, widgetStyle, space.w, fillWidth);
+            return calculateDropDownListSize(listOptions, getDisplayName, widgetStyle, space.width(), fillWidth);
         });
 
         if (!hideWidgets) {
@@ -101,7 +101,7 @@ struct Panel {
         V2I radioButtonSize = calculateRadioButtonSize(radioButtonStyle);
 
         Rect2I buttonGroupBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
-            s32 textWidth = space.w - (radioButtonSize.x + style->contentPadding);
+            s32 textWidth = space.width() - (radioButtonSize.x + style->contentPadding);
 
             // Calculate the overall size
             // This means addRadioButtonGroup() has to loop through everything twice, but what can you do
@@ -117,12 +117,12 @@ struct Panel {
                 widgetSize.y += max(labelSize.y, radioButtonSize.y);
             }
 
-            ASSERT(widgetSize.x <= space.w);
+            ASSERT(widgetSize.x <= space.width());
             return widgetSize;
         });
 
         Rect2I radioButtonBounds = buttonGroupBounds.create_aligned_within(radioButtonSize, { HAlign::Left, VAlign::Top });
-        s32 textWidth = buttonGroupBounds.w - (radioButtonSize.x + style->contentPadding);
+        s32 textWidth = buttonGroupBounds.width() - (radioButtonSize.x + style->contentPadding);
         bool fillWidth = widgetAlignment.horizontal == HAlign::Fill;
 
         for (s32 optionIndex = 0; optionIndex < listOptions->count; optionIndex++) {
@@ -133,7 +133,7 @@ struct Panel {
             String optionText = getDisplayName(&listOptions->get(optionIndex));
             V2I labelSize = calculateLabelSize(optionText, labelStyle, textWidth, fillWidth);
             Rect2I labelBounds {
-                radioButtonBounds.x + radioButtonBounds.w + style->contentPadding,
+                radioButtonBounds.x + radioButtonBounds.width() + style->contentPadding,
                 radioButtonBounds.y,
                 labelSize.x,
                 labelSize.y
@@ -143,7 +143,7 @@ struct Panel {
                 putLabel(optionText, labelBounds, labelStyle, renderBuffer);
             }
 
-            radioButtonBounds.y = labelBounds.y + labelBounds.h + style->contentPadding;
+            radioButtonBounds.y = labelBounds.y + labelBounds.height() + style->contentPadding;
         }
 
         completeWidget(buttonGroupBounds.size());
@@ -199,28 +199,28 @@ struct Panel {
         Rect2I space = {};
 
         space.x = contentArea.x + currentLeft;
-        space.w = currentRight - currentLeft;
+        space.set_width(currentRight - currentLeft);
 
         if (layoutBottomToTop) {
             space.y = contentArea.y + currentBottom;
 
             if (vScrollbar != nullptr) {
-                space.y += (vScrollbar->contentSize - getScrollbarContentOffset(vScrollbar, bounds.h) - bounds.h);
+                space.y += (vScrollbar->contentSize - getScrollbarContentOffset(vScrollbar, bounds.height()) - bounds.height());
             }
         } else {
             space.y = contentArea.y + currentTop;
 
             if (vScrollbar != nullptr) {
-                space.y -= getScrollbarContentOffset(vScrollbar, bounds.h);
+                space.y -= getScrollbarContentOffset(vScrollbar, bounds.height());
             }
         }
 
         // Adjust if we're in a scrolling area
         if (hScrollbar != nullptr) {
-            space.w = s16Max; // Not s32 because then we'd have overflow issues. s16 should be plenty large enough.
-            space.x = space.x - getScrollbarContentOffset(hScrollbar, bounds.w);
+            space.set_width(s16Max); // Not s32 because then we'd have overflow issues. s16 should be plenty large enough.
+            space.x = space.x - getScrollbarContentOffset(hScrollbar, bounds.width());
         }
-        ASSERT(space.w > 0);
+        ASSERT(space.width() > 0);
 
         bool fillWidth = ((widgetAlignment.horizontal) == HAlign::Fill);
 

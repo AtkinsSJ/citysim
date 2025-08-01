@@ -294,7 +294,7 @@ void Renderer::render_internal()
 
                 push(&m_scissor_stack, header->bounds);
 
-                glScissor(header->bounds.x, header->bounds.y, header->bounds.w, header->bounds.h);
+                glScissor(header->bounds.x, header->bounds.y, header->bounds.width(), header->bounds.height());
             } break;
 
             case RenderItemType::EndScissor: {
@@ -312,7 +312,7 @@ void Renderer::render_internal()
                 // Restore previous scissor
                 if (!isEmpty(&m_scissor_stack)) {
                     Rect2I* previousScissor = peek(&m_scissor_stack);
-                    glScissor(previousScissor->x, previousScissor->y, previousScissor->w, previousScissor->h);
+                    glScissor(previousScissor->x, previousScissor->y, previousScissor->width(), previousScissor->height());
                 } else {
                     glDisable(GL_SCISSOR_TEST);
                 }

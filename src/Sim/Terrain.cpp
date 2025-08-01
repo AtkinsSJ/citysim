@@ -53,11 +53,11 @@ void setTerrainAt(City* city, s32 x, s32 y, u8 terrainType)
     city->terrainLayer.tileTerrainType.set(x, y, terrainType);
 
     // Update sprites on this and neighbouring tiles
-    Rect2I spriteUpdateBounds = city->bounds.intersected({x - 1, y - 1, 3, 3});
+    Rect2I spriteUpdateBounds = city->bounds.intersected({ x - 1, y - 1, 3, 3 });
     assignTerrainSprites(city, spriteUpdateBounds);
 
     // Update distance to water
-    updateDistanceToWater(city, {x, y, 1, 1});
+    updateDistanceToWater(city, { x, y, 1, 1 });
 }
 
 u8 getDistanceToWaterAt(City* city, s32 x, s32 y)
@@ -72,10 +72,10 @@ void updateDistanceToWater(City* city, Rect2I dirtyBounds)
     u8 tWater = truncate<u8>(findTerrainTypeByName("water"_s));
 
     for (s32 y = bounds.y;
-        y < bounds.y + bounds.h;
+        y < bounds.y + bounds.height();
         y++) {
         for (s32 x = bounds.x;
-            x < bounds.x + bounds.w;
+            x < bounds.x + bounds.width();
             x++) {
             u8 tileType = layer->tileTerrainType.getIfExists(x, y, 0);
             if (tileType == tWater) {
@@ -242,12 +242,12 @@ void drawTerrain(City* city, Rect2I visibleArea, s8 shaderID)
     // DrawRectsGroup *group = beginRectsGroupTextured(&renderer.world_buffer(), terrainTexture, shaderID, tilesToDraw);
 
     for (s32 y = visibleArea.y;
-        y < visibleArea.y + visibleArea.h;
+        y < visibleArea.y + visibleArea.height();
         y++) {
         spriteBounds.set_y(y);
 
         for (s32 x = visibleArea.x;
-            x < visibleArea.x + visibleArea.w;
+            x < visibleArea.x + visibleArea.width();
             x++) {
             Sprite* sprite = getSprite(&layer->tileSprite.get(x, y));
             spriteBounds.set_x(x);
@@ -281,21 +281,21 @@ void generateTerrain(City* city, Random* gameRandom)
     layer->terrainGenerationSeed = seed;
     fill<u8>(&layer->tileTerrainType, tGround);
 
-    for (s32 y = 0; y < city->bounds.h; y++) {
-        for (s32 x = 0; x < city->bounds.w; x++) {
+    for (s32 y = 0; y < city->bounds.height(); y++) {
+        for (s32 x = 0; x < city->bounds.width(); x++) {
             layer->tileSpriteOffset.set(x, y, app_state.cosmeticRandom->random_integer<u8>());
         }
     }
 
     // Generate a river
-    Array<float> riverOffset = temp_arena().allocate_array<float>(city->bounds.h, true);
+    Array<float> riverOffset = temp_arena().allocate_array<float>(city->bounds.height(), true);
     terrainRandom->fill_with_noise(riverOffset, 10);
     float riverMaxWidth = terrainRandom->random_float_between(12, 16);
     float riverMinWidth = terrainRandom->random_float_between(6, riverMaxWidth);
     float riverWaviness = 16.0f;
-    s32 riverCentreBase = terrainRandom->random_between(ceil_s32(city->bounds.w * 0.4f), floor_s32(city->bounds.w * 0.6f));
-    for (s32 y = 0; y < city->bounds.h; y++) {
-        s32 riverWidth = ceil_s32(lerp(riverMinWidth, riverMaxWidth, ((float)y / (float)city->bounds.h)));
+    s32 riverCentreBase = terrainRandom->random_between(ceil_s32(city->bounds.width() * 0.4f), floor_s32(city->bounds.width() * 0.6f));
+    for (s32 y = 0; y < city->bounds.height(); y++) {
+        s32 riverWidth = ceil_s32(lerp(riverMinWidth, riverMaxWidth, ((float)y / (float)city->bounds.height())));
         s32 riverCentre = riverCentreBase - round_s32((riverWaviness * 0.5f) + (riverWaviness * riverOffset[y]));
         s32 riverLeft = riverCentre - (riverWidth / 2);
 
@@ -305,13 +305,13 @@ void generateTerrain(City* city, Random* gameRandom)
     }
 
     // Coastline
-    Array<float> coastlineOffset = temp_arena().allocate_array<float>(city->bounds.w, true);
+    Array<float> coastlineOffset = temp_arena().allocate_array<float>(city->bounds.width(), true);
     terrainRandom->fill_with_noise(coastlineOffset, 10);
-    for (s32 x = 0; x < city->bounds.w; x++) {
+    for (s32 x = 0; x < city->bounds.width(); x++) {
         s32 coastDepth = 8 + round_s32(coastlineOffset[x] * 16.0f);
 
         for (s32 i = 0; i < coastDepth; i++) {
-            s32 y = city->bounds.h - 1 - i;
+            s32 y = city->bounds.height() - 1 - i;
 
             layer->tileTerrainType.set(x, y, tWater);
         }
@@ -320,8 +320,8 @@ void generateTerrain(City* city, Random* gameRandom)
     // Lakes/ponds
     s32 pondCount = terrainRandom->random_between(1, 4);
     for (s32 pondIndex = 0; pondIndex < pondCount; pondIndex++) {
-        s32 pondCentreX = terrainRandom->random_between(0, city->bounds.w);
-        s32 pondCentreY = terrainRandom->random_between(0, city->bounds.h);
+        s32 pondCentreX = terrainRandom->random_between(0, city->bounds.width());
+        s32 pondCentreY = terrainRandom->random_between(0, city->bounds.height());
 
         float pondMinRadius = terrainRandom->random_float_between(3.0f, 5.0f);
         float pondMaxRadius = terrainRandom->random_float_between(pondMinRadius + 3.0f, 20.0f);
@@ -329,8 +329,8 @@ void generateTerrain(City* city, Random* gameRandom)
         Splat pondSplat = Splat::create_random(pondCentreX, pondCentreY, pondMinRadius, pondMaxRadius, 36, terrainRandom);
 
         Rect2I boundingBox = pondSplat.bounding_box().intersected(city->bounds);
-        for (s32 y = boundingBox.y; y < boundingBox.y + boundingBox.h; y++) {
-            for (s32 x = boundingBox.x; x < boundingBox.x + boundingBox.w; x++) {
+        for (s32 y = boundingBox.y; y < boundingBox.y + boundingBox.height(); y++) {
+            for (s32 x = boundingBox.x; x < boundingBox.x + boundingBox.width(); x++) {
                 if (pondSplat.contains(x, y)) {
                     layer->tileTerrainType.set(x, y, tWater);
                 }
@@ -344,8 +344,8 @@ void generateTerrain(City* city, Random* gameRandom)
     } else {
         s32 forestCount = terrainRandom->random_between(10, 20);
         for (s32 forestIndex = 0; forestIndex < forestCount; forestIndex++) {
-            s32 centreX = terrainRandom->random_between(0, city->bounds.w);
-            s32 centreY = terrainRandom->random_between(0, city->bounds.h);
+            s32 centreX = terrainRandom->random_between(0, city->bounds.width());
+            s32 centreY = terrainRandom->random_between(0, city->bounds.height());
 
             float minRadius = terrainRandom->random_float_between(2.0f, 8.0f);
             float maxRadius = terrainRandom->random_float_between(minRadius + 1.0f, 30.0f);
@@ -353,12 +353,12 @@ void generateTerrain(City* city, Random* gameRandom)
             Splat forestSplat = Splat::create_random(centreX, centreY, minRadius, maxRadius, 36, terrainRandom);
 
             Rect2I boundingBox = forestSplat.bounding_box().intersected(city->bounds);
-            for (s32 y = boundingBox.y; y < boundingBox.y + boundingBox.h; y++) {
-                for (s32 x = boundingBox.x; x < boundingBox.x + boundingBox.w; x++) {
+            for (s32 y = boundingBox.y; y < boundingBox.y + boundingBox.height(); y++) {
+                for (s32 x = boundingBox.x; x < boundingBox.x + boundingBox.width(); x++) {
                     if (getTerrainAt(city, x, y)->canBuildOn
                         && (getBuildingAt(city, x, y) == nullptr)
                         && forestSplat.contains(x, y)) {
-                        addBuilding(city, treeDef, {x, y, treeDef->size.x, treeDef->size.y});
+                        addBuilding(city, treeDef, { x, y, treeDef->size.x, treeDef->size.y });
                     }
                 }
             }
@@ -376,10 +376,10 @@ void assignTerrainSprites(City* city, Rect2I bounds)
 
     // Assign a terrain tile variant for each tile, depending on its neighbours
     for (s32 y = bounds.y;
-        y < bounds.y + bounds.h;
+        y < bounds.y + bounds.height();
         y++) {
         for (s32 x = bounds.x;
-            x < bounds.x + bounds.w;
+            x < bounds.x + bounds.width();
             x++) {
             TerrainDef* def = getTerrainAt(city, x, y);
 

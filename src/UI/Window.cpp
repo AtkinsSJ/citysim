@@ -20,8 +20,8 @@ WindowContext::WindowContext(Window* window, WindowStyle* windowStyle, bool hide
           Rect2I {
               window->area.x,
               window->area.y + ((window->flags & WindowFlags::Headless) ? 0 : windowStyle->titleBarHeight),
-              window->area.w,
-              (window->flags & WindowFlags::AutomaticHeight) ? 10000 : (window->area.h - ((window->flags & WindowFlags::Headless) ? 0 : windowStyle->titleBarHeight)),
+              window->area.width(),
+              (window->flags & WindowFlags::AutomaticHeight) ? 10000 : (window->area.height() - ((window->flags & WindowFlags::Headless) ? 0 : windowStyle->titleBarHeight)),
           },
           getStyle<PanelStyle>(&windowStyle->panelStyle),
           ((window->flags & WindowFlags::Tooltip) ? PanelFlags::AllowClickThrough : 0)
@@ -217,11 +217,11 @@ void updateAndRenderWindows()
             context.windowPanel.end(shrinkHeight, shrinkWidth);
 
             if (shrinkHeight) {
-                window->area.h = barHeight + context.windowPanel.bounds.h;
+                window->area.set_height(barHeight + context.windowPanel.bounds.height());
             }
 
             if (shrinkWidth) {
-                window->area.w = context.windowPanel.bounds.w;
+                window->area.set_width(context.windowPanel.bounds.width());
                 window->area.x = context.windowPanel.bounds.x;
             }
         }
@@ -239,23 +239,23 @@ void updateAndRenderWindows()
         // Keep window on screen
         {
             // X
-            if (window->area.w > validWindowArea.w) {
+            if (window->area.width() > validWindowArea.width()) {
                 // If it's too big, centre it.
-                window->area.x = validWindowArea.x - ((window->area.w - validWindowArea.w) / 2);
+                window->area.x = validWindowArea.x - ((window->area.width() - validWindowArea.width()) / 2);
             } else if (window->area.x < validWindowArea.x) {
                 window->area.x = validWindowArea.x;
-            } else if ((window->area.x + window->area.w) > (validWindowArea.x + validWindowArea.w)) {
-                window->area.x = validWindowArea.x + validWindowArea.w - window->area.w;
+            } else if ((window->area.x + window->area.width()) > (validWindowArea.x + validWindowArea.width())) {
+                window->area.x = validWindowArea.x + validWindowArea.width() - window->area.width();
             }
 
             // Y
-            if (window->area.h > validWindowArea.h) {
+            if (window->area.height() > validWindowArea.height()) {
                 // If it's too big, centre it.
-                window->area.y = validWindowArea.y - ((window->area.h - validWindowArea.h) / 2);
+                window->area.y = validWindowArea.y - ((window->area.height() - validWindowArea.height()) / 2);
             } else if (window->area.y < validWindowArea.y) {
                 window->area.y = validWindowArea.y;
-            } else if ((window->area.y + window->area.h) > (validWindowArea.y + validWindowArea.h)) {
-                window->area.y = validWindowArea.y + validWindowArea.h - window->area.h;
+            } else if ((window->area.y + window->area.height()) > (validWindowArea.y + validWindowArea.height())) {
+                window->area.y = validWindowArea.y + validWindowArea.height() - window->area.height();
             }
         }
 
@@ -265,11 +265,11 @@ void updateAndRenderWindows()
         context.windowPanel.end(shrinkHeight, shrinkWidth);
 
         if (shrinkHeight) {
-            window->area.h = barHeight + context.windowPanel.bounds.h;
+            window->area.set_height(barHeight + context.windowPanel.bounds.height());
         }
 
         if (shrinkWidth) {
-            window->area.w = context.windowPanel.bounds.w;
+            window->area.set_width(context.windowPanel.bounds.width());
             window->area.x = context.windowPanel.bounds.x;
         }
 
@@ -282,8 +282,8 @@ void updateAndRenderWindows()
         }
 
         Rect2I wholeWindowArea = window->area;
-        Rect2I barArea { wholeWindowArea.x, wholeWindowArea.y, wholeWindowArea.w, barHeight };
-        Rect2I closeButtonRect { wholeWindowArea.x + wholeWindowArea.w - barHeight, wholeWindowArea.y, barHeight, barHeight };
+        Rect2I barArea { wholeWindowArea.x, wholeWindowArea.y, wholeWindowArea.width(), barHeight };
+        Rect2I closeButtonRect { wholeWindowArea.x + wholeWindowArea.width() - barHeight, wholeWindowArea.y, barHeight, barHeight };
 
         if (hasTitleBar) {
             bool hoveringOverCloseButton = closeButtonRect.contains(mousePos);
@@ -298,7 +298,7 @@ void updateAndRenderWindows()
 
             LabelStyle* titleStyle = getStyle<LabelStyle>(&windowStyle->titleLabelStyle);
             // TODO: Take close-button size into account
-            V2I titleSize = calculateLabelSize(titleString, titleStyle, barArea.w, false);
+            V2I titleSize = calculateLabelSize(titleString, titleStyle, barArea.width(), false);
             putLabel(titleString, barArea.create_aligned_within(titleSize, titleStyle->textAlignment), titleStyle, window->renderBuffer);
 
             // TODO: Replace this with an actual Button?
@@ -431,8 +431,8 @@ Rect2I getWindowContentArea(Rect2I windowArea, s32 barHeight, s32 margin)
 {
     return { windowArea.x + margin,
         windowArea.y + barHeight + margin,
-        windowArea.w - (margin * 2),
-        windowArea.h - barHeight - (margin * 2) };
+        windowArea.width() - (margin * 2),
+        windowArea.height() - barHeight - (margin * 2) };
 }
 
 void closeWindow(s32 windowIndex)

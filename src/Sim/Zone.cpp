@@ -76,10 +76,10 @@ CanZoneQuery* queryCanZoneTiles(City* city, ZoneType zoneType, Rect2I bounds)
     // - Sam, 13/12/2018
 
     for (s32 y = bounds.y;
-        y < bounds.y + bounds.h;
+        y < bounds.y + bounds.height();
         y++) {
         for (s32 x = bounds.x;
-            x < bounds.x + bounds.w;
+            x < bounds.x + bounds.width();
             x++) {
             bool canZone = true;
 
@@ -100,7 +100,7 @@ CanZoneQuery* queryCanZoneTiles(City* city, ZoneType zoneType, Rect2I bounds)
             // Pos relative to our query
             s32 qX = x - bounds.x;
             s32 qY = y - bounds.y;
-            query->tileCanBeZoned[(qY * bounds.w) + qX] = canZone ? 1 : 0;
+            query->tileCanBeZoned[(qY * bounds.width()) + qX] = canZone ? 1 : 0;
             if (canZone)
                 query->zoneableTilesCount++;
         }
@@ -115,7 +115,7 @@ bool canZoneTile(CanZoneQuery* query, s32 x, s32 y)
     s32 qX = x - query->bounds.x;
     s32 qY = y - query->bounds.y;
 
-    return query->tileCanBeZoned[(qY * query->bounds.w) + qX] != 0;
+    return query->tileCanBeZoned[(qY * query->bounds.width()) + qX] != 0;
 }
 
 void drawZones(City* city, Rect2I visibleTileBounds, s8 shaderID)
@@ -134,11 +134,11 @@ void drawZones(City* city, Rect2I visibleTileBounds, s8 shaderID)
     DrawRectsGroup* group = beginRectsGroupUntextured(&renderer.world_buffer(), shaderID, visibleTileBounds.area());
 
     for (s32 y = visibleTileBounds.y;
-        y < visibleTileBounds.y + visibleTileBounds.h;
+        y < visibleTileBounds.y + visibleTileBounds.height();
         y++) {
         spriteBounds.set_y(y);
         for (s32 x = visibleTileBounds.x;
-            x < visibleTileBounds.x + visibleTileBounds.w;
+            x < visibleTileBounds.x + visibleTileBounds.width();
             x++) {
             ZoneType tile_zone = getZoneAt(city, x, y);
             if (tile_zone != ZoneType::None) {
@@ -164,10 +164,10 @@ void placeZone(City* city, ZoneType zoneType, Rect2I area)
     ZoneLayer* zoneLayer = &city->zoneLayer;
 
     for (s32 y = area.y;
-        y < area.y + area.h;
+        y < area.y + area.height();
         y++) {
         for (s32 x = area.x;
-            x < area.x + area.w;
+            x < area.x + area.width();
             x++) {
             // Ignore tiles that are already this zone!
             if ((zoneLayer->tileZone.get(x, y) != zoneType)
@@ -213,8 +213,8 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
 
             sector->zoneSectorFlags = {};
 
-            for (s32 y = sector->bounds.y; y < sector->bounds.y + sector->bounds.h; y++) {
-                for (s32 x = sector->bounds.x; x < sector->bounds.x + sector->bounds.w; x++) {
+            for (s32 y = sector->bounds.y; y < sector->bounds.y + sector->bounds.height(); y++) {
+                for (s32 x = sector->bounds.x; x < sector->bounds.x + sector->bounds.width(); x++) {
                     ZoneType zone = getZoneAt(city, x, y);
                     if (zone == ZoneType::None)
                         continue;
@@ -272,8 +272,8 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
             float totalComDesirability = 0.0f;
             float totalIndDesirability = 0.0f;
 
-            for (s32 y = sector->bounds.y; y < sector->bounds.y + sector->bounds.h; y++) {
-                for (s32 x = sector->bounds.x; x < sector->bounds.x + sector->bounds.w; x++) {
+            for (s32 y = sector->bounds.y; y < sector->bounds.y + sector->bounds.height(); y++) {
+                for (s32 x = sector->bounds.x; x < sector->bounds.x + sector->bounds.width(); x++) {
                     // Residential
                     {
                         // Land value = good
@@ -490,13 +490,13 @@ void growSomeZoneBuildings(City* city)
                         ZoneSector* sector = &layer->sectors.sectors[sectorIndex];
 
                         for (s32 relY = 0;
-                            !foundAZone && relY < sector->bounds.h;
+                            !foundAZone && relY < sector->bounds.height();
                             relY++) {
                             for (s32 relX = 0;
-                                !foundAZone && relX < sector->bounds.w;
+                                !foundAZone && relX < sector->bounds.width();
                                 relX++) {
-                                s32 tileX = (relX + randomXOffset) % sector->bounds.w;
-                                s32 tileY = (relY + randomYOffset) % sector->bounds.h;
+                                s32 tileX = (relX + randomXOffset) % sector->bounds.width();
+                                s32 tileY = (relY + randomYOffset) % sector->bounds.height();
                                 s32 x = sector->bounds.x + tileX;
                                 s32 y = sector->bounds.y + tileY;
 
@@ -541,9 +541,9 @@ void growSomeZoneBuildings(City* city)
                     while (true) {
                         bool canExpand = true;
                         if (tryX) {
-                            s32 x = positive ? (zoneFootprint.x + zoneFootprint.w) : (zoneFootprint.x - 1);
+                            s32 x = positive ? (zoneFootprint.x + zoneFootprint.width()) : (zoneFootprint.x - 1);
 
-                            for (s32 y = zoneFootprint.y; y < zoneFootprint.y + zoneFootprint.h; y++) {
+                            for (s32 y = zoneFootprint.y; y < zoneFootprint.y + zoneFootprint.height(); y++) {
                                 if (!isZoneAcceptable(city, zone_type, x, y)) {
                                     canExpand = false;
                                     break;
@@ -555,9 +555,9 @@ void growSomeZoneBuildings(City* city)
                                 canExpand = true;
                                 positive = !positive;
 
-                                x = positive ? (zoneFootprint.x + zoneFootprint.w) : (zoneFootprint.x - 1);
+                                x = positive ? (zoneFootprint.x + zoneFootprint.width()) : (zoneFootprint.x - 1);
 
-                                for (s32 y = zoneFootprint.y; y < zoneFootprint.y + zoneFootprint.h; y++) {
+                                for (s32 y = zoneFootprint.y; y < zoneFootprint.y + zoneFootprint.height(); y++) {
                                     if (!isZoneAcceptable(city, zone_type, x, y)) {
                                         canExpand = false;
                                         break;
@@ -566,15 +566,15 @@ void growSomeZoneBuildings(City* city)
                             }
 
                             if (canExpand) {
-                                zoneFootprint.w++;
+                                zoneFootprint.set_width(zoneFootprint.width() + 1);
                                 if (!positive)
                                     zoneFootprint.x--;
                             }
                         } else // expand in y
                         {
-                            s32 y = positive ? (zoneFootprint.y + zoneFootprint.h) : (zoneFootprint.y - 1);
+                            s32 y = positive ? (zoneFootprint.y + zoneFootprint.height()) : (zoneFootprint.y - 1);
 
-                            for (s32 x = zoneFootprint.x; x < zoneFootprint.x + zoneFootprint.w; x++) {
+                            for (s32 x = zoneFootprint.x; x < zoneFootprint.x + zoneFootprint.width(); x++) {
                                 if (!isZoneAcceptable(city, zone_type, x, y)) {
                                     canExpand = false;
                                     break;
@@ -586,9 +586,9 @@ void growSomeZoneBuildings(City* city)
                                 canExpand = true;
                                 positive = !positive;
 
-                                y = positive ? (zoneFootprint.y + zoneFootprint.h) : (zoneFootprint.y - 1);
+                                y = positive ? (zoneFootprint.y + zoneFootprint.height()) : (zoneFootprint.y - 1);
 
-                                for (s32 x = zoneFootprint.x; x < zoneFootprint.x + zoneFootprint.w; x++) {
+                                for (s32 x = zoneFootprint.x; x < zoneFootprint.x + zoneFootprint.width(); x++) {
                                     if (!isZoneAcceptable(city, zone_type, x, y)) {
                                         canExpand = false;
                                         break;
@@ -597,7 +597,7 @@ void growSomeZoneBuildings(City* city)
                             }
 
                             if (canExpand) {
-                                zoneFootprint.h++;
+                                zoneFootprint.set_height(zoneFootprint.height() + 1);
                                 if (!positive)
                                     zoneFootprint.y--;
                             }
@@ -610,7 +610,7 @@ void growSomeZoneBuildings(City* city)
 
                         // No need to grow bigger than the largest possible building!
                         // (Unless at some point we do "batches" of buildings like SC4 does)
-                        if (zoneFootprint.w >= maxRBuildingDim && zoneFootprint.h >= maxRBuildingDim)
+                        if (zoneFootprint.width() >= maxRBuildingDim && zoneFootprint.height() >= maxRBuildingDim)
                             break;
 
                         tryX = !tryX;                     // Alternate x and y
@@ -621,7 +621,7 @@ void growSomeZoneBuildings(City* city)
                 // Pick a building def that fits the space and is not more than 10% more than the remaining demand
                 s32 maxPopulation = (s32)((float)remainingDemand * 1.1f);
                 BuildingDef* buildingDef = findRandomZoneBuilding(zone_type, random, [=](BuildingDef* it) -> bool {
-                    if ((it->width > zoneFootprint.w) || (it->height > zoneFootprint.h))
+                    if ((it->width > zoneFootprint.width()) || (it->height > zoneFootprint.height()))
                         return false;
 
                     if (it->growsInZone == ZoneType::Residential) {

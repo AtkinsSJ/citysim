@@ -21,9 +21,9 @@ Panel::Panel(Rect2I bounds, PanelStyle* panelStyle, u32 flags, RenderBuffer* ren
     , contentArea(bounds.shrunk(this->style->padding))
     , widgetAlignment({ style->widgetAlignment.horizontal, layoutBottomToTop ? VAlign::Bottom : VAlign::Top })
     , currentLeft(0)
-    , currentRight(this->contentArea.w)
+    , currentRight(this->contentArea.width())
     , currentTop(0)
-    , currentBottom(this->contentArea.h)
+    , currentBottom(this->contentArea.height())
     , background(Drawable(&this->style->background))
 {
 }
@@ -34,9 +34,9 @@ void Panel::enableHorizontalScrolling(ScrollbarState* scrollbarState)
     ASSERT(scrollbarStyle != nullptr);
 
     this->hScrollbar = scrollbarState;
-    this->hScrollbarBounds = { bounds.x, bounds.y + bounds.h - scrollbarStyle->width, bounds.w, scrollbarStyle->width };
+    this->hScrollbarBounds = { bounds.x, bounds.y + bounds.height() - scrollbarStyle->width, bounds.width(), scrollbarStyle->width };
 
-    this->contentArea.h -= scrollbarStyle->width;
+    this->contentArea.set_height(this->contentArea.height() - scrollbarStyle->width);
     updateLayoutPosition();
 }
 
@@ -47,13 +47,13 @@ void Panel::enableVerticalScrolling(ScrollbarState* scrollbarState, bool expandW
 
     this->vScrollbar = scrollbarState;
 
-    s32 scrollbarX = bounds.x + bounds.w - (expandWidth ? 0 : scrollbarStyle->width);
-    this->vScrollbarBounds = { scrollbarX, bounds.y, scrollbarStyle->width, bounds.h };
+    s32 scrollbarX = bounds.x + bounds.width() - (expandWidth ? 0 : scrollbarStyle->width);
+    this->vScrollbarBounds = { scrollbarX, bounds.y, scrollbarStyle->width, bounds.height() };
 
     if (expandWidth) {
-        this->bounds.w += scrollbarStyle->width;
+        this->bounds.set_width(this->bounds.width() + scrollbarStyle->width);
     } else {
-        this->contentArea.w -= scrollbarStyle->width;
+        this->contentArea.set_width(this->contentArea.width() - scrollbarStyle->width);
         this->currentRight -= scrollbarStyle->width;
         updateLayoutPosition();
     }
@@ -68,7 +68,7 @@ bool Panel::addTextButton(String text, ButtonState state, String styleName)
     ButtonStyle* widgetStyle = getStyle<ButtonStyle>(styleName, &this->style->buttonStyle);
 
     Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
-        return calculateButtonSize(text, widgetStyle, space.w, fillWidth);
+        return calculateButtonSize(text, widgetStyle, space.width(), fillWidth);
     });
 
     bool wasClicked = false;
@@ -92,7 +92,7 @@ bool Panel::addImageButton(Sprite* sprite, ButtonState state, String styleName)
     V2I spriteSize = v2i(sprite->pixelWidth, sprite->pixelHeight);
 
     Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
-        return calculateButtonSize(spriteSize, widgetStyle, space.w, fillWidth);
+        return calculateButtonSize(spriteSize, widgetStyle, space.width(), fillWidth);
     });
 
     bool wasClicked = false;
@@ -134,7 +134,7 @@ void Panel::addLabel(String text, String styleName)
     LabelStyle* widgetStyle = getStyle<LabelStyle>(styleName, &this->style->labelStyle);
 
     Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
-        return calculateLabelSize(text, widgetStyle, space.w, fillWidth);
+        return calculateLabelSize(text, widgetStyle, space.width(), fillWidth);
     });
 
     if (!hideWidgets) {
@@ -197,7 +197,7 @@ bool Panel::addTextInput(TextInput* textInput, String styleName)
     TextInputStyle* widgetStyle = getStyle<TextInputStyle>(styleName, &this->style->textInputStyle);
 
     Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
-        return calculateTextInputSize(textInput, widgetStyle, space.w, fillWidth);
+        return calculateTextInputSize(textInput, widgetStyle, space.width(), fillWidth);
     });
 
     bool result = false;
@@ -237,7 +237,7 @@ void Panel::startNewLine(Optional<HAlign> h_align)
     largestLineWidth = max(largestLineWidth, lineWidth);
 
     currentLeft = 0;
-    currentRight = contentArea.w;
+    currentRight = contentArea.width();
 
     if (largestItemHeightOnLine > 0) {
         if (layoutBottomToTop) {
@@ -266,10 +266,10 @@ Panel Panel::row(s32 height, VAlign vAlignment, String styleName)
     PanelStyle* rowStyle = getPanelStyle(styleName);
 
     if (vAlignment == VAlign::Top) {
-        Rect2I rowBounds { contentArea.x, contentArea.y + currentTop, contentArea.w, height };
+        Rect2I rowBounds { contentArea.x, contentArea.y + currentTop, contentArea.width(), height };
 
         if (layoutBottomToTop) {
-            contentArea.h -= height + style->contentPadding;
+            contentArea.set_height(contentArea.height() - (height + style->contentPadding));
             contentArea.y += height + style->contentPadding;
         } else {
             completeWidget(rowBounds.size());
@@ -279,12 +279,12 @@ Panel Panel::row(s32 height, VAlign vAlignment, String styleName)
 
         return Panel(rowBounds, rowStyle, flags, renderBuffer);
     } else {
-        Rect2I rowBounds { contentArea.x, contentArea.y + currentBottom - height, contentArea.w, height };
+        Rect2I rowBounds { contentArea.x, contentArea.y + currentBottom - height, contentArea.width(), height };
 
         if (layoutBottomToTop) {
             completeWidget(rowBounds.size());
         } else {
-            contentArea.h -= height + style->contentPadding;
+            contentArea.set_height(contentArea.height() - (height + style->contentPadding));
         }
 
         updateLayoutPosition();
@@ -305,17 +305,17 @@ Panel Panel::column(s32 width, HAlign hAlignment, String styleName)
     PanelStyle* columnStyle = getPanelStyle(styleName);
 
     if (hAlignment == HAlign::Left) {
-        Rect2I columnBounds { contentArea.x, contentArea.y + currentTop, width, contentArea.h };
+        Rect2I columnBounds { contentArea.x, contentArea.y + currentTop, width, contentArea.height() };
 
-        contentArea.w -= width + style->contentPadding;
+        contentArea.set_width(contentArea.width() - (width + style->contentPadding));
         contentArea.x += width + style->contentPadding;
         updateLayoutPosition();
 
         return Panel(columnBounds, columnStyle, flags, renderBuffer);
     } else {
-        Rect2I columnBounds { contentArea.x + contentArea.w - width, contentArea.y + currentTop, width, contentArea.h };
+        Rect2I columnBounds { contentArea.x + contentArea.width() - width, contentArea.y + currentTop, width, contentArea.height() };
 
-        contentArea.w -= width + style->contentPadding;
+        contentArea.set_width(contentArea.width() - (width + style->contentPadding));
         updateLayoutPosition();
 
         return Panel(columnBounds, columnStyle, flags, renderBuffer);
@@ -334,23 +334,23 @@ void Panel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
         currentBottom += (style->contentPadding * 2);
     }
 
-    s32 contentHeight = (layoutBottomToTop ? (contentArea.h - currentBottom)
+    s32 contentHeight = (layoutBottomToTop ? (contentArea.height() - currentBottom)
                                            : (currentTop + style->padding.bottom));
 
     bool boundsChanged = false;
 
     if (shrinkToContentWidth) {
         if (widgetAlignment.horizontal == HAlign::Left) {
-            s32 widthDifference = contentArea.w - largestLineWidth;
+            s32 widthDifference = contentArea.width() - largestLineWidth;
             if (widthDifference > 0) {
-                bounds.w -= widthDifference;
+                bounds.set_width(bounds.width() - widthDifference);
                 boundsChanged = true;
             }
         } else {
-            s32 widthDifference = contentArea.w - largestLineWidth;
+            s32 widthDifference = contentArea.width() - largestLineWidth;
             if (widthDifference > 0) {
                 bounds.x += widthDifference;
-                bounds.w -= widthDifference;
+                bounds.set_width(bounds.width() - widthDifference);
                 boundsChanged = true;
             }
         }
@@ -359,33 +359,33 @@ void Panel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
     if (shrinkToContentHeight) {
         s32 totalVPadding = style->padding.top + style->padding.bottom;
         if (layoutBottomToTop) {
-            contentHeight = (contentArea.h - currentBottom) + style->contentPadding + totalVPadding;
-            s32 newHeight = clamp(contentHeight, totalVPadding, bounds.h);
-            bounds.y += (bounds.h - newHeight);
-            bounds.h = newHeight;
+            contentHeight = (contentArea.height() - currentBottom) + style->contentPadding + totalVPadding;
+            s32 newHeight = clamp(contentHeight, totalVPadding, bounds.height());
+            bounds.y += (bounds.height() - newHeight);
+            bounds.set_height(newHeight);
             boundsChanged = true;
         } else {
             contentHeight = currentTop - style->contentPadding + totalVPadding;
-            bounds.h = clamp(contentHeight, totalVPadding, bounds.h);
+            bounds.set_height(clamp(contentHeight, totalVPadding, bounds.height()));
             boundsChanged = true;
         }
 
         // Make sure there is space for the scrollbar if we have one
         if (hScrollbar) {
-            bounds.h += hScrollbarBounds.h;
+            bounds.set_height(bounds.height() + hScrollbarBounds.height());
             if (layoutBottomToTop)
-                bounds.y -= hScrollbarBounds.h;
+                bounds.y -= hScrollbarBounds.height();
             boundsChanged = true;
         }
     }
 
     if (boundsChanged) {
-        hScrollbarBounds.w = bounds.w;
+        hScrollbarBounds.set_width(bounds.width());
         hScrollbarBounds.x = bounds.x;
         // In case the height has shrunk, move the scrollbar to the bottom edge
-        hScrollbarBounds.y = bounds.y + bounds.h - hScrollbarBounds.h;
+        hScrollbarBounds.y = bounds.y + bounds.height() - hScrollbarBounds.height();
 
-        vScrollbarBounds.h = bounds.h;
+        vScrollbarBounds.set_height(bounds.height());
         vScrollbarBounds.y = bounds.y;
     }
 
@@ -519,10 +519,10 @@ PanelStyle* Panel::getPanelStyle(String styleName)
 void Panel::updateLayoutPosition()
 {
     currentLeft = max(0, currentLeft);
-    currentRight = min(contentArea.w, currentRight);
+    currentRight = min(contentArea.width(), currentRight);
 
     currentTop = max(0, currentTop);
-    currentBottom = min(contentArea.h, currentBottom);
+    currentBottom = min(contentArea.height(), currentBottom);
 }
 
 }

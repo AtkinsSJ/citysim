@@ -663,7 +663,7 @@ void updateAdjacentBuildingVariants(City* city, Rect2I footprint)
     DEBUG_FUNCTION();
 
     for (s32 y = footprint.y;
-        y < footprint.y + footprint.h;
+        y < footprint.y + footprint.height();
         y++) {
         Building* buildingL = getBuildingAt(city, footprint.x - 1, y);
         if (buildingL) {
@@ -672,7 +672,7 @@ void updateAdjacentBuildingVariants(City* city, Rect2I footprint)
                 updateBuildingVariant(city, buildingL, defL);
         }
 
-        Building* buildingR = getBuildingAt(city, footprint.x + footprint.w, y);
+        Building* buildingR = getBuildingAt(city, footprint.x + footprint.width(), y);
         if (buildingR) {
             BuildingDef* defD = getBuildingDef(buildingR->typeID);
             if (defD->variants.count > 0)
@@ -681,10 +681,10 @@ void updateAdjacentBuildingVariants(City* city, Rect2I footprint)
     }
 
     for (s32 x = footprint.x;
-        x < footprint.x + footprint.w;
+        x < footprint.x + footprint.width();
         x++) {
         Building* buildingU = getBuildingAt(city, x, footprint.y - 1);
-        Building* buildingD = getBuildingAt(city, x, footprint.y + footprint.h);
+        Building* buildingD = getBuildingAt(city, x, footprint.y + footprint.height());
         if (buildingU) {
             BuildingDef* defU = getBuildingDef(buildingU->typeID);
             if (defU->variants.count > 0)
@@ -746,8 +746,8 @@ void updateBuilding(City* city, Building* building)
         // the inner tiles... unless we allow multiple buildings per tile. Actually maybe we do? I'm not sure how that
         // would work really. Anyway, can think about that later.
         // - Sam, 30/08/2019
-        for (s32 y = building->footprint.y; y < building->footprint.y + building->footprint.h; y++) {
-            for (s32 x = building->footprint.x; x < building->footprint.x + building->footprint.w; x++) {
+        for (s32 y = building->footprint.y; y < building->footprint.y + building->footprint.height(); y++) {
+            for (s32 x = building->footprint.x; x < building->footprint.x + building->footprint.width(); x++) {
                 distanceToRoad = min(distanceToRoad, getDistanceToTransport(city, x, y, TransportType::Road));
             }
         }

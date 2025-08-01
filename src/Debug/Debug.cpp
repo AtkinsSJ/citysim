@@ -219,9 +219,9 @@ void debugTextOut(DebugTextState* textState, String text, bool doHighlight = fal
     }
 
     if (textState->progressUpwards) {
-        textState->pos.y -= bounds.h;
+        textState->pos.y -= bounds.height();
     } else {
-        textState->pos.y += bounds.h;
+        textState->pos.y += bounds.height();
     }
 }
 

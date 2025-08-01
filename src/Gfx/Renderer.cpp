@@ -338,21 +338,21 @@ void addClear(RenderBuffer* buffer, Colour clearColor)
 
 void addBeginScissor(RenderBuffer* buffer, Rect2I bounds)
 {
-    ASSERT(bounds.w >= 0);
-    ASSERT(bounds.h >= 0);
+    ASSERT(bounds.width() >= 0);
+    ASSERT(bounds.height() >= 0);
 
     RenderItem_BeginScissor* scissor = appendRenderItem<RenderItem_BeginScissor>(buffer, RenderItemType::BeginScissor);
 
     // We have to flip the bounds rectangle vertically because OpenGL has the origin in the bottom-left,
     // whereas our system uses the top-left!
 
-    bounds.y = s_renderer->window_height() - bounds.y - bounds.h;
+    bounds.y = s_renderer->window_height() - bounds.y - bounds.height();
 
     // Crop to window bounds
     scissor->bounds = bounds.intersected({ 0u, 0u, s_renderer->window_width(), s_renderer->window_height() });
 
-    ASSERT(scissor->bounds.w >= 0);
-    ASSERT(scissor->bounds.h >= 0);
+    ASSERT(scissor->bounds.width() >= 0);
+    ASSERT(scissor->bounds.height() >= 0);
 
     buffer->scissorCount++;
 }
@@ -461,13 +461,13 @@ void drawNinepatch(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, Ninepatch* 
 
     float x0 = (float)(bounds.x);
     float x1 = (float)(bounds.x + ninepatch->pu1 - ninepatch->pu0);
-    float x2 = (float)(bounds.x + bounds.w - (ninepatch->pu3 - ninepatch->pu2));
-    float x3 = (float)(bounds.x + bounds.w);
+    float x2 = (float)(bounds.x + bounds.width() - (ninepatch->pu3 - ninepatch->pu2));
+    float x3 = (float)(bounds.x + bounds.width());
 
     float y0 = (float)(bounds.y);
     float y1 = (float)(bounds.y + ninepatch->pv1 - ninepatch->pv0);
-    float y2 = (float)(bounds.y + bounds.h - (ninepatch->pv3 - ninepatch->pv2));
-    float y3 = (float)(bounds.y + bounds.h);
+    float y2 = (float)(bounds.y + bounds.height() - (ninepatch->pv3 - ninepatch->pv2));
+    float y3 = (float)(bounds.y + bounds.height());
 
     // top left
     addRectInternal(group, Rect2::create_min_max(x0, y0, x1, y1), color, Rect2::create_min_max(ninepatch->u0, ninepatch->v0, ninepatch->u1, ninepatch->v1));
@@ -518,13 +518,13 @@ void fillDrawNinepatchPlaceholder(DrawNinepatchPlaceholder* placeholder, Rect2I 
 
     float x0 = (float)(bounds.x);
     float x1 = (float)(bounds.x + ninepatch->pu1 - ninepatch->pu0);
-    float x2 = (float)(bounds.x + bounds.w - (ninepatch->pu3 - ninepatch->pu2));
-    float x3 = (float)(bounds.x + bounds.w);
+    float x2 = (float)(bounds.x + bounds.width() - (ninepatch->pu3 - ninepatch->pu2));
+    float x3 = (float)(bounds.x + bounds.width());
 
     float y0 = (float)(bounds.y);
     float y1 = (float)(bounds.y + ninepatch->pv1 - ninepatch->pv0);
-    float y2 = (float)(bounds.y + bounds.h - (ninepatch->pv3 - ninepatch->pv2));
-    float y3 = (float)(bounds.y + bounds.h);
+    float y2 = (float)(bounds.y + bounds.height() - (ninepatch->pv3 - ninepatch->pv2));
+    float y3 = (float)(bounds.y + bounds.height());
 
     RenderItem_DrawRects_Item* rect = placeholder->firstRect;
 

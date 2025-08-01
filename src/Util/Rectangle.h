@@ -99,8 +99,8 @@ public:
     Rect2I(s32 x, s32 y, s32 w, s32 h)
         : x(x)
         , y(y)
-        , w(w)
-        , h(h)
+        , m_width(w)
+        , m_height(h)
     {
     }
 
@@ -108,16 +108,16 @@ public:
     Rect2I(U x, U y, U w, U h)
         : x(x)
         , y(y)
-        , w(w)
-        , h(h)
+        , m_width(w)
+        , m_height(h)
     {
     }
 
     Rect2I(V2I position, V2I size)
         : x(position.x)
         , y(position.y)
-        , w(size.x)
-        , h(size.y)
+        , m_width(size.x)
+        , m_height(size.y)
     {
     }
 
@@ -147,22 +147,26 @@ public:
 
     s32 x;
     s32 y;
-    s32 w;
-    s32 h;
     static Rect2I placed_randomly_within(Random& random, V2I size, Rect2I boundary);
     Rect2I create_centred_within(V2I size) const;
     Rect2I create_aligned_within(V2I size, Alignment alignment, Padding padding = {}) const;
 
-    float min_x() const { return x; }
-    float max_x() const { return x + w; }
-    float min_y() const { return y; }
-    float max_y() const { return y + h; }
+    s32 min_x() const { return x; }
+    s32 max_x() const { return x + m_width; }
+    s32 min_y() const { return y; }
+    s32 max_y() const { return y + m_height; }
 
-    V2I size() const { return v2i(w, h); }
+    s32 width() const { return m_width; }
+    void set_width(s32 width) { m_width = width; }
+
+    s32 height() const { return m_height; }
+    void set_height(s32 height) { m_height = height; }
+
+    V2I size() const { return v2i(m_width, m_height); }
     void set_size(V2I size)
     {
-        w = size.x;
-        h = size.y;
+        m_width = size.x;
+        m_height = size.y;
     }
 
     V2 centre() const;
@@ -194,4 +198,8 @@ public:
     Rect2I intersected_relative(Rect2I const&) const;
 
     Rect2I union_with(Rect2I const&) const;
+
+private:
+    s32 m_width;
+    s32 m_height;
 };
