@@ -93,7 +93,7 @@ bool isMouseInUIBounds(Rect2I bounds, V2I pos)
 {
     Rect2I clippedBounds = isInputScissorActive() ? intersect(bounds, getInputScissorRect()) : bounds;
 
-    bool result = contains(clippedBounds, pos);
+    bool result = clippedBounds.contains(pos);
 
     return result;
 }
@@ -103,9 +103,9 @@ bool justClickedOnUI(Rect2I bounds)
     Rect2I clippedBounds = isInputScissorActive() ? intersect(bounds, getInputScissorRect()) : bounds;
 
     bool result = !isMouseInputHandled()
-        && contains(clippedBounds, mousePos)
+        && clippedBounds.contains(mousePos)
         && mouseButtonJustReleased(MouseButton::Left)
-        && contains(clippedBounds, mouseClickStartPos);
+        && clippedBounds.contains(mouseClickStartPos);
 
     return result;
 }
@@ -177,7 +177,7 @@ bool mouseIsWithinUIRects()
     bool result = false;
 
     for (auto it = uiState.uiRects.iterate(); it.hasNext(); it.next()) {
-        if (contains(it.getValue(), mousePos)) {
+        if (it.getValue().contains(mousePos)) {
             result = true;
             break;
         }

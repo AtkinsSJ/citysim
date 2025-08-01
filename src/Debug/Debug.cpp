@@ -211,7 +211,7 @@ void debugTextOut(DebugTextState* textState, String text, bool doHighlight = fal
 
     Rect2I bounds { topLeft, textSize };
 
-    if (doHighlight && contains(bounds, textState->camera->mouse_position())) {
+    if (doHighlight && bounds.contains(v2i(textState->camera->mouse_position()))) {
         drawSingleRect(textState->renderBuffer, bounds, textState->untexturedShaderID, textColor * 0.5f);
         drawText(textState->renderBuffer, textState->font, text, bounds, align, Colour::from_rgb_255(0, 0, 0, 255), textState->textShaderID);
     } else {

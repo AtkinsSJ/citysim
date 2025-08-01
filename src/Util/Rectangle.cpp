@@ -260,41 +260,30 @@ Rect2I Rect2I::create_aligned(V2I origin, V2I size, Alignment alignment)
     return create_aligned(origin.x, origin.y, size.x, size.y, alignment);
 }
 
-bool contains(Rect2I rect, s32 x, s32 y)
+bool Rect2I::contains(s32 x, s32 y) const
 {
-    return (x >= rect.x)
-        && (x < rect.x + rect.w)
-        && (y >= rect.y)
-        && (y < rect.y + rect.h);
+    return min_x() <= x
+        && x < max_x()
+        && min_y() <= y
+        && y < max_y();
 }
 
-bool contains(Rect2I rect, V2I pos)
+bool Rect2I::contains(V2I pos) const
 {
-    return contains(rect, pos.x, pos.y);
+    return contains(pos.x, pos.y);
 }
 
-bool contains(Rect2I rect, V2 pos)
+bool Rect2I::contains(Rect2I const& inner) const
 {
-    return (pos.x >= rect.x)
-        && (pos.x < rect.x + rect.w)
-        && (pos.y >= rect.y)
-        && (pos.y < rect.y + rect.h);
+    return contains(inner.position()) && contains(inner.position() + inner.size() - v2i(1, 1));
 }
 
-bool contains(Rect2I outer, Rect2I inner)
+bool Rect2I::overlaps(Rect2I const& other) const
 {
-    return inner.x >= outer.x
-        && (inner.x + inner.w) <= (outer.x + outer.w)
-        && inner.y >= outer.y
-        && (inner.y + inner.h) <= (outer.y + outer.h);
-}
-
-bool overlaps(Rect2I a, Rect2I b)
-{
-    return (a.x < b.x + b.w)
-        && (b.x < a.x + a.w)
-        && (a.y < b.y + b.h)
-        && (b.y < a.y + a.h);
+    return min_x() < other.max_x()
+        && other.min_x() < max_x()
+        && min_y() < other.max_y()
+        && other.min_y() < max_y();
 }
 
 Rect2I expand(Rect2I rect, s32 radius)
@@ -404,12 +393,12 @@ Rect2I intersectRelative(Rect2I outer, Rect2I inner)
     return result;
 }
 
-Rect2I unionOf(Rect2I a, Rect2I b)
+Rect2I Rect2I::union_with(Rect2I const& other) const
 {
-    s32 min_x = min(a.x, b.x);
-    s32 min_y = min(a.y, b.y);
-    s32 max_x = max(a.x + a.w - 1, b.x + b.w - 1);
-    s32 max_y = max(a.y + a.h - 1, b.y + b.h - 1);
+    s32 min_x = min(x, other.x);
+    s32 min_y = min(y, other.y);
+    s32 max_x = max(x + w - 1, other.x + other.w - 1);
+    s32 max_y = max(y + h - 1, other.y + other.h - 1);
 
     return Rect2I::create_min_max(min_x, min_y, max_x, max_y);
 }

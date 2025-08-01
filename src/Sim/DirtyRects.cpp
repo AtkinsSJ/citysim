@@ -37,7 +37,7 @@ void markRectAsDirty(DirtyRects* dirtyRects, Rect2I rect)
             it.next()) {
             Rect2I* existingRect = it.get();
 
-            if (contains(*existingRect, rectToAdd)) {
+            if (existingRect->contains(rectToAdd)) {
                 added = true;
                 break;
             }
@@ -49,7 +49,7 @@ void markRectAsDirty(DirtyRects* dirtyRects, Rect2I rect)
                 it.hasNext();
                 it.next()) {
                 Rect2I existingRect = it.getValue();
-                if (contains(rectToAdd, existingRect)) {
+                if (rectToAdd.contains(existingRect)) {
                     dirtyRects->rects.removeIndex(it.getIndex(), false);
                 }
             }
@@ -81,7 +81,7 @@ Rect2I getOverallRect(DirtyRects* dirtyRects)
         for (auto it = dirtyRects->rects.iterate(1, false);
             it.hasNext();
             it.next()) {
-            result = unionOf(result, it.getValue());
+            result = result.union_with(it.getValue());
         }
     }
 

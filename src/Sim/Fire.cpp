@@ -71,7 +71,7 @@ void updateFireLayer(City* city, FireLayer* layer)
 
                     for (auto it = sector->activeFires.iterate(); it.hasNext(); it.next()) {
                         Fire* fire = it.get();
-                        if (contains(expandedRect, fire->pos)) {
+                        if (expandedRect.contains(fire->pos)) {
                             // TODO: Different "strengths" of fire should have different effects
                             EffectRadius fireEffect { layer->maxFireRadius, 255, 20 };
                             fireEffect.apply(layer->tileFireProximityEffect, dirtyRect, v2(fire->pos), EffectType::Add);
@@ -173,7 +173,7 @@ bool doesAreaContainFire(City* city, Rect2I bounds)
             for (auto it = sector->activeFires.iterate(); it.hasNext(); it.next()) {
                 Fire* fire = it.get();
 
-                if (contains(bounds, fire->pos)) {
+                if (bounds.contains(fire->pos)) {
                     foundFire = true;
                     break;
                 }
@@ -237,7 +237,7 @@ void removeFireAt(City* city, s32 x, s32 y)
         sectorAtPosition->activeFires.removeIndex(fireAtPosition.index);
         layer->activeFireCount--;
 
-        markRectAsDirty(&layer->dirtyRects, {x, y, 1, 1});
+        markRectAsDirty(&layer->dirtyRects, { x, y, 1, 1 });
     }
 }
 

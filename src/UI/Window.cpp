@@ -286,7 +286,7 @@ void updateAndRenderWindows()
         Rect2I closeButtonRect { wholeWindowArea.x + wholeWindowArea.w - barHeight, wholeWindowArea.y, barHeight, barHeight };
 
         if (hasTitleBar) {
-            bool hoveringOverCloseButton = contains(closeButtonRect, mousePos);
+            bool hoveringOverCloseButton = closeButtonRect.contains(mousePos);
 
             auto barColor = (isActive ? windowStyle->titleBarColor : windowStyle->titleBarColorInactive);
 
@@ -312,13 +312,13 @@ void updateAndRenderWindows()
             drawText(window->renderBuffer, titleFont, closeButtonString, closeTextBounds, Alignment::centre(), titleStyle->textColor, renderer.shaderIds.text);
 
             if ((!isMouseInputHandled() || windowIndex == 0)
-                && contains(wholeWindowArea, mousePos)
+                && wholeWindowArea.contains(mousePos)
                 && mouseButtonJustPressed(MouseButton::Left)) {
                 if (hoveringOverCloseButton) {
                     // If we're inside the X, close it!
                     uiState.windowsToClose.add(windowIndex);
                 } else {
-                    if (!isModal && contains(barArea, mousePos)) {
+                    if (!isModal && barArea.contains(mousePos)) {
                         // If we're inside the title bar, start dragging!
 
                         // @Hack: We're pretending the window ID is a pointer, which does work, but could conflict
@@ -346,7 +346,7 @@ void updateAndRenderWindows()
             markMouseInputHandled();
         }
         // Prevent anything behind this window from interacting with the mouse
-        else if (contains(wholeWindowArea, mousePos)) {
+        else if (wholeWindowArea.contains(mousePos)) {
             // Tooltips don't take mouse input
             if (!isTooltip) {
                 markMouseInputHandled();

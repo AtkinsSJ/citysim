@@ -111,7 +111,7 @@ CanZoneQuery* queryCanZoneTiles(City* city, ZoneType zoneType, Rect2I bounds)
 
 bool canZoneTile(CanZoneQuery* query, s32 x, s32 y)
 {
-    ASSERT(contains(query->bounds, x, y));
+    ASSERT(query->bounds.contains(x, y));
     s32 qX = x - query->bounds.x;
     s32 qY = y - query->bounds.y;
 

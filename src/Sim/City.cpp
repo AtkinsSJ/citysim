@@ -191,9 +191,10 @@ bool canPlaceBuilding(City* city, BuildingDef* def, s32 left, s32 top)
     }
 
     Rect2I footprint { left, top, def->width, def->height };
+    Rect2I bounds { 0, 0, city->bounds.w, city->bounds.h };
 
     // Are we in bounds?
-    if (!contains({ 0, 0, city->bounds.w, city->bounds.h }, footprint)) {
+    if (!bounds.contains(footprint)) {
         return false;
     }
 
@@ -359,7 +360,7 @@ void demolishRect(City* city, Rect2I area)
         }
 
         // Only need to add the footprint as a separate rect if it's not inside the area!
-        if (!contains(area, buildingFootprint)) {
+        if (!area.contains(buildingFootprint)) {
             markZonesAsEmpty(city, buildingFootprint);
             markAreaDirty(city, buildingFootprint);
         }
@@ -428,7 +429,7 @@ ChunkedArray<Building*> findBuildingsOverlappingArea(City* city, Rect2I area, Fl
 
             for (auto it = sector->ownedBuildings.iterate(); it.hasNext(); it.next()) {
                 Building* building = it.getValue();
-                if (overlaps(building->footprint, area)) {
+                if (building->footprint.overlaps(area)) {
                     result.append(building);
                 }
             }

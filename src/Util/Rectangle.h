@@ -151,6 +151,11 @@ public:
     s32 h;
     static Rect2I placed_randomly_within(Random& random, V2I size, Rect2I boundary);
 
+    float min_x() const { return x; }
+    float max_x() const { return x + w; }
+    float min_y() const { return y; }
+    float max_y() const { return y + h; }
+
     V2I size() const { return v2i(w, h); }
     void set_size(V2I size)
     {
@@ -169,13 +174,15 @@ public:
 
     s32 area() const;
     bool has_positive_area() const;
-};
 
-bool contains(Rect2I rect, s32 x, s32 y);
-bool contains(Rect2I rect, V2I pos);
-bool contains(Rect2I rect, V2 pos);
-bool contains(Rect2I outer, Rect2I inner);
-bool overlaps(Rect2I outer, Rect2I inner);
+    bool contains(s32 x, s32 y) const;
+    bool contains(V2I) const;
+    bool contains(Rect2I const&) const;
+
+    bool overlaps(Rect2I const&) const;
+
+    Rect2I union_with(Rect2I const&) const;
+};
 
 Rect2I expand(Rect2I rect, s32 radius);
 Rect2I expand(Rect2I rect, s32 top, s32 right, s32 bottom, s32 left);
@@ -189,7 +196,6 @@ Rect2I intersect(Rect2I a, Rect2I b);
 // Takes the intersection of inner and outer, and then converts it to being relative to outer.
 // (Originally used to take a world-space rectangle and put it into a cropped, sector-space one.)
 Rect2I intersectRelative(Rect2I outer, Rect2I inner);
-Rect2I unionOf(Rect2I a, Rect2I b);
 
 Rect2I centreWithin(Rect2I outer, V2I innerSize);
 Rect2I alignWithinRectangle(Rect2I bounds, V2I size, Alignment alignment, Padding padding = {});
