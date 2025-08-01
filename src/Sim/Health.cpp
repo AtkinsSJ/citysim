@@ -22,7 +22,7 @@ void initHealthLayer(HealthLayer* layer, City* city, MemoryArena* gameArena)
 
     initDirtyRects(&layer->dirtyRects, gameArena, maxLandValueEffectDistance, city->bounds);
 
-    layer->tileHealthCoverage = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
+    layer->tileHealthCoverage = gameArena->allocate_array_2d<u8>(city->bounds.size());
     fill<u8>(&layer->tileHealthCoverage, 0);
 
     initChunkedArray(&layer->healthBuildings, &city->buildingRefsChunkPool);

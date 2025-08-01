@@ -20,13 +20,13 @@ TerrainCatalogue s_terrain_catalogue = {};
 
 void initTerrainLayer(TerrainLayer* layer, City* city, MemoryArena* gameArena)
 {
-    layer->tileTerrainType = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
-    layer->tileHeight = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
-    layer->tileDistanceToWater = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
+    layer->tileTerrainType = gameArena->allocate_array_2d<u8>(city->bounds.size());
+    layer->tileHeight = gameArena->allocate_array_2d<u8>(city->bounds.size());
+    layer->tileDistanceToWater = gameArena->allocate_array_2d<u8>(city->bounds.size());
 
-    layer->tileSpriteOffset = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
-    layer->tileSprite = gameArena->allocate_array_2d<SpriteRef>(city->bounds.w, city->bounds.h);
-    layer->tileBorderSprite = gameArena->allocate_array_2d<SpriteRef>(city->bounds.w, city->bounds.h);
+    layer->tileSpriteOffset = gameArena->allocate_array_2d<u8>(city->bounds.size());
+    layer->tileSprite = gameArena->allocate_array_2d<SpriteRef>(city->bounds.size());
+    layer->tileBorderSprite = gameArena->allocate_array_2d<SpriteRef>(city->bounds.size());
 }
 
 TerrainDef* getTerrainAt(City* city, s32 x, s32 y)

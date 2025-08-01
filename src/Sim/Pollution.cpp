@@ -16,10 +16,10 @@
 
 void initPollutionLayer(PollutionLayer* layer, City* city, MemoryArena* gameArena)
 {
-    layer->tilePollution = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
+    layer->tilePollution = gameArena->allocate_array_2d<u8>(city->bounds.size());
     fill<u8>(&layer->tilePollution, 0);
 
-    layer->tileBuildingContributions = gameArena->allocate_array_2d<s16>(city->bounds.w, city->bounds.h);
+    layer->tileBuildingContributions = gameArena->allocate_array_2d<s16>(city->bounds.size());
     fill<s16>(&layer->tileBuildingContributions, 0);
 
     initDirtyRects(&layer->dirtyRects, gameArena, maxPollutionEffectDistance, city->bounds);

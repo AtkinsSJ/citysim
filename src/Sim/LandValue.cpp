@@ -15,10 +15,10 @@ void initLandValueLayer(LandValueLayer* layer, City* city, MemoryArena* gameAren
 {
     initSectorGrid(&layer->sectors, gameArena, city->bounds.w, city->bounds.h, 16, 8);
 
-    layer->tileLandValue = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
+    layer->tileLandValue = gameArena->allocate_array_2d<u8>(city->bounds.size());
     fill<u8>(&layer->tileLandValue, 0);
 
-    layer->tileBuildingContributions = gameArena->allocate_array_2d<s16>(city->bounds.w, city->bounds.h);
+    layer->tileBuildingContributions = gameArena->allocate_array_2d<s16>(city->bounds.size());
     fill<s16>(&layer->tileBuildingContributions, 0);
 
     initDirtyRects(&layer->dirtyRects, gameArena, maxLandValueEffectDistance, city->bounds);

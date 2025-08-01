@@ -14,7 +14,7 @@
 
 void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena)
 {
-    zoneLayer->tileZone = gameArena->allocate_array_2d<ZoneType>(city->bounds.w, city->bounds.h);
+    zoneLayer->tileZone = gameArena->allocate_array_2d<ZoneType>(city->bounds.size());
 
     initSectorGrid(&zoneLayer->sectors, gameArena, city->bounds.w, city->bounds.h, 16, 8);
     s32 sectorCount = getSectorCount(&zoneLayer->sectors);
@@ -24,7 +24,7 @@ void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena)
         initBitArray(&zoneLayer->sectorsWithZones[zone_type], gameArena, sectorCount);
         initBitArray(&zoneLayer->sectorsWithEmptyZones[zone_type], gameArena, sectorCount);
 
-        zoneLayer->tileDesirability[zone_type] = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
+        zoneLayer->tileDesirability[zone_type] = gameArena->allocate_array_2d<u8>(city->bounds.size());
 
         zoneLayer->mostDesirableSectors[zone_type] = gameArena->allocate_array<s32>(sectorCount, true);
         for (s32 sectorIndex = 0; sectorIndex < sectorCount; sectorIndex++) {

@@ -1083,7 +1083,7 @@ void drawDataViewOverlay(GameState* gameState, Rect2I visibleTileBounds)
         drawGrid(&renderer.world_overlay_buffer(), bounds, bounds.w, bounds.h, *dataView->overlayTileData, (u16)overlayPalette->count, overlayPalette->items);
     } else if (dataView->calculateTileValue) {
         // The per-tile overlay data is generated
-        Array2<u8> overlayTileData = temp_arena().allocate_array_2d<u8>(visibleTileBounds.w, visibleTileBounds.h);
+        Array2<u8> overlayTileData = temp_arena().allocate_array_2d<u8>(visibleTileBounds.size());
 
         for (s32 gridY = 0; gridY < visibleTileBounds.h; gridY++) {
             for (s32 gridX = 0; gridX < visibleTileBounds.w; gridX++) {

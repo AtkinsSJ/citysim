@@ -13,13 +13,13 @@
 
 void initTransportLayer(TransportLayer* layer, City* city, MemoryArena* gameArena)
 {
-    layer->tileTransportTypes = gameArena->allocate_array_2d<Flags<TransportType>>(city->bounds.w, city->bounds.h);
+    layer->tileTransportTypes = gameArena->allocate_array_2d<Flags<TransportType>>(city->bounds.size());
 
     layer->transportMaxDistance = 8;
     initDirtyRects(&layer->dirtyRects, gameArena, layer->transportMaxDistance, city->bounds);
 
     for (auto type : enum_values<TransportType>()) {
-        layer->tileTransportDistance[type] = gameArena->allocate_array_2d<u8>(city->bounds.w, city->bounds.h);
+        layer->tileTransportDistance[type] = gameArena->allocate_array_2d<u8>(city->bounds.size());
         fill<u8>(&layer->tileTransportDistance[type], 255);
     }
 }
