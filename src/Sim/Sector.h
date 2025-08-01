@@ -37,21 +37,21 @@ struct BasicSector {
 // NB: The Sector struct needs to contain a "Rect2I bounds;" member. This is filled-in inside initSectorGrid().
 
 template<typename Sector>
-void initSectorGrid(SectorGrid<Sector>* grid, MemoryArena* arena, s32 cityWidth, s32 cityHeight, s32 sectorSize, s32 sectorsToUpdatePerTick = 0)
+void initSectorGrid(SectorGrid<Sector>* grid, MemoryArena* arena, V2I city_size, s32 sectorSize, s32 sectorsToUpdatePerTick = 0)
 {
-    grid->width = cityWidth;
-    grid->height = cityHeight;
+    grid->width = city_size.x;
+    grid->height = city_size.y;
     grid->sectorSize = sectorSize;
-    grid->sectorsX = divideCeil(cityWidth, sectorSize);
-    grid->sectorsY = divideCeil(cityHeight, sectorSize);
+    grid->sectorsX = divideCeil(city_size.x, sectorSize);
+    grid->sectorsY = divideCeil(city_size.y, sectorSize);
 
     grid->nextSectorUpdateIndex = 0;
     grid->sectorsToUpdatePerTick = sectorsToUpdatePerTick;
 
     grid->sectors = arena->allocate_array<Sector>(grid->sectorsX * grid->sectorsY, true);
 
-    s32 remainderWidth = cityWidth % sectorSize;
-    s32 remainderHeight = cityHeight % sectorSize;
+    s32 remainderWidth = city_size.x % sectorSize;
+    s32 remainderHeight = city_size.y % sectorSize;
     for (s32 y = 0; y < grid->sectorsY; y++) {
         for (s32 x = 0; x < grid->sectorsX; x++) {
             Sector* sector = &grid->sectors[(grid->sectorsX * y) + x];
@@ -114,7 +114,7 @@ Sector* getSectorAtTilePos(SectorGrid<Sector>* grid, s32 x, s32 y)
 template<typename Sector>
 Rect2I getSectorsCovered(SectorGrid<Sector>* grid, Rect2I area)
 {
-    auto intersected_area = area.intersected({0, 0, grid->width, grid->height});
+    auto intersected_area = area.intersected({ 0, 0, grid->width, grid->height });
 
     return Rect2I::create_min_max(
         intersected_area.x / grid->sectorSize,

@@ -30,7 +30,7 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
     initChunkPool(&city->sectorBoundariesChunkPool, gameArena, 8);
     initChunkPool(&city->buildingRefsChunkPool, gameArena, 128);
 
-    initSectorGrid(&city->sectors, gameArena, width, height, 16, 8);
+    initSectorGrid(&city->sectors, gameArena, city->bounds.size(), 16, 8);
     for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&city->sectors); sectorIndex++) {
         CitySector* sector = &city->sectors.sectors[sectorIndex];
         initChunkedArray(&sector->ownedBuildings, &city->sectorBuildingsChunkPool);

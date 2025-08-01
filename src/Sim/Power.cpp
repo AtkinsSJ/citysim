@@ -23,7 +23,7 @@ void initPowerLayer(PowerLayer* layer, City* city, MemoryArena* gameArena)
     layer->powerMaxDistance = 2;
     initDirtyRects(&layer->dirtyRects, gameArena, layer->powerMaxDistance, city->bounds);
 
-    initSectorGrid(&layer->sectors, gameArena, city->bounds.w, city->bounds.h, 16);
+    initSectorGrid(&layer->sectors, gameArena, city->bounds.size(), 16);
     for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&layer->sectors); sectorIndex++) {
         PowerSector* sector = &layer->sectors.sectors[sectorIndex];
 

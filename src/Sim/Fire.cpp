@@ -35,7 +35,7 @@ void initFireLayer(FireLayer* layer, City* city, MemoryArena* gameArena)
 
     layer->activeFireCount = 0;
     initChunkPool(&layer->firePool, gameArena, 64);
-    initSectorGrid(&layer->sectors, gameArena, city->bounds.w, city->bounds.h, 16, 8);
+    initSectorGrid(&layer->sectors, gameArena, city->bounds.size(), 16, 8);
     for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&layer->sectors); sectorIndex++) {
         FireSector* sector = &layer->sectors.sectors[sectorIndex];
 

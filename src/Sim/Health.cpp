@@ -18,7 +18,7 @@ float getHealthCoveragePercentAt(City* city, s32 x, s32 y)
 
 void initHealthLayer(HealthLayer* layer, City* city, MemoryArena* gameArena)
 {
-    initSectorGrid(&layer->sectors, gameArena, city->bounds.w, city->bounds.h, 16, 8);
+    initSectorGrid(&layer->sectors, gameArena, city->bounds.size(), 16, 8);
 
     initDirtyRects(&layer->dirtyRects, gameArena, maxLandValueEffectDistance, city->bounds);
 

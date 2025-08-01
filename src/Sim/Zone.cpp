@@ -16,7 +16,7 @@ void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena)
 {
     zoneLayer->tileZone = gameArena->allocate_array_2d<ZoneType>(city->bounds.size());
 
-    initSectorGrid(&zoneLayer->sectors, gameArena, city->bounds.w, city->bounds.h, 16, 8);
+    initSectorGrid(&zoneLayer->sectors, gameArena, city->bounds.size(), 16, 8);
     s32 sectorCount = getSectorCount(&zoneLayer->sectors);
 
     // NB: Element 0 is empty because tracking spots with no zone is not useful

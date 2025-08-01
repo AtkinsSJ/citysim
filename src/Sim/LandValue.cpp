@@ -13,7 +13,7 @@
 
 void initLandValueLayer(LandValueLayer* layer, City* city, MemoryArena* gameArena)
 {
-    initSectorGrid(&layer->sectors, gameArena, city->bounds.w, city->bounds.h, 16, 8);
+    initSectorGrid(&layer->sectors, gameArena, city->bounds.size(), 16, 8);
 
     layer->tileLandValue = gameArena->allocate_array_2d<u8>(city->bounds.size());
     fill<u8>(&layer->tileLandValue, 0);
