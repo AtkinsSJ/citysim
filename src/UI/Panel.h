@@ -121,7 +121,7 @@ struct Panel {
             return widgetSize;
         });
 
-        Rect2I radioButtonBounds = alignWithinRectangle(buttonGroupBounds, radioButtonSize, { HAlign::Left, VAlign::Top });
+        Rect2I radioButtonBounds = buttonGroupBounds.create_aligned_within(radioButtonSize, { HAlign::Left, VAlign::Top });
         s32 textWidth = buttonGroupBounds.w - (radioButtonSize.x + style->contentPadding);
         bool fillWidth = widgetAlignment.horizontal == HAlign::Fill;
 
@@ -226,7 +226,7 @@ struct Panel {
 
         V2I widgetSize = calculateSize(space, fillWidth);
 
-        Rect2I widgetBounds = alignWithinRectangle(space, widgetSize, widgetAlignment);
+        Rect2I widgetBounds = space.create_aligned_within(widgetSize, widgetAlignment);
 
         return widgetBounds;
     }

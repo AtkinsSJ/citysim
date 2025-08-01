@@ -383,7 +383,7 @@ Rect2I drawTextInput(RenderBuffer* renderBuffer, TextInput* textInput, TextInput
         && hasCapturedInput(textInput)
         && (textInput->caretFlashCounter < (style->caretFlashCycleDuration * 0.5f));
 
-    Rect2I textBounds = shrink(bounds, style->padding);
+    Rect2I textBounds = bounds.shrunk(style->padding);
     DrawTextResult drawTextResult = {};
     drawText(renderBuffer, font, text, textBounds, style->textAlignment, style->textColor, renderer.shaderIds.text, textInput->caret.glyphPos, &drawTextResult);
 

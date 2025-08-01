@@ -229,7 +229,7 @@ void updateAndRenderWindows()
         // Handle dragging the window
         if (isModal) {
             // Modal windows can't be moved, they just auto-centre
-            window->area = centreWithin(validWindowArea, window->area.size());
+            window->area = validWindowArea.create_centred_within(window->area.size());
         } else if (isDragging((void*)window->id)) {
             window->area.set_position(getDraggingObjectPos());
         } else if (isTooltip) {
@@ -299,7 +299,7 @@ void updateAndRenderWindows()
             LabelStyle* titleStyle = getStyle<LabelStyle>(&windowStyle->titleLabelStyle);
             // TODO: Take close-button size into account
             V2I titleSize = calculateLabelSize(titleString, titleStyle, barArea.w, false);
-            putLabel(titleString, alignWithinRectangle(barArea, titleSize, titleStyle->textAlignment), titleStyle, window->renderBuffer);
+            putLabel(titleString, barArea.create_aligned_within(titleSize, titleStyle->textAlignment), titleStyle, window->renderBuffer);
 
             // TODO: Replace this with an actual Button?
             auto titleFont = getFont(&titleStyle->font);

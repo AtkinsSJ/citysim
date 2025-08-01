@@ -62,7 +62,7 @@ void updateFireLayer(City* city, FireLayer* layer)
             Rect2I dirtyRect = rectIt.getValue();
             fillRegion<u16>(&layer->tileFireProximityEffect, dirtyRect, 0);
 
-            Rect2I expandedRect = expand(dirtyRect, layer->maxFireRadius);
+            Rect2I expandedRect = dirtyRect.expanded(layer->maxFireRadius);
             Rect2I affectedSectors = getSectorsCovered(&layer->sectors, expandedRect);
 
             for (s32 sy = affectedSectors.y; sy < affectedSectors.y + affectedSectors.h; sy++) {

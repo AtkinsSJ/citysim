@@ -53,7 +53,7 @@ void setTerrainAt(City* city, s32 x, s32 y, u8 terrainType)
     city->terrainLayer.tileTerrainType.set(x, y, terrainType);
 
     // Update sprites on this and neighbouring tiles
-    Rect2I spriteUpdateBounds = intersect({x - 1, y - 1, 3, 3}, city->bounds);
+    Rect2I spriteUpdateBounds = city->bounds.intersected({x - 1, y - 1, 3, 3});
     assignTerrainSprites(city, spriteUpdateBounds);
 
     // Update distance to water
@@ -68,7 +68,7 @@ u8 getDistanceToWaterAt(City* city, s32 x, s32 y)
 void updateDistanceToWater(City* city, Rect2I dirtyBounds)
 {
     TerrainLayer* layer = &city->terrainLayer;
-    Rect2I bounds = intersect(expand(dirtyBounds, maxDistanceToWater), city->bounds);
+    Rect2I bounds = city->bounds.intersected(dirtyBounds.expanded(maxDistanceToWater));
     u8 tWater = truncate<u8>(findTerrainTypeByName("water"_s));
 
     for (s32 y = bounds.y;
@@ -328,7 +328,7 @@ void generateTerrain(City* city, Random* gameRandom)
 
         Splat pondSplat = Splat::create_random(pondCentreX, pondCentreY, pondMinRadius, pondMaxRadius, 36, terrainRandom);
 
-        Rect2I boundingBox = intersect(pondSplat.bounding_box(), city->bounds);
+        Rect2I boundingBox = pondSplat.bounding_box().intersected(city->bounds);
         for (s32 y = boundingBox.y; y < boundingBox.y + boundingBox.h; y++) {
             for (s32 x = boundingBox.x; x < boundingBox.x + boundingBox.w; x++) {
                 if (pondSplat.contains(x, y)) {
@@ -352,7 +352,7 @@ void generateTerrain(City* city, Random* gameRandom)
 
             Splat forestSplat = Splat::create_random(centreX, centreY, minRadius, maxRadius, 36, terrainRandom);
 
-            Rect2I boundingBox = intersect(forestSplat.bounding_box(), city->bounds);
+            Rect2I boundingBox = forestSplat.bounding_box().intersected(city->bounds);
             for (s32 y = boundingBox.y; y < boundingBox.y + boundingBox.h; y++) {
                 for (s32 x = boundingBox.x; x < boundingBox.x + boundingBox.w; x++) {
                     if (getTerrainAt(city, x, y)->canBuildOn

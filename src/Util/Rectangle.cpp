@@ -286,57 +286,40 @@ bool Rect2I::overlaps(Rect2I const& other) const
         && other.min_y() < max_y();
 }
 
-Rect2I expand(Rect2I rect, s32 radius)
+Rect2I Rect2I::expanded(s32 radius) const
+{
+    return expanded(radius, radius, radius, radius);
+}
+
+Rect2I Rect2I::expanded(s32 top, s32 right, s32 bottom, s32 left) const
 {
     return {
-        rect.x - radius,
-        rect.y - radius,
-        rect.w + (radius * 2),
-        rect.h + (radius * 2)
+        x - left,
+        y - top,
+        w + left + right,
+        h + top + bottom
     };
 }
 
-Rect2I expand(Rect2I rect, s32 top, s32 right, s32 bottom, s32 left)
+Rect2I Rect2I::shrunk(s32 radius) const
 {
-    return {
-        rect.x - left,
-        rect.y - top,
-        rect.w + left + right,
-        rect.h + top + bottom
-    };
+    return shrunk(radius, radius, radius, radius);
 }
 
-Rect2I shrink(Rect2I rect, s32 radius)
-{
-    s32 doubleRadius = radius * 2;
-    if ((rect.w >= doubleRadius) && (rect.h >= doubleRadius)) {
-        return {
-            rect.x + radius,
-            rect.y + radius,
-            rect.w - doubleRadius,
-            rect.h - doubleRadius
-        };
-    } else {
-        V2 centre = rect.centre();
-        return Rect2I::create_centre_size((s32)centre.x, (s32)centre.y,
-            max(rect.w - doubleRadius, 0), max(rect.h - doubleRadius, 0));
-    }
-}
-
-Rect2I shrink(Rect2I rect, Padding padding)
+Rect2I Rect2I::shrunk(s32 top, s32 right, s32 bottom, s32 left) const
 {
     Rect2I result {
-        rect.x + padding.left,
-        rect.y + padding.top,
-        rect.w - (padding.left + padding.right),
-        rect.h - (padding.top + padding.bottom)
+        x + left,
+        y + top,
+        w - (left + right),
+        h - (top + bottom)
     };
 
-    // NB: We do this calculation differently from the simpler shrink(rect, radius), because
-    // the shrink amount might be different from one side to the other, which means the new
+    // NB: The shrink amount might be different from one side to the other, which means the new
     // centre is not the same as the old centre!
     // So, we create the new, possibly inside-out rectangle, and then set its dimensions
     // to 0 if they are negative, while maintaining the centre point.
+    // FIXME: This means that shrinking past 0 will move the rectangle around. That seems not OK?
 
     V2 centre = result.centre();
 
@@ -353,28 +336,33 @@ Rect2I shrink(Rect2I rect, Padding padding)
     return result;
 }
 
-Rect2I intersect(Rect2I inner, Rect2I outer)
+Rect2I Rect2I::shrunk(Padding const& padding) const
 {
-    Rect2I result = inner;
+    return shrunk(padding.top, padding.right, padding.bottom, padding.left);
+}
+
+Rect2I Rect2I::intersected(Rect2I const& other) const
+{
+    Rect2I result = *this;
 
     // X
-    s32 rightExtension = (result.x + result.w) - (outer.x + outer.w);
+    s32 rightExtension = (result.x + result.w) - (other.x + other.w);
     if (rightExtension > 0) {
         result.w -= rightExtension;
     }
-    if (result.x < outer.x) {
-        s32 leftExtension = outer.x - result.x;
+    if (result.x < other.x) {
+        s32 leftExtension = other.x - result.x;
         result.x += leftExtension;
         result.w -= leftExtension;
     }
 
     // Y
-    s32 bottomExtension = (result.y + result.h) - (outer.y + outer.h);
+    s32 bottomExtension = (result.y + result.h) - (other.y + other.h);
     if (bottomExtension > 0) {
         result.h -= bottomExtension;
     }
-    if (result.y < outer.y) {
-        s32 topExtension = outer.y - result.y;
+    if (result.y < other.y) {
+        s32 topExtension = other.y - result.y;
         result.y += topExtension;
         result.h -= topExtension;
     }
@@ -385,10 +373,10 @@ Rect2I intersect(Rect2I inner, Rect2I outer)
     return result;
 }
 
-Rect2I intersectRelative(Rect2I outer, Rect2I inner)
+Rect2I Rect2I::intersected_relative(Rect2I const& inner) const
 {
-    Rect2I result = intersect(inner, outer);
-    result.set_position(result.position() - outer.position());
+    Rect2I result = intersected(inner);
+    result.set_position(result.position() - position());
 
     return result;
 }
@@ -418,45 +406,45 @@ bool Rect2I::has_positive_area() const
     return w > 0 && h > 0;
 }
 
-Rect2I centreWithin(Rect2I outer, V2I innerSize)
+Rect2I Rect2I::create_centred_within(V2I inner_size) const
 {
     return {
-        outer.x - ((innerSize.x - outer.w) / 2),
-        outer.y - ((innerSize.y - outer.h) / 2),
-        innerSize.x,
-        innerSize.y
+        x - ((inner_size.x - w) / 2),
+        y - ((inner_size.y - h) / 2),
+        inner_size.x,
+        inner_size.y
     };
 }
 
-Rect2I alignWithinRectangle(Rect2I bounds, V2I size, Alignment alignment, Padding padding)
+Rect2I Rect2I::create_aligned_within(V2I size, Alignment alignment, Padding padding) const
 {
     V2I origin;
 
     switch (alignment.horizontal) {
     case HAlign::Centre:
-        origin.x = bounds.x + (bounds.w / 2);
+        origin.x = x + (w / 2);
         break;
     case HAlign::Right:
-        origin.x = bounds.x + bounds.w - padding.right;
+        origin.x = x + w - padding.right;
         break;
     case HAlign::Left: // Left is default
     case HAlign::Fill: // Meaningless here so default to left
     default:
-        origin.x = bounds.x + padding.left;
+        origin.x = x + padding.left;
         break;
     }
 
     switch (alignment.vertical) {
     case VAlign::Centre:
-        origin.y = bounds.y + (bounds.h / 2);
+        origin.y = y + (h / 2);
         break;
     case VAlign::Bottom:
-        origin.y = bounds.y + bounds.h - padding.bottom;
+        origin.y = y + h - padding.bottom;
         break;
     case VAlign::Top:  // Top is default
     case VAlign::Fill: // Meaningless here so default to top
     default:
-        origin.y = bounds.y + padding.top;
+        origin.y = y + padding.top;
         break;
     }
 

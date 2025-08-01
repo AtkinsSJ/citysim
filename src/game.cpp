@@ -217,7 +217,7 @@ Rect2I getDragArea(DragState* dragState, Rect2I cityBounds, DragType dragType, V
             INVALID_DEFAULT_CASE;
         }
 
-        result = intersect(result, cityBounds);
+        result = result.intersected(cityBounds);
     }
 
     return result;
@@ -875,7 +875,7 @@ AppStatus updateAndRenderGame(GameState* gameState, float deltaTime)
     // We err on the side of drawing too much, rather than risking having holes in the world.
     Rect2I visibleTileBounds = Rect2I::create_centre_size(
         v2i(world_camera.position()), v2i(world_camera.size() / world_camera.zoom()) + v2i(3, 3));
-    visibleTileBounds = intersect(visibleTileBounds, city->bounds);
+    visibleTileBounds = visibleTileBounds.intersected(city->bounds);
 
     // logInfo("visibleTileBounds = {0} {1} {2} {3}"_s, {formatInt(visibleTileBounds.x),formatInt(visibleTileBounds.y),formatInt(visibleTileBounds.w),formatInt(visibleTileBounds.h)});
 
@@ -1123,7 +1123,7 @@ void drawDataViewUI(GameState* gameState)
     V2I dataViewButtonSize = UI::calculateButtonSize(dataViewButtonText, buttonStyle);
     Rect2I dataViewButtonBounds { uiPadding, UI::windowSize.y - uiPadding - dataViewButtonSize.y, dataViewButtonSize.x, dataViewButtonSize.y };
 
-    Rect2I dataViewUIBounds = expand(dataViewButtonBounds, uiPadding);
+    Rect2I dataViewUIBounds = dataViewButtonBounds.expanded(uiPadding);
     drawSingleRect(uiBuffer, dataViewUIBounds, renderer.shaderIds.untextured, Colour::from_rgb_255(0, 0, 0, 128));
     UI::addUIRect(dataViewUIBounds);
 

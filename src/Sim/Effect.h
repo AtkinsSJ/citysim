@@ -44,7 +44,7 @@ public:
         float outer_value = m_outer_value * scale;
 
         Rect2I possibleEffectArea { floor_s32(effect_centre.x - m_radius), floor_s32(effect_centre.y - m_radius), ceil_s32(m_radius + m_radius), ceil_s32(m_radius + m_radius) };
-        possibleEffectArea = intersect(possibleEffectArea, region);
+        possibleEffectArea = possibleEffectArea.intersected(region);
         for (s32 y = possibleEffectArea.y; y < possibleEffectArea.y + possibleEffectArea.h; y++) {
             for (s32 x = possibleEffectArea.x; x < possibleEffectArea.x + possibleEffectArea.w; x++) {
                 float distance2FromSource = lengthSquaredOf(x - effect_centre.x, y - effect_centre.y);

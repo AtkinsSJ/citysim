@@ -114,7 +114,7 @@ Sector* getSectorAtTilePos(SectorGrid<Sector>* grid, s32 x, s32 y)
 template<typename Sector>
 Rect2I getSectorsCovered(SectorGrid<Sector>* grid, Rect2I area)
 {
-    auto intersected_area = intersect(area, {0, 0, grid->width, grid->height});
+    auto intersected_area = area.intersected({0, 0, grid->width, grid->height});
 
     return Rect2I::create_min_max(
         intersected_area.x / grid->sectorSize,

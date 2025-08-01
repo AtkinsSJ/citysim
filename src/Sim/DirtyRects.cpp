@@ -18,10 +18,10 @@ void markRectAsDirty(DirtyRects* dirtyRects, Rect2I rect)
 {
     bool added = false;
 
-    Rect2I rectToAdd = expand(rect, dirtyRects->expansionRadius);
+    Rect2I rectToAdd = rect.expanded(dirtyRects->expansionRadius);
 
     if (dirtyRects->bounds.has_positive_area())
-        rectToAdd = intersect(rectToAdd, dirtyRects->bounds);
+        rectToAdd = rectToAdd.intersected(dirtyRects->bounds);
 
     // Skip empty rects
     if (!rectToAdd.has_positive_area())

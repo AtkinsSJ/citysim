@@ -367,7 +367,7 @@ void demolishRect(City* city, Rect2I area)
     }
 
     // Expand the area to account for buildings to the left or up from it
-    Rect2I expandedArea = expand(area, buildingCatalogue.overallMaxBuildingDim, 0, 0, buildingCatalogue.overallMaxBuildingDim);
+    Rect2I expandedArea = area.expanded(buildingCatalogue.overallMaxBuildingDim, 0, 0, buildingCatalogue.overallMaxBuildingDim);
     Rect2I sectorsArea = getSectorsCovered(&city->sectors, expandedArea);
 
     for (s32 sY = sectorsArea.y;
@@ -416,7 +416,7 @@ ChunkedArray<Building*> findBuildingsOverlappingArea(City* city, Rect2I area, Fl
     // Expand the area to account for buildings to the left or up from it
     // (but don't do that if we only care about origins)
     s32 expansion = flags.has(BuildingQueryFlag::RequireOriginInArea) ? 0 : buildingCatalogue.overallMaxBuildingDim;
-    Rect2I expandedArea = expand(area, expansion, 0, 0, expansion);
+    Rect2I expandedArea = area.expanded(expansion, 0, 0, expansion);
     Rect2I sectorsArea = getSectorsCovered(&city->sectors, expandedArea);
 
     for (s32 sY = sectorsArea.y;

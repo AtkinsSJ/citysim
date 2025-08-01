@@ -221,7 +221,7 @@ void setRectPowerGroupUnknown(PowerSector* sector, Rect2I area)
 {
     DEBUG_FUNCTION();
 
-    Rect2I relArea = intersectRelative(sector->bounds, area);
+    Rect2I relArea = sector->bounds.intersected_relative(area);
 
     for (s32 relY = relArea.y;
         relY < relArea.y + relArea.h;
@@ -480,7 +480,7 @@ void floodFillCityPowerNetwork(PowerLayer* layer, PowerGroup* powerGroup, PowerN
         it.next()) {
         Rect2I bounds = it.getValue();
         PowerSector* sector = getSectorAtTilePos(&layer->sectors, bounds.x, bounds.y);
-        bounds = intersectRelative(sector->bounds, bounds);
+        bounds = sector->bounds.intersected_relative(bounds);
 
         s32 lastPowerGroupIndex = -1;
 

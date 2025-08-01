@@ -18,7 +18,7 @@ Panel::Panel(Rect2I bounds, PanelStyle* panelStyle, u32 flags, RenderBuffer* ren
     , layoutBottomToTop((flags & PanelFlags::LayoutBottomToTop) != 0)
     , renderBuffer(renderBuffer)
     , bounds(bounds)
-    , contentArea(shrink(bounds, this->style->padding))
+    , contentArea(bounds.shrunk(this->style->padding))
     , widgetAlignment({ style->widgetAlignment.horizontal, layoutBottomToTop ? VAlign::Bottom : VAlign::Top })
     , currentLeft(0)
     , currentRight(this->contentArea.w)

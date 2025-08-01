@@ -150,6 +150,8 @@ public:
     s32 w;
     s32 h;
     static Rect2I placed_randomly_within(Random& random, V2I size, Rect2I boundary);
+    Rect2I create_centred_within(V2I size) const;
+    Rect2I create_aligned_within(V2I size, Alignment alignment, Padding padding = {}) const;
 
     float min_x() const { return x; }
     float max_x() const { return x + w; }
@@ -181,21 +183,15 @@ public:
 
     bool overlaps(Rect2I const&) const;
 
+    Rect2I expanded(s32 radius) const;
+    Rect2I expanded(s32 top, s32 right, s32 bottom, s32 left) const;
+
+    Rect2I shrunk(s32 radius) const;
+    Rect2I shrunk(Padding const&) const;
+    Rect2I shrunk(s32 top, s32 right, s32 bottom, s32 left) const;
+
+    Rect2I intersected(Rect2I const&) const;
+    Rect2I intersected_relative(Rect2I const&) const;
+
     Rect2I union_with(Rect2I const&) const;
 };
-
-Rect2I expand(Rect2I rect, s32 radius);
-Rect2I expand(Rect2I rect, s32 top, s32 right, s32 bottom, s32 left);
-// NB: shrink() always keeps the rectangle at >=0 sizes, so if you attempt
-// to subtract more, it remains 0 wide or tall, with a correct centre.
-// (This means shrinking a 0-size rectangle asymmetrically will move the
-// rectangle around. Which isn't useful so I don't know why I'm documenting it.)
-Rect2I shrink(Rect2I rect, s32 radius);
-Rect2I shrink(Rect2I rect, Padding padding);
-Rect2I intersect(Rect2I a, Rect2I b);
-// Takes the intersection of inner and outer, and then converts it to being relative to outer.
-// (Originally used to take a world-space rectangle and put it into a cropped, sector-space one.)
-Rect2I intersectRelative(Rect2I outer, Rect2I inner);
-
-Rect2I centreWithin(Rect2I outer, V2I innerSize);
-Rect2I alignWithinRectangle(Rect2I bounds, V2I size, Alignment alignment, Padding padding = {});

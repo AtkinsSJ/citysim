@@ -91,7 +91,7 @@ bool isMouseInUIBounds(Rect2I bounds)
 
 bool isMouseInUIBounds(Rect2I bounds, V2I pos)
 {
-    Rect2I clippedBounds = isInputScissorActive() ? intersect(bounds, getInputScissorRect()) : bounds;
+    Rect2I clippedBounds = isInputScissorActive() ? bounds.intersected(getInputScissorRect()) : bounds;
 
     bool result = clippedBounds.contains(pos);
 
@@ -100,7 +100,7 @@ bool isMouseInUIBounds(Rect2I bounds, V2I pos)
 
 bool justClickedOnUI(Rect2I bounds)
 {
-    Rect2I clippedBounds = isInputScissorActive() ? intersect(bounds, getInputScissorRect()) : bounds;
+    Rect2I clippedBounds = isInputScissorActive() ? bounds.intersected(getInputScissorRect()) : bounds;
 
     bool result = !isMouseInputHandled()
         && clippedBounds.contains(mousePos)
@@ -255,7 +255,7 @@ V2I calculateButtonSize(V2I contentSize, ButtonStyle* style, s32 maxWidth, bool 
 
 Rect2I calculateButtonContentBounds(Rect2I bounds, ButtonStyle* style)
 {
-    Rect2I contentBounds = shrink(bounds, style->padding);
+    Rect2I contentBounds = bounds.shrunk(style->padding);
 
     V2I startIconSize = style->startIcon.getSize();
     if (startIconSize.x > 0) {
@@ -308,13 +308,13 @@ bool putButton(Rect2I bounds, ButtonStyle* style, ButtonState state, RenderBuffe
     // Icons!
     if (style->startIcon.type != DrawableType::None) {
         V2I startIconSize = style->startIcon.getSize();
-        Rect2I startIconBounds = alignWithinRectangle(bounds, startIconSize, style->startIconAlignment, style->padding);
+        Rect2I startIconBounds = bounds.create_aligned_within(startIconSize, style->startIconAlignment, style->padding);
 
         Drawable(&style->startIcon).draw(renderBuffer, startIconBounds);
     }
     if (style->endIcon.type != DrawableType::None) {
         V2I endIconSize = style->endIcon.getSize();
-        Rect2I endIconBounds = alignWithinRectangle(bounds, endIconSize, style->endIconAlignment, style->padding);
+        Rect2I endIconBounds = bounds.create_aligned_within(endIconSize, style->endIconAlignment, style->padding);
 
         Drawable(&style->endIcon).draw(renderBuffer, endIconBounds);
     }
@@ -404,7 +404,7 @@ void putCheckbox(bool* checked, Rect2I bounds, CheckboxStyle* style, bool isDisa
     Drawable(backgroundStyle).draw(renderBuffer, bounds);
 
     if (*checked) {
-        Rect2I checkBounds = shrink(bounds, style->padding);
+        Rect2I checkBounds = bounds.shrunk(style->padding);
         Drawable(checkStyle).draw(renderBuffer, checkBounds);
     }
 }
@@ -462,7 +462,7 @@ void putLabel(String text, Rect2I bounds, LabelStyle* style, RenderBuffer* rende
     if (renderBuffer == nullptr)
         renderBuffer = &renderer.ui_buffer();
 
-    Rect2I textBounds = shrink(bounds, style->padding);
+    Rect2I textBounds = bounds.shrunk(style->padding);
 
     Drawable(&style->background).draw(renderBuffer, bounds);
 
@@ -547,7 +547,7 @@ void putRadioButton(s32* selectedValue, s32 value, Rect2I bounds, RadioButtonSty
     Drawable(backgroundStyle).draw(renderBuffer, bounds);
 
     if (*selectedValue == value) {
-        Rect2I dotBounds = centreWithin(bounds, style->dotSize);
+        Rect2I dotBounds = bounds.create_centred_within(style->dotSize);
         Drawable(dotStyle).draw(renderBuffer, dotBounds);
     }
 }
