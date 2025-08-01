@@ -120,6 +120,12 @@ public:
     }
 
     template<typename T>
+    Array2<T> allocate_array_2d(V2I size)
+    {
+        return allocate_array_2d<T>(size.x, size.y);
+    }
+
+    template<typename T>
     Array2<T> allocate_array_2d(u32 w, u32 h)
     {
         ASSERT(w > 0 && h > 0);
