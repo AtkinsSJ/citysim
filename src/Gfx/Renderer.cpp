@@ -346,7 +346,7 @@ void addBeginScissor(RenderBuffer* buffer, Rect2I bounds)
     // We have to flip the bounds rectangle vertically because OpenGL has the origin in the bottom-left,
     // whereas our system uses the top-left!
 
-    bounds.y = s_renderer->window_height() - bounds.y - bounds.height();
+    bounds.set_y(s_renderer->window_height() - bounds.y() - bounds.height());
 
     // Crop to window bounds
     scissor->bounds = bounds.intersected({ 0u, 0u, s_renderer->window_width(), s_renderer->window_height() });
@@ -459,15 +459,15 @@ void drawNinepatch(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, Ninepatch* 
     // NB: See comments in the Ninepatch struct for how we could avoid doing the  UV calculations repeatedly,
     // and why we haven't done so.
 
-    float x0 = (float)(bounds.x);
-    float x1 = (float)(bounds.x + ninepatch->pu1 - ninepatch->pu0);
-    float x2 = (float)(bounds.x + bounds.width() - (ninepatch->pu3 - ninepatch->pu2));
-    float x3 = (float)(bounds.x + bounds.width());
+    float x0 = (float)(bounds.x());
+    float x1 = (float)(bounds.x() + ninepatch->pu1 - ninepatch->pu0);
+    float x2 = (float)(bounds.x() + bounds.width() - (ninepatch->pu3 - ninepatch->pu2));
+    float x3 = (float)(bounds.x() + bounds.width());
 
-    float y0 = (float)(bounds.y);
-    float y1 = (float)(bounds.y + ninepatch->pv1 - ninepatch->pv0);
-    float y2 = (float)(bounds.y + bounds.height() - (ninepatch->pv3 - ninepatch->pv2));
-    float y3 = (float)(bounds.y + bounds.height());
+    float y0 = (float)(bounds.y());
+    float y1 = (float)(bounds.y() + ninepatch->pv1 - ninepatch->pv0);
+    float y2 = (float)(bounds.y() + bounds.height() - (ninepatch->pv3 - ninepatch->pv2));
+    float y3 = (float)(bounds.y() + bounds.height());
 
     // top left
     addRectInternal(group, Rect2::create_min_max(x0, y0, x1, y1), color, Rect2::create_min_max(ninepatch->u0, ninepatch->v0, ninepatch->u1, ninepatch->v1));
@@ -516,15 +516,15 @@ void fillDrawNinepatchPlaceholder(DrawNinepatchPlaceholder* placeholder, Rect2I 
     // NB: See comments in the Ninepatch struct for how we could avoid doing the  UV calculations repeatedly,
     // and why we haven't done so.
 
-    float x0 = (float)(bounds.x);
-    float x1 = (float)(bounds.x + ninepatch->pu1 - ninepatch->pu0);
-    float x2 = (float)(bounds.x + bounds.width() - (ninepatch->pu3 - ninepatch->pu2));
-    float x3 = (float)(bounds.x + bounds.width());
+    float x0 = (float)(bounds.x());
+    float x1 = (float)(bounds.x() + ninepatch->pu1 - ninepatch->pu0);
+    float x2 = (float)(bounds.x() + bounds.width() - (ninepatch->pu3 - ninepatch->pu2));
+    float x3 = (float)(bounds.x() + bounds.width());
 
-    float y0 = (float)(bounds.y);
-    float y1 = (float)(bounds.y + ninepatch->pv1 - ninepatch->pv0);
-    float y2 = (float)(bounds.y + bounds.height() - (ninepatch->pv3 - ninepatch->pv2));
-    float y3 = (float)(bounds.y + bounds.height());
+    float y0 = (float)(bounds.y());
+    float y1 = (float)(bounds.y() + ninepatch->pv1 - ninepatch->pv0);
+    float y2 = (float)(bounds.y() + bounds.height() - (ninepatch->pv3 - ninepatch->pv2));
+    float y3 = (float)(bounds.y() + bounds.height());
 
     RenderItem_DrawRects_Item* rect = placeholder->firstRect;
 

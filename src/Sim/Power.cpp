@@ -124,7 +124,7 @@ void updateSectorPowerValues(City* city, PowerSector* sector)
         BuildingDef* def = getBuildingDef(building->typeID);
 
         if (def->power != 0) {
-            u8 powerGroupIndex = getPowerGroupID(sector, building->footprint.x - sector->bounds.x, building->footprint.y - sector->bounds.y);
+            u8 powerGroupIndex = getPowerGroupID(sector, building->footprint.x() - sector->bounds.x(), building->footprint.y() - sector->bounds.y());
             PowerGroup* powerGroup = sector->powerGroups.get(powerGroupIndex - 1);
             if (def->power > 0) {
                 powerGroup->production += def->power;
@@ -143,8 +143,8 @@ bool doesTileHavePowerNetwork(City* city, s32 x, s32 y)
         PowerLayer* layer = &city->powerLayer;
         PowerSector* sector = getSectorAtTilePos(&layer->sectors, x, y);
 
-        s32 relX = x - sector->bounds.x;
-        s32 relY = y - sector->bounds.y;
+        s32 relX = x - sector->bounds.x();
+        s32 relY = y - sector->bounds.y();
 
         u8 powerGroupIndex = getPowerGroupID(sector, relX, relY);
         result = (powerGroupIndex != 0);
@@ -161,8 +161,8 @@ PowerNetwork* getPowerNetworkAt(City* city, s32 x, s32 y)
         PowerLayer* layer = &city->powerLayer;
         PowerSector* sector = getSectorAtTilePos(&layer->sectors, x, y);
 
-        s32 relX = x - sector->bounds.x;
-        s32 relY = y - sector->bounds.y;
+        s32 relX = x - sector->bounds.x();
+        s32 relY = y - sector->bounds.y();
 
         u8 powerGroupIndex = getPowerGroupID(sector, relX, relY);
         if (powerGroupIndex != 0) {
@@ -223,11 +223,11 @@ void setRectPowerGroupUnknown(PowerSector* sector, Rect2I area)
 
     Rect2I relArea = sector->bounds.intersected_relative(area);
 
-    for (s32 relY = relArea.y;
-        relY < relArea.y + relArea.height();
+    for (s32 relY = relArea.y();
+        relY < relArea.y() + relArea.height();
         relY++) {
-        for (s32 relX = relArea.x;
-            relX < relArea.x + relArea.width();
+        for (s32 relX = relArea.x();
+            relX < relArea.x() + relArea.width();
             relX++) {
             setPowerGroupID(sector, relX, relY, POWER_GROUP_UNKNOWN);
         }
@@ -241,8 +241,8 @@ void markPowerLayerDirty(PowerLayer* layer, Rect2I bounds)
 
 void addBuildingToPowerLayer(PowerLayer* layer, Building* building)
 {
-    PowerSector* sector = getSectorAtTilePos(&layer->sectors, building->footprint.x, building->footprint.y);
-    PowerGroup* group = getPowerGroupAt(sector, building->footprint.x - sector->bounds.x, building->footprint.y - sector->bounds.y);
+    PowerSector* sector = getSectorAtTilePos(&layer->sectors, building->footprint.x(), building->footprint.y());
+    PowerGroup* group = getPowerGroupAt(sector, building->footprint.x() - sector->bounds.x(), building->footprint.y() - sector->bounds.y());
     if (group != nullptr) {
         group->buildings.append(getReferenceTo(building));
     }
@@ -274,7 +274,7 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
         for (s32 relX = 0;
             relX < sector->bounds.width();
             relX++) {
-            u8 distanceToPower = layer->tilePowerDistance.get(relX + sector->bounds.x, relY + sector->bounds.y);
+            u8 distanceToPower = layer->tilePowerDistance.get(relX + sector->bounds.x(), relY + sector->bounds.y());
 
             if (distanceToPower <= 1) {
                 setPowerGroupID(sector, relX, relY, POWER_GROUP_UNKNOWN);
@@ -321,7 +321,7 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
             continue; // We only care about powered buildings!
 
         if (sector->bounds.contains(building->footprint.position())) {
-            PowerGroup* group = getPowerGroupAt(sector, building->footprint.x - sector->bounds.x, building->footprint.y - sector->bounds.y);
+            PowerGroup* group = getPowerGroupAt(sector, building->footprint.x() - sector->bounds.x(), building->footprint.y() - sector->bounds.y());
 
             ASSERT(group != nullptr);
             group->buildings.append(getReferenceTo(building));
@@ -335,7 +335,7 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
     // @Copypasta The code for all this is really repetitive, but I'm not sure how to factor it together nicely.
 
     // - Step 4.1: Left edge
-    if (sector->bounds.x > 0) {
+    if (sector->bounds.x() > 0) {
         u8 currentPGId = 0;
         Rect2I* currentBoundary = nullptr;
 
@@ -355,8 +355,8 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
 
                 // Start a new boundary
                 currentBoundary = sector->powerGroups.get(currentPGId - 1)->sectorBoundaries.appendBlank();
-                currentBoundary->x = sector->bounds.x - 1;
-                currentBoundary->y = sector->bounds.y + relY;
+                currentBoundary->set_x(sector->bounds.x() - 1);
+                currentBoundary->set_y(sector->bounds.y() + relY);
                 currentBoundary->set_width(1);
                 currentBoundary->set_height(1);
             }
@@ -364,7 +364,7 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
     }
 
     // - Step 4.2: Right edge
-    if (sector->bounds.x + sector->bounds.width() < city->bounds.width()) {
+    if (sector->bounds.x() + sector->bounds.width() < city->bounds.width()) {
         u8 currentPGId = 0;
         Rect2I* currentBoundary = nullptr;
 
@@ -384,8 +384,8 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
 
                 // Start a new boundary
                 currentBoundary = sector->powerGroups.get(currentPGId - 1)->sectorBoundaries.appendBlank();
-                currentBoundary->x = sector->bounds.x + sector->bounds.width();
-                currentBoundary->y = sector->bounds.y + relY;
+                currentBoundary->set_x(sector->bounds.x() + sector->bounds.width());
+                currentBoundary->set_y(sector->bounds.y() + relY);
                 currentBoundary->set_width(1);
                 currentBoundary->set_height(1);
             }
@@ -393,7 +393,7 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
     }
 
     // - Step 4.3: Top edge
-    if (sector->bounds.y > 0) {
+    if (sector->bounds.y() > 0) {
         u8 currentPGId = 0;
         Rect2I* currentBoundary = nullptr;
 
@@ -413,8 +413,8 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
 
                 // Start a new boundary
                 currentBoundary = sector->powerGroups.get(currentPGId - 1)->sectorBoundaries.appendBlank();
-                currentBoundary->x = sector->bounds.x + relX;
-                currentBoundary->y = sector->bounds.y - 1;
+                currentBoundary->set_x(sector->bounds.x() + relX);
+                currentBoundary->set_y(sector->bounds.y() - 1);
                 currentBoundary->set_width(1);
                 currentBoundary->set_height(1);
             }
@@ -422,7 +422,7 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
     }
 
     // - Step 4.4: Bottom edge
-    if (sector->bounds.y + sector->bounds.height() < city->bounds.height()) {
+    if (sector->bounds.y() + sector->bounds.height() < city->bounds.height()) {
         u8 currentPGId = 0;
         Rect2I* currentBoundary = nullptr;
 
@@ -442,8 +442,8 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
 
                 // Start a new boundary
                 currentBoundary = sector->powerGroups.get(currentPGId - 1)->sectorBoundaries.appendBlank();
-                currentBoundary->x = sector->bounds.x + relX;
-                currentBoundary->y = sector->bounds.y + sector->bounds.height();
+                currentBoundary->set_x(sector->bounds.x() + relX);
+                currentBoundary->set_y(sector->bounds.y() + sector->bounds.height());
                 currentBoundary->set_width(1);
                 currentBoundary->set_height(1);
             }
@@ -479,14 +479,14 @@ void floodFillCityPowerNetwork(PowerLayer* layer, PowerGroup* powerGroup, PowerN
         it.hasNext();
         it.next()) {
         Rect2I bounds = it.getValue();
-        PowerSector* sector = getSectorAtTilePos(&layer->sectors, bounds.x, bounds.y);
+        PowerSector* sector = getSectorAtTilePos(&layer->sectors, bounds.x(), bounds.y());
         bounds = sector->bounds.intersected_relative(bounds);
 
         s32 lastPowerGroupIndex = -1;
 
         // TODO: @Speed We could probably just do 1 loop because the bounds rect is only 1-wide in one dimension!
-        for (s32 relY = bounds.y; relY < bounds.y + bounds.height(); relY++) {
-            for (s32 relX = bounds.x; relX < bounds.x + bounds.width(); relX++) {
+        for (s32 relY = bounds.y(); relY < bounds.y() + bounds.height(); relY++) {
+            for (s32 relX = bounds.x(); relX < bounds.x() + bounds.width(); relX++) {
                 s32 powerGroupIndex = getPowerGroupID(sector, relX, relY);
                 if (powerGroupIndex != 0 && powerGroupIndex != lastPowerGroupIndex) {
                     lastPowerGroupIndex = powerGroupIndex;
@@ -557,8 +557,8 @@ void updatePowerLayer(City* city, PowerLayer* layer)
             Rect2I dirtyRect = it.getValue();
 
             // Clear the "distance to power" for the surrounding area to 0 or 255
-            for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.height(); y++) {
-                for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.width(); x++) {
+            for (s32 y = dirtyRect.y(); y < dirtyRect.y() + dirtyRect.height(); y++) {
+                for (s32 x = dirtyRect.x(); x < dirtyRect.x() + dirtyRect.width(); x++) {
                     Building* building = getBuildingAt(city, x, y);
                     BuildingDef* def = nullptr;
                     if (building != nullptr) {
@@ -577,8 +577,8 @@ void updatePowerLayer(City* city, PowerLayer* layer)
 
             // Add the sectors to the list of touched sectors
             Rect2I sectorsRect = getSectorsCovered(&layer->sectors, dirtyRect);
-            for (s32 sY = sectorsRect.y; sY < sectorsRect.y + sectorsRect.height(); sY++) {
-                for (s32 sX = sectorsRect.x; sX < sectorsRect.x + sectorsRect.width(); sX++) {
+            for (s32 sY = sectorsRect.y(); sY < sectorsRect.y() + sectorsRect.height(); sY++) {
+                for (s32 sX = sectorsRect.x(); sX < sectorsRect.x() + sectorsRect.width(); sX++) {
                     touchedSectors.add(getSector(&layer->sectors, sX, sY));
                 }
             }

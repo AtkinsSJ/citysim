@@ -15,7 +15,7 @@ class MemoryArena;
 struct Padding;
 class Random;
 class Rect2;
-struct Rect2I;
+class Rect2I;
 struct String;
 struct V2;
 struct V2I;

@@ -13,8 +13,8 @@
  **********************************************/
 
 Rect2::Rect2(Rect2I const& other)
-    : m_x(other.x)
-    , m_y(other.y)
+    : m_x(other.x())
+    , m_y(other.y())
     , m_width(other.width())
     , m_height(other.height())
 {
@@ -198,8 +198,8 @@ bool Rect2::has_positive_area() const
 Rect2I Rect2I::placed_randomly_within(Random& random, V2I size, Rect2I boundary)
 {
     return {
-        random.random_between(boundary.x, boundary.x + boundary.m_width - size.x),
-        random.random_between(boundary.y, boundary.y + boundary.m_height - size.y),
+        random.random_between(boundary.m_x, boundary.m_x + boundary.m_width - size.x),
+        random.random_between(boundary.m_y, boundary.m_y + boundary.m_height - size.y),
         size.x, size.y
     };
 }
@@ -294,8 +294,8 @@ Rect2I Rect2I::expanded(s32 radius) const
 Rect2I Rect2I::expanded(s32 top, s32 right, s32 bottom, s32 left) const
 {
     return {
-        x - left,
-        y - top,
+        m_x - left,
+        m_y - top,
         m_width + left + right,
         m_height + top + bottom
     };
@@ -309,8 +309,8 @@ Rect2I Rect2I::shrunk(s32 radius) const
 Rect2I Rect2I::shrunk(s32 top, s32 right, s32 bottom, s32 left) const
 {
     Rect2I result {
-        x + left,
-        y + top,
+        m_x + left,
+        m_y + top,
         m_width - (left + right),
         m_height - (top + bottom)
     };
@@ -324,12 +324,12 @@ Rect2I Rect2I::shrunk(s32 top, s32 right, s32 bottom, s32 left) const
     V2 centre = result.centre();
 
     if (result.m_width < 0) {
-        result.x = (s32)centre.x;
+        result.m_x = (s32)centre.x;
         result.m_width = 0;
     }
 
     if (result.m_height < 0) {
-        result.y = (s32)centre.y;
+        result.m_y = (s32)centre.y;
         result.m_height = 0;
     }
 
@@ -346,24 +346,24 @@ Rect2I Rect2I::intersected(Rect2I const& other) const
     Rect2I result = *this;
 
     // X
-    s32 rightExtension = (result.x + result.m_width) - (other.x + other.m_width);
+    s32 rightExtension = (result.m_x + result.m_width) - (other.m_x + other.m_width);
     if (rightExtension > 0) {
         result.m_width -= rightExtension;
     }
-    if (result.x < other.x) {
-        s32 leftExtension = other.x - result.x;
-        result.x += leftExtension;
+    if (result.m_x < other.m_x) {
+        s32 leftExtension = other.m_x - result.m_x;
+        result.m_x += leftExtension;
         result.m_width -= leftExtension;
     }
 
     // Y
-    s32 bottomExtension = (result.y + result.m_height) - (other.y + other.m_height);
+    s32 bottomExtension = (result.m_y + result.m_height) - (other.m_y + other.m_height);
     if (bottomExtension > 0) {
         result.m_height -= bottomExtension;
     }
-    if (result.y < other.y) {
-        s32 topExtension = other.y - result.y;
-        result.y += topExtension;
+    if (result.m_y < other.m_y) {
+        s32 topExtension = other.m_y - result.m_y;
+        result.m_y += topExtension;
         result.m_height -= topExtension;
     }
 
@@ -383,17 +383,17 @@ Rect2I Rect2I::intersected_relative(Rect2I const& inner) const
 
 Rect2I Rect2I::union_with(Rect2I const& other) const
 {
-    s32 min_x = min(x, other.x);
-    s32 min_y = min(y, other.y);
-    s32 max_x = max(x + m_width - 1, other.x + other.m_width - 1);
-    s32 max_y = max(y + m_height - 1, other.y + other.m_height - 1);
+    s32 min_x = min(m_x, other.m_x);
+    s32 min_y = min(m_y, other.m_y);
+    s32 max_x = max(m_x + m_width - 1, other.m_x + other.m_width - 1);
+    s32 max_y = max(m_y + m_height - 1, other.m_y + other.m_height - 1);
 
     return Rect2I::create_min_max(min_x, min_y, max_x, max_y);
 }
 
 V2 Rect2I::centre() const
 {
-    return v2(x + m_width / 2.0f, y + m_height / 2.0f);
+    return v2(m_x + m_width / 2.0f, m_y + m_height / 2.0f);
 }
 
 s32 Rect2I::area() const
@@ -409,8 +409,8 @@ bool Rect2I::has_positive_area() const
 Rect2I Rect2I::create_centred_within(V2I inner_size) const
 {
     return {
-        x - ((inner_size.x - m_width) / 2),
-        y - ((inner_size.y - m_height) / 2),
+        m_x - ((inner_size.x - m_width) / 2),
+        m_y - ((inner_size.y - m_height) / 2),
         inner_size.x,
         inner_size.y
     };
@@ -422,29 +422,29 @@ Rect2I Rect2I::create_aligned_within(V2I size, Alignment alignment, Padding padd
 
     switch (alignment.horizontal) {
     case HAlign::Centre:
-        origin.x = x + (m_width / 2);
+        origin.x = m_x + (m_width / 2);
         break;
     case HAlign::Right:
-        origin.x = x + m_width - padding.right;
+        origin.x = m_x + m_width - padding.right;
         break;
     case HAlign::Left: // Left is default
     case HAlign::Fill: // Meaningless here so default to left
     default:
-        origin.x = x + padding.left;
+        origin.x = m_x + padding.left;
         break;
     }
 
     switch (alignment.vertical) {
     case VAlign::Centre:
-        origin.y = y + (m_height / 2);
+        origin.y = m_y + (m_height / 2);
         break;
     case VAlign::Bottom:
-        origin.y = y + m_height - padding.bottom;
+        origin.y = m_y + m_height - padding.bottom;
         break;
     case VAlign::Top:  // Top is default
     case VAlign::Fill: // Meaningless here so default to top
     default:
-        origin.y = y + padding.top;
+        origin.y = m_y + padding.top;
         break;
     }
 

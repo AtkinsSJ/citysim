@@ -177,7 +177,7 @@ void updateAndRenderConsole(Console* console)
         UI::drawTextInput(renderBuffer, &console->input, textInputStyle, textInputBounds);
 
         // Output area
-        V2I textPos = v2i(consoleStyle->padding.left, textInputBounds.y);
+        V2I textPos = v2i(consoleStyle->padding.left, textInputBounds.y());
         s32 textMaxWidth = screenWidth - (consoleStyle->padding.left + consoleStyle->padding.right);
         s32 heightOfOutputArea = textPos.y;
         Rect2I consoleBackRect { 0, 0, screenWidth, heightOfOutputArea };

@@ -17,8 +17,8 @@ void updateDistances(Array2<u8>* tileDistance, Rect2I dirtyRect, u8 maxDistance)
     DEBUG_FUNCTION();
 
     for (s32 iteration = 0; iteration < maxDistance; iteration++) {
-        for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.height(); y++) {
-            for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.width(); x++) {
+        for (s32 y = dirtyRect.y(); y < dirtyRect.y() + dirtyRect.height(); y++) {
+            for (s32 x = dirtyRect.x(); x < dirtyRect.x() + dirtyRect.width(); x++) {
                 if (tileDistance->get(x, y) != 0) {
                     u8 minDistance = min(
                         tileDistance->getIfExists(x - 1, y - 1, 255),
@@ -54,8 +54,8 @@ void updateDistances(Array2<u8>* tileDistance, DirtyRects* dirtyRects, u8 maxDis
             it.next()) {
             Rect2I dirtyRect = it.getValue();
 
-            for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.height(); y++) {
-                for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.width(); x++) {
+            for (s32 y = dirtyRect.y(); y < dirtyRect.y() + dirtyRect.height(); y++) {
+                for (s32 x = dirtyRect.x(); x < dirtyRect.x() + dirtyRect.width(); x++) {
                     if (tileDistance->get(x, y) != 0) {
                         u8 minDistance = min(
                             tileDistance->getIfExists(x - 1, y - 1, 255),

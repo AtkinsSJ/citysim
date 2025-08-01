@@ -45,8 +45,8 @@ public:
 
         Rect2I possibleEffectArea { floor_s32(effect_centre.x - m_radius), floor_s32(effect_centre.y - m_radius), ceil_s32(m_radius + m_radius), ceil_s32(m_radius + m_radius) };
         possibleEffectArea = possibleEffectArea.intersected(region);
-        for (s32 y = possibleEffectArea.y; y < possibleEffectArea.y + possibleEffectArea.height(); y++) {
-            for (s32 x = possibleEffectArea.x; x < possibleEffectArea.x + possibleEffectArea.width(); x++) {
+        for (s32 y = possibleEffectArea.y(); y < possibleEffectArea.y() + possibleEffectArea.height(); y++) {
+            for (s32 x = possibleEffectArea.x(); x < possibleEffectArea.x() + possibleEffectArea.width(); x++) {
                 float distance2FromSource = lengthSquaredOf(x - effect_centre.x, y - effect_centre.y);
                 if (distance2FromSource <= square_radius) {
                     float contributionF = lerp(centre_value, outer_value, sqrt_float(distance2FromSource) * inverse_radius);

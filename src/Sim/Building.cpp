@@ -619,8 +619,8 @@ void updateBuildingVariant(City* city, Building* building, BuildingDef* passedDe
         // - Sam, 14/02/2020
 
         // Calculate our connections
-        s32 x = building->footprint.x;
-        s32 y = building->footprint.y;
+        s32 x = building->footprint.x();
+        s32 y = building->footprint.y();
 
         static_assert(to_underlying(ConnectionDirection::COUNT) == 8, "updateBuildingVariant() assumes ConnectionDirectionCount == 8");
         EnumMap<ConnectionDirection, BuildingDef*> neighbourDefs;
@@ -662,17 +662,17 @@ void updateAdjacentBuildingVariants(City* city, Rect2I footprint)
 {
     DEBUG_FUNCTION();
 
-    for (s32 y = footprint.y;
-        y < footprint.y + footprint.height();
+    for (s32 y = footprint.y();
+        y < footprint.y() + footprint.height();
         y++) {
-        Building* buildingL = getBuildingAt(city, footprint.x - 1, y);
+        Building* buildingL = getBuildingAt(city, footprint.x() - 1, y);
         if (buildingL) {
             BuildingDef* defL = getBuildingDef(buildingL->typeID);
             if (defL->variants.count > 0)
                 updateBuildingVariant(city, buildingL, defL);
         }
 
-        Building* buildingR = getBuildingAt(city, footprint.x + footprint.width(), y);
+        Building* buildingR = getBuildingAt(city, footprint.x() + footprint.width(), y);
         if (buildingR) {
             BuildingDef* defD = getBuildingDef(buildingR->typeID);
             if (defD->variants.count > 0)
@@ -680,11 +680,11 @@ void updateAdjacentBuildingVariants(City* city, Rect2I footprint)
         }
     }
 
-    for (s32 x = footprint.x;
-        x < footprint.x + footprint.width();
+    for (s32 x = footprint.x();
+        x < footprint.x() + footprint.width();
         x++) {
-        Building* buildingU = getBuildingAt(city, x, footprint.y - 1);
-        Building* buildingD = getBuildingAt(city, x, footprint.y + footprint.height());
+        Building* buildingU = getBuildingAt(city, x, footprint.y() - 1);
+        Building* buildingD = getBuildingAt(city, x, footprint.y() + footprint.height());
         if (buildingU) {
             BuildingDef* defU = getBuildingDef(buildingU->typeID);
             if (defU->variants.count > 0)
@@ -746,8 +746,8 @@ void updateBuilding(City* city, Building* building)
         // the inner tiles... unless we allow multiple buildings per tile. Actually maybe we do? I'm not sure how that
         // would work really. Anyway, can think about that later.
         // - Sam, 30/08/2019
-        for (s32 y = building->footprint.y; y < building->footprint.y + building->footprint.height(); y++) {
-            for (s32 x = building->footprint.x; x < building->footprint.x + building->footprint.width(); x++) {
+        for (s32 y = building->footprint.y(); y < building->footprint.y() + building->footprint.height(); y++) {
+            for (s32 x = building->footprint.x(); x < building->footprint.x() + building->footprint.width(); x++) {
                 distanceToRoad = min(distanceToRoad, getDistanceToTransport(city, x, y, TransportType::Road));
             }
         }

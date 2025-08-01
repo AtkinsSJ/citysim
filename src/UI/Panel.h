@@ -133,8 +133,8 @@ struct Panel {
             String optionText = getDisplayName(&listOptions->get(optionIndex));
             V2I labelSize = calculateLabelSize(optionText, labelStyle, textWidth, fillWidth);
             Rect2I labelBounds {
-                radioButtonBounds.x + radioButtonBounds.width() + style->contentPadding,
-                radioButtonBounds.y,
+                radioButtonBounds.x() + radioButtonBounds.width() + style->contentPadding,
+                radioButtonBounds.y(),
                 labelSize.x,
                 labelSize.y
             };
@@ -143,7 +143,7 @@ struct Panel {
                 putLabel(optionText, labelBounds, labelStyle, renderBuffer);
             }
 
-            radioButtonBounds.y = labelBounds.y + labelBounds.height() + style->contentPadding;
+            radioButtonBounds.set_y(labelBounds.y() + labelBounds.height() + style->contentPadding);
         }
 
         completeWidget(buttonGroupBounds.size());
@@ -198,27 +198,27 @@ struct Panel {
         // Calculate the available space
         Rect2I space = {};
 
-        space.x = contentArea.x + currentLeft;
+        space.set_x(contentArea.x() + currentLeft);
         space.set_width(currentRight - currentLeft);
 
         if (layoutBottomToTop) {
-            space.y = contentArea.y + currentBottom;
+            space.set_y(contentArea.y() + currentBottom);
 
             if (vScrollbar != nullptr) {
-                space.y += (vScrollbar->contentSize - getScrollbarContentOffset(vScrollbar, bounds.height()) - bounds.height());
+                space.set_y(space.y() + (vScrollbar->contentSize - getScrollbarContentOffset(vScrollbar, bounds.height()) - bounds.height()));
             }
         } else {
-            space.y = contentArea.y + currentTop;
+            space.set_y(contentArea.y() + currentTop);
 
             if (vScrollbar != nullptr) {
-                space.y -= getScrollbarContentOffset(vScrollbar, bounds.height());
+                space.set_y(space.y() - getScrollbarContentOffset(vScrollbar, bounds.height()));
             }
         }
 
         // Adjust if we're in a scrolling area
         if (hScrollbar != nullptr) {
             space.set_width(s16Max); // Not s32 because then we'd have overflow issues. s16 should be plenty large enough.
-            space.x = space.x - getScrollbarContentOffset(hScrollbar, bounds.width());
+            space.set_x(space.x() - getScrollbarContentOffset(hScrollbar, bounds.width()));
         }
         ASSERT(space.width() > 0);
 

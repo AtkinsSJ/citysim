@@ -64,8 +64,8 @@ void updatePollutionLayer(City* city, PollutionLayer* layer)
                 //
                 // - Sam, 04/09/2019
                 //
-                for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.height(); y++) {
-                    for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.width(); x++) {
+                for (s32 y = dirtyRect.y(); y < dirtyRect.y() + dirtyRect.height(); y++) {
+                    for (s32 x = dirtyRect.x(); x < dirtyRect.x() + dirtyRect.width(); x++) {
                         s16 originalValue = layer->tileBuildingContributions.get(x, y);
                         s16 newValue = clamp<s16>(originalValue, -255, 255);
                         layer->tileBuildingContributions.set(x, y, newValue);
@@ -83,8 +83,8 @@ void updatePollutionLayer(City* city, PollutionLayer* layer)
                 rectIt.next()) {
                 Rect2I dirtyRect = rectIt.getValue();
 
-                for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.height(); y++) {
-                    for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.width(); x++) {
+                for (s32 y = dirtyRect.y(); y < dirtyRect.y() + dirtyRect.height(); y++) {
+                    for (s32 x = dirtyRect.x(); x < dirtyRect.x() + dirtyRect.width(); x++) {
                         // This is really lazy right now.
                         // In future we might want to update things over time, but right now it's just
                         // a glorified copy from the tileBuildingContributions array.

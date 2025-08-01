@@ -92,13 +92,13 @@ private:
     float m_height { 0 };
 };
 
-struct Rect2I {
+class Rect2I {
 public:
     Rect2I() = default;
 
     Rect2I(s32 x, s32 y, s32 w, s32 h)
-        : x(x)
-        , y(y)
+        : m_x(x)
+        , m_y(y)
         , m_width(w)
         , m_height(h)
     {
@@ -106,16 +106,16 @@ public:
 
     template<typename U>
     Rect2I(U x, U y, U w, U h)
-        : x(x)
-        , y(y)
+        : m_x(x)
+        , m_y(y)
         , m_width(w)
         , m_height(h)
     {
     }
 
     Rect2I(V2I position, V2I size)
-        : x(position.x)
-        , y(position.y)
+        : m_x(position.x)
+        , m_y(position.y)
         , m_width(size.x)
         , m_height(size.y)
     {
@@ -145,16 +145,19 @@ public:
         return { s32Max, s32Max, s32Min, s32Min };
     }
 
-    s32 x;
-    s32 y;
     static Rect2I placed_randomly_within(Random& random, V2I size, Rect2I boundary);
     Rect2I create_centred_within(V2I size) const;
     Rect2I create_aligned_within(V2I size, Alignment alignment, Padding padding = {}) const;
 
-    s32 min_x() const { return x; }
-    s32 max_x() const { return x + m_width; }
-    s32 min_y() const { return y; }
-    s32 max_y() const { return y + m_height; }
+    s32 x() const { return m_x; }
+    void set_x(s32 x) { m_x = x; }
+    s32 y() const { return m_y; }
+    void set_y(s32 y) { m_y = y; }
+
+    s32 min_x() const { return m_x; }
+    s32 max_x() const { return m_x + m_width; }
+    s32 min_y() const { return m_y; }
+    s32 max_y() const { return m_y + m_height; }
 
     s32 width() const { return m_width; }
     void set_width(s32 width) { m_width = width; }
@@ -171,11 +174,11 @@ public:
 
     V2 centre() const;
 
-    V2I position() const { return v2i(x, y); }
+    V2I position() const { return v2i(m_x, m_y); }
     void set_position(V2I position)
     {
-        x = position.x;
-        y = position.y;
+        m_x = position.x;
+        m_y = position.y;
     }
 
     s32 area() const;
@@ -200,6 +203,8 @@ public:
     Rect2I union_with(Rect2I const&) const;
 
 private:
+    s32 m_x;
+    s32 m_y;
     s32 m_width;
     s32 m_height;
 };

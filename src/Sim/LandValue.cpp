@@ -68,8 +68,8 @@ void updateLandValueLayer(City* city, LandValueLayer* layer)
                 //
                 // - Sam, 04/09/2019
                 //
-                for (s32 y = dirtyRect.y; y < dirtyRect.y + dirtyRect.height(); y++) {
-                    for (s32 x = dirtyRect.x; x < dirtyRect.x + dirtyRect.width(); x++) {
+                for (s32 y = dirtyRect.y(); y < dirtyRect.y() + dirtyRect.height(); y++) {
+                    for (s32 x = dirtyRect.x(); x < dirtyRect.x() + dirtyRect.width(); x++) {
                         s16 originalValue = layer->tileBuildingContributions.get(x, y);
                         s16 newValue = clamp<s16>(originalValue, -255, 255);
                         layer->tileBuildingContributions.set(x, y, newValue);
@@ -88,8 +88,8 @@ void updateLandValueLayer(City* city, LandValueLayer* layer)
         for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++) {
             BasicSector* sector = getNextSector(&layer->sectors);
 
-            for (s32 y = sector->bounds.y; y < sector->bounds.y + sector->bounds.height(); y++) {
-                for (s32 x = sector->bounds.x; x < sector->bounds.x + sector->bounds.width(); x++) {
+            for (s32 y = sector->bounds.y(); y < sector->bounds.y() + sector->bounds.height(); y++) {
+                for (s32 x = sector->bounds.x(); x < sector->bounds.x() + sector->bounds.width(); x++) {
                     // Right now, we have very little to base this on!
                     // This explains how SC3K does it: http://www.sc3000.com/knowledge/showarticle.cfm?id=1132
                     // (However, apparently SC3K has an overflow bug with land value, so ehhhhhh...)

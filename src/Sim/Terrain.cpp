@@ -71,11 +71,11 @@ void updateDistanceToWater(City* city, Rect2I dirtyBounds)
     Rect2I bounds = city->bounds.intersected(dirtyBounds.expanded(maxDistanceToWater));
     u8 tWater = truncate<u8>(findTerrainTypeByName("water"_s));
 
-    for (s32 y = bounds.y;
-        y < bounds.y + bounds.height();
+    for (s32 y = bounds.y();
+        y < bounds.y() + bounds.height();
         y++) {
-        for (s32 x = bounds.x;
-            x < bounds.x + bounds.width();
+        for (s32 x = bounds.x();
+            x < bounds.x() + bounds.width();
             x++) {
             u8 tileType = layer->tileTerrainType.getIfExists(x, y, 0);
             if (tileType == tWater) {
@@ -241,13 +241,13 @@ void drawTerrain(City* city, Rect2I visibleArea, s8 shaderID)
     // Asset *terrainTexture = getSprite(getTerrainDef(1)->sprites, 0)->texture;
     // DrawRectsGroup *group = beginRectsGroupTextured(&renderer.world_buffer(), terrainTexture, shaderID, tilesToDraw);
 
-    for (s32 y = visibleArea.y;
-        y < visibleArea.y + visibleArea.height();
+    for (s32 y = visibleArea.y();
+        y < visibleArea.y() + visibleArea.height();
         y++) {
         spriteBounds.set_y(y);
 
-        for (s32 x = visibleArea.x;
-            x < visibleArea.x + visibleArea.width();
+        for (s32 x = visibleArea.x();
+            x < visibleArea.x() + visibleArea.width();
             x++) {
             Sprite* sprite = getSprite(&layer->tileSprite.get(x, y));
             spriteBounds.set_x(x);
@@ -329,8 +329,8 @@ void generateTerrain(City* city, Random* gameRandom)
         Splat pondSplat = Splat::create_random(pondCentreX, pondCentreY, pondMinRadius, pondMaxRadius, 36, terrainRandom);
 
         Rect2I boundingBox = pondSplat.bounding_box().intersected(city->bounds);
-        for (s32 y = boundingBox.y; y < boundingBox.y + boundingBox.height(); y++) {
-            for (s32 x = boundingBox.x; x < boundingBox.x + boundingBox.width(); x++) {
+        for (s32 y = boundingBox.y(); y < boundingBox.y() + boundingBox.height(); y++) {
+            for (s32 x = boundingBox.x(); x < boundingBox.x() + boundingBox.width(); x++) {
                 if (pondSplat.contains(x, y)) {
                     layer->tileTerrainType.set(x, y, tWater);
                 }
@@ -353,8 +353,8 @@ void generateTerrain(City* city, Random* gameRandom)
             Splat forestSplat = Splat::create_random(centreX, centreY, minRadius, maxRadius, 36, terrainRandom);
 
             Rect2I boundingBox = forestSplat.bounding_box().intersected(city->bounds);
-            for (s32 y = boundingBox.y; y < boundingBox.y + boundingBox.height(); y++) {
-                for (s32 x = boundingBox.x; x < boundingBox.x + boundingBox.width(); x++) {
+            for (s32 y = boundingBox.y(); y < boundingBox.y() + boundingBox.height(); y++) {
+                for (s32 x = boundingBox.x(); x < boundingBox.x() + boundingBox.width(); x++) {
                     if (getTerrainAt(city, x, y)->canBuildOn
                         && (getBuildingAt(city, x, y) == nullptr)
                         && forestSplat.contains(x, y)) {
@@ -375,11 +375,11 @@ void assignTerrainSprites(City* city, Rect2I bounds)
     TerrainLayer* layer = &city->terrainLayer;
 
     // Assign a terrain tile variant for each tile, depending on its neighbours
-    for (s32 y = bounds.y;
-        y < bounds.y + bounds.height();
+    for (s32 y = bounds.y();
+        y < bounds.y() + bounds.height();
         y++) {
-        for (s32 x = bounds.x;
-            x < bounds.x + bounds.width();
+        for (s32 x = bounds.x();
+            x < bounds.x() + bounds.width();
             x++) {
             TerrainDef* def = getTerrainAt(city, x, y);
 
@@ -558,8 +558,8 @@ bool loadTerrainLayer(TerrainLayer* layer, City* city, BinaryFileReader* reader)
         // Terrain type
         if (!reader->readBlob(section->tileTerrainType, &layer->tileTerrainType))
             break;
-        for (s32 y = 0; y < city->bounds.y; y++) {
-            for (s32 x = 0; x < city->bounds.x; x++) {
+        for (s32 y = 0; y < city->bounds.y(); y++) {
+            for (s32 x = 0; x < city->bounds.x(); x++) {
                 layer->tileTerrainType.set(x, y, oldTypeToNewType[layer->tileTerrainType.get(x, y)]);
             }
         }

@@ -34,7 +34,7 @@ void Panel::enableHorizontalScrolling(ScrollbarState* scrollbarState)
     ASSERT(scrollbarStyle != nullptr);
 
     this->hScrollbar = scrollbarState;
-    this->hScrollbarBounds = { bounds.x, bounds.y + bounds.height() - scrollbarStyle->width, bounds.width(), scrollbarStyle->width };
+    this->hScrollbarBounds = { bounds.x(), bounds.y() + bounds.height() - scrollbarStyle->width, bounds.width(), scrollbarStyle->width };
 
     this->contentArea.set_height(this->contentArea.height() - scrollbarStyle->width);
     updateLayoutPosition();
@@ -47,8 +47,8 @@ void Panel::enableVerticalScrolling(ScrollbarState* scrollbarState, bool expandW
 
     this->vScrollbar = scrollbarState;
 
-    s32 scrollbarX = bounds.x + bounds.width() - (expandWidth ? 0 : scrollbarStyle->width);
-    this->vScrollbarBounds = { scrollbarX, bounds.y, scrollbarStyle->width, bounds.height() };
+    s32 scrollbarX = bounds.x() + bounds.width() - (expandWidth ? 0 : scrollbarStyle->width);
+    this->vScrollbarBounds = { scrollbarX, bounds.y(), scrollbarStyle->width, bounds.height() };
 
     if (expandWidth) {
         this->bounds.set_width(this->bounds.width() + scrollbarStyle->width);
@@ -266,11 +266,11 @@ Panel Panel::row(s32 height, VAlign vAlignment, String styleName)
     PanelStyle* rowStyle = getPanelStyle(styleName);
 
     if (vAlignment == VAlign::Top) {
-        Rect2I rowBounds { contentArea.x, contentArea.y + currentTop, contentArea.width(), height };
+        Rect2I rowBounds { contentArea.x(), contentArea.y() + currentTop, contentArea.width(), height };
 
         if (layoutBottomToTop) {
             contentArea.set_height(contentArea.height() - (height + style->contentPadding));
-            contentArea.y += height + style->contentPadding;
+            contentArea.set_y(contentArea.y() + height + style->contentPadding);
         } else {
             completeWidget(rowBounds.size());
         }
@@ -279,7 +279,7 @@ Panel Panel::row(s32 height, VAlign vAlignment, String styleName)
 
         return Panel(rowBounds, rowStyle, flags, renderBuffer);
     } else {
-        Rect2I rowBounds { contentArea.x, contentArea.y + currentBottom - height, contentArea.width(), height };
+        Rect2I rowBounds { contentArea.x(), contentArea.y() + currentBottom - height, contentArea.width(), height };
 
         if (layoutBottomToTop) {
             completeWidget(rowBounds.size());
@@ -305,15 +305,15 @@ Panel Panel::column(s32 width, HAlign hAlignment, String styleName)
     PanelStyle* columnStyle = getPanelStyle(styleName);
 
     if (hAlignment == HAlign::Left) {
-        Rect2I columnBounds { contentArea.x, contentArea.y + currentTop, width, contentArea.height() };
+        Rect2I columnBounds { contentArea.x(), contentArea.y() + currentTop, width, contentArea.height() };
 
         contentArea.set_width(contentArea.width() - (width + style->contentPadding));
-        contentArea.x += width + style->contentPadding;
+        contentArea.set_x(contentArea.x() + width + style->contentPadding);
         updateLayoutPosition();
 
         return Panel(columnBounds, columnStyle, flags, renderBuffer);
     } else {
-        Rect2I columnBounds { contentArea.x + contentArea.width() - width, contentArea.y + currentTop, width, contentArea.height() };
+        Rect2I columnBounds { contentArea.x() + contentArea.width() - width, contentArea.y() + currentTop, width, contentArea.height() };
 
         contentArea.set_width(contentArea.width() - (width + style->contentPadding));
         updateLayoutPosition();
@@ -349,7 +349,7 @@ void Panel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
         } else {
             s32 widthDifference = contentArea.width() - largestLineWidth;
             if (widthDifference > 0) {
-                bounds.x += widthDifference;
+                bounds.set_x(bounds.x() + widthDifference);
                 bounds.set_width(bounds.width() - widthDifference);
                 boundsChanged = true;
             }
@@ -361,7 +361,7 @@ void Panel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
         if (layoutBottomToTop) {
             contentHeight = (contentArea.height() - currentBottom) + style->contentPadding + totalVPadding;
             s32 newHeight = clamp(contentHeight, totalVPadding, bounds.height());
-            bounds.y += (bounds.height() - newHeight);
+            bounds.set_y(bounds.y() + (bounds.height() - newHeight));
             bounds.set_height(newHeight);
             boundsChanged = true;
         } else {
@@ -374,19 +374,19 @@ void Panel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
         if (hScrollbar) {
             bounds.set_height(bounds.height() + hScrollbarBounds.height());
             if (layoutBottomToTop)
-                bounds.y -= hScrollbarBounds.height();
+                bounds.set_y(bounds.y() - hScrollbarBounds.height());
             boundsChanged = true;
         }
     }
 
     if (boundsChanged) {
         hScrollbarBounds.set_width(bounds.width());
-        hScrollbarBounds.x = bounds.x;
+        hScrollbarBounds.set_x(bounds.x());
         // In case the height has shrunk, move the scrollbar to the bottom edge
-        hScrollbarBounds.y = bounds.y + bounds.height() - hScrollbarBounds.height();
+        hScrollbarBounds.set_y(bounds.y() + bounds.height() - hScrollbarBounds.height());
 
         vScrollbarBounds.set_height(bounds.height());
-        vScrollbarBounds.y = bounds.y;
+        vScrollbarBounds.set_y(bounds.y());
     }
 
     if (!hasAddedWidgets) {

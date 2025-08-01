@@ -65,8 +65,8 @@ void updateFireLayer(City* city, FireLayer* layer)
             Rect2I expandedRect = dirtyRect.expanded(layer->maxFireRadius);
             Rect2I affectedSectors = getSectorsCovered(&layer->sectors, expandedRect);
 
-            for (s32 sy = affectedSectors.y; sy < affectedSectors.y + affectedSectors.height(); sy++) {
-                for (s32 sx = affectedSectors.x; sx < affectedSectors.x + affectedSectors.width(); sx++) {
+            for (s32 sy = affectedSectors.y(); sy < affectedSectors.y() + affectedSectors.height(); sy++) {
+                for (s32 sx = affectedSectors.x(); sx < affectedSectors.x() + affectedSectors.width(); sx++) {
                     FireSector* sector = getSector(&layer->sectors, sx, sy);
 
                     for (auto it = sector->activeFires.iterate(); it.hasNext(); it.next()) {
@@ -110,8 +110,8 @@ void updateFireLayer(City* city, FireLayer* layer)
                 }
             }
 
-            for (s32 y = sector->bounds.y; y < sector->bounds.y + sector->bounds.height(); y++) {
-                for (s32 x = sector->bounds.x; x < sector->bounds.x + sector->bounds.width(); x++) {
+            for (s32 y = sector->bounds.y(); y < sector->bounds.y() + sector->bounds.height(); y++) {
+                for (s32 x = sector->bounds.x(); x < sector->bounds.x() + sector->bounds.width(); x++) {
                     float tileFireRisk = 0.0f;
 
                     Building* building = getBuildingAt(city, x, y);
@@ -163,11 +163,11 @@ bool doesAreaContainFire(City* city, Rect2I bounds)
     bool foundFire = false;
 
     Rect2I footprintSectors = getSectorsCovered(&layer->sectors, bounds);
-    for (s32 sy = footprintSectors.y;
-        sy < footprintSectors.y + footprintSectors.height() && !foundFire;
+    for (s32 sy = footprintSectors.y();
+        sy < footprintSectors.y() + footprintSectors.height() && !foundFire;
         sy++) {
-        for (s32 sx = footprintSectors.x;
-            sx < footprintSectors.x + footprintSectors.width() && !foundFire;
+        for (s32 sx = footprintSectors.x();
+            sx < footprintSectors.x() + footprintSectors.width() && !foundFire;
             sx++) {
             FireSector* sector = getSector(&layer->sectors, sx, sy);
             for (auto it = sector->activeFires.iterate(); it.hasNext(); it.next()) {

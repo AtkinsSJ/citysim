@@ -390,7 +390,7 @@ Rect2I drawTextInput(RenderBuffer* renderBuffer, TextInput* textInput, TextInput
     textInput->caretFlashCounter = (float)fmod(textInput->caretFlashCounter + AppState::the().deltaTime, style->caretFlashCycleDuration);
 
     if (showCaret) {
-        Rect2 caretRect { textBounds.x, textBounds.y, 2, font->lineHeight };
+        Rect2 caretRect { textBounds.x(), textBounds.y(), 2, font->lineHeight };
 
         if (textInput->caret.glyphPos != 0 && drawTextResult.isValid) {
             // Draw it to the right of the glyph

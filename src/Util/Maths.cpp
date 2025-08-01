@@ -105,16 +105,16 @@ s32 manhattanDistance(Rect2I rect, V2I point)
 {
     s32 result = 0;
 
-    if (point.x < rect.x) {
-        result += rect.x - point.x;
-    } else if (point.x >= (rect.x + rect.width())) {
-        result += 1 + point.x - (rect.x + rect.width());
+    if (point.x < rect.x()) {
+        result += rect.x() - point.x;
+    } else if (point.x >= (rect.x() + rect.width())) {
+        result += 1 + point.x - (rect.x() + rect.width());
     }
 
-    if (point.y < rect.y) {
-        result += rect.y - point.y;
-    } else if (point.y >= (rect.y + rect.height())) {
-        result += 1 + point.y - (rect.y + rect.height());
+    if (point.y < rect.y()) {
+        result += rect.y() - point.y;
+    } else if (point.y >= (rect.y() + rect.height())) {
+        result += 1 + point.y - (rect.y() + rect.height());
     }
 
     return result;
@@ -124,16 +124,16 @@ s32 manhattanDistance(Rect2I a, Rect2I b)
 {
     s32 result = 0;
 
-    if (a.x + a.width() <= b.x) {
-        result += 1 + b.x - (a.x + a.width());
-    } else if (b.x + b.width() <= a.x) {
-        result += 1 + a.x - (b.x + b.width());
+    if (a.x() + a.width() <= b.x()) {
+        result += 1 + b.x() - (a.x() + a.width());
+    } else if (b.x() + b.width() <= a.x()) {
+        result += 1 + a.x() - (b.x() + b.width());
     }
 
-    if (a.y + a.height() <= b.y) {
-        result += 1 + b.y - (a.y + a.height());
-    } else if (b.y + b.height() <= a.y) {
-        result += 1 + a.y - (b.y + b.height());
+    if (a.y() + a.height() <= b.y()) {
+        result += 1 + b.y() - (a.y() + a.height());
+    } else if (b.y() + b.height() <= a.y()) {
+        result += 1 + a.y() - (b.y() + b.height());
     }
 
     return result;

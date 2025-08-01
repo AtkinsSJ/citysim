@@ -259,7 +259,7 @@ Rect2I calculateButtonContentBounds(Rect2I bounds, ButtonStyle* style)
 
     V2I startIconSize = style->startIcon.getSize();
     if (startIconSize.x > 0) {
-        contentBounds.x += startIconSize.x + style->contentPadding;
+        contentBounds.set_x(contentBounds.x() + startIconSize.x + style->contentPadding);
         contentBounds.set_width(contentBounds.width() - (startIconSize.x + style->contentPadding));
     }
 
@@ -582,7 +582,7 @@ Maybe<Rect2I> getScrollbarThumbBounds(ScrollbarState* state, Rect2I scrollbarBou
 
             s32 thumbPos = round_s32(state->scrollPercent * (scrollbarBounds.width() - thumbWidth));
 
-            result = makeSuccess(Rect2I { scrollbarBounds.x + thumbPos, scrollbarBounds.y, thumbWidth, thumbHeight });
+            result = makeSuccess(Rect2I { scrollbarBounds.x() + thumbPos, scrollbarBounds.y(), thumbWidth, thumbHeight });
         }
     } else {
         ASSERT(state->orientation == Orientation::Vertical);
@@ -597,7 +597,7 @@ Maybe<Rect2I> getScrollbarThumbBounds(ScrollbarState* state, Rect2I scrollbarBou
 
             s32 thumbPos = round_s32(state->scrollPercent * (scrollbarBounds.height() - thumbHeight));
 
-            result = makeSuccess(Rect2I { scrollbarBounds.x, scrollbarBounds.y + thumbPos, thumbWidth, thumbHeight });
+            result = makeSuccess(Rect2I { scrollbarBounds.x(), scrollbarBounds.y() + thumbPos, thumbWidth, thumbHeight });
         }
     }
 
@@ -657,11 +657,11 @@ void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, Scrollb
                     // @Copypasta We duplicate this code below, because there are two states where we need to set
                     // the new thumb position. It's really awkward but I don't know how to pull the logic out.
                     if (isHorizontal) {
-                        thumbBounds.x = clamp(thumbPos.x, bounds.x, bounds.x + thumbRange);
-                        state->scrollPercent = clamp01((float)(thumbBounds.x - bounds.x) / (float)thumbRange);
+                        thumbBounds.set_x(clamp(thumbPos.x, bounds.x(), bounds.x() + thumbRange));
+                        state->scrollPercent = clamp01((float)(thumbBounds.x() - bounds.x()) / (float)thumbRange);
                     } else {
-                        thumbBounds.y = clamp(thumbPos.y, bounds.y, bounds.y + thumbRange);
-                        state->scrollPercent = clamp01((float)(thumbBounds.y - bounds.y) / (float)thumbRange);
+                        thumbBounds.set_y(clamp(thumbPos.y, bounds.y(), bounds.y() + thumbRange));
+                        state->scrollPercent = clamp01((float)(thumbBounds.y() - bounds.y()) / (float)thumbRange);
                     }
 
                     thumbStyle = &style->thumbPressed;
@@ -672,11 +672,11 @@ void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, Scrollb
                         // If we're not on the thumb, jump the thumb to where we are!
                         if (!inThumbBounds) {
                             if (isHorizontal) {
-                                thumbBounds.x = clamp(mousePos.x - (thumbBounds.width() / 2), bounds.x, bounds.x + thumbRange);
-                                state->scrollPercent = clamp01((float)(thumbBounds.x - bounds.x) / (float)thumbRange);
+                                thumbBounds.set_x(clamp(mousePos.x - (thumbBounds.width() / 2), bounds.x(), bounds.x() + thumbRange));
+                                state->scrollPercent = clamp01((float)(thumbBounds.x() - bounds.x()) / (float)thumbRange);
                             } else {
-                                thumbBounds.y = clamp(mousePos.y - (thumbBounds.height() / 2), bounds.y, bounds.y + thumbRange);
-                                state->scrollPercent = clamp01((float)(thumbBounds.y - bounds.y) / (float)thumbRange);
+                                thumbBounds.set_y(clamp(mousePos.y - (thumbBounds.height() / 2), bounds.y(), bounds.y() + thumbRange));
+                                state->scrollPercent = clamp01((float)(thumbBounds.y() - bounds.y()) / (float)thumbRange);
                             }
                         }
 
@@ -747,14 +747,14 @@ void putSlider(float* currentValue, float minValue, float maxValue, Orientation 
     V2I thumbPos;
     if (orientation == Orientation::Horizontal) {
         travel = (bounds.width() - style->thumbSize.x);
-        thumbPos.x = bounds.x + round_s32((float)travel * currentPercent);
-        thumbPos.y = bounds.y + ((bounds.height() - style->thumbSize.y) / 2);
+        thumbPos.x = bounds.x() + round_s32((float)travel * currentPercent);
+        thumbPos.y = bounds.y() + ((bounds.height() - style->thumbSize.y) / 2);
     } else {
         ASSERT(orientation == Orientation::Vertical);
 
         travel = (bounds.height() - style->thumbSize.y);
-        thumbPos.x = bounds.x + ((bounds.width() - style->thumbSize.x) / 2);
-        thumbPos.y = bounds.y + bounds.height() - style->thumbSize.y - round_s32((float)travel * currentPercent);
+        thumbPos.x = bounds.x() + ((bounds.width() - style->thumbSize.x) / 2);
+        thumbPos.y = bounds.y() + bounds.height() - style->thumbSize.y - round_s32((float)travel * currentPercent);
     }
     Rect2I thumbBounds { thumbPos, style->thumbSize };
 
@@ -767,13 +767,13 @@ void putSlider(float* currentValue, float minValue, float maxValue, Orientation 
         V2I draggedPos = getDraggingObjectPos();
         float positionPercent;
         if (orientation == Orientation::Horizontal) {
-            thumbBounds.x = clamp(draggedPos.x, bounds.x, bounds.x + travel);
-            positionPercent = (float)(thumbBounds.x - bounds.x) / (float)travel;
+            thumbBounds.set_x(clamp(draggedPos.x, bounds.x(), bounds.x() + travel));
+            positionPercent = (float)(thumbBounds.x() - bounds.x()) / (float)travel;
         } else {
             ASSERT(orientation == Orientation::Vertical);
 
-            thumbBounds.y = clamp(draggedPos.y, bounds.y, bounds.y + travel);
-            positionPercent = 1.0f - (float)(thumbBounds.y - bounds.y) / (float)travel;
+            thumbBounds.set_y(clamp(draggedPos.y, bounds.y(), bounds.y() + travel));
+            positionPercent = 1.0f - (float)(thumbBounds.y() - bounds.y()) / (float)travel;
         }
 
         // Apply that to the currentValue
@@ -789,13 +789,13 @@ void putSlider(float* currentValue, float minValue, float maxValue, Orientation 
 
                 float positionPercent;
                 if (orientation == Orientation::Horizontal) {
-                    thumbBounds.x = clamp(mousePos.x - (thumbBounds.width() / 2), bounds.x, bounds.x + travel);
-                    positionPercent = (float)(thumbBounds.x - bounds.x) / (float)travel;
+                    thumbBounds.set_x(clamp(mousePos.x - (thumbBounds.width() / 2), bounds.x(), bounds.x() + travel));
+                    positionPercent = (float)(thumbBounds.x() - bounds.x()) / (float)travel;
                 } else {
                     ASSERT(orientation == Orientation::Vertical);
 
-                    thumbBounds.y = clamp(mousePos.y - (thumbBounds.height() / 2), bounds.y, bounds.y + travel);
-                    positionPercent = 1.0f - (float)(thumbBounds.y - bounds.y) / (float)travel;
+                    thumbBounds.set_y(clamp(mousePos.y - (thumbBounds.height() / 2), bounds.y(), bounds.y() + travel));
+                    positionPercent = 1.0f - (float)(thumbBounds.y() - bounds.y()) / (float)travel;
                 }
 
                 // Apply that to the currentValue
@@ -821,11 +821,11 @@ void putSlider(float* currentValue, float minValue, float maxValue, Orientation 
         currentPercent = (*currentValue - minValue) / valueRange;
 
         if (orientation == Orientation::Horizontal) {
-            thumbBounds.x = bounds.x + round_s32((float)travel * currentPercent);
+            thumbBounds.set_x(bounds.x() + round_s32((float)travel * currentPercent));
         } else {
             ASSERT(orientation == Orientation::Vertical);
 
-            thumbBounds.y = bounds.y + bounds.height() - thumbBounds.height() - round_s32((float)travel * currentPercent);
+            thumbBounds.set_y(bounds.y() + bounds.height() - thumbBounds.height() - round_s32((float)travel * currentPercent));
         }
     }
 
@@ -833,12 +833,12 @@ void putSlider(float* currentValue, float minValue, float maxValue, Orientation 
     Rect2I trackBounds;
     if (orientation == Orientation::Horizontal) {
         s32 trackThickness = (style->trackThickness != 0) ? style->trackThickness : bounds.height();
-        trackBounds = Rect2I::create_aligned(bounds.x, bounds.y + bounds.height() / 2, bounds.width(), trackThickness, { HAlign::Left, VAlign::Centre });
+        trackBounds = Rect2I::create_aligned(bounds.x(), bounds.y() + bounds.height() / 2, bounds.width(), trackThickness, { HAlign::Left, VAlign::Centre });
     } else {
         ASSERT(orientation == Orientation::Vertical);
 
         s32 trackThickness = (style->trackThickness != 0) ? style->trackThickness : bounds.width();
-        trackBounds = Rect2I::create_aligned(bounds.x + bounds.width() / 2, bounds.y, trackThickness, bounds.height(), { HAlign::Centre, VAlign::Top });
+        trackBounds = Rect2I::create_aligned(bounds.x() + bounds.width() / 2, bounds.y(), trackThickness, bounds.height(), { HAlign::Centre, VAlign::Top });
     }
 
     Drawable(&style->track).draw(renderBuffer, trackBounds);
