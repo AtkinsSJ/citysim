@@ -136,7 +136,7 @@ void drawZones(City* city, Rect2I visibleTileBounds, s8 shaderID)
     for (s32 y = visibleTileBounds.y;
         y < visibleTileBounds.y + visibleTileBounds.h;
         y++) {
-        spriteBounds.y = (float)y;
+        spriteBounds.set_y(y);
         for (s32 x = visibleTileBounds.x;
             x < visibleTileBounds.x + visibleTileBounds.w;
             x++) {
@@ -147,7 +147,7 @@ void drawZones(City* city, Rect2I visibleTileBounds, s8 shaderID)
                     zoneColor = ZONE_DEFS[current_zone_type.value()].color;
                 }
 
-                spriteBounds.x = (float)x;
+                spriteBounds.set_x(x);
 
                 addUntexturedRect(group, spriteBounds, zoneColor);
             }

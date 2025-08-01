@@ -390,15 +390,15 @@ Rect2I drawTextInput(RenderBuffer* renderBuffer, TextInput* textInput, TextInput
     textInput->caretFlashCounter = (float)fmod(textInput->caretFlashCounter + AppState::the().deltaTime, style->caretFlashCycleDuration);
 
     if (showCaret) {
-        Rect2 caretRect { textBounds.x, textBounds.y, 2, font->lineHeight};
+        Rect2 caretRect { textBounds.x, textBounds.y, 2, font->lineHeight };
 
         if (textInput->caret.glyphPos != 0 && drawTextResult.isValid) {
             // Draw it to the right of the glyph
-            caretRect.pos = v2(drawTextResult.caretPosition);
+            caretRect.set_position(v2(drawTextResult.caretPosition));
         }
 
         // Shifted 1px left for better legibility of text
-        caretRect.x -= 1.0f;
+        caretRect.set_x(caretRect.x() - 1.0f);
 
         drawSingleRect(renderBuffer, caretRect, renderer.shaderIds.untextured, style->textColor);
     }

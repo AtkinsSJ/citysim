@@ -376,10 +376,10 @@ void loadAsset(Asset* asset)
             float textureHeight = (float)t->texture.surface->h;
 
             sprite->uv = {
-                sprite->uv.x / textureWidth,
-                sprite->uv.y / textureHeight,
-                sprite->uv.w / textureWidth,
-                sprite->uv.h / textureHeight
+                sprite->uv.x() / textureWidth,
+                sprite->uv.y() / textureHeight,
+                sprite->uv.width() / textureWidth,
+                sprite->uv.height() / textureHeight
             };
         }
 
@@ -1130,7 +1130,7 @@ void loadSpriteDefs(Blob data, Asset* asset)
 
                 Sprite* sprite = group->spriteGroup.sprites;
                 sprite->texture = addTexture(filename, false);
-                sprite->uv = {0, 0, spriteSize.x, spriteSize.y};
+                sprite->uv = { 0, 0, spriteSize.x, spriteSize.y };
                 sprite->pixelWidth = spriteSize.x;
                 sprite->pixelHeight = spriteSize.y;
 
@@ -1185,9 +1185,9 @@ void loadSpriteDefs(Blob data, Asset* asset)
 
                     Sprite* sprite = spriteGroup->spriteGroup.sprites + spriteIndex;
                     sprite->texture = textureAsset;
-                    sprite->uv = {spriteBorder.x + x * (spriteSize.x + spriteBorder.x + spriteBorder.x),
+                    sprite->uv = { spriteBorder.x + x * (spriteSize.x + spriteBorder.x + spriteBorder.x),
                         spriteBorder.y + y * (spriteSize.y + spriteBorder.y + spriteBorder.y),
-                        spriteSize.x, spriteSize.y};
+                        spriteSize.x, spriteSize.y };
                     sprite->pixelWidth = spriteSize.x;
                     sprite->pixelHeight = spriteSize.y;
 

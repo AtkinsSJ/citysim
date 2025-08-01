@@ -17,6 +17,8 @@
 struct V2 {
     float x;
     float y;
+
+    V2 operator-() const { return { -x, -y }; }
 };
 
 V2 v2(float x, float y);

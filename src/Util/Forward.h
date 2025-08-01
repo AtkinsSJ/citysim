@@ -14,7 +14,7 @@ struct Matrix4;
 class MemoryArena;
 struct Padding;
 class Random;
-struct Rect2;
+class Rect2;
 struct Rect2I;
 struct String;
 struct V2;

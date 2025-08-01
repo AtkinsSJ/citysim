@@ -13,65 +13,65 @@
  **********************************************/
 
 Rect2::Rect2(Rect2I const& other)
-    : x(other.x)
-    , y(other.y)
-    , w(other.w)
-    , h(other.h)
+    : m_x(other.x)
+    , m_y(other.y)
+    , m_width(other.w)
+    , m_height(other.h)
 {
 }
 
-Rect2 Rect2::create_min_max(float minX, float minY, float maxX, float maxY)
+Rect2 Rect2::create_min_max(float min_x, float min_y, float max_x, float max_y)
 {
     return {
-        minX,
-        minY,
-        maxX - minX,
-        maxY - minY,
+        min_x,
+        min_y,
+        max_x - min_x,
+        max_y - min_y,
     };
 }
 
 Rect2 Rect2::create_aligned(V2 origin, V2 size, Alignment alignment)
 {
-    Rect2 rect = {};
-    rect.size = size;
+    float x = 0;
+    float y = 0;
 
     switch (alignment.horizontal) {
     case HAlign::Centre:
-        rect.x = origin.x - round_float(size.x / 2.0f);
+        x = origin.x - round_float(size.x / 2.0f);
         break;
     case HAlign::Right:
-        rect.x = origin.x - size.x;
+        x = origin.x - size.x;
         break;
     case HAlign::Left: // Left is default
     case HAlign::Fill: // Same as left
     default:
-        rect.x = origin.x;
+        x = origin.x;
         break;
     }
 
     switch (alignment.vertical) {
     case VAlign::Centre:
-        rect.y = origin.y - round_float(size.y / 2.0f);
+        y = origin.y - round_float(size.y / 2.0f);
         break;
     case VAlign::Bottom:
-        rect.y = origin.y - size.y;
+        y = origin.y - size.y;
         break;
     case VAlign::Top:  // Top is default
     case VAlign::Fill: // Same as top
     default:
-        rect.y = origin.y;
+        y = origin.y;
         break;
     }
 
-    return rect;
+    return { x, y, size.x, size.y };
 }
 
 bool Rect2::contains(float x, float y) const
 {
-    return left() <= x
-        && x < right()
-        && top() <= y
-        && y < bottom();
+    return min_x() <= x
+        && x < max_x()
+        && min_y() <= y
+        && y < max_y();
 }
 
 bool Rect2::contains(V2 pos) const
@@ -81,34 +81,39 @@ bool Rect2::contains(V2 pos) const
 
 bool Rect2::contains(Rect2 const& inner) const
 {
-    return contains(inner.pos) && contains(inner.pos + inner.size);
+    return contains(inner.position()) && contains(inner.position() + inner.size());
 }
 
 bool Rect2::overlaps(Rect2 const& b) const
 {
-    return left() < b.right()
-        && b.left() < right()
-        && top() < b.bottom()
-        && b.top() < bottom();
+    return min_x() < b.max_x()
+        && b.min_x() < max_x()
+        && min_y() < b.max_y()
+        && b.min_y() < max_y();
+}
+
+Rect2 Rect2::translated(V2 offset) const
+{
+    return { m_x + offset.x, m_y + offset.y, m_width, m_height };
 }
 
 Rect2 Rect2::expanded(float radius) const
 {
     return {
-        x - radius,
-        y - radius,
-        w + (radius * 2.0f),
-        h + (radius * 2.0f)
+        m_x - radius,
+        m_y - radius,
+        m_width + (radius * 2.0f),
+        m_height + (radius * 2.0f)
     };
 }
 
 Rect2 Rect2::expanded(float top, float right, float bottom, float left) const
 {
     return {
-        x - left,
-        y - top,
-        w + left + right,
-        h + top + bottom
+        m_x - left,
+        m_y - top,
+        m_width + left + right,
+        m_height + top + bottom
     };
 }
 
@@ -117,29 +122,29 @@ Rect2 Rect2::intersected(Rect2 const& other) const
     Rect2 result = *this;
 
     // X
-    float right_extension = (result.x + result.w) - (other.x + other.w);
+    float right_extension = (result.m_x + result.m_width) - (other.m_x + other.m_width);
     if (right_extension > 0) {
-        result.w -= right_extension;
+        result.m_width -= right_extension;
     }
-    if (result.x < other.x) {
-        float left_extension = other.x - result.x;
-        result.x += left_extension;
-        result.w -= left_extension;
+    if (result.m_x < other.m_x) {
+        float left_extension = other.m_x - result.m_x;
+        result.m_x += left_extension;
+        result.m_width -= left_extension;
     }
 
     // Y
-    float bottom_extension = (result.y + result.h) - (other.y + other.h);
+    float bottom_extension = (result.m_y + result.m_height) - (other.m_y + other.m_height);
     if (bottom_extension > 0) {
-        result.h -= bottom_extension;
+        result.m_height -= bottom_extension;
     }
-    if (result.y < other.y) {
-        float top_extension = other.y - result.y;
-        result.y += top_extension;
-        result.h -= top_extension;
+    if (result.m_y < other.m_y) {
+        float top_extension = other.m_y - result.m_y;
+        result.m_y += top_extension;
+        result.m_height -= top_extension;
     }
 
-    result.w = max(result.w, 0.0f);
-    result.h = max(result.h, 0.0f);
+    result.m_width = max(result.m_width, 0.0f);
+    result.m_height = max(result.m_height, 0.0f);
 
     return result;
 }
@@ -148,17 +153,32 @@ Rect2 Rect2::intersected(Rect2 const& other) const
 // (Originally used to take a world-space rectangle and put it into a cropped, sector-space one.)
 Rect2 Rect2::intersected_relative(Rect2 const& inner) const
 {
-    Rect2 result = intersected(inner);
-    result.pos -= pos;
-
-    return result;
+    return intersected(inner).translated(-position());
 }
 
 V2 Rect2::centre() const
 {
     return v2(
-        x + (w / 2.0f),
-        y + (h / 2.0f));
+        m_x + (m_width / 2.0f),
+        m_y + (m_height / 2.0f));
+}
+
+void Rect2::set_size(V2 size)
+{
+    m_width = size.x;
+    m_height = size.y;
+}
+
+void Rect2::set_position(V2 position)
+{
+    m_x = position.x;
+    m_y = position.y;
+}
+
+void Rect2::translate(V2 offset)
+{
+    m_x += offset.x;
+    m_y += offset.y;
 }
 
 V2I centreOfI(Rect2I rect)
@@ -170,12 +190,12 @@ V2I centreOfI(Rect2I rect)
 
 float Rect2::area() const
 {
-    return abs_float(w * h);
+    return abs_float(m_width * m_height);
 }
 
 bool Rect2::has_positive_area() const
 {
-    return w > 0 && h > 0;
+    return m_width > 0 && m_height > 0;
 }
 
 /**********************************************

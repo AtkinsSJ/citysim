@@ -244,13 +244,13 @@ void drawTerrain(City* city, Rect2I visibleArea, s8 shaderID)
     for (s32 y = visibleArea.y;
         y < visibleArea.y + visibleArea.h;
         y++) {
-        spriteBounds.y = (float)y;
+        spriteBounds.set_y(y);
 
         for (s32 x = visibleArea.x;
             x < visibleArea.x + visibleArea.w;
             x++) {
             Sprite* sprite = getSprite(&layer->tileSprite.get(x, y));
-            spriteBounds.x = (float)x;
+            spriteBounds.set_x(x);
             drawSingleSprite(&renderer.world_buffer(), sprite, spriteBounds, shaderID, white);
             // addSpriteRect(group, sprite, spriteBounds, white);
 

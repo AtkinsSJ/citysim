@@ -760,10 +760,10 @@ void Renderer::push_quad(Rect2 bounds, Colour color)
 
     VertexData* vertex = m_vertices + m_vertex_count;
 
-    float minX = bounds.x;
-    float maxX = bounds.x + bounds.w;
-    float minY = bounds.y;
-    float maxY = bounds.y + bounds.h;
+    float minX = bounds.min_x();
+    float maxX = bounds.max_x();
+    float minY = bounds.min_y();
+    float maxY = bounds.max_y();
 
     vertex->pos.x = minX;
     vertex->pos.y = minY;
@@ -812,15 +812,15 @@ void Renderer::push_quad_with_uv_multicolor(Rect2 bounds, Colour color00, Colour
 
     VertexData* vertex = m_vertices + m_vertex_count;
 
-    float minX = bounds.x;
-    float maxX = bounds.x + bounds.w;
-    float minY = bounds.y;
-    float maxY = bounds.y + bounds.h;
+    float minX = bounds.min_x();
+    float maxX = bounds.max_x();
+    float minY = bounds.min_y();
+    float maxY = bounds.max_y();
 
-    float minU = uv.x;
-    float maxU = uv.x + uv.w;
-    float minV = uv.y;
-    float maxV = uv.y + uv.h;
+    float minU = uv.min_x();
+    float maxU = uv.max_x();
+    float minV = uv.min_y();
+    float maxV = uv.max_y();
 
     vertex->pos.x = minX;
     vertex->pos.y = minY;

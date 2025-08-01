@@ -706,6 +706,8 @@ void offsetRange(DrawRectsGroup* group, s32 startIndex, s32 endIndexInclusive, f
     ASSERT(endIndexInclusive >= 0 && endIndexInclusive < group->count);
     ASSERT(startIndex <= endIndexInclusive);
 
+    V2 offset { offsetX, offsetY };
+
     s32 debugItemsUpdated = 0;
 
     DrawRectsSubGroup* subGroup = &group->firstSubGroup;
@@ -725,8 +727,7 @@ void offsetRange(DrawRectsGroup* group, s32 startIndex, s32 endIndexInclusive, f
             (index <= endIndexInclusive - firstIndexInSubGroup) && (index < subGroup->header->count);
             index++) {
             RenderItem_DrawRects_Item* item = subGroup->first + index;
-            item->bounds.x += offsetX;
-            item->bounds.y += offsetY;
+            item->bounds.translate(offset);
             debugItemsUpdated++;
         }
 

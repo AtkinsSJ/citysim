@@ -33,20 +33,20 @@ void Camera::move_by(V2 delta)
 void Camera::snap_to_rectangle(Rect2 const bounds)
 {
     V2 cameraSize = m_size / m_zoom;
-    if (bounds.w < cameraSize.x) {
+    if (bounds.width() < cameraSize.x) {
         // City smaller than camera, so centre on it
-        m_position.x = bounds.w * 0.5f;
+        m_position.x = bounds.width() * 0.5f;
     } else {
         float minX = (cameraSize.x * 0.5f);
-        m_position.x = clamp(m_position.x, minX, bounds.right() - minX);
+        m_position.x = clamp(m_position.x, minX, bounds.max_x() - minX);
     }
 
-    if (bounds.h < m_size.y / m_zoom) {
+    if (bounds.height() < m_size.y / m_zoom) {
         // City smaller than camera, so centre on it
-        m_position.y = bounds.h * 0.5f;
+        m_position.y = bounds.height() * 0.5f;
     } else {
         float minY = (cameraSize.y * 0.5f);
-        m_position.y = clamp(m_position.y, minY, bounds.bottom() - minY);
+        m_position.y = clamp(m_position.y, minY, bounds.max_y() - minY);
     }
 }
 

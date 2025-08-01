@@ -11,61 +11,64 @@
 #include <Util/Padding.h>
 #include <Util/Vector.h>
 
-struct Rect2 {
+class Rect2 {
+public:
     Rect2() = default;
 
     Rect2(float x, float y, float w, float h)
-        : x(x)
-        , y(y)
-        , w(w)
-        , h(h)
+        : m_x(x)
+        , m_y(y)
+        , m_width(w)
+        , m_height(h)
     {
     }
 
     Rect2(s32 x, s32 y, s32 w, s32 h)
-        : x(x)
-        , y(y)
-        , w(w)
-        , h(h)
+        : m_x(x)
+        , m_y(y)
+        , m_width(w)
+        , m_height(h)
     {
     }
 
     Rect2(V2 pos, V2 size)
-        : x(pos.x)
-        , y(pos.y)
-        , w(size.x)
-        , h(size.y)
+        : m_x(pos.x)
+        , m_y(pos.y)
+        , m_width(size.x)
+        , m_height(size.y)
     {
     }
 
     Rect2(Rect2I const& other);
 
-    static Rect2 create_min_max(float minX, float minY, float maxX, float maxY);
+    static Rect2 create_min_max(float min_x, float min_y, float max_x, float max_y);
     static Rect2 create_aligned(V2 origin, V2 size, Alignment alignment);
 
-    union {
-        V2 pos;
-        struct
-        {
-            float x { 0 };
-            float y { 0 };
-        };
-    };
-    union {
-        V2 size;
-        struct
-        {
-            float w { 0 };
-            float h { 0 };
-        };
-    };
+    float x() const { return m_x; }
+    void set_x(float x) { m_x = x; }
+    float y() const { return m_y; }
+    void set_y(float y) { m_y = y; }
 
-    float left() const { return x; }
-    float right() const { return x + w; }
-    float top() const { return y; }
-    float bottom() const { return y + h; }
+    float min_x() const { return m_x; }
+    float max_x() const { return m_x + m_width; }
+    float min_y() const { return m_y; }
+    float max_y() const { return m_y + m_height; }
+
+    float width() const { return m_width; }
+    void set_width(float width) { m_width = width; }
+
+    float height() const { return m_height; }
+    void set_height(float height) { m_height = height; }
+
+    V2 size() const { return v2(m_width, m_height); }
+    void set_size(V2 size);
 
     V2 centre() const;
+
+    V2 position() const { return v2(m_x, m_y); }
+    void set_position(V2 position);
+
+    void translate(V2 offset);
 
     float area() const;
     bool has_positive_area() const;
@@ -76,10 +79,17 @@ struct Rect2 {
 
     bool overlaps(Rect2 const&) const;
 
+    Rect2 translated(V2 offset) const;
     Rect2 expanded(float radius) const;
     Rect2 expanded(float top, float right, float bottom, float left) const;
     Rect2 intersected(Rect2 const&) const;
     Rect2 intersected_relative(Rect2 const&) const;
+
+private:
+    float m_x { 0 };
+    float m_y { 0 };
+    float m_width { 0 };
+    float m_height { 0 };
 };
 
 struct Rect2I {
