@@ -421,19 +421,19 @@ void updateAndRenderGameUI(GameState* gameState)
             clock->speed = GameClockSpeed::Fast;
             clock->isPaused = false;
         }
-        speedButtonRect.set_x(speedButtonRect.x() - speedButtonRect.width() + uiPadding);
+        speedButtonRect.set_x(speedButtonRect.x() - (speedButtonRect.width() + uiPadding));
 
         if (UI::putTextButton(">>"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->speed == GameClockSpeed::Medium))) {
             clock->speed = GameClockSpeed::Medium;
             clock->isPaused = false;
         }
-        speedButtonRect.set_x(speedButtonRect.x() - speedButtonRect.width() + uiPadding);
+        speedButtonRect.set_x(speedButtonRect.x() - (speedButtonRect.width() + uiPadding));
 
         if (UI::putTextButton(">"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->speed == GameClockSpeed::Slow))) {
             clock->speed = GameClockSpeed::Slow;
             clock->isPaused = false;
         }
-        speedButtonRect.set_x(speedButtonRect.x() - speedButtonRect.width() + uiPadding);
+        speedButtonRect.set_x(speedButtonRect.x() - (speedButtonRect.width() + uiPadding));
 
         if (UI::putTextButton("||"_s, speedButtonRect, buttonStyle, buttonIsActive(clock->isPaused))) {
             clock->isPaused = !clock->isPaused;
