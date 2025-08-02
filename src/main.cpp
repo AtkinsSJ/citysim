@@ -35,6 +35,7 @@
 #include <Assets/AssetManager.h>
 #include <Debug/Console.h>
 #include <Gfx/Renderer.h>
+#include <Sim/BuildingCatalogue.h>
 #include <UI/UI.h>
 #include <UI/Window.h>
 #include <Util/Log.h>
@@ -110,6 +111,8 @@ int main(int argc, char* argv[])
     auto& input = input_state();
 
     initAssets();
+    initBuildingCatalogue();
+    initTerrainCatalogue();
 
     if (!Renderer::initialize(window)) {
         logError("Failed to initialize renderer!"_s);
