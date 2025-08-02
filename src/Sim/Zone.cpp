@@ -198,8 +198,8 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
     for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++) {
-        Indexed<ZoneSector*> sectorWithIndex = getNextSectorWithIndex(&layer->sectors);
-        ZoneSector* sector = sectorWithIndex.value();
+        Indexed<ZoneSector> sectorWithIndex = getNextSectorWithIndex(&layer->sectors);
+        ZoneSector& sector = sectorWithIndex.value();
         s32 sectorIndex = sectorWithIndex.index();
 
         // What zones does it contain?
@@ -211,10 +211,10 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
                 layer->sectorsWithEmptyZones[zone_type].unsetBit(sectorIndex);
             }
 
-            sector->zoneSectorFlags = {};
+            sector.zoneSectorFlags = {};
 
-            for (s32 y = sector->bounds.y(); y < sector->bounds.y() + sector->bounds.height(); y++) {
-                for (s32 x = sector->bounds.x(); x < sector->bounds.x() + sector->bounds.width(); x++) {
+            for (s32 y = sector.bounds.y(); y < sector.bounds.y() + sector.bounds.height(); y++) {
+                for (s32 x = sector.bounds.x(); x < sector.bounds.x() + sector.bounds.width(); x++) {
                     ZoneType zone = getZoneAt(city, x, y);
                     if (zone == ZoneType::None)
                         continue;
@@ -222,21 +222,21 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
                     bool isFilled = buildingExistsAt(city, x, y);
                     switch (zone) {
                     case ZoneType::Residential: {
-                        sector->zoneSectorFlags.add(ZoneSectorFlags::HasResZones);
+                        sector.zoneSectorFlags.add(ZoneSectorFlags::HasResZones);
                         if (!isFilled)
-                            sector->zoneSectorFlags.add(ZoneSectorFlags::HasEmptyResZones);
+                            sector.zoneSectorFlags.add(ZoneSectorFlags::HasEmptyResZones);
                     } break;
 
                     case ZoneType::Commercial: {
-                        sector->zoneSectorFlags.add(ZoneSectorFlags::HasComZones);
+                        sector.zoneSectorFlags.add(ZoneSectorFlags::HasComZones);
                         if (!isFilled)
-                            sector->zoneSectorFlags.add(ZoneSectorFlags::HasEmptyComZones);
+                            sector.zoneSectorFlags.add(ZoneSectorFlags::HasEmptyComZones);
                     } break;
 
                     case ZoneType::Industrial: {
-                        sector->zoneSectorFlags.add(ZoneSectorFlags::HasIndZones);
+                        sector.zoneSectorFlags.add(ZoneSectorFlags::HasIndZones);
                         if (!isFilled)
-                            sector->zoneSectorFlags.add(ZoneSectorFlags::HasEmptyIndZones);
+                            sector.zoneSectorFlags.add(ZoneSectorFlags::HasEmptyIndZones);
                     } break;
 
                         INVALID_DEFAULT_CASE;
@@ -244,22 +244,22 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
                 }
             }
 
-            if (sector->zoneSectorFlags.has(ZoneSectorFlags::HasResZones)) {
+            if (sector.zoneSectorFlags.has(ZoneSectorFlags::HasResZones)) {
                 layer->sectorsWithZones[ZoneType::Residential].setBit(sectorIndex);
             }
-            if (sector->zoneSectorFlags.has(ZoneSectorFlags::HasEmptyResZones)) {
+            if (sector.zoneSectorFlags.has(ZoneSectorFlags::HasEmptyResZones)) {
                 layer->sectorsWithEmptyZones[ZoneType::Residential].setBit(sectorIndex);
             }
-            if (sector->zoneSectorFlags.has(ZoneSectorFlags::HasComZones)) {
+            if (sector.zoneSectorFlags.has(ZoneSectorFlags::HasComZones)) {
                 layer->sectorsWithZones[ZoneType::Commercial].setBit(sectorIndex);
             }
-            if (sector->zoneSectorFlags.has(ZoneSectorFlags::HasEmptyComZones)) {
+            if (sector.zoneSectorFlags.has(ZoneSectorFlags::HasEmptyComZones)) {
                 layer->sectorsWithEmptyZones[ZoneType::Commercial].setBit(sectorIndex);
             }
-            if (sector->zoneSectorFlags.has(ZoneSectorFlags::HasIndZones)) {
+            if (sector.zoneSectorFlags.has(ZoneSectorFlags::HasIndZones)) {
                 layer->sectorsWithZones[ZoneType::Industrial].setBit(sectorIndex);
             }
-            if (sector->zoneSectorFlags.has(ZoneSectorFlags::HasEmptyIndZones)) {
+            if (sector.zoneSectorFlags.has(ZoneSectorFlags::HasEmptyIndZones)) {
                 layer->sectorsWithEmptyZones[ZoneType::Industrial].setBit(sectorIndex);
             }
         }
@@ -272,8 +272,8 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
             float totalComDesirability = 0.0f;
             float totalIndDesirability = 0.0f;
 
-            for (s32 y = sector->bounds.y(); y < sector->bounds.y() + sector->bounds.height(); y++) {
-                for (s32 x = sector->bounds.x(); x < sector->bounds.x() + sector->bounds.width(); x++) {
+            for (s32 y = sector.bounds.y(); y < sector.bounds.y() + sector.bounds.height(); y++) {
+                for (s32 x = sector.bounds.x(); x < sector.bounds.x() + sector.bounds.width(); x++) {
                     // Residential
                     {
                         // Land value = good
@@ -336,11 +336,11 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
                 }
             }
 
-            s32 sectorArea = sector->bounds.area();
+            s32 sectorArea = sector.bounds.area();
             float invSectorArea = 1.0f / (float)sectorArea;
-            sector->averageDesirability[ZoneType::Residential] = totalResDesirability * invSectorArea;
-            sector->averageDesirability[ZoneType::Commercial] = totalComDesirability * invSectorArea;
-            sector->averageDesirability[ZoneType::Industrial] = totalIndDesirability * invSectorArea;
+            sector.averageDesirability[ZoneType::Residential] = totalResDesirability * invSectorArea;
+            sector.averageDesirability[ZoneType::Commercial] = totalComDesirability * invSectorArea;
+            sector.averageDesirability[ZoneType::Industrial] = totalIndDesirability * invSectorArea;
         }
     }
 

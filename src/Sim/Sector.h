@@ -135,9 +135,9 @@ Sector* getNextSector(SectorGrid<Sector>* grid)
 }
 
 template<typename Sector>
-Indexed<Sector*> getNextSectorWithIndex(SectorGrid<Sector>* grid)
+Indexed<Sector> getNextSectorWithIndex(SectorGrid<Sector>* grid)
 {
-    Indexed<Sector*> result { grid->nextSectorUpdateIndex, &grid->sectors[grid->nextSectorUpdateIndex] };
+    Indexed<Sector> result { grid->nextSectorUpdateIndex, grid->sectors[grid->nextSectorUpdateIndex] };
 
     grid->nextSectorUpdateIndex = (grid->nextSectorUpdateIndex + 1) % getSectorCount(grid);
 

@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include <Sim/Sector.h>
 #include <Sim/Budget.h>
 #include <Sim/Crime.h>
 #include <Sim/Education.h>
@@ -16,6 +15,7 @@
 #include <Sim/LandValue.h>
 #include <Sim/Pollution.h>
 #include <Sim/Power.h>
+#include <Sim/Sector.h>
 #include <Sim/Terrain.h>
 #include <Sim/Zone.h>
 #include <Util/ChunkedArray.h>
@@ -104,22 +104,22 @@ void demolishRect(City* city, Rect2I area);
 template<typename T>
 Entity* addEntity(City* city, Entity::Type type, T* entityData)
 {
-    Indexed<Entity*> entityRecord = city->entities.append();
+    Indexed<Entity> entityRecord = city->entities.append();
     // logInfo("Adding entity #{0}"_s, {formatInt(entityRecord.index)});
-    entityRecord.value()->index = entityRecord.index();
+    entityRecord.value().index = entityRecord.index();
 
-    Entity* entity = entityRecord.value();
-    entity->type = type;
+    Entity& entity = entityRecord.value();
+    entity.type = type;
     // Make sure we're supplying entity data that matched the entity type!
-    ASSERT(checkEntityMatchesType<T>(entity));
-    entity->dataPointer = entityData;
+    ASSERT(checkEntityMatchesType<T>(&entity));
+    entity.dataPointer = entityData;
 
-    entity->color = Colour::white();
-    entity->depth = 0;
+    entity.color = Colour::white();
+    entity.depth = 0;
 
-    entity->canBeDemolished = false;
+    entity.canBeDemolished = false;
 
-    return entity;
+    return &entity;
 }
 
 void removeEntity(City* city, Entity* entity);

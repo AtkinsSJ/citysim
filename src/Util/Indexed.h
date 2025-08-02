@@ -11,7 +11,7 @@
 template<typename T>
 class Indexed {
 public:
-    Indexed(s32 index, T value)
+    Indexed(s32 index, T& value)
         : m_index(index)
         , m_value(value)
     {
@@ -23,5 +23,5 @@ public:
 
 private:
     s32 m_index;
-    T m_value;
+    T& m_value;
 };

@@ -109,21 +109,21 @@ Building* addBuildingDirect(City* city, s32 id, BuildingDef* def, Rect2I footpri
 {
     DEBUG_FUNCTION();
 
-    Indexed<Building*> buildingSlot = city->buildings.append();
+    Indexed<Building> buildingSlot = city->buildings.append();
     s32 buildingIndex = buildingSlot.index();
-    Building* building = buildingSlot.value();
-    initBuilding(building, id, def, footprint, creationDate);
+    Building& building = buildingSlot.value();
+    initBuilding(&building, id, def, footprint, creationDate);
 
     // Random sprite!
-    building->spriteOffset = AppState::the().cosmeticRandom->random_integer<u16>();
+    building.spriteOffset = AppState::the().cosmeticRandom->random_integer<u16>();
 
-    building->entity = addEntity(city, Entity::Type::Building, building);
-    building->entity->bounds = footprint;
-    loadBuildingSprite(building);
-    building->entity->canBeDemolished = true;
+    building.entity = addEntity(city, Entity::Type::Building, &building);
+    building.entity->bounds = footprint;
+    loadBuildingSprite(&building);
+    building.entity->canBeDemolished = true;
 
     CitySector* ownerSector = getSectorAtTilePos(&city->sectors, footprint.x(), footprint.y());
-    ownerSector->ownedBuildings.append(building);
+    ownerSector->ownedBuildings.append(&building);
 
     for (s32 y = footprint.y();
         y < footprint.y() + footprint.height();
@@ -135,12 +135,12 @@ Building* addBuildingDirect(City* city, s32 id, BuildingDef* def, Rect2I footpri
         }
     }
 
-    notifyNewBuilding(&city->crimeLayer, def, building);
-    notifyNewBuilding(&city->fireLayer, def, building);
-    notifyNewBuilding(&city->healthLayer, def, building);
-    notifyNewBuilding(&city->powerLayer, def, building);
+    notifyNewBuilding(&city->crimeLayer, def, &building);
+    notifyNewBuilding(&city->fireLayer, def, &building);
+    notifyNewBuilding(&city->healthLayer, def, &building);
+    notifyNewBuilding(&city->powerLayer, def, &building);
 
-    return building;
+    return &building;
 }
 
 Building* addBuilding(City* city, BuildingDef* def, Rect2I footprint, GameTimestamp creationDate)

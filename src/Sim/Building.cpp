@@ -30,8 +30,7 @@ void initBuildingCatalogue()
     // So, we have to append a blank for a "null" def. Could probably get rid of it, but initialise-to-zero is convenient
     // and I'm likely to accidentally leave other things set to 0, so it's safer to just keep the null def.
     // Update 18/02/2020: We now use the null building def when failing to match an intersection part name.
-    Indexed<BuildingDef*> nullBuildingDef = catalogue->allBuildings.append();
-    *nullBuildingDef.value() = {};
+    catalogue->allBuildings.append(); // Null building def
 
     initHashTable(&catalogue->buildingsByName, 0.75f, 128);
     initStringTable(&catalogue->buildingNames);
@@ -91,16 +90,16 @@ void _assignBuildingCategories(BuildingCatalogue* catalogue, BuildingDef* def)
 
 BuildingDef* appendNewBuildingDef(String name)
 {
-    Indexed<BuildingDef*> newDef = buildingCatalogue.allBuildings.append();
-    BuildingDef* result = newDef.value();
-    result->name = intern(&buildingCatalogue.buildingNames, name);
-    result->typeID = newDef.index();
+    Indexed<BuildingDef> newDef = buildingCatalogue.allBuildings.append();
+    BuildingDef& result = newDef.value();
+    result.name = intern(&buildingCatalogue.buildingNames, name);
+    result.typeID = newDef.index();
 
-    result->fireRisk = 1.0f;
-    buildingCatalogue.buildingsByName.put(result->name, result);
-    buildingCatalogue.buildingNameToTypeID.put(result->name, result->typeID);
+    result.fireRisk = 1.0f;
+    buildingCatalogue.buildingsByName.put(result.name, &result);
+    buildingCatalogue.buildingNameToTypeID.put(result.name, result.typeID);
 
-    return result;
+    return &result;
 }
 
 void loadBuildingDefs(Blob data, Asset* asset)
