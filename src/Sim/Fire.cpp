@@ -226,12 +226,13 @@ void removeFireAt(City* city, s32 x, s32 y)
     FireLayer* layer = &city->fireLayer;
 
     FireSector* sectorAtPosition = getSectorAtTilePos(&layer->sectors, x, y);
-    auto fire_at_position = sectorAtPosition->activeFires.find_first([=](Fire* fire) { return fire->pos.x == x && fire->pos.y == y; });
+    auto existing_fire = sectorAtPosition->activeFires.find_first([=](Fire* fire) { return fire->pos.x == x && fire->pos.y == y; });
 
-    if (fire_at_position.has_value()) {
+    if (existing_fire.has_value()) {
         // Remove it!
-        removeEntity(city, fire_at_position.value().value()->entity);
-        sectorAtPosition->activeFires.removeIndex(fire_at_position.value().index());
+        auto& [index, fire] = existing_fire.value();
+        removeEntity(city, fire->entity);
+        sectorAtPosition->activeFires.removeIndex(index);
         layer->activeFireCount--;
 
         markRectAsDirty(&layer->dirtyRects, { x, y, 1, 1 });
