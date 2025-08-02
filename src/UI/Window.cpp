@@ -141,17 +141,17 @@ bool hasPauseWindowOpen()
 
 bool isWindowOpen(WindowProc windowProc)
 {
-    Indexed<Window*> windowToRemove = uiState.openWindows.findFirst([&](Window* window) { return window->windowProc == windowProc; });
+    auto window_to_remove = uiState.openWindows.find_first([&](Window* window) { return window->windowProc == windowProc; });
 
-    return windowToRemove.index != -1;
+    return window_to_remove.has_value();
 }
 
 void closeWindow(WindowProc windowProc)
 {
-    Indexed<Window*> windowToRemove = uiState.openWindows.findFirst([&](Window* window) { return window->windowProc == windowProc; });
+    auto window_to_remove = uiState.openWindows.find_first([&](Window* window) { return window->windowProc == windowProc; });
 
-    if (windowToRemove.index != -1) {
-        uiState.windowsToClose.add(windowToRemove.index);
+    if (window_to_remove.has_value()) {
+        uiState.windowsToClose.add(window_to_remove.value().index);
     } else if (!uiState.openWindows.isEmpty()) {
         logInfo("closeWindow() call didn't find any windows that matched the WindowProc."_s);
     }

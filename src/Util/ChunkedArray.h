@@ -171,23 +171,17 @@ struct ChunkedArray {
         return iterate(count - 1, false, true);
     }
 
-    // NB: Returns an Indexed<> of null/-1 if nothing is found.
-    // A Maybe<> would be more specific, but Maybe<Indexed<T*>> is heading into ridiculousness territory.
     // Filter is a function with signature: bool filter(T *value)
     template<typename Filter>
-    Indexed<T*> findFirst(Filter filter)
+    Optional<Indexed<T*>> find_first(Filter filter)
     {
-        Indexed<T*> result = makeNullIndexedValue<T*>();
-
         for (auto it = iterate(); it.hasNext(); it.next()) {
             T* entry = it.get();
-            if (filter(entry)) {
-                result = makeIndexedValue(entry, it.getIndex());
-                break;
-            }
+            if (filter(entry))
+                return makeIndexedValue(entry, it.getIndex());
         }
 
-        return result;
+        return {};
     }
 
     bool findAndRemove(T toRemove, bool keepItemOrder = false)

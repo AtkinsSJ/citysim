@@ -152,11 +152,7 @@ Optional<Indexed<Fire*>> find_fire_at(City* city, s32 x, s32 y)
         return {};
 
     FireSector* sector = getSectorAtTilePos(&layer.sectors, x, y);
-    // FIXME: Remove this extra value check once findFirst() is more sane.
-    auto result = sector->activeFires.findFirst([=](Fire* fire) { return fire->pos.x == x && fire->pos.y == y; });
-    if (result.value)
-        return result;
-    return {};
+    return sector->activeFires.find_first([=](Fire* fire) { return fire->pos.x == x && fire->pos.y == y; });
 }
 
 bool doesAreaContainFire(City* city, Rect2I bounds)
@@ -230,12 +226,12 @@ void removeFireAt(City* city, s32 x, s32 y)
     FireLayer* layer = &city->fireLayer;
 
     FireSector* sectorAtPosition = getSectorAtTilePos(&layer->sectors, x, y);
-    Indexed<Fire*> fireAtPosition = sectorAtPosition->activeFires.findFirst([=](Fire* fire) { return fire->pos.x == x && fire->pos.y == y; });
+    auto fire_at_position = sectorAtPosition->activeFires.find_first([=](Fire* fire) { return fire->pos.x == x && fire->pos.y == y; });
 
-    if (fireAtPosition.value != nullptr) {
+    if (fire_at_position.has_value()) {
         // Remove it!
-        removeEntity(city, fireAtPosition.value->entity);
-        sectorAtPosition->activeFires.removeIndex(fireAtPosition.index);
+        removeEntity(city, fire_at_position.value().value->entity);
+        sectorAtPosition->activeFires.removeIndex(fire_at_position.value().index);
         layer->activeFireCount--;
 
         markRectAsDirty(&layer->dirtyRects, { x, y, 1, 1 });

@@ -123,12 +123,12 @@ void showSaveGameWindow()
     captureInput(&catalogue->saveGameName);
 
     // If we're playing a save file, select that by default
-    Indexed<SavedGameInfo*> selectedSavedGame = catalogue->savedGames.findFirst([&](SavedGameInfo* info) {
+    auto selected_saved_game = catalogue->savedGames.find_first([&](SavedGameInfo* info) {
         return info->shortName == catalogue->activeSavedGameName;
     });
-    if (selectedSavedGame.index != -1) {
+    if (selected_saved_game.has_value()) {
         catalogue->selectedSavedGameName = catalogue->activeSavedGameName;
-        catalogue->selectedSavedGameIndex = selectedSavedGame.index;
+        catalogue->selectedSavedGameIndex = selected_saved_game.value().index;
         catalogue->saveGameName.append(catalogue->selectedSavedGameName);
     } else {
         catalogue->selectedSavedGameName = nullString;
@@ -228,11 +228,11 @@ void savedGamesWindowProc(UI::WindowContext* context, void* userData)
             // Show a warning if we're overwriting an existing save that ISN'T the active one
             bool showOverwriteWarning = false;
             if (!isEmpty(inputName) && inputName != catalogue->activeSavedGameName) {
-                Indexed<SavedGameInfo*> fileToOverwrite = catalogue->savedGames.findFirst([&](SavedGameInfo* info) {
+                auto file_to_overwrite = catalogue->savedGames.find_first([&](SavedGameInfo* info) {
                     return inputName == info->shortName;
                 });
 
-                if (fileToOverwrite.index != -1) {
+                if (file_to_overwrite.has_value()) {
                     showOverwriteWarning = true;
                 }
             }
