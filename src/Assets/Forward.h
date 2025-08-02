@@ -11,6 +11,8 @@
 enum class AssetType : u8;
 struct Asset;
 struct AssetID;
+struct AssetManager;
+class AssetManagerListener;
 struct AssetRef;
 struct Cursor;
 struct Ninepatch;

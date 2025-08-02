@@ -6,8 +6,9 @@
 
 #pragma once
 
-#include <IO/File.h>
 #include <Assets/Asset.h>
+#include <Assets/AssetManagerListener.h>
+#include <IO/File.h>
 #include <Util/ChunkedArray.h>
 #include <Util/EnumMap.h>
 #include <Util/Set.h>
@@ -43,6 +44,7 @@ struct AssetManager {
     // TODO: this probably belongs somewhere else? IDK.
     // It feels icky having parts of assets directly in this struct, but when there's only 1, and you
     // have to do a hashtable lookup inside it, it makes more sense to avoid the "find the asset" lookup.
+    // FIXME: TextCatalogue?
     HashTable<String> texts;
     HashTable<String> defaultTexts; // "en" locale
     // NB: Sets are stupid right now, they just wrap a ChunkedArray, which means it gets wiped when
@@ -52,6 +54,10 @@ struct AssetManager {
     // be useful.
     // - Sam, 02/10/2019
     Set<String> missingTextIDs;
+
+    ChunkedArray<AssetManagerListener*> listeners;
+    void register_listener(AssetManagerListener*);
+    void unregister_listener(AssetManagerListener*);
 };
 
 void initAssets();

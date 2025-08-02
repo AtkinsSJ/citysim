@@ -69,6 +69,8 @@ void initAssets()
 
     initSet<String>(&s_assets->missingTextIDs, &s_assets->arena, compareStrings);
 
+    initChunkedArray(&s_assets->listeners, &s_assets->arena, 32);
+
     // Placeholder s_assets!
     {
         // BitmapFont
@@ -597,6 +599,10 @@ void loadAssets()
 
     s_assets->lastAssetReloadTicks = SDL_GetTicks();
     s_assets->assetReloadHasJustHappened = true;
+
+    for (auto it = s_assets->listeners.iterate(); it.hasNext(); it.next()) {
+        it.getValue()->after_assets_loaded();
+    }
 }
 
 void addAssetsFromDirectory(String subDirectory, Optional<AssetType> manualAssetType)
@@ -661,8 +667,11 @@ void reloadAssets()
     DEBUG_FUNCTION();
 
     // Preparation
-    logInfo("Reloading s_assets..."_s);
+    logInfo("Reloading assets..."_s);
     the_renderer().unload_assets();
+    for (auto it = s_assets->listeners.iterate(); it.hasNext(); it.next()) {
+        it.getValue()->before_assets_unloaded();
+    }
 
     // Clear managed s_assets
     for (auto it = s_assets->allAssets.iterate(); it.hasNext(); it.next()) {
@@ -1274,4 +1283,14 @@ void loadTexts(HashTable<String>* texts, Asset* asset, Blob fileData)
 
         texts->put(key, text);
     }
+}
+
+void AssetManager::register_listener(AssetManagerListener* listener)
+{
+    listeners.append(listener);
+}
+
+void AssetManager::unregister_listener(AssetManagerListener* listener)
+{
+    listeners.findAndRemove(listener);
 }
