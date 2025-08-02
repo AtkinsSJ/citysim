@@ -14,6 +14,7 @@ target_sources(CitySim PRIVATE
     Pollution.cpp
     Power.cpp
     Terrain.cpp
+    TerrainCatalogue.cpp
     TileUtils.cpp
     Transport.cpp
     Zone.cpp

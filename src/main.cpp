@@ -36,6 +36,7 @@
 #include <Debug/Console.h>
 #include <Gfx/Renderer.h>
 #include <Sim/BuildingCatalogue.h>
+#include <Sim/TerrainCatalogue.h>
 #include <UI/UI.h>
 #include <UI/Window.h>
 #include <Util/Log.h>

@@ -13,6 +13,7 @@
 #include <IO/BinaryFileWriter.h>
 #include <IO/WriteBuffer.h>
 #include <Sim/BuildingCatalogue.h>
+#include <Sim/TerrainCatalogue.h>
 #include <Util/Random.h>
 #include <Util/Rectangle.h>
 

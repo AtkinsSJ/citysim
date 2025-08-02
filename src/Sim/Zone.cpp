@@ -12,6 +12,7 @@
 #include <IO/BinaryFileWriter.h>
 #include <Sim/BuildingCatalogue.h>
 #include <Sim/City.h>
+#include <Sim/TerrainCatalogue.h>
 
 void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena)
 {
