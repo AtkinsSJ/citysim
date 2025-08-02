@@ -95,7 +95,7 @@ struct ChunkedArray {
     T* append(T item)
     {
         T* result = appendUninitialised();
-        *result = item;
+        *result = move(item);
         return result;
     }
 
