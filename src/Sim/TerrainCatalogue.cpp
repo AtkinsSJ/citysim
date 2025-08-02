@@ -32,6 +32,8 @@ void initTerrainCatalogue()
     s_terrain_catalogue.terrainNameToType.put(nullString, 0);
 
     initHashTable(&s_terrain_catalogue.terrainNameToOldType, 0.75f, 128);
+
+    asset_manager().register_listener(&s_terrain_catalogue);
 }
 
 void loadTerrainDefs(Blob data, Asset* asset)
@@ -159,7 +161,7 @@ void saveTerrainTypes()
     s_terrain_catalogue.terrainNameToOldType.putAll(&s_terrain_catalogue.terrainNameToType);
 }
 
-void remapTerrainTypes(City* city)
+void remapTerrainTypes()
 {
     // First, remap any Names that are not present in the current data, so they won't get
     // merged accidentally.
@@ -180,18 +182,23 @@ void remapTerrainTypes(City* city)
             oldTypeToNewType[oldType] = s_terrain_catalogue.terrainNameToType.findValue(terrainName).orDefault(0);
         }
 
-        TerrainLayer* layer = &city->terrainLayer;
+        TerrainLayer& layer = AppState::the().gameState->city.terrainLayer;
 
-        for (s32 y = 0; y < layer->tileTerrainType.h; y++) {
-            for (s32 x = 0; x < layer->tileTerrainType.w; x++) {
-                u8 oldType = layer->tileTerrainType.get(x, y);
+        for (s32 y = 0; y < layer.tileTerrainType.h; y++) {
+            for (s32 x = 0; x < layer.tileTerrainType.w; x++) {
+                u8 oldType = layer.tileTerrainType.get(x, y);
 
                 if (oldType < oldTypeToNewType.count && (oldTypeToNewType[oldType] != 0)) {
-                    layer->tileTerrainType.set(x, y, oldTypeToNewType[oldType]);
+                    layer.tileTerrainType.set(x, y, oldTypeToNewType[oldType]);
                 }
             }
         }
     }
 
     saveTerrainTypes();
+}
+
+void TerrainCatalogue::after_assets_loaded()
+{
+    remapTerrainTypes();
 }

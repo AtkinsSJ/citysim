@@ -604,10 +604,6 @@ AppStatus updateAndRenderGame(GameState* gameState, float deltaTime)
     AppStatus result = AppStatus::Game;
     City* city = &gameState->city;
 
-    if (asset_manager().assetReloadHasJustHappened) {
-        remapTerrainTypes(city);
-    }
-
     // Update the simulation... need a smarter way of doing this!
     if (!UI::hasPauseWindowOpen()) {
         DEBUG_BLOCK_T("Update simulation", DebugCodeDataTag::Simulation);

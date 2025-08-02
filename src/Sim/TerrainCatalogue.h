@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <Assets/AssetManagerListener.h>
 #include <Assets/Forward.h>
 #include <Sim/Forward.h>
 #include <Util/HashTable.h>
@@ -27,7 +28,7 @@ struct TerrainDef {
     bool drawBordersOver;
 };
 
-struct TerrainCatalogue {
+struct TerrainCatalogue final : public AssetManagerListener {
     static TerrainCatalogue& the();
 
     OccupancyArray<TerrainDef> terrainDefs;
@@ -37,6 +38,9 @@ struct TerrainCatalogue {
 
     HashTable<u8> terrainNameToOldType;
     HashTable<u8> terrainNameToType;
+
+    // ^AssetManagerListener
+    virtual void after_assets_loaded() override;
 };
 
 void initTerrainCatalogue();
@@ -48,4 +52,4 @@ TerrainDef* getTerrainDef(u8 terrainType);
 u8 findTerrainTypeByName(String name);
 
 void saveTerrainTypes();
-void remapTerrainTypes(City* city);
+void remapTerrainTypes();
