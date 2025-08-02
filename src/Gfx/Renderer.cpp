@@ -109,14 +109,14 @@ void Renderer::render()
     }
 }
 
-void Renderer::load_assets()
+void Renderer::after_assets_loaded()
 {
     if (!isEmpty(m_current_cursor_name)) {
         set_cursor(m_current_cursor_name);
     }
 }
 
-void Renderer::unload_assets()
+void Renderer::before_assets_unloaded()
 {
     show_system_wait_cursor();
 }

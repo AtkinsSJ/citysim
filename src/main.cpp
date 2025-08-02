@@ -110,8 +110,6 @@ int main(int argc, char* argv[])
     auto& input = input_state();
 
     initAssets();
-    addAssets();
-    loadAssets();
 
     if (!Renderer::initialize(window)) {
         logError("Failed to initialize renderer!"_s);
@@ -119,7 +117,11 @@ int main(int argc, char* argv[])
     }
 
     auto& renderer = the_renderer();
-    renderer.load_assets();
+    asset_manager().register_listener(&renderer);
+
+    addAssets();
+    loadAssets();
+
     renderer.set_cursor("default"_s);
     renderer.set_cursor_visible(true);
 

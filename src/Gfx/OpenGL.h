@@ -67,8 +67,8 @@ public:
 
     virtual void on_window_resized(s32 width, s32 height) override;
     virtual void render_internal() override;
-    virtual void load_assets() override;
-    virtual void unload_assets() override;
+    virtual void after_assets_loaded() override;
+    virtual void before_assets_unloaded() override;
 
     ShaderProgram* use_shader(s8 shaderID);
 

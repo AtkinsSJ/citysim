@@ -7,6 +7,7 @@
 #pragma once
 
 #include "font.h"
+#include <Assets/AssetManagerListener.h>
 #include <Assets/Forward.h>
 #include <Gfx/Camera.h>
 #include <Gfx/Colour.h>
@@ -44,9 +45,9 @@ struct DrawRingsGroup {
     s32 maxCount;
 };
 
-class Renderer {
+class Renderer : public AssetManagerListener {
 public:
-    virtual ~Renderer();
+    virtual ~Renderer() override;
 
     static bool initialize(SDL_Window*);
 
@@ -88,8 +89,8 @@ public:
     virtual void on_window_resized(s32 width, s32 height) = 0;
     void render();
     virtual void render_internal() = 0;
-    virtual void load_assets();
-    virtual void unload_assets();
+    virtual void after_assets_loaded() override;
+    virtual void before_assets_unloaded() override;
     virtual void free() = 0;
 
     void show_system_wait_cursor();

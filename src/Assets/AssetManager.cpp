@@ -668,7 +668,6 @@ void reloadAssets()
 
     // Preparation
     logInfo("Reloading assets..."_s);
-    the_renderer().unload_assets();
     for (auto it = s_assets->listeners.iterate(); it.hasNext(); it.next()) {
         it.getValue()->before_assets_unloaded();
     }
@@ -693,9 +692,6 @@ void reloadAssets()
     s_assets->allAssets.clear();
     addAssets();
     loadAssets();
-
-    // After stuff
-    the_renderer().load_assets();
     logInfo("AssetManager reloaded successfully!"_s);
 }
 

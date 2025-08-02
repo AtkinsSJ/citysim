@@ -424,11 +424,11 @@ void Renderer::render_internal()
     ASSERT(isEmpty(&m_scissor_stack));
 }
 
-void Renderer::load_assets()
+void Renderer::after_assets_loaded()
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Renderer);
 
-    ::Renderer::load_assets();
+    ::Renderer::after_assets_loaded();
 
     // Textures
     for (auto it = asset_manager().assetsByType[AssetType::Texture].iterate();
@@ -467,11 +467,11 @@ void Renderer::load_assets()
     shaderIds.untextured = getShader("untextured.glsl"_s)->rendererShaderID;
 }
 
-void Renderer::unload_assets()
+void Renderer::before_assets_unloaded()
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Renderer);
 
-    ::Renderer::unload_assets();
+    ::Renderer::before_assets_unloaded();
 
     // Textures
     for (auto it = asset_manager().assetsByType[AssetType::Texture].iterate();
