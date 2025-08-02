@@ -66,7 +66,7 @@ void markFireLayerDirty(FireLayer* layer, Rect2I bounds);
 void notifyNewBuilding(FireLayer* layer, BuildingDef* def, Building* building);
 void notifyBuildingDemolished(FireLayer* layer, BuildingDef* def, Building* building);
 
-Indexed<Fire*> findFireAt(City* city, s32 x, s32 y);
+Optional<Indexed<Fire*>> find_fire_at(City* city, s32 x, s32 y);
 bool doesAreaContainFire(City* city, Rect2I bounds);
 void startFireAt(City* city, s32 x, s32 y);
 void addFireRaw(City* city, s32 x, s32 y, GameTimestamp startDate);

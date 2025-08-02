@@ -143,18 +143,20 @@ void updateFireLayer(City* city, FireLayer* layer)
     }
 }
 
-Indexed<Fire*> findFireAt(City* city, s32 x, s32 y)
+Optional<Indexed<Fire*>> find_fire_at(City* city, s32 x, s32 y)
 {
-    FireLayer* layer = &city->fireLayer;
+    FireLayer& layer = city->fireLayer;
 
-    Indexed<Fire*> result = makeNullIndexedValue<Fire*>();
+    // Optimization: Skip looking for fires if we know there are none.
+    if (layer.activeFireCount == 0)
+        return {};
 
-    if (layer->activeFireCount > 0) {
-        FireSector* sector = getSectorAtTilePos(&layer->sectors, x, y);
-        result = sector->activeFires.findFirst([=](Fire* fire) { return fire->pos.x == x && fire->pos.y == y; });
-    }
-
-    return result;
+    FireSector* sector = getSectorAtTilePos(&layer.sectors, x, y);
+    // FIXME: Remove this extra value check once findFirst() is more sane.
+    auto result = sector->activeFires.findFirst([=](Fire* fire) { return fire->pos.x == x && fire->pos.y == y; });
+    if (result.value)
+        return result;
+    return {};
 }
 
 bool doesAreaContainFire(City* city, Rect2I bounds)
@@ -186,8 +188,7 @@ bool doesAreaContainFire(City* city, Rect2I bounds)
 
 void startFireAt(City* city, s32 x, s32 y)
 {
-    Indexed<Fire*> existingFire = findFireAt(city, x, y);
-    if (existingFire.value != nullptr) {
+    if (auto existing_fire = find_fire_at(city, x, y); existing_fire.has_value()) {
         // Fire already exists!
         // TODO: make the fire stronger?
         logWarn("Fire at {0},{1} already exists!"_s, { formatInt(x), formatInt(y) });
