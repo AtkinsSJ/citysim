@@ -12,6 +12,7 @@
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
 #include <IO/WriteBuffer.h>
+#include <Sim/BuildingCatalogue.h>
 #include <Util/Random.h>
 #include <Util/Rectangle.h>
 

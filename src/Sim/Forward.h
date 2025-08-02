@@ -8,6 +8,7 @@
 
 struct BudgetLayer;
 struct Building;
+struct BuildingCatalogue;
 struct BuildingDef;
 class BuildingRef;
 struct City;

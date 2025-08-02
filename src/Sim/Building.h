@@ -13,8 +13,6 @@
 #include <Sim/Transport.h>
 #include <Util/EnumMap.h>
 #include <Util/Flags.h>
-#include <Util/OccupancyArray.h>
-#include <Util/StringTable.h>
 
 enum class BuildMethod : u8 {
     None,
@@ -125,28 +123,6 @@ struct BuildingDef {
     // copy their values when a building `extends` a template!
 };
 
-struct BuildingCatalogue {
-    OccupancyArray<BuildingDef> allBuildings;
-    HashTable<BuildingDef*> buildingsByName;
-    StringTable buildingNames;
-
-    HashTable<s32> buildingNameToTypeID;
-    HashTable<s32> buildingNameToOldTypeID;
-
-    ChunkedArray<BuildingDef*> constructibleBuildings;
-    ChunkedArray<BuildingDef*> rGrowableBuildings;
-    ChunkedArray<BuildingDef*> cGrowableBuildings;
-    ChunkedArray<BuildingDef*> iGrowableBuildings;
-    ChunkedArray<BuildingDef*> intersectionBuildings;
-
-    s32 maxRBuildingDim;
-    s32 maxCBuildingDim;
-    s32 maxIBuildingDim;
-    s32 overallMaxBuildingDim;
-};
-
-inline BuildingCatalogue buildingCatalogue = {};
-
 struct BuildingProblem {
     enum class Type : u8 {
         Fire,
@@ -187,14 +163,7 @@ struct Building {
     BuildingRef get_reference() const;
 };
 
-void initBuildingCatalogue();
-
-BuildingDef* appendNewBuildingDef(String name);
-void loadBuildingDefs(Blob data, Asset* asset);
-void removeBuildingDefs(Array<String> idsToRemove);
-BuildingDef* getBuildingDef(s32 buildingTypeID);
 BuildingDef* getBuildingDef(Building* building);
-BuildingDef* findBuildingDef(String name);
 
 bool buildingDefHasType(BuildingDef* def, s32 typeID);
 
@@ -227,6 +196,3 @@ s32 getMaxBuildingSize(ZoneType zoneType);
 
 void updateBuildingVariant(City* city, Building* building, BuildingDef* def = nullptr);
 void updateAdjacentBuildingVariants(City* city, Rect2I footprint);
-
-void saveBuildingTypes();
-void remapBuildingTypes(City* city);

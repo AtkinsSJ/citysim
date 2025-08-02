@@ -1,6 +1,7 @@
 target_sources(CitySim PRIVATE
     Budget.cpp
     Building.cpp
+    BuildingCatalogue.cpp
     City.cpp
     Crime.cpp
     DirtyRects.cpp

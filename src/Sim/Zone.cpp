@@ -10,6 +10,7 @@
 #include <Gfx/Renderer.h>
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
+#include <Sim/BuildingCatalogue.h>
 #include <Sim/City.h>
 
 void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena)

@@ -12,6 +12,7 @@
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
 #include <IO/LineReader.h>
+#include <Sim/BuildingCatalogue.h>
 #include <Sim/City.h>
 #include <UI/Window.h>
 #include <Util/Splat.h>

@@ -14,6 +14,7 @@
 #include <SDL2/SDL_filesystem.h>
 #include <SDL2/SDL_image.h>
 #include <Sim/Building.h>
+#include <Sim/BuildingCatalogue.h>
 #include <Sim/Terrain.h>
 
 AssetManager* s_assets;
