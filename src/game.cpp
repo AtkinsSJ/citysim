@@ -279,7 +279,7 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
     Building* building = getBuildingAt(city, tilePos.x, tilePos.y);
     if (building != nullptr) {
         s32 buildingIndex = city->tileBuildingIndex.get(tilePos.x, tilePos.y);
-        BuildingDef* def = getBuildingDef(building->typeID);
+        BuildingDef* def = getBuildingDef(building);
         ui->addLabel(myprintf("Building: {0} (ID {1}, array index {2})"_s, { getText(def->textAssetName), formatInt(building->id), formatInt(buildingIndex) }));
         ui->addLabel(myprintf("Constructed: {0}"_s, { formatDateTime(dateTimeFromTimestamp(building->creationDate), DateTimeFormat::ShortDate) }));
         ui->addLabel(myprintf("Variant: {0}"_s, { formatInt(building->variantIndex.value_or(-1)) }));

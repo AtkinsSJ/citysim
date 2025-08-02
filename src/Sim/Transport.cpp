@@ -49,7 +49,7 @@ void updateTransportLayer(City* city, TransportLayer* layer)
                 for (s32 x = dirtyRect.x(); x < dirtyRect.x() + dirtyRect.width(); x++) {
                     Building* building = getBuildingAt(city, x, y);
                     if (building != nullptr) {
-                        BuildingDef* def = getBuildingDef(building->typeID);
+                        BuildingDef* def = getBuildingDef(building);
                         layer->tileTransportTypes.set(x, y, def->transportTypes);
                     } else {
                         layer->tileTransportTypes.set(x, y, {});

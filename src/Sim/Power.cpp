@@ -121,7 +121,7 @@ void updateSectorPowerValues(City* city, PowerSector* sector)
         it.hasNext();
         it.next()) {
         Building* building = it.getValue();
-        BuildingDef* def = getBuildingDef(building->typeID);
+        BuildingDef* def = getBuildingDef(building);
 
         if (def->power != 0) {
             u8 powerGroupIndex = getPowerGroupID(sector, building->footprint.x() - sector->bounds.x(), building->footprint.y() - sector->bounds.y());
@@ -317,7 +317,7 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
         it.hasNext();
         it.next()) {
         Building* building = it.getValue();
-        if (getBuildingDef(building->typeID)->power == 0)
+        if (getBuildingDef(building)->power == 0)
             continue; // We only care about powered buildings!
 
         if (sector->bounds.contains(building->footprint.position())) {
@@ -562,7 +562,7 @@ void updatePowerLayer(City* city, PowerLayer* layer)
                     Building* building = getBuildingAt(city, x, y);
                     BuildingDef* def = nullptr;
                     if (building != nullptr) {
-                        def = getBuildingDef(building->typeID);
+                        def = getBuildingDef(building);
                     }
 
                     if (def != nullptr && def->flags.has(BuildingFlags::CarriesPower)) {

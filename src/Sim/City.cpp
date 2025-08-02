@@ -211,7 +211,7 @@ bool canPlaceBuilding(City* city, BuildingDef* def, s32 left, s32 top)
             Building* buildingAtPos = getBuildingAt(city, x, y);
             if (buildingAtPos != nullptr) {
                 // Check if we can combine this with the building that's already there
-                Maybe<BuildingDef*> possibleIntersection = findBuildingIntersection(getBuildingDef(buildingAtPos->typeID), def);
+                Maybe<BuildingDef*> possibleIntersection = findBuildingIntersection(getBuildingDef(buildingAtPos), def);
                 if (possibleIntersection.isValid) {
                     // We can!
                     // TODO: We want to check if there is a valid variant, before we build.
@@ -238,7 +238,7 @@ void placeBuilding(City* city, BuildingDef* def, s32 left, s32 top, bool markAre
     if (building != nullptr) {
         // Do a quick replace! We already established in canPlaceBuilding() that we match.
         // NB: We're keeping the old building's id. I think that's preferable, but might want to change that later.
-        BuildingDef* oldDef = getBuildingDef(building->typeID);
+        BuildingDef* oldDef = getBuildingDef(building);
 
         Maybe<BuildingDef*> intersectionDef = findBuildingIntersection(oldDef, def);
         ASSERT(intersectionDef.isValid);
@@ -310,7 +310,7 @@ s32 calculateDemolitionCost(City* city, Rect2I area)
     ChunkedArray<Building*> buildingsToDemolish = findBuildingsOverlappingArea(city, area);
     for (auto it = buildingsToDemolish.iterate(); it.hasNext(); it.next()) {
         Building* building = it.getValue();
-        total += getBuildingDef(building->typeID)->demolishCost;
+        total += getBuildingDef(building)->demolishCost;
     }
 
     return total;
@@ -328,7 +328,7 @@ void demolishRect(City* city, Rect2I area)
         it.hasNext();
         it.next()) {
         Building* building = it.getValue();
-        BuildingDef* def = getBuildingDef(building->typeID);
+        BuildingDef* def = getBuildingDef(building);
 
         city->zoneLayer.population[def->growsInZone] -= building->currentResidents + building->currentJobs;
 
