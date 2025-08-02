@@ -95,7 +95,7 @@ void updateFireLayer(City* city, FireLayer* layer)
                 // Building fire protection
                 fillRegion<u8>(&layer->tileFireProtection, sector->bounds, 0);
                 for (auto it = layer->fireProtectionBuildings.iterate(); it.hasNext(); it.next()) {
-                    Building* building = getBuilding(city, it.getValue());
+                    Building* building = city->get_building(it.getValue());
                     if (building != nullptr) {
                         BuildingDef* def = getBuildingDef(building);
 
@@ -241,14 +241,14 @@ void removeFireAt(City* city, s32 x, s32 y)
 void notifyNewBuilding(FireLayer* layer, BuildingDef* def, Building* building)
 {
     if (def->fireProtection.has_effect()) {
-        layer->fireProtectionBuildings.append(getReferenceTo(building));
+        layer->fireProtectionBuildings.append(building->get_reference());
     }
 }
 
 void notifyBuildingDemolished(FireLayer* layer, BuildingDef* def, Building* building)
 {
     if (def->fireProtection.has_effect()) {
-        bool success = layer->fireProtectionBuildings.findAndRemove(getReferenceTo(building));
+        bool success = layer->fireProtectionBuildings.findAndRemove(building->get_reference());
         ASSERT(success);
     }
 }

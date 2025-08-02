@@ -980,7 +980,7 @@ static void drawBuildingHighlights(City* city, Iterable* buildingRefs)
 
         DrawRectsGroup* buildingHighlights = beginRectsGroupUntextured(&renderer.world_overlay_buffer(), renderer.shaderIds.untextured, buildingRefs->count);
         for (auto it = buildingRefs->iterate(); it.hasNext(); it.next()) {
-            Building* building = getBuilding(city, it.getValue());
+            Building* building = city->get_building(it.getValue());
             // NB: If we're doing this in a separate loop, we could crop out buildings that aren't in the visible tile bounds
             if (building != nullptr) {
                 s32 paletteIndex = (buildingHasPower(building) ? paletteIndexPowered : paletteIndexUnpowered);
@@ -1027,7 +1027,7 @@ static void drawBuildingEffectRadii(City* city, Iterable* buildingRefs, EffectRa
         DrawRingsGroup* buildingRadii = beginRingsGroup(&renderer.world_overlay_buffer(), buildingRefs->count);
 
         for (auto it = buildingRefs->iterate(); it.hasNext(); it.next()) {
-            Building* building = getBuilding(city, it.getValue());
+            Building* building = city->get_building(it.getValue());
             // NB: We don't filter buildings outside of the visibleTileBounds because their radius might be
             // visible even if the building isn't!
             if (building != nullptr) {

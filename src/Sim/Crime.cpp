@@ -44,7 +44,7 @@ void updateCrimeLayer(City* city, CrimeLayer* layer)
     // development we have this whole hot-loaded building defs system, so it's better to be safe.
     layer->totalJailCapacity = 0;
     for (auto it = layer->policeBuildings.iterate(); it.hasNext(); it.next()) {
-        Building* building = getBuilding(city, it.getValue());
+        Building* building = city->get_building(it.getValue());
         if (building != nullptr) {
             BuildingDef* def = getBuildingDef(building);
             if (def->jailCapacity > 0)
@@ -62,7 +62,7 @@ void updateCrimeLayer(City* city, CrimeLayer* layer)
                 DEBUG_BLOCK_T("updateCrimeLayer: building police coverage", DebugCodeDataTag::Simulation);
                 fillRegion<u8>(&layer->tilePoliceCoverage, sector->bounds, 0);
                 for (auto it = layer->policeBuildings.iterate(); it.hasNext(); it.next()) {
-                    Building* building = getBuilding(city, it.getValue());
+                    Building* building = city->get_building(it.getValue());
                     if (building != nullptr) {
                         BuildingDef* def = getBuildingDef(building);
 
@@ -88,14 +88,14 @@ void updateCrimeLayer(City* city, CrimeLayer* layer)
 void notifyNewBuilding(CrimeLayer* layer, BuildingDef* def, Building* building)
 {
     if (def->policeEffect.has_effect() || (def->jailCapacity > 0)) {
-        layer->policeBuildings.append(getReferenceTo(building));
+        layer->policeBuildings.append(building->get_reference());
     }
 }
 
 void notifyBuildingDemolished(CrimeLayer* layer, BuildingDef* def, Building* building)
 {
     if (def->policeEffect.has_effect() || (def->jailCapacity > 0)) {
-        bool success = layer->policeBuildings.findAndRemove(getReferenceTo(building));
+        bool success = layer->policeBuildings.findAndRemove(building->get_reference());
         ASSERT(success);
     }
 }

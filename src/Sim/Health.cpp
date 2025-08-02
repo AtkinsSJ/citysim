@@ -52,7 +52,7 @@ void updateHealthLayer(City* city, HealthLayer* layer)
                 DEBUG_BLOCK_T("updateHealthLayer: building health coverage", DebugCodeDataTag::Simulation);
                 fillRegion<u8>(&layer->tileHealthCoverage, sector->bounds, 0);
                 for (auto it = layer->healthBuildings.iterate(); it.hasNext(); it.next()) {
-                    Building* building = getBuilding(city, it.getValue());
+                    Building* building = city->get_building(it.getValue());
                     if (building != nullptr) {
                         BuildingDef* def = getBuildingDef(building);
 
@@ -84,14 +84,14 @@ void markHealthLayerDirty(HealthLayer* layer, Rect2I bounds)
 void notifyNewBuilding(HealthLayer* layer, BuildingDef* def, Building* building)
 {
     if (def->healthEffect.has_effect()) {
-        layer->healthBuildings.append(getReferenceTo(building));
+        layer->healthBuildings.append(building->get_reference());
     }
 }
 
 void notifyBuildingDemolished(HealthLayer* layer, BuildingDef* def, Building* building)
 {
     if (def->healthEffect.has_effect()) {
-        bool success = layer->healthBuildings.findAndRemove(getReferenceTo(building));
+        bool success = layer->healthBuildings.findAndRemove(building->get_reference());
         ASSERT(success);
     }
 }

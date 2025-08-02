@@ -32,6 +32,12 @@ struct CitySector {
 };
 
 struct City {
+    Building* get_building(BuildingRef const&);
+    Building const* get_building(BuildingRef const& ref) const
+    {
+        return const_cast<City*>(this)->get_building(ref);
+    }
+
     String name;
     String playerName;
 

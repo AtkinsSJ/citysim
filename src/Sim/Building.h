@@ -183,6 +183,8 @@ struct Building {
     s32 allocatedPower;
 
     EnumMap<BuildingProblem::Type, BuildingProblem> problems;
+
+    BuildingRef get_reference() const;
 };
 
 void initBuildingCatalogue();

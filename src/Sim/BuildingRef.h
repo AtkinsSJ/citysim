@@ -14,15 +14,24 @@
 // The position lets you look-up the building via getBuildingAt(), and the buildingID lets you check
 // that the found building is indeed the one you were after.
 // You'd then do something like this:
-//     Building *theBuilding = getBuilding(city, buildingRef);
+//     Building *the_building = city->get_building(building_ref);
 // which would look-up the building, check its ID, and return the Building* if it matches
 // and null if it doesn't, or if no building is at the position any more.
 // - Sam, 19/08/2019
-struct BuildingRef {
-    u32 buildingID;
-    V2I buildingPos;
+class BuildingRef {
+public:
+    BuildingRef(u32 id, V2I position)
+        : m_id(id)
+        , m_position(position)
+    {
+    }
+
+    u32 id() const { return m_id; }
+    V2I const& position() const { return m_position; }
 
     bool operator==(BuildingRef const&) const = default;
+
+private:
+    u32 m_id;
+    V2I m_position;
 };
-BuildingRef getReferenceTo(Building* building);
-Building* getBuilding(City* city, BuildingRef ref);

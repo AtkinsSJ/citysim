@@ -9,7 +9,7 @@
 struct BudgetLayer;
 struct Building;
 struct BuildingDef;
-struct BuildingRef;
+class BuildingRef;
 struct City;
 struct CrimeLayer;
 struct DirtyRects;

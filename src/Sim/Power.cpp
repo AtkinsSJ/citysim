@@ -244,7 +244,7 @@ void addBuildingToPowerLayer(PowerLayer* layer, Building* building)
     PowerSector* sector = getSectorAtTilePos(&layer->sectors, building->footprint.x(), building->footprint.y());
     PowerGroup* group = getPowerGroupAt(sector, building->footprint.x() - sector->bounds.x(), building->footprint.y() - sector->bounds.y());
     if (group != nullptr) {
-        group->buildings.append(getReferenceTo(building));
+        group->buildings.append(building->get_reference());
     }
 }
 
@@ -324,7 +324,7 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
             PowerGroup* group = getPowerGroupAt(sector, building->footprint.x() - sector->bounds.x(), building->footprint.y() - sector->bounds.y());
 
             ASSERT(group != nullptr);
-            group->buildings.append(getReferenceTo(building));
+            group->buildings.append(building->get_reference());
         }
     }
 
@@ -665,7 +665,7 @@ void updatePowerLayer(City* city, PowerLayer* layer)
                 buildingRefIt.hasNext();
                 buildingRefIt.next()) {
                 BuildingRef buildingRef = buildingRefIt.getValue();
-                Building* building = getBuilding(city, buildingRef);
+                Building* building = city->get_building(buildingRef);
 
                 if (building != nullptr) {
                     switch (networkMode) {
@@ -699,14 +699,14 @@ void updatePowerLayer(City* city, PowerLayer* layer)
 void notifyNewBuilding(PowerLayer* layer, BuildingDef* def, Building* building)
 {
     if (def->power > 0) {
-        layer->powerBuildings.append(getReferenceTo(building));
+        layer->powerBuildings.append(building->get_reference());
     }
 }
 
 void notifyBuildingDemolished(PowerLayer* layer, BuildingDef* def, Building* building)
 {
     if (def->power > 0) {
-        bool success = layer->powerBuildings.findAndRemove(getReferenceTo(building));
+        bool success = layer->powerBuildings.findAndRemove(building->get_reference());
         ASSERT(success);
     }
 }

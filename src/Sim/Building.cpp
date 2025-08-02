@@ -954,3 +954,8 @@ void remapBuildingTypes(City* city)
 
     saveBuildingTypes();
 }
+
+BuildingRef Building::get_reference() const
+{
+    return BuildingRef { id, footprint.position() };
+}

@@ -654,3 +654,13 @@ bool loadBuildings(City* city, BinaryFileReader* reader)
 
     return succeeded;
 }
+
+Building* City::get_building(BuildingRef const& ref)
+{
+    Building* building = getBuildingAt(this, ref.position().x, ref.position().y);
+    if ((building != nullptr) && (building->id == ref.id())) {
+        return building;
+    }
+
+    return nullptr;
+}
