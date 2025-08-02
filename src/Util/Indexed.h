@@ -10,26 +10,15 @@
 
 template<typename T>
 struct Indexed {
+    // FIXME: Temporary!
+    Indexed() = default;
+
+    Indexed(T value, s32 index)
+        : value(value)
+        , index(index)
+    {
+    }
+
     T value;
     s32 index;
 };
-
-template<typename T>
-inline Indexed<T> makeNullIndexedValue()
-{
-    Indexed<T> result;
-    result.value = nullptr;
-    result.index = -1;
-
-    return result;
-}
-
-template<typename T>
-inline Indexed<T> makeIndexedValue(T value, s32 index)
-{
-    Indexed<T> result;
-    result.value = value;
-    result.index = index;
-
-    return result;
-}

@@ -23,4 +23,7 @@ struct V3;
 struct V4;
 
 template<typename T>
+struct Indexed;
+
+template<typename T>
 class Optional;

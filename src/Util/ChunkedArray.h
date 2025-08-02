@@ -178,7 +178,7 @@ struct ChunkedArray {
         for (auto it = iterate(); it.hasNext(); it.next()) {
             T* entry = it.get();
             if (filter(entry))
-                return makeIndexedValue(entry, it.getIndex());
+                return Indexed { entry, it.getIndex() };
         }
 
         return {};
