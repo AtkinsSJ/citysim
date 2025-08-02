@@ -28,7 +28,36 @@ public:
     T& value() { return m_value; }
     T const& value() const { return m_value; }
 
+    template<std::size_t Index>
+    std::tuple_element_t<Index, Indexed>& get()
+    {
+        if constexpr (Index == 0)
+            return m_index;
+        if constexpr (Index == 1)
+            return m_value;
+        VERIFY_NOT_REACHED();
+    }
+
 private:
     u32 m_index;
     T& m_value;
 };
+
+namespace std {
+
+template<typename T>
+struct tuple_size<::Indexed<T>> {
+    static constexpr size_t value = 2;
+};
+
+template<typename T>
+struct tuple_element<0, ::Indexed<T>> {
+    using type = u32;
+};
+
+template<typename T>
+struct tuple_element<1, ::Indexed<T>> {
+    using type = T&;
+};
+
+}
