@@ -595,7 +595,6 @@ void loadAssets()
     }
 
     s_assets->lastAssetReloadTicks = SDL_GetTicks();
-    s_assets->assetReloadHasJustHappened = true;
 
     for (auto it = s_assets->listeners.iterate(); it.hasNext(); it.next()) {
         it.getValue()->after_assets_loaded();
@@ -921,8 +920,6 @@ void reloadLocaleSpecificAssets()
             loadAsset(asset);
         }
     }
-
-    s_assets->assetReloadHasJustHappened = true;
 }
 
 void loadCursorDefs(Blob data, Asset* asset)

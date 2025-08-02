@@ -245,8 +245,6 @@ int main(int argc, char* argv[])
             app_state.setDeltaTimeFromLastFrame(deltaTime);
             frameStartTime = now;
         }
-
-        asset_manager().assetReloadHasJustHappened = false;
     }
 
     // CLEAN UP

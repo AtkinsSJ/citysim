@@ -19,7 +19,6 @@ struct AssetManager {
     StringTable assetStrings;
 
     DirectoryChangeWatchingHandle assetChangeHandle;
-    bool assetReloadHasJustHappened;
     u32 lastAssetReloadTicks;
 
     // TODO: Also include size of the UITheme, somehow.
