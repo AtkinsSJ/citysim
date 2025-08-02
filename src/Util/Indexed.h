@@ -11,17 +11,24 @@
 template<typename T>
 class Indexed {
 public:
+    Indexed(u32 index, T& value)
+        : m_index(index)
+        , m_value(value)
+    {
+    }
+
+    // FIXME: Temporary, until we consistently use unsigned types for indexes
     Indexed(s32 index, T& value)
         : m_index(index)
         , m_value(value)
     {
     }
 
-    s32 index() const { return m_index; }
+    u32 index() const { return m_index; }
     T& value() { return m_value; }
     T const& value() const { return m_value; }
 
 private:
-    s32 m_index;
+    u32 m_index;
     T& m_value;
 };
