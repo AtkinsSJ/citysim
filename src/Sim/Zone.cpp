@@ -199,8 +199,8 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
 
     for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++) {
         Indexed<ZoneSector*> sectorWithIndex = getNextSectorWithIndex(&layer->sectors);
-        ZoneSector* sector = sectorWithIndex.value;
-        s32 sectorIndex = sectorWithIndex.index;
+        ZoneSector* sector = sectorWithIndex.value();
+        s32 sectorIndex = sectorWithIndex.index();
 
         // What zones does it contain?
         {

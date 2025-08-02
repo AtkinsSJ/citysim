@@ -106,9 +106,9 @@ Entity* addEntity(City* city, Entity::Type type, T* entityData)
 {
     Indexed<Entity*> entityRecord = city->entities.append();
     // logInfo("Adding entity #{0}"_s, {formatInt(entityRecord.index)});
-    entityRecord.value->index = entityRecord.index;
+    entityRecord.value()->index = entityRecord.index();
 
-    Entity* entity = entityRecord.value;
+    Entity* entity = entityRecord.value();
     entity->type = type;
     // Make sure we're supplying entity data that matched the entity type!
     ASSERT(checkEntityMatchesType<T>(entity));

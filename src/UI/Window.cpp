@@ -151,7 +151,7 @@ void closeWindow(WindowProc windowProc)
     auto window_to_remove = uiState.openWindows.find_first([&](Window* window) { return window->windowProc == windowProc; });
 
     if (window_to_remove.has_value()) {
-        uiState.windowsToClose.add(window_to_remove.value().index);
+        uiState.windowsToClose.add(window_to_remove.value().index());
     } else if (!uiState.openWindows.isEmpty()) {
         logInfo("closeWindow() call didn't find any windows that matched the WindowProc."_s);
     }

@@ -43,8 +43,6 @@ struct OccupancyArray {
     // Methods
     Indexed<T*> append()
     {
-        Indexed<T*> result = {};
-
         if (firstChunkWithSpace == nullptr) {
             // Append a new chunk
 
@@ -87,11 +85,13 @@ struct OccupancyArray {
 
         // mark that slot as occupied
         chunk->occupancy.setBit(indexInChunk);
-        result.index = indexInChunk + (firstChunkWithSpaceIndex * itemsPerChunk);
-        result.value = chunk->items + indexInChunk;
+        Indexed<T*> result {
+            indexInChunk + (firstChunkWithSpaceIndex * itemsPerChunk),
+            chunk->items + indexInChunk
+        };
 
         // Make sure the "new" element is actually new and blank and fresh
-        *result.value = {};
+        *result.value() = {};
 
         // update counts
         count++;
@@ -121,7 +121,7 @@ struct OccupancyArray {
             }
         }
 
-        ASSERT(result.value == get(result.index));
+        ASSERT(result.value() == get(result.index()));
 
         return result;
     }

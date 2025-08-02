@@ -95,7 +95,7 @@ void initTerrainCatalogue()
 
     initOccupancyArray(&s_terrain_catalogue.terrainDefs, &AppState::the().systemArena, 128);
     Indexed<TerrainDef*> nullTerrainDef = s_terrain_catalogue.terrainDefs.append();
-    *nullTerrainDef.value = {};
+    *nullTerrainDef.value() = {};
 
     initHashTable(&s_terrain_catalogue.terrainDefsByName, 0.75f, 128);
     initStringTable(&s_terrain_catalogue.terrainNames);
@@ -145,14 +145,14 @@ void loadTerrainDefs(Blob data, Asset* asset)
                 }
 
                 Indexed<TerrainDef*> slot = s_terrain_catalogue.terrainDefs.append();
-                def = slot.value;
+                def = slot.value();
                 *def = {};
 
-                if (slot.index > u8Max) {
+                if (slot.index() > u8Max) {
                     reader.error("Too many Terrain definitions! The most we support is {0}."_s, { formatInt(u8Max) });
                     return;
                 }
-                def->typeID = (u8)slot.index;
+                def->typeID = (u8)slot.index();
 
                 def->name = intern(&s_terrain_catalogue.terrainNames, name);
                 asset->terrainDefs.terrainIDs.append(def->name);

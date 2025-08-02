@@ -31,7 +31,7 @@ void initBuildingCatalogue()
     // and I'm likely to accidentally leave other things set to 0, so it's safer to just keep the null def.
     // Update 18/02/2020: We now use the null building def when failing to match an intersection part name.
     Indexed<BuildingDef*> nullBuildingDef = catalogue->allBuildings.append();
-    *nullBuildingDef.value = {};
+    *nullBuildingDef.value() = {};
 
     initHashTable(&catalogue->buildingsByName, 0.75f, 128);
     initStringTable(&catalogue->buildingNames);
@@ -92,9 +92,9 @@ void _assignBuildingCategories(BuildingCatalogue* catalogue, BuildingDef* def)
 BuildingDef* appendNewBuildingDef(String name)
 {
     Indexed<BuildingDef*> newDef = buildingCatalogue.allBuildings.append();
-    BuildingDef* result = newDef.value;
+    BuildingDef* result = newDef.value();
     result->name = intern(&buildingCatalogue.buildingNames, name);
-    result->typeID = newDef.index;
+    result->typeID = newDef.index();
 
     result->fireRisk = 1.0f;
     buildingCatalogue.buildingsByName.put(result->name, result);

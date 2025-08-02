@@ -110,8 +110,8 @@ Building* addBuildingDirect(City* city, s32 id, BuildingDef* def, Rect2I footpri
     DEBUG_FUNCTION();
 
     Indexed<Building*> buildingSlot = city->buildings.append();
-    s32 buildingIndex = buildingSlot.index;
-    Building* building = buildingSlot.value;
+    s32 buildingIndex = buildingSlot.index();
+    Building* building = buildingSlot.value();
     initBuilding(building, id, def, footprint, creationDate);
 
     // Random sprite!

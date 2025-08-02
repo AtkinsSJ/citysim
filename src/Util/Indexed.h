@@ -9,16 +9,19 @@
 #include <Util/Basic.h>
 
 template<typename T>
-struct Indexed {
-    // FIXME: Temporary!
-    Indexed() = default;
-
-    Indexed(T value, s32 index)
-        : value(value)
-        , index(index)
+class Indexed {
+public:
+    Indexed(s32 index, T value)
+        : m_index(index)
+        , m_value(value)
     {
     }
 
-    T value;
-    s32 index;
+    s32 index() const { return m_index; }
+    T& value() { return m_value; }
+    T const& value() const { return m_value; }
+
+private:
+    s32 m_index;
+    T m_value;
 };

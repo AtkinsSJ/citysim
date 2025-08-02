@@ -128,7 +128,7 @@ void showSaveGameWindow()
     });
     if (selected_saved_game.has_value()) {
         catalogue->selectedSavedGameName = catalogue->activeSavedGameName;
-        catalogue->selectedSavedGameIndex = selected_saved_game.value().index;
+        catalogue->selectedSavedGameIndex = selected_saved_game.value().index();
         catalogue->saveGameName.append(catalogue->selectedSavedGameName);
     } else {
         catalogue->selectedSavedGameName = nullString;
