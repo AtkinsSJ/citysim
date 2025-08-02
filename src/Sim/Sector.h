@@ -115,6 +115,8 @@ template<typename Sector>
 Rect2I getSectorsCovered(SectorGrid<Sector>* grid, Rect2I area)
 {
     auto intersected_area = area.intersected({ 0, 0, grid->width, grid->height });
+    if (!intersected_area.has_positive_area())
+        return {};
 
     return Rect2I::create_min_max(
         intersected_area.x() / grid->sectorSize,
