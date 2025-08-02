@@ -41,6 +41,13 @@ void initBuildingCatalogue()
     catalogue->maxCBuildingDim = 0;
     catalogue->maxIBuildingDim = 0;
     catalogue->overallMaxBuildingDim = 0;
+
+    asset_manager().register_listener(catalogue);
+}
+
+void BuildingCatalogue::after_assets_loaded()
+{
+    remapBuildingTypes();
 }
 
 void _assignBuildingCategories(BuildingCatalogue* catalogue, BuildingDef* def)
@@ -520,7 +527,7 @@ void saveBuildingTypes()
     buildingCatalogue.buildingNameToOldTypeID.putAll(&buildingCatalogue.buildingNameToTypeID);
 }
 
-void remapBuildingTypes(City* city)
+void remapBuildingTypes()
 {
     // First, remap any IDs that are not present in the current data, so they won't get
     // merged accidentally.
@@ -541,7 +548,8 @@ void remapBuildingTypes(City* city)
             oldTypeToNewType[oldType] = buildingCatalogue.buildingNameToTypeID.findValue(buildingName).orDefault(0);
         }
 
-        for (auto it = city->buildings.iterate(); it.hasNext(); it.next()) {
+        auto& city = AppState::the().gameState->city;
+        for (auto it = city.buildings.iterate(); it.hasNext(); it.next()) {
             Building* building = it.get();
             s32 oldType = building->typeID;
             if (oldType < oldTypeToNewType.count && (oldTypeToNewType[oldType] != 0)) {

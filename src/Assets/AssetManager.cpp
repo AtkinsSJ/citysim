@@ -61,10 +61,6 @@ void initAssets()
 
     UI::initStyleConstants();
 
-    // FIXME: Generic callback system so AssetManager doesn't have to know anything about these.
-    initTerrainCatalogue();
-    initBuildingCatalogue();
-
     initHashTable(&s_assets->texts);
     initHashTable(&s_assets->defaultTexts);
 
@@ -140,6 +136,10 @@ void initAssets()
     // NB: This might fail, or we might be on a platform where it isn't implemented.
     // That's OK though!
     s_assets->assetChangeHandle = beginWatchingDirectory(s_assets->assetsPath);
+
+    // FIXME: Generic callback system so AssetManager doesn't have to know anything about these.
+    initTerrainCatalogue();
+    initBuildingCatalogue();
 }
 
 AssetManager& asset_manager()

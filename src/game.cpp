@@ -605,7 +605,6 @@ AppStatus updateAndRenderGame(GameState* gameState, float deltaTime)
 
     if (asset_manager().assetReloadHasJustHappened) {
         remapTerrainTypes(city);
-        remapBuildingTypes(city);
     }
 
     // Update the simulation... need a smarter way of doing this!

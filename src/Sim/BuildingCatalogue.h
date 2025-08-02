@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <Assets/AssetManagerListener.h>
 #include <Assets/Forward.h>
 #include <Sim/Forward.h>
 #include <Util/ChunkedArray.h>
@@ -13,7 +14,7 @@
 #include <Util/OccupancyArray.h>
 #include <Util/StringTable.h>
 
-struct BuildingCatalogue {
+struct BuildingCatalogue final : public AssetManagerListener {
     OccupancyArray<BuildingDef> allBuildings;
     HashTable<BuildingDef*> buildingsByName;
     StringTable buildingNames;
@@ -31,6 +32,9 @@ struct BuildingCatalogue {
     s32 maxCBuildingDim;
     s32 maxIBuildingDim;
     s32 overallMaxBuildingDim;
+
+    // ^AssetManagerListener
+    virtual void after_assets_loaded() override;
 };
 
 inline BuildingCatalogue buildingCatalogue = {};
@@ -44,4 +48,4 @@ BuildingDef* getBuildingDef(s32 buildingTypeID);
 BuildingDef* findBuildingDef(String name);
 
 void saveBuildingTypes();
-void remapBuildingTypes(City* city);
+void remapBuildingTypes();
