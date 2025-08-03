@@ -5,9 +5,9 @@
  */
 
 #include "../AppState.h"
-#include "../settings.h"
 #include <Debug/Console.h>
 #include <Gfx/Renderer.h>
+#include <Settings/Settings.h>
 #include <Sim/City.h>
 #include <Sim/Terrain.h>
 #include <UI/Window.h>

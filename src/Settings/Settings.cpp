@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "settings.h"
+#include "Settings.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/Renderer.h>
 #include <IO/LineReader.h>
