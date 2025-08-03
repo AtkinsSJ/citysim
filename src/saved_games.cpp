@@ -8,7 +8,7 @@
 #include "AppState.h"
 #include "input.h"
 #include "save_file.h"
-#include "settings.h"
+#include <Settings/Settings.h>
 #include <UI/Window.h>
 #include <Util/Orientation.h>
 

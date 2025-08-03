@@ -8,9 +8,9 @@
 #include "about.h"
 #include "game.h"
 #include "saved_games.h"
-#include "settings.h"
 #include <Debug/Debug.h>
 #include <Gfx/Renderer.h>
+#include <Settings/Settings.h>
 #include <UI/Panel.h>
 
 AppStatus updateAndRenderMainMenu(float /*deltaTime*/)
