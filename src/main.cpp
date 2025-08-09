@@ -103,8 +103,7 @@ int main(int argc, char* argv[])
 
     app_state.cosmeticRandom = Random::create();
 
-    initSettings();
-    loadSettings();
+    Settings::initialize();
 
     SDL_Window* window = initSDL(getWindowSettings(), "Some kind of city builder");
 
@@ -223,7 +222,7 @@ int main(int argc, char* argv[])
                 DEBUG_ARENA(&temp_arena(), "Global Temp Arena");
                 DEBUG_ARENA(&renderer.arena(), "Renderer");
                 DEBUG_ARENA(app_state.gameState ? &app_state.gameState->arena : nullptr, "GameState");
-                DEBUG_ARENA(&settings().arena, "Settings");
+                DEBUG_ARENA(&Settings::the().arena, "Settings");
                 DEBUG_ARENA(&globalDebugState->arena, "Debug");
 
                 updateAndRenderDebugData(globalDebugState);

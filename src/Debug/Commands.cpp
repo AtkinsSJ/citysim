@@ -122,8 +122,8 @@ ConsoleCommand(reload_assets)
 
 ConsoleCommand(reload_settings)
 {
-    loadSettings();
-    applySettings();
+    Settings::the().load();
+    Settings::the().apply();
 }
 
 ConsoleCommand(show_layer)
