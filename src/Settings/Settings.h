@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include "Setting.h"
+
 #include <UI/Forward.h>
 #include <Util/Array.h>
 #include <Util/ChunkedArray.h>
@@ -125,6 +127,21 @@ struct SettingsState {
     float musicVolume;
     float soundVolume;
     s32 widgetCount;
+};
+
+struct SettingsAgain {
+    BoolSetting windowed { "windowed"_s, "setting_windowed"_s, true };
+    V2ISetting resolution { "resolution"_s, "setting_resolution"_s, v2i(1024, 600) };
+    EnumSetting<Locale> locale { "locale"_s, "setting_locale"_s,
+        EnumMap<Locale, EnumSettingData> {
+            { "en"_s, "locale_en"_s },
+            { "es"_s, "locale_es"_s },
+            { "pl"_s, "locale_pl"_s },
+        },
+        Locale::En };
+    PercentSetting music_volume { "music_volume"_s, "setting_music_volume"_s, 0.5f };
+    PercentSetting sound_volume { "sound_volume"_s, "setting_sound_volume"_s, 0.5f };
+    S32RangeSetting widget_count { "widget_count"_s, "setting_widget_count"_s, 5, 15, 10 };
 };
 
 struct Settings {
