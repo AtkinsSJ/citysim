@@ -88,8 +88,8 @@ struct Panel {
 
     void addRadioButton(s32* currentValue, s32 myValue, String styleName = nullString);
 
-    template<typename T>
-    void addRadioButtonGroup(Array<T>* listOptions, s32* currentSelection, String (*getDisplayName)(T* data), String styleName = nullString, String labelStyleName = nullString)
+    template<CountedEnum EnumT, typename U, typename GetDisplayName>
+    void addRadioButtonGroup(EnumMap<EnumT, U>& listOptions, u32* currentSelection, GetDisplayName get_display_name, String styleName = nullString, String labelStyleName = nullString)
     {
         DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
@@ -106,13 +106,13 @@ struct Panel {
             // Calculate the overall size
             // This means addRadioButtonGroup() has to loop through everything twice, but what can you do
             V2I widgetSize = v2i(0, 0);
-            for (s32 optionIndex = 0; optionIndex < listOptions->count; optionIndex++) {
-                String optionText = getDisplayName(&listOptions->get(optionIndex));
+            for (auto entry : enum_values<EnumT>()) {
+                String optionText = get_display_name(listOptions[entry]);
                 V2I labelSize = calculateLabelSize(optionText, labelStyle, textWidth, fillWidth);
 
                 widgetSize.x = max(widgetSize.x, radioButtonSize.x + style->contentPadding + labelSize.x);
 
-                if (optionIndex > 0)
+                if (to_underlying(entry) > 0)
                     widgetSize.y += style->contentPadding;
                 widgetSize.y += max(labelSize.y, radioButtonSize.y);
             }
@@ -125,12 +125,13 @@ struct Panel {
         s32 textWidth = buttonGroupBounds.width() - (radioButtonSize.x + style->contentPadding);
         bool fillWidth = widgetAlignment.horizontal == HAlign::Fill;
 
-        for (s32 optionIndex = 0; optionIndex < listOptions->count; optionIndex++) {
+        for (auto entry : enum_values<EnumT>()) {
             if (!hideWidgets) {
-                putRadioButton(currentSelection, optionIndex, radioButtonBounds, radioButtonStyle, false, renderBuffer);
+                // FIXME: This s32* cast is bad!
+                putRadioButton((s32*)currentSelection, to_underlying(entry), radioButtonBounds, radioButtonStyle, false, renderBuffer);
             }
 
-            String optionText = getDisplayName(&listOptions->get(optionIndex));
+            String optionText = get_display_name(listOptions[entry]);
             V2I labelSize = calculateLabelSize(optionText, labelStyle, textWidth, fillWidth);
             Rect2I labelBounds {
                 radioButtonBounds.x() + radioButtonBounds.width() + style->contentPadding,

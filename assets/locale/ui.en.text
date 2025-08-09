@@ -73,11 +73,11 @@ date_part_month10   October
 date_part_month11   November
 date_part_month12   December
 
-setting_locale      Locale
-setting_resolution  Window resolution
-setting_windowed    Windowed
-setting_musicVolume Music volume
-setting_soundVolume Sound volume
+setting_locale        Locale
+setting_resolution    Window resolution
+setting_windowed      Windowed
+setting_music_volume  Music volume
+setting_sound_volume  Sound volume
 
 locale_en English
 locale_es Español
