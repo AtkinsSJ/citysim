@@ -102,14 +102,14 @@ String getUserSettingsPath()
     return myprintf("{0}{1}"_s, { s_settings->userDataPath, s_settings->userSettingsFilename }, true);
 }
 
-void loadSettingsFile(String name, Blob settingsData)
+void Settings::load_settings_from_file(String filename, Blob data)
 {
-    LineReader reader { name, settingsData };
+    LineReader reader { filename, data };
 
     while (reader.load_next_line()) {
         String settingName = reader.next_token('=');
 
-        Maybe<SettingDef*> maybeDef = s_settings->defs.find(settingName);
+        Maybe<SettingDef*> maybeDef = defs.find(settingName);
 
         if (!maybeDef.isValid) {
             reader.error("Unrecognized setting: {0}"_s, { settingName });
@@ -119,7 +119,7 @@ void loadSettingsFile(String name, Blob settingsData)
             switch (def->type) {
             case SettingType::Bool: {
                 if (auto value = reader.read_bool(); value.has_value()) {
-                    setSettingData<bool>(&s_settings->settings, def, value.release_value());
+                    setSettingData<bool>(&settings, def, value.release_value());
                 }
             } break;
 
@@ -130,7 +130,7 @@ void loadSettingsFile(String name, Blob settingsData)
                 bool foundValue = false;
                 for (s32 enumValueIndex = 0; enumValueIndex < enumData.count; enumValueIndex++) {
                     if (enumData[enumValueIndex].id == token) {
-                        setSettingData<s32>(&s_settings->settings, def, enumValueIndex);
+                        setSettingData<s32>(&settings, def, enumValueIndex);
 
                         foundValue = true;
                         break;
@@ -146,31 +146,31 @@ void loadSettingsFile(String name, Blob settingsData)
             case SettingType::Percent: {
                 if (auto value = reader.read_float(); value.has_value()) {
                     float clamped_value = clamp01(value.release_value());
-                    setSettingData<float>(&s_settings->settings, def, clamped_value);
+                    setSettingData<float>(&settings, def, clamped_value);
                 }
             } break;
 
             case SettingType::S32: {
                 if (auto value = reader.read_int<s32>(); value.has_value()) {
-                    setSettingData<s32>(&s_settings->settings, def, value.release_value());
+                    setSettingData<s32>(&settings, def, value.release_value());
                 }
             } break;
 
             case SettingType::S32_Range: {
                 if (auto value = reader.read_int<s32>(); value.has_value()) {
                     s32 clampedValue = clamp(value.release_value(), def->intRange.min, def->intRange.max);
-                    setSettingData<s32>(&s_settings->settings, def, clampedValue);
+                    setSettingData<s32>(&settings, def, clampedValue);
                 }
             } break;
 
             case SettingType::String: {
-                String value = pushString(&s_settings->arena, reader.next_token());
-                setSettingData<String>(&s_settings->settings, def, value);
+                String value = pushString(&arena, reader.next_token());
+                setSettingData<String>(&settings, def, value);
             } break;
 
             case SettingType::V2I: {
                 if (auto value = V2I::read(reader); value.has_value()) {
-                    setSettingData<V2I>(&s_settings->settings, def, value.release_value());
+                    setSettingData<V2I>(&settings, def, value.release_value());
                 }
             } break;
 
@@ -189,7 +189,7 @@ void Settings::load()
     File userSettingsFile = readFile(&temp_arena(), getUserSettingsPath());
     // User settings might not exist
     if (userSettingsFile.isLoaded) {
-        loadSettingsFile(userSettingsFile.name, userSettingsFile.data);
+        load_settings_from_file(userSettingsFile.name, userSettingsFile.data);
     }
 
     logInfo("Settings loaded: windowed={0}, resolution={1}x{2}, locale={3}"_s,

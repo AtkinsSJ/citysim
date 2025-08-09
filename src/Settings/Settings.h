@@ -71,6 +71,7 @@ struct SettingsState {
 };
 
 struct Settings {
+public:
     static Settings& the();
     static void initialize();
 
@@ -78,6 +79,10 @@ struct Settings {
     bool save();
     void apply();
 
+private:
+    void load_settings_from_file(String filename, Blob data);
+
+public:
     MemoryArena arena;
     HashTable<SettingDef> defs;
     ChunkedArray<String> defsOrder;
@@ -110,7 +115,6 @@ void settingsWindowProc(UI::WindowContext*, void*);
 //
 void registerSetting(String settingName, smm offset, SettingType type, String textAssetName, void* dataA = nullptr, void* dataB = nullptr);
 SettingsState makeDefaultSettings();
-void loadSettingsFile(String name, Blob settingsData);
 
 // Grab a setting. index is for multi-value settings, to specify the array index
 template<typename T>
