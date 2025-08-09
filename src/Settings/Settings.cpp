@@ -62,12 +62,12 @@ SettingsState makeDefaultSettings()
     return result;
 }
 
-Settings& settings()
+Settings& Settings::the()
 {
     return *s_settings;
 }
 
-void initSettings()
+void Settings::initialize()
 {
     s_settings = MemoryArena::bootstrap<Settings>("Settings"_s);
     initHashTable(&s_settings->defs);
@@ -88,6 +88,8 @@ void initSettings()
     REGISTER_SETTING(widgetCount, SettingType::S32_Range, (void*)5, (void*)15);
 
 #undef REGISTER_SETTING
+
+    s_settings->load();
 }
 
 String getUserDataPath()
@@ -179,10 +181,10 @@ void loadSettingsFile(String name, Blob settingsData)
     }
 }
 
-void loadSettings()
+void Settings::load()
 {
-    s_settings->arena.reset();
-    s_settings->settings = makeDefaultSettings();
+    arena.reset();
+    settings = makeDefaultSettings();
 
     File userSettingsFile = readFile(&temp_arena(), getUserSettingsPath());
     // User settings might not exist
@@ -192,16 +194,18 @@ void loadSettings()
 
     logInfo("Settings loaded: windowed={0}, resolution={1}x{2}, locale={3}"_s,
         {
-            formatBool(s_settings->settings.windowed),
-            formatInt(s_settings->settings.resolution.x),
-            formatInt(s_settings->settings.resolution.y),
-            localeData[to_underlying(s_settings->settings.locale)].id,
+            formatBool(settings.windowed),
+            formatInt(settings.resolution.x),
+            formatInt(settings.resolution.y),
+            localeData[to_underlying(settings.locale)].id,
         });
 }
 
-void applySettings()
+void Settings::apply()
 {
-    the_renderer().resize_window(s_settings->settings.resolution.x, s_settings->settings.resolution.y, !s_settings->settings.windowed);
+    // FIXME: Replace with callbacks
+
+    the_renderer().resize_window(settings.resolution.x, settings.resolution.y, !settings.windowed);
 
     reloadLocaleSpecificAssets();
 }
@@ -247,22 +251,22 @@ String settingToString(SettingsState* state, SettingDef* def)
     return getString(&stb);
 }
 
-void saveSettings()
+bool Settings::save()
 {
     StringBuilder stb = newStringBuilder(2048);
     append(&stb, "# User-specific settings file.\n#\n"_s);
     append(&stb, "# I don't recommend fiddling with this manually, but it should work.\n"_s);
     append(&stb, "# If the game won't run, try deleting this file, and it should be re-generated with the default settings.\n\n"_s);
 
-    for (auto it = s_settings->defsOrder.iterate();
+    for (auto it = defsOrder.iterate();
         it.hasNext();
         it.next()) {
         String name = it.getValue();
-        SettingDef* def = s_settings->defs.find(name).value;
+        SettingDef* def = defs.find(name).value;
 
         append(&stb, name);
         append(&stb, " = "_s);
-        append(&stb, settingToString(&s_settings->settings, def));
+        append(&stb, settingToString(&settings, def));
         append(&stb, '\n');
     }
 
@@ -271,10 +275,12 @@ void saveSettings()
 
     if (writeFile(userSettingsPath, fileData)) {
         logInfo("Settings saved successfully."_s);
-    } else {
-        // TODO: Really really really need to display an error window to the user!
-        logError("Failed to save user settings to {0}."_s, { userSettingsPath });
+        return true;
     }
+
+    // TODO: Really really really need to display an error window to the user!
+    logError("Failed to save user settings to {0}."_s, { userSettingsPath });
+    return false;
 }
 
 WindowSettings getWindowSettings()
@@ -301,13 +307,14 @@ void showSettingsWindow()
 
 void settingsWindowProc(UI::WindowContext* context, void*)
 {
+    auto& settings = Settings::the();
     UI::Panel* ui = &context->windowPanel;
 
-    for (auto it = s_settings->defsOrder.iterate();
+    for (auto it = settings.defsOrder.iterate();
         it.hasNext();
         it.next()) {
         String name = it.getValue();
-        SettingDef* def = s_settings->defs.find(name).value;
+        SettingDef* def = settings.defs.find(name).value;
 
         ui->startNewLine(HAlign::Left);
         ui->addLabel(getText(def->textAssetName));
@@ -315,29 +322,29 @@ void settingsWindowProc(UI::WindowContext* context, void*)
         ui->alignWidgets(HAlign::Right);
         switch (def->type) {
         case SettingType::Bool: {
-            ui->addCheckbox(getSettingDataRaw<bool>(&s_settings->workingState, def));
+            ui->addCheckbox(getSettingDataRaw<bool>(&settings.workingState, def));
         } break;
 
         case SettingType::Enum: {
             // ui->addDropDownList(def->enumData, getSettingDataRaw<s32>(&settings->workingState, def), getEnumDisplayName);
-            ui->addRadioButtonGroup(def->enumData, getSettingDataRaw<s32>(&s_settings->workingState, def), getEnumDisplayName);
+            ui->addRadioButtonGroup(def->enumData, getSettingDataRaw<s32>(&settings.workingState, def), getEnumDisplayName);
         } break;
 
         case SettingType::Percent: {
-            float* percent = getSettingDataRaw<float>(&s_settings->workingState, def);
+            float* percent = getSettingDataRaw<float>(&settings.workingState, def);
             s32 intPercent = round_s32(*percent * 100.0f);
             ui->addLabel(myprintf("{0}%"_s, { formatInt(intPercent) }));
             ui->addSlider(percent, 0.0f, 1.0f);
         } break;
 
         case SettingType::S32_Range: {
-            s32* intValue = getSettingDataRaw<s32>(&s_settings->workingState, def);
+            s32* intValue = getSettingDataRaw<s32>(&settings.workingState, def);
             ui->addLabel(formatInt(*intValue));
             ui->addSlider(intValue, def->intRange.min, def->intRange.max);
         } break;
 
         default: {
-            ui->addLabel(settingToString(&s_settings->workingState, def));
+            ui->addLabel(settingToString(&settings.workingState, def));
         } break;
         }
     }
@@ -347,12 +354,12 @@ void settingsWindowProc(UI::WindowContext* context, void*)
         context->closeRequested = true;
     }
     if (ui->addTextButton(getText("button_restore_defaults"_s))) {
-        s_settings->workingState = makeDefaultSettings();
+        settings.workingState = makeDefaultSettings();
     }
     if (ui->addTextButton(getText("button_save"_s))) {
-        s_settings->settings = s_settings->workingState;
-        saveSettings();
-        applySettings();
+        settings.settings = settings.workingState;
+        settings.save();
+        settings.apply();
         context->closeRequested = true;
     }
 }

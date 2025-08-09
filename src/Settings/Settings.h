@@ -71,6 +71,13 @@ struct SettingsState {
 };
 
 struct Settings {
+    static Settings& the();
+    static void initialize();
+
+    void load();
+    bool save();
+    void apply();
+
     MemoryArena arena;
     HashTable<SettingDef> defs;
     ChunkedArray<String> defsOrder;
@@ -84,15 +91,6 @@ struct Settings {
 
     SettingsState workingState; // Used in settings screen
 };
-
-//
-// PUBLIC
-//
-Settings& settings();
-void initSettings();
-void loadSettings();
-void applySettings();
-void saveSettings();
 
 // Settings access
 struct WindowSettings {
