@@ -62,6 +62,8 @@ inline SettingEnumData _localeData[to_underlying(Locale::COUNT)] = {
 inline Array<SettingEnumData> localeData = makeArray<SettingEnumData>(to_underlying(Locale::COUNT), _localeData, to_underlying(Locale::COUNT));
 
 struct SettingsState {
+    static SettingsState make_default();
+
     bool windowed;
     V2I resolution;
     Locale locale;
@@ -80,6 +82,8 @@ public:
     void apply();
 
 private:
+    void register_setting(String setting_name, smm offset, SettingType type, String text_asset_name, void* data_a = nullptr, void* data_b = nullptr);
+
     void load_settings_from_file(String filename, Blob data);
 
 public:
@@ -94,6 +98,7 @@ public:
     // You shouldn't access these directly! Use the getters below.
     SettingsState settings;
 
+    // FIXME: Replace this with storage in the settings window
     SettingsState workingState; // Used in settings screen
 };
 
@@ -109,12 +114,6 @@ String getLocale();
 // Menu
 void showSettingsWindow();
 void settingsWindowProc(UI::WindowContext*, void*);
-
-//
-// INTERNAL
-//
-void registerSetting(String settingName, smm offset, SettingType type, String textAssetName, void* dataA = nullptr, void* dataB = nullptr);
-SettingsState makeDefaultSettings();
 
 // Grab a setting. index is for multi-value settings, to specify the array index
 template<typename T>

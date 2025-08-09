@@ -19,37 +19,37 @@ String getEnumDisplayName(SettingEnumData* data)
     return getText(data->displayName);
 }
 
-void registerSetting(String settingName, smm offset, SettingType type, String textAssetName, void* dataA, void* dataB)
+void Settings::register_setting(String setting_name, smm offset, SettingType type, String text_asset_name, void* data_a, void* data_b)
 {
     SettingDef def = {};
-    def.name = settingName;
-    def.textAssetName = textAssetName;
+    def.name = setting_name;
+    def.textAssetName = text_asset_name;
     def.offsetWithinSettingsState = offset;
     def.type = type;
 
     switch (type) {
     case SettingType::Enum: {
-        def.enumData = (Array<SettingEnumData>*)dataA;
-        ASSERT(dataB == nullptr);
+        ASSERT(data_b == nullptr);
+        def.enumData = (Array<SettingEnumData>*)data_a;
     } break;
 
     case SettingType::S32_Range: {
-        def.intRange.min = truncate<s32>((s64)dataA);
-        def.intRange.max = truncate<s32>((s64)dataB);
-        ASSERT(dataA < dataB);
+        ASSERT(data_a < data_b);
+        def.intRange.min = truncate<s32>((s64)data_a);
+        def.intRange.max = truncate<s32>((s64)data_b);
     } break;
 
     default: {
-        def.dataA = dataA;
-        def.dataB = dataB;
+        def.dataA = data_a;
+        def.dataB = data_b;
     } break;
     }
 
-    s_settings->defs.put(settingName, def);
-    s_settings->defsOrder.append(settingName);
+    s_settings->defs.put(setting_name, def);
+    s_settings->defsOrder.append(setting_name);
 }
 
-SettingsState makeDefaultSettings()
+SettingsState SettingsState::make_default()
 {
     SettingsState result = {};
 
@@ -77,7 +77,7 @@ void Settings::initialize()
     s_settings->userDataPath = makeString(SDL_GetPrefPath("Baffled Badger Games", "CitySim"));
     s_settings->userSettingsFilename = "settings.cnf"_s;
 
-#define REGISTER_SETTING(settingName, type, dataA, dataB) registerSetting(makeString(#settingName, true), offsetof(SettingsState, settingName), type, makeString("setting_" #settingName), dataA, dataB)
+#define REGISTER_SETTING(settingName, type, dataA, dataB) s_settings->register_setting(makeString(#settingName, true), offsetof(SettingsState, settingName), type, makeString("setting_" #settingName), dataA, dataB)
 
     // NB: The settings will appear in this order in the settings window
     REGISTER_SETTING(windowed, SettingType::Bool, nullptr, nullptr);
@@ -184,7 +184,7 @@ void Settings::load_settings_from_file(String filename, Blob data)
 void Settings::load()
 {
     arena.reset();
-    settings = makeDefaultSettings();
+    settings = SettingsState::make_default();
 
     File userSettingsFile = readFile(&temp_arena(), getUserSettingsPath());
     // User settings might not exist
@@ -354,7 +354,7 @@ void settingsWindowProc(UI::WindowContext* context, void*)
         context->closeRequested = true;
     }
     if (ui->addTextButton(getText("button_restore_defaults"_s))) {
-        settings.workingState = makeDefaultSettings();
+        settings.workingState = SettingsState::make_default();
     }
     if (ui->addTextButton(getText("button_save"_s))) {
         settings.settings = settings.workingState;
