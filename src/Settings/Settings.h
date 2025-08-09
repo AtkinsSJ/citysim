@@ -12,15 +12,7 @@
 #include <Util/HashTable.h>
 #include <Util/String.h>
 
-enum class SettingType : u8 {
-    Bool,
-    Enum,
-    Percent,
-    S32,
-    S32_Range,
-    String,
-    V2I,
-};
+struct SettingsState;
 
 struct SettingEnumData {
     String id;
@@ -28,11 +20,39 @@ struct SettingEnumData {
 };
 String getEnumDisplayName(SettingEnumData* data);
 
-struct SettingDef {
+class SettingDef {
+public:
+    enum class Type : u8 {
+        Bool,
+        Enum,
+        Percent,
+        S32,
+        S32_Range,
+        String,
+        V2I,
+    };
+
+    template<typename T>
+    T get(SettingsState const& state) const
+    {
+        return *const_cast<SettingDef&>(*this).get_raw<T>(const_cast<SettingsState&>(state));
+    }
+
+    template<typename T>
+    void set(SettingsState& state, T value)
+    {
+        *get_raw<T>(state) = value;
+    }
+
+    void add_ui_widget(SettingsState&, UI::Panel&);
+
+    bool set_from_file(SettingsState&, LineReader&);
+    String serialize(SettingsState const&) const;
+
     String name;
     String textAssetName;
     smm offsetWithinSettingsState;
-    SettingType type;
+    Type type;
     union {
         struct {
             void* dataA;
@@ -45,6 +65,41 @@ struct SettingDef {
             s32 max;
         } intRange;
     };
+
+private:
+    // Grab a setting. index is for multi-value settings, to specify the array index
+    template<typename T>
+    T* get_raw(SettingsState& state)
+    {
+        // Make sure the requested type it the right one
+        switch (type) {
+        case Type::Bool:
+            ASSERT(typeid(T*) == typeid(bool*));
+            break;
+        case Type::Enum:
+            ASSERT(typeid(T*) == typeid(s32*));
+            break;
+        case Type::Percent:
+            ASSERT(typeid(T*) == typeid(float*));
+            break;
+        case Type::S32:
+            ASSERT(typeid(T*) == typeid(s32*));
+            break;
+        case Type::S32_Range:
+            ASSERT(typeid(T*) == typeid(s32*));
+            break;
+        case Type::String:
+            ASSERT(typeid(T*) == typeid(String*));
+            break;
+        case Type::V2I:
+            ASSERT(typeid(T*) == typeid(V2I*));
+            break;
+            INVALID_DEFAULT_CASE;
+        }
+
+        T* firstItem = (T*)((u8*)(&state) + offsetWithinSettingsState);
+        return firstItem;
+    }
 };
 
 enum class Locale : u8 {
@@ -82,7 +137,7 @@ public:
     void apply();
 
 private:
-    void register_setting(String setting_name, smm offset, SettingType type, String text_asset_name, void* data_a = nullptr, void* data_b = nullptr);
+    void register_setting(String setting_name, smm offset, SettingDef::Type type, String text_asset_name, void* data_a = nullptr, void* data_b = nullptr);
 
     void load_settings_from_file(String filename, Blob data);
 
@@ -115,53 +170,5 @@ String getLocale();
 void showSettingsWindow();
 void settingsWindowProc(UI::WindowContext*, void*);
 
-// Grab a setting. index is for multi-value settings, to specify the array index
-template<typename T>
-T* getSettingDataRaw(SettingsState* state, SettingDef* def)
-{
-    // Make sure the requested type it the right one
-    switch (def->type) {
-    case SettingType::Bool:
-        ASSERT(typeid(T*) == typeid(bool*));
-        break;
-    case SettingType::Enum:
-        ASSERT(typeid(T*) == typeid(s32*));
-        break;
-    case SettingType::Percent:
-        ASSERT(typeid(T*) == typeid(float*));
-        break;
-    case SettingType::S32:
-        ASSERT(typeid(T*) == typeid(s32*));
-        break;
-    case SettingType::S32_Range:
-        ASSERT(typeid(T*) == typeid(s32*));
-        break;
-    case SettingType::String:
-        ASSERT(typeid(T*) == typeid(String*));
-        break;
-    case SettingType::V2I:
-        ASSERT(typeid(T*) == typeid(V2I*));
-        break;
-        INVALID_DEFAULT_CASE;
-    }
-
-    T* firstItem = (T*)((u8*)(state) + def->offsetWithinSettingsState);
-    return firstItem;
-}
-
-template<typename T>
-T getSettingData(SettingsState* state, SettingDef* def)
-{
-    return *getSettingDataRaw<T>(state, def);
-}
-
-template<typename T>
-void setSettingData(SettingsState* state, SettingDef* def, T value)
-{
-    *getSettingDataRaw<T>(state, def) = value;
-}
-
 String getUserDataPath();
 String getUserSettingsPath();
-// Essentially a "serialiser". Writes strings for use in the conf file; not for human consumption!
-String settingToString(SettingsState* state, SettingDef* def);

@@ -19,21 +19,21 @@ String getEnumDisplayName(SettingEnumData* data)
     return getText(data->displayName);
 }
 
-void Settings::register_setting(String setting_name, smm offset, SettingType type, String text_asset_name, void* data_a, void* data_b)
+void Settings::register_setting(String setting_name, smm offset, SettingDef::Type type, String text_asset_name, void* data_a, void* data_b)
 {
-    SettingDef def = {};
+    SettingDef def {};
     def.name = setting_name;
     def.textAssetName = text_asset_name;
     def.offsetWithinSettingsState = offset;
     def.type = type;
 
     switch (type) {
-    case SettingType::Enum: {
+    case SettingDef::Type::Enum: {
         ASSERT(data_b == nullptr);
         def.enumData = (Array<SettingEnumData>*)data_a;
     } break;
 
-    case SettingType::S32_Range: {
+    case SettingDef::Type::S32_Range: {
         ASSERT(data_a < data_b);
         def.intRange.min = truncate<s32>((s64)data_a);
         def.intRange.max = truncate<s32>((s64)data_b);
@@ -80,12 +80,12 @@ void Settings::initialize()
 #define REGISTER_SETTING(settingName, type, dataA, dataB) s_settings->register_setting(makeString(#settingName, true), offsetof(SettingsState, settingName), type, makeString("setting_" #settingName), dataA, dataB)
 
     // NB: The settings will appear in this order in the settings window
-    REGISTER_SETTING(windowed, SettingType::Bool, nullptr, nullptr);
-    REGISTER_SETTING(resolution, SettingType::V2I, nullptr, nullptr);
-    REGISTER_SETTING(locale, SettingType::Enum, &localeData, nullptr);
-    REGISTER_SETTING(musicVolume, SettingType::Percent, nullptr, nullptr);
-    REGISTER_SETTING(soundVolume, SettingType::Percent, nullptr, nullptr);
-    REGISTER_SETTING(widgetCount, SettingType::S32_Range, (void*)5, (void*)15);
+    REGISTER_SETTING(windowed, SettingDef::Type::Bool, nullptr, nullptr);
+    REGISTER_SETTING(resolution, SettingDef::Type::V2I, nullptr, nullptr);
+    REGISTER_SETTING(locale, SettingDef::Type::Enum, &localeData, nullptr);
+    REGISTER_SETTING(musicVolume, SettingDef::Type::Percent, nullptr, nullptr);
+    REGISTER_SETTING(soundVolume, SettingDef::Type::Percent, nullptr, nullptr);
+    REGISTER_SETTING(widgetCount, SettingDef::Type::S32_Range, (void*)5, (void*)15);
 
 #undef REGISTER_SETTING
 
@@ -114,69 +114,7 @@ void Settings::load_settings_from_file(String filename, Blob data)
         if (!maybeDef.isValid) {
             reader.error("Unrecognized setting: {0}"_s, { settingName });
         } else {
-            SettingDef* def = maybeDef.value;
-
-            switch (def->type) {
-            case SettingType::Bool: {
-                if (auto value = reader.read_bool(); value.has_value()) {
-                    setSettingData<bool>(&settings, def, value.release_value());
-                }
-            } break;
-
-            case SettingType::Enum: {
-                String token = reader.next_token();
-                // Look it up in the enum data
-                Array<SettingEnumData> enumData = *def->enumData;
-                bool foundValue = false;
-                for (s32 enumValueIndex = 0; enumValueIndex < enumData.count; enumValueIndex++) {
-                    if (enumData[enumValueIndex].id == token) {
-                        setSettingData<s32>(&settings, def, enumValueIndex);
-
-                        foundValue = true;
-                        break;
-                    }
-                }
-
-                if (!foundValue) {
-                    reader.error("Couldn't find '{0}' in the list of valid values for setting '{1}'."_s, { token, def->name });
-                }
-
-            } break;
-
-            case SettingType::Percent: {
-                if (auto value = reader.read_float(); value.has_value()) {
-                    float clamped_value = clamp01(value.release_value());
-                    setSettingData<float>(&settings, def, clamped_value);
-                }
-            } break;
-
-            case SettingType::S32: {
-                if (auto value = reader.read_int<s32>(); value.has_value()) {
-                    setSettingData<s32>(&settings, def, value.release_value());
-                }
-            } break;
-
-            case SettingType::S32_Range: {
-                if (auto value = reader.read_int<s32>(); value.has_value()) {
-                    s32 clampedValue = clamp(value.release_value(), def->intRange.min, def->intRange.max);
-                    setSettingData<s32>(&settings, def, clampedValue);
-                }
-            } break;
-
-            case SettingType::String: {
-                String value = pushString(&arena, reader.next_token());
-                setSettingData<String>(&settings, def, value);
-            } break;
-
-            case SettingType::V2I: {
-                if (auto value = V2I::read(reader); value.has_value()) {
-                    setSettingData<V2I>(&settings, def, value.release_value());
-                }
-            } break;
-
-            default:
-                ASSERT(false); // Unhandled setting type!
-            }
+            maybeDef.value->set_from_file(settings, reader);
         }
     }
 }
@@ -210,47 +148,6 @@ void Settings::apply()
     reloadLocaleSpecificAssets();
 }
 
-String settingToString(SettingsState* state, SettingDef* def)
-{
-    StringBuilder stb = newStringBuilder(256);
-
-    switch (def->type) {
-    case SettingType::Bool: {
-        append(&stb, formatBool(getSettingData<bool>(state, def)));
-    } break;
-
-    case SettingType::Enum: {
-        s32 enumValueIndex = getSettingData<s32>(state, def);
-        append(&stb, (*def->enumData)[enumValueIndex].id);
-    } break;
-
-    case SettingType::Percent: {
-        append(&stb, formatFloat(getSettingData<float>(state, def), 2));
-    } break;
-
-    case SettingType::S32:
-    case SettingType::S32_Range: {
-        append(&stb, formatInt(getSettingData<s32>(state, def)));
-    } break;
-
-    case SettingType::String: {
-        append(&stb, getSettingData<String>(state, def));
-    } break;
-
-    case SettingType::V2I: {
-        V2I value = getSettingData<V2I>(state, def);
-        append(&stb, formatInt(value.x));
-        append(&stb, 'x');
-        append(&stb, formatInt(value.y));
-    } break;
-
-    default:
-        ASSERT(false); // Unhandled setting type!
-    }
-
-    return getString(&stb);
-}
-
 bool Settings::save()
 {
     StringBuilder stb = newStringBuilder(2048);
@@ -266,7 +163,7 @@ bool Settings::save()
 
         append(&stb, name);
         append(&stb, " = "_s);
-        append(&stb, settingToString(&settings, def));
+        append(&stb, def->serialize(settings));
         append(&stb, '\n');
     }
 
@@ -315,38 +212,7 @@ void settingsWindowProc(UI::WindowContext* context, void*)
         it.next()) {
         String name = it.getValue();
         SettingDef* def = settings.defs.find(name).value;
-
-        ui->startNewLine(HAlign::Left);
-        ui->addLabel(getText(def->textAssetName));
-
-        ui->alignWidgets(HAlign::Right);
-        switch (def->type) {
-        case SettingType::Bool: {
-            ui->addCheckbox(getSettingDataRaw<bool>(&settings.workingState, def));
-        } break;
-
-        case SettingType::Enum: {
-            // ui->addDropDownList(def->enumData, getSettingDataRaw<s32>(&settings->workingState, def), getEnumDisplayName);
-            ui->addRadioButtonGroup(def->enumData, getSettingDataRaw<s32>(&settings.workingState, def), getEnumDisplayName);
-        } break;
-
-        case SettingType::Percent: {
-            float* percent = getSettingDataRaw<float>(&settings.workingState, def);
-            s32 intPercent = round_s32(*percent * 100.0f);
-            ui->addLabel(myprintf("{0}%"_s, { formatInt(intPercent) }));
-            ui->addSlider(percent, 0.0f, 1.0f);
-        } break;
-
-        case SettingType::S32_Range: {
-            s32* intValue = getSettingDataRaw<s32>(&settings.workingState, def);
-            ui->addLabel(formatInt(*intValue));
-            ui->addSlider(intValue, def->intRange.min, def->intRange.max);
-        } break;
-
-        default: {
-            ui->addLabel(settingToString(&settings.workingState, def));
-        } break;
-        }
+        def->add_ui_widget(settings.workingState, *ui);
     }
 
     ui->startNewLine(HAlign::Left);
@@ -362,4 +228,143 @@ void settingsWindowProc(UI::WindowContext* context, void*)
         settings.apply();
         context->closeRequested = true;
     }
+}
+
+void SettingDef::add_ui_widget(SettingsState& state, UI::Panel& ui)
+{
+    ui.startNewLine(HAlign::Left);
+    ui.addLabel(getText(textAssetName));
+
+    ui.alignWidgets(HAlign::Right);
+
+    switch (type) {
+    case Type::Bool: {
+        ui.addCheckbox(get_raw<bool>(state));
+    } break;
+
+    case Type::Enum: {
+        // ui.addDropDownList(enumData, get_raw<s32>(state), getEnumDisplayName);
+        ui.addRadioButtonGroup(enumData, get_raw<s32>(state), getEnumDisplayName);
+    } break;
+
+    case Type::Percent: {
+        float* percent = get_raw<float>(state);
+        s32 intPercent = round_s32(*percent * 100.0f);
+        ui.addLabel(myprintf("{0}%"_s, { formatInt(intPercent) }));
+        ui.addSlider(percent, 0.0f, 1.0f);
+    } break;
+
+    case Type::S32_Range: {
+        s32* intValue = get_raw<s32>(state);
+        ui.addLabel(formatInt(*intValue));
+        ui.addSlider(intValue, intRange.min, intRange.max);
+    } break;
+
+    default: {
+        ui.addLabel(serialize(state));
+    } break;
+    }
+}
+
+bool SettingDef::set_from_file(SettingsState& state, LineReader& reader)
+{
+    switch (type) {
+    case Type::Bool:
+        if (auto value = reader.read_bool(); value.has_value()) {
+            set<bool>(state, value.release_value());
+            return true;
+        }
+        return false;
+
+    case Type::Enum: {
+        String token = reader.next_token();
+        // Look it up in the enum data
+        for (s32 enumValueIndex = 0; enumValueIndex < enumData->count; enumValueIndex++) {
+            if ((*enumData)[enumValueIndex].id == token) {
+                set<s32>(state, enumValueIndex);
+                return true;
+            }
+        }
+
+        reader.error("Couldn't find '{0}' in the list of valid values for setting '{1}'."_s, { token, name });
+        return false;
+    }
+
+    case Type::Percent:
+        if (auto value = reader.read_float(); value.has_value()) {
+            float clamped_value = clamp01(value.release_value());
+            set<float>(state, clamped_value);
+            return true;
+        }
+        return false;
+
+    case Type::S32:
+        if (auto value = reader.read_int<s32>(); value.has_value()) {
+            set<s32>(state, value.release_value());
+            return true;
+        }
+        return false;
+
+    case Type::S32_Range:
+        if (auto value = reader.read_int<s32>(); value.has_value()) {
+            s32 clampedValue = clamp(value.release_value(), intRange.min, intRange.max);
+            set<s32>(state, clampedValue);
+            return true;
+        }
+        return false;
+
+    case Type::String: {
+        // FIXME: @Leak
+        String value = pushString(&Settings::the().arena, reader.next_token());
+        set<String>(state, value);
+        return true;
+    }
+
+    case Type::V2I:
+        if (auto value = V2I::read(reader); value.has_value()) {
+            set<V2I>(state, value.release_value());
+            return true;
+        }
+        return false;
+    }
+
+    VERIFY_NOT_REACHED();
+}
+
+String SettingDef::serialize(SettingsState const& state) const
+{
+    StringBuilder stb = newStringBuilder(256);
+
+    switch (type) {
+    case Type::Bool: {
+        append(&stb, formatBool(get<bool>(state)));
+    } break;
+
+    case Type::Enum: {
+        s32 enumValueIndex = get<s32>(state);
+        append(&stb, (*enumData)[enumValueIndex].id);
+    } break;
+
+    case Type::Percent: {
+        append(&stb, formatFloat(get<float>(state), 2));
+    } break;
+
+    case Type::S32:
+    case Type::S32_Range: {
+        append(&stb, formatInt(get<s32>(state)));
+    } break;
+
+    case Type::String: {
+        append(&stb, get<String>(state));
+    } break;
+
+    case Type::V2I: {
+        V2I value = get<V2I>(state);
+        append(&stb, formatInt(value.x));
+        append(&stb, 'x');
+        append(&stb, formatInt(value.y));
+    } break;
+    }
+
+    return getString(&stb);
 }
