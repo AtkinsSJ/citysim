@@ -20,6 +20,8 @@ public:
     T* operator->() const { return m_value; }
     T& operator*() const { return *m_value; }
 
+    bool operator==(Ref const&) const = default;
+
 private:
     T* m_value;
 };
