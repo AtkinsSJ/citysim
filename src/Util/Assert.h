@@ -8,7 +8,11 @@
 
 #include <SDL2/SDL_assert.h>
 
-#define DEBUG_BREAK() SDL_TriggerBreakpoint()
+#if BUILD_DEBUG
+#    define DEBUG_BREAK() SDL_TriggerBreakpoint()
+#else
+#    define DEBUG_BREAK()
+#endif
 
 // SDL already does work to avoid MSVC warnings, but we still get them!
 // So, I've added what SHOULD be a no-op wrapper around it, using the (a,b) comma trick.
