@@ -110,7 +110,9 @@ void settingsWindowProc(UI::WindowContext* context, void*)
     auto& settings = Settings::the();
     UI::Panel& ui = context->windowPanel;
 
-    settings.workingState->create_ui(ui);
+    settings.workingState->for_each_setting([&ui](auto& setting) {
+        setting.add_ui_line(ui);
+    });
 
     ui.startNewLine(HAlign::Left);
     if (ui.addTextButton(getText("button_cancel"_s))) {

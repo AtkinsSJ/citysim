@@ -26,7 +26,17 @@ public:
     // FIXME: Should be const, but that's awkward right now.
     bool save_to_file(String filename);
 
-    void create_ui(UI::Panel&);
+    template<typename Callback>
+    void for_each_setting(Callback callback)
+    {
+        for (auto it = m_settings_order.iterate();
+            it.hasNext();
+            it.next()) {
+            String name = it.getValue();
+            auto setting = *m_settings_by_name.find(name).value;
+            callback(*setting);
+        }
+    }
 
 protected:
     explicit BaseSettingsState(MemoryArena& arena);

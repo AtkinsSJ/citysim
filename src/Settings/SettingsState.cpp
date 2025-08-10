@@ -91,17 +91,6 @@ bool BaseSettingsState::save_to_file(String filename)
     return false;
 }
 
-void BaseSettingsState::create_ui(UI::Panel& ui)
-{
-    for (auto it = m_settings_order.iterate();
-        it.hasNext();
-        it.next()) {
-        String name = it.getValue();
-        auto setting = *m_settings_by_name.find(name).value;
-        setting->add_ui_line(ui);
-    }
-}
-
 void BaseSettingsState::register_setting(Setting& setting)
 {
     m_settings_by_name.put(setting.name(), setting);
