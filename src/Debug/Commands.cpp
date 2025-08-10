@@ -126,6 +126,43 @@ ConsoleCommand(reload_settings)
     Settings::the().apply();
 }
 
+ConsoleCommand(setting)
+{
+    auto& settings = *Settings::the().settings;
+
+    if (argumentsCount == 0) {
+        consoleWriteLine("Available settings:"_s, ConsoleLineStyle::Success);
+        settings.for_each_setting([](auto& setting) {
+            consoleWriteLine(setting.name(), ConsoleLineStyle::Success);
+        });
+        return;
+    }
+
+    // FIXME: This is hacky, surely we can come up with a nice API for this.
+    LineReader reader { "console"_s, Blob { static_cast<smm>(arguments.length), reinterpret_cast<u8*>(arguments.chars) } };
+    reader.load_next_line();
+
+    auto setting_name = reader.next_token();
+    auto maybe_setting = settings.setting_by_name(setting_name);
+    if (!maybe_setting.has_value()) {
+        consoleWriteLine(myprintf("Unrecognized setting name '{}'."_s, { setting_name }), ConsoleLineStyle::Error);
+        return;
+    }
+    auto& setting = *maybe_setting.release_value();
+
+    if (argumentsCount == 1) {
+        consoleWriteLine(myprintf("{} is {}"_s, { setting_name, setting.serialize_value() }), ConsoleLineStyle::Success);
+        return;
+    }
+
+    if (setting.set_from_file(reader)) {
+        Settings::the().apply();
+        consoleWriteLine(myprintf("Set {} to {}"_s, { setting_name, setting.serialize_value() }), ConsoleLineStyle::Success);
+    } else {
+        consoleWriteLine(myprintf("Unable to set {}: invalid format"_s, { setting_name }), ConsoleLineStyle::Error);
+    }
+}
+
 ConsoleCommand(show_layer)
 {
     String remainder = arguments;
@@ -199,32 +236,6 @@ ConsoleCommand(toast)
     UI::pushToast(arguments);
 }
 
-ConsoleCommand(window_size)
-{
-    if (argumentsCount == 2) {
-        String remainder = arguments;
-
-        String sWidth = nextToken(remainder, &remainder);
-        String sHeight = nextToken(remainder, &remainder);
-
-        Maybe<s64> width = asInt(sWidth);
-        Maybe<s64> height = asInt(sHeight);
-        if (width.isValid && (width.value > 0)
-            && height.isValid && (height.value > 0)) {
-            consoleWriteLine(myprintf("Window resized to {0} by {1}"_s, { sWidth, sHeight }), ConsoleLineStyle::Success);
-
-            the_renderer().resize_window(truncate32(width.value), truncate32(height.value), false);
-        } else {
-            consoleWriteLine("Usage: window_size [width height], where both width and height are positive integers. If no width or height are provided, the current window size is returned."_s, ConsoleLineStyle::Error);
-        }
-    } else if (argumentsCount == 0) {
-        V2 screenSize = the_renderer().ui_camera().size();
-        consoleWriteLine(myprintf("Window size is {0} by {1}"_s, { formatInt((s32)screenSize.x), formatInt((s32)screenSize.y) }), ConsoleLineStyle::Success);
-    } else {
-        consoleWriteLine("Usage: window_size [width height], where both width and height are positive integers. If no width or height are provided, the current window size is returned."_s, ConsoleLineStyle::Error);
-    }
-}
-
 ConsoleCommand(zoom)
 {
     String remainder = arguments;
@@ -267,10 +278,10 @@ void initCommands(Console* console)
     AddCommand(mark_all_dirty, 0, 0);
     AddCommand(reload_assets, 0, 0);
     AddCommand(reload_settings, 0, 0);
+    AddCommand(setting, 0, -1);
     AddCommand(show_layer, 0, 1);
     AddCommand(speed, 0, 1);
     AddCommand(toast, 1, -1);
-    AddCommand(window_size, 0, 2);
     AddCommand(zoom, 0, 1);
 #undef AddCommand
 }
