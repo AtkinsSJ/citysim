@@ -136,6 +136,8 @@ void initAssets()
     // NB: This might fail, or we might be on a platform where it isn't implemented.
     // That's OK though!
     s_assets->assetChangeHandle = beginWatchingDirectory(s_assets->assetsPath);
+
+    Settings::the().register_listener(*s_assets);
 }
 
 AssetManager& asset_manager()
@@ -902,8 +904,10 @@ String getAssetPath(AssetType type, String shortName)
     return result;
 }
 
-void reloadLocaleSpecificAssets()
+void AssetManager::on_settings_changed()
 {
+    // Reload locale-specific assets
+
     // Clear the list of missing texts because they might not be missing in the new locale!
     s_assets->missingTextIDs.clear();
 

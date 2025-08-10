@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Setting.h"
+#include <Settings/SettingsChangeListener.h>
 #include <Settings/SettingsState.h>
 #include <UI/Forward.h>
 #include <Util/String.h>
@@ -29,6 +30,12 @@ public:
     SettingsState* settings;
     // FIXME: Replace this with storage in the settings window
     SettingsState* workingState;
+
+    void register_listener(SettingsChangeListener&);
+    void unregister_listener(SettingsChangeListener&);
+
+private:
+    ChunkedArray<Ref<SettingsChangeListener>> m_listeners {};
 };
 
 // Settings access

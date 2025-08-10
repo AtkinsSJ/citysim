@@ -4,10 +4,11 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#include "Renderer.h"
 #include <Assets/AssetManager.h>
 #include <Debug/Debug.h>
 #include <Gfx/OpenGL.h>
-#include <Gfx/Renderer.h>
+#include <Settings/Settings.h>
 
 static Renderer* s_renderer;
 
@@ -70,6 +71,7 @@ bool Renderer::initialize(SDL_Window* window)
     gl_renderer->m_arena.mark_reset_position();
 
     s_renderer = gl_renderer;
+    Settings::the().register_listener(*s_renderer);
     return true;
 }
 
@@ -223,6 +225,12 @@ RenderBuffer* Renderer::get_temporary_render_buffer(String name)
 void Renderer::return_temporary_render_buffer(RenderBuffer& buffer)
 {
     m_render_buffer_pool.discard(buffer);
+}
+
+void Renderer::on_settings_changed()
+{
+    auto& settings = Settings::the().settings;
+    resize_window(settings->resolution.value().x, settings->resolution.value().y, !settings->windowed.value());
 }
 
 void appendRenderItemType(RenderBuffer* buffer, RenderItemType type)

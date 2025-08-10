@@ -16,6 +16,7 @@ class S32Setting;
 class S32RangeSetting;
 class Setting;
 class Settings;
+class SettingsChangeListener;
 class SettingsState;
 class StringSetting;
 class V2ISetting;

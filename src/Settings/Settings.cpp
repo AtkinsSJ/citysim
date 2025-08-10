@@ -25,6 +25,7 @@ void Settings::initialize()
     s_settings->userSettingsFilename = "settings.cnf"_s;
     s_settings->settings = s_settings->arena.allocate<SettingsState>(s_settings->arena);
     s_settings->workingState = s_settings->arena.allocate<SettingsState>(s_settings->arena);
+    initChunkedArray(&s_settings->m_listeners, &s_settings->arena, 32);
     s_settings->arena.mark_reset_position();
 
     s_settings->load();
@@ -62,16 +63,24 @@ void Settings::load()
 
 void Settings::apply()
 {
-    // FIXME: Replace with callbacks
-
-    the_renderer().resize_window(settings->resolution.value().x, settings->resolution.value().y, !settings->windowed.value());
-
-    reloadLocaleSpecificAssets();
+    for (auto it = m_listeners.iterate(); it.hasNext(); it.next()) {
+        it.getValue()->on_settings_changed();
+    }
 }
 
 bool Settings::save()
 {
     return settings->save_to_file(getUserSettingsPath());
+}
+
+void Settings::register_listener(SettingsChangeListener& listener)
+{
+    m_listeners.append(listener);
+}
+
+void Settings::unregister_listener(SettingsChangeListener& listener)
+{
+    m_listeners.findAndRemove(Ref { listener });
 }
 
 WindowSettings getWindowSettings()

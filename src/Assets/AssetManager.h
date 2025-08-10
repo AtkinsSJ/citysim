@@ -9,12 +9,13 @@
 #include <Assets/Asset.h>
 #include <Assets/AssetManagerListener.h>
 #include <IO/File.h>
+#include <Settings/SettingsChangeListener.h>
 #include <Util/ChunkedArray.h>
 #include <Util/EnumMap.h>
 #include <Util/Set.h>
 #include <Util/StringTable.h>
 
-struct AssetManager {
+struct AssetManager final : public SettingsChangeListener {
     MemoryArena arena;
     StringTable assetStrings;
 
@@ -57,13 +58,15 @@ struct AssetManager {
     ChunkedArray<AssetManagerListener*> listeners;
     void register_listener(AssetManagerListener*);
     void unregister_listener(AssetManagerListener*);
+
+private:
+    // ^SettingsChangeListener
+    virtual void on_settings_changed() override;
 };
 
 void initAssets();
 AssetManager& asset_manager();
 Asset* makePlaceholderAsset(AssetType type);
-
-void reloadLocaleSpecificAssets();
 
 Asset* addAsset(AssetType type, String shortName, Flags<AssetFlags> flags = default_asset_flags);
 Asset* addNinepatch(String name, String filename, s32 pu0, s32 pu1, s32 pu2, s32 pu3, s32 pv0, s32 pv1, s32 pv2, s32 pv3);

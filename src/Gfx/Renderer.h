@@ -14,6 +14,7 @@
 #include <Gfx/Forward.h>
 #include <Gfx/RenderBuffer.h>
 #include <SDL2/SDL_events.h>
+#include <Settings/SettingsChangeListener.h>
 #include <Util/Basic.h>
 #include <Util/MemoryArena.h>
 #include <Util/Pool.h>
@@ -45,7 +46,9 @@ struct DrawRingsGroup {
     s32 maxCount;
 };
 
-class Renderer : public AssetManagerListener {
+class Renderer
+    : public AssetManagerListener
+    , public SettingsChangeListener {
 public:
     virtual ~Renderer() override;
 
@@ -101,6 +104,9 @@ public:
 
 protected:
     explicit Renderer(SDL_Window*);
+
+    // ^SettingsChangeListener
+    virtual void on_settings_changed() override;
 
     MemoryArena m_arena {};
 
