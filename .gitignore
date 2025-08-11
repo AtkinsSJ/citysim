@@ -11,6 +11,7 @@ build/under-london.VC.VC.opendb
 build/under-london.VC.db
 build/preprocessed.output
 build/citysim
+build/vcpkg
 under-london.sln
 under-london.VC.db
 under-london.VC.VC.opendb
