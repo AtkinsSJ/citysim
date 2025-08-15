@@ -14,7 +14,7 @@ void initStringTable(StringTable* table)
 
 String intern(StringTable* table, String input)
 {
-    ASSERT(stringIsValid(input));
+    ASSERT(input.is_valid());
 
     HashTable<String>* hashTable = &table->table;
 

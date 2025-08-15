@@ -93,19 +93,15 @@ bool String::operator==(String const& other) const
     return isMemoryEqual(chars, other.chars, length);
 }
 
-bool stringIsValid(String s)
+bool String::is_valid() const
 {
-    bool isValid = true;
-
     // NB: The final char (length-1) is allowed to be null, so we only check until the one before that
-    for (s32 index = 0; index < s.length - 1; index++) {
-        if (s.chars[index] == 0) {
-            isValid = false;
-            break;
-        }
+    for (s32 index = 0; index < length - 1; index++) {
+        if (chars[index] == 0)
+            return false;
     }
 
-    return isValid;
+    return true;
 }
 
 u32 hashString(String* s)

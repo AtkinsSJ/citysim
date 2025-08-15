@@ -45,6 +45,7 @@ struct String {
     bool is_empty() const;
 
     bool is_null_terminated() const;
+    bool is_valid() const;
 
     Optional<u32> find(char needle, SearchFrom = SearchFrom::Start, Optional<u32> start_index = {}) const;
     bool contains(char) const;
@@ -85,8 +86,6 @@ String pushString(MemoryArena* arena, char const* src);
 String pushString(MemoryArena* arena, String src);
 
 u32 hashString(String* s);
-
-bool stringIsValid(String s);
 
 Maybe<s64> asInt(String input);
 Maybe<double> asFloat(String input);
