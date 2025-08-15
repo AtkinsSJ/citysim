@@ -339,7 +339,7 @@ bool saveGame(String saveName)
 
     String saveFilename = saveName;
     if (!saveFilename.ends_with(".sav"_s)) {
-        saveFilename = concatenate({ saveName, ".sav"_s });
+        saveFilename = String::join({ saveName, ".sav"_s });
     }
 
     String savePath = constructPath({ catalogue->savedGamesPath, saveFilename });

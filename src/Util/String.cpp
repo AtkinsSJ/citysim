@@ -426,14 +426,13 @@ bool splitInTwo(String input, char divider, String* leftResult, String* rightRes
     return foundDivider;
 }
 
-String concatenate(std::initializer_list<String> strings, String between)
+String String::join(std::initializer_list<String> strings, Optional<String> between)
 {
-    bool useBetween = (between.length > 0);
     String result = nullString;
 
     if (strings.size() > 0) {
         // Count up the resulting length
-        s32 resultLength = truncate32(between.length * (strings.size() - 1));
+        s32 resultLength = between.has_value() ? truncate32(between.value().length * (strings.size() - 1)) : 0;
         for (auto it = strings.begin(); it != strings.end(); it++) {
             resultLength += it->length;
         }
@@ -443,8 +442,8 @@ String concatenate(std::initializer_list<String> strings, String between)
         append(&stb, *strings.begin());
 
         for (auto it = (strings.begin() + 1); it != strings.end(); it++) {
-            if (useBetween)
-                append(&stb, between);
+            if (between.has_value())
+                append(&stb, between.value());
             append(&stb, *it);
         }
 

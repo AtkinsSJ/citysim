@@ -10,6 +10,7 @@
 #include <Util/Enum.h>
 #include <Util/Forward.h>
 #include <Util/Maybe.h>
+#include <Util/Optional.h>
 #include <initializer_list>
 #include <typeinfo>
 
@@ -22,6 +23,9 @@ struct String {
     s32 length;
     u32 hash;
     char* chars;
+
+    // FIXME: initializer_list isn't the best option
+    static String join(std::initializer_list<String> strings, Optional<String> between = {});
 
     char operator[](s32 index) const;
 
@@ -80,8 +84,6 @@ s32 countTokens(String input, char splitChar = 0);
 String nextToken(String input, String* remainder, char splitChar = 0);
 // NB: You can pass null for leftResult or rightResult to ignore that part.
 bool splitInTwo(String input, char divider, String* leftResult, String* rightResult);
-
-String concatenate(std::initializer_list<String> strings, String between = nullString);
 
 String formatInt(u64 value, u8 base = 10, s32 zeroPadWidth = 0);
 inline String formatInt(u32 value, u8 base = 10, s32 zeroPadWidth = 0) { return formatInt((u64)value, base, zeroPadWidth); }
