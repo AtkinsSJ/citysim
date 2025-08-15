@@ -117,7 +117,7 @@ bool LineReader::load_next_line()
         }
 
         // Trim whitespace
-        line = trim(line);
+        line = line.trimmed();
 
         // This seems weird, but basically: The break means all lines get returned if we're not skipping blank ones.
         if (!m_skip_blank_lines)
@@ -147,7 +147,7 @@ String LineReader::current_line() const
 
 String LineReader::remainder_of_current_line() const
 {
-    return trim(m_state.line_remainder);
+    return m_state.line_remainder.trimmed();
 }
 
 void LineReader::warn(String message, std::initializer_list<String> args) const

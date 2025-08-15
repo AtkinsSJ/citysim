@@ -24,6 +24,13 @@ enum class SearchFrom : u8 {
     End,
 };
 
+enum class TrimSide : u8 {
+    Start,
+    End,
+    Both,
+};
+
+// FIXME: Distinguishing between owning and non-owning Strings would be good. (AKA, introduce StringView.)
 struct String {
     s32 length;
     u32 hash;
@@ -43,6 +50,8 @@ struct String {
     bool contains(char) const;
     bool starts_with(String const& prefix) const;
     bool ends_with(String const& suffix) const;
+
+    String trimmed(TrimSide = TrimSide::Both) const;
 
     bool operator==(String const&) const;
 };
@@ -78,10 +87,6 @@ String pushString(MemoryArena* arena, String src);
 u32 hashString(String* s);
 
 bool stringIsValid(String s);
-
-String trim(String input);
-String trimStart(String input);
-String trimEnd(String input);
 
 Maybe<s64> asInt(String input);
 Maybe<double> asFloat(String input);

@@ -127,30 +127,24 @@ u32 hashString(String* s)
     return result;
 }
 
-String trimStart(String input)
+String String::trimmed(TrimSide trim_side) const
 {
-    String result = input;
-    while (!input.is_empty() && isWhitespace(result.chars[0], false)) {
-        ++result.chars;
-        --result.length;
+    String result = *this;
+
+    if (trim_side != TrimSide::End) {
+        while (!result.is_empty() && isWhitespace(result.chars[0], false)) {
+            ++result.chars;
+            --result.length;
+        }
+    }
+
+    if (trim_side != TrimSide::Start) {
+        while (!result.is_empty() && isWhitespace(result.chars[result.length - 1], false)) {
+            --result.length;
+        }
     }
 
     return result;
-}
-
-String trimEnd(String input)
-{
-    String result = input;
-    while (!input.is_empty() && isWhitespace(result.chars[result.length - 1], false)) {
-        --result.length;
-    }
-
-    return result;
-}
-
-String trim(String input)
-{
-    return trimStart(trimEnd(input));
 }
 
 Maybe<s64> asInt(String input)
@@ -357,7 +351,6 @@ s32 countTokens(String input, char splitChar)
 // Otherwise, we stop at the first whitespace character, determined by isWhitespace()
 String nextToken(String input, String* remainder, char splitChar)
 {
-
     String firstWord = input;
     firstWord.length = 0;
 
@@ -366,19 +359,19 @@ String nextToken(String input, String* remainder, char splitChar)
         ++firstWord.length;
     }
 
-    firstWord = trimEnd(firstWord);
+    firstWord = firstWord.trimmed(TrimSide::End);
 
     if (remainder) {
         // NB: We have to make sure we properly initialise remainder here, because we had a bug before
         // where we didn't, and it sometimes had old data in the "hasHash" field, which was causing all
         // kinds of weird stuff to happen!
-        *remainder = trimStart(makeString(firstWord.chars + firstWord.length, input.length - firstWord.length));
+        *remainder = makeString(firstWord.chars + firstWord.length, input.length - firstWord.length).trimmed(TrimSide::Start);
 
         // Skip the split char
         if (splitChar != 0 && remainder->length > 0) {
             remainder->length--;
             remainder->chars++;
-            *remainder = trimStart(*remainder);
+            *remainder = remainder->trimmed(TrimSide::Start);
         }
     }
 

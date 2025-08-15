@@ -223,7 +223,7 @@ void savedGamesWindowProc(UI::WindowContext* context, void* userData)
             }
 
             bool pressedEnterInTextInput = bottomBar.addTextInput(&catalogue->saveGameName);
-            String inputName = trim(catalogue->saveGameName.toString());
+            String inputName = catalogue->saveGameName.toString().trimmed();
 
             // Show a warning if we're overwriting an existing save that ISN'T the active one
             bool showOverwriteWarning = false;
@@ -266,7 +266,7 @@ void confirmOverwriteSaveWindowProc(UI::WindowContext* context, void* /*userData
 {
     UI::Panel* ui = &context->windowPanel;
 
-    String inputName = trim(savedGamesCatalogue.saveGameName.toString());
+    String inputName = savedGamesCatalogue.saveGameName.toString().trimmed();
 
     ui->addLabel(getText("msg_save_overwrite_confirm"_s, { inputName }));
     ui->startNewLine(HAlign::Right);
