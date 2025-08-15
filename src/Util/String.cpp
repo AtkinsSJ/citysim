@@ -127,17 +127,6 @@ u32 hashString(String* s)
     return result;
 }
 
-void reverse(char* first, u32 length)
-{
-    u32 flips = length / 2;
-    char temp;
-    for (u32 n = 0; n < flips; n++) {
-        temp = first[n];
-        first[n] = first[length - 1 - n];
-        first[length - 1 - n] = temp;
-    }
-}
-
 String trimStart(String input)
 {
     String result = input;

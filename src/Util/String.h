@@ -62,7 +62,6 @@ u32 hashString(String* s);
 
 bool stringIsValid(String s);
 
-void reverse(char* first, u32 length);
 String trim(String input);
 String trimStart(String input);
 String trimEnd(String input);
