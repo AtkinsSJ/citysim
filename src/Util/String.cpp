@@ -648,7 +648,7 @@ String formatBool(bool value)
         return "false"_s;
 }
 
-String repeatChar(char c, s32 length)
+String String::repeat(char c, u32 length)
 {
     String result = pushString(&temp_arena(), length);
     result.length = length;

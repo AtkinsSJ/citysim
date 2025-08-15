@@ -26,6 +26,7 @@ struct String {
 
     // FIXME: initializer_list isn't the best option
     static String join(std::initializer_list<String> strings, Optional<String> between = {});
+    static String repeat(char c, u32 length);
 
     char operator[](s32 index) const;
 
@@ -43,7 +44,6 @@ String makeString(char* chars, s32 length, bool hash = false);
 String makeString(char* chars, bool hash = false);
 String makeString(char const* chars, bool hash = false);
 String stringFromBlob(Blob blob, bool hash = false);
-String repeatChar(char c, s32 length);
 
 inline String operator""_s(char const* chars, size_t length)
 {

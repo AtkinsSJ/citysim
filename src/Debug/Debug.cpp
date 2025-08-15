@@ -324,7 +324,7 @@ void renderDebugData(DebugState* debugState)
     {
         debugTextOut(&textState, myprintf("{0}| {1}| {2}| {3}| {4}"_s, { formatString("Code", 60), formatString("Total cycles", 20, false), formatString("Calls", 10, false), formatString("Avg Cycles", 20, false), formatString("2-second avg cycles", 20, false) }));
 
-        debugTextOut(&textState, repeatChar('-', textState.charsLastPrinted));
+        debugTextOut(&textState, String::repeat('-', textState.charsLastPrinted));
         DebugCodeDataWrapper* topBlock = debugState->topCodeBlocksSentinel.nextNode;
         float msPerCycle = 1000.0f / (float)cyclesPerSecond;
         while (topBlock != &debugState->topCodeBlocksSentinel) {

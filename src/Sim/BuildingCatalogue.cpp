@@ -395,7 +395,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
                         // Check the values are valid first, because that's less verbose than checking each one individually.
                         for (auto i = 0; i < directionFlags.length; i++) {
                             if (!connectionTypeOf(directionFlags[i]).has_value()) {
-                                reader.error("Unrecognized connection type character '{0}', valid values: '012*'"_s, { repeatChar(directionFlags[i], 1) });
+                                reader.error("Unrecognized connection type character '{0}', valid values: '012*'"_s, { String::repeat(directionFlags[i], 1) });
                             }
                         }
 
