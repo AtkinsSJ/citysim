@@ -31,14 +31,14 @@ void init_input_state()
     // Letters
     for (char c = 'A'; c <= 'Z'; c++) {
         String key = pushString(systemArena, 1);
-        key[0] = c;
+        key.chars[0] = c;
         s_input_state.keyNames.put(key, (SDL_Keycode)(SDLK_a + (c - 'A')));
     }
 
     // Numbers
     for (char i = 0; i <= 9; i++) {
         String key = pushString(systemArena, 1);
-        key[0] = '0' + i;
+        key.chars[0] = '0' + i;
         s_input_state.keyNames.put(key, (SDL_Keycode)(SDLK_0 + i));
     }
 

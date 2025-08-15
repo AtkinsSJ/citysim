@@ -40,7 +40,7 @@ String stringFromBlob(Blob blob, bool hash)
     return makeString((char*)blob.data(), truncate32(blob.size()), hash);
 }
 
-char& String::operator[](s32 index)
+char String::operator[](s32 index) const
 {
     ASSERT(index >= 0 && index < this->length); // Index out of range!
     return this->chars[index];
@@ -215,7 +215,7 @@ Maybe<double> asFloat(String input)
     String nullTerminatedInput = pushString(&temp_arena(), input.length + 1);
     copyString(input, &nullTerminatedInput);
     nullTerminatedInput.length++;
-    nullTerminatedInput[input.length] = '\0';
+    nullTerminatedInput.chars[input.length] = '\0';
 
     double doubleValue = atof(nullTerminatedInput.chars);
     if (doubleValue == 0.0) {

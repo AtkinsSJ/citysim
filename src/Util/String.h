@@ -23,7 +23,7 @@ struct String {
     u32 hash;
     char* chars;
 
-    char& operator[](s32 index);
+    char operator[](s32 index) const;
 
     bool is_null_terminated() const;
     bool starts_with(String const& prefix) const;
