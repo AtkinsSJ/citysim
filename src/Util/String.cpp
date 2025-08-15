@@ -285,53 +285,40 @@ bool String::ends_with(String const& suffix) const
     return result;
 }
 
-Maybe<s32> findIndexOfChar(String input, char c, bool searchFromEnd, s32 startIndex)
+Optional<u32> String::find(char needle, SearchFrom search_direction, Optional<u32> start_index) const
 {
-    Maybe<s32> result;
+    if (is_empty())
+        return {};
 
-    if (input.is_empty()) {
-        result = makeFailure<s32>();
-    } else {
-        if (startIndex == -1) {
-            startIndex = (searchFromEnd ? input.length - 1 : 0);
+    switch (search_direction) {
+    case SearchFrom::Start: {
+        auto index = start_index.value_or(0);
+        while (index < length) {
+            if (chars[index] == needle)
+                return index;
+            index++;
         }
-
-        s32 pos = startIndex;
-        bool found = false;
-
-        if (searchFromEnd) {
-            while (pos >= 0) {
-                if (input[pos] == c) {
-                    found = true;
-                    break;
-                }
-
-                pos--;
-            }
-        } else {
-            while (pos < input.length) {
-                if (input[pos] == c) {
-                    found = true;
-                    break;
-                }
-
-                pos++;
-            }
+        break;
+    }
+    case SearchFrom::End: {
+        auto index = start_index.value_or(length - 1);
+        while (true) {
+            if (chars[index] == needle)
+                return index;
+            if (index == 0)
+                return {};
+            index--;
         }
-
-        if (found) {
-            result = makeSuccess(pos);
-        } else {
-            result = makeFailure<s32>();
-        }
+        break;
+    }
     }
 
-    return result;
+    return {};
 }
 
-bool contains(String input, char c)
+bool String::contains(char c) const
 {
-    return findIndexOfChar(input, c, false).isValid;
+    return find(c).has_value();
 }
 
 bool isSplitChar(char input, char splitChar)

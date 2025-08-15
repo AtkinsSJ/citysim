@@ -313,7 +313,7 @@ bool updateTextInput(TextInput* textInput)
             String enteredText = getEnteredText();
             for (s32 charIndex = 0; charIndex < enteredText.length; charIndex++) {
                 char c = enteredText[charIndex];
-                if (!contains(textInput->characterBlacklist, c)) {
+                if (!textInput->characterBlacklist.contains(c)) {
                     textInput->insert(c);
                 }
             }
@@ -326,7 +326,7 @@ bool updateTextInput(TextInput* textInput)
             String enteredText = getClipboardText();
             for (s32 charIndex = 0; charIndex < enteredText.length; charIndex++) {
                 char c = enteredText[charIndex];
-                if (!contains(textInput->characterBlacklist, c)) {
+                if (!textInput->characterBlacklist.contains(c)) {
                     textInput->insert(c);
                 }
             }

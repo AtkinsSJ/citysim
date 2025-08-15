@@ -58,11 +58,10 @@ String getFileLocale(String filename)
 {
     String result = {};
 
-    Maybe<s32> endPos = findIndexOfChar(filename, '.', true);
-    if (endPos.isValid) {
-        Maybe<s32> startPos = findIndexOfChar(filename, '.', true, endPos.value - 1);
-        if (startPos.isValid) {
-            result = makeString(filename.chars + startPos.value + 1, endPos.value - startPos.value - 1);
+    // The locale is a section just before the file extension, eg `foo.en.txt`
+    if (auto end_position = filename.find('.', SearchFrom::End); end_position.has_value()) {
+        if (auto start_position = filename.find('.', SearchFrom::End, end_position.value() - 1); start_position.has_value()) {
+            result = makeString(filename.chars + start_position.value() + 1, end_position.value() - start_position.value() - 1);
         }
     }
 

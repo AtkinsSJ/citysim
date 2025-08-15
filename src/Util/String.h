@@ -19,6 +19,11 @@
 // Probably one day we should make this consistent with TextInput using both, but eh.
 //
 
+enum class SearchFrom : u8 {
+    Start,
+    End,
+};
+
 struct String {
     s32 length;
     u32 hash;
@@ -30,10 +35,14 @@ struct String {
 
     char operator[](s32 index) const;
 
+    bool is_empty() const;
+
     bool is_null_terminated() const;
+
+    Optional<u32> find(char needle, SearchFrom = SearchFrom::Start, Optional<u32> start_index = {}) const;
+    bool contains(char) const;
     bool starts_with(String const& prefix) const;
     bool ends_with(String const& suffix) const;
-    bool is_empty() const;
 
     bool operator==(String const&) const;
 };
@@ -41,6 +50,10 @@ struct String {
 String const nullString = {};
 
 String makeString(char* chars, s32 length, bool hash = false);
+inline String makeString(char* chars, u32 length, bool hash = false)
+{
+    return makeString(chars, (s32)length, hash);
+}
 String makeString(char* chars, bool hash = false);
 String makeString(char const* chars, bool hash = false);
 String stringFromBlob(Blob blob, bool hash = false);
@@ -73,9 +86,6 @@ String trimEnd(String input);
 Maybe<s64> asInt(String input);
 Maybe<double> asFloat(String input);
 Maybe<bool> asBool(String input);
-
-Maybe<s32> findIndexOfChar(String input, char c, bool searchFromEnd, s32 startIndex = -1);
-bool contains(String input, char c);
 
 bool isSplitChar(char input, char splitChar);
 s32 countTokens(String input, char splitChar = 0);

@@ -164,7 +164,7 @@ static void fillFileInfo(DirectoryListingHandle const& handle, dirent const& ent
 
     if (statBuffer.st_mode & S_IFDIR)
         result.flags.add(FileFlags::Directory);
-    if (findIndexOfChar(result.filename, '.', false).orDefault(-1) == 0)
+    if (result.filename[0] == '.')
         result.flags.add(FileFlags::Hidden);
     // TODO: ReadOnly flag, which... we never use!
 
