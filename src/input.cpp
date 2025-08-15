@@ -350,7 +350,7 @@ KeyboardShortcut parseKeyboardShortcut(String shortcutString)
     String keyName, remainder;
     keyName = nextToken(shortcutString, &remainder, '+');
 
-    while (!isEmpty(keyName)) {
+    while (!keyName.is_empty()) {
         //
         // MODIFIERS
         //

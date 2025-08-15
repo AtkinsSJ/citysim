@@ -19,6 +19,6 @@ struct AssetRef {
 
     bool isValid()
     {
-        return !isEmpty(name);
+        return !name.is_empty();
     }
 };

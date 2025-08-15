@@ -508,7 +508,7 @@ void Panel::completeWidget(V2I widgetSize)
 PanelStyle* Panel::getPanelStyle(String styleName)
 {
     PanelStyle* result = nullptr;
-    if (!isEmpty(styleName))
+    if (!styleName.is_empty())
         result = getStyle<PanelStyle>(styleName);
     if (result == nullptr)
         result = this->style;

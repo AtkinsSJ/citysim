@@ -248,7 +248,7 @@ void consoleHandleCommand(Console* console, String commandInput)
     // copy input to output, for readability
     consoleWriteLine(myprintf("> {0}"_s, { commandInput }), ConsoleLineStyle::InputEcho);
 
-    if (!isEmpty(commandInput)) {
+    if (!commandInput.is_empty()) {
         // Add to history
         console->inputHistory.append(pushString(console->inputHistory.memoryArena, commandInput));
         console->inputHistoryCursor = -1;

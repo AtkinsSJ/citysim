@@ -13,7 +13,7 @@ Optional<Alignment> Alignment::read(LineReader& reader)
     Optional<VAlign> v;
 
     String token = reader.next_token();
-    while (!isEmpty(token)) {
+    while (!token.is_empty()) {
         if (token == "LEFT"_s) {
             if (h.has_value()) {
                 reader.error("Multiple horizontal alignment keywords given!"_s);

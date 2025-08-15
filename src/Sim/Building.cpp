@@ -159,7 +159,7 @@ void updateBuildingVariant(City* city, Building* building, BuildingDef* passedDe
         }
 
         if (!foundVariant) {
-            if (!isEmpty(def->spriteName)) {
+            if (!def->spriteName.is_empty()) {
                 logWarn("Unable to find a matching variant for building '{0}'. Defaulting to the building's defined sprite, '{1}'."_s, { def->name, def->spriteName });
                 building->variantIndex = {};
             } else {

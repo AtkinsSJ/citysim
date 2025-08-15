@@ -152,7 +152,7 @@ template<typename T>
 T* getStyle(String styleName, AssetRef* defaultStyle)
 {
     T* result = nullptr;
-    if (!isEmpty(styleName))
+    if (!styleName.is_empty())
         result = getStyle<T>(styleName);
     if (result == nullptr)
         result = getStyle<T>(defaultStyle);

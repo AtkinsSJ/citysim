@@ -77,14 +77,14 @@ String platform_constructPath(std::initializer_list<String> parts, bool appendWi
 
     String result = getString(&stb);
 
-    ASSERT(isNullTerminated(result)); // Path strings must be null-terminated!
+    ASSERT(result.is_null_terminated()); // Path strings must be null-terminated!
 
     return result;
 }
 
 bool platform_createDirectory(String _path)
 {
-    ASSERT(isNullTerminated(_path));
+    ASSERT(_path.is_null_terminated());
 
     if (mkdir(_path.chars, S_IRWXU) != 0) {
         int result = errno;
@@ -132,7 +132,7 @@ bool platform_createDirectory(String _path)
 
 bool platform_deleteFile(String path)
 {
-    ASSERT(isNullTerminated(path));
+    ASSERT(path.is_null_terminated());
 
     if (unlink(path.chars) == 0)
         return true;
@@ -194,7 +194,7 @@ static bool readNextDirEntry(DirectoryListingHandle& handle, FileInfo& result)
 
 DirectoryListingHandle platform_beginDirectoryListing(String path, FileInfo* result)
 {
-    ASSERT(isNullTerminated(path));
+    ASSERT(path.is_null_terminated());
 
     DirectoryListingHandle handle = {};
 
@@ -234,7 +234,7 @@ void platform_stopDirectoryListing(DirectoryListingHandle* handle)
 struct DirectoryChangeWatchingHandle;
 DirectoryChangeWatchingHandle platform_beginWatchingDirectory(String path)
 {
-    ASSERT(isNullTerminated(path));
+    ASSERT(path.is_null_terminated());
 
     DirectoryChangeWatchingHandle handle = {};
     handle.path = path;

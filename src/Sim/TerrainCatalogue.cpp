@@ -69,7 +69,7 @@ void loadTerrainDefs(Blob data, Asset* asset)
 
             if (firstWord == "Terrain"_s) {
                 String name = reader.next_token();
-                if (isEmpty(name)) {
+                if (name.is_empty()) {
                     reader.error("Couldn't parse Terrain. Expected: ':Terrain identifier'"_s);
                     return;
                 }

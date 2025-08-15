@@ -13,7 +13,7 @@ Optional<Colour> Colour::read(LineReader& reader, LineReader::IsRequired is_requ
 
     String all_arguments = reader.remainder_of_current_line();
 
-    if (isEmpty(all_arguments)) {
+    if (all_arguments.is_empty()) {
         if (is_required == LineReader::IsRequired::Yes)
             reader.error("Expected a colour."_s);
         return {};

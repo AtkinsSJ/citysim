@@ -70,9 +70,6 @@ Maybe<s64> asInt(String input);
 Maybe<double> asFloat(String input);
 Maybe<bool> asBool(String input);
 
-bool isNullTerminated(String s);
-bool isEmpty(String s);
-
 Maybe<s32> findIndexOfChar(String input, char c, bool searchFromEnd, s32 startIndex = -1);
 bool contains(String input, char c);
 

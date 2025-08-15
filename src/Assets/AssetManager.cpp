@@ -606,7 +606,7 @@ void loadAssets()
 void addAssetsFromDirectory(String subDirectory, Optional<AssetType> manualAssetType)
 {
     String pathToScan;
-    if (isEmpty(subDirectory)) {
+    if (subDirectory.is_empty()) {
         pathToScan = constructPath({ s_assets->assetsPath });
     } else {
         pathToScan = constructPath({ s_assets->assetsPath, subDirectory });
@@ -1108,7 +1108,7 @@ void loadSpriteDefs(Blob data, Asset* asset)
                 auto pv2 = reader.read_int<s32>();
                 auto pv3 = reader.read_int<s32>();
 
-                if (isEmpty(name) || isEmpty(filename) || !all_have_values(pu0, pu1, pu2, pu3, pv0, pv1, pv2, pv3)) {
+                if (name.is_empty() || filename.is_empty() || !all_have_values(pu0, pu1, pu2, pu3, pv0, pv1, pv2, pv3)) {
                     reader.error("Couldn't parse Ninepatch. Expected: ':Ninepatch identifier filename.png pu0 pu1 pu2 pu3 pv0 pv1 pv2 pv3'"_s);
                     return;
                 }
@@ -1122,7 +1122,7 @@ void loadSpriteDefs(Blob data, Asset* asset)
                 String filename = reader.next_token();
                 auto spriteSizeIn = V2I::read(reader);
 
-                if (isEmpty(name) || isEmpty(filename) || !spriteSizeIn.has_value()) {
+                if (name.is_empty() || filename.is_empty() || !spriteSizeIn.has_value()) {
                     reader.error("Couldn't parse Sprite. Expected: ':Sprite identifier filename.png SWxSH'"_s);
                     return;
                 }
@@ -1143,7 +1143,7 @@ void loadSpriteDefs(Blob data, Asset* asset)
                 String filename = reader.next_token();
                 auto spriteSizeIn = V2I::read(reader);
 
-                if (isEmpty(name) || isEmpty(filename) || !spriteSizeIn.has_value()) {
+                if (name.is_empty() || filename.is_empty() || !spriteSizeIn.has_value()) {
                     reader.error("Couldn't parse SpriteGroup. Expected: ':SpriteGroup identifier filename.png SWxSH'"_s);
                     return;
                 }

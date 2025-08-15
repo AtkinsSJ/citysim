@@ -73,7 +73,7 @@ FileHandle openFile(String path, FileAccessMode mode)
 {
     DEBUG_FUNCTION();
 
-    ASSERT(isNullTerminated(path)); // openFile() path must be null-terminated.
+    ASSERT(path.is_null_terminated()); // openFile() path must be null-terminated.
 
     FileHandle result = {};
 
@@ -121,13 +121,13 @@ smm getFileSize(FileHandle* file)
 
 bool deleteFile(String path)
 {
-    ASSERT(isNullTerminated(path));
+    ASSERT(path.is_null_terminated());
     return platform_deleteFile(path);
 }
 
 bool createDirectory(String path)
 {
-    ASSERT(isNullTerminated(path));
+    ASSERT(path.is_null_terminated());
     return platform_createDirectory(path);
 }
 

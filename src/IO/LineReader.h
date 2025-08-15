@@ -68,7 +68,7 @@ public:
     {
         String token = next_token(split_char);
 
-        if (isEmpty(token)) {
+        if (token.is_empty()) {
             if (is_required == IsRequired::Yes)
                 error("Expected an integer value."_s);
             return {};

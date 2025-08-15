@@ -113,7 +113,7 @@ void Renderer::render()
 
 void Renderer::after_assets_loaded()
 {
-    if (!isEmpty(m_current_cursor_name)) {
+    if (!m_current_cursor_name.is_empty()) {
         set_cursor(m_current_cursor_name);
     }
 }

@@ -227,7 +227,7 @@ void savedGamesWindowProc(UI::WindowContext* context, void* userData)
 
             // Show a warning if we're overwriting an existing save that ISN'T the active one
             bool showOverwriteWarning = false;
-            if (!isEmpty(inputName) && inputName != catalogue->activeSavedGameName) {
+            if (!inputName.is_empty() && inputName != catalogue->activeSavedGameName) {
                 auto file_to_overwrite = catalogue->savedGames.find_first([&](SavedGameInfo* info) {
                     return inputName == info->shortName;
                 });
@@ -238,7 +238,7 @@ void savedGamesWindowProc(UI::WindowContext* context, void* userData)
             }
 
             if (pressedSave || pressedEnterInTextInput) {
-                if (!isEmpty(inputName)) {
+                if (!inputName.is_empty()) {
                     if (showOverwriteWarning) {
                         UI::showWindow(UI::WindowTitle::fromTextAsset("title_overwrite_save"_s), 300, 300, v2i(0, 0), "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Modal | WindowFlags::Unique, confirmOverwriteSaveWindowProc);
                     } else if (saveGame(inputName)) {

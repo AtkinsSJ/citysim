@@ -345,7 +345,7 @@ void loadUITheme(Blob data, Asset* asset)
                 String fontName = reader.next_token();
                 String fontFilename = reader.remainder_of_current_line();
 
-                if (!isEmpty(fontName) && !isEmpty(fontFilename)) {
+                if (!fontName.is_empty() && !fontFilename.is_empty()) {
                     Asset* fontAsset = addAsset(AssetType::BitmapFont, fontFilename);
                     fontNamesToAssetNames.put(fontName, fontAsset->shortName);
                 } else {

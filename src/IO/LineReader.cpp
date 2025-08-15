@@ -122,12 +122,12 @@ bool LineReader::load_next_line()
         // This seems weird, but basically: The break means all lines get returned if we're not skipping blank ones.
         if (!m_skip_blank_lines)
             break;
-    } while (isEmpty(line) && !(m_state.start_of_next_line >= m_data.size()));
+    } while (line.is_empty() && !(m_state.start_of_next_line >= m_data.size()));
 
     m_state.current_line = line;
     m_state.line_remainder = line;
 
-    if (isEmpty(line)) {
+    if (line.is_empty()) {
         if (m_skip_blank_lines) {
             result = false;
             m_state.at_end_of_file = true;
@@ -183,7 +183,7 @@ Optional<bool> LineReader::read_bool(IsRequired is_required, Optional<char> spli
 {
     String token = next_token(split_char);
 
-    if (isEmpty(token)) {
+    if (token.is_empty()) {
         if (is_required == IsRequired::Yes)
             error("Expected a boolean value."_s);
         return {};
@@ -200,7 +200,7 @@ Optional<double> LineReader::read_double(IsRequired is_required, Optional<char> 
 {
     String token = next_token(split_char);
 
-    if (isEmpty(token)) {
+    if (token.is_empty()) {
         if (is_required == IsRequired::Yes)
             error("Expected a floating-point or percentage value."_s);
         return {};

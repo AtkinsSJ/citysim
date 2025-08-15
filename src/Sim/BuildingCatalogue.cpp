@@ -158,7 +158,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
 
             if (firstWord == "Building"_s) {
                 String name = reader.next_token();
-                if (isEmpty(name)) {
+                if (name.is_empty()) {
                     reader.error("Couldn't parse Building. Expected: ':Building identifier'"_s);
                     return;
                 }
@@ -170,7 +170,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
                 String part1Name = reader.next_token();
                 String part2Name = reader.next_token();
 
-                if (isEmpty(name) || isEmpty(part1Name) || isEmpty(part2Name)) {
+                if (name.is_empty() || part1Name.is_empty() || part2Name.is_empty()) {
                     reader.error("Couldn't parse Intersection. Expected: ':Intersection identifier part1 part2'"_s);
                     return;
                 }
@@ -183,7 +183,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
                 def->intersectionPart2Name = intern(&catalogue->buildingNames, part2Name);
             } else if (firstWord == "Template"_s) {
                 String name = reader.next_token();
-                if (isEmpty(name)) {
+                if (name.is_empty()) {
                     reader.error("Couldn't parse Template. Expected: ':Template identifier'"_s);
                     return;
                 }

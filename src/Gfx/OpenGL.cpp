@@ -599,7 +599,7 @@ bool compileShader(ShaderProgram* glShader, String shaderName, Shader* shaderPro
         String infoLog = pushString(&temp_arena(), logMaxLength);
         glGetShaderInfoLog(shaderID, logMaxLength, &infoLog.length, infoLog.chars);
 
-        if (isEmpty(infoLog)) {
+        if (infoLog.is_empty()) {
             infoLog = "No error log provided by OpenGL. Sad panda."_s;
         }
 
@@ -654,7 +654,7 @@ void loadShaderProgram(Asset* asset, ShaderProgram* glShader)
                 String infoLog = pushString(&temp_arena(), logMaxLength);
                 glGetProgramInfoLog(glShader->shaderProgramID, logMaxLength, &infoLog.length, infoLog.chars);
 
-                if (isEmpty(infoLog)) {
+                if (infoLog.is_empty()) {
                     infoLog = "No error log provided by OpenGL. Sad panda."_s;
                 }
 

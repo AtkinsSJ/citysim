@@ -130,7 +130,7 @@ u32 hashString(String* s)
 String trimStart(String input)
 {
     String result = input;
-    while (!isEmpty(input) && isWhitespace(result.chars[0], false)) {
+    while (!input.is_empty() && isWhitespace(result.chars[0], false)) {
         ++result.chars;
         --result.length;
     }
@@ -141,7 +141,7 @@ String trimStart(String input)
 String trimEnd(String input)
 {
     String result = input;
-    while (!isEmpty(input) && isWhitespace(result.chars[result.length - 1], false)) {
+    while (!input.is_empty() && isWhitespace(result.chars[result.length - 1], false)) {
         --result.length;
     }
 
@@ -285,21 +285,11 @@ bool String::ends_with(String const& suffix) const
     return result;
 }
 
-bool isNullTerminated(String s)
-{
-    return s.is_null_terminated();
-}
-
-bool isEmpty(String s)
-{
-    return s.is_empty();
-}
-
 Maybe<s32> findIndexOfChar(String input, char c, bool searchFromEnd, s32 startIndex)
 {
     Maybe<s32> result;
 
-    if (isEmpty(input)) {
+    if (input.is_empty()) {
         result = makeFailure<s32>();
     } else {
         if (startIndex == -1) {
@@ -478,7 +468,7 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
     // based on the zeroTerminate param.
     // Any nulls in-line will just be printed to the result, following the "garbage in, garbage out"
     // principle!
-    if (isNullTerminated(format)) {
+    if (format.is_null_terminated()) {
         format.length--;
     }
 
@@ -516,7 +506,7 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
             if ((index >= 0) && (index < args.size())) {
                 String arg = args.begin()[index];
 
-                if (isNullTerminated(arg))
+                if (arg.is_null_terminated())
                     arg.length--;
 
                 append(&stb, arg);
