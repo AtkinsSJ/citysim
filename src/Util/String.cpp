@@ -252,19 +252,19 @@ Maybe<bool> asBool(String input)
     return result;
 }
 
-bool String::isNullTerminated()
+bool String::is_null_terminated() const
 {
     // A 0-length string, by definition, can't have a null terminator
     bool result = (length > 0) && (chars[length - 1] == 0);
     return result;
 }
 
-bool String::isEmpty()
+bool String::is_empty() const
 {
     return (length == 0);
 }
 
-bool String::startsWith(String prefix)
+bool String::starts_with(String const& prefix) const
 {
     bool result = false;
 
@@ -280,7 +280,7 @@ bool String::startsWith(String prefix)
     return result;
 }
 
-bool String::endsWith(String suffix)
+bool String::ends_with(String const& suffix) const
 {
     bool result = false;
 
@@ -298,12 +298,12 @@ bool String::endsWith(String suffix)
 
 bool isNullTerminated(String s)
 {
-    return s.isNullTerminated();
+    return s.is_null_terminated();
 }
 
 bool isEmpty(String s)
 {
-    return s.isEmpty();
+    return s.is_empty();
 }
 
 Maybe<s32> findIndexOfChar(String input, char c, bool searchFromEnd, s32 startIndex)

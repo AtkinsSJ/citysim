@@ -116,7 +116,7 @@ void drawTerrain(City* city, Rect2I visibleArea, s8 shaderID)
             // addSpriteRect(group, sprite, spriteBounds, white);
 
             SpriteRef* borderSpriteRef = &layer->tileBorderSprite.get(x, y);
-            if (!borderSpriteRef->spriteGroupName.isEmpty()) {
+            if (!borderSpriteRef->spriteGroupName.is_empty()) {
                 Sprite* borderSprite = getSprite(borderSpriteRef);
                 drawSingleSprite(&renderer.world_buffer(), borderSprite, spriteBounds, shaderID, white);
                 // addSpriteRect(group, borderSprite, spriteBounds, white);

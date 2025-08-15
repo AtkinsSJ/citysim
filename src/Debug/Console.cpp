@@ -108,7 +108,7 @@ void updateAndRenderConsole(Console* console)
             // Tab completion
             if (keyJustPressed(SDLK_TAB)) {
                 String wordToComplete = console->input.getLastWord();
-                if (!wordToComplete.isEmpty()) {
+                if (!wordToComplete.is_empty()) {
                     // Search through our commands to find one that matches
                     // Eventually, we might want to cache an array of commands, but that's a low priority for now
                     String completeCommand = nullString;
@@ -117,13 +117,13 @@ void updateAndRenderConsole(Console* console)
                         it.hasNext();
                         it.next()) {
                         Command* c = it.get();
-                        if (c->name.startsWith(wordToComplete)) {
+                        if (c->name.starts_with(wordToComplete)) {
                             completeCommand = c->name;
                             break;
                         }
                     }
 
-                    if (!completeCommand.isEmpty()) {
+                    if (!completeCommand.is_empty()) {
                         String completion = makeString(completeCommand.chars + wordToComplete.length, completeCommand.length - wordToComplete.length);
                         console->input.insert(completion);
                     }

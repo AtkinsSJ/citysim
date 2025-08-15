@@ -25,10 +25,10 @@ struct String {
 
     char& operator[](s32 index);
 
-    bool isNullTerminated();
-    bool startsWith(String prefix);
-    bool endsWith(String suffix);
-    bool isEmpty();
+    bool is_null_terminated() const;
+    bool starts_with(String const& prefix) const;
+    bool ends_with(String const& suffix) const;
+    bool is_empty() const;
 
     bool operator==(String const&) const;
 };

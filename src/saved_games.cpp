@@ -338,7 +338,7 @@ bool saveGame(String saveName)
     SavedGamesCatalogue* catalogue = &savedGamesCatalogue;
 
     String saveFilename = saveName;
-    if (!saveFilename.endsWith(".sav"_s)) {
+    if (!saveFilename.ends_with(".sav"_s)) {
         saveFilename = concatenate({ saveName, ".sav"_s });
     }
 
