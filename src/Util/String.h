@@ -54,6 +54,10 @@ struct String {
 
     String trimmed(TrimSide = TrimSide::Both) const;
 
+    Optional<bool> to_bool() const;
+    Optional<double> to_double() const;
+    Optional<s64> to_int() const;
+
     bool operator==(String const&) const;
 };
 
@@ -86,10 +90,6 @@ String pushString(MemoryArena* arena, char const* src);
 String pushString(MemoryArena* arena, String src);
 
 u32 hashString(String* s);
-
-Maybe<s64> asInt(String input);
-Maybe<double> asFloat(String input);
-Maybe<bool> asBool(String input);
 
 bool isSplitChar(char input, char splitChar);
 s32 countTokens(String input, char splitChar = 0);

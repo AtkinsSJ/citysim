@@ -53,10 +53,9 @@ ConsoleCommand(funds)
         return;
 
     String sAmount = nextToken(remainder, &remainder);
-    Maybe<s64> amount = asInt(sAmount);
-    if (amount.isValid) {
+    if (auto amount = sAmount.to_int(); amount.has_value()) {
         consoleWriteLine(myprintf("Set funds to {0}"_s, { sAmount }), ConsoleLineStyle::Success);
-        AppState::the().gameState->city.funds = truncate32(amount.value);
+        AppState::the().gameState->city.funds = truncate32(amount.value());
     } else {
         consoleWriteLine("Usage: funds amount, where amount is an integer"_s, ConsoleLineStyle::Error);
     }
@@ -219,10 +218,9 @@ ConsoleCommand(speed)
     } else {
         String remainder = arguments;
 
-        Maybe<double> speedMultiplier = asFloat(nextToken(remainder, &remainder));
-
-        if (speedMultiplier.isValid) {
-            float multiplier = (float)speedMultiplier.value;
+        Optional<double> speedMultiplier = nextToken(remainder, &remainder).to_double();
+        if (speedMultiplier.has_value()) {
+            float multiplier = (float)speedMultiplier.value();
             app_state.setSpeedMultiplier(multiplier);
             consoleWriteLine(myprintf("Set speed to {0}"_s, { formatFloat(multiplier, 3) }), ConsoleLineStyle::Success);
         } else {
@@ -247,9 +245,9 @@ ConsoleCommand(zoom)
         consoleWriteLine(myprintf("Current zoom is {0}"_s, { formatFloat(zoom, 3) }), ConsoleLineStyle::Success);
     } else if (argumentsCount == 1) {
         // set the zoom
-        Maybe<double> requestedZoom = asFloat(nextToken(remainder, &remainder));
-        if (requestedZoom.isValid) {
-            float newZoom = (float)requestedZoom.value;
+        Optional<double> requestedZoom = nextToken(remainder, &remainder).to_double();
+        if (requestedZoom.has_value()) {
+            float newZoom = (float)requestedZoom.release_value();
             renderer.world_camera().set_zoom(newZoom);
             consoleWriteLine(myprintf("Set zoom to {0}"_s, { formatFloat(newZoom, 3) }), ConsoleLineStyle::Success);
         } else {
