@@ -52,7 +52,7 @@ ConsoleCommand(funds)
     if (!checkInGame())
         return;
 
-    String sAmount = nextToken(remainder, &remainder);
+    String sAmount = remainder.next_token(&remainder);
     if (auto amount = sAmount.to_int(); amount.has_value()) {
         consoleWriteLine(myprintf("Set funds to {0}"_s, { sAmount }), ConsoleLineStyle::Success);
         AppState::the().gameState->city.funds = truncate32(amount.value());
@@ -175,7 +175,7 @@ ConsoleCommand(show_layer)
         app_state.gameState->dataLayerToDraw = DataView::None;
         consoleWriteLine("Hiding data layers"_s, ConsoleLineStyle::Success);
     } else if (argumentsCount == 1) {
-        String layerName = nextToken(remainder, &remainder);
+        String layerName = remainder.next_token(&remainder);
         if (layerName == "crime"_s) {
             app_state.gameState->dataLayerToDraw = DataView::Crime;
             consoleWriteLine("Showing crime layer"_s, ConsoleLineStyle::Success);
@@ -218,7 +218,7 @@ ConsoleCommand(speed)
     } else {
         String remainder = arguments;
 
-        Optional<double> speedMultiplier = nextToken(remainder, &remainder).to_double();
+        Optional<double> speedMultiplier = remainder.next_token(&remainder).to_double();
         if (speedMultiplier.has_value()) {
             float multiplier = (float)speedMultiplier.value();
             app_state.setSpeedMultiplier(multiplier);
@@ -245,7 +245,7 @@ ConsoleCommand(zoom)
         consoleWriteLine(myprintf("Current zoom is {0}"_s, { formatFloat(zoom, 3) }), ConsoleLineStyle::Success);
     } else if (argumentsCount == 1) {
         // set the zoom
-        Optional<double> requestedZoom = nextToken(remainder, &remainder).to_double();
+        Optional<double> requestedZoom = remainder.next_token(&remainder).to_double();
         if (requestedZoom.has_value()) {
             float newZoom = (float)requestedZoom.release_value();
             renderer.world_camera().set_zoom(newZoom);

@@ -253,10 +253,9 @@ void consoleHandleCommand(Console* console, String commandInput)
         console->inputHistory.append(pushString(console->inputHistory.memoryArena, commandInput));
         console->inputHistoryCursor = -1;
 
-        s32 tokenCount = countTokens(commandInput);
-        if (tokenCount > 0) {
+        if (auto token_count = commandInput.count_tokens(); token_count > 0) {
             String arguments;
-            String firstToken = nextToken(commandInput, &arguments);
+            String firstToken = commandInput.next_token(&arguments);
 
             // Find the command
             Command* command = nullptr;
@@ -272,7 +271,7 @@ void consoleHandleCommand(Console* console, String commandInput)
 
             // Run the command
             if (command != nullptr) {
-                s32 argCount = tokenCount - 1;
+                auto argCount = token_count - 1;
                 bool tooManyArgs = (argCount > command->maxArgs) && (command->maxArgs != -1);
                 if ((argCount < command->minArgs) || tooManyArgs) {
                     if (command->minArgs == command->maxArgs) {

@@ -348,7 +348,7 @@ KeyboardShortcut parseKeyboardShortcut(String shortcutString)
     KeyboardShortcut result = {};
 
     String keyName, remainder;
-    keyName = nextToken(shortcutString, &remainder, '+');
+    keyName = shortcutString.next_token(&remainder, '+');
 
     while (!keyName.is_empty()) {
         //
@@ -374,7 +374,7 @@ KeyboardShortcut parseKeyboardShortcut(String shortcutString)
             break;
         }
 
-        keyName = nextToken(remainder, &remainder, '+');
+        keyName = remainder.next_token(&remainder, '+');
     }
 
     return result;
