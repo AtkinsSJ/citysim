@@ -29,15 +29,24 @@ enum class TrimSide : u8 {
     Both,
 };
 
+enum class WithHash : u8 {
+    No,
+    Yes,
+};
+
 // FIXME: Distinguishing between owning and non-owning Strings would be good. (AKA, introduce StringView.)
 struct String {
     s32 length;
-    u32 hash;
+    u32 hash {};
     char* chars;
 
     // FIXME: initializer_list isn't the best option
     static String join(std::initializer_list<String> strings, Optional<String> between = {});
     static String repeat(char c, u32 length);
+
+    static Optional<String> from_blob(Blob const&, WithHash = WithHash::No);
+
+    String() = default;
 
     char operator[](s32 index) const;
 
@@ -62,6 +71,9 @@ struct String {
     String next_token(String* remainder, Optional<char> split_char = {}) const;
 
     bool operator==(String const&) const;
+
+private:
+    explicit String(char* chars, u32 length);
 };
 
 String const nullString = {};
@@ -73,7 +85,6 @@ inline String makeString(char* chars, u32 length, bool hash = false)
 }
 String makeString(char* chars, bool hash = false);
 String makeString(char const* chars, bool hash = false);
-String stringFromBlob(Blob blob, bool hash = false);
 
 inline String operator""_s(char const* chars, size_t length)
 {

@@ -365,7 +365,7 @@ void loadAsset(Asset* asset)
 
     case AssetType::Shader: {
         copyFileIntoAsset(&fileData, asset);
-        splitInTwo(stringFromBlob(fileData), '$', &asset->shader.vertexShader, &asset->shader.fragmentShader);
+        splitInTwo(String::from_blob(fileData).value(), '$', &asset->shader.vertexShader, &asset->shader.fragmentShader);
         asset->state = Asset::State::Loaded;
     } break;
 
