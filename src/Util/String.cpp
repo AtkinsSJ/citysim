@@ -288,30 +288,28 @@ bool String::contains(char c) const
     return find(c).has_value();
 }
 
-bool isSplitChar(char input, char splitChar)
+static bool is_split_char(char input, Optional<char> const& split_char)
 {
-    if (splitChar == 0) {
-        return isWhitespace(input);
-    } else {
-        return input == splitChar;
-    }
+    if (split_char.has_value())
+        return input == split_char.value();
+    return isWhitespace(input);
 }
 
-s32 countTokens(String input, char splitChar)
+u32 String::count_tokens(Optional<char> split_char) const
 {
-    s32 result = 0;
+    u32 result = 0;
 
-    s32 position = 0;
-    while (position < input.length) {
-        while ((position <= input.length) && isSplitChar(input.chars[position], splitChar)) {
+    u32 position = 0;
+    while (position < length) {
+        while ((position <= length) && is_split_char(chars[position], split_char)) {
             position++;
         }
 
-        if (position < input.length) {
+        if (position < length) {
             result++;
 
             // length
-            while ((position < input.length) && !isSplitChar(input.chars[position], splitChar)) {
+            while ((position < length) && !is_split_char(chars[position], split_char)) {
                 position++;
             }
         }
@@ -320,35 +318,32 @@ s32 countTokens(String input, char splitChar)
     return result;
 }
 
-// If splitChar is provided, the token ends before that, and it is skipped.
-// Otherwise, we stop at the first whitespace character, determined by isWhitespace()
-String nextToken(String input, String* remainder, char splitChar)
+String String::next_token(String* remainder, Optional<char> split_char) const
 {
-    String firstWord = input;
-    firstWord.length = 0;
+    String first_word = *this;
+    first_word.length = 0;
 
-    while (!isSplitChar(firstWord.chars[firstWord.length], splitChar)
-        && (firstWord.length < input.length)) {
-        ++firstWord.length;
+    while ((first_word.length < length) && !is_split_char(first_word.chars[first_word.length], split_char)) {
+        ++first_word.length;
     }
 
-    firstWord = firstWord.trimmed(TrimSide::End);
+    first_word = first_word.trimmed(TrimSide::End);
 
     if (remainder) {
         // NB: We have to make sure we properly initialise remainder here, because we had a bug before
         // where we didn't, and it sometimes had old data in the "hasHash" field, which was causing all
         // kinds of weird stuff to happen!
-        *remainder = makeString(firstWord.chars + firstWord.length, input.length - firstWord.length).trimmed(TrimSide::Start);
+        *remainder = makeString(first_word.chars + first_word.length, length - first_word.length).trimmed(TrimSide::Start);
 
         // Skip the split char
-        if (splitChar != 0 && remainder->length > 0) {
+        if (split_char.has_value() && remainder->length > 0) {
             remainder->length--;
             remainder->chars++;
             *remainder = remainder->trimmed(TrimSide::Start);
         }
     }
 
-    return firstWord;
+    return first_word;
 }
 
 // NB: You can pass null for leftResult or rightResult to ignore that part.

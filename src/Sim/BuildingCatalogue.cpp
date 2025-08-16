@@ -229,8 +229,8 @@ void loadBuildingDefs(Blob data, Asset* asset)
                         }
                     }
                 } else if (firstWord == "carries_transport"_s) {
-                    s32 tokenCount = countTokens(reader.remainder_of_current_line());
-                    for (s32 tokenIndex = 0; tokenIndex < tokenCount; tokenIndex++) {
+                    auto token_count = reader.remainder_of_current_line().count_tokens();
+                    for (auto tokenIndex = 0u; tokenIndex < token_count; tokenIndex++) {
                         String transportName = reader.next_token();
 
                         if (transportName == "road"_s) {

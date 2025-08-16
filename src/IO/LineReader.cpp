@@ -166,17 +166,17 @@ void LineReader::error(String message, std::initializer_list<String> args) const
 
 String LineReader::next_token(Optional<char> split_char)
 {
-    return nextToken(m_state.line_remainder, &m_state.line_remainder, split_char.value_or(0));
+    return m_state.line_remainder.next_token(&m_state.line_remainder, split_char);
 }
 
 String LineReader::peek_token(Optional<char> split_char)
 {
-    return nextToken(m_state.line_remainder, nullptr, split_char.value_or(0));
+    return m_state.line_remainder.next_token(nullptr, split_char);
 }
 
 s32 LineReader::count_remaining_tokens_in_current_line(Optional<char> split_char) const
 {
-    return countTokens(m_state.line_remainder, split_char.value_or(0));
+    return m_state.line_remainder.count_tokens(split_char);
 }
 
 Optional<bool> LineReader::read_bool(IsRequired is_required, Optional<char> split_char)

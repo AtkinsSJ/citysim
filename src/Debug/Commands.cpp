@@ -52,9 +52,8 @@ ConsoleCommand(funds)
     if (!checkInGame())
         return;
 
-    String sAmount = nextToken(remainder, &remainder);
-    auto amount = sAmount.to_int();
-    if (amount.has_value()) {
+    String sAmount = remainder.next_token(&remainder);
+    if (auto amount = sAmount.to_int(); amount.has_value()) {
         consoleWriteLine(myprintf("Set funds to {0}"_s, { sAmount }), ConsoleLineStyle::Success);
         AppState::the().gameState->city.funds = truncate32(amount.value());
     } else {
@@ -176,7 +175,7 @@ ConsoleCommand(show_layer)
         app_state.gameState->dataLayerToDraw = DataView::None;
         consoleWriteLine("Hiding data layers"_s, ConsoleLineStyle::Success);
     } else if (argumentsCount == 1) {
-        String layerName = nextToken(remainder, &remainder);
+        String layerName = remainder.next_token(&remainder);
         if (layerName == "crime"_s) {
             app_state.gameState->dataLayerToDraw = DataView::Crime;
             consoleWriteLine("Showing crime layer"_s, ConsoleLineStyle::Success);
@@ -219,9 +218,7 @@ ConsoleCommand(speed)
     } else {
         String remainder = arguments;
 
-        auto speed_multiplier = nextToken(remainder, &remainder).to_float();
-
-        if (speed_multiplier.has_value()) {
+        if (auto speed_multiplier = remainder.next_token(&remainder).to_float(); speed_multiplier.has_value()) {
             float multiplier = (float)speed_multiplier.value();
             app_state.setSpeedMultiplier(multiplier);
             consoleWriteLine(myprintf("Set speed to {0}"_s, { formatFloat(multiplier, 3) }), ConsoleLineStyle::Success);
@@ -247,9 +244,8 @@ ConsoleCommand(zoom)
         consoleWriteLine(myprintf("Current zoom is {0}"_s, { formatFloat(zoom, 3) }), ConsoleLineStyle::Success);
     } else if (argumentsCount == 1) {
         // set the zoom
-        auto requested_zoom = nextToken(remainder, &remainder).to_float();
-        if (requested_zoom.has_value()) {
-            float newZoom = (float)requested_zoom.value();
+        if (auto requested_zoom = remainder.next_token(&remainder).to_float(); requested_zoom.has_value()) {
+            float newZoom = (float)requested_zoom.release_value();
             renderer.world_camera().set_zoom(newZoom);
             consoleWriteLine(myprintf("Set zoom to {0}"_s, { formatFloat(newZoom, 3) }), ConsoleLineStyle::Success);
         } else {

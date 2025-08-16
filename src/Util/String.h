@@ -57,6 +57,10 @@ struct String {
     Optional<double> to_float() const;
     Optional<bool> to_bool() const;
 
+    // FIXME: This functionality should really go somewhere else.
+    u32 count_tokens(Optional<char> split_char = {}) const;
+    String next_token(String* remainder, Optional<char> split_char = {}) const;
+
     bool operator==(String const&) const;
 };
 
@@ -90,11 +94,6 @@ String pushString(MemoryArena* arena, String src);
 
 u32 hashString(String* s);
 
-bool isSplitChar(char input, char splitChar);
-s32 countTokens(String input, char splitChar = 0);
-// If splitChar is provided, the token ends before that, and it is skipped.
-// Otherwise, we stop at the first whitespace character, determined by isWhitespace()
-String nextToken(String input, String* remainder, char splitChar = 0);
 // NB: You can pass null for leftResult or rightResult to ignore that part.
 bool splitInTwo(String input, char divider, String* leftResult, String* rightResult);
 
