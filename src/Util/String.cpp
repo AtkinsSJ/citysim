@@ -12,6 +12,12 @@
 #include <Util/Unicode.h>
 #include <stdio.h> // For snprintf
 
+String::String(char* chars, u32 length)
+    : length(length)
+    , chars(chars)
+{
+}
+
 String makeString(char* chars, s32 length, bool hash)
 {
     String result = {};
@@ -35,9 +41,14 @@ String makeString(char const* chars, bool hash)
     return makeString((char*)chars, truncate32(strlen(chars)), hash);
 }
 
-String stringFromBlob(Blob blob, bool hash)
+Optional<String> String::from_blob(Blob const& blob, WithHash with_hash)
 {
-    return makeString((char*)blob.data(), truncate32(blob.size()), hash);
+    String result { (char*)blob.data(), (u32)truncate32(blob.size()) };
+    if (!result.is_valid())
+        return {};
+    if (with_hash == WithHash::Yes)
+        hashString(&result);
+    return result;
 }
 
 char String::operator[](s32 index) const
