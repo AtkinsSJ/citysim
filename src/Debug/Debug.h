@@ -18,20 +18,20 @@
 
 #if BUILD_DEBUG
 
-#    define DEBUG_BLOCK_T(name, tag)                                                                                    \
-        static DebugCodeData* GLUE(debugBlockData____, __LINE__) = debugFindOrAddCodeData(makeString(name, true), tag); \
+#    define DEBUG_BLOCK_T(name, tag)                                                                       \
+        static DebugCodeData* GLUE(debugBlockData____, __LINE__) = debugFindOrAddCodeData(#name##_h, tag); \
         DebugBlock GLUE(debugBlock____, __LINE__)(GLUE(debugBlockData____, __LINE__))
 #    define DEBUG_FUNCTION_T(tag) DEBUG_BLOCK_T(__FUNCTION__, tag)
 
 #    define DEBUG_BLOCK(name) DEBUG_BLOCK_T(name, DebugCodeDataTag::Misc)
 #    define DEBUG_FUNCTION() DEBUG_FUNCTION_T(DebugCodeDataTag::Misc)
 
-#    define DEBUG_ARENA(arena, name)                                               \
-        static String GLUE(debugArenaName____, __LINE__) = makeString(name, true); \
+#    define DEBUG_ARENA(arena, name)                                  \
+        static String GLUE(debugArenaName____, __LINE__) = #name##_h; \
         debugTrackArena(globalDebugState, arena, GLUE(debugArenaName____, __LINE__))
 
-#    define DEBUG_POOL(pool, name)                                                \
-        static String GLUE(debugPoolName____, __LINE__) = makeString(name, true); \
+#    define DEBUG_POOL(pool, name)                                   \
+        static String GLUE(debugPoolName____, __LINE__) = #name##_h; \
         debugTrackPool(globalDebugState, pool, GLUE(debugPoolName____, __LINE__))
 
 #    define DEBUG_ASSETS() debugTrackAssets(globalDebugState)
