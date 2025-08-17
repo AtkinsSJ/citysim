@@ -824,7 +824,7 @@ String getText(String name)
 {
     DEBUG_FUNCTION();
 
-    hashString(&name);
+    name.hash();
 
     String result = name;
 

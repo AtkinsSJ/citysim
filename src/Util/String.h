@@ -26,8 +26,8 @@ enum class WithHash : u8 {
 
 // FIXME: Distinguishing between owning and non-owning Strings would be good. (AKA, introduce StringView.)
 struct String {
+    using Hash = u32;
     s32 length;
-    u32 hash {};
     char* chars;
 
     // FIXME: initializer_list isn't the best option
@@ -42,6 +42,8 @@ struct String {
     String(char* chars, size_t length, WithHash = WithHash::No);
 
     char operator[](s32 index) const;
+
+    Hash hash() const;
 
     bool is_empty() const;
 
@@ -64,6 +66,10 @@ struct String {
     String next_token(String* remainder, Optional<char> split_char = {}) const;
 
     bool operator==(String const&) const;
+
+private:
+    Hash compute_hash() const;
+    mutable Hash m_hash {};
 };
 
 String const nullString = {};
@@ -84,8 +90,6 @@ void copyString(String src, String* dest);
 String pushString(MemoryArena* arena, s32 length);
 String pushString(MemoryArena* arena, char const* src);
 String pushString(MemoryArena* arena, String src);
-
-u32 hashString(String* s);
 
 // NB: You can pass null for leftResult or rightResult to ignore that part.
 bool splitInTwo(String input, char divider, String* leftResult, String* rightResult);
