@@ -58,7 +58,7 @@ inline void fillMemory<u8>(u8* memory, u8 value, smm length)
 }
 
 template<typename T>
-bool isMemoryEqual(T* a, T* b, smm length = 1)
+bool isMemoryEqual(T const* a, T const* b, smm length = 1)
 {
     // Shortcut if we're comparing memory with itself
     return (a == b)
