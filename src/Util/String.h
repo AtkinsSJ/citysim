@@ -35,8 +35,11 @@ struct String {
     static String repeat(char c, u32 length);
 
     static Optional<String> from_blob(Blob const&, WithHash = WithHash::No);
+    static String from_null_terminated(char const*);
 
     String() = default;
+    String(char const* chars, size_t length, WithHash = WithHash::No);
+    String(char* chars, size_t length, WithHash = WithHash::No);
 
     char operator[](s32 index) const;
 
@@ -61,9 +64,6 @@ struct String {
     String next_token(String* remainder, Optional<char> split_char = {}) const;
 
     bool operator==(String const&) const;
-
-private:
-    explicit String(char* chars, u32 length);
 };
 
 String const nullString = {};

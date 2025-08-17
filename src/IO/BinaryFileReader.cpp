@@ -24,7 +24,7 @@ BinaryFileReader readBinaryFile(FileHandle* handle, FileIdentifier identifier, M
             logError("Binary file '{0}' has corrupted newline characters. This probably means the saving or loading code is incorrect."_s, { handle->path });
             reader.problems.add(BinaryFileReader::Problems::InvalidFormat);
         } else if (header.identifier != identifier) {
-            logError("Binary file '{0}' does not begin with the expected 4-byte sequence. Expected '{1}', got '{2}'"_s, { handle->path, makeString((char*)(&identifier), 4), makeString((char*)(&header.identifier), 4) });
+            logError("Binary file '{0}' does not begin with the expected 4-byte sequence. Expected '{1}', got '{2}'"_s, { handle->path, toString(identifier), toString(header.identifier) });
             reader.problems.add(BinaryFileReader::Problems::WrongIdentifier);
         } else if (header.version > BINARY_FILE_FORMAT_VERSION) {
             logError("Binary file '{0}' was created with a newer file format than we understand. File version is '{1}', maximum we support is '{2}'"_s, {
@@ -98,13 +98,11 @@ bool BinaryFileReader::startSection(FileIdentifier sectionID, u8 supportedSectio
 
 String BinaryFileReader::readString(FileString fileString)
 {
-    String result = nullString;
-
     if (isValidFile && currentSectionHeader != nullptr) {
-        result = makeString((char*)sectionMemoryAt(fileString.relativeOffset), fileString.length, false);
+        return { (char*)sectionMemoryAt(fileString.relativeOffset), fileString.length };
     }
 
-    return result;
+    return nullString;
 }
 
 bool BinaryFileReader::readBlob(FileBlob source, u8* dest, smm destSize)

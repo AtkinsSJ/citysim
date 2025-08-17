@@ -25,13 +25,12 @@ bool TextInput::isEmpty()
 String TextInput::getLastWord()
 {
     TextInputPos startOfWord = findStartOfWordLeft();
-    String result = makeString(buffer + startOfWord.bytePos, caret.bytePos - startOfWord.bytePos);
-    return result;
+    return { buffer + startOfWord.bytePos, (size_t)(caret.bytePos - startOfWord.bytePos) };
 }
 
 String TextInput::toString()
 {
-    return makeString(buffer, byteLength);
+    return { buffer, (size_t)byteLength };
 }
 
 void TextInput::moveCaretLeft(s32 count)
@@ -135,7 +134,7 @@ void TextInput::insert(String source)
 
 void TextInput::insert(char c)
 {
-    insert(makeString(&c, 1));
+    insert(String { &c, 1 });
 }
 
 void TextInput::clear()

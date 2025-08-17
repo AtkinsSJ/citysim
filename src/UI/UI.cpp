@@ -881,7 +881,8 @@ void pushToast(String message)
     Toast* newToast = uiState.toasts.push();
 
     *newToast = {};
-    newToast->text = makeString(newToast->_chars, MAX_TOAST_LENGTH);
+    // FIXME: StringBuffer
+    newToast->text = String { newToast->_chars, MAX_TOAST_LENGTH };
     copyString(message, &newToast->text);
 
     newToast->duration = TOAST_APPEAR_TIME + TOAST_DISPLAY_TIME + TOAST_DISAPPEAR_TIME;

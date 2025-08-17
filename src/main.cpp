@@ -51,12 +51,12 @@ SDL_Window* initSDL(WindowSettings windowSettings, char const* windowTitle)
     SDL_Window* window = nullptr;
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        logCritical("SDL could not be initialised! :(\n {0}"_s, { makeString(SDL_GetError()) });
+        logCritical("SDL could not be initialised! :(\n {0}"_s, { String::from_null_terminated(SDL_GetError()) });
     } else {
         // SDL_image
         u8 imgFlags = IMG_INIT_PNG;
         if (!(IMG_Init(imgFlags) & imgFlags)) {
-            logCritical("SDL_image could not be initialised! :(\n {0}"_s, { makeString(IMG_GetError()) });
+            logCritical("SDL_image could not be initialised! :(\n {0}"_s, { String::from_null_terminated(IMG_GetError()) });
         } else {
             // Window
             u32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
@@ -66,7 +66,7 @@ SDL_Window* initSDL(WindowSettings windowSettings, char const* windowTitle)
             window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowSettings.width, windowSettings.height, windowFlags);
 
             if (!window) {
-                logCritical("Window could not be created! :(\n {0}"_s, { makeString(SDL_GetError()) });
+                logCritical("Window could not be created! :(\n {0}"_s, { String::from_null_terminated(SDL_GetError()) });
             } else {
                 SDL_SetWindowMinimumSize(window, 800, 600);
             }

@@ -113,7 +113,7 @@ void initStyleConstants()
         Property property = {};                               \
         property.type = PropType::_type;                      \
         property.offsetInStyleStruct = offsetof(Style, name); \
-        styleProperties.put(makeString(#name), property);     \
+        styleProperties.put(#name##_s, property);             \
     }
 
     PROP(background, Drawable);

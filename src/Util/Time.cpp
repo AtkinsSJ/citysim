@@ -59,7 +59,7 @@ String formatDateTime(DateTime dateTime, DateTimeFormat format)
         case '}': {
             s32 endOfSymbol = i;
             if (isReadingSymbol && endOfSymbol > startOfSymbol) {
-                String symbol = makeString(formatString.chars + startOfSymbol, (endOfSymbol - startOfSymbol), true);
+                String symbol { formatString.chars + startOfSymbol, (size_t)(endOfSymbol - startOfSymbol), WithHash::Yes };
 
                 if (symbol == "year"_s) {
                     append(&stb, formatInt(dateTime.year));

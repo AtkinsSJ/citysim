@@ -25,7 +25,7 @@ void initAssets()
 {
     s_assets = MemoryArena::bootstrap<AssetManager>("Assets"_s);
 
-    String basePath = makeString(SDL_GetBasePath());
+    String basePath = String::from_null_terminated(SDL_GetBasePath());
     s_assets->assetsPath = intern(&s_assets->assetStrings, constructPath({ basePath, "assets"_s }));
 
     // NB: We only need to define these for s_assets in the root s_assets/ directory
@@ -230,12 +230,12 @@ SDL_Surface* createSurfaceFromFileData(Blob fileData, String name)
         result = IMG_Load_RW(rw, 0);
 
         if (result == nullptr) {
-            logError("Failed to create SDL_Surface from asset '{0}'!\n{1}"_s, { name, makeString(IMG_GetError()) });
+            logError("Failed to create SDL_Surface from asset '{0}'!\n{1}"_s, { name, String::from_null_terminated(IMG_GetError()) });
         }
 
         SDL_RWclose(rw);
     } else {
-        logError("Failed to create SDL_RWops from asset '{0}'!\n{1}"_s, { name, makeString(SDL_GetError()) });
+        logError("Failed to create SDL_RWops from asset '{0}'!\n{1}"_s, { name, String::from_null_terminated(SDL_GetError()) });
     }
 
     return result;
@@ -1223,14 +1223,14 @@ void loadTexts(HashTable<String>* texts, Asset* asset, Blob fileData)
 
         // Store the key
         ASSERT(currentSize + inputKey.length <= asset->data.size());
-        String key = makeString(currentPos, inputKey.length, false);
+        String key { currentPos, (size_t)inputKey.length };
         copyString(inputKey, &key);
         currentSize += key.length;
         currentPos += key.length;
 
         // Store the text
         ASSERT(currentSize + inputText.length <= asset->data.size());
-        String text = makeString(currentPos, 0, false);
+        String text { currentPos, 0 };
 
         for (s32 charIndex = 0; charIndex < inputText.length; charIndex++) {
             char c = inputText[charIndex];

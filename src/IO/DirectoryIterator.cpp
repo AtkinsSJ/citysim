@@ -26,7 +26,7 @@ ErrorOr<FileInfo> DirectoryIterator::operator*() const
 
     struct stat stat_buffer {};
     FileInfo file_info {
-        .filename = makeString(m_data.dir_entry->d_name),
+        .filename = String::from_null_terminated(m_data.dir_entry->d_name),
         .flags = {},
         .size = 0,
     };

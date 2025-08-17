@@ -161,7 +161,7 @@ void Renderer::resize_window(s32 w, s32 h, bool fullscreen)
             newW = displayMode.w;
             newH = displayMode.h;
         } else {
-            logError("Failed to get desktop display mode: {0}"_s, { makeString(SDL_GetError()) });
+            logError("Failed to get desktop display mode: {0}"_s, { String::from_null_terminated(SDL_GetError()) });
         }
     } else {
         // Window!
@@ -182,7 +182,7 @@ void Renderer::resize_window(s32 w, s32 h, bool fullscreen)
 
             SDL_SetWindowPosition(m_sdl_window, displayBounds.x + windowLeft, displayBounds.y + windowTop);
         } else {
-            logError("Failed to get display bounds: {0}"_s, { makeString(SDL_GetError()) });
+            logError("Failed to get display bounds: {0}"_s, { String::from_null_terminated(SDL_GetError()) });
 
             // As a backup, just centre it on the main display
             SDL_SetWindowPosition(m_sdl_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);

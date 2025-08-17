@@ -20,7 +20,7 @@ Settings& Settings::the()
 void Settings::initialize()
 {
     s_settings = MemoryArena::bootstrap<Settings>("Settings"_s);
-    s_settings->userDataPath = makeString(SDL_GetPrefPath("Baffled Badger Games", "CitySim"));
+    s_settings->userDataPath = String::from_null_terminated(SDL_GetPrefPath("Baffled Badger Games", "CitySim"));
     s_settings->userSettingsFilename = "settings.cnf"_s;
     s_settings->settings = s_settings->arena.allocate<SettingsState>(s_settings->arena);
     s_settings->workingState = s_settings->arena.allocate<SettingsState>(s_settings->arena);

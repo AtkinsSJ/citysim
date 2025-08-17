@@ -12,10 +12,20 @@
 #include <Util/Unicode.h>
 #include <stdio.h> // For snprintf
 
-String::String(char* chars, u32 length)
+String::String(char* chars, size_t length, WithHash with_hash)
     : length(length)
     , chars(chars)
 {
+    if (with_hash == WithHash::Yes)
+        hashString(this);
+}
+
+String::String(char const* chars, size_t length, WithHash with_hash)
+    : length(length)
+    , chars(const_cast<char*>(chars))
+{
+    if (with_hash == WithHash::Yes)
+        hashString(this);
 }
 
 String makeString(char* chars, s32 length, bool hash)
@@ -49,6 +59,11 @@ Optional<String> String::from_blob(Blob const& blob, WithHash with_hash)
     if (with_hash == WithHash::Yes)
         hashString(&result);
     return result;
+}
+
+String String::from_null_terminated(char const* chars)
+{
+    return { chars, strlen(chars) };
 }
 
 char String::operator[](s32 index) const

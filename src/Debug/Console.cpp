@@ -44,7 +44,7 @@ void console_log_output_function(void* /*userdata*/, int category, SDL_LogPriori
         break;
     }
 
-    consoleWriteLine(makeString(message), style);
+    consoleWriteLine(String::from_null_terminated(message), style);
 }
 
 void initConsole(MemoryArena* debugArena, float openHeight, float maximisedHeight, float openSpeed)
@@ -151,7 +151,10 @@ void updateAndRenderConsole(Console* console)
                     }
 
                     if (!completeCommand.is_empty()) {
-                        String completion = makeString(completeCommand.chars + wordToComplete.length, completeCommand.length - wordToComplete.length);
+                        String completion {
+                            completeCommand.chars + wordToComplete.length,
+                            (size_t)(completeCommand.length - wordToComplete.length),
+                        };
                         console->input.insert(completion);
                     }
                 }

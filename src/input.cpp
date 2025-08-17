@@ -20,7 +20,7 @@ void init_input_state()
 {
     MemoryArena* systemArena = &AppState::the().systemArena;
 
-    s_input_state.textEntered = makeString(&s_input_state._textEntered[0], SDL_TEXTINPUTEVENT_TEXT_SIZE);
+    s_input_state.textEntered = String { &s_input_state._textEntered[0], SDL_TEXTINPUTEVENT_TEXT_SIZE };
     s_input_state.textEnteredLength = 0;
 
     // Letters

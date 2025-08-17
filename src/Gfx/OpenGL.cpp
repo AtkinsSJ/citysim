@@ -31,14 +31,14 @@ bool Renderer::set_up_context()
     // Create context
     m_context = SDL_GL_CreateContext(m_sdl_window);
     if (m_context == nullptr) {
-        logCritical("OpenGL context could not be created! :(\n {0}"_s, { makeString(SDL_GetError()) });
+        logCritical("OpenGL context could not be created! :(\n {0}"_s, { String::from_null_terminated(SDL_GetError()) });
         return false;
     }
 
     // GLEW
     glewExperimental = GL_TRUE;
     if (auto const glewError = glewInit(); glewError != GLEW_OK) {
-        logCritical("Could not initialise GLEW! :(\n {0}"_s, { makeString((char*)glewGetErrorString(glewError)) });
+        logCritical("Could not initialise GLEW! :(\n {0}"_s, { String::from_null_terminated((char*)glewGetErrorString(glewError)) });
         return false;
     }
 
@@ -55,7 +55,7 @@ bool Renderer::set_up_context()
 
     // VSync
     if (SDL_GL_SetSwapInterval(1) < 0) {
-        logCritical("Could not set vsync! :(\n {0}"_s, { makeString(SDL_GetError()) });
+        logCritical("Could not set vsync! :(\n {0}"_s, { String::from_null_terminated(SDL_GetError()) });
         return false;
     }
 
@@ -499,7 +499,7 @@ void Renderer::before_assets_unloaded()
 void logGLError(GLenum errorCode)
 {
     if (errorCode != GL_NO_ERROR) {
-        logError(makeString((char*)gluErrorString(errorCode)));
+        logError(String::from_null_terminated((char*)gluErrorString(errorCode)));
     }
 }
 
@@ -551,7 +551,7 @@ void GLAPIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum seve
         break;
     }
 
-    String messageString = makeString((char*)message, truncate32(length));
+    String messageString { message, (size_t)length };
 
     log(priority, "GL DEBUG: {0} (severity {1}, id {2}): {3}"_s, { typeString, severityString, formatInt(id), messageString });
 
@@ -614,7 +614,7 @@ void loadShaderAttrib(ShaderProgram* glShader, char const* attribName, int* attr
 
     *attribLocation = glGetAttribLocation(glShader->shaderProgramID, attribName);
     if (*attribLocation == -1) {
-        logWarn("Shader '{0}' does not contain requested variable '{1}'"_s, { glShader->asset->shortName, makeString(attribName) });
+        logWarn("Shader '{0}' does not contain requested variable '{1}'"_s, { glShader->asset->shortName, String::from_null_terminated(attribName) });
     }
 }
 
@@ -624,7 +624,7 @@ void loadShaderUniform(ShaderProgram* glShader, char const* uniformName, int* un
 
     *uniformLocation = glGetUniformLocation(glShader->shaderProgramID, uniformName);
     if (*uniformLocation == -1) {
-        logWarn("Shader '{0}' does not contain requested uniform '{1}'"_s, { glShader->asset->shortName, makeString(uniformName) });
+        logWarn("Shader '{0}' does not contain requested uniform '{1}'"_s, { glShader->asset->shortName, String::from_null_terminated(uniformName) });
     }
 }
 

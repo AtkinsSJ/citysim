@@ -131,7 +131,7 @@ s32 countGlyphs(char* startByte, s32 byteLength)
                 s32 glyphLength = lengthOfGlyph(startByte[pos]);
 
                 if (glyphLength == 0) {
-                    logError("Invalid unicode codepoint {2} at pos {0} of string '{1}'"_s, { formatInt(pos), makeString(startByte, byteLength), formatInt(startByte[pos], 16) });
+                    logError("Invalid unicode codepoint {2} at pos {0} of string '{1}'"_s, { formatInt(pos), String { startByte, (size_t)byteLength }, formatInt(startByte[pos], 16) });
                     break;
                 } else {
                     glyphCount++;

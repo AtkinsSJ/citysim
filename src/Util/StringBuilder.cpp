@@ -61,6 +61,5 @@ void append(StringBuilder* stringBuilder, StringBuilder* source)
 
 String getString(StringBuilder* stb)
 {
-    String result = makeString(stb->buffer, stb->length);
-    return result;
+    return { stb->buffer, (size_t)stb->length };
 }
