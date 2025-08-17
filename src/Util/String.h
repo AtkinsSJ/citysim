@@ -10,6 +10,7 @@
 #include <Util/Enum.h>
 #include <Util/Forward.h>
 #include <Util/Optional.h>
+#include <Util/StringBase.h>
 #include <initializer_list>
 #include <typeinfo>
 
@@ -17,17 +18,6 @@
 // NB: Strings are UTF-8. The length is measured in bytes, not in glyphs.
 // Probably one day we should make this consistent with TextInput using both, but eh.
 //
-
-enum class SearchFrom : u8 {
-    Start,
-    End,
-};
-
-enum class TrimSide : u8 {
-    Start,
-    End,
-    Both,
-};
 
 enum class WithHash : u8 {
     No,

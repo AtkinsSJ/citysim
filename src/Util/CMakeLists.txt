@@ -13,8 +13,10 @@ add_library(Util STATIC
     Rectangle.cpp
     Splat.cpp
     String.cpp
+    StringBase.cpp
     StringBuilder.cpp
     StringTable.cpp
+    StringView.cpp
     Time.cpp
     Unicode.cpp
     Vector.cpp
