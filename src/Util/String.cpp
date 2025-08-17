@@ -17,7 +17,7 @@ String::String(char* chars, size_t length, WithHash with_hash)
     , chars(chars)
 {
     if (with_hash == WithHash::Yes)
-        hashString(this);
+        m_hash = compute_hash();
 }
 
 String::String(char const* chars, size_t length, WithHash with_hash)
@@ -25,7 +25,7 @@ String::String(char const* chars, size_t length, WithHash with_hash)
     , chars(const_cast<char*>(chars))
 {
     if (with_hash == WithHash::Yes)
-        hashString(this);
+        m_hash = compute_hash();
 }
 
 Optional<String> String::from_blob(Blob const& blob, WithHash with_hash)
@@ -34,7 +34,7 @@ Optional<String> String::from_blob(Blob const& blob, WithHash with_hash)
     if (!result.is_valid())
         return {};
     if (with_hash == WithHash::Yes)
-        hashString(&result);
+        result.m_hash = result.compute_hash();
     return result;
 }
 
@@ -90,7 +90,7 @@ bool String::operator==(String const& other) const
 {
     if (length != other.length)
         return false;
-    if (hash && other.hash && hash != other.hash)
+    if (m_hash && other.m_hash && m_hash != other.m_hash)
         return false;
 
     return isMemoryEqual(chars, other.chars, length);
@@ -107,23 +107,24 @@ bool String::is_valid() const
     return true;
 }
 
-u32 hashString(String* s)
+String::Hash String::compute_hash() const
 {
-    u32 result = s->hash;
-
-    if (!s->hash) {
-        // FNV-1a hash
-        // http://www.isthe.com/chongo/tech/comp/fnv/
-        result = 2166136261;
-        for (s32 i = 0; i < s->length; i++) {
-            result ^= s->chars[i];
-            result *= 16777619;
-        }
-
-        s->hash = max(result, 1); // Force the hash to be at least 1, so we can use 0 to mean "no hash"
+    // FNV-1a hash
+    // http://www.isthe.com/chongo/tech/comp/fnv/
+    Hash result = 2166136261;
+    for (s32 i = 0; i < length; i++) {
+        result ^= chars[i];
+        result *= 16777619;
     }
 
-    return result;
+    return max(result, 1); // Force the hash to be at least 1, so we can use 0 to mean "no hash"
+}
+
+String::Hash String::hash() const
+{
+    if (!m_hash)
+        m_hash = compute_hash();
+    return m_hash;
 }
 
 String String::trimmed(TrimSide trim_side) const

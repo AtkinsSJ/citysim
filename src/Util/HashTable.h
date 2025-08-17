@@ -175,7 +175,7 @@ struct HashTable {
     {
         ASSERT(isInitialised());
 
-        u32 hash = hashString(&key);
+        u32 hash = key.hash();
         u32 index = hash % capacity;
         HashTableEntry<T>* result = nullptr;
 
@@ -188,7 +188,7 @@ struct HashTable {
                 // Store the first gravestone we find, in case we fail to find the "real" option
                 if (result == nullptr)
                     result = entry;
-            } else if ((entry->isOccupied == false) || (hash == hashString(&entry->key) && key == entry->key)) {
+            } else if ((entry->isOccupied == false) || (hash == entry->key.hash() && key == entry->key)) {
                 // If the entry is unoccupied, we'd rather re-use the gravestone we found above
                 if (entry->isOccupied || result == nullptr) {
                     result = entry;
@@ -275,7 +275,7 @@ struct HashTable {
             entry->isGravestone = false;
 
             String theKey = pushString(&keyDataArena, key);
-            hashString(&theKey);
+            theKey.hash();
             entry->key = theKey;
         }
 
@@ -292,7 +292,7 @@ struct HashTable {
             entry->isGravestone = false;
 
             String theKey = pushString(&keyDataArena, key);
-            hashString(&theKey);
+            theKey.hash();
             entry->key = theKey;
         }
 

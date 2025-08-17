@@ -20,7 +20,7 @@ String intern(StringTable* table, String input)
         entry->isGravestone = false;
 
         String internedString = pushString(&hashTable->keyDataArena, input);
-        hashString(&internedString);
+        internedString.hash();
         entry->key = internedString;
         entry->value = internedString;
     }
