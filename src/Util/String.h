@@ -68,22 +68,14 @@ struct String {
 
 String const nullString = {};
 
-String makeString(char* chars, s32 length, bool hash = false);
-inline String makeString(char* chars, u32 length, bool hash = false)
-{
-    return makeString(chars, (s32)length, hash);
-}
-String makeString(char* chars, bool hash = false);
-String makeString(char const* chars, bool hash = false);
-
 inline String operator""_s(char const* chars, size_t length)
 {
-    return makeString((char*)chars, (s32)length);
+    return { chars, length };
 }
 
 inline String operator""_h(char const* chars, size_t length)
 {
-    return makeString((char*)chars, (s32)length, true);
+    return { chars, length, WithHash::Yes };
 }
 
 void copyString(char const* src, s32 srcLength, String* dest);
@@ -120,7 +112,7 @@ inline String formatFloat(float value, s32 decimalPlaces) { return formatFloat((
 String formatString(String value, s32 length = -1, bool alignLeft = true, char paddingChar = ' ');
 inline String formatString(char const* value, s32 length = -1, bool alignLeft = true, char paddingChar = ' ')
 {
-    return formatString(makeString(value), length, alignLeft, paddingChar);
+    return formatString(String::from_null_terminated(value), length, alignLeft, paddingChar);
 }
 
 String formatBool(bool value);
@@ -130,5 +122,5 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
 template<typename T>
 String typeNameOf()
 {
-    return makeString(typeid(T).name());
+    return String::from_null_terminated(typeid(T).name());
 }
