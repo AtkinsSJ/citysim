@@ -310,8 +310,8 @@ bool updateTextInput(TextInput* textInput)
 
         if (wasTextEntered()) {
             // Filter the input to remove any blacklisted characters
-            String enteredText = getEnteredText();
-            for (s32 charIndex = 0; charIndex < enteredText.length; charIndex++) {
+            auto enteredText = getEnteredText();
+            for (auto charIndex = 0u; charIndex < enteredText.length(); charIndex++) {
                 char c = enteredText[charIndex];
                 if (!textInput->characterBlacklist.contains(c)) {
                     textInput->insert(c);

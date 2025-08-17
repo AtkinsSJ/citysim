@@ -16,6 +16,7 @@
 #include <Util/Flags.h>
 #include <Util/HashTable.h>
 #include <Util/String.h>
+#include <Util/StringView.h>
 #include <Util/Vector.h>
 
 int const KEYBOARD_KEY_COUNT = SDL_NUM_SCANCODES;
@@ -94,7 +95,7 @@ KeyboardShortcut parseKeyboardShortcut(String shortcutString);
 bool wasShortcutJustPressed(KeyboardShortcut const& shortcut);
 
 bool wasTextEntered();
-String getEnteredText();
+StringView getEnteredText();
 
 String getClipboardText();
 
