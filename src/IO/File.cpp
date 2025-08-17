@@ -14,8 +14,7 @@
 // If there is no '.', we return an empty String.
 String getFileExtension(String filename)
 {
-    String fileExtension = {};
-
+    // FIXME: Use find() and substring(). Also return StringView.
     s32 length = 0;
     while ((length < filename.length) && (filename[filename.length - length - 1] != '.')) {
         length++;
@@ -26,13 +25,12 @@ String getFileExtension(String filename)
         length = 0;
     }
 
-    fileExtension = makeString(filename.chars + filename.length - length, length);
-
-    return fileExtension;
+    return { filename.chars + filename.length - length, (size_t)length };
 }
 
 String getFileName(String filename)
 {
+    // FIXME: Use find() and substring(). Also return StringView.
     String result = filename;
 
     s32 length = 0;
@@ -56,16 +54,15 @@ String constructPath(std::initializer_list<String> parts, bool appendWildcard)
 
 String getFileLocale(String filename)
 {
-    String result = {};
-
+    // FIXME: Use find() and substring(). Also return StringView.
     // The locale is a section just before the file extension, eg `foo.en.txt`
     if (auto end_position = filename.find('.', SearchFrom::End); end_position.has_value()) {
         if (auto start_position = filename.find('.', SearchFrom::End, end_position.value() - 1); start_position.has_value()) {
-            result = makeString(filename.chars + start_position.value() + 1, end_position.value() - start_position.value() - 1);
+            return { filename.chars + start_position.value() + 1, end_position.value() - start_position.value() - 1 };
         }
     }
 
-    return result;
+    return {};
 }
 
 FileHandle openFile(String path, FileAccessMode mode)

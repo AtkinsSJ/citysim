@@ -124,7 +124,10 @@ void updateAndRenderConsole(Console* console)
                     }
 
                     if (!completeCommand.is_empty()) {
-                        String completion = makeString(completeCommand.chars + wordToComplete.length, completeCommand.length - wordToComplete.length);
+                        String completion {
+                            completeCommand.chars + wordToComplete.length,
+                            (size_t)(completeCommand.length - wordToComplete.length),
+                        };
                         console->input.insert(completion);
                     }
                 }

@@ -152,7 +152,7 @@ static void fillFileInfo(DirectoryListingHandle const& handle, dirent const& ent
 {
     struct stat statBuffer {};
     result = {
-        .filename = makeString(entry.d_name),
+        .filename = String::from_null_terminated(entry.d_name),
         .flags = {},
         .size = 0,
     };

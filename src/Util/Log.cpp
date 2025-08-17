@@ -71,7 +71,7 @@ void customLogOutputFunction(void* /*userdata*/, int category, SDL_LogPriority p
         break;
     }
 
-    consoleWriteLine(makeString(message), style);
+    consoleWriteLine(String::from_null_terminated(message), style);
 }
 
 void enableCustomLogger()
