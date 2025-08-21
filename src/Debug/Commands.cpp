@@ -264,7 +264,7 @@ void initCommands(Console* console)
 {
     // NB: Increase the count before we reach it - hash tables like lots of extra space!
     s32 commandCapacity = 128;
-    console->commands = allocateFixedSizeHashTable<Command>(&AppState::the().systemArena, commandCapacity);
+    console->commands = HashTable<Command>::allocate_fixed_size(AppState::the().systemArena, commandCapacity);
 
     // NB: a max-arguments value of -1 means "no maximum"
 #define AddCommand(name, minArgs, maxArgs) console->commands.put(#name##_h, Command(#name##_h, &cmd_##name, minArgs, maxArgs))

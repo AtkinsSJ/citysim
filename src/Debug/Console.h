@@ -30,6 +30,7 @@ struct Command {
     void (*function)(Console*, s32, String);
     s32 minArgs, maxArgs;
 
+    Command() = default;
     Command(String name, void (*function)(Console*, s32, String), s32 minArgs = 0, s32 maxArgs = 0)
     {
         this->name = name;

@@ -20,6 +20,4 @@ struct StringTable {
     HashTable<String> table;
 };
 
-void initStringTable(StringTable* table);
-
 String intern(StringTable* table, String input);

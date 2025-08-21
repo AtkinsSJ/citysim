@@ -29,12 +29,7 @@ void initBuildingCatalogue()
     // Update 18/02/2020: We now use the null building def when failing to match an intersection part name.
     catalogue->allBuildings.append(); // Null building def
 
-    initHashTable(&catalogue->buildingsByName, 0.75f, 128);
-    initStringTable(&catalogue->buildingNames);
-
-    initHashTable(&catalogue->buildingNameToTypeID, 0.75f, 128);
     catalogue->buildingNameToTypeID.put(nullString, 0);
-    initHashTable(&catalogue->buildingNameToOldTypeID, 0.75f, 128);
 
     catalogue->maxRBuildingDim = 0;
     catalogue->maxCBuildingDim = 0;
@@ -136,8 +131,6 @@ void loadBuildingDefs(Blob data, Asset* asset)
     reader.restart();
 
     HashTable<BuildingDef> templates;
-    initHashTable(&templates);
-    Deferred defer_free_hash_table = [&templates] { freeHashTable(&templates); };
 
     BuildingDef* def = nullptr;
 

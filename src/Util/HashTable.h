@@ -37,16 +37,80 @@ struct HashTableIterator;
 
 template<typename T>
 struct HashTable {
-    s32 count;
-    s32 capacity;
-    float maxLoadFactor;
-    bool hasFixedMemory; // Fixed-memory HashTables don't expand in size
-    HashTableEntry<T>* entries;
+
+    static smm calculate_desired_count(s32 capacity, float max_load_factor)
+    {
+        return ceil_s32(static_cast<float>(capacity) / max_load_factor);
+    }
+
+    explicit HashTable(s32 initial_capacity, float max_load_factor = 0.75f)
+        : maxLoadFactor(max_load_factor)
+        , keyDataArena("HashTable"_s, KB(4), KB(4))
+    {
+        ASSERT(max_load_factor < 1.0f);
+
+        if (initial_capacity > 0) {
+            expand(ceil_s32(initial_capacity / max_load_factor));
+        }
+    }
+
+    HashTable()
+        : HashTable(0)
+    {
+    }
+
+    HashTable(HashTable&& other)
+        : count(other.count)
+        , capacity(other.capacity)
+        , maxLoadFactor(other.maxLoadFactor)
+        , hasFixedMemory(other.hasFixedMemory)
+        , entries(move(other.entries))
+        , keyDataArena(move(other.keyDataArena))
+    {
+    }
+
+    HashTable& operator=(HashTable&& other)
+    {
+        count = other.count;
+        capacity = other.capacity;
+        maxLoadFactor = other.maxLoadFactor;
+        hasFixedMemory = other.hasFixedMemory;
+        entries = move(other.entries);
+        keyDataArena = move(other.keyDataArena);
+        return *this;
+    }
+
+    static HashTable allocate_fixed_size(MemoryArena& arena, s32 capacity, float max_load_factor = 0.75f)
+    {
+        auto slot_count = calculate_desired_count(capacity, max_load_factor);
+        auto* entries = arena.allocate_multiple<HashTableEntry<T>>(slot_count);
+
+        return HashTable {
+            { "FixedSizeHashTable"_s, KB(4), KB(4) },
+            entries,
+            ceil_s32(static_cast<float>(capacity) / max_load_factor),
+            max_load_factor
+        };
+    }
+
+    ~HashTable()
+    {
+        if (!hasFixedMemory && entries != nullptr) {
+            deallocateRaw(entries);
+        }
+    }
+
+    s32 count { 0 };
+    s32 capacity { 0 };
+    float maxLoadFactor { 0 };
+    bool hasFixedMemory { false }; // Fixed-memory HashTables don't expand in size
+    HashTableEntry<T>* entries {};
 
     // @Size: In a lot of cases, we already store the key in a separate StringTable, so having
     // it stored here too is redundant. But, keys are small so it's unlikely to cause any real
     // issues.
     // - Sam, 08/01/2020
+    // FIXME: Make Strings own their memory!
     MemoryArena keyDataArena;
 
     // Methods
@@ -256,7 +320,17 @@ struct HashTable {
         return iterator;
     }
 
-    // "Private"
+private:
+    HashTable(MemoryArena&& arena, HashTableEntry<T>* entries, s32 capacity, float max_load_factor)
+        : capacity(capacity)
+        , maxLoadFactor(max_load_factor)
+        , hasFixedMemory(true)
+        , entries(entries)
+        // TODO: Eliminate the keyDataArena somehow
+        , keyDataArena(move(arena))
+    {
+    }
+
     void expand(s32 newCapacity)
     {
         ASSERT(!hasFixedMemory);
@@ -287,71 +361,6 @@ struct HashTable {
         ASSERT(oldCount == count); //, "Hash table item count changed while expanding it! Old: {0}, new: {1}", {formatInt(oldCount), formatInt(table->count)});
     }
 };
-
-template<typename T>
-void initHashTable(HashTable<T>* table, float maxLoadFactor = 0.75f, s32 initialCapacity = 0)
-{
-    *table = {};
-
-    ASSERT(maxLoadFactor < 1.0f);
-    table->maxLoadFactor = maxLoadFactor;
-
-    if (initialCapacity > 0) {
-        table->expand(ceil_s32(initialCapacity / maxLoadFactor));
-    }
-
-    table->keyDataArena = { "HashTable"_s, KB(4), KB(4) };
-}
-
-template<typename T>
-void freeHashTable(HashTable<T>* table)
-{
-    ASSERT(!table->hasFixedMemory);
-
-    if (table->entries != nullptr) {
-        deallocateRaw(table->entries);
-        *table = {};
-    }
-}
-
-template<typename T>
-smm calculateHashTableDataSize(s32 capacity, float maxLoadFactor)
-{
-    s32 desiredCapacity = ceil_s32((float)capacity / maxLoadFactor);
-
-    return desiredCapacity * sizeof(HashTableEntry<T>);
-}
-
-template<typename T>
-HashTable<T> allocateFixedSizeHashTable(MemoryArena* arena, s32 capacity, float maxLoadFactor = 0.75f)
-{
-    HashTable<T> result;
-
-    smm hashTableDataSize = calculateHashTableDataSize<T>(capacity, maxLoadFactor);
-    Blob hashTableData = arena->allocate_blob(hashTableDataSize);
-    initFixedSizeHashTable<T>(&result, capacity, maxLoadFactor, hashTableData);
-
-    return result;
-}
-
-template<typename T>
-void initFixedSizeHashTable(HashTable<T>* table, s32 capacity, float maxLoadFactor, Blob entryData)
-{
-    ASSERT(maxLoadFactor < 1.0f);
-
-    *table = {};
-    table->maxLoadFactor = maxLoadFactor;
-    table->capacity = ceil_s32((float)capacity / maxLoadFactor);
-    table->hasFixedMemory = true;
-
-    smm requiredSize = calculateHashTableDataSize<T>(capacity, maxLoadFactor);
-    ASSERT(requiredSize >= entryData.size());
-
-    table->entries = (HashTableEntry<T>*)entryData.data();
-
-    // TODO: Eliminate this somehow
-    table->keyDataArena = { "FixedSizeHashTable"_s, KB(4), KB(4) };
-}
 
 template<typename T>
 struct HashTableIterator {

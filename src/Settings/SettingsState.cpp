@@ -10,7 +10,6 @@
 
 BaseSettingsState::BaseSettingsState(MemoryArena& arena)
 {
-    initHashTable(&m_settings_by_name);
     initChunkedArray(&m_settings_order, &arena, 32);
 }
 

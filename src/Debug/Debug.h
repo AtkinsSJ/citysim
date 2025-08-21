@@ -168,7 +168,7 @@ struct DebugState {
     DebugRenderBufferData* currentRenderBuffer;
     DebugAssetData assetData; // Not a sentinel because there's only one asset system!
 
-    HashTable<DebugCodeData> codeData;
+    HashTable<DebugCodeData> codeData { 2048, 0.5f };
 
     // Processed stuff
     DebugCodeDataWrapper topCodeBlocksFreeListSentinel;

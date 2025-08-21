@@ -16,11 +16,11 @@
 
 struct BuildingCatalogue final : public AssetManagerListener {
     OccupancyArray<BuildingDef> allBuildings;
-    HashTable<BuildingDef*> buildingsByName;
+    HashTable<BuildingDef*> buildingsByName { 128 };
     StringTable buildingNames;
 
-    HashTable<s32> buildingNameToTypeID;
-    HashTable<s32> buildingNameToOldTypeID;
+    HashTable<s32> buildingNameToTypeID { 128 };
+    HashTable<s32> buildingNameToOldTypeID { 128 };
 
     ChunkedArray<BuildingDef*> constructibleBuildings;
     ChunkedArray<BuildingDef*> rGrowableBuildings;

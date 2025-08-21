@@ -7,12 +7,11 @@
 #include <Assets/AssetManager.h>
 #include <IO/LineReader.h>
 #include <UI/UITheme.h>
-#include <Util/Deferred.h>
 
 namespace UI {
 
-static HashTable<Property> styleProperties {};
-static HashTable<StyleType> styleTypesByName {};
+static HashTable<Property> styleProperties { 256 };
+static HashTable<StyleType> styleTypesByName { 256 };
 
 template<typename T>
 static void setPropertyValue(Style* style, Property* property, T value)
@@ -109,7 +108,6 @@ V2I DrawableStyle::getSize()
 
 void initStyleConstants()
 {
-    initHashTable(&styleProperties, 0.75f, 256);
 #define PROP(name, _type)                                     \
     {                                                         \
         Property property = {};                               \
@@ -290,7 +288,6 @@ void initStyleConstants()
                                                  "titleLabelStyle"_s,
                                              });
 
-    initHashTable(&styleTypesByName, 0.75f, 256);
     styleTypesByName.put("Button"_s, StyleType::Button);
     styleTypesByName.put("Checkbox"_s, StyleType::Checkbox);
     styleTypesByName.put("Console"_s, StyleType::Console);
@@ -319,15 +316,8 @@ void loadUITheme(Blob data, Asset* asset)
     LineReader reader { asset->shortName, data };
 
     HashTable<EnumMap<UI::StyleType, UI::Style>> styles;
-    initHashTable(&styles);
 
     HashTable<String> fontNamesToAssetNames;
-    initHashTable(&fontNamesToAssetNames);
-
-    Deferred defer_free_hash_tables = [&styles, &fontNamesToAssetNames] {
-        freeHashTable(&styles);
-        freeHashTable(&fontNamesToAssetNames);
-    };
 
     EnumMap<UI::StyleType, s32> style_count;
 

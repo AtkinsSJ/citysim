@@ -20,8 +20,6 @@ void initSavedGamesCatalogue()
 
     catalogue->savedGamesArena = { "SavedGames"_s };
 
-    initStringTable(&catalogue->stringsTable);
-
     catalogue->savedGamesPath = intern(&catalogue->stringsTable, constructPath({ getUserDataPath(), "saves"_s }));
     createDirectory(catalogue->savedGamesPath);
     catalogue->savedGamesChangeHandle = beginWatchingDirectory(catalogue->savedGamesPath);

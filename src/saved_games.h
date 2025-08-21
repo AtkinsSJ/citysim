@@ -34,6 +34,8 @@ struct SavedGameInfo {
 };
 
 struct SavedGamesCatalogue {
+    SavedGamesCatalogue() = default;
+
     // Rather than scan the save files directory every time we need it, we maintain
     // a list of saved games here, which updates when the files change.
 

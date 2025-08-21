@@ -23,13 +23,7 @@ void initTerrainCatalogue()
     initOccupancyArray(&s_terrain_catalogue.terrainDefs, &AppState::the().systemArena, 128);
     s_terrain_catalogue.terrainDefs.append(); // Null terrain def
 
-    initHashTable(&s_terrain_catalogue.terrainDefsByName, 0.75f, 128);
-    initStringTable(&s_terrain_catalogue.terrainNames);
-
-    initHashTable(&s_terrain_catalogue.terrainNameToType, 0.75f, 128);
     s_terrain_catalogue.terrainNameToType.put(nullString, 0);
-
-    initHashTable(&s_terrain_catalogue.terrainNameToOldType, 0.75f, 128);
 
     asset_manager().register_listener(&s_terrain_catalogue);
 }

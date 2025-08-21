@@ -7,11 +7,6 @@
 #include "StringTable.h"
 #include <Util/Assert.h>
 
-void initStringTable(StringTable* table)
-{
-    initHashTable(&table->table);
-}
-
 String intern(StringTable* table, String input)
 {
     ASSERT(input.is_valid());

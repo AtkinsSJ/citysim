@@ -22,8 +22,6 @@ void debugInit()
     initLinkedListSentinel(&globalDebugState->poolDataSentinel);
     initLinkedListSentinel(&globalDebugState->renderBufferDataSentinel);
 
-    initHashTable(&globalDebugState->codeData, 0.5f, 2048);
-
     initLinkedListSentinel(&globalDebugState->topCodeBlocksFreeListSentinel);
     initLinkedListSentinel(&globalDebugState->topCodeBlocksSentinel);
     for (u32 i = 0; i < DEBUG_TOP_CODE_BLOCKS_COUNT; i++) {

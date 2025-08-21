@@ -33,11 +33,11 @@ struct TerrainCatalogue final : public AssetManagerListener {
 
     OccupancyArray<TerrainDef> terrainDefs;
 
-    HashTable<TerrainDef*> terrainDefsByName;
+    HashTable<TerrainDef*> terrainDefsByName { 128 };
     StringTable terrainNames;
 
-    HashTable<u8> terrainNameToOldType;
-    HashTable<u8> terrainNameToType;
+    HashTable<u8> terrainNameToOldType { 128 };
+    HashTable<u8> terrainNameToType { 128 };
 
     // ^AssetManagerListener
     virtual void after_assets_loaded() override;

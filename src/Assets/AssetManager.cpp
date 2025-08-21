@@ -23,15 +23,12 @@ void initAssets()
 {
     s_assets = MemoryArena::bootstrap<AssetManager>("Assets"_s);
 
-    initStringTable(&s_assets->assetStrings);
-
     String basePath = makeString(SDL_GetBasePath());
     s_assets->assetsPath = intern(&s_assets->assetStrings, constructPath({ basePath, "assets"_s }));
 
     // NB: We only need to define these for s_assets in the root s_assets/ directory
     // Well, for now at least.
     // - Sam, 19/05/2019
-    initHashTable(&s_assets->fileExtensionToType);
     s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "buildings"_s), AssetType::BuildingDefs);
     s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "cursors"_s), AssetType::CursorDefs);
     s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "keymap"_s), AssetType::DevKeymap);
@@ -40,7 +37,6 @@ void initAssets()
     s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "terrain"_s), AssetType::TerrainDefs);
     s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "theme"_s), AssetType::UITheme);
 
-    initHashTable(&s_assets->directoryNameToType);
     s_assets->directoryNameToType.put(intern(&s_assets->assetStrings, "fonts"_s), AssetType::BitmapFont);
     s_assets->directoryNameToType.put(intern(&s_assets->assetStrings, "shaders"_s), AssetType::Shader);
     s_assets->directoryNameToType.put(intern(&s_assets->assetStrings, "textures"_s), AssetType::Texture);
@@ -55,14 +51,10 @@ void initAssets()
     auto compareStrings = [](String* a, String* b) { return *a == *b; };
 
     for (auto asset_type : enum_values<AssetType>()) {
-        initHashTable(&s_assets->assetsByType[asset_type]);
         initSet<String>(&s_assets->missingAssetNames[asset_type], &s_assets->arena, compareStrings);
     }
 
     UI::initStyleConstants();
-
-    initHashTable(&s_assets->texts);
-    initHashTable(&s_assets->defaultTexts);
 
     initSet<String>(&s_assets->missingTextIDs, &s_assets->arena, compareStrings);
 

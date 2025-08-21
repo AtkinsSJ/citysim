@@ -23,9 +23,6 @@ void init_input_state()
     s_input_state.textEntered = makeString(&s_input_state._textEntered[0], SDL_TEXTINPUTEVENT_TEXT_SIZE);
     s_input_state.textEnteredLength = 0;
 
-    // Key names
-    initHashTable(&s_input_state.keyNames, 0.75f, SDL_NUM_SCANCODES);
-
     // Letters
     for (char c = 'A'; c <= 'Z'; c++) {
         String key = pushString(systemArena, 1);
