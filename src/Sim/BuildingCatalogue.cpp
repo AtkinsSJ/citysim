@@ -13,7 +13,6 @@
 void initBuildingCatalogue()
 {
     BuildingCatalogue* catalogue = &buildingCatalogue;
-    *catalogue = {};
 
     auto& app_state = AppState::the();
 

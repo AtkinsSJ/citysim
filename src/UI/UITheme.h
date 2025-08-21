@@ -347,8 +347,6 @@ struct Style {
     Optional<DrawableStyle> dotDisabled;
 };
 
-inline HashTable<Property> styleProperties;
-inline HashTable<StyleType> styleTypesByName;
 void initStyleConstants();
 void assignStyleProperties(StyleType type, std::initializer_list<String> properties);
 

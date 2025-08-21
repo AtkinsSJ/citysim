@@ -11,6 +11,9 @@
 
 namespace UI {
 
+static HashTable<Property> styleProperties {};
+static HashTable<StyleType> styleTypesByName {};
+
 template<typename T>
 static void setPropertyValue(Style* style, Property* property, T value)
 {

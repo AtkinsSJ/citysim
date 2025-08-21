@@ -55,8 +55,6 @@ struct SavedGamesCatalogue {
     UI::ScrollbarState savedGamesListScrollbar;
 };
 
-inline SavedGamesCatalogue savedGamesCatalogue;
-
 void initSavedGamesCatalogue();
 void updateSavedGamesCatalogue();
 void readSavedGamesInfo(SavedGamesCatalogue* catalogue);

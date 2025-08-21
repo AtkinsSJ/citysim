@@ -9,7 +9,7 @@
 #include <Gfx/Renderer.h>
 #include <SDL2/SDL_clipboard.h>
 
-static InputState s_input_state;
+static InputState s_input_state {};
 
 u32 keycodeToIndex(u32 key)
 {
@@ -18,8 +18,6 @@ u32 keycodeToIndex(u32 key)
 
 void init_input_state()
 {
-    s_input_state = {};
-
     MemoryArena* systemArena = &AppState::the().systemArena;
 
     s_input_state.textEntered = makeString(&s_input_state._textEntered[0], SDL_TEXTINPUTEVENT_TEXT_SIZE);

@@ -12,10 +12,11 @@
 #include <UI/Window.h>
 #include <Util/Orientation.h>
 
+static SavedGamesCatalogue savedGamesCatalogue {};
+
 void initSavedGamesCatalogue()
 {
     SavedGamesCatalogue* catalogue = &savedGamesCatalogue;
-    *catalogue = {};
 
     catalogue->savedGamesArena = { "SavedGames"_s };
 
