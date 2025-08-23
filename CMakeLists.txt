@@ -23,6 +23,7 @@ find_package(SDL2_image REQUIRED)
 
 add_executable(CitySim)
 add_subdirectory("src")
+add_subdirectory("tests")
 include_directories("src")
 target_include_directories(CitySim PRIVATE ${OPENGL_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
 
