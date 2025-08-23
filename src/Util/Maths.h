@@ -36,7 +36,7 @@ s32 truncate32(s64 in);
 u8 clamp01AndMap_u8(float in);
 
 template<typename T>
-T clamp(T value, T min, T max)
+constexpr T clamp(T value, T min, T max)
 {
     ASSERT(min <= max); // min > max in clamp()!
     if (value < min)
@@ -47,32 +47,32 @@ T clamp(T value, T min, T max)
 }
 
 template<typename T>
-T min(T a, T b)
+constexpr T min(T a, T b)
 {
     return (a < b) ? a : b;
 }
 
 template<typename T>
-inline T min(T a) { return a; }
+constexpr T min(T a) { return a; }
 
 template<typename T, typename... Args>
-T min(T a, Args... args)
+constexpr T min(T a, Args... args)
 {
     T b = min(args...);
     return (a < b) ? a : b;
 }
 
 template<typename T>
-T max(T a, T b)
+constexpr T max(T a, T b)
 {
     return (a > b) ? a : b;
 }
 
 template<typename T>
-inline T max(T a) { return a; }
+constexpr T max(T a) { return a; }
 
 template<typename T, typename... Args>
-T max(T a, Args... args)
+constexpr T max(T a, Args... args)
 {
     T b = max(args...);
     return (a > b) ? a : b;
