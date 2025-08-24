@@ -32,7 +32,9 @@ MemoryArena::MemoryArena(MemoryArena&& other)
     , m_external_tracked_memory_size(other.m_external_tracked_memory_size)
     , m_reset_state(other.m_reset_state)
 {
-    other = {};
+    other.m_current_block = nullptr;
+    other.m_external_tracked_memory_size = 0;
+    other.m_reset_state = {};
 }
 
 MemoryArena& MemoryArena::operator=(MemoryArena&& other)
@@ -45,7 +47,8 @@ MemoryArena& MemoryArena::operator=(MemoryArena&& other)
     m_external_tracked_memory_size = other.m_external_tracked_memory_size;
     m_reset_state = other.m_reset_state;
 
-    other.m_current_block = {};
+    other.m_current_block = nullptr;
+    other.m_external_tracked_memory_size = 0;
     other.m_reset_state = {};
 
     return *this;
