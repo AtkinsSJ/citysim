@@ -98,7 +98,6 @@ int main(int argc, char* argv[])
         debugInit();
         globalDebugState->showDebugData = false;
         initConsole(&globalDebugState->arena, 0.2f, 0.9f, 6.0f);
-        enableCustomLogger();
     }
 
     app_state.cosmeticRandom = Random::create();

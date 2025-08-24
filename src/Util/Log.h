@@ -18,5 +18,3 @@ void logInfo(String format, std::initializer_list<String> args = {});
 void logWarn(String format, std::initializer_list<String> args = {});
 void logError(String format, std::initializer_list<String> args = {});
 void logCritical(String format, std::initializer_list<String> args = {});
-
-void enableCustomLogger();

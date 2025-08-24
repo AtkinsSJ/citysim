@@ -15,6 +15,38 @@
 
 static Console theConsole;
 
+/*
+ * Our custom logger posts the message into the built-in console, AND then sends it off to SDL's
+ * usual logger. This way it's still useful even if our console is broken. (Which will happen!)
+ */
+
+static SDL_LogOutputFunction default_logger;
+static void* default_logger_user_data;
+
+void console_log_output_function(void* /*userdata*/, int category, SDL_LogPriority priority, char const* message)
+{
+    default_logger(default_logger_user_data, category, priority, message);
+
+    ConsoleLineStyle style = ConsoleLineStyle::Default;
+
+    switch (priority) {
+    case SDL_LOG_PRIORITY_WARN:
+        style = ConsoleLineStyle::Warning;
+        break;
+
+    case SDL_LOG_PRIORITY_ERROR:
+    case SDL_LOG_PRIORITY_CRITICAL:
+        style = ConsoleLineStyle::Error;
+        break;
+
+    default:
+        style = ConsoleLineStyle::Default;
+        break;
+    }
+
+    consoleWriteLine(makeString(message), style);
+}
+
 void initConsole(MemoryArena* debugArena, float openHeight, float maximisedHeight, float openSpeed)
 {
     Console* console = &theConsole;
@@ -42,6 +74,9 @@ void initConsole(MemoryArena* debugArena, float openHeight, float maximisedHeigh
     consoleWriteLine(myprintf("Loaded {} commands. Type 'help' to list them."_s, { formatInt(console->commands.count) }), ConsoleLineStyle::Default);
 
     consoleWriteLine("GREETINGS PROFESSOR FALKEN.\nWOULD YOU LIKE TO PLAY A GAME?"_s);
+
+    SDL_LogGetOutputFunction(&default_logger, &default_logger_user_data);
+    SDL_LogSetOutputFunction(&console_log_output_function, nullptr);
 }
 
 void updateAndRenderConsole(Console* console)

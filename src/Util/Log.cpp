@@ -5,8 +5,6 @@
  */
 
 #include "Log.h"
-#include <Debug/Console.h>
-#include <UI/UITheme.h>
 #include <Util/String.h>
 
 void log(SDL_LogPriority priority, String format, std::initializer_list<String> args)
@@ -40,42 +38,4 @@ void logCritical(String format, std::initializer_list<String> args)
 {
     log(SDL_LOG_PRIORITY_CRITICAL, format, args);
     ASSERT(!"Critical error");
-}
-
-/*
- * Our custom logger posts the message into the built-in console, AND then sends it off to SDL's
- * usual logger. This way it's still useful even if our console is broken. (Which will happen!)
- */
-
-static SDL_LogOutputFunction defaultLogger;
-static void* defaultLoggerUserData;
-
-void customLogOutputFunction(void* /*userdata*/, int category, SDL_LogPriority priority, char const* message)
-{
-    defaultLogger(defaultLoggerUserData, category, priority, message);
-
-    ConsoleLineStyle style = ConsoleLineStyle::Default;
-
-    switch (priority) {
-    case SDL_LOG_PRIORITY_WARN:
-        style = ConsoleLineStyle::Warning;
-        break;
-
-    case SDL_LOG_PRIORITY_ERROR:
-    case SDL_LOG_PRIORITY_CRITICAL:
-        style = ConsoleLineStyle::Error;
-        break;
-
-    default:
-        style = ConsoleLineStyle::Default;
-        break;
-    }
-
-    consoleWriteLine(makeString(message), style);
-}
-
-void enableCustomLogger()
-{
-    SDL_LogGetOutputFunction(&defaultLogger, &defaultLoggerUserData);
-    SDL_LogSetOutputFunction(&customLogOutputFunction, 0);
 }
