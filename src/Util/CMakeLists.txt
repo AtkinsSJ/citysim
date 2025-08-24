@@ -1,4 +1,4 @@
-target_sources(CitySim PRIVATE
+add_library(Util STATIC
     Alignment.cpp
     BitArray.cpp
     Interpolate.cpp
@@ -17,4 +17,13 @@ target_sources(CitySim PRIVATE
     Time.cpp
     Unicode.cpp
     Vector.cpp
+)
+target_include_directories(Util PUBLIC ..)
+target_compile_definitions(Util PRIVATE
+    $<$<CONFIG:Debug>:
+        BUILD_DEBUG=1
+    >
+    $<$<CONFIG:Release>:
+        BUILD_DEBUG=0
+    >
 )

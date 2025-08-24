@@ -31,8 +31,11 @@ target_compile_definitions(CitySim PRIVATE
     $<$<CONFIG:Debug>:
         BUILD_DEBUG=1
     >
+    $<$<CONFIG:Release>:
+        BUILD_DEBUG=0
+    >
 )
 
-target_link_libraries(CitySim PRIVATE ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${SDL2_LIBRARIES} SDL2_image::SDL2_image)
+target_link_libraries(CitySim PRIVATE Util ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${SDL2_LIBRARIES} SDL2_image::SDL2_image)
 
 file(CREATE_LINK ${CMAKE_SOURCE_DIR}/assets ${CMAKE_BINARY_DIR}/assets SYMBOLIC)

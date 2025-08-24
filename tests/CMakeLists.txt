@@ -3,7 +3,7 @@ function(citysim_test source)
     add_executable(${CITYSIM_TEST_NAME} ${source})
     target_include_directories(${CITYSIM_TEST_NAME} PRIVATE "../src" ${SDL2_INCLUDE_DIRS})
     # TODO: If and when we actually divide things up into libraries, link them!
-    target_link_libraries(${CITYSIM_TEST_NAME} PRIVATE ${SDL2_LIBRARIES})
+    target_link_libraries(${CITYSIM_TEST_NAME} PRIVATE Util ${SDL2_LIBRARIES})
     
     add_test(NAME ${CITYSIM_TEST_NAME}
              COMMAND ${CITYSIM_TEST_NAME})
