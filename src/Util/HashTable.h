@@ -67,6 +67,10 @@ struct HashTable {
         , entries(move(other.entries))
         , keyDataArena(move(other.keyDataArena))
     {
+        other.count = 0;
+        other.entries = nullptr;
+        other.hasFixedMemory = false;
+        other.entries = nullptr;
     }
 
     HashTable& operator=(HashTable&& other)
@@ -77,6 +81,12 @@ struct HashTable {
         hasFixedMemory = other.hasFixedMemory;
         entries = move(other.entries);
         keyDataArena = move(other.keyDataArena);
+
+        other.count = 0;
+        other.entries = nullptr;
+        other.hasFixedMemory = false;
+        other.entries = nullptr;
+
         return *this;
     }
 
