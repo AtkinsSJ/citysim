@@ -5,7 +5,6 @@
  */
 
 #include "Matrix4.h"
-#include <Debug/Debug.h>
 #include <Util/Maths.h>
 #include <Util/Vector.h>
 
@@ -37,8 +36,6 @@ Matrix4 orthographicMatrix4(float left, float right, float top, float bottom, fl
 
 Matrix4 inverse(Matrix4* source)
 {
-    DEBUG_FUNCTION();
-
     // Shamelessly copied from http://stackoverflow.com/a/1148405/1178345
     // This is complicated! *_*
     Matrix4 result;

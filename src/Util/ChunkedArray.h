@@ -6,12 +6,12 @@
 
 #pragma once
 
-#include <Debug/Debug.h>
 #include <Util/Basic.h>
 #include <Util/DeprecatedPool.h>
 #include <Util/Indexed.h>
 #include <Util/Log.h>
 #include <Util/Memory.h>
+#include <Util/MemoryArena.h>
 
 /**
  * Variation on Array where we allocate the data in chunks, which are linked-listed together.
@@ -108,8 +108,6 @@ struct ChunkedArray {
 
     void reserve(s32 desiredSize)
     {
-        DEBUG_FUNCTION();
-
         while (((itemsPerChunk * chunkCount) - count) < desiredSize) {
             appendChunk();
         }
@@ -186,8 +184,6 @@ struct ChunkedArray {
 
     bool findAndRemove(T toRemove, bool keepItemOrder = false)
     {
-        DEBUG_FUNCTION();
-
         s32 removed = removeAll([&](T* t) { return *t == toRemove; }, 1, keepItemOrder);
 
         return removed > 0;
@@ -195,8 +191,6 @@ struct ChunkedArray {
 
     void removeIndex(s32 indexToRemove, bool keepItemOrder = false)
     {
-        DEBUG_FUNCTION();
-
         if (indexToRemove < 0 || indexToRemove >= count) {
             logError("Attempted to remove non-existent index {0} from a ChunkedArray!"_s, { formatInt(indexToRemove) });
             return;
@@ -236,8 +230,6 @@ struct ChunkedArray {
     template<typename Filter>
     s32 removeAll(Filter filter, s32 limit = -1, bool keepItemOrder = false)
     {
-        DEBUG_FUNCTION();
-
         s32 removedCount = 0;
         bool limited = (limit != -1);
 
@@ -278,8 +270,6 @@ struct ChunkedArray {
     // Inserts the item at fromIndex into toIndex, moving other items around as necessary
     void moveItemKeepingOrder(s32 fromIndex, s32 toIndex)
     {
-        DEBUG_FUNCTION();
-
         // Skip if there's nothing to do
         if (fromIndex == toIndex)
             return;

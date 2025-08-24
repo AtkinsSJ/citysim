@@ -11,6 +11,7 @@
 #include <Sim/Forward.h>
 #include <Sim/Sector.h>
 #include <UI/Forward.h>
+#include <Util/EnumMap.h>
 #include <Util/Flags.h>
 
 enum class TransportType : u8 {

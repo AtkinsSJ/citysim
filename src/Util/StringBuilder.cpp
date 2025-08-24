@@ -5,7 +5,6 @@
  */
 
 #include "StringBuilder.h"
-#include <Debug/Debug.h>
 #include <Util/Log.h>
 #include <Util/Memory.h>
 
@@ -24,7 +23,6 @@ StringBuilder newStringBuilder(s32 initialSize, MemoryArena* arena)
 
 void expand(StringBuilder* stb, s32 newSize)
 {
-    DEBUG_FUNCTION();
     logWarn("Expanding StringBuilder"_s);
 
     s32 targetSize = max(newSize, stb->currentMaxLength * 2);

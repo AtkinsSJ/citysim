@@ -5,8 +5,8 @@
  */
 
 #include "BitArray.h"
-#include <Debug/Debug.h>
 #include <Util/Assert.h>
+#include <Util/MemoryArena.h>
 
 void initBitArray(BitArray* array, MemoryArena* arena, s32 size)
 {

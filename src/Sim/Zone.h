@@ -6,11 +6,13 @@
 
 #pragma once
 
+#include <Gfx/Colour.h>
 #include <IO/Forward.h>
 #include <Sim/DirtyRects.h>
 #include <Sim/Forward.h>
 #include <Sim/Sector.h>
 #include <Util/BitArray.h>
+#include <Util/EnumMap.h>
 #include <Util/Flags.h>
 
 enum class ZoneType : u8 {
