@@ -192,8 +192,8 @@ bool canPlaceBuilding(City* city, BuildingDef* def, s32 left, s32 top)
         return false;
     }
 
-    Rect2I footprint { left, top, def->width, def->height };
-    Rect2I bounds { 0, 0, city->bounds.width(), city->bounds.height() };
+    Rect2I footprint { { left, top }, def->size };
+    Rect2I bounds = city->bounds;
 
     // Are we in bounds?
     if (!bounds.contains(footprint)) {
@@ -234,7 +234,7 @@ void placeBuilding(City* city, BuildingDef* def, s32 left, s32 top, bool markAre
 {
     DEBUG_FUNCTION();
 
-    Rect2I footprint { left, top, def->width, def->height };
+    Rect2I footprint { { left, top }, def->size };
 
     Building* building = getBuildingAt(city, left, top);
     if (building != nullptr) {
@@ -276,8 +276,8 @@ s32 calculateBuildCost(City* city, BuildingDef* def, Rect2I area)
 
     s32 totalCost = 0;
 
-    for (s32 y = 0; y + def->height <= area.height(); y += def->height) {
-        for (s32 x = 0; x + def->width <= area.width(); x += def->width) {
+    for (s32 y = 0; y + def->size.y <= area.height(); y += def->size.y) {
+        for (s32 x = 0; x + def->size.x <= area.width(); x += def->size.x) {
             if (canPlaceBuilding(city, def, area.x() + x, area.y() + y)) {
                 totalCost += def->buildCost;
             }
@@ -291,8 +291,8 @@ void placeBuildingRect(City* city, BuildingDef* def, Rect2I area)
 {
     DEBUG_FUNCTION();
 
-    for (s32 y = 0; y + def->height <= area.height(); y += def->height) {
-        for (s32 x = 0; x + def->width <= area.width(); x += def->width) {
+    for (s32 y = 0; y + def->size.y <= area.height(); y += def->size.y) {
+        for (s32 x = 0; x + def->size.x <= area.width(); x += def->size.x) {
             if (canPlaceBuilding(city, def, area.x() + x, area.y() + y)) {
                 placeBuilding(city, def, area.x() + x, area.y() + y, false);
             }

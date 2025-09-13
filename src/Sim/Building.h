@@ -76,14 +76,7 @@ struct BuildingDef {
 
     Flags<BuildingFlags> flags;
 
-    union {
-        V2I size;
-        struct
-        {
-            s32 width;
-            s32 height;
-        };
-    };
+    V2I size;
     String spriteName;
     Array<BuildingVariant> variants;
 

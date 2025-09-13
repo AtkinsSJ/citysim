@@ -49,7 +49,7 @@ void _assignBuildingCategories(BuildingCatalogue* catalogue, BuildingDef* def)
     if (def->typeID == 0)
         return; // Defs with typeID 0 are templates, which we don't want polluting the catalogue!
 
-    catalogue->overallMaxBuildingDim = max(catalogue->overallMaxBuildingDim, max(def->width, def->height));
+    catalogue->overallMaxBuildingDim = max(catalogue->overallMaxBuildingDim, max(def->size.x, def->size.y));
 
     if (def->buildMethod != BuildMethod::None) {
         catalogue->constructibleBuildings.append(def);
@@ -58,17 +58,17 @@ void _assignBuildingCategories(BuildingCatalogue* catalogue, BuildingDef* def)
     switch (def->growsInZone) {
     case ZoneType::Residential: {
         catalogue->rGrowableBuildings.append(def);
-        catalogue->maxRBuildingDim = max(catalogue->maxRBuildingDim, max(def->width, def->height));
+        catalogue->maxRBuildingDim = max(catalogue->maxRBuildingDim, max(def->size.x, def->size.y));
     } break;
 
     case ZoneType::Commercial: {
         catalogue->cGrowableBuildings.append(def);
-        catalogue->maxCBuildingDim = max(catalogue->maxCBuildingDim, max(def->width, def->height));
+        catalogue->maxCBuildingDim = max(catalogue->maxCBuildingDim, max(def->size.x, def->size.y));
     } break;
 
     case ZoneType::Industrial: {
         catalogue->iGrowableBuildings.append(def);
-        catalogue->maxIBuildingDim = max(catalogue->maxIBuildingDim, max(def->width, def->height));
+        catalogue->maxIBuildingDim = max(catalogue->maxIBuildingDim, max(def->size.x, def->size.y));
     } break;
 
     case ZoneType::None:
@@ -342,11 +342,11 @@ void loadBuildingDefs(Blob data, Asset* asset)
                     auto h = reader.read_int<s32>();
 
                     if (w.has_value() && h.has_value()) {
-                        def->width = w.release_value();
-                        def->height = h.release_value();
+                        def->size.x = w.release_value();
+                        def->size.y = h.release_value();
 
-                        if ((def->variants.count > 0) && (def->width != 1 || def->height != 1)) {
-                            reader.error("This building is {0}x{1} and has variants. Variants are only allowed for 1x1 tile buildings!"_s, { formatInt(def->width), formatInt(def->height) });
+                        if ((def->variants.count > 0) && (def->size.x != 1 || def->size.y != 1)) {
+                            reader.error("This building is {0}x{1} and has variants. Variants are only allowed for 1x1 tile buildings!"_s, { formatInt(def->size.x), formatInt(def->size.y) });
                             return;
                         }
                     } else {

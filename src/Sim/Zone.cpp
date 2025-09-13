@@ -623,7 +623,7 @@ void growSomeZoneBuildings(City* city)
                 // Pick a building def that fits the space and is not more than 10% more than the remaining demand
                 s32 maxPopulation = (s32)((float)remainingDemand * 1.1f);
                 BuildingDef* buildingDef = findRandomZoneBuilding(zone_type, random, [=](BuildingDef* it) -> bool {
-                    if ((it->width > zoneFootprint.width()) || (it->height > zoneFootprint.height()))
+                    if ((it->size.x > zoneFootprint.width()) || (it->size.y > zoneFootprint.height()))
                         return false;
 
                     if (it->growsInZone == ZoneType::Residential) {
