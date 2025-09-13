@@ -81,13 +81,11 @@ struct Palette {
     Type type;
     s32 size;
 
-    union {
-        struct
-        {
-            Colour from;
-            Colour to;
-        } gradient;
-    };
+    struct
+    {
+        Colour from;
+        Colour to;
+    } gradient;
 
     Array<Colour> paletteData;
 };
@@ -104,12 +102,10 @@ struct Texture {
     SDL_Surface* surface;
 
     // Renderer-specific stuff.
-    union {
-        struct {
-            u32 glTextureID;
-            bool isLoaded;
-        } gl;
-    };
+    struct {
+        u32 glTextureID;
+        bool isLoaded;
+    } gl;
 };
 
 enum class AssetFlags : u8 {
