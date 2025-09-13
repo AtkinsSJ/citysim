@@ -15,6 +15,7 @@
 #include <UI/UITheme.h>
 #include <Util/Array.h>
 #include <Util/Flags.h>
+#include <Util/Locale.h>
 #include <Util/Memory.h>
 #include <Util/Vector.h>
 
@@ -109,8 +110,7 @@ struct Texture {
 };
 
 enum class AssetFlags : u8 {
-    IsAFile,          // The file at Asset.fullName should be loaded into memory when loading this Asset
-    IsLocaleSpecific, // File path has a {0} in it which should be filled in with the current locale
+    IsAFile, // The file at Asset.fullName should be loaded into memory when loading this Asset
 
     COUNT,
 };
@@ -130,7 +130,8 @@ struct Asset {
         Unloaded,
         Loaded,
     };
-    State state;
+    State state { State::Unloaded };
+    Optional<Locale> locale;
 
     Array<AssetID> children;
 

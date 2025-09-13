@@ -6,7 +6,6 @@
 
 #include "Settings.h"
 #include <Assets/AssetManager.h>
-#include <Gfx/Renderer.h>
 #include <SDL2/SDL_filesystem.h>
 #include <UI/Window.h>
 #include <Util/StringBuilder.h>
@@ -93,9 +92,9 @@ WindowSettings getWindowSettings()
     return result;
 }
 
-String getLocale()
+Locale get_locale()
 {
-    return s_settings->settings->locale.enum_data().id;
+    return s_settings->settings->locale.enum_value();
 }
 
 void showSettingsWindow()

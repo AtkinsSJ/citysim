@@ -7,6 +7,7 @@
 #include "File.h"
 #include "../platform.h"
 #include <Debug/Debug.h>
+#include <Util/Locale.h>
 #include <Util/Log.h>
 
 // Returns the part of 'filename' after the final '.'
@@ -54,18 +55,16 @@ String constructPath(std::initializer_list<String> parts, bool appendWildcard)
     return platform_constructPath(parts, appendWildcard);
 }
 
-String getFileLocale(String filename)
+Optional<String> get_file_locale_segment(String filename)
 {
-    String result = {};
-
     // The locale is a section just before the file extension, eg `foo.en.txt`
     if (auto end_position = filename.find('.', SearchFrom::End); end_position.has_value()) {
         if (auto start_position = filename.find('.', SearchFrom::End, end_position.value() - 1); start_position.has_value()) {
-            result = makeString(filename.chars + start_position.value() + 1, end_position.value() - start_position.value() - 1);
+            return makeString(filename.chars + start_position.value() + 1, end_position.value() - start_position.value() - 1);
         }
     }
 
-    return result;
+    return {};
 }
 
 FileHandle openFile(String path, FileAccessMode mode)

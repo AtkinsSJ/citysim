@@ -185,6 +185,11 @@ Asset* addAsset(AssetType type, String shortName, Flags<AssetFlags> flags)
     asset->shortName = internedShortName;
     if (flags.has(AssetFlags::IsAFile)) {
         asset->fullName = intern(&s_assets->assetStrings, getAssetPath(asset->type, internedShortName));
+        if (auto locale_string = get_file_locale_segment(asset->fullName); locale_string.has_value()) {
+            asset->locale = locale_from_string(locale_string.value());
+            if (!asset->locale.has_value())
+                logWarn("Unrecognized locale for asset '{0}'."_s, { asset->fullName });
+        }
     }
     asset->state = Asset::State::Unloaded;
     asset->data = {};
@@ -247,18 +252,16 @@ void loadAsset(Asset* asset)
     if (asset->state != Asset::State::Unloaded)
         return;
 
-    if (asset->flags.has(AssetFlags::IsLocaleSpecific)) {
-        // Only load s_assets that match our locale
-        String assetLocale = getFileLocale(asset->fullName);
-
-        if (assetLocale == getLocale()) {
+    if (asset->locale.has_value()) {
+        // Only load assets that match our locale
+        if (asset->locale == get_locale()) {
             asset->texts.isFallbackLocale = false;
         } else {
-            if (assetLocale == "en"_s) {
-                logInfo("Loading asset {0} as a default-locale fallback. (Locale {1}, current is {2})"_s, { asset->fullName, assetLocale, getLocale() });
+            if (asset->locale == Locale::En) {
+                logInfo("Loading asset {0} as a default-locale fallback. (Locale {1}, current is {2})"_s, { asset->fullName, to_string(asset->locale.value()), to_string(get_locale()) });
                 asset->texts.isFallbackLocale = true;
             } else {
-                logInfo("Skipping asset {0} because it's the wrong locale. ({1}, current is {2})"_s, { asset->fullName, assetLocale, getLocale() });
+                logInfo("Skipping asset {0} because it's the wrong locale. ({1}, current is {2})"_s, { asset->fullName, to_string(asset->locale.value()), to_string(get_locale()) });
                 return;
             }
         }
@@ -604,10 +607,7 @@ void addAssetsFromDirectory(String subDirectory, Optional<AssetType> manualAsset
         pathToScan = constructPath({ s_assets->assetsPath, subDirectory });
     }
 
-    bool isLocaleSpecific = subDirectory == "locale"_s;
     auto assetFlags = default_asset_flags;
-    if (isLocaleSpecific)
-        assetFlags.add(AssetFlags::IsLocaleSpecific);
 
     for (auto it = iterateDirectoryListing(pathToScan);
         hasNextFile(&it);
@@ -851,9 +851,9 @@ String getText(String name)
 
         if (s_assets->missingTextIDs.add(name)) {
             if (defaultText.isValid) {
-                logWarn("Locale {0} is missing text for '{1}'. (Fell back to using the default locale.)"_s, { getLocale(), name });
+                logWarn("Locale {0} is missing text for '{1}'. (Fell back to using the default locale.)"_s, { to_string(get_locale()), name });
             } else {
-                logWarn("Locale {0} is missing text for '{1}'. (No default found!)"_s, { getLocale(), name });
+                logWarn("Locale {0} is missing text for '{1}'. (No default found!)"_s, { to_string(get_locale()), name });
             }
         }
     }
@@ -905,14 +905,15 @@ void AssetManager::on_settings_changed()
 
     for (auto it = s_assets->allAssets.iterate(); it.hasNext(); it.next()) {
         Asset* asset = it.get();
-        if (asset->flags.has(AssetFlags::IsLocaleSpecific)) {
+        if (asset->locale.has_value()) {
             unloadAsset(asset);
         }
     }
 
     for (auto it = s_assets->allAssets.iterate(); it.hasNext(); it.next()) {
         Asset* asset = it.get();
-        if (asset->flags.has(AssetFlags::IsLocaleSpecific)) {
+        // FIXME: Only try to load if the locale matches.
+        if (asset->locale.has_value()) {
             loadAsset(asset);
         }
     }

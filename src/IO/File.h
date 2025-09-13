@@ -98,8 +98,7 @@ String getFileName(String filename);
 String constructPath(std::initializer_list<String> parts, bool appendWildcard = false);
 
 // Locale-dependent files have the format "name.locale.extension"
-// If the filename doesn't follow this format, returns an empty String.
-String getFileLocale(String filename);
+Optional<String> get_file_locale_segment(String filename);
 
 FileHandle openFile(String path, FileAccessMode mode);
 void closeFile(FileHandle* file);

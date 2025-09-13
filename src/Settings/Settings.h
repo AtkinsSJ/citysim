@@ -45,7 +45,7 @@ struct WindowSettings {
     bool isWindowed;
 };
 WindowSettings getWindowSettings();
-String getLocale();
+Locale get_locale();
 
 // Menu
 void showSettingsWindow();
