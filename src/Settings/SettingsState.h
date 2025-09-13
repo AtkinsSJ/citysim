@@ -9,6 +9,7 @@
 #include <Settings/Setting.h>
 #include <Util/ChunkedArray.h>
 #include <Util/HashTable.h>
+#include <Util/Locale.h>
 #include <Util/Optional.h>
 #include <Util/Ref.h>
 #include <Util/String.h>
@@ -45,14 +46,6 @@ protected:
 private:
     HashTable<Ref<Setting>> m_settings_by_name;
     ChunkedArray<String> m_settings_order;
-};
-
-// FIXME: Where should this go?
-enum class Locale : u8 {
-    En,
-    Es,
-    Pl,
-    COUNT
 };
 
 class SettingsState final : public BaseSettingsState {

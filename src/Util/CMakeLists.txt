@@ -2,6 +2,7 @@ add_library(Util STATIC
     Alignment.cpp
     BitArray.cpp
     Interpolate.cpp
+    Locale.cpp
     Log.cpp
     Maths.cpp
     Matrix4.cpp
