@@ -158,6 +158,22 @@ public:
         return *this;
     }
 
+    Variant& operator=(Variant&& other)
+    {
+        other.visit([&](auto& it) {
+            set_without_destructing_old_value(move(it));
+        });
+        return *this;
+    }
+
+    Variant& operator=(Variant const& other)
+    {
+        other.visit([&](auto& it) {
+            set_without_destructing_old_value(it);
+        });
+        return *this;
+    }
+
     bool operator==(Variant const& other) const
     {
         if (m_current_type != other.m_current_type)
