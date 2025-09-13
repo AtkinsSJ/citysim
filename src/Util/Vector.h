@@ -204,30 +204,10 @@ inline V3 operator/=(V3& v, float s)
  **********************************************/
 
 struct V4 {
-    union {
-        struct
-        {
-            float x;
-            float y;
-            float z;
-            float w;
-        };
-        struct
-        {
-            float r;
-            float g;
-            float b;
-            float a;
-        };
-        struct
-        {
-            V3 xyz;
-        };
-        struct
-        {
-            V2 xy;
-        };
-    };
+    float x;
+    float y;
+    float z;
+    float w;
 };
 
 V4 v4(float x, float y, float z, float w);

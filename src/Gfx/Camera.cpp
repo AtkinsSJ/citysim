@@ -91,5 +91,5 @@ V2 Camera::unproject(V2 screen_position) const
 {
     // Convert into scene space
     V4 unprojected = m_inverse_projection_matrix * v4(screen_position.x, screen_position.y, 0.0f, 1.0f);
-    return unprojected.xy;
+    return { unprojected.x, unprojected.y };
 }
