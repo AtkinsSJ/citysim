@@ -19,19 +19,19 @@ void Drawable::preparePlaceholder(RenderBuffer* buffer)
     } break;
 
     case DrawableType::Color: {
-        rectPlaceholder = appendDrawRectPlaceholder(buffer, renderer.shaderIds.untextured, false);
+        placeholder = appendDrawRectPlaceholder(buffer, renderer.shaderIds.untextured, false);
     } break;
 
     case DrawableType::Gradient: {
-        rectPlaceholder = appendDrawRectPlaceholder(buffer, renderer.shaderIds.untextured, false);
+        placeholder = appendDrawRectPlaceholder(buffer, renderer.shaderIds.untextured, false);
     } break;
 
     case DrawableType::Ninepatch: {
-        ninepatchPlaceholder = appendDrawNinepatchPlaceholder(buffer, getAsset(&style->ninepatch)->ninepatch.texture, renderer.shaderIds.textured);
+        placeholder = appendDrawNinepatchPlaceholder(buffer, getAsset(&style->ninepatch)->ninepatch.texture, renderer.shaderIds.textured);
     } break;
 
     case DrawableType::Sprite: {
-        rectPlaceholder = appendDrawRectPlaceholder(buffer, renderer.shaderIds.pixelArt, true);
+        placeholder = appendDrawRectPlaceholder(buffer, renderer.shaderIds.pixelArt, true);
     } break;
 
         INVALID_DEFAULT_CASE;
@@ -46,19 +46,19 @@ void Drawable::fillPlaceholder(Rect2I bounds)
     } break;
 
     case DrawableType::Color: {
-        fillDrawRectPlaceholder(&rectPlaceholder, bounds, style->color);
+        fillDrawRectPlaceholder(&placeholder.get<DrawRectPlaceholder>(), bounds, style->color);
     } break;
 
     case DrawableType::Gradient: {
-        fillDrawRectPlaceholder(&rectPlaceholder, bounds, style->gradient.color00, style->gradient.color01, style->gradient.color10, style->gradient.color11);
+        fillDrawRectPlaceholder(&placeholder.get<DrawRectPlaceholder>(), bounds, style->gradient.color00, style->gradient.color01, style->gradient.color10, style->gradient.color11);
     } break;
 
     case DrawableType::Ninepatch: {
-        fillDrawNinepatchPlaceholder(&ninepatchPlaceholder, bounds, &getAsset(&style->ninepatch)->ninepatch, style->color);
+        fillDrawNinepatchPlaceholder(&placeholder.get<DrawNinepatchPlaceholder>(), bounds, &getAsset(&style->ninepatch)->ninepatch, style->color);
     } break;
 
     case DrawableType::Sprite: {
-        fillDrawRectPlaceholder(&rectPlaceholder, bounds, getSprite(&style->sprite), style->color);
+        fillDrawRectPlaceholder(&placeholder.get<DrawRectPlaceholder>(), bounds, getSprite(&style->sprite), style->color);
     } break;
 
         INVALID_DEFAULT_CASE;

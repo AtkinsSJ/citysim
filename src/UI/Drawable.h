@@ -8,6 +8,7 @@
 
 #include <Gfx/Renderer.h>
 #include <UI/Forward.h>
+#include <Util/Variant.h>
 
 namespace UI {
 
@@ -26,11 +27,7 @@ struct Drawable {
     void draw(RenderBuffer* buffer, Rect2I bounds);
 
     DrawableStyle* style;
-
-    union {
-        DrawRectPlaceholder rectPlaceholder;
-        DrawNinepatchPlaceholder ninepatchPlaceholder;
-    };
+    Variant<Empty, DrawRectPlaceholder, DrawNinepatchPlaceholder> placeholder;
 };
 
 }
