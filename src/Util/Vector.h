@@ -145,18 +145,9 @@ inline V2I operator/=(V2I& v, s32 s)
  **********************************************/
 
 struct V3 {
-    union {
-        struct
-        {
-            float x;
-            float y;
-            float z;
-        };
-        struct
-        {
-            V2 xy;
-        };
-    };
+    float x;
+    float y;
+    float z;
 };
 
 V3 v3(float x, float y, float z);
