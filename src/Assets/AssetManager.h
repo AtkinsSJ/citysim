@@ -93,11 +93,9 @@ String getAssetPath(AssetType type, String shortName);
 
 Asset* getAsset(AssetType type, String shortName);
 Asset* getAssetIfExists(AssetType type, String shortName);
-AssetRef getAssetRef(AssetType type, String shortName);
-Asset* getAsset(AssetRef* ref);
 
 BitmapFont* getFont(String fontName);
-BitmapFont* getFont(AssetRef* fontRef);
+BitmapFont* getFont(AssetRef const& fontRef);
 
 Array<Colour>* getPalette(String name);
 Shader* getShader(String shaderName);
@@ -111,9 +109,9 @@ String getText(String name);
 String getText(String name, std::initializer_list<String> args);
 
 template<typename T>
-bool checkStyleMatchesType(AssetRef* reference)
+bool checkStyleMatchesType(AssetRef const& reference)
 {
-    switch (reference->type) {
+    switch (reference.type()) {
     case AssetType::ButtonStyle:
         return (typeid(T*) == typeid(UI::ButtonStyle*));
     case AssetType::CheckboxStyle:
@@ -143,25 +141,21 @@ bool checkStyleMatchesType(AssetRef* reference)
 }
 
 template<typename T>
-T* getStyle(AssetRef* ref)
+T* getStyle(AssetRef const& ref)
 {
     ASSERT(checkStyleMatchesType<T>(ref));
 
-    Asset* asset = getAsset(ref);
+    Asset* asset = ref.get();
 
     return (T*)&asset->_localData;
 }
 
 template<typename T>
-T* getStyle(String styleName, AssetRef* defaultStyle)
+T* getStyle(String styleName, AssetRef const& defaultStyle)
 {
-    T* result = nullptr;
-    if (!styleName.is_empty())
-        result = getStyle<T>(styleName);
-    if (result == nullptr)
-        result = getStyle<T>(defaultStyle);
-
-    return result;
+    if (styleName.is_empty())
+        return getStyle<T>(defaultStyle);
+    return getStyle<T>(styleName);
 }
 
 template<typename T>

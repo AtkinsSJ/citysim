@@ -203,7 +203,7 @@ V2I calculateButtonSize(String text, ButtonStyle* style, s32 maxWidth, bool fill
     }
 
     V2I result = {};
-    BitmapFont* font = getFont(&style->font);
+    BitmapFont* font = getFont(style->font);
 
     if (textMaxWidth < 0) {
         // ERROR! Negative text width means we can't fit any so give up.
@@ -339,7 +339,7 @@ bool putTextButton(String text, Rect2I bounds, ButtonStyle* style, ButtonState s
 
     Rect2I contentBounds = calculateButtonContentBounds(bounds, style);
 
-    drawText(renderBuffer, getFont(&style->font), text, contentBounds, style->textAlignment, style->textColor, renderer.shaderIds.text);
+    drawText(renderBuffer, getFont(style->font), text, contentBounds, style->textAlignment, style->textColor, renderer.shaderIds.text);
 
     return result;
 }
@@ -438,7 +438,7 @@ V2I calculateLabelSize(String text, LabelStyle* style, s32 maxWidth, bool fillWi
 
     s32 maxTextWidth = maxWidth - (style->padding.left + style->padding.right);
 
-    V2I textSize = calculateTextSize(getFont(&style->font), text, maxTextWidth);
+    V2I textSize = calculateTextSize(getFont(style->font), text, maxTextWidth);
 
     // Add padding
     V2I result = v2i(
@@ -466,7 +466,7 @@ void putLabel(String text, Rect2I bounds, LabelStyle* style, RenderBuffer* rende
 
     Drawable(&style->background).draw(renderBuffer, bounds);
 
-    drawText(renderBuffer, getFont(&style->font), text, textBounds, style->textAlignment, style->textColor, renderer.shaderIds.text);
+    drawText(renderBuffer, getFont(style->font), text, textBounds, style->textAlignment, style->textColor, renderer.shaderIds.text);
 }
 
 void showMenu(s32 menuID)
@@ -906,9 +906,9 @@ void drawToast()
             PanelStyle* style = getStyle<PanelStyle>("toast"_s);
             V2I origin = v2i(windowSize.x / 2, windowSize.y - 8);
 
-            LabelStyle* labelStyle = getStyle<LabelStyle>(&style->labelStyle);
+            LabelStyle* labelStyle = getStyle<LabelStyle>(style->labelStyle);
             s32 maxWidth = min(floor_s32(windowSize.x * 0.8f), 500);
-            V2I textSize = calculateTextSize(getFont(&labelStyle->font), toast->text, maxWidth - (style->padding.left + style->padding.right));
+            V2I textSize = calculateTextSize(getFont(labelStyle->font), toast->text, maxWidth - (style->padding.left + style->padding.right));
 
             V2I toastSize = v2i(
                 textSize.x + (style->padding.left + style->padding.right),

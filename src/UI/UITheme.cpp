@@ -62,7 +62,7 @@ Optional<DrawableStyle> readDrawableStyle(LineReader* reader)
         DrawableStyle drawable = {};
         drawable.type = DrawableType::Ninepatch;
         drawable.color = color.value_or(Colour::white());
-        drawable.ninepatch = getAssetRef(AssetType::Ninepatch, ninepatchName);
+        drawable.ninepatch = AssetRef { AssetType::Ninepatch, intern(&asset_manager().assetStrings, ninepatchName) };
 
         result = move(drawable);
     } else if (typeName == "sprite"_s) {
@@ -424,7 +424,7 @@ void loadUITheme(Blob data, Asset* asset)
                             String value = intern(&asset_manager().assetStrings, reader.next_token());
                             Optional<String> fontFilename = fontNamesToAssetNames.findValue(value);
                             if (fontFilename.has_value()) {
-                                AssetRef fontRef = getAssetRef(AssetType::BitmapFont, fontFilename.value());
+                                AssetRef fontRef = AssetRef { AssetType::BitmapFont, fontFilename.value() };
                                 UI::setPropertyValue(target, property, fontRef);
                             } else {
                                 reader.error("Unrecognised font name '{0}'. Make sure to declare the :Font before it is used!"_s, { value });
@@ -483,7 +483,7 @@ void loadUITheme(Blob data, Asset* asset)
     // Some default values to use
     auto transparent = Colour::from_rgb_255(0, 0, 0, 0);
     auto white = Colour::white();
-    AssetRef defaultFont = getAssetRef(AssetType::BitmapFont, nullString);
+    AssetRef defaultFont = AssetRef { AssetType::BitmapFont, nullString };
     String defaultStyleName = "default"_h;
 
     for (auto it = styles.iterate(); it.hasNext(); it.next()) {
@@ -577,8 +577,8 @@ void loadUITheme(Blob data, Asset* asset)
                     console->padding = style->padding.value_or({});
                     console->contentPadding = style->contentPadding.value_or({});
 
-                    console->scrollbarStyle = getAssetRef(AssetType::ScrollbarStyle, style->scrollbarStyle.value_or(defaultStyleName));
-                    console->textInputStyle = getAssetRef(AssetType::TextInputStyle, style->textInputStyle.value_or(defaultStyleName));
+                    console->scrollbarStyle = AssetRef { AssetType::ScrollbarStyle, style->scrollbarStyle.value_or(defaultStyleName) };
+                    console->textInputStyle = AssetRef { AssetType::TextInputStyle, style->textInputStyle.value_or(defaultStyleName) };
                 } break;
 
                 case UI::StyleType::DropDownList: {
@@ -588,8 +588,8 @@ void loadUITheme(Blob data, Asset* asset)
                     UI::DropDownListStyle* ddl = &childAsset->dropDownListStyle;
                     ddl->name = style->name;
 
-                    ddl->buttonStyle = getAssetRef(AssetType::ButtonStyle, style->buttonStyle.value_or(defaultStyleName));
-                    ddl->panelStyle = getAssetRef(AssetType::PanelStyle, style->panelStyle.value_or(defaultStyleName));
+                    ddl->buttonStyle = AssetRef { AssetType::ButtonStyle, style->buttonStyle.value_or(defaultStyleName) };
+                    ddl->panelStyle = AssetRef { AssetType::PanelStyle, style->panelStyle.value_or(defaultStyleName) };
                 } break;
 
                 case UI::StyleType::Label: {
@@ -618,14 +618,14 @@ void loadUITheme(Blob data, Asset* asset)
                     panel->widgetAlignment = style->widgetAlignment.value_or({ HAlign::Fill, VAlign::Top });
                     panel->background = style->background.value_or({});
 
-                    panel->buttonStyle = getAssetRef(AssetType::ButtonStyle, style->buttonStyle.value_or(defaultStyleName));
-                    panel->checkboxStyle = getAssetRef(AssetType::CheckboxStyle, style->checkboxStyle.value_or(defaultStyleName));
-                    panel->dropDownListStyle = getAssetRef(AssetType::DropDownListStyle, style->dropDownListStyle.value_or(defaultStyleName));
-                    panel->labelStyle = getAssetRef(AssetType::LabelStyle, style->labelStyle.value_or(defaultStyleName));
-                    panel->radioButtonStyle = getAssetRef(AssetType::RadioButtonStyle, style->radioButtonStyle.value_or(defaultStyleName));
-                    panel->scrollbarStyle = getAssetRef(AssetType::ScrollbarStyle, style->scrollbarStyle.value_or(defaultStyleName));
-                    panel->sliderStyle = getAssetRef(AssetType::SliderStyle, style->sliderStyle.value_or(defaultStyleName));
-                    panel->textInputStyle = getAssetRef(AssetType::TextInputStyle, style->textInputStyle.value_or(defaultStyleName));
+                    panel->buttonStyle = AssetRef { AssetType::ButtonStyle, style->buttonStyle.value_or(defaultStyleName) };
+                    panel->checkboxStyle = AssetRef { AssetType::CheckboxStyle, style->checkboxStyle.value_or(defaultStyleName) };
+                    panel->dropDownListStyle = AssetRef { AssetType::DropDownListStyle, style->dropDownListStyle.value_or(defaultStyleName) };
+                    panel->labelStyle = AssetRef { AssetType::LabelStyle, style->labelStyle.value_or(defaultStyleName) };
+                    panel->radioButtonStyle = AssetRef { AssetType::RadioButtonStyle, style->radioButtonStyle.value_or(defaultStyleName) };
+                    panel->scrollbarStyle = AssetRef { AssetType::ScrollbarStyle, style->scrollbarStyle.value_or(defaultStyleName) };
+                    panel->sliderStyle = AssetRef { AssetType::SliderStyle, style->sliderStyle.value_or(defaultStyleName) };
+                    panel->textInputStyle = AssetRef { AssetType::TextInputStyle, style->textInputStyle.value_or(defaultStyleName) };
                 } break;
 
                 case UI::StyleType::RadioButton: {
@@ -709,11 +709,11 @@ void loadUITheme(Blob data, Asset* asset)
                     window->titleBarColorInactive = style->titleBarColorInactive.value_or(window->titleBarColor);
                     window->titleBarButtonHoverColor = style->titleBarButtonHoverColor.value_or(transparent);
 
-                    window->titleLabelStyle = getAssetRef(AssetType::LabelStyle, style->titleLabelStyle.value_or(defaultStyleName));
+                    window->titleLabelStyle = AssetRef { AssetType::LabelStyle, style->titleLabelStyle.value_or(defaultStyleName) };
 
                     window->offsetFromMouse = style->offsetFromMouse.value_or({});
 
-                    window->panelStyle = getAssetRef(AssetType::PanelStyle, style->panelStyle.value_or(defaultStyleName));
+                    window->panelStyle = AssetRef { AssetType::PanelStyle, style->panelStyle.value_or(defaultStyleName) };
                 } break;
 
                     INVALID_DEFAULT_CASE;

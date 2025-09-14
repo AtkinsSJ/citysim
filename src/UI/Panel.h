@@ -71,7 +71,7 @@ struct Panel {
 
         prepareForWidgets();
 
-        DropDownListStyle* widgetStyle = getStyle<DropDownListStyle>(styleName, &style->dropDownListStyle);
+        DropDownListStyle* widgetStyle = getStyle<DropDownListStyle>(styleName, style->dropDownListStyle);
 
         Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
             return calculateDropDownListSize(listOptions, getDisplayName, widgetStyle, space.width(), fillWidth);
@@ -95,8 +95,8 @@ struct Panel {
 
         prepareForWidgets();
 
-        RadioButtonStyle* radioButtonStyle = getStyle<RadioButtonStyle>(styleName, &style->radioButtonStyle);
-        LabelStyle* labelStyle = getStyle<LabelStyle>(labelStyleName, &style->labelStyle);
+        RadioButtonStyle* radioButtonStyle = getStyle<RadioButtonStyle>(styleName, style->radioButtonStyle);
+        LabelStyle* labelStyle = getStyle<LabelStyle>(labelStyleName, style->labelStyle);
 
         V2I radioButtonSize = calculateRadioButtonSize(radioButtonStyle);
 
@@ -157,7 +157,7 @@ struct Panel {
 
         prepareForWidgets();
 
-        SliderStyle* widgetStyle = getStyle<SliderStyle>(styleName, &style->sliderStyle);
+        SliderStyle* widgetStyle = getStyle<SliderStyle>(styleName, style->sliderStyle);
 
         Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
             return calculateSliderSize(Orientation::Horizontal, widgetStyle, space.size(), fillWidth);

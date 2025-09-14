@@ -13,7 +13,7 @@ struct Asset;
 struct AssetID;
 struct AssetManager;
 class AssetManagerListener;
-struct AssetRef;
+class AssetRef;
 struct Cursor;
 struct Ninepatch;
 struct Palette;

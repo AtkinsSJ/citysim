@@ -707,26 +707,6 @@ Asset* getAssetIfExists(AssetType type, String shortName)
     return result.isValid ? result.value : nullptr;
 }
 
-AssetRef getAssetRef(AssetType type, String shortName)
-{
-    AssetRef result = {};
-
-    result.type = type;
-    result.name = intern(&s_assets->assetStrings, shortName);
-
-    return result;
-}
-
-Asset* getAsset(AssetRef* ref)
-{
-    if (!ref->pointer || s_assets->asset_generation() > ref->asset_generation) {
-        ref->pointer = getAsset(ref->type, ref->name);
-        ref->asset_generation = s_assets->asset_generation();
-    }
-
-    return ref->pointer;
-}
-
 Array<Colour>* getPalette(String name)
 {
     return &getAsset(AssetType::Palette, name)->palette.paletteData;
@@ -798,12 +778,12 @@ BitmapFont* getFont(String fontName)
     return result;
 }
 
-BitmapFont* getFont(AssetRef* fontRef)
+BitmapFont* getFont(AssetRef const& fontRef)
 {
-    ASSERT(fontRef->type == AssetType::BitmapFont);
+    ASSERT(fontRef.type() == AssetType::BitmapFont);
 
     BitmapFont* result = nullptr;
-    Asset* asset = getAsset(fontRef);
+    Asset* asset = fontRef.get();
 
     if (asset != nullptr) {
         result = &asset->bitmapFont;

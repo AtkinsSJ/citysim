@@ -352,7 +352,7 @@ V2I calculateTextInputSize(TextInput* textInput, TextInputStyle* style, s32 maxW
 {
     s32 textMaxWidth = (maxWidth == 0) ? 0 : (maxWidth - (style->padding.left + style->padding.right));
 
-    BitmapFont* font = getFont(&style->font);
+    BitmapFont* font = getFont(style->font);
     String text = textInput->toString();
     V2I textSize = calculateTextSize(font, text, textMaxWidth);
 
@@ -375,7 +375,7 @@ Rect2I drawTextInput(RenderBuffer* renderBuffer, TextInput* textInput, TextInput
 
     auto& renderer = the_renderer();
     String text = textInput->toString();
-    BitmapFont* font = getFont(&style->font);
+    BitmapFont* font = getFont(style->font);
 
     Drawable(&style->background).draw(renderBuffer, bounds);
 

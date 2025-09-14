@@ -30,7 +30,7 @@ Panel::Panel(Rect2I bounds, PanelStyle* panelStyle, u32 flags, RenderBuffer* ren
 
 void Panel::enableHorizontalScrolling(ScrollbarState* scrollbarState)
 {
-    ScrollbarStyle* scrollbarStyle = getStyle<ScrollbarStyle>(&style->scrollbarStyle);
+    ScrollbarStyle* scrollbarStyle = getStyle<ScrollbarStyle>(style->scrollbarStyle);
     ASSERT(scrollbarStyle != nullptr);
 
     this->hScrollbar = scrollbarState;
@@ -42,7 +42,7 @@ void Panel::enableHorizontalScrolling(ScrollbarState* scrollbarState)
 
 void Panel::enableVerticalScrolling(ScrollbarState* scrollbarState, bool expandWidth)
 {
-    ScrollbarStyle* scrollbarStyle = getStyle<ScrollbarStyle>(&style->scrollbarStyle);
+    ScrollbarStyle* scrollbarStyle = getStyle<ScrollbarStyle>(style->scrollbarStyle);
     ASSERT(scrollbarStyle != nullptr);
 
     this->vScrollbar = scrollbarState;
@@ -65,7 +65,7 @@ bool Panel::addTextButton(String text, ButtonState state, String styleName)
 
     prepareForWidgets();
 
-    ButtonStyle* widgetStyle = getStyle<ButtonStyle>(styleName, &this->style->buttonStyle);
+    ButtonStyle* widgetStyle = getStyle<ButtonStyle>(styleName, style->buttonStyle);
 
     Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
         return calculateButtonSize(text, widgetStyle, space.width(), fillWidth);
@@ -88,7 +88,7 @@ bool Panel::addImageButton(Sprite* sprite, ButtonState state, String styleName)
 
     prepareForWidgets();
 
-    ButtonStyle* widgetStyle = getStyle<ButtonStyle>(styleName, &this->style->buttonStyle);
+    ButtonStyle* widgetStyle = getStyle<ButtonStyle>(styleName, style->buttonStyle);
     V2I spriteSize = v2i(sprite->pixelWidth, sprite->pixelHeight);
 
     Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
@@ -112,7 +112,7 @@ void Panel::addCheckbox(bool* checked, String styleName)
 
     prepareForWidgets();
 
-    CheckboxStyle* widgetStyle = getStyle<CheckboxStyle>(styleName, &style->checkboxStyle);
+    CheckboxStyle* widgetStyle = getStyle<CheckboxStyle>(styleName, style->checkboxStyle);
 
     Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I, bool) {
         return calculateCheckboxSize(widgetStyle);
@@ -131,7 +131,7 @@ void Panel::addLabel(String text, String styleName)
 
     prepareForWidgets();
 
-    LabelStyle* widgetStyle = getStyle<LabelStyle>(styleName, &this->style->labelStyle);
+    LabelStyle* widgetStyle = getStyle<LabelStyle>(styleName, style->labelStyle);
 
     Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
         return calculateLabelSize(text, widgetStyle, space.width(), fillWidth);
@@ -150,7 +150,7 @@ void Panel::addRadioButton(s32* currentValue, s32 myValue, String styleName)
 
     prepareForWidgets();
 
-    RadioButtonStyle* widgetStyle = getStyle<RadioButtonStyle>(styleName, &style->radioButtonStyle);
+    RadioButtonStyle* widgetStyle = getStyle<RadioButtonStyle>(styleName, style->radioButtonStyle);
 
     Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I, bool) {
         return calculateRadioButtonSize(widgetStyle);
@@ -194,7 +194,7 @@ bool Panel::addTextInput(TextInput* textInput, String styleName)
 
     prepareForWidgets();
 
-    TextInputStyle* widgetStyle = getStyle<TextInputStyle>(styleName, &this->style->textInputStyle);
+    TextInputStyle* widgetStyle = getStyle<TextInputStyle>(styleName, style->textInputStyle);
 
     Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
         return calculateTextInputSize(textInput, widgetStyle, space.width(), fillWidth);
@@ -400,7 +400,7 @@ void Panel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
 
     // Handle scrollbars
     if (hScrollbar) {
-        ScrollbarStyle* scrollbarStyle = getStyle<ScrollbarStyle>(&style->scrollbarStyle);
+        ScrollbarStyle* scrollbarStyle = getStyle<ScrollbarStyle>(style->scrollbarStyle);
 
         if (!hideWidgets) {
             putScrollbar(hScrollbar, largestLineWidth + style->padding.left + style->padding.right, hScrollbarBounds, scrollbarStyle, false, renderBuffer);
@@ -408,7 +408,7 @@ void Panel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
     }
 
     if (vScrollbar) {
-        ScrollbarStyle* scrollbarStyle = getStyle<ScrollbarStyle>(&style->scrollbarStyle);
+        ScrollbarStyle* scrollbarStyle = getStyle<ScrollbarStyle>(style->scrollbarStyle);
 
         if (!hideWidgets) {
             putScrollbar(vScrollbar, contentHeight, vScrollbarBounds, scrollbarStyle, false, renderBuffer);

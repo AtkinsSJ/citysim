@@ -165,7 +165,7 @@ V2I calculateDropDownListSize(Array<T>* listOptions, String (*getDisplayName)(T*
 {
     if (style == nullptr)
         style = getStyle<DropDownListStyle>("default"_s);
-    ButtonStyle* buttonStyle = getStyle<ButtonStyle>(&style->buttonStyle);
+    ButtonStyle* buttonStyle = getStyle<ButtonStyle>(style->buttonStyle);
 
     // I don't have a smarter way to do this, so, we'll just go through every option
     // and find the maximum width and height.
@@ -204,7 +204,7 @@ void putDropDownList(Array<T>* listOptions, s32* currentSelection, String (*getD
 
     // Show the selection box
     String selectionText = getDisplayName(&listOptions->get(*currentSelection));
-    bool clicked = putTextButton(selectionText, bounds, getStyle<ButtonStyle>(&style->buttonStyle), buttonIsActive(isOpen), renderBuffer);
+    bool clicked = putTextButton(selectionText, bounds, getStyle<ButtonStyle>(style->buttonStyle), buttonIsActive(isOpen), renderBuffer);
     if (clicked) {
         // Toggle things
         if (isOpen) {
@@ -221,7 +221,7 @@ void putDropDownList(Array<T>* listOptions, s32* currentSelection, String (*getD
         s32 panelTop = bounds.y + bounds.h;
         s32 panelMaxHeight = windowSize.y - panelTop;
         Rect2I panelBounds { bounds.x, panelTop, bounds.w, panelMaxHeight };
-        Panel panel = Panel(panelBounds, getStyle<PanelStyle>(&style->panelStyle), 0, uiState.openDropDownListRenderBuffer);
+        Panel panel = Panel(panelBounds, getStyle<PanelStyle>(style->panelStyle), 0, uiState.openDropDownListRenderBuffer);
         panel.enableVerticalScrolling(&uiState.openDropDownListScrollbar, false);
         for (s32 optionIndex = 0; optionIndex < listOptions->count; optionIndex++) {
             if (panel.addTextButton(getDisplayName(&listOptions->get(optionIndex)), buttonIsActive(optionIndex == *currentSelection))) {

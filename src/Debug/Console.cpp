@@ -51,9 +51,6 @@ void initConsole(MemoryArena* debugArena, float openHeight, float maximisedHeigh
 {
     Console* console = &theConsole;
 
-    // NB: Console->style is initialised later, in updateConsole(), because initConsole() happens
-    // before the asset system is initialised!
-
     console->currentHeight = 0;
 
     console->openHeight = openHeight;
@@ -83,11 +80,6 @@ void updateAndRenderConsole(Console* console)
 {
     bool scrollToBottom = false;
     auto& renderer = the_renderer();
-
-    // Late-init the console style
-    if (console->style.type != AssetType::ConsoleStyle) {
-        console->style = getAssetRef(AssetType::ConsoleStyle, "default"_s);
-    }
 
     // Keyboard shortcuts for commands
     for (auto it = console->commandShortcuts.iterate();
@@ -201,9 +193,9 @@ void updateAndRenderConsole(Console* console)
         s32 actualConsoleHeight = floor_s32(console->currentHeight * (float)UI::windowSize.y);
         s32 screenWidth = renderer.window_width();
 
-        UI::ConsoleStyle* consoleStyle = getStyle<UI::ConsoleStyle>(&console->style);
-        UI::ScrollbarStyle* scrollbarStyle = getStyle<UI::ScrollbarStyle>(&consoleStyle->scrollbarStyle);
-        UI::TextInputStyle* textInputStyle = getStyle<UI::TextInputStyle>(&consoleStyle->textInputStyle);
+        UI::ConsoleStyle* consoleStyle = getStyle<UI::ConsoleStyle>(console->style);
+        UI::ScrollbarStyle* scrollbarStyle = getStyle<UI::ScrollbarStyle>(consoleStyle->scrollbarStyle);
+        UI::TextInputStyle* textInputStyle = getStyle<UI::TextInputStyle>(consoleStyle->textInputStyle);
 
         // Text input
         V2I textInputSize = UI::calculateTextInputSize(&console->input, textInputStyle, screenWidth);
@@ -221,7 +213,7 @@ void updateAndRenderConsole(Console* console)
         // Scrollbar
         Rect2I scrollbarBounds = getConsoleScrollbarBounds(console);
         if (scrollbarBounds.has_positive_area()) {
-            s32 fontLineHeight = getFont(&consoleStyle->font)->lineHeight;
+            s32 fontLineHeight = getFont(consoleStyle->font)->lineHeight;
             s32 contentHeight = ((console->outputLines.count - 1) * fontLineHeight) + scrollbarBounds.height();
             if (scrollToBottom) {
                 console->scrollbar.scrollPercent = 1.0f;
@@ -235,7 +227,7 @@ void updateAndRenderConsole(Console* console)
         textPos.y -= consoleStyle->padding.bottom;
 
         // print output lines
-        BitmapFont* consoleFont = getFont(&consoleStyle->font);
+        BitmapFont* consoleFont = getFont(consoleStyle->font);
         s32 scrollLinePos = clamp(floor_s32(console->scrollbar.scrollPercent * console->outputLines.count), 0, console->outputLines.count - 1);
         Alignment outputLinesAlign { HAlign::Left, VAlign::Bottom };
         for (auto it = console->outputLines.iterate(scrollLinePos, false, true);
@@ -349,9 +341,9 @@ void consoleWriteLine(String text, ConsoleLineStyle style)
 Rect2I getConsoleScrollbarBounds(Console* console)
 {
     auto& renderer = the_renderer();
-    UI::ConsoleStyle* consoleStyle = getStyle<UI::ConsoleStyle>(&console->style);
-    UI::ScrollbarStyle* scrollbarStyle = getStyle<UI::ScrollbarStyle>(&consoleStyle->scrollbarStyle);
-    UI::TextInputStyle* textInputStyle = getStyle<UI::TextInputStyle>(&consoleStyle->textInputStyle);
+    UI::ConsoleStyle* consoleStyle = getStyle<UI::ConsoleStyle>(console->style);
+    UI::ScrollbarStyle* scrollbarStyle = getStyle<UI::ScrollbarStyle>(consoleStyle->scrollbarStyle);
+    UI::TextInputStyle* textInputStyle = getStyle<UI::TextInputStyle>(consoleStyle->textInputStyle);
 
     V2I textInputSize = UI::calculateTextInputSize(&console->input, textInputStyle, renderer.window_width());
 

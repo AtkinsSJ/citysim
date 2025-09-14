@@ -23,7 +23,7 @@ WindowContext::WindowContext(Window* window, WindowStyle* windowStyle, bool hide
               window->area.width(),
               (window->flags & WindowFlags::AutomaticHeight) ? 10000 : (window->area.height() - ((window->flags & WindowFlags::Headless) ? 0 : windowStyle->titleBarHeight)),
           },
-          getStyle<PanelStyle>(&windowStyle->panelStyle),
+          getStyle<PanelStyle>(windowStyle->panelStyle),
           ((window->flags & WindowFlags::Tooltip) ? PanelFlags::AllowClickThrough : 0)
               | (hideWidgets ? PanelFlags::HideWidgets : 0),
           renderBuffer)
@@ -296,13 +296,13 @@ void updateAndRenderWindows()
             drawSingleRect(window->renderBuffer, barArea, renderer.shaderIds.untextured, barColor);
             String titleString = window->title.getString();
 
-            LabelStyle* titleStyle = getStyle<LabelStyle>(&windowStyle->titleLabelStyle);
+            LabelStyle* titleStyle = getStyle<LabelStyle>(windowStyle->titleLabelStyle);
             // TODO: Take close-button size into account
             V2I titleSize = calculateLabelSize(titleString, titleStyle, barArea.width(), false);
             putLabel(titleString, barArea.create_aligned_within(titleSize, titleStyle->textAlignment), titleStyle, window->renderBuffer);
 
             // TODO: Replace this with an actual Button?
-            auto titleFont = getFont(&titleStyle->font);
+            auto titleFont = getFont(titleStyle->font);
             if (hoveringOverCloseButton
                 && (!isMouseInputHandled() || windowIndex == 0)) {
                 drawSingleRect(window->renderBuffer, closeButtonRect, renderer.shaderIds.untextured, closeButtonColorHover);

@@ -371,7 +371,7 @@ void updateAndRenderGameUI(GameState* gameState)
     auto& renderer = the_renderer();
     RenderBuffer* uiBuffer = &renderer.ui_buffer();
     UI::LabelStyle* labelStyle = getStyle<UI::LabelStyle>("title"_s);
-    BitmapFont* font = getFont(&labelStyle->font);
+    BitmapFont* font = getFont(labelStyle->font);
     City* city = &gameState->city;
 
     s32 const uiPadding = 4; // TODO: Move this somewhere sensible!
@@ -1097,7 +1097,7 @@ void drawDataViewUI(GameState* gameState)
     auto& renderer = the_renderer();
     RenderBuffer* uiBuffer = &renderer.ui_buffer();
     UI::LabelStyle* labelStyle = getStyle<UI::LabelStyle>("title"_s);
-    BitmapFont* font = getFont(&labelStyle->font);
+    BitmapFont* font = getFont(labelStyle->font);
 
     s32 const uiPadding = 4; // TODO: Move this somewhere sensible!
     UI::ButtonStyle* buttonStyle = getStyle<UI::ButtonStyle>("default"_s);
@@ -1118,7 +1118,7 @@ void drawDataViewUI(GameState* gameState)
 
     if (UI::isMenuVisible(to_underlying(GameMenuID::DataViews))) {
         // Measure the menu contents
-        UI::ButtonStyle* popupButtonStyle = getStyle<UI::ButtonStyle>(&popupMenuPanelStyle->buttonStyle);
+        UI::ButtonStyle* popupButtonStyle = getStyle<UI::ButtonStyle>(popupMenuPanelStyle->buttonStyle);
         s32 buttonMaxWidth = 0;
         s32 buttonMaxHeight = 0;
         for (auto data_view : enum_values<DataView>()) {

@@ -36,7 +36,7 @@ AppStatus updateAndRenderMainMenu(float /*deltaTime*/)
     // TODO: Some way of telling the panel to make these buttons all the same size.
     // Maybe we just create a child panel set to HAlign::Fill its widgets?
     /*
-    UI::ButtonStyle *style = getStyle<UI::ButtonStyle>(&panel.style->buttonStyle);
+    UI::ButtonStyle *style = getStyle<UI::ButtonStyle>(panel.style->buttonStyle);
 
     V2I newGameSize  = UI::calculateButtonSize(newGameText,  style);
     V2I loadSize     = UI::calculateButtonSize(loadText,     style);

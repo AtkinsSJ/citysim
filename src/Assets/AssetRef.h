@@ -10,10 +10,23 @@
 #include <Assets/Forward.h>
 #include <Util/String.h>
 
-struct AssetRef {
-    AssetType type;
-    String name;
+class AssetRef {
+public:
+    explicit AssetRef(AssetType type, String short_name)
+        : m_type(type)
+        , m_name(short_name)
+    {
+    }
 
-    Asset* pointer;
-    u32 asset_generation;
+    Asset* get() const;
+
+    AssetType type() const { return m_type; }
+    String const& name() const { return m_name; }
+
+private:
+    AssetType m_type;
+    String m_name;
+
+    mutable Asset* m_pointer { nullptr };
+    mutable u32 m_asset_generation { 0 };
 };

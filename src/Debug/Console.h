@@ -41,7 +41,7 @@ struct Command {
 };
 
 struct Console {
-    AssetRef style;
+    AssetRef style { AssetType::ConsoleStyle, "default"_s };
 
     float currentHeight;
     float targetHeight;
