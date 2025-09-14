@@ -10,7 +10,6 @@
 
 enum class AssetType : u8;
 struct Asset;
-struct AssetID;
 struct AssetManager;
 class AssetManagerListener;
 class AssetRef;

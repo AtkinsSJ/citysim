@@ -19,21 +19,6 @@
 #include <Util/Memory.h>
 #include <Util/Vector.h>
 
-struct AssetID {
-    AssetType type;
-    String name;
-};
-
-inline AssetID makeAssetID(AssetType type, String name)
-{
-    AssetID result = {};
-
-    result.type = type;
-    result.name = name;
-
-    return result;
-}
-
 struct Cursor {
     String imageFilePath; // Full path
     V2I hotspot;
@@ -133,7 +118,7 @@ struct Asset {
     State state { State::Unloaded };
     Optional<Locale> locale;
 
-    Array<AssetID> children;
+    Array<AssetRef> children;
 
     // Depending on the AssetType, this could be the file contents, or something else!
     Blob data;

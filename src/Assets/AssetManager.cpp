@@ -145,7 +145,7 @@ Asset* makePlaceholderAsset(AssetType type)
     result->fullName = nullString;
     result->flags = {};
     result->state = Asset::State::Loaded;
-    result->children = makeEmptyArray<AssetID>();
+    result->children = makeEmptyArray<AssetRef>();
     result->data = {};
 
     return result;
@@ -163,13 +163,13 @@ Blob assetsAllocate(AssetManager* theAssets, smm size)
 
 void allocateChildren(Asset* asset, s32 childCount)
 {
-    asset->data = assetsAllocate(s_assets, childCount * sizeof(AssetID));
-    asset->children = makeArray(childCount, (AssetID*)asset->data.writable_data());
+    asset->data = assetsAllocate(s_assets, childCount * sizeof(AssetRef));
+    asset->children = makeArray(childCount, reinterpret_cast<AssetRef*>(asset->data.writable_data()));
 }
 
 void addChildAsset(Asset* parent, Asset* child)
 {
-    parent->children.append(makeAssetID(child->type, child->shortName));
+    parent->children.append(AssetRef { child->type, child->shortName });
 }
 
 Asset* addAsset(AssetType type, String shortName, Flags<AssetFlags> flags)
@@ -506,8 +506,10 @@ void unloadAsset(Asset* asset)
     }
 
     if (!asset->children.isEmpty()) {
-        removeAssets(asset->children);
-        asset->children = makeEmptyArray<AssetID>();
+        for (s32 nameIndex = 0; nameIndex < asset->children.count; nameIndex++) {
+            removeAsset(asset->children[nameIndex]);
+        }
+        asset->children = makeEmptyArray<AssetRef>();
     }
 
     if (asset->data.data() != nullptr) {
@@ -530,12 +532,9 @@ void removeAsset(AssetType type, String name)
     }
 }
 
-void removeAssets(Array<AssetID> s_assetsToRemove)
+void removeAsset(AssetRef const& ref)
 {
-    for (s32 nameIndex = 0; nameIndex < s_assetsToRemove.count; nameIndex++) {
-        AssetID assetToRemove = s_assetsToRemove[nameIndex];
-        removeAsset(assetToRemove.type, assetToRemove.name);
-    }
+    removeAsset(ref.type(), ref.name());
 }
 
 Asset* addNinepatch(String name, String filename, s32 pu0, s32 pu1, s32 pu2, s32 pu3, s32 pv0, s32 pv1, s32 pv2, s32 pv3)

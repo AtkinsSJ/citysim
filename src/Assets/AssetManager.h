@@ -82,7 +82,7 @@ void loadAsset(Asset* asset);
 void ensureAssetIsLoaded(Asset* asset);
 void unloadAsset(Asset* asset);
 void removeAsset(AssetType type, String name);
-void removeAssets(Array<AssetID> assetsToRemove);
+void removeAsset(AssetRef const&);
 
 void addAssets();
 void addAssetsFromDirectory(String subDirectory, Optional<AssetType> manualAssetType = {});
