@@ -41,7 +41,8 @@ void initBuildingCatalogue()
 
 void BuildingCatalogue::after_assets_loaded()
 {
-    remapBuildingTypes();
+    if (AppState::the().gameState)
+        remapBuildingTypes();
 }
 
 void _assignBuildingCategories(BuildingCatalogue* catalogue, BuildingDef* def)
@@ -521,6 +522,8 @@ void saveBuildingTypes()
 
 void remapBuildingTypes()
 {
+    // FIXME: This doesn't seem to work any more. Investigate!
+
     // First, remap any IDs that are not present in the current data, so they won't get
     // merged accidentally.
     for (auto it = buildingCatalogue.buildingNameToOldTypeID.iterate(); it.hasNext(); it.next()) {

@@ -155,6 +155,8 @@ void saveTerrainTypes()
 
 void remapTerrainTypes()
 {
+    // FIXME: This doesn't seem to work any more. Terrain doesn't update. Investigate!
+
     // First, remap any Names that are not present in the current data, so they won't get
     // merged accidentally.
     for (auto it = s_terrain_catalogue.terrainNameToOldType.iterate(); it.hasNext(); it.next()) {
@@ -192,5 +194,6 @@ void remapTerrainTypes()
 
 void TerrainCatalogue::after_assets_loaded()
 {
-    remapTerrainTypes();
+    if (AppState::the().gameState)
+        remapTerrainTypes();
 }
