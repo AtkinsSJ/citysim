@@ -20,7 +20,9 @@ struct AssetManager final : public SettingsChangeListener {
     StringTable assetStrings;
 
     DirectoryChangeWatchingHandle assetChangeHandle;
-    u32 lastAssetReloadTicks;
+
+    u32 asset_generation() const { return m_asset_generation; }
+    void fixme_increment_asset_generation() { m_asset_generation++; }
 
     // TODO: Also include size of the UITheme, somehow.
     smm assetMemoryAllocated;
@@ -62,6 +64,8 @@ struct AssetManager final : public SettingsChangeListener {
 private:
     // ^SettingsChangeListener
     virtual void on_settings_changed() override;
+
+    u32 m_asset_generation { 0 };
 };
 
 void initAssets();

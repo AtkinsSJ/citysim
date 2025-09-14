@@ -15,10 +15,5 @@ struct AssetRef {
     String name;
 
     Asset* pointer;
-    u32 pointerRetrievedTicks;
-
-    bool isValid()
-    {
-        return !name.is_empty();
-    }
+    u32 asset_generation;
 };

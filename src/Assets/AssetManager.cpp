@@ -591,7 +591,7 @@ void loadAssets()
         loadAsset(asset);
     }
 
-    s_assets->lastAssetReloadTicks = SDL_GetTicks();
+    s_assets->fixme_increment_asset_generation();
 
     for (auto it = s_assets->listeners.iterate(); it.hasNext(); it.next()) {
         it.getValue()->after_assets_loaded();
@@ -719,9 +719,9 @@ AssetRef getAssetRef(AssetType type, String shortName)
 
 Asset* getAsset(AssetRef* ref)
 {
-    if (SDL_TICKS_PASSED(s_assets->lastAssetReloadTicks, ref->pointerRetrievedTicks)) {
+    if (!ref->pointer || s_assets->asset_generation() > ref->asset_generation) {
         ref->pointer = getAsset(ref->type, ref->name);
-        ref->pointerRetrievedTicks = SDL_GetTicks();
+        ref->asset_generation = s_assets->asset_generation();
     }
 
     return ref->pointer;
@@ -764,7 +764,7 @@ SpriteRef getSpriteRef(String groupName, s32 spriteIndex)
 
 Sprite* getSprite(SpriteRef* ref)
 {
-    if (SDL_TICKS_PASSED(s_assets->lastAssetReloadTicks, ref->pointerRetrievedTicks)) {
+    if (s_assets->asset_generation() > ref->asset_generation) {
         SpriteGroup* group = getSpriteGroup(ref->spriteGroupName);
         if (group != nullptr) {
             ref->pointer = group->sprites + (ref->spriteIndex % group->count);
@@ -773,7 +773,7 @@ Sprite* getSprite(SpriteRef* ref)
             ASSERT(!"Sprite group missing");
         }
 
-        ref->pointerRetrievedTicks = SDL_GetTicks();
+        ref->asset_generation = s_assets->asset_generation();
     }
 
     return ref->pointer;

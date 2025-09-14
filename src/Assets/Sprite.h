@@ -27,5 +27,5 @@ struct SpriteRef {
     s32 spriteIndex;
 
     Sprite* pointer;
-    u32 pointerRetrievedTicks;
+    u32 asset_generation;
 };
