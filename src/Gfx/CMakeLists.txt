@@ -5,4 +5,5 @@ target_sources(CitySim PRIVATE
     OpenGL.cpp
     RenderBuffer.cpp
     Renderer.cpp
+    SDL.cpp
 )
