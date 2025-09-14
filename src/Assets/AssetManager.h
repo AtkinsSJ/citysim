@@ -41,7 +41,7 @@ struct AssetManager final : public SettingsChangeListener {
     // Probably most of these will be empty, but we do need a placeholder sprite at least,
     // so I figure it's better to put this in place for all types while I'm at it.
     // - Sam, 27/03/2020
-    EnumMap<AssetType, Asset> placeholderAssets;
+    EnumMap<AssetType, Asset*> placeholderAssets;
     // The missing assets are logged here!
     EnumMap<AssetType, Set<String>> missingAssetNames;
 

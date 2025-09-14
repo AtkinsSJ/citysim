@@ -19,12 +19,6 @@
 #include <Util/Memory.h>
 #include <Util/Vector.h>
 
-struct Cursor {
-    String imageFilePath; // Full path
-    V2I hotspot;
-    SDL_Cursor* sdlCursor;
-};
-
 struct Ninepatch {
     Asset* texture;
 
@@ -103,6 +97,22 @@ enum class AssetFlags : u8 {
 constexpr Flags<AssetFlags> default_asset_flags { AssetFlags::IsAFile };
 
 struct Asset {
+    static Asset* make_placeholder(AssetType);
+
+    Asset(AssetType type, String short_name, String full_path, Flags<AssetFlags> flags, Optional<Locale> locale)
+        : type(type)
+        , shortName(short_name)
+        , fullName(full_path)
+        , flags(flags)
+    {
+    }
+
+    virtual ~Asset();
+
+    AssetRef get_ref() const;
+
+    void load();
+
     AssetType type;
 
     // shortName = "foo.png", fullName = "c:/mygame/assets/textures/foo.png"
@@ -142,8 +152,6 @@ struct Asset {
             Array<String> buildingIDs;
         } buildingDefs;
 
-        Cursor cursor;
-
         Ninepatch ninepatch;
 
         Palette palette;
@@ -175,4 +183,24 @@ struct Asset {
         UI::TextInputStyle textInputStyle;
         UI::WindowStyle windowStyle;
     };
+
+private:
+    virtual void on_load() { }
+    virtual void on_unload() { }
+};
+
+class Cursor final : public Asset {
+public:
+    static Cursor* make_placeholder();
+    Cursor(String short_name, String full_path, Flags<AssetFlags>, String image_file_path, V2I hotspot, Optional<Locale>);
+
+    SDL_Cursor* sdl_cursor() const { return m_sdl_cursor; }
+
+private:
+    virtual void on_load() override;
+    virtual void on_unload() override;
+
+    String m_image_file_path;
+    V2I m_hotspot;
+    SDL_Cursor* m_sdl_cursor { nullptr };
 };

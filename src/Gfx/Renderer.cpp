@@ -206,7 +206,7 @@ void Renderer::set_cursor(String name)
 
     if (Asset const* new_cursor_asset = getAsset(AssetType::Cursor, name)) {
         m_current_cursor_name = name;
-        SDL_SetCursor(new_cursor_asset->cursor.sdlCursor);
+        SDL_SetCursor(dynamic_cast<Cursor const&>(*new_cursor_asset).sdl_cursor());
     }
 }
 

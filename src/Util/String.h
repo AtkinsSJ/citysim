@@ -26,9 +26,9 @@ enum class WithHash : u8 {
 
 // FIXME: Distinguishing between owning and non-owning Strings would be good. (AKA, introduce StringView.)
 struct String {
-    s32 length;
+    s32 length { 0 };
     u32 hash {};
-    char* chars;
+    char* chars { nullptr };
 
     // FIXME: initializer_list isn't the best option
     static String join(std::initializer_list<String> strings, Optional<String> between = {});

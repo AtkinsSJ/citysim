@@ -62,17 +62,17 @@ void initAssets()
 
     initChunkedArray(&s_assets->listeners, &s_assets->arena, 32);
 
-    // Placeholder s_assets!
+    for (auto asset_type : enum_values<AssetType>()) {
+        s_assets->placeholderAssets[asset_type] = Asset::make_placeholder(asset_type);
+    }
+
+    // FIXME: Placeholder assets!
     {
         // BitmapFont
         makePlaceholderAsset(AssetType::BitmapFont);
 
         // BuildingDefs
         makePlaceholderAsset(AssetType::BuildingDefs);
-
-        // Cursor
-        Asset* placeholderCursor = makePlaceholderAsset(AssetType::Cursor);
-        placeholderCursor->cursor.sdlCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
 
         // CursorDefs
         makePlaceholderAsset(AssetType::CursorDefs);
@@ -82,7 +82,7 @@ void initAssets()
 
         // Ninepatch
         Asset* placeholderNinepatch = makePlaceholderAsset(AssetType::Ninepatch);
-        placeholderNinepatch->ninepatch.texture = &s_assets->placeholderAssets[AssetType::Texture];
+        placeholderNinepatch->ninepatch.texture = s_assets->placeholderAssets[AssetType::Texture];
 
         // Palette
         Asset* placeholderPalette = makePlaceholderAsset(AssetType::Palette);
@@ -101,7 +101,7 @@ void initAssets()
         placeholderSprite->data = assetsAllocate(s_assets, 1 * sizeof(Sprite));
         placeholderSprite->spriteGroup.count = 1;
         placeholderSprite->spriteGroup.sprites = (Sprite*)placeholderSprite->data.writable_data();
-        placeholderSprite->spriteGroup.sprites[0].texture = &s_assets->placeholderAssets[AssetType::Texture];
+        placeholderSprite->spriteGroup.sprites[0].texture = s_assets->placeholderAssets[AssetType::Texture];
         placeholderSprite->spriteGroup.sprites[0].uv = { 0.0f, 0.0f, 1.0f, 1.0f };
 
         // SpriteDefs
@@ -146,7 +146,7 @@ AssetManager& asset_manager()
 
 Asset* makePlaceholderAsset(AssetType type)
 {
-    Asset* result = &s_assets->placeholderAssets[type];
+    Asset* result = s_assets->placeholderAssets[type];
     result->type = type;
     result->shortName = nullString;
     result->fullName = nullString;
@@ -176,32 +176,28 @@ void allocateChildren(Asset* asset, s32 childCount)
 
 void addChildAsset(Asset* parent, Asset* child)
 {
-    parent->children.append(AssetRef { child->type, child->shortName });
+    parent->children.append(child->get_ref());
 }
 
 Asset* addAsset(AssetType type, String shortName, Flags<AssetFlags> flags)
 {
     String internedShortName = intern(&s_assets->assetStrings, shortName);
 
-    Asset* existing = getAssetIfExists(type, internedShortName);
-    if (existing)
+    if (Asset* existing = getAssetIfExists(type, internedShortName))
         return existing;
 
-    Asset* asset = s_assets->allAssets.appendBlank();
-    asset->type = type;
-    asset->shortName = internedShortName;
+    String full_path;
+    Optional<Locale> locale;
     if (flags.has(AssetFlags::IsAFile)) {
-        asset->fullName = intern(&s_assets->assetStrings, getAssetPath(asset->type, internedShortName));
-        if (auto locale_string = get_file_locale_segment(asset->fullName); locale_string.has_value()) {
-            asset->locale = locale_from_string(locale_string.value());
-            if (!asset->locale.has_value())
-                logWarn("Unrecognized locale for asset '{0}'."_s, { asset->fullName });
+        full_path = intern(&s_assets->assetStrings, getAssetPath(type, internedShortName));
+        if (auto locale_string = get_file_locale_segment(full_path); locale_string.has_value()) {
+            locale = locale_from_string(locale_string.value());
+            if (!locale.has_value())
+                logWarn("Unrecognized locale for asset '{0}'."_s, { full_path });
         }
     }
-    asset->state = Asset::State::Unloaded;
-    asset->data = {};
-    asset->flags = flags;
 
+    auto* asset = s_assets->allAssets.append({ type, internedShortName, full_path, flags, locale });
     s_assets->assetsByType[type].put(internedShortName, asset);
 
     return asset;
@@ -218,7 +214,7 @@ void copyFileIntoAsset(Blob* fileData, Asset* asset)
     *fileData = asset->data;
 }
 
-SDL_Surface* createSurfaceFromFileData(Blob fileData, String name)
+SDL_Surface* create_surface_from_file_data(Blob fileData, String name)
 {
     SDL_Surface* result = nullptr;
 
@@ -290,14 +286,6 @@ void loadAsset(Asset* asset)
 
     case AssetType::BuildingDefs: {
         loadBuildingDefs(fileData, asset);
-        asset->state = Asset::State::Loaded;
-    } break;
-
-    case AssetType::Cursor: {
-        fileData = readTempFile(asset->cursor.imageFilePath);
-        SDL_Surface* cursorSurface = createSurfaceFromFileData(fileData, asset->shortName);
-        asset->cursor.sdlCursor = SDL_CreateColorCursor(cursorSurface, asset->cursor.hotspot.x, asset->cursor.hotspot.y);
-        SDL_FreeSurface(cursorSurface);
         asset->state = Asset::State::Loaded;
     } break;
 
@@ -408,7 +396,7 @@ void loadAsset(Asset* asset)
     case AssetType::Texture: {
         // TODO: Emergency debug texture that's used if loading a file fails.
         // Right now, we just crash! (Not shippable)
-        SDL_Surface* surface = createSurfaceFromFileData(fileData, asset->fullName);
+        SDL_Surface* surface = create_surface_from_file_data(fileData, asset->fullName);
         if (surface->format->BytesPerPixel != 4) {
             logError("Texture asset '{0}' is not 32bit, which is all we support right now. (BytesPerPixel = {1})"_s, { asset->shortName, formatInt(surface->format->BytesPerPixel) });
             return;
@@ -475,13 +463,6 @@ void unloadAsset(Asset* asset)
         // Remove all of our terrain defs
         removeBuildingDefs(asset->buildingDefs.buildingIDs);
         asset->buildingDefs.buildingIDs = makeEmptyArray<String>();
-    } break;
-
-    case AssetType::Cursor: {
-        if (asset->cursor.sdlCursor != nullptr) {
-            SDL_FreeCursor(asset->cursor.sdlCursor);
-            asset->cursor.sdlCursor = nullptr;
-        }
     } break;
 
     case AssetType::TerrainDefs: {
@@ -708,7 +689,7 @@ Asset* getAsset(AssetType type, String shortName)
         if (s_assets->missingAssetNames[type].add(shortName)) {
             logWarn("Requested {0} asset '{1}' was not found! Using placeholder."_s, { asset_type_names[type], shortName });
         }
-        result = &s_assets->placeholderAssets[type];
+        result = s_assets->placeholderAssets[type];
     }
 
     return result;
