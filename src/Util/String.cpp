@@ -143,92 +143,69 @@ String String::trimmed(TrimSide trim_side) const
     return result;
 }
 
-Maybe<s64> asInt(String input)
+Optional<s64> String::to_int() const
 {
-    Maybe<s64> result = makeFailure<s64>();
+    if (is_empty())
+        return {};
 
-    bool succeeded = input.length > 0;
+    s64 value = 0;
+    s32 startPosition = 0;
+    bool isNegative = false;
+    if (chars[0] == '-') {
+        isNegative = true;
+        startPosition++;
+    } else if (chars[0] == '+') {
+        // allow a leading + in case people want it for some reason.
+        startPosition++;
+    }
 
-    if (succeeded) {
-        s64 value = 0;
-        s32 startPosition = 0;
-        bool isNegative = false;
-        if (input.chars[0] == '-') {
-            isNegative = true;
-            startPosition++;
-        } else if (input.chars[0] == '+') {
-            // allow a leading + in case people want it for some reason.
-            startPosition++;
-        }
+    for (s32 position = startPosition; position < length; position++) {
+        value *= 10;
 
-        for (s32 position = startPosition; position < input.length; position++) {
-            value *= 10;
-
-            char c = input.chars[position];
-            if (c >= '0' && c <= '9') {
-                value += c - '0';
-            } else {
-                succeeded = false;
-                break;
-            }
-        }
-
-        if (succeeded) {
-            if (isNegative) {
-                result = makeSuccess(-value);
-            } else {
-                result = makeSuccess(value);
-            }
+        char c = chars[position];
+        if (c >= '0' && c <= '9') {
+            value += c - '0';
+        } else {
+            return {};
         }
     }
 
-    return result;
+    if (isNegative)
+        return -value;
+    return value;
 }
 
-Maybe<double> asFloat(String input)
+Optional<double> String::to_float() const
 {
-    Maybe<double> result;
-
     // TODO: Implement this properly!
     // (c runtime functions atof / strtod don't tell you if they failed, they just return 0 which is a valid value!
-    String nullTerminatedInput = pushString(&temp_arena(), input.length + 1);
-    copyString(input, &nullTerminatedInput);
-    nullTerminatedInput.length++;
-    nullTerminatedInput.chars[input.length] = '\0';
+    String null_terminated = pushString(&temp_arena(), length + 1);
+    copyString(*this, &null_terminated);
+    null_terminated.length++;
+    null_terminated.chars[length] = '\0';
 
-    double doubleValue = atof(nullTerminatedInput.chars);
-    if (doubleValue == 0.0) {
+    double double_value = atof(null_terminated.chars);
+    if (double_value == 0.0) {
         // @Hack: 0.0 is returned by atof() if it fails. So, we see if the input really began with a '0' or not.
         // If it didn't, we assume it failed. If it did, we assume it succeeded.
         // Note that if it failed on a value beginning with a '0' character, (eg "0_0") then it will assume it succeeded...
         // But, I don't know a more reliable way without just parsing the float value ourselves so eh!
         // - Sam, 12/09/2019
-        if (input[0] == '0') {
-            result = makeSuccess(doubleValue);
-        } else {
-            result = makeFailure<double>();
-        }
-    } else {
-        result = makeSuccess(doubleValue);
+        if (chars[0] == '0')
+            return double_value;
+        return {};
     }
 
-    return result;
+    return double_value;
 }
 
-Maybe<bool> asBool(String input)
+Optional<bool> String::to_bool() const
 {
-
-    Maybe<bool> result;
-
-    if (input == "true"_s) {
-        result = makeSuccess(true);
-    } else if (input == "false"_s) {
-        result = makeSuccess(false);
-    } else {
-        result = makeFailure<bool>();
-    }
-
-    return result;
+    if (*this == "true"_s)
+        return true;
+    if (*this == "false"_s)
+        return false;
+    return {};
 }
 
 bool String::is_null_terminated() const
@@ -470,12 +447,9 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
 
             if (indexLength > 0) {
                 // Positional
-                String indexString = makeString(format.chars + startOfNumber, indexLength);
-                Maybe<s64> parsedIndex = asInt(indexString);
-
-                if (parsedIndex.isValid) {
-                    index = (s32)parsedIndex.value;
-                }
+                String index_string = makeString(format.chars + startOfNumber, indexLength);
+                if (auto parsed_index = index_string.to_int(); parsed_index.has_value())
+                    index = (s32)parsed_index.value();
             }
 
             if ((index >= 0) && (index < args.size())) {

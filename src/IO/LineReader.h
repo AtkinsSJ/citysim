@@ -74,9 +74,9 @@ public:
             return {};
         }
 
-        if (auto maybe_s64 = asInt(token); maybe_s64.isValid) {
-            if (canCastIntTo<T>(maybe_s64.value))
-                return static_cast<T>(maybe_s64.value);
+        if (auto maybe_s64 = token.to_int(); maybe_s64.has_value()) {
+            if (canCastIntTo<T>(maybe_s64.value()))
+                return static_cast<T>(maybe_s64.value());
 
             error("Value {0} cannot fit in a {1}."_s, { token, typeNameOf<T>() });
             return {};

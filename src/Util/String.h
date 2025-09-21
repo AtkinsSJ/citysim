@@ -9,7 +9,6 @@
 #include <Util/Basic.h>
 #include <Util/Enum.h>
 #include <Util/Forward.h>
-#include <Util/Maybe.h>
 #include <Util/Optional.h>
 #include <initializer_list>
 #include <typeinfo>
@@ -54,6 +53,10 @@ struct String {
 
     String trimmed(TrimSide = TrimSide::Both) const;
 
+    Optional<s64> to_int() const;
+    Optional<double> to_float() const;
+    Optional<bool> to_bool() const;
+
     bool operator==(String const&) const;
 };
 
@@ -86,10 +89,6 @@ String pushString(MemoryArena* arena, char const* src);
 String pushString(MemoryArena* arena, String src);
 
 u32 hashString(String* s);
-
-Maybe<s64> asInt(String input);
-Maybe<double> asFloat(String input);
-Maybe<bool> asBool(String input);
 
 bool isSplitChar(char input, char splitChar);
 s32 countTokens(String input, char splitChar = 0);

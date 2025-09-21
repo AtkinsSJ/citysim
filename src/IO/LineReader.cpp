@@ -189,8 +189,8 @@ Optional<bool> LineReader::read_bool(IsRequired is_required, Optional<char> spli
         return {};
     }
 
-    if (auto maybe_bool = asBool(token); maybe_bool.isValid)
-        return maybe_bool.value;
+    if (auto maybe_bool = token.to_bool(); maybe_bool.has_value())
+        return maybe_bool.value();
 
     error("Couldn't parse '{0}' as a boolean."_s, { token });
     return {};
@@ -209,15 +209,15 @@ Optional<double> LineReader::read_double(IsRequired is_required, Optional<char> 
     if (token[token.length - 1] == '%') {
         token.length--;
 
-        if (auto percent = asFloat(token); percent.isValid)
-            return percent.value * 0.01;
+        if (auto percent = token.to_float(); percent.has_value())
+            return percent.value() * 0.01;
 
         error("Couldn't parse '{0}%' as a percentage."_s, { token });
         return {};
     }
 
-    if (auto float_value = asFloat(token); float_value.isValid)
-        return float_value.value;
+    if (auto float_value = token.to_float(); float_value.has_value())
+        return float_value.value();
 
     error("Couldn't parse '{0}' as a float."_s, { token });
     return {};
