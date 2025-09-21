@@ -560,10 +560,8 @@ void initScrollbar(ScrollbarState* state, Orientation orientation, s32 mouseWhee
     state->mouseWheelStepSize = mouseWheelStepSize;
 }
 
-Maybe<Rect2I> getScrollbarThumbBounds(ScrollbarState* state, Rect2I scrollbarBounds, ScrollbarStyle* style)
+Optional<Rect2I> get_scrollbar_thumb_bounds(ScrollbarState* state, Rect2I scrollbarBounds, ScrollbarStyle* style)
 {
-    Maybe<Rect2I> result = makeFailure<Rect2I>();
-
     // NB: This algorithm for thumb size came from here: https://ux.stackexchange.com/a/85698
     // (Which is ultimately taken from Microsoft's .NET documentation.)
     // Anyway, it's simple enough, but distinguishes between the size of visible content, and
@@ -582,7 +580,7 @@ Maybe<Rect2I> getScrollbarThumbBounds(ScrollbarState* state, Rect2I scrollbarBou
 
             s32 thumbPos = round_s32(state->scrollPercent * (scrollbarBounds.width() - thumbWidth));
 
-            result = makeSuccess(Rect2I { scrollbarBounds.x() + thumbPos, scrollbarBounds.y(), thumbWidth, thumbHeight });
+            return Rect2I { scrollbarBounds.x() + thumbPos, scrollbarBounds.y(), thumbWidth, thumbHeight };
         }
     } else {
         ASSERT(state->orientation == Orientation::Vertical);
@@ -597,11 +595,11 @@ Maybe<Rect2I> getScrollbarThumbBounds(ScrollbarState* state, Rect2I scrollbarBou
 
             s32 thumbPos = round_s32(state->scrollPercent * (scrollbarBounds.height() - thumbHeight));
 
-            result = makeSuccess(Rect2I { scrollbarBounds.x(), scrollbarBounds.y() + thumbPos, thumbWidth, thumbHeight });
+            return Rect2I { scrollbarBounds.x(), scrollbarBounds.y() + thumbPos, thumbWidth, thumbHeight };
         }
     }
 
-    return result;
+    return {};
 }
 
 void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, ScrollbarStyle* style, bool isDisabled, RenderBuffer* renderBuffer)
@@ -628,11 +626,11 @@ void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, Scrollb
             bool isHorizontal = (state->orientation == Orientation::Horizontal);
             ASSERT(isHorizontal || (state->orientation == Orientation::Vertical));
 
-            Maybe<Rect2I> thumb = getScrollbarThumbBounds(state, bounds, style);
-            if (thumb.isValid) {
+            auto maybe_thumb = get_scrollbar_thumb_bounds(state, bounds, style);
+            if (maybe_thumb.has_value()) {
+                Rect2I thumb = maybe_thumb.release_value();
                 s32 overflowSize = state->contentSize - (isHorizontal ? bounds.width() : bounds.height());
-                Rect2I thumbBounds = thumb.value;
-                s32 thumbSize = isHorizontal ? thumbBounds.width() : thumbBounds.height();
+                s32 thumbSize = isHorizontal ? thumb.width() : thumb.height();
                 s32 gutterSize = isHorizontal ? bounds.width() : bounds.height();
                 s32 thumbRange = gutterSize - thumbSize;
 
@@ -657,31 +655,31 @@ void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, Scrollb
                     // @Copypasta We duplicate this code below, because there are two states where we need to set
                     // the new thumb position. It's really awkward but I don't know how to pull the logic out.
                     if (isHorizontal) {
-                        thumbBounds.set_x(clamp(thumbPos.x, bounds.x(), bounds.x() + thumbRange));
-                        state->scrollPercent = clamp01((float)(thumbBounds.x() - bounds.x()) / (float)thumbRange);
+                        thumb.set_x(clamp(thumbPos.x, bounds.x(), bounds.x() + thumbRange));
+                        state->scrollPercent = clamp01((float)(thumb.x() - bounds.x()) / (float)thumbRange);
                     } else {
-                        thumbBounds.set_y(clamp(thumbPos.y, bounds.y(), bounds.y() + thumbRange));
-                        state->scrollPercent = clamp01((float)(thumbBounds.y() - bounds.y()) / (float)thumbRange);
+                        thumb.set_y(clamp(thumbPos.y, bounds.y(), bounds.y() + thumbRange));
+                        state->scrollPercent = clamp01((float)(thumb.y() - bounds.y()) / (float)thumbRange);
                     }
 
                     thumbStyle = &style->thumbPressed;
                 } else if (isMouseInUIBounds(bounds)) {
-                    bool inThumbBounds = isMouseInUIBounds(thumbBounds);
+                    bool inThumbBounds = isMouseInUIBounds(thumb);
 
                     if (mouseButtonJustPressed(MouseButton::Left)) {
                         // If we're not on the thumb, jump the thumb to where we are!
                         if (!inThumbBounds) {
                             if (isHorizontal) {
-                                thumbBounds.set_x(clamp(mousePos.x - (thumbBounds.width() / 2), bounds.x(), bounds.x() + thumbRange));
-                                state->scrollPercent = clamp01((float)(thumbBounds.x() - bounds.x()) / (float)thumbRange);
+                                thumb.set_x(clamp(mousePos.x - (thumb.width() / 2), bounds.x(), bounds.x() + thumbRange));
+                                state->scrollPercent = clamp01((float)(thumb.x() - bounds.x()) / (float)thumbRange);
                             } else {
-                                thumbBounds.set_y(clamp(mousePos.y - (thumbBounds.height() / 2), bounds.y(), bounds.y() + thumbRange));
-                                state->scrollPercent = clamp01((float)(thumbBounds.y() - bounds.y()) / (float)thumbRange);
+                                thumb.set_y(clamp(mousePos.y - (thumb.height() / 2), bounds.y(), bounds.y() + thumbRange));
+                                state->scrollPercent = clamp01((float)(thumb.y() - bounds.y()) / (float)thumbRange);
                             }
                         }
 
                         // Start drag
-                        startDragging(state, thumbBounds.position());
+                        startDragging(state, thumb.position());
 
                         thumbStyle = &style->thumbPressed;
                     } else if (inThumbBounds) {
@@ -690,7 +688,7 @@ void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, Scrollb
                     }
                 }
 
-                Drawable(thumbStyle).draw(renderBuffer, thumbBounds);
+                Drawable(thumbStyle).draw(renderBuffer, thumb);
             }
         }
     }

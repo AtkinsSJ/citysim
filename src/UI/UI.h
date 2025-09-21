@@ -261,7 +261,7 @@ void putRadioButton(s32* selectedValue, s32 value, Rect2I bounds, RadioButtonSty
 // Scrollbars
 void initScrollbar(ScrollbarState* state, Orientation orientation, s32 mouseWheelStepSize = 64);
 // NB: When the viewport is larger than the content, there's no thumb rect so nothing is returned
-Maybe<Rect2I> getScrollbarThumbBounds(ScrollbarState* state, Rect2I scrollbarBounds, ScrollbarStyle* style);
+Optional<Rect2I> get_scrollbar_thumb_bounds(ScrollbarState* state, Rect2I scrollbarBounds, ScrollbarStyle* style);
 void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, ScrollbarStyle* style = nullptr, bool isDisabled = false, RenderBuffer* renderBuffer = nullptr);
 s32 getScrollbarContentOffset(ScrollbarState* state, s32 scrollbarSize);
 
