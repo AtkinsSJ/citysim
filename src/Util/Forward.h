@@ -27,3 +27,6 @@ class Indexed;
 
 template<typename T>
 class Optional;
+
+template<typename T>
+class Ref;
