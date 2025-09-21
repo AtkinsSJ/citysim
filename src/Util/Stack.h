@@ -56,14 +56,13 @@ T* peek(Stack<T>* stack)
 }
 
 template<typename T>
-Maybe<T> pop(Stack<T>* stack)
+Optional<T> pop(Stack<T>* stack)
 {
-    Maybe<T> result = makeFailure<T>();
-
     if (!isEmpty(stack)) {
-        result = makeSuccess(*stack->_array.get(stack->_array.count - 1));
+        Optional<T> result { *stack->_array.get(stack->_array.count - 1) };
         stack->_array.removeIndex(stack->_array.count - 1);
+        return result;
     }
 
-    return result;
+    return {};
 }
