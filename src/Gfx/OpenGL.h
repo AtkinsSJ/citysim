@@ -6,10 +6,12 @@
 
 #pragma once
 
-#ifdef __linux__
+#include <Util/Platform.h>
+
+#if OS_LINUX
 #    include <GL/glew.h>
 #    include <SDL2/SDL_opengl.h>
-#else // Windows
+#elif OS_WINDOWS
 #    include <SDL_opengl.h>
 #    include <gl/glew.h>
 #endif

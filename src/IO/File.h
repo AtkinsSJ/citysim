@@ -13,9 +13,10 @@
 #include <Util/Log.h>
 #include <Util/Memory.h>
 #include <Util/MemoryArena.h>
+#include <Util/Platform.h>
 #include <Util/String.h>
 
-#ifdef __linux__
+#if OS_LINUX
 #    include <dirent.h>
 #endif
 
@@ -48,10 +49,10 @@ struct DirectoryListingHandle {
     u32 errorCode;
     String path;
 
-#ifdef __linux__
+#if OS_LINUX
     DIR* dir;
     int dirFD;
-#else
+#elif OS_WINDOWS
     struct
     {
         HANDLE hFile;
@@ -77,10 +78,10 @@ struct DirectoryChangeWatchingHandle {
     u32 errorCode;
     String path;
 
-#ifdef __linux__
+#if OS_LINUX
     int inotify_fd;
     int watcher_fd;
-#else
+#elif OS_WINDOWS
     struct
     {
         HANDLE handle;

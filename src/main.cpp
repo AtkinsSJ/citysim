@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#include <Util/Platform.h>
 #include <initializer_list>
 #include <inttypes.h>
 #include <math.h>
@@ -18,10 +19,10 @@
 #    define SDL_ASSERT_LEVEL 1
 #endif
 
-#ifdef __linux__
+#if OS_LINUX
 #    include <SDL2/SDL.h>
 #    include <SDL2/SDL_image.h>
-#else // Windows
+#elif OS_WINDOWS
 #    include <SDL.h>
 #    include <SDL_image.h>
 #endif
