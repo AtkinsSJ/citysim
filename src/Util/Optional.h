@@ -7,6 +7,7 @@
 #pragma once
 
 #include <Util/Assert.h>
+#include <Util/Basic.h>
 
 template<typename T>
 class Optional {
