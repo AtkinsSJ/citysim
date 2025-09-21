@@ -36,8 +36,8 @@ void BaseSettingsState::copy_from(BaseSettingsState& other)
 Optional<Ref<Setting>> BaseSettingsState::setting_by_name(String const& name)
 {
     auto setting = m_settings_by_name.find(name);
-    if (setting.isValid)
-        return *setting.value;
+    if (setting.has_value())
+        return *setting.value();
     return {};
 }
 
@@ -50,10 +50,10 @@ void BaseSettingsState::load_from_file(String filename, Blob data)
 
         auto maybe_setting = m_settings_by_name.find(settingName);
 
-        if (!maybe_setting.isValid) {
+        if (!maybe_setting.has_value()) {
             reader.warn("Unrecognized setting: {0}"_s, { settingName });
         } else {
-            (*maybe_setting.value)->set_from_file(reader);
+            (*maybe_setting.value())->set_from_file(reader);
         }
     }
 }
@@ -69,7 +69,7 @@ bool BaseSettingsState::save_to_file(String filename)
         it.hasNext();
         it.next()) {
         String name = it.getValue();
-        auto& setting = *m_settings_by_name.find(name).value;
+        auto& setting = *m_settings_by_name.find(name).value();
 
         append(&stb, name);
         append(&stb, " = "_s);

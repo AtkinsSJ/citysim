@@ -34,7 +34,7 @@ public:
             it.hasNext();
             it.next()) {
             String name = it.getValue();
-            auto setting = *m_settings_by_name.find(name).value;
+            auto setting = *m_settings_by_name.find(name).value();
             callback(*setting);
         }
     }

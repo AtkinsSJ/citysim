@@ -252,11 +252,11 @@ void loadBuildingDefs(Blob data, Asset* asset)
                 } else if (firstWord == "extends"_s) {
                     String templateName = reader.next_token();
 
-                    Maybe<BuildingDef*> templateDef = templates.find(templateName);
-                    if (!templateDef.isValid) {
+                    auto templateDef = templates.find(templateName);
+                    if (!templateDef.has_value()) {
                         reader.error("Could not find template named '{0}'. Templates must be defined before the buildings that use them, and in the same file."_s, { templateName });
                     } else {
-                        BuildingDef* tDef = templateDef.value;
+                        BuildingDef* tDef = templateDef.value();
 
                         // Copy the def... this could be messy
                         // (We can't just do copyMemory() because we don't want to change the name or typeID.)

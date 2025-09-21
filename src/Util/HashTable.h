@@ -214,18 +214,16 @@ struct HashTable {
 
         return result;
     }
-    Maybe<T*> find(String key)
+
+    Optional<T*> find(String key)
     {
-        Maybe<T*> result = makeFailure<T*>();
+        if (!entries)
+            return {};
 
-        if (entries != nullptr) {
-            HashTableEntry<T>* entry = findEntry(key);
-            if (entry->isOccupied) {
-                result = makeSuccess(&entry->value);
-            }
-        }
+        if (HashTableEntry<T>* entry = findEntry(key); entry->isOccupied)
+            return &entry->value;
 
-        return result;
+        return {};
     }
 
     Maybe<T> findValue(String key)

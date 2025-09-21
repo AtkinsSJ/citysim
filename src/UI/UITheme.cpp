@@ -304,7 +304,7 @@ void initStyleConstants()
 void assignStyleProperties(StyleType type, std::initializer_list<String> properties)
 {
     for (String* propName = (String*)properties.begin(); propName < properties.end(); propName++) {
-        Property* property = styleProperties.find(*propName).orDefault(nullptr);
+        Property* property = styleProperties.find(*propName).value();
         property->existsInStyle[type] = true;
     }
 }
@@ -370,10 +370,10 @@ void loadUITheme(Blob data, Asset* asset)
                 // Clones an existing style
                 String parentStyle = reader.next_token();
                 auto parentPack = styles.find(parentStyle);
-                if (!parentPack.isValid) {
+                if (!parentPack.has_value()) {
                     reader.error("Unable to find style named '{0}'"_s, { parentStyle });
                 } else {
-                    UI::Style const& parent = (*parentPack.value)[target->type];
+                    UI::Style const& parent = (*parentPack.value())[target->type];
                     // For undefined styles, the parent struct will be all nulls, so the type will not match
                     if (parent.type != target->type) {
                         reader.error("Attempting to extend a style of the wrong type."_s);
@@ -385,7 +385,7 @@ void loadUITheme(Blob data, Asset* asset)
                 }
             } else {
                 // Check our properties map for a match
-                UI::Property* property = UI::styleProperties.find(firstWord).orDefault(nullptr);
+                UI::Property* property = UI::styleProperties.find(firstWord).value_or(nullptr);
                 if (property) {
                     if (property->existsInStyle[target->type]) {
                         switch (property->type) {
