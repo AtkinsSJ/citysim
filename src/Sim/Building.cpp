@@ -215,11 +215,9 @@ void updateAdjacentBuildingVariants(City* city, Rect2I footprint)
     }
 }
 
-Maybe<BuildingDef*> findBuildingIntersection(BuildingDef* defA, BuildingDef* defB)
+Optional<BuildingDef*> find_building_intersection(BuildingDef* defA, BuildingDef* defB)
 {
     DEBUG_FUNCTION();
-
-    Maybe<BuildingDef*> result = makeFailure<BuildingDef*>();
 
     // It's horrible linear search time!
     for (auto it = buildingCatalogue.intersectionBuildings.iterate(); it.hasNext(); it.next()) {
@@ -228,13 +226,12 @@ Maybe<BuildingDef*> findBuildingIntersection(BuildingDef* defA, BuildingDef* def
         if (itDef->isIntersection) {
             if (((itDef->intersectionPart1TypeID == defA->typeID) && (itDef->intersectionPart2TypeID == defB->typeID))
                 || ((itDef->intersectionPart2TypeID == defA->typeID) && (itDef->intersectionPart1TypeID == defB->typeID))) {
-                result = makeSuccess(itDef);
-                break;
+                return itDef;
             }
         }
     }
 
-    return result;
+    return {};
 }
 
 void initBuilding(Building* building, s32 id, BuildingDef* def, Rect2I footprint, GameTimestamp creationDate)

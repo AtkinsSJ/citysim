@@ -213,8 +213,7 @@ bool canPlaceBuilding(City* city, BuildingDef* def, s32 left, s32 top)
             Building* buildingAtPos = getBuildingAt(city, x, y);
             if (buildingAtPos != nullptr) {
                 // Check if we can combine this with the building that's already there
-                Maybe<BuildingDef*> possibleIntersection = findBuildingIntersection(getBuildingDef(buildingAtPos), def);
-                if (possibleIntersection.isValid) {
+                if (find_building_intersection(getBuildingDef(buildingAtPos), def).has_value()) {
                     // We can!
                     // TODO: We want to check if there is a valid variant, before we build.
                     // But that means matching against buildings that aren't constructed yet,
@@ -242,11 +241,10 @@ void placeBuilding(City* city, BuildingDef* def, s32 left, s32 top, bool markAre
         // NB: We're keeping the old building's id. I think that's preferable, but might want to change that later.
         BuildingDef* oldDef = getBuildingDef(building);
 
-        Maybe<BuildingDef*> intersectionDef = findBuildingIntersection(oldDef, def);
-        ASSERT(intersectionDef.isValid);
+        auto* intersection_def = find_building_intersection(oldDef, def).release_value();
 
-        building->typeID = intersectionDef.value->typeID;
-        def = intersectionDef.value; // I really don't like this but I don't want to rewrite this entire function right now!
+        building->typeID = intersection_def->typeID;
+        def = intersection_def; // I really don't like this but I don't want to rewrite this entire function right now!
 
         city->zoneLayer.population[oldDef->growsInZone] -= building->currentResidents + building->currentJobs;
     } else {
