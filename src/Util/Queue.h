@@ -76,23 +76,18 @@ struct Queue {
         return result;
     }
 
-    Maybe<T*> peek()
+    Optional<T*> peek()
     {
-        Maybe<T*> result = makeFailure<T*>();
+        if (!isEmpty())
+            return startChunk->items + startChunk->startIndex;
 
-        if (!isEmpty()) {
-            result = makeSuccess(startChunk->items + startChunk->startIndex);
-        }
-
-        return result;
+        return {};
     }
 
-    Maybe<T> pop()
+    Optional<T> pop()
     {
-        Maybe<T> result = makeFailure<T>();
-
         if (!isEmpty()) {
-            result = makeSuccess(startChunk->items[startChunk->startIndex]);
+            Optional<T> result = move(startChunk->items[startChunk->startIndex]);
 
             startChunk->count--;
             startChunk->startIndex++;
@@ -118,9 +113,10 @@ struct Queue {
                     }
                 }
             }
+            return result;
         }
 
-        return result;
+        return {};
     }
 
     QueueIterator<T> iterate(bool goBackwards = false)

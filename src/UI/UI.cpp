@@ -894,9 +894,9 @@ void drawToast()
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
-    Maybe<Toast*> currentToast = uiState.toasts.peek();
-    if (currentToast.isValid) {
-        Toast* toast = currentToast.value;
+    auto current_toast = uiState.toasts.peek();
+    if (current_toast.has_value()) {
+        Toast* toast = current_toast.value();
 
         toast->time += AppState::the().deltaTime;
 
