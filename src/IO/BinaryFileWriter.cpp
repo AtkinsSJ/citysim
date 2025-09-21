@@ -35,8 +35,8 @@ void BinaryFileWriter::addTOCEntry(FileIdentifier sectionID)
     ASSERT(!tocComplete);
 
     // Make sure this entry doesn't exist already
-    Maybe<WriteBufferRange> existingTocEntry = findTOCEntry(sectionID);
-    ASSERT(!existingTocEntry.isValid); // Duplicate TOC entry!
+    auto existing_toc_entry = find_toc_entry(sectionID);
+    ASSERT(!existing_toc_entry.has_value()); // Duplicate TOC entry!
 
     // Add a TOC entry with no location or length
     FileTOCEntry tocEntry = {};
@@ -168,31 +168,27 @@ bool BinaryFileWriter::outputToFile(FileHandle* file)
     return buffer.writeToFile(file);
 }
 
-Maybe<WriteBufferRange> BinaryFileWriter::findTOCEntry(FileIdentifier sectionID)
+Optional<WriteBufferRange> BinaryFileWriter::find_toc_entry(FileIdentifier sectionID)
 {
-    Maybe<WriteBufferRange> result = makeFailure<WriteBufferRange>();
-
     // Find our TOC entry
     // So, we have to walk the array, which is... interesting
     // TODO: maybe just keep a table of toc entry locations?
-    FileHeader fileHeader = buffer.readAt<FileHeader>(fileHeaderLoc);
+    FileHeader file_header = buffer.readAt<FileHeader>(fileHeaderLoc);
 
-    WriteBufferRange tocEntryRange = {};
-    tocEntryRange.start = fileHeaderLoc.start + fileHeader.toc.relativeOffset;
-    tocEntryRange.length = sizeof(FileTOCEntry);
+    WriteBufferRange toc_entry_range = {};
+    toc_entry_range.start = fileHeaderLoc.start + file_header.toc.relativeOffset;
+    toc_entry_range.length = sizeof(FileTOCEntry);
 
-    for (u32 i = 0; i < fileHeader.toc.count; i++) {
-        FileTOCEntry tocEntry = buffer.readAt<FileTOCEntry>(tocEntryRange);
+    for (u32 i = 0; i < file_header.toc.count; i++) {
+        FileTOCEntry tocEntry = buffer.readAt<FileTOCEntry>(toc_entry_range);
 
-        if (tocEntry.sectionID == sectionID) {
-            result = makeSuccess(tocEntryRange);
-            break;
-        }
+        if (tocEntry.sectionID == sectionID)
+            return toc_entry_range;
 
-        tocEntryRange.start += sizeof(FileTOCEntry);
+        toc_entry_range.start += sizeof(FileTOCEntry);
     }
 
-    return result;
+    return {};
 }
 
 s8 BinaryFileWriter::countRunLength(s32 dataLength, u8* data)

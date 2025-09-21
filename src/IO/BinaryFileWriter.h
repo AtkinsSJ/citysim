@@ -46,9 +46,9 @@ struct BinaryFileWriter {
         sectionHeader.version = sectionVersion;
 
         // Find our TOC entry
-        Maybe<WriteBufferRange> tocEntry = findTOCEntry(sectionID);
-        ASSERT(tocEntry.isValid); // Must add a TOC entry for each section in advance!
-        sectionTOCRange = tocEntry.value;
+        auto toc_entry = find_toc_entry(sectionID);
+        ASSERT(toc_entry.has_value()); // Must add a TOC entry for each section in advance!
+        sectionTOCRange = toc_entry.value();
 
         // Reserve our "section struct"
         buffer.reserve<T>();
@@ -123,7 +123,7 @@ struct BinaryFileWriter {
     bool outputToFile(FileHandle* file);
 
     // Internal
-    Maybe<WriteBufferRange> findTOCEntry(FileIdentifier sectionID);
+    Optional<WriteBufferRange> find_toc_entry(FileIdentifier sectionID);
     s8 countRunLength(s32 dataLength, u8* data);
 };
 
