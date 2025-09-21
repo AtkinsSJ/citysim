@@ -7,7 +7,6 @@
 #pragma once
 
 #include <Util/Assert.h>
-#include <Util/Maybe.h>
 
 template<typename T>
 class Optional {
@@ -22,15 +21,6 @@ public:
         : m_has_value(true)
         , m_value(move(value))
     {
-    }
-
-    // FIXME: Temporary
-    Optional(Maybe<T> maybe)
-        : m_has_value(maybe.isValid)
-        , m_blank()
-    {
-        if (maybe.isValid)
-            m_value = maybe.value;
     }
 
     ~Optional()
