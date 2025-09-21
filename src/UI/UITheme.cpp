@@ -346,7 +346,7 @@ void loadUITheme(Blob data, Asset* asset)
                 }
             } else {
                 // Create a new style entry if the name matches a style type
-                Optional<UI::StyleType> foundStyleType = UI::styleTypesByName.findValue(firstWord);
+                Optional<UI::StyleType> foundStyleType = UI::styleTypesByName.find_value(firstWord);
                 if (foundStyleType.has_value()) {
                     UI::StyleType styleType = foundStyleType.release_value();
 
@@ -422,7 +422,7 @@ void loadUITheme(Blob data, Asset* asset)
 
                         case UI::PropType::Font: {
                             String value = intern(&asset_manager().assetStrings, reader.next_token());
-                            Optional<String> fontFilename = fontNamesToAssetNames.findValue(value);
+                            Optional<String> fontFilename = fontNamesToAssetNames.find_value(value);
                             if (fontFilename.has_value()) {
                                 AssetRef fontRef = AssetRef { AssetType::BitmapFont, fontFilename.value() };
                                 UI::setPropertyValue(target, property, fontRef);

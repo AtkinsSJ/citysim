@@ -486,7 +486,7 @@ BuildingDef* getBuildingDef(s32 buildingTypeID)
 
 BuildingDef* findBuildingDef(String name)
 {
-    BuildingDef* result = buildingCatalogue.buildingsByName.findValue(name).orDefault(nullptr);
+    BuildingDef* result = buildingCatalogue.buildingsByName.find_value(name).value_or(nullptr);
 
     return result;
 }
@@ -540,7 +540,7 @@ void remapBuildingTypes()
             String buildingName = entry->key;
             s32 oldType = entry->value;
 
-            oldTypeToNewType[oldType] = buildingCatalogue.buildingNameToTypeID.findValue(buildingName).orDefault(0);
+            oldTypeToNewType[oldType] = buildingCatalogue.buildingNameToTypeID.find_value(buildingName).value_or(0);
         }
 
         auto& city = AppState::the().gameState->city;

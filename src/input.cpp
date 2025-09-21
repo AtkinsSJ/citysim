@@ -358,9 +358,8 @@ KeyboardShortcut parseKeyboardShortcut(String shortcutString)
         } else if (keyName == "Super"_s) {
             result.modifiers.add(ModifierKey::Super);
         } else {
-            Maybe<SDL_Keycode> found = s_input_state.keyNames.findValue(keyName);
-            if (found.isValid) {
-                result.key = found.value;
+            if (auto found_key = s_input_state.keyNames.find_value(keyName); found_key.has_value()) {
+                result.key = found_key.release_value();
             } else {
                 // Error!
                 logWarn("Unrecognised key name '{0}' in shortcut string '{1}'"_s, { keyName, shortcutString });

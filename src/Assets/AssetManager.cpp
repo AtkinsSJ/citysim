@@ -624,8 +624,8 @@ void addAssetsFromDirectory(String subDirectory, Optional<AssetType> manualAsset
             if (manualAssetType.has_value())
                 return manualAssetType.value();
             String fileExtension = getFileExtension(filename);
-            Maybe<AssetType> foundAssetType = s_assets->fileExtensionToType.findValue(fileExtension);
-            return foundAssetType.orDefault(AssetType::Misc);
+            auto foundAssetType = s_assets->fileExtensionToType.find_value(fileExtension);
+            return foundAssetType.value_or(AssetType::Misc);
         }();
 
         addAsset(assetType, filename, assetFlags);
@@ -701,9 +701,8 @@ Asset* getAsset(AssetType type, String shortName)
 
 Asset* getAssetIfExists(AssetType type, String shortName)
 {
-    Maybe<Asset*> result = s_assets->assetsByType[type].findValue(shortName);
-
-    return result.isValid ? result.value : nullptr;
+    auto asset = s_assets->assetsByType[type].find_value(shortName);
+    return asset.value_or(nullptr);
 }
 
 Array<Colour>* getPalette(String name)
@@ -799,14 +798,14 @@ String getText(String name)
 
     String result = name;
 
-    Maybe<String> foundText = s_assets->texts.findValue(name);
-    if (foundText.isValid) {
-        result = foundText.value;
+    auto found_text = s_assets->texts.find_value(name);
+    if (found_text.has_value()) {
+        result = found_text.release_value();
     } else {
         // Try to fall back to english if possible
-        Maybe<String> defaultText = s_assets->defaultTexts.findValue(name);
-        if (defaultText.isValid) {
-            result = defaultText.value;
+        auto default_text = s_assets->defaultTexts.find_value(name);
+        if (default_text.has_value()) {
+            result = default_text.release_value();
         }
 
         // Dilemma: We probably want to report missing texts, somehow... because we'd want to know
@@ -829,7 +828,7 @@ String getText(String name)
         // set. (And then add it.)
 
         if (s_assets->missingTextIDs.add(name)) {
-            if (defaultText.isValid) {
+            if (default_text.has_value()) {
                 logWarn("Locale {0} is missing text for '{1}'. (Fell back to using the default locale.)"_s, { to_string(get_locale()), name });
             } else {
                 logWarn("Locale {0} is missing text for '{1}'. (No default found!)"_s, { to_string(get_locale()), name });
@@ -1240,9 +1239,9 @@ void loadTexts(HashTable<String>* texts, Asset* asset, Blob fileData)
         // Check that we don't already have a text with that name.
         // If we do, one will overwrite the other, and that could be unpredictable if they're
         // in different files. Things will still work, but it would be confusing! And unintended.
-        Maybe<String> existingValue = texts->findValue(key);
-        if (existingValue.isValid && existingValue.value != key) {
-            reader.warn("Text asset with ID '{0}' already exists in the texts table! Existing value: \"{1}\""_s, { key, existingValue.value });
+        auto existing_text = texts->find_value(key);
+        if (existing_text.has_value() && existing_text != key) {
+            reader.warn("Text asset with ID '{0}' already exists in the texts table! Existing value: \"{1}\""_s, { key, existing_text.value() });
         }
 
         asset->texts.keys.append(key);

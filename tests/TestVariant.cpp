@@ -119,15 +119,15 @@ void test_main()
         EXPECT(table_variant.has<HashTable<int>>());
         auto& held_table = table_variant.get<HashTable<int>>();
         {
-            auto hello = held_table.findValue("Hello"_s);
-            EXPECT(hello.isValid);
-            EXPECT(hello.value == 42);
+            auto hello = held_table.find_value("Hello"_s);
+            EXPECT(hello.has_value());
+            EXPECT(hello == 42);
         }
         {
-            auto world = held_table.findValue("World"_s);
-            EXPECT(world.isValid);
-            EXPECT(world.value == 17);
+            auto world = held_table.find_value("World"_s);
+            EXPECT(world.has_value());
+            EXPECT(world == 17);
         }
-        EXPECT(!held_table.findValue("huh?"_s).isValid);
+        EXPECT(!held_table.find_value("huh?"_s).has_value());
     }
 }

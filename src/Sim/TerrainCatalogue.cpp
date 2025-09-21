@@ -140,9 +140,9 @@ u8 findTerrainTypeByName(String name)
 
     u8 result = 0;
 
-    Maybe<TerrainDef*> def = s_terrain_catalogue.terrainDefsByName.findValue(name);
-    if (def.isValid && def.value != nullptr) {
-        result = def.value->typeID;
+    auto def = s_terrain_catalogue.terrainDefsByName.find_value(name);
+    if (def.has_value() && def != nullptr) {
+        result = def.value()->typeID;
     }
 
     return result;
@@ -173,7 +173,7 @@ void remapTerrainTypes()
             String terrainName = entry->key;
             u8 oldType = entry->value;
 
-            oldTypeToNewType[oldType] = s_terrain_catalogue.terrainNameToType.findValue(terrainName).orDefault(0);
+            oldTypeToNewType[oldType] = s_terrain_catalogue.terrainNameToType.find_value(terrainName).value_or(0);
         }
 
         TerrainLayer& layer = AppState::the().gameState->city.terrainLayer;
