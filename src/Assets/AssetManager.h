@@ -8,6 +8,7 @@
 
 #include <Assets/Asset.h>
 #include <Assets/AssetManagerListener.h>
+#include <IO/DirectoryWatcher.h>
 #include <IO/File.h>
 #include <Settings/SettingsChangeListener.h>
 #include <Util/ChunkedArray.h>
@@ -19,7 +20,8 @@ struct AssetManager final : public SettingsChangeListener {
     MemoryArena arena;
     StringTable assetStrings;
 
-    DirectoryChangeWatchingHandle assetChangeHandle;
+    // FIXME: This should be nonnull and initialized on construction.
+    OwnPtr<DirectoryWatcher> asset_change_handle;
 
     u32 asset_generation() const { return m_asset_generation; }
     void fixme_increment_asset_generation() { m_asset_generation++; }

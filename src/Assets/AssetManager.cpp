@@ -8,6 +8,7 @@
 #include <Debug/Console.h>
 #include <Gfx/BMFont.h>
 #include <Gfx/Renderer.h>
+#include <IO/DirectoryWatcher.h>
 #include <IO/File.h>
 #include <IO/LineReader.h>
 #include <SDL2/SDL_filesystem.h>
@@ -127,7 +128,7 @@ void initAssets()
 
     // NB: This might fail, or we might be on a platform where it isn't implemented.
     // That's OK though!
-    s_assets->assetChangeHandle = beginWatchingDirectory(s_assets->assetsPath);
+    s_assets->asset_change_handle = DirectoryWatcher::watch(s_assets->assetsPath);
 
     Settings::the().register_listener(*s_assets);
 }
@@ -648,7 +649,7 @@ void addAssets()
 
 bool haveAssetFilesChanged()
 {
-    return hasDirectoryChanged(&s_assets->assetChangeHandle);
+    return s_assets->asset_change_handle->has_changed() == true;
 }
 
 void reloadAssets()

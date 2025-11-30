@@ -7,6 +7,7 @@
 #pragma once
 
 #include <IO/BinaryFileReader.h>
+#include <IO/DirectoryWatcher.h>
 #include <IO/File.h>
 #include <UI/TextInput.h>
 #include <UI/UI.h>
@@ -42,7 +43,8 @@ struct SavedGamesCatalogue {
     MemoryArena savedGamesArena;
     StringTable stringsTable;
 
-    DirectoryChangeWatchingHandle savedGamesChangeHandle;
+    // FIXME: This should be nonnull and initialized on construction.
+    OwnPtr<DirectoryWatcher> savedGamesChangeHandle;
     String savedGamesPath;
 
     ChunkedArray<SavedGameInfo> savedGames;

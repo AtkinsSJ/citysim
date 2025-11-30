@@ -8,6 +8,7 @@
 #include "AppState.h"
 #include "input.h"
 #include "save_file.h"
+#include <IO/DirectoryWatcher.h>
 #include <Settings/Settings.h>
 #include <UI/Window.h>
 #include <Util/Orientation.h>
@@ -22,7 +23,7 @@ void initSavedGamesCatalogue()
 
     catalogue->savedGamesPath = intern(&catalogue->stringsTable, constructPath({ getUserDataPath(), "saves"_s }));
     createDirectory(catalogue->savedGamesPath);
-    catalogue->savedGamesChangeHandle = beginWatchingDirectory(catalogue->savedGamesPath);
+    catalogue->savedGamesChangeHandle = DirectoryWatcher::watch(catalogue->savedGamesPath);
 
     initChunkedArray(&catalogue->savedGames, &catalogue->savedGamesArena, 64);
 
@@ -41,7 +42,7 @@ void updateSavedGamesCatalogue()
 {
     SavedGamesCatalogue* catalogue = &savedGamesCatalogue;
 
-    if (hasDirectoryChanged(&catalogue->savedGamesChangeHandle)) {
+    if (catalogue->savedGamesChangeHandle->has_changed() == true) {
         // TODO: @Speed Throwing the list away and starting over is unnecessary - if we could
         // detect which file changed and only update that, it'd be much better!
         // That'd mean using ReadDirectoryChangesW() instead of FindFirstChangeNotification() on win32.
