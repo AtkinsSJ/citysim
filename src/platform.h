@@ -29,8 +29,3 @@ struct DirectoryListingHandle;
 DirectoryListingHandle platform_beginDirectoryListing(String path, FileInfo* result);
 bool platform_nextFileInDirectory(DirectoryListingHandle* handle, FileInfo* result);
 void platform_stopDirectoryListing(DirectoryListingHandle* handle);
-
-struct DirectoryChangeWatchingHandle;
-DirectoryChangeWatchingHandle platform_beginWatchingDirectory(String path);
-bool platform_hasDirectoryChanged(DirectoryChangeWatchingHandle* handle);
-void platform_stopWatchingDirectory(DirectoryChangeWatchingHandle* handle);

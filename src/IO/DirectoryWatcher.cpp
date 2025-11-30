@@ -93,6 +93,8 @@ Optional<bool> DirectoryWatcher::has_changed() const
         return {};
     }
 
+    // FIXME: Update recursive watchers to respond to newly added/removed directories.
+
     return true;
 
 #elif OS_WINDOWS

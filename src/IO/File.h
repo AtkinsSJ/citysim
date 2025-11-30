@@ -73,22 +73,6 @@ struct FileInfo {
     smm size;
 };
 
-struct DirectoryChangeWatchingHandle {
-    bool isValid;
-    u32 errorCode;
-    String path;
-
-#if OS_LINUX
-    int inotify_fd;
-    int watcher_fd;
-#elif OS_WINDOWS
-    struct
-    {
-        HANDLE handle;
-    } windows;
-#endif
-};
-
 // Returns the part of 'filename' after the final '.'
 // eg, getFileExtension("foo.bar.baz") would return "baz".
 // If there is no '.', we return an empty String.
@@ -224,19 +208,3 @@ struct iterateDirectoryListing {
 bool hasNextFile(iterateDirectoryListing* iterator);
 void findNextFile(iterateDirectoryListing* iterator);
 FileInfo* getFileInfo(iterateDirectoryListing* iterator);
-
-/*
- * Watch for file changes within a specific directory.
- * Right now, this watches for any file or directory changes within that directory, recursively.
- * Call beginWatchingDirectory() with the path, then hasDirectoryChanged() to see if anything has
- * changed since the last call. If you want to, you can close the handle with stopWatchingDirectory().
- *
- * hasDirectoryChanged() checks if the handle is valid, and returns false (for "no changes") if not,
- * so it's safe to call it on platforms that this system isn't implemented on, or in cases where the
- * beginWatchingDirectory() call failed for whatever reason. It Just Works!™
- *
- * - Sam, 30/05/2019
- */
-DirectoryChangeWatchingHandle beginWatchingDirectory(String path);
-bool hasDirectoryChanged(DirectoryChangeWatchingHandle* handle);
-void stopWatchingDirectory(DirectoryChangeWatchingHandle* handle);

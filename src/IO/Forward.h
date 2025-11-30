@@ -8,7 +8,6 @@
 
 struct BinaryFileReader;
 struct BinaryFileWriter;
-struct DirectoryChangeWatchingHandle;
 struct DirectoryListingHandle;
 class DirectoryWatcher;
 struct File;

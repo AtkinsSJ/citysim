@@ -262,25 +262,3 @@ FileInfo* getFileInfo(iterateDirectoryListing* iterator)
 {
     return &iterator->fileInfo;
 }
-
-DirectoryChangeWatchingHandle beginWatchingDirectory(String path)
-{
-    return platform_beginWatchingDirectory(path);
-}
-
-bool hasDirectoryChanged(DirectoryChangeWatchingHandle* handle)
-{
-    bool result = false;
-    if (handle->isValid) {
-        result = platform_hasDirectoryChanged(handle);
-    }
-    return result;
-}
-
-void stopWatchingDirectory(DirectoryChangeWatchingHandle* handle)
-{
-    if (handle->isValid) {
-        platform_stopWatchingDirectory(handle);
-        handle->isValid = false;
-    }
-}
