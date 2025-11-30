@@ -29,4 +29,10 @@ template<typename T>
 class Optional;
 
 template<typename T>
+class OwnPtr;
+
+template<typename T>
+class NonnullOwnPtr;
+
+template<typename T>
 class Ref;
