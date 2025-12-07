@@ -22,6 +22,12 @@ struct V2I;
 struct V3;
 struct V4;
 
+// FIXME: Actual error type
+using Error = String;
+
+template<typename T>
+class ErrorOr;
+
 template<typename T>
 class Indexed;
 
