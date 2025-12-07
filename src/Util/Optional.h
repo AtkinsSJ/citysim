@@ -10,7 +10,7 @@
 #include <Util/Basic.h>
 
 template<typename T>
-class Optional {
+class [[nodiscard]] Optional {
 public:
     Optional()
         : m_has_value(false)

@@ -39,7 +39,7 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
     }
 
     initOccupancyArray(&city->buildings, gameArena, 1024);
-    city->buildings.append(); // Null building
+    (void)city->buildings.append(); // Null building
 
     initOccupancyArray(&city->entities, gameArena, 1024);
 

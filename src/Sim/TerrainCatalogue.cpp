@@ -21,7 +21,7 @@ TerrainCatalogue& TerrainCatalogue::the()
 void initTerrainCatalogue()
 {
     initOccupancyArray(&s_terrain_catalogue.terrainDefs, &AppState::the().systemArena, 128);
-    s_terrain_catalogue.terrainDefs.append(); // Null terrain def
+    (void)s_terrain_catalogue.terrainDefs.append(); // Null terrain def
 
     s_terrain_catalogue.terrainNameToType.put(nullString, 0);
 

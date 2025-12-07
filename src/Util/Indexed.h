@@ -9,7 +9,7 @@
 #include <Util/Basic.h>
 
 template<typename T>
-class Indexed {
+class [[nodiscard]] Indexed {
 public:
     Indexed(u32 index, T& value)
         : m_index(index)

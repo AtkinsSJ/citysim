@@ -306,7 +306,7 @@ void Renderer::render_internal()
                     flush_vertices();
                 }
 
-                pop(&m_scissor_stack);
+                (void)pop(&m_scissor_stack);
 
                 // Restore previous scissor
                 if (!isEmpty(&m_scissor_stack)) {

@@ -10,7 +10,7 @@
 #include <Util/Variant.h>
 
 template<typename T>
-class ErrorOr {
+class [[nodiscard]] ErrorOr {
 public:
     ErrorOr(Error&& error)
         : m_value(move(error))

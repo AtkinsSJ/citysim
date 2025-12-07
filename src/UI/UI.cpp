@@ -151,7 +151,7 @@ void pushInputScissorRect(Rect2I bounds)
 
 void popInputScissorRect()
 {
-    pop(&uiState.inputScissorRects);
+    (void)pop(&uiState.inputScissorRects);
 }
 
 bool isInputScissorActive()
@@ -899,7 +899,7 @@ void drawToast()
         toast->time += AppState::the().deltaTime;
 
         if (toast->time >= toast->duration) {
-            uiState.toasts.pop();
+            (void)uiState.toasts.pop();
         } else {
             PanelStyle* style = getStyle<PanelStyle>("toast"_s);
             V2I origin = v2i(windowSize.x / 2, windowSize.y - 8);

@@ -27,7 +27,7 @@ void initBuildingCatalogue()
     // So, we have to append a blank for a "null" def. Could probably get rid of it, but initialise-to-zero is convenient
     // and I'm likely to accidentally leave other things set to 0, so it's safer to just keep the null def.
     // Update 18/02/2020: We now use the null building def when failing to match an intersection part name.
-    catalogue->allBuildings.append(); // Null building def
+    (void)catalogue->allBuildings.append(); // Null building def
 
     catalogue->buildingNameToTypeID.put(nullString, 0);
 
