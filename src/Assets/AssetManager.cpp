@@ -487,11 +487,8 @@ void unloadAsset(Asset* asset)
     case AssetType::Texts: {
         // Remove all of our texts from the table
         HashTable<String>* textsTable = (asset->texts.isFallbackLocale ? &s_assets->defaultTexts : &s_assets->texts);
-        for (s32 keyIndex = 0; keyIndex < asset->texts.keys.count; keyIndex++) {
-            String key = asset->texts.keys[keyIndex];
+        for (auto const& key : asset->texts.keys)
             textsTable->removeKey(key);
-        }
-
         asset->texts.keys = makeEmptyArray<String>();
     } break;
 
@@ -507,9 +504,8 @@ void unloadAsset(Asset* asset)
     }
 
     if (!asset->children.isEmpty()) {
-        for (s32 nameIndex = 0; nameIndex < asset->children.count; nameIndex++) {
-            removeAsset(asset->children[nameIndex]);
-        }
+        for (auto const& child : asset->children)
+            removeAsset(child);
         asset->children = makeEmptyArray<AssetRef>();
     }
 

@@ -397,9 +397,7 @@ void updateAndRenderWindows()
         // we are guaranteed to not perturb the positions of any later window indices, so this operation is completely
         // safe, and we can do it really simply. Hooray!
         // - Sam, 07/04/2021
-        for (s32 i = 0; i < windowsToMakeActive.count; i++) {
-            s32 windowIndex = windowsToMakeActive[i];
-
+        for (auto const& windowIndex : windowsToMakeActive) {
             // Don't do anything if it's already the active window.
             if (windowIndex == 0)
                 continue;

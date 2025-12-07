@@ -591,9 +591,8 @@ bool loadBuildings(City* city, BinaryFileReader* reader)
         Array<SAVBuildingTypeEntry> buildingTypeTable = reader->arena->allocate_array<SAVBuildingTypeEntry>(section->buildingTypeTable.count);
         if (!reader->readArray(section->buildingTypeTable, &buildingTypeTable))
             break;
-        for (s32 i = 0; i < buildingTypeTable.count; i++) {
-            SAVBuildingTypeEntry* entry = &buildingTypeTable[i];
-            String buildingName = reader->readString(entry->name);
+        for (auto const& entry : buildingTypeTable) {
+            String buildingName = reader->readString(entry.name);
 
             BuildingDef* def = findBuildingDef(buildingName);
             if (def == nullptr) {
@@ -618,9 +617,9 @@ bool loadBuildings(City* city, BinaryFileReader* reader)
                 //
                 // - Sam, 11/11/2019
                 //
-                oldTypeToNewType[entry->typeID] = 0;
+                oldTypeToNewType[entry.typeID] = 0;
             } else {
-                oldTypeToNewType[entry->typeID] = def->typeID;
+                oldTypeToNewType[entry.typeID] = def->typeID;
             }
         }
 

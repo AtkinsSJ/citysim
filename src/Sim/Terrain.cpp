@@ -369,10 +369,9 @@ bool loadTerrainLayer(TerrainLayer* layer, City* city, BinaryFileReader* reader)
         Array<SAVTerrainTypeEntry> terrainTypeTable = reader->arena->allocate_array<SAVTerrainTypeEntry>(section->terrainTypeTable.count);
         if (!reader->readArray(section->terrainTypeTable, &terrainTypeTable))
             break;
-        for (s32 i = 0; i < terrainTypeTable.count; i++) {
-            SAVTerrainTypeEntry* entry = &terrainTypeTable[i];
-            String terrainName = reader->readString(entry->name);
-            oldTypeToNewType[entry->typeID] = findTerrainTypeByName(terrainName);
+        for (auto const& entry : terrainTypeTable) {
+            String terrainName = reader->readString(entry.name);
+            oldTypeToNewType[entry.typeID] = findTerrainTypeByName(terrainName);
         }
 
         // Terrain type

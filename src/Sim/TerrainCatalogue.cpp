@@ -110,8 +110,7 @@ void loadTerrainDefs(Blob data, Asset* asset)
 
 void removeTerrainDefs(Array<String> namesToRemove)
 {
-    for (s32 nameIndex = 0; nameIndex < namesToRemove.count; nameIndex++) {
-        String terrainName = namesToRemove[nameIndex];
+    for (auto const& terrainName : namesToRemove) {
         s32 terrainIndex = findTerrainTypeByName(terrainName);
         if (terrainIndex > 0) {
             s_terrain_catalogue.terrainDefs.removeIndex(terrainIndex);

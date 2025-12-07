@@ -135,8 +135,7 @@ void Renderer::render_internal()
     ShaderProgram* activeShader = nullptr;
     Camera* currentCamera = nullptr;
 
-    for (s32 bufferIndex = 0; bufferIndex < m_render_buffers.count; bufferIndex++) {
-        RenderBuffer* buffer = m_render_buffers[bufferIndex];
+    for (auto const* buffer : m_render_buffers) {
         RenderBufferChunk* renderBufferChunk = buffer->firstChunk;
 
         DEBUG_BEGIN_RENDER_BUFFER(buffer->name, buffer->name);

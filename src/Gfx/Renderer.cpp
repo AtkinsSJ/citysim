@@ -106,9 +106,8 @@ void Renderer::render()
 
     render_internal();
 
-    for (s32 i = 0; i < m_render_buffers.count; i++) {
-        m_render_buffers[i]->clear_for_pool();
-    }
+    for (auto* buffer : m_render_buffers)
+        buffer->clear_for_pool();
 }
 
 void Renderer::after_assets_loaded()

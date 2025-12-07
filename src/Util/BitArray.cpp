@@ -86,8 +86,9 @@ void BitArray::clearBits()
 {
     setBitCount = 0;
 
-    for (s32 i = 0; i < u64s.count; i++) {
-        u64s[i] = 0;
+    // FIXME: memset?
+    for (auto& it : u64s) {
+        it = 0;
     }
 }
 

@@ -440,8 +440,7 @@ void removeBuildingDefs(Array<String> idsToRemove)
 {
     BuildingCatalogue* catalogue = &buildingCatalogue;
 
-    for (s32 idIndex = 0; idIndex < idsToRemove.count; idIndex++) {
-        String buildingID = idsToRemove[idIndex];
+    for (auto const& buildingID : idsToRemove) {
         BuildingDef* def = findBuildingDef(buildingID);
         if (def != nullptr) {
             catalogue->constructibleBuildings.findAndRemove(def);

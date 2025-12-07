@@ -60,10 +60,11 @@ bool BinaryFileReader::startSection(FileIdentifier sectionID, u8 supportedSectio
             arena->revert_to(arenaResetState);
 
             // Find the section in the TOC
+            // FIXME: find_matching
             FileTOCEntry* tocEntry = nullptr;
-            for (s32 tocIndex = 0; tocIndex < toc.count; tocIndex++) {
-                if (toc[tocIndex].sectionID == sectionID) {
-                    tocEntry = &toc[tocIndex];
+            for (auto& it : toc) {
+                if (it.sectionID == sectionID) {
+                    tocEntry = &it;
                     break;
                 }
             }
