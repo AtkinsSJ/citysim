@@ -7,6 +7,7 @@
 #pragma once
 
 #include <Util/Assert.h>
+#include <Util/Badge.h>
 #include <Util/Basic.h>
 
 template<typename T>
@@ -100,6 +101,53 @@ struct Array {
             sortInternal(compareElements, lowIndex, partitionIndex - 1);
             sortInternal(compareElements, partitionIndex + 1, highIndex);
         }
+    }
+
+    class Iterator {
+    public:
+        explicit Iterator(Badge<Array<T>>, T* pointer)
+            : m_pointer(pointer)
+        {
+        }
+
+        T& operator*() { return *m_pointer; }
+        T* operator->() { return m_pointer; }
+
+        Iterator& operator++()
+        {
+            ++m_pointer;
+            return *this;
+        }
+
+        Iterator operator++(int)
+        {
+            auto result = *this;
+            ++(*this);
+            return result;
+        }
+
+        bool operator==(Iterator const& other)
+        {
+            return m_pointer == other.m_pointer;
+        }
+
+        bool operator!=(Iterator const& other)
+        {
+            return m_pointer != other.m_pointer;
+        }
+
+    private:
+        T* m_pointer;
+    };
+
+    Iterator begin()
+    {
+        return Iterator({}, items);
+    }
+
+    Iterator end()
+    {
+        return Iterator({}, items + count);
     }
 };
 
