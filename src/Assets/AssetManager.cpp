@@ -8,6 +8,7 @@
 #include <Debug/Console.h>
 #include <Gfx/BMFont.h>
 #include <Gfx/Renderer.h>
+#include <IO/DirectoryIterator.h>
 #include <IO/DirectoryWatcher.h>
 #include <IO/File.h>
 #include <IO/LineReader.h>
@@ -610,17 +611,24 @@ void addAssetsFromDirectory(String subDirectory, Optional<AssetType> manualAsset
 
     auto assetFlags = default_asset_flags;
 
-    for (auto it = iterateDirectoryListing(pathToScan);
-        hasNextFile(&it);
-        findNextFile(&it)) {
-        FileInfo* fileInfo = getFileInfo(&it);
+    auto iterate = iterate_directory(pathToScan);
+    if (iterate.is_error()) {
+        logError("Failed to iterate asset directory: {}"_s, { iterate.error() });
+        return;
+    }
+    for (auto it : iterate.release_value()) {
+        if (it.is_error()) {
+            logError("Failed to iterate asset directory: {}"_s, { it.error() });
+            break;
+        }
+        auto& file_info = it.value();
 
-        if (fileInfo->flags.has(FileFlags::Directory) || fileInfo->flags.has(FileFlags::Hidden)
-            || (fileInfo->filename[0] == '.')) {
+        if (file_info.flags.has(FileFlags::Directory) || file_info.flags.has(FileFlags::Hidden)
+            || (file_info.filename[0] == '.')) {
             continue;
         }
 
-        String filename = intern(&s_assets->assetStrings, fileInfo->filename);
+        String filename = intern(&s_assets->assetStrings, file_info.filename);
         AssetType assetType = [&manualAssetType, &filename]() {
             // Attempt to categorise the asset based on file extension
             if (manualAssetType.has_value())
