@@ -6,15 +6,14 @@
 
 #pragma once
 
-#include <Util/Optional.h>
+#include <Util/ErrorOr.h>
 #include <Util/OwnPtr.h>
 #include <Util/Platform.h>
 #include <Util/String.h>
 
 class DirectoryWatcher {
 public:
-    // FIXME: ErrorOr
-    static OwnPtr<DirectoryWatcher> watch(String path);
+    static ErrorOr<NonnullOwnPtr<DirectoryWatcher>> watch(String path);
 
     // Movable but not copyable
     DirectoryWatcher(DirectoryWatcher&&) = default;
@@ -23,8 +22,7 @@ public:
 
     ~DirectoryWatcher();
 
-    // FIXME: ErrorOr
-    Optional<bool> has_changed() const;
+    ErrorOr<bool> has_changed() const;
 
 private:
 #if OS_LINUX

@@ -23,7 +23,12 @@ void initSavedGamesCatalogue()
 
     catalogue->savedGamesPath = intern(&catalogue->stringsTable, constructPath({ getUserDataPath(), "saves"_s }));
     createDirectory(catalogue->savedGamesPath);
-    catalogue->savedGamesChangeHandle = DirectoryWatcher::watch(catalogue->savedGamesPath);
+    auto saved_games_watcher = DirectoryWatcher::watch(catalogue->savedGamesPath);
+    if (saved_games_watcher.is_error()) {
+        logError("Failed to watch saved games directory: {}"_s, { saved_games_watcher.error() });
+    } else {
+        catalogue->savedGamesChangeHandle = saved_games_watcher.release_value();
+    }
 
     initChunkedArray(&catalogue->savedGames, &catalogue->savedGamesArena, 64);
 
@@ -42,7 +47,12 @@ void updateSavedGamesCatalogue()
 {
     SavedGamesCatalogue* catalogue = &savedGamesCatalogue;
 
-    if (catalogue->savedGamesChangeHandle->has_changed() == true) {
+    auto has_changed = catalogue->savedGamesChangeHandle->has_changed();
+    if (has_changed.is_error()) {
+        logError("Failed to check for saved game changes: {}"_s, { has_changed.error() });
+        return;
+    }
+    if (has_changed.value()) {
         // TODO: @Speed Throwing the list away and starting over is unnecessary - if we could
         // detect which file changed and only update that, it'd be much better!
         // That'd mean using ReadDirectoryChangesW() instead of FindFirstChangeNotification() on win32.

@@ -128,7 +128,12 @@ void initAssets()
 
     // NB: This might fail, or we might be on a platform where it isn't implemented.
     // That's OK though!
-    s_assets->asset_change_handle = DirectoryWatcher::watch(s_assets->assetsPath);
+    auto asset_watcher = DirectoryWatcher::watch(s_assets->assetsPath);
+    if (asset_watcher.is_error()) {
+        logError("Failed to watch assets directory: {}"_s, { asset_watcher.error() });
+    } else {
+        s_assets->asset_change_handle = asset_watcher.release_value();
+    }
 
     Settings::the().register_listener(*s_assets);
 }
@@ -645,7 +650,12 @@ void addAssets()
 
 bool haveAssetFilesChanged()
 {
-    return s_assets->asset_change_handle->has_changed() == true;
+    auto result = s_assets->asset_change_handle->has_changed();
+    if (result.is_error()) {
+        logError("Failed to check for asset changes: {}"_s, { result.error() });
+        return false;
+    }
+    return result.value();
 }
 
 void reloadAssets()

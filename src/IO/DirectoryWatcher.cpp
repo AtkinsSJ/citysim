@@ -5,6 +5,7 @@
  */
 
 #include "DirectoryWatcher.h"
+#include <Util/ErrorOr.h>
 #include <Util/Log.h>
 
 #if OS_LINUX
@@ -14,7 +15,7 @@
 #    include <unistd.h>
 #endif
 
-OwnPtr<DirectoryWatcher> DirectoryWatcher::watch(String path)
+ErrorOr<NonnullOwnPtr<DirectoryWatcher>> DirectoryWatcher::watch(String path)
 {
     ASSERT(path.is_null_terminated());
 
@@ -22,29 +23,33 @@ OwnPtr<DirectoryWatcher> DirectoryWatcher::watch(String path)
     auto inotify_fd = inotify_init();
     if (inotify_fd < 0) {
         auto error_code = -errno;
-        logError("Failed to initialize inotify. (Error {})"_s, { formatInt(error_code) });
+        // FIXME: This should make a permanent copy of the string.
+        //        For now, temporary is fine as it'll live for the rest of the frame, and we won't persist errors, but that's a footgun.
+        auto error = myprintf("Failed to initialize inotify. (Error {})"_s, { formatInt(error_code) });
         close(inotify_fd);
-        return {};
+        return Error { error };
     }
 
     if (inotify_add_watch(inotify_fd, path.chars, IN_CREATE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVED_FROM | IN_MOVED_TO) < 0) {
         auto error_code = -errno;
-        logError("Failed to add inotify watch to \"{}\". (Error {})"_s, { path, formatInt(error_code) });
+        // FIXME: This should make a permanent copy of the string, see above.
+        auto error = myprintf("Failed to add inotify watch to \"{}\". (Error {})"_s, { path, formatInt(error_code) });
         close(inotify_fd);
-        return {};
+        return Error { error };
     }
 
     // FIXME: Recurse!
 
-    return adopt_own_if_nonnull(new DirectoryWatcher { path, inotify_fd });
+    return adopt_own(*new DirectoryWatcher { path, inotify_fd });
 #elif OS_WINDOWS
     auto handle = FindFirstChangeNotification(path.chars, true, FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE);
     if (handle == INVALID_HANDLE_VALUE) {
         auto error_code = GetLastError();
-        logError("Failed to set notification for file changes in \"{0}\". (Error {1})"_s, { path, formatInt(error_code) });
-        return {};
+        // FIXME: This should make a permanent copy of the string, see above.
+        auto error = myprintf("Failed to set notification for file changes in \"{0}\". (Error {1})"_s, { path, formatInt(error_code) });
+        return Error { error };
     }
-    return adopt_own_if_nonnull(new DirectoryWatcher { path, handle });
+    return adopt_own(*new DirectoryWatcher { path, handle });
 #endif
 }
 
@@ -57,8 +62,7 @@ DirectoryWatcher::~DirectoryWatcher()
 #endif
 }
 
-// FIXME: ErrorOr<bool>
-Optional<bool> DirectoryWatcher::has_changed() const
+ErrorOr<bool> DirectoryWatcher::has_changed() const
 {
 #if OS_LINUX
     pollfd fd_info {
@@ -74,10 +78,11 @@ Optional<bool> DirectoryWatcher::has_changed() const
     }
 
     if (result < 0) {
-        // FIXME: Return the error
         auto error_code = -errno;
-        logError("Failed to poll inotify for \"{}\". (Error {})"_s, { m_path, formatInt(error_code) });
-        return {};
+        // FIXME: This should make a permanent copy of the string.
+        //        For now, temporary is fine as it'll live for the rest of the frame, and we won't persist errors, but that's a footgun.
+        auto error = myprintf("Failed to poll inotify for \"{}\". (Error {})"_s, { m_path, formatInt(error_code) });
+        return Error { error };
     }
 
     ASSERT(fd_info.revents & POLLIN);
@@ -87,10 +92,10 @@ Optional<bool> DirectoryWatcher::has_changed() const
     u8 buffer[buffer_size];
     auto read_result = read(m_inotify_fd, buffer, buffer_size);
     if (read_result < 0) {
-        // FIXME: Return the error
         auto error_code = -errno;
-        logError("Failed to read from inotify for \"{}\". (Error {})"_s, { m_path, formatInt(error_code) });
-        return {};
+        // FIXME: This should make a permanent copy of the string, see above.
+        auto error = myprintf("Failed to read from inotify for \"{}\". (Error {})"_s, { m_path, formatInt(error_code) });
+        return Error { error };
     }
 
     // FIXME: Update recursive watchers to respond to newly added/removed directories.
@@ -102,10 +107,10 @@ Optional<bool> DirectoryWatcher::has_changed() const
     switch (waitResult) {
     case WAIT_FAILED: {
         // Something broke
-        // FIXME: Return the error
         auto error_code = GetLastError();
-        logError("Failed to poll for file changes in \"{0}\". (Error {1})"_s, { m_path, formatInt(error_code) });
-        return {};
+        // FIXME: This should make a permanent copy of the string, see above.
+        auto error = myprintf("Failed to poll for file changes in \"{0}\". (Error {1})"_s, { m_path, formatInt(error_code) });
+        return Error { error };
     }
 
     case WAIT_TIMEOUT: {
@@ -126,8 +131,9 @@ Optional<bool> DirectoryWatcher::has_changed() const
         if (FindNextChangeNotification(m_handle) == false) {
             // something broke
             auto error_code = GetLastError();
-            logError("Failed to re-set notification for file changes in \"{0}\". (Error {1})"_s, { m_path, formatInt(error_code) });
-            return {};
+            // FIXME: This should make a permanent copy of the string, see above.
+            auto error = myprintf("Failed to re-set notification for file changes in \"{0}\". (Error {1})"_s, { m_path, formatInt(error_code) });
+            return Error { error };
         }
 
         return true;
