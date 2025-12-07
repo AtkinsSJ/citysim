@@ -22,10 +22,3 @@ String platform_constructPath(std::initializer_list<String> parts, bool appendWi
 
 bool platform_createDirectory(String path);
 bool platform_deleteFile(String path);
-
-struct FileInfo;
-
-struct DirectoryListingHandle;
-DirectoryListingHandle platform_beginDirectoryListing(String path, FileInfo* result);
-bool platform_nextFileInDirectory(DirectoryListingHandle* handle, FileInfo* result);
-void platform_stopDirectoryListing(DirectoryListingHandle* handle);
