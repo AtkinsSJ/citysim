@@ -23,11 +23,13 @@ public:
     }
 
     bool is_error() const { return m_value.template has<Error>(); }
+
     Error const& error() const { return m_value.template get<Error>(); }
+    Error& error() { return m_value.template get<Error>(); }
+    Error&& release_error() { return move(error()); }
 
     T const& value() const { return m_value.template get<T>(); }
     T& value() { return m_value.template get<T>(); }
-
     T&& release_value() { return move(value()); }
 
 private:
