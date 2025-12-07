@@ -8,6 +8,7 @@
 #include "AppState.h"
 #include "input.h"
 #include "save_file.h"
+#include <IO/DirectoryIterator.h>
 #include <IO/DirectoryWatcher.h>
 #include <Settings/Settings.h>
 #include <UI/Window.h>
@@ -73,17 +74,24 @@ void updateSavedGamesCatalogue()
 void readSavedGamesInfo(SavedGamesCatalogue* catalogue)
 {
     // Load the save game metadata
-    for (auto it = iterateDirectoryListing(constructPath({ catalogue->savedGamesPath }));
-        hasNextFile(&it);
-        findNextFile(&it)) {
-        FileInfo* fileInfo = getFileInfo(&it);
-        if (fileInfo->flags.has(FileFlags::Directory) || fileInfo->flags.has(FileFlags::Hidden))
+    auto iterate = iterate_directory(constructPath({ catalogue->savedGamesPath }));
+    if (iterate.is_error()) {
+        logError("Failed to iterate saved games directory: {}"_s, { iterate.error() });
+        return;
+    }
+    for (auto it : iterate.release_value()) {
+        if (it.is_error()) {
+            logError("Failed to iterate saved games directory: {}"_s, { it.error() });
+            break;
+        }
+        auto& file_info = it.value();
+        if (file_info.flags.has(FileFlags::Directory) || file_info.flags.has(FileFlags::Hidden))
             continue;
 
         SavedGameInfo* savedGame = catalogue->savedGames.appendBlank();
 
-        savedGame->shortName = intern(&catalogue->stringsTable, getFileName(fileInfo->filename));
-        savedGame->fullPath = intern(&catalogue->stringsTable, constructPath({ catalogue->savedGamesPath, fileInfo->filename }));
+        savedGame->shortName = intern(&catalogue->stringsTable, getFileName(file_info.filename));
+        savedGame->fullPath = intern(&catalogue->stringsTable, constructPath({ catalogue->savedGamesPath, file_info.filename }));
         savedGame->isReadable = false;
 
         FileHandle savedFile = openFile(savedGame->fullPath, FileAccessMode::Read);
