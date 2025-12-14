@@ -9,6 +9,7 @@
 #include <IO/File.h>
 #include <Util/ErrorOr.h>
 #include <Util/Flags.h>
+#include <Util/Platform.h>
 
 #if OS_LINUX
 #    include <dirent.h>
