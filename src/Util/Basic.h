@@ -47,3 +47,41 @@ typedef intptr_t smm;
 
 #include <uchar.h>
 typedef char32_t unichar;
+
+namespace Detail {
+
+template<typename T>
+struct RemoveConst {
+    using Type = T;
+};
+
+template<typename T>
+struct RemoveConst<T const> {
+    using Type = T;
+};
+
+template<typename T>
+struct RemoveReference {
+    using Type = T;
+};
+
+template<typename T>
+struct RemoveReference<T&> {
+    using Type = T;
+};
+
+template<typename T>
+struct RemoveReference<T&&> {
+    using Type = T;
+};
+
+}
+
+template<typename T>
+using RemoveConst = Detail::RemoveConst<T>::Type;
+
+template<typename T>
+using RemoveReference = Detail::RemoveReference<T>::Type;
+
+template<typename T>
+using RemoveConstReference = RemoveConst<RemoveReference<T>>;
