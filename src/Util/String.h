@@ -11,6 +11,7 @@
 #include <Util/Forward.h>
 #include <Util/Optional.h>
 #include <Util/StringBase.h>
+#include <Util/StringView.h>
 #include <initializer_list>
 #include <typeinfo>
 
@@ -40,6 +41,9 @@ struct String {
     String() = default;
     String(char const* chars, size_t length, WithHash = WithHash::No);
     String(char* chars, size_t length, WithHash = WithHash::No);
+
+    StringView view() const;
+    explicit operator StringView() const { return view(); }
 
     char operator[](s32 index) const;
 

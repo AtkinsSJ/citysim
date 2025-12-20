@@ -43,6 +43,11 @@ String String::from_null_terminated(char const* chars)
     return { chars, strlen(chars) };
 }
 
+StringView String::view() const
+{
+    return StringView { chars, length };
+}
+
 char String::operator[](s32 index) const
 {
     ASSERT(index >= 0 && index < this->length); // Index out of range!
