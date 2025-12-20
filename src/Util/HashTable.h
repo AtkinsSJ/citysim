@@ -30,6 +30,18 @@ struct HashTableEntry {
     String key;
 
     T value;
+
+    void clear()
+    {
+        isOccupied = false;
+        isGravestone = false;
+        key = {};
+        if constexpr (requires { value.~T(); }) {
+            value.~T();
+        } else {
+            value = {};
+        }
+    }
 };
 
 template<typename T>
@@ -57,6 +69,23 @@ struct HashTable {
     HashTable()
         : HashTable(0)
     {
+    }
+
+    HashTable(HashTable const& other)
+        : HashTable(other.capacity, other.maxLoadFactor)
+    {
+        put_all(other);
+    }
+
+    HashTable& operator=(HashTable const& other)
+    {
+        if (&other == this)
+            return *this;
+
+        clear();
+        maxLoadFactor = other.maxLoadFactor;
+        put_all(other);
+        return *this;
     }
 
     HashTable(HashTable&& other)
@@ -280,6 +309,15 @@ struct HashTable {
         }
     }
 
+    void put_all(HashTable const& source)
+    {
+        // FIXME: Remove const cast when we're const correct
+        for (auto it = const_cast<HashTable&>(source).iterate(); it.hasNext(); it.next()) {
+            auto entry = it.getEntry();
+            put(entry->key, entry->value);
+        }
+    }
+
     void removeKey(String key)
     {
         if (entries == nullptr)
@@ -301,7 +339,7 @@ struct HashTable {
             count = 0;
             if (entries != nullptr) {
                 for (s32 i = 0; i < capacity; i++) {
-                    entries[i] = {};
+                    entries[i].clear();
                 }
             }
         }
