@@ -27,7 +27,7 @@ enum class WithHash : u8 {
 // FIXME: Distinguishing between owning and non-owning Strings would be good. (AKA, introduce StringView.)
 struct String {
     using Hash = u32;
-    s32 length;
+    size_t length;
     char* chars;
 
     // FIXME: initializer_list isn't the best option

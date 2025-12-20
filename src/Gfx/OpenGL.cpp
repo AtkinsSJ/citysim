@@ -580,7 +580,8 @@ bool compileShader(ShaderProgram* glShader, String shaderName, Shader* shaderPro
         INVALID_DEFAULT_CASE;
     }
 
-    glShaderSource(shaderID, 1, (char**)&source.chars, &source.length);
+    GLint source_length = static_cast<GLint>(source.length);
+    glShaderSource(shaderID, 1, (char**)&source.chars, &source_length);
 
     glCompileShader(shaderID);
 
@@ -596,7 +597,9 @@ bool compileShader(ShaderProgram* glShader, String shaderName, Shader* shaderPro
 
         glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &logMaxLength);
         String infoLog = pushString(&temp_arena(), logMaxLength);
-        glGetShaderInfoLog(shaderID, logMaxLength, &infoLog.length, infoLog.chars);
+        GLint infoLogLength = 0;
+        glGetShaderInfoLog(shaderID, logMaxLength, &infoLogLength, infoLog.chars);
+        infoLog.length = infoLogLength;
 
         if (infoLog.is_empty()) {
             infoLog = "No error log provided by OpenGL. Sad panda."_s;
@@ -651,7 +654,9 @@ void loadShaderProgram(Asset* asset, ShaderProgram* glShader)
 
                 glGetProgramiv(glShader->shaderProgramID, GL_INFO_LOG_LENGTH, &logMaxLength);
                 String infoLog = pushString(&temp_arena(), logMaxLength);
-                glGetProgramInfoLog(glShader->shaderProgramID, logMaxLength, &infoLog.length, infoLog.chars);
+                GLint infoLogLength = 0;
+                glGetProgramInfoLog(glShader->shaderProgramID, logMaxLength, &infoLogLength, infoLog.chars);
+                infoLog.length = infoLogLength;
 
                 if (infoLog.is_empty()) {
                     infoLog = "No error log provided by OpenGL. Sad panda."_s;
