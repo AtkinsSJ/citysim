@@ -418,7 +418,7 @@ String String::join(std::initializer_list<String> strings, Optional<String> betw
  * You pass the arguments in an initializer-list, so like: myprintf("Hello {0}!", {name});
  * All arguments must already be Strings. Use the various formatXXX() functions to convert things to Strings.
  */
-String myprintf(String format, std::initializer_list<String> args, bool zeroTerminate)
+String myprintf(String format, std::initializer_list<StringView> args, bool zeroTerminate)
 {
     // Null bytes are a pain.
     // If we have a terminating one, just trim it off for now (and optionally re-attach it
@@ -458,10 +458,10 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
             }
 
             if ((index >= 0) && (index < args.size())) {
-                String arg = args.begin()[index];
+                auto arg = args.begin()[index];
 
-                if (arg.is_null_terminated())
-                    arg.length--;
+                if (arg.ends_with("\0"_sv))
+                    arg = arg.substring(0, arg.length() - 1);
 
                 stb.append(arg);
             } else {

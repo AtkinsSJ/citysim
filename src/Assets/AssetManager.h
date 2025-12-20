@@ -108,7 +108,7 @@ SpriteRef getSpriteRef(String groupName, s32 spriteIndex);
 Sprite* getSprite(SpriteRef* ref);
 
 String getText(String name);
-String getText(String name, std::initializer_list<String> args);
+String getText(String name, std::initializer_list<StringView> args);
 
 template<typename T>
 bool checkStyleMatchesType(AssetRef const& reference)

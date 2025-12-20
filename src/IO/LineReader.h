@@ -86,8 +86,8 @@ public:
         return {};
     }
 
-    void warn(String message, std::initializer_list<String> args = {}) const;
-    void error(String message, std::initializer_list<String> args = {}) const;
+    void warn(String message, std::initializer_list<StringView> args = {}) const;
+    void error(String message, std::initializer_list<StringView> args = {}) const;
 
     static u32 count_lines(Blob const& data);
 

@@ -150,14 +150,14 @@ String LineReader::remainder_of_current_line() const
     return m_state.line_remainder.trimmed();
 }
 
-void LineReader::warn(String message, std::initializer_list<String> args) const
+void LineReader::warn(String message, std::initializer_list<StringView> args) const
 {
     String text = myprintf(message, args, false);
     String lineNumber = m_state.at_end_of_file ? "EOF"_s : formatInt(m_state.current_line_number);
     logWarn("{0}:{1} - {2}"_s, { m_filename, lineNumber, text });
 }
 
-void LineReader::error(String message, std::initializer_list<String> args) const
+void LineReader::error(String message, std::initializer_list<StringView> args) const
 {
     String text = myprintf(message, args, false);
     String lineNumber = m_state.at_end_of_file ? "EOF"_s : formatInt(m_state.current_line_number);

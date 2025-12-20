@@ -854,7 +854,7 @@ String getText(String name)
     return result;
 }
 
-String getText(String name, std::initializer_list<String> args)
+String getText(String name, std::initializer_list<StringView> args)
 {
     String format = getText(name);
 

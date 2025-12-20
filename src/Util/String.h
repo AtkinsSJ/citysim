@@ -125,7 +125,7 @@ inline String formatString(char const* value, s32 length = -1, bool alignLeft = 
 
 String formatBool(bool value);
 
-String myprintf(String format, std::initializer_list<String> args, bool zeroTerminate = false);
+String myprintf(String format, std::initializer_list<StringView> args, bool zeroTerminate = false);
 
 template<typename T>
 String typeNameOf()
