@@ -62,7 +62,7 @@ public:
     template<typename T>
     static constexpr bool can_contain()
     {
-        return (std::is_same_v<T, Ts> || ...);
+        return (std::is_same_v<RemoveConstReference<T>, Ts> || ...);
     }
 
     template<typename T>
@@ -168,6 +168,9 @@ public:
 
     Variant& operator=(Variant const& other)
     {
+        if (&other == this)
+            return *this;
+
         other.visit([&](auto& it) {
             set_without_destructing_old_value(it);
         });
@@ -210,8 +213,9 @@ private:
     void set_without_destructing_old_value(T&& t)
     requires(can_contain<T>())
     {
-        new (m_data) T(forward<T>(t));
-        m_current_type = &typeid(T);
+        using V = RemoveConstReference<T>;
+        new (m_data) V(forward<T>(t));
+        m_current_type = &typeid(V);
     }
 
     template<typename T>
