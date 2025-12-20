@@ -12,6 +12,8 @@
 #include <IO/Forward.h>
 #include <Util/HashTable.h>
 #include <Util/Optional.h>
+#include <Util/Ref.h>
+#include <Util/Variant.h>
 #include <Util/Vector.h>
 
 enum class ConsoleLineStyle : u8 {
@@ -264,87 +266,44 @@ enum class PropType : u8 {
 
 struct Property {
     PropType type;
-    smm offsetInStyleStruct;
     EnumMap<StyleType, bool> existsInStyle;
 };
 
-struct Style {
+class Style {
+public:
     StyleType type;
     String name;
 
-    // PROPERTIES
-    Optional<Padding> padding;
-    Optional<s32> contentPadding;
-    Optional<V2I> offsetFromMouse;
-    Optional<s32> width;
-    Optional<Alignment> widgetAlignment;
-    Optional<V2I> size;
+    using PropertyValue = Variant<bool, float, s32, Alignment, Colour, DrawableStyle, Padding, String, V2I>;
 
-    Optional<DrawableStyle> background;
-    Optional<DrawableStyle> backgroundDisabled;
-    Optional<DrawableStyle> backgroundHover;
-    Optional<DrawableStyle> backgroundPressed;
+    void set_property(String const& property, PropertyValue&& value);
 
-    Optional<String> buttonStyle;
-    Optional<String> checkboxStyle;
-    Optional<String> dropDownListStyle;
-    Optional<String> labelStyle;
-    Optional<String> panelStyle;
-    Optional<String> radioButtonStyle;
-    Optional<String> scrollbarStyle;
-    Optional<String> sliderStyle;
-    Optional<String> textInputStyle;
+    bool get_bool(String const& property, bool default_value) const;
+    float get_float(String const& property, float default_value) const;
+    s32 get_s32(String const& property, s32 default_value) const;
+    Alignment get_alignment(String const& property, Alignment const& default_value) const;
+    AssetRef get_asset_ref(String const& property, AssetType, String const& default_name = "default"_h) const;
+    Colour get_colour(String const& property, Colour const& default_value) const;
+    DrawableStyle get_drawable_style(String const& property, DrawableStyle const& default_value) const;
+    Padding get_padding(String const& property, Padding const& default_value) const;
+    String get_string(String const& property, String const& default_value) const;
+    V2I get_v2i(String const& property, V2I const& default_value) const;
+    Optional<V2I> get_v2i(String const& property) const;
 
-    Optional<DrawableStyle> startIcon;
-    Optional<Alignment> startIconAlignment;
+private:
+    // FIXME: Remove `mutable` once HashTable is const-correct
+    mutable HashTable<PropertyValue> m_properties;
 
-    Optional<DrawableStyle> endIcon;
-    Optional<Alignment> endIconAlignment;
+    template<typename T>
+    Optional<T> get_property_value(String const& property) const
+    {
+        if (auto property_value = m_properties.find(property); property_value.has_value()) {
+            if (auto* value = property_value->try_get<T>())
+                return *value;
+        }
 
-    Optional<bool> showCaret;
-    Optional<float> caretFlashCycleDuration;
-
-    Optional<DrawableStyle> track;
-    Optional<s32> trackThickness;
-    Optional<DrawableStyle> thumb;
-    Optional<DrawableStyle> thumbHover;
-    Optional<DrawableStyle> thumbPressed;
-    Optional<DrawableStyle> thumbDisabled;
-    Optional<V2I> thumbSize;
-
-    Optional<Colour> overlayColor;
-
-    Optional<AssetRef> font;
-    Optional<Alignment> textAlignment;
-    Optional<Colour> textColor;
-
-    // Window
-    Optional<String> titleLabelStyle;
-    Optional<Colour> titleBarButtonHoverColor;
-    Optional<Colour> titleBarColor;
-    Optional<Colour> titleBarColorInactive;
-    Optional<s32> titleBarHeight;
-
-    // Checkbox specific
-    Optional<V2I> checkSize;
-    Optional<DrawableStyle> check;
-    Optional<DrawableStyle> checkHover;
-    Optional<DrawableStyle> checkPressed;
-    Optional<DrawableStyle> checkDisabled;
-
-    // Console
-    Optional<Colour> outputTextColor;
-    Optional<Colour> outputTextColorInputEcho;
-    Optional<Colour> outputTextColorError;
-    Optional<Colour> outputTextColorSuccess;
-    Optional<Colour> outputTextColorWarning;
-
-    // Radio button
-    Optional<V2I> dotSize;
-    Optional<DrawableStyle> dot;
-    Optional<DrawableStyle> dotHover;
-    Optional<DrawableStyle> dotPressed;
-    Optional<DrawableStyle> dotDisabled;
+        return {};
+    }
 };
 
 void initStyleConstants();
