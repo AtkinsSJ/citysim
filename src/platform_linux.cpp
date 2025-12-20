@@ -55,27 +55,27 @@ DateTime platform_getLocalTimeFromTimestamp(u64 unixTimestamp)
 String platform_constructPath(std::initializer_list<String> parts, bool appendWildcard)
 {
     // @Copypasta: This is identical to the win32 version except with '/' instead of '\\'!
-    StringBuilder stb = newStringBuilder(256);
+    StringBuilder stb;
 
     if (parts.size() > 0) {
         for (auto it = parts.begin(); it != parts.end(); it++) {
-            if (it != parts.begin() && (stb.buffer[stb.length - 1] != '/')) {
-                append(&stb, '/');
+            if (it != parts.begin() && (stb.char_at(stb.length() - 1) != '/')) {
+                stb.append('/');
             }
-            append(&stb, *it);
+            stb.append(*it);
             // Trim off a trailing null that might be there.
-            if (stb.buffer[stb.length - 1] == '\0')
-                stb.length--;
+            if (stb.char_at(stb.length() - 1) == '\0')
+                stb.remove(1);
         }
     }
 
     if (appendWildcard) {
-        append(&stb, "/*"_s);
+        stb.append("/*"_s);
     }
 
-    append(&stb, '\0');
+    stb.append('\0');
 
-    String result = getString(&stb);
+    String result = stb.deprecated_to_string();
 
     ASSERT(result.is_null_terminated()); // Path strings must be null-terminated!
 

@@ -60,10 +60,10 @@ void BaseSettingsState::load_from_file(String filename, Blob data)
 
 bool BaseSettingsState::save_to_file(String filename)
 {
-    StringBuilder stb = newStringBuilder(2048);
-    append(&stb, "# User-specific settings file.\n#\n"_s);
-    append(&stb, "# I don't recommend fiddling with this manually, but it should work.\n"_s);
-    append(&stb, "# If the game won't run, try deleting this file, and it should be re-generated with the default settings.\n\n"_s);
+    StringBuilder stb { 2048 };
+    stb.append("# User-specific settings file.\n#\n"_s);
+    stb.append("# I don't recommend fiddling with this manually, but it should work.\n"_s);
+    stb.append("# If the game won't run, try deleting this file, and it should be re-generated with the default settings.\n\n"_s);
 
     for (auto it = m_settings_order.iterate();
         it.hasNext();
@@ -71,14 +71,14 @@ bool BaseSettingsState::save_to_file(String filename)
         String name = it.getValue();
         auto& setting = *m_settings_by_name.find(name).value();
 
-        append(&stb, name);
-        append(&stb, " = "_s);
-        append(&stb, setting->serialize_value());
-        append(&stb, '\n');
+        stb.append(name);
+        stb.append(" = "_s);
+        stb.append(setting->serialize_value());
+        stb.append('\n');
     }
 
     String userSettingsPath = getUserSettingsPath();
-    String fileData = getString(&stb);
+    String fileData = stb.deprecated_to_string();
 
     if (writeFile(filename, fileData)) {
         logInfo("Settings saved successfully."_s);

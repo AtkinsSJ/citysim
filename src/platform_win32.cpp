@@ -149,9 +149,9 @@ String platform_constructPath(std::initializer_list<String> parts, bool appendWi
     if (parts.size() > 0) {
         for (auto it = parts.begin(); it != parts.end(); it++) {
             if (it != parts.begin() && (stb.buffer[stb.length - 1] != '\\')) {
-                append(&stb, '\\');
+                stb.append('\\');
             }
-            append(&stb, *it);
+            stb.append(*it);
             // Trim off a trailing null that might be there.
             if (stb.buffer[stb.length - 1] == '\0')
                 stb.length--;
@@ -159,10 +159,10 @@ String platform_constructPath(std::initializer_list<String> parts, bool appendWi
     }
 
     if (appendWildcard) {
-        append(&stb, "\\*"_s);
+        stb.append("\\*"_s);
     }
 
-    append(&stb, '\0');
+    stb.append('\0');
 
     String result = getString(&stb);
 

@@ -390,22 +390,22 @@ String String::join(std::initializer_list<String> strings, Optional<String> betw
 
     if (strings.size() > 0) {
         // Count up the resulting length
-        s32 resultLength = between.has_value() ? truncate32(between.value().length * (strings.size() - 1)) : 0;
+        size_t resultLength = between.has_value() ? truncate32(between.value().length * (strings.size() - 1)) : 0;
         for (auto it = strings.begin(); it != strings.end(); it++) {
             resultLength += it->length;
         }
 
-        StringBuilder stb = newStringBuilder(resultLength, &temp_arena());
+        StringBuilder stb { resultLength };
 
-        append(&stb, *strings.begin());
+        stb.append(*strings.begin());
 
         for (auto it = (strings.begin() + 1); it != strings.end(); it++) {
             if (between.has_value())
-                append(&stb, between.value());
-            append(&stb, *it);
+                stb.append(between.value());
+            stb.append(*it);
         }
 
-        result = getString(&stb);
+        result = stb.deprecated_to_string();
     }
 
     return result;
@@ -429,7 +429,7 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
         format.length--;
     }
 
-    StringBuilder stb = newStringBuilder(format.length * 4);
+    StringBuilder stb { format.length * 4 };
 
     s32 positionalIndex = 0;
 
@@ -463,15 +463,15 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
                 if (arg.is_null_terminated())
                     arg.length--;
 
-                append(&stb, arg);
+                stb.append(arg);
             } else {
                 // If the index is invalid, show some kind of error. For now, we'll just insert the {n} as given.
-                append(&stb, format.chars + startOfNumber - 1, indexLength + 2);
+                stb.append(format.chars + startOfNumber - 1, indexLength + 2);
             }
 
             positionalIndex++;
         } else {
-            s32 startIndex = i;
+            auto startIndex = i;
 
             // Run until the next character is a { or we're done
             while (((i + 1) < format.length)
@@ -479,15 +479,15 @@ String myprintf(String format, std::initializer_list<String> args, bool zeroTerm
                 i++;
             }
 
-            append(&stb, format.chars + startIndex, i + 1 - startIndex);
+            stb.append(format.chars + startIndex, i + 1 - startIndex);
         }
     }
 
     if (zeroTerminate) {
-        append(&stb, '\0');
+        stb.append('\0');
     }
 
-    String result = getString(&stb);
+    String result = stb.deprecated_to_string();
 
     return result;
 }

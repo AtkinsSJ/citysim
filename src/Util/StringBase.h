@@ -27,6 +27,7 @@ public:
 
     char char_at(size_t index) const;
     char operator[](size_t index) const { return char_at(index); }
+    char const* raw_pointer_to_characters() const { return m_chars; }
 
     bool operator==(StringBase const&) const = default;
 

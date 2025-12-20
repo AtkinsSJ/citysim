@@ -153,9 +153,9 @@ bool V2ISetting::set_from_file(LineReader& reader)
 
 String V2ISetting::serialize_value() const
 {
-    StringBuilder stb = newStringBuilder(256);
-    append(&stb, formatInt(value().x));
-    append(&stb, 'x');
-    append(&stb, formatInt(value().y));
-    return getString(&stb);
+    StringBuilder stb;
+    stb.append(formatInt(value().x));
+    stb.append('x');
+    stb.append(formatInt(value().y));
+    return stb.deprecated_to_string();
 }

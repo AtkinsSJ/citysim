@@ -27,21 +27,27 @@
  * For now, I've added logging when we call expand() so we can see if that's ever an issue.
  */
 
-struct StringBuilder {
-    MemoryArena* arena;
-    char* buffer;
-    s32 length;
-    s32 currentMaxLength;
+class StringBuilder {
+public:
+    explicit StringBuilder(size_t initial_size = 256);
+
+    void append(StringView);
+    void append(char);
+    void append(char const*, size_t length);
+
+    void ensure_capacity(size_t new_capacity);
+    void remove(size_t count);
+
+    char char_at(size_t index) const;
+
+    size_t length() const { return m_length; }
+    bool is_empty() const { return m_length == 0; }
+
+    StringView to_string_view() const;
+    String deprecated_to_string() const;
+
+private:
+    size_t m_capacity;
+    size_t m_length;
+    char* m_buffer;
 };
-
-StringBuilder newStringBuilder(s32 initialSize, MemoryArena* arena = &temp_arena());
-
-// NB: As mentioned above, the old buffer is NOT deallocated!
-void expand(StringBuilder* stb, s32 newSize);
-
-void append(StringBuilder* stb, char* source, s32 length);
-void append(StringBuilder* stringBuilder, String source);
-void append(StringBuilder* stringBuilder, char source);
-void append(StringBuilder* stringBuilder, StringBuilder* source);
-
-String getString(StringBuilder* stb);

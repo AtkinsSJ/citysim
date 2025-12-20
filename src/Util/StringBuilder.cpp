@@ -8,58 +8,64 @@
 #include <Util/Log.h>
 #include <Util/Memory.h>
 
-StringBuilder newStringBuilder(s32 initialSize, MemoryArena* arena)
+StringBuilder::StringBuilder(size_t initial_size)
+    : m_capacity(max(initial_size, 256))
+    , m_length(0)
+    , m_buffer(temp_arena().allocate_multiple<char>(m_capacity))
 {
-    s32 allocationSize = max(initialSize, 256);
-
-    StringBuilder b = {};
-    b.arena = arena;
-    b.buffer = arena->allocate_multiple<char>(allocationSize);
-    b.currentMaxLength = allocationSize;
-    b.length = 0;
-
-    return b;
 }
 
-void expand(StringBuilder* stb, s32 newSize)
+void StringBuilder::append(StringView string)
+{
+    auto new_length = m_length + string.length();
+    if (new_length > m_capacity)
+        ensure_capacity(new_length);
+
+    copyMemory(string.raw_pointer_to_characters(), m_buffer + m_length, string.length());
+    m_length += string.length();
+}
+
+void StringBuilder::append(char character)
+{
+    append({ &character, 1 });
+}
+
+void StringBuilder::append(char const* chars, size_t length)
+{
+    append({ chars, length });
+}
+
+void StringBuilder::ensure_capacity(size_t new_capacity)
 {
     logWarn("Expanding StringBuilder"_s);
 
-    s32 targetSize = max(newSize, stb->currentMaxLength * 2);
+    s32 target_capacity = max(new_capacity, m_capacity * 2);
 
-    char* newBuffer = stb->arena->allocate_multiple<char>(targetSize);
-    copyMemory(stb->buffer, newBuffer, stb->length);
+    char* newBuffer = temp_arena().allocate_multiple<char>(target_capacity);
+    copyMemory(m_buffer, newBuffer, m_length);
 
-    stb->buffer = newBuffer;
-    stb->currentMaxLength = targetSize;
+    m_buffer = newBuffer;
+    m_capacity = target_capacity;
 }
 
-void append(StringBuilder* stb, char* source, s32 length)
+void StringBuilder::remove(size_t count)
 {
-    if ((stb->length + length) > stb->currentMaxLength) {
-        expand(stb, stb->length + length);
-    }
-
-    copyMemory(source, stb->buffer + stb->length, length);
-    stb->length += length;
+    ASSERT(m_length > count);
+    m_length -= count;
 }
 
-void append(StringBuilder* stringBuilder, String source)
+char StringBuilder::char_at(size_t index) const
 {
-    append(stringBuilder, source.chars, source.length);
+    ASSERT(index < m_length);
+    return m_buffer[index];
 }
 
-void append(StringBuilder* stringBuilder, char source)
+StringView StringBuilder::to_string_view() const
 {
-    append(stringBuilder, &source, 1);
+    return StringView { m_buffer, m_length };
 }
 
-void append(StringBuilder* stringBuilder, StringBuilder* source)
+String StringBuilder::deprecated_to_string() const
 {
-    append(stringBuilder, source->buffer, source->length);
-}
-
-String getString(StringBuilder* stb)
-{
-    return { stb->buffer, (size_t)stb->length };
+    return String { m_buffer, m_length };
 }
