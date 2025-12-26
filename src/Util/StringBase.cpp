@@ -73,6 +73,11 @@ bool StringBase::starts_with(StringBase const& prefix) const
     return result;
 }
 
+bool StringBase::starts_with(char prefix) const
+{
+    return m_length >= 1 && m_chars[0] == prefix;
+}
+
 bool StringBase::ends_with(StringBase const& suffix) const
 {
     bool result = false;
@@ -87,6 +92,11 @@ bool StringBase::ends_with(StringBase const& suffix) const
     }
 
     return result;
+}
+
+bool StringBase::ends_with(char suffix) const
+{
+    return m_length >= 1 && m_chars[m_length - 1] == suffix;
 }
 
 StringView StringBase::substring(size_t start, Optional<size_t> length) const

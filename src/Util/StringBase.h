@@ -37,7 +37,9 @@ public:
     Optional<size_t> find(char needle, SearchFrom = SearchFrom::Start, Optional<size_t> start_index = {}) const;
     bool contains(char) const;
     bool starts_with(StringBase const& prefix) const;
+    bool starts_with(char prefix) const;
     bool ends_with(StringBase const& suffix) const;
+    bool ends_with(char suffix) const;
 
     StringView substring(size_t start, Optional<size_t> length = {}) const;
     StringView with_whitespace_trimmed(TrimSide = TrimSide::Both) const;
