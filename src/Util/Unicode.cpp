@@ -279,12 +279,12 @@ bool isNewline(unichar uChar)
 }
 
 // FIXME: Replace with an iterator of some kind
-bool getNextUnichar(String string, s32* bytePos, unichar* result)
+bool getNextUnichar(StringView string, s32* bytePos, unichar* result)
 {
     bool foundResult = false;
 
-    if (*bytePos < string.length) {
-        unichar c = readUnicodeChar(string.chars + *bytePos);
+    if (*bytePos < string.length()) {
+        unichar c = readUnicodeChar(string.raw_pointer_to_characters() + *bytePos);
 
         *result = c;
 
