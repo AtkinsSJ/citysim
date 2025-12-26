@@ -19,19 +19,19 @@ s32 lengthOfGlyph(char startByte);
 s32 lengthOfUnichar(unichar c);
 
 // returns 0 (start of the buffer) if can't find the start of the glyph
-s32 findStartOfGlyph(char* buffer, s32 byteOffset);
+s32 findStartOfGlyph(char const* buffer, s32 byteOffset);
 
 // returns -1 if no next glyph exists
-s32 findStartOfNextGlyph(char* buffer, s32 byteOffset, s32 bufferByteLength);
+s32 findStartOfNextGlyph(char const* buffer, s32 byteOffset, s32 bufferByteLength);
 
 // returns 0 if we start mid-way through a glyph
-s32 floorToWholeGlyphs(char* startByte, s32 byteLength);
+s32 floorToWholeGlyphs(char const* startByte, s32 byteLength);
 
 // Counts how many full glyphs are in the buffer
-s32 countGlyphs(char* startByte, s32 byteLength);
+s32 countGlyphs(char const* startByte, s32 byteLength);
 
 // If the first char is not a start byte, we return 0.
-unichar readUnicodeChar(char* firstChar);
+unichar readUnicodeChar(char const* firstChar);
 
 bool isWhitespace(unichar uChar, bool countNewlines = true);
 

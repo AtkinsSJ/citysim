@@ -73,7 +73,7 @@ void TextInput::moveCaretRightWholeWord()
     caret = findStartOfWordRight();
 }
 
-void TextInput::append(char* source, s32 length)
+void TextInput::append(char const* source, s32 length)
 {
     s32 bytesToCopy = length;
     if ((byteLength + length) > maxByteLength) {
