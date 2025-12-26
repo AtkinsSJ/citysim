@@ -229,7 +229,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
                         }
                     }
                 } else if (firstWord == "carries_transport"_s) {
-                    auto token_count = reader.remainder_of_current_line().count_tokens();
+                    auto token_count = reader.count_remaining_tokens_in_current_line();
                     for (auto tokenIndex = 0u; tokenIndex < token_count; tokenIndex++) {
                         String transportName = reader.next_token();
 
