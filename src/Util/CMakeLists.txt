@@ -18,6 +18,7 @@ add_library(Util STATIC
     StringTable.cpp
     StringView.cpp
     Time.cpp
+    TokenReader.cpp
     Unicode.cpp
     Vector.cpp
 )
