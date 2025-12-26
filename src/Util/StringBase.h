@@ -29,7 +29,7 @@ public:
     char operator[](size_t index) const { return char_at(index); }
     char const* raw_pointer_to_characters() const { return m_chars; }
 
-    bool operator==(StringBase const&) const = default;
+    bool operator==(StringBase const&) const;
 
     size_t length() const { return m_length; }
     bool is_empty() const { return m_length == 0; }

@@ -16,6 +16,11 @@ char StringBase::char_at(size_t index) const
     return m_chars[index];
 }
 
+bool StringBase::operator==(StringBase const& other) const
+{
+    return length() == other.length() && isMemoryEqual(m_chars, other.m_chars, length());
+}
+
 Optional<size_t> StringBase::find(char needle, SearchFrom search_direction, Optional<size_t> start_index) const
 {
     if (is_empty())
