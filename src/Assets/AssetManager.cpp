@@ -861,32 +861,22 @@ String getText(String name, std::initializer_list<StringView> args)
     return myprintf(format, args);
 }
 
-String getAssetPath(AssetType type, String shortName)
+String getAssetPath(AssetType type, StringView shortName)
 {
-    String result = shortName;
-
     switch (type) {
     case AssetType::Cursor:
-        result = myprintf("{0}/cursors/{1}"_s, { s_assets->assetsPath, shortName }, true);
-        break;
+        return myprintf("{0}/cursors/{1}"_s, { s_assets->assetsPath, shortName }, true);
     case AssetType::BitmapFont:
-        result = myprintf("{0}/fonts/{1}"_s, { s_assets->assetsPath, shortName }, true);
-        break;
+        return myprintf("{0}/fonts/{1}"_s, { s_assets->assetsPath, shortName }, true);
     case AssetType::Shader:
-        result = myprintf("{0}/shaders/{1}"_s, { s_assets->assetsPath, shortName }, true);
-        break;
+        return myprintf("{0}/shaders/{1}"_s, { s_assets->assetsPath, shortName }, true);
     case AssetType::Texts:
-        result = myprintf("{0}/locale/{1}"_s, { s_assets->assetsPath, shortName }, true);
-        break;
+        return myprintf("{0}/locale/{1}"_s, { s_assets->assetsPath, shortName }, true);
     case AssetType::Texture:
-        result = myprintf("{0}/textures/{1}"_s, { s_assets->assetsPath, shortName }, true);
-        break;
+        return myprintf("{0}/textures/{1}"_s, { s_assets->assetsPath, shortName }, true);
     default:
-        result = myprintf("{0}/{1}"_s, { s_assets->assetsPath, shortName }, true);
-        break;
+        return myprintf("{0}/{1}"_s, { s_assets->assetsPath, shortName }, true);
     }
-
-    return result;
 }
 
 void AssetManager::on_settings_changed()

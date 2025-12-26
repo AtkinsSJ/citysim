@@ -91,7 +91,7 @@ void addAssetsFromDirectory(String subDirectory, Optional<AssetType> manualAsset
 bool haveAssetFilesChanged();
 void reloadAssets();
 
-String getAssetPath(AssetType type, String shortName);
+String getAssetPath(AssetType type, StringView shortName);
 
 Asset* getAsset(AssetType type, String shortName);
 Asset* getAssetIfExists(AssetType type, String shortName);
