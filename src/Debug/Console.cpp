@@ -12,6 +12,7 @@
 #include <UI/Drawable.h>
 #include <UI/TextInput.h>
 #include <Util/Orientation.h>
+#include <Util/TokenReader.h>
 
 static Console theConsole;
 
@@ -260,7 +261,7 @@ void loadConsoleKeyboardShortcuts(Console* console, Blob data, String filename)
 
     while (reader.load_next_line()) {
         String shortcutString = reader.next_token();
-        String command = reader.remainder_of_current_line();
+        auto command = reader.remainder_of_current_line();
 
         KeyboardShortcut shortcut = parseKeyboardShortcut(shortcutString);
         if (shortcut.key == SDLK_UNKNOWN) {
@@ -273,7 +274,7 @@ void loadConsoleKeyboardShortcuts(Console* console, Blob data, String filename)
     }
 }
 
-void consoleHandleCommand(Console* console, String commandInput)
+void consoleHandleCommand(Console* console, StringView commandInput)
 {
     // copy input to output, for readability
     consoleWriteLine(myprintf("> {0}"_s, { commandInput }), ConsoleLineStyle::InputEcho);
@@ -283,9 +284,9 @@ void consoleHandleCommand(Console* console, String commandInput)
         console->inputHistory.append(pushString(console->inputHistory.memoryArena, commandInput));
         console->inputHistoryCursor = -1;
 
-        if (auto token_count = commandInput.count_tokens(); token_count > 0) {
-            String arguments;
-            String firstToken = commandInput.next_token(&arguments);
+        TokenReader tokens { commandInput };
+        if (auto token_count = tokens.remaining_token_count(); token_count > 0) {
+            auto firstToken = tokens.next_token().release_value();
 
             // Find the command
             Command* command = nullptr;
@@ -293,7 +294,7 @@ void consoleHandleCommand(Console* console, String commandInput)
                 it.hasNext();
                 it.next()) {
                 Command* c = it.get();
-                if (c->name == firstToken) {
+                if (c->name.view() == firstToken) {
                     command = c;
                     break;
                 }
@@ -319,7 +320,7 @@ void consoleHandleCommand(Console* console, String commandInput)
                     }
                 } else {
                     u32 commandStartTime = SDL_GetTicks();
-                    command->function(console, argCount, arguments);
+                    command->function(console, argCount, tokens.remaining_input());
                     u32 commandEndTime = SDL_GetTicks();
 
                     consoleWriteLine(myprintf("Command executed in {0}ms"_s, { formatInt(commandEndTime - commandStartTime) }));

@@ -20,18 +20,19 @@ struct ConsoleOutputLine {
 
 struct CommandShortcut {
     KeyboardShortcut shortcut;
-    String command;
+    StringView command;
 };
 
 struct Console;
 
+using CommandFunction = void (*)(Console*, s32, StringView);
 struct Command {
     String name;
-    void (*function)(Console*, s32, String);
+    CommandFunction function;
     s32 minArgs, maxArgs;
 
     Command() = default;
-    Command(String name, void (*function)(Console*, s32, String), s32 minArgs = 0, s32 maxArgs = 0)
+    Command(String name, CommandFunction function, s32 minArgs = 0, s32 maxArgs = 0)
     {
         this->name = name;
         this->function = function;
@@ -68,7 +69,7 @@ void updateAndRenderConsole(Console* console);
 
 void initCommands(Console* console); // Implementation in commands.cpp
 void loadConsoleKeyboardShortcuts(Console* console, Blob data, String filename);
-void consoleHandleCommand(Console* console, String commandInput);
+void consoleHandleCommand(Console* console, StringView commandInput);
 
 void consoleWriteLine(String text, ConsoleLineStyle style = ConsoleLineStyle::Default);
 

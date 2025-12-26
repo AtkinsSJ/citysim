@@ -11,11 +11,12 @@
 #include <Sim/City.h>
 #include <Sim/Terrain.h>
 #include <UI/Window.h>
+#include <Util/TokenReader.h>
 
 #pragma warning(push)
 #pragma warning(disable : 4100) // Disable unused-arg warnings for commands, as they all have to take the same args.
 
-#define ConsoleCommand(name) void cmd_##name(Console* console, s32 argumentsCount, String arguments)
+#define ConsoleCommand(name) void cmd_##name(Console* console, s32 argumentsCount, StringView arguments)
 
 static bool checkInGame()
 {
@@ -48,17 +49,18 @@ ConsoleCommand(exit)
 
 ConsoleCommand(funds)
 {
-    String remainder = arguments;
     if (!checkInGame())
         return;
 
-    String sAmount = remainder.next_token(&remainder);
-    if (auto amount = sAmount.to_int(); amount.has_value()) {
-        consoleWriteLine(myprintf("Set funds to {0}"_s, { sAmount }), ConsoleLineStyle::Success);
-        AppState::the().gameState->city.funds = truncate32(amount.value());
-    } else {
-        consoleWriteLine("Usage: funds amount, where amount is an integer"_s, ConsoleLineStyle::Error);
+    TokenReader tokens { arguments };
+    if (auto sAmount = tokens.next_token(); sAmount.has_value()) {
+        if (auto amount = sAmount.value().to_int(); amount.has_value()) {
+            consoleWriteLine(myprintf("Set funds to {0}"_s, { sAmount.value() }), ConsoleLineStyle::Success);
+            AppState::the().gameState->city.funds = truncate32(amount.value());
+            return;
+        }
     }
+    consoleWriteLine("Usage: funds amount, where amount is an integer"_s, ConsoleLineStyle::Error);
 }
 
 ConsoleCommand(generate)
@@ -138,7 +140,7 @@ ConsoleCommand(setting)
     }
 
     // FIXME: This is hacky, surely we can come up with a nice API for this.
-    LineReader reader { "console"_s, Blob { static_cast<smm>(arguments.length), reinterpret_cast<u8*>(arguments.chars) } };
+    LineReader reader { "console"_s, Blob { static_cast<smm>(arguments.length()), const_cast<u8*>(reinterpret_cast<u8 const*>(arguments.raw_pointer_to_characters())) } };
     reader.load_next_line();
 
     auto setting_name = reader.next_token();
@@ -164,7 +166,6 @@ ConsoleCommand(setting)
 
 ConsoleCommand(show_layer)
 {
-    String remainder = arguments;
     if (!checkInGame())
         return;
 
@@ -175,7 +176,8 @@ ConsoleCommand(show_layer)
         app_state.gameState->dataLayerToDraw = DataView::None;
         consoleWriteLine("Hiding data layers"_s, ConsoleLineStyle::Success);
     } else if (argumentsCount == 1) {
-        String layerName = remainder.next_token(&remainder);
+        TokenReader tokens { arguments };
+        auto layerName = tokens.next_token();
         if (layerName == "crime"_s) {
             app_state.gameState->dataLayerToDraw = DataView::Crime;
             consoleWriteLine("Showing crime layer"_s, ConsoleLineStyle::Success);
@@ -216,15 +218,14 @@ ConsoleCommand(speed)
     if (argumentsCount == 0) {
         consoleWriteLine(myprintf("Current game speed: {0}"_s, { formatFloat(app_state.speedMultiplier, 3) }), ConsoleLineStyle::Success);
     } else {
-        String remainder = arguments;
-
-        if (auto speed_multiplier = remainder.next_token(&remainder).to_float(); speed_multiplier.has_value()) {
-            float multiplier = (float)speed_multiplier.value();
+        TokenReader tokens { arguments };
+        if (auto speed_multiplier = tokens.next_token().value().to_float(); speed_multiplier.has_value()) {
+            float multiplier = speed_multiplier.value();
             app_state.setSpeedMultiplier(multiplier);
             consoleWriteLine(myprintf("Set speed to {0}"_s, { formatFloat(multiplier, 3) }), ConsoleLineStyle::Success);
-        } else {
-            consoleWriteLine("Usage: speed (multiplier), where multiplier is a float, or with no argument to list the current speed"_s, ConsoleLineStyle::Error);
+            return;
         }
+        consoleWriteLine("Usage: speed (multiplier), where multiplier is a float, or with no argument to list the current speed"_s, ConsoleLineStyle::Error);
     }
 }
 
@@ -235,7 +236,6 @@ ConsoleCommand(toast)
 
 ConsoleCommand(zoom)
 {
-    String remainder = arguments;
     auto& renderer = the_renderer();
 
     if (argumentsCount == 0) {
@@ -244,13 +244,14 @@ ConsoleCommand(zoom)
         consoleWriteLine(myprintf("Current zoom is {0}"_s, { formatFloat(zoom, 3) }), ConsoleLineStyle::Success);
     } else if (argumentsCount == 1) {
         // set the zoom
-        if (auto requested_zoom = remainder.next_token(&remainder).to_float(); requested_zoom.has_value()) {
-            float newZoom = (float)requested_zoom.release_value();
+        TokenReader tokens { arguments };
+        if (auto requested_zoom = tokens.next_token().value().to_float(); requested_zoom.has_value()) {
+            float newZoom = requested_zoom.release_value();
             renderer.world_camera().set_zoom(newZoom);
             consoleWriteLine(myprintf("Set zoom to {0}"_s, { formatFloat(newZoom, 3) }), ConsoleLineStyle::Success);
-        } else {
-            consoleWriteLine("Usage: zoom (scale), where scale is a float, or with no argument to list the current zoom"_s, ConsoleLineStyle::Error);
+            return;
         }
+        consoleWriteLine("Usage: zoom (scale), where scale is a float, or with no argument to list the current zoom"_s, ConsoleLineStyle::Error);
     }
 }
 
