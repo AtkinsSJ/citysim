@@ -60,7 +60,7 @@ BitmapFontGlyph* findGlyph(BitmapFont* font, unichar targetChar)
     return result;
 }
 
-V2I calculateTextSize(BitmapFont* font, String text, s32 maxWidth)
+V2I calculateTextSize(BitmapFont* font, StringView text, s32 maxWidth)
 {
     DEBUG_FUNCTION();
 
@@ -184,14 +184,11 @@ V2I calculateTextSize(BitmapFont* font, String text, s32 maxWidth)
     return result;
 }
 
-s32 calculateMaxTextWidth(BitmapFont* font, std::initializer_list<String> texts, s32 limit)
+s32 calculateMaxTextWidth(BitmapFont* font, std::initializer_list<StringView> texts, s32 limit)
 {
     s32 result = 0;
-
-    for (auto text = texts.begin(); text != texts.end(); text++) {
-        result = max(result, calculateTextSize(font, *text, limit).x);
-    }
-
+    for (auto const& text : texts)
+        result = max(result, calculateTextSize(font, text, limit).x);
     return result;
 }
 
@@ -226,7 +223,7 @@ void _alignText(DrawRectsGroup* state, s32 startIndex, s32 endIndexInclusive, s3
     }
 }
 
-void drawText(RenderBuffer* renderBuffer, BitmapFont* font, String text, Rect2I bounds, Alignment align, Colour color, s8 shaderID, s32 caretIndex, DrawTextResult* caretInfoResult)
+void drawText(RenderBuffer* renderBuffer, BitmapFont* font, StringView text, Rect2I bounds, Alignment align, Colour color, s8 shaderID, s32 caretIndex, DrawTextResult* caretInfoResult)
 {
     DEBUG_FUNCTION();
 
@@ -255,7 +252,7 @@ void drawText(RenderBuffer* renderBuffer, BitmapFont* font, String text, Rect2I 
     // - Sam, 28/06/2019
     //
     // s32 glyphsToOutput = countGlyphs(text.chars, text.length);
-    s32 glyphsToOutput = text.length;
+    s32 glyphsToOutput = text.length();
 
     DrawRectsGroup* group = beginRectsGroupForText(renderBuffer, font, shaderID, glyphsToOutput);
 
