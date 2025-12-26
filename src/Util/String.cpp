@@ -66,6 +66,11 @@ void copyString(String src, String* dest)
     copyString(src.chars, src.length, dest);
 }
 
+void copyString(StringView src, String* dest)
+{
+    copyString(src.raw_pointer_to_characters(), src.length(), dest);
+}
+
 String pushString(MemoryArena* arena, s32 length)
 {
     String s = {};
@@ -88,6 +93,13 @@ String pushString(MemoryArena* arena, String src)
 {
     String s = pushString(arena, src.length);
     copyString(src, &s);
+    return s;
+}
+
+String pushString(MemoryArena* arena, StringView src)
+{
+    String s = pushString(arena, src.length());
+    copyString(src.raw_pointer_to_characters(), src.length(), &s);
     return s;
 }
 

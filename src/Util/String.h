@@ -90,10 +90,12 @@ inline String operator""_h(char const* chars, size_t length)
 
 void copyString(char const* src, s32 srcLength, String* dest);
 void copyString(String src, String* dest);
+void copyString(StringView src, String* dest);
 
 String pushString(MemoryArena* arena, s32 length);
 String pushString(MemoryArena* arena, char const* src);
 String pushString(MemoryArena* arena, String src);
+String pushString(MemoryArena* arena, StringView src);
 
 // NB: You can pass null for leftResult or rightResult to ignore that part.
 bool splitInTwo(String input, char divider, String* leftResult, String* rightResult);
