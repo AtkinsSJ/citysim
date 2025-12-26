@@ -8,6 +8,7 @@
 #include "AppState.h"
 #include <Gfx/Renderer.h>
 #include <SDL2/SDL_clipboard.h>
+#include <Util/TokenReader.h>
 
 static InputState s_input_state {};
 
@@ -342,33 +343,35 @@ KeyboardShortcut parseKeyboardShortcut(String shortcutString)
 
     KeyboardShortcut result = {};
 
-    String keyName, remainder;
-    keyName = shortcutString.next_token(&remainder, '+');
+    TokenReader tokens { shortcutString };
 
-    while (!keyName.is_empty()) {
+    auto key_name = tokens.next_token('+');
+    while (key_name.has_value()) {
         //
         // MODIFIERS
         //
-        if (keyName == "Alt"_s) {
+        if (key_name == "Alt"_s) {
             result.modifiers.add(ModifierKey::Alt);
-        } else if (keyName == "Ctrl"_s) {
+        } else if (key_name == "Ctrl"_s) {
             result.modifiers.add(ModifierKey::Ctrl);
-        } else if (keyName == "Shift"_s) {
+        } else if (key_name == "Shift"_s) {
             result.modifiers.add(ModifierKey::Shift);
-        } else if (keyName == "Super"_s) {
+        } else if (key_name == "Super"_s) {
             result.modifiers.add(ModifierKey::Super);
         } else {
-            if (auto found_key = s_input_state.keyNames.find_value(keyName); found_key.has_value()) {
+            // FIXME: Make HashTable compatible with StringViews.
+            String key_string { key_name.value().raw_pointer_to_characters(), key_name.value().length() };
+            if (auto found_key = s_input_state.keyNames.find_value(key_string); found_key.has_value()) {
                 result.key = found_key.release_value();
             } else {
                 // Error!
-                logWarn("Unrecognised key name '{0}' in shortcut string '{1}'"_s, { keyName, shortcutString });
+                logWarn("Unrecognised key name '{0}' in shortcut string '{1}'"_s, { key_name.value(), shortcutString });
                 result.key = SDLK_UNKNOWN;
             }
             break;
         }
 
-        keyName = remainder.next_token(&remainder, '+');
+        key_name = tokens.next_token('+');
     }
 
     return result;
