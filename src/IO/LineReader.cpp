@@ -125,7 +125,7 @@ bool LineReader::load_next_line()
     } while (line.is_empty() && !(m_state.start_of_next_line >= m_data.size()));
 
     m_state.current_line = line;
-    m_state.line_remainder = line;
+    m_state.current_line_reader = TokenReader { line };
 
     if (line.is_empty()) {
         if (m_skip_blank_lines) {
@@ -147,7 +147,9 @@ String LineReader::current_line() const
 
 String LineReader::remainder_of_current_line() const
 {
-    return m_state.line_remainder.trimmed();
+    // FIXME: Return StringView instead.
+    auto trimmed_sv = m_state.current_line_reader.remaining_input().with_whitespace_trimmed();
+    return String { trimmed_sv.raw_pointer_to_characters(), trimmed_sv.length() };
 }
 
 void LineReader::warn(String message, std::initializer_list<StringView> args) const
@@ -166,17 +168,23 @@ void LineReader::error(String message, std::initializer_list<StringView> args) c
 
 String LineReader::next_token(Optional<char> split_char)
 {
-    return m_state.line_remainder.next_token(&m_state.line_remainder, split_char);
+    // FIXME: Return Optional<StringView> instead.
+    if (auto result = m_state.current_line_reader.next_token(split_char); result.has_value())
+        return String { result.value().raw_pointer_to_characters(), result.value().length() };
+    return {};
 }
 
 String LineReader::peek_token(Optional<char> split_char)
 {
-    return m_state.line_remainder.next_token(nullptr, split_char);
+    // FIXME: Return Optional<StringView> instead.
+    if (auto result = m_state.current_line_reader.peek_token(split_char); result.has_value())
+        return String { result.value().raw_pointer_to_characters(), result.value().length() };
+    return {};
 }
 
 s32 LineReader::count_remaining_tokens_in_current_line(Optional<char> split_char) const
 {
-    return m_state.line_remainder.count_tokens(split_char);
+    return m_state.current_line_reader.remaining_token_count(split_char);
 }
 
 Optional<bool> LineReader::read_bool(IsRequired is_required, Optional<char> split_char)

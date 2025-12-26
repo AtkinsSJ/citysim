@@ -11,13 +11,14 @@
 #include <Util/Memory.h>
 #include <Util/Optional.h>
 #include <Util/String.h>
+#include <Util/TokenReader.h>
 
 class LineReader {
 public:
     struct State {
         String current_line;
         smm current_line_number;
-        String line_remainder;
+        TokenReader current_line_reader { current_line };
         smm start_of_next_line;
         bool at_end_of_file;
     };
