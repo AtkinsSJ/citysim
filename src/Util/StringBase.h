@@ -42,6 +42,11 @@ public:
     StringView substring(size_t start, Optional<size_t> length = {}) const;
     StringView with_whitespace_trimmed(TrimSide = TrimSide::Both) const;
 
+    Optional<s64> to_int() const;
+    Optional<double> to_double() const;
+    Optional<float> to_float() const;
+    Optional<bool> to_bool() const;
+
 protected:
     StringBase(char const* chars, size_t length)
         : m_chars(chars)
