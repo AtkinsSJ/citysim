@@ -147,11 +147,11 @@ void addUIRect(Rect2I bounds);
 bool mouseIsWithinUIRects();
 
 // Buttons
-V2I calculateButtonSize(String text, ButtonStyle* style = nullptr, s32 maxWidth = 0, bool fillWidth = true);
+V2I calculateButtonSize(StringView text, ButtonStyle* style = nullptr, s32 maxWidth = 0, bool fillWidth = true);
 V2I calculateButtonSize(V2I contentSize, ButtonStyle* style = nullptr, s32 maxWidth = 0, bool fillWidth = true);
 Rect2I calculateButtonContentBounds(Rect2I bounds, ButtonStyle* style = nullptr);
 bool putButton(Rect2I bounds, ButtonStyle* style = nullptr, ButtonState state = ButtonState::Normal, RenderBuffer* renderBuffer = nullptr, String tooltip = nullString);
-bool putTextButton(String text, Rect2I bounds, ButtonStyle* style = nullptr, ButtonState state = ButtonState::Normal, RenderBuffer* renderBuffer = nullptr, String tooltip = nullString);
+bool putTextButton(StringView text, Rect2I bounds, ButtonStyle* style = nullptr, ButtonState state = ButtonState::Normal, RenderBuffer* renderBuffer = nullptr, String tooltip = nullString);
 bool putImageButton(Sprite* sprite, Rect2I bounds, ButtonStyle* style = nullptr, ButtonState state = ButtonState::Normal, RenderBuffer* renderBuffer = nullptr, String tooltip = nullString);
 
 // Checkboxes
@@ -244,8 +244,8 @@ void putDropDownList(Array<T>* listOptions, s32* currentSelection, String (*getD
 #endif
 
 // Labels
-V2I calculateLabelSize(String text, LabelStyle* style = nullptr, s32 maxWidth = 0, bool fillWidth = true);
-void putLabel(String text, Rect2I bounds, LabelStyle* style = nullptr, RenderBuffer* renderBuffer = nullptr);
+V2I calculateLabelSize(StringView text, LabelStyle* style = nullptr, s32 maxWidth = 0, bool fillWidth = true);
+void putLabel(StringView text, Rect2I bounds, LabelStyle* style = nullptr, RenderBuffer* renderBuffer = nullptr);
 
 // Menus
 void showMenu(s32 menuID);
@@ -276,7 +276,7 @@ bool putTextInput(TextInput* textInput, Rect2I bounds, TextInputStyle* style = n
 
 // Toasts
 // NB: `message` is copied into the UIState, so it can be a temporary allocation
-void pushToast(String message);
+void pushToast(StringView message);
 void drawToast();
 
 // Tooltip

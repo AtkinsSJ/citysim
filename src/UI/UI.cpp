@@ -186,7 +186,7 @@ bool mouseIsWithinUIRects()
     return result;
 }
 
-V2I calculateButtonSize(String text, ButtonStyle* style, s32 maxWidth, bool fillWidth)
+V2I calculateButtonSize(StringView text, ButtonStyle* style, s32 maxWidth, bool fillWidth)
 {
     // If we have icons, take them into account
     V2I startIconSize = style->startIcon.getSize();
@@ -328,7 +328,7 @@ bool putButton(Rect2I bounds, ButtonStyle* style, ButtonState state, RenderBuffe
     return buttonClicked;
 }
 
-bool putTextButton(String text, Rect2I bounds, ButtonStyle* style, ButtonState state, RenderBuffer* renderBuffer, String tooltip)
+bool putTextButton(StringView text, Rect2I bounds, ButtonStyle* style, ButtonState state, RenderBuffer* renderBuffer, String tooltip)
 {
     auto& renderer = the_renderer();
     if (renderBuffer == nullptr) {
@@ -431,7 +431,7 @@ bool isDropDownListOpen(void* pointer)
     return (uiState.openDropDownList == pointer);
 }
 
-V2I calculateLabelSize(String text, LabelStyle* style, s32 maxWidth, bool fillWidth)
+V2I calculateLabelSize(StringView text, LabelStyle* style, s32 maxWidth, bool fillWidth)
 {
     if (style == nullptr)
         style = getStyle<LabelStyle>("default"_s);
@@ -452,7 +452,7 @@ V2I calculateLabelSize(String text, LabelStyle* style, s32 maxWidth, bool fillWi
     return result;
 }
 
-void putLabel(String text, Rect2I bounds, LabelStyle* style, RenderBuffer* renderBuffer)
+void putLabel(StringView text, Rect2I bounds, LabelStyle* style, RenderBuffer* renderBuffer)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
@@ -876,14 +876,14 @@ bool putTextInput(TextInput* textInput, Rect2I bounds, TextInputStyle* style, Re
     return submittedInput;
 }
 
-void pushToast(String message)
+void pushToast(StringView message)
 {
     Toast* newToast = uiState.toasts.push();
 
     *newToast = {};
     // FIXME: StringBuffer
     newToast->text = String { newToast->_chars, MAX_TOAST_LENGTH };
-    copyString(message, &newToast->text);
+    copyString(message.raw_pointer_to_characters(), message.length(), &newToast->text);
 
     newToast->duration = TOAST_APPEAR_TIME + TOAST_DISPLAY_TIME + TOAST_DISAPPEAR_TIME;
     newToast->time = 0;
