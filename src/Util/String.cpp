@@ -309,65 +309,6 @@ bool String::contains(char c) const
     return find(c).has_value();
 }
 
-static bool is_split_char(char input, Optional<char> const& split_char)
-{
-    if (split_char.has_value())
-        return input == split_char.value();
-    return isWhitespace(input);
-}
-
-u32 String::count_tokens(Optional<char> split_char) const
-{
-    u32 result = 0;
-
-    u32 position = 0;
-    while (position < length) {
-        while ((position <= length) && is_split_char(chars[position], split_char)) {
-            position++;
-        }
-
-        if (position < length) {
-            result++;
-
-            // length
-            while ((position < length) && !is_split_char(chars[position], split_char)) {
-                position++;
-            }
-        }
-    }
-
-    return result;
-}
-
-String String::next_token(String* remainder, Optional<char> split_char) const
-{
-    String first_word = *this;
-    first_word.length = 0;
-
-    while ((first_word.length < length) && !is_split_char(first_word.chars[first_word.length], split_char)) {
-        ++first_word.length;
-    }
-
-    first_word = first_word.trimmed(TrimSide::End);
-
-    if (remainder) {
-        // NB: We have to make sure we properly initialise remainder here, because we had a bug before
-        // where we didn't, and it sometimes had old data in the "hasHash" field, which was causing all
-        // kinds of weird stuff to happen!
-        *remainder = String { first_word.chars + first_word.length, (size_t)(length - first_word.length) }
-                         .trimmed(TrimSide::Start);
-
-        // Skip the split char
-        if (split_char.has_value() && remainder->length > 0) {
-            remainder->length--;
-            remainder->chars++;
-            *remainder = remainder->trimmed(TrimSide::Start);
-        }
-    }
-
-    return first_word;
-}
-
 // NB: You can pass null for leftResult or rightResult to ignore that part.
 bool splitInTwo(String input, char divider, String* leftResult, String* rightResult)
 {

@@ -65,10 +65,6 @@ struct String {
     Optional<double> to_float() const;
     Optional<bool> to_bool() const;
 
-    // FIXME: This functionality should really go somewhere else.
-    u32 count_tokens(Optional<char> split_char = {}) const;
-    String next_token(String* remainder, Optional<char> split_char = {}) const;
-
     bool operator==(String const&) const;
 
 private:
