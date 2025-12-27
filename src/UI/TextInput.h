@@ -34,10 +34,10 @@ struct TextInput {
     String characterBlacklist;
 
     // Methods
-    bool isEmpty();
+    bool isEmpty() const;
 
-    String getLastWord();
-    String toString();
+    String getLastWord() const;
+    String toString() const;
 
     void moveCaretLeft(s32 count);
     void moveCaretRight(s32 count);
@@ -56,8 +56,8 @@ struct TextInput {
     void deleteWholeWord();
 
     // Internal
-    TextInputPos findStartOfWordLeft();
-    TextInputPos findStartOfWordRight();
+    TextInputPos findStartOfWordLeft() const;
+    TextInputPos findStartOfWordRight() const;
 };
 
 TextInput newTextInput(MemoryArena* arena, s32 length, String characterBlacklist = "`"_s);

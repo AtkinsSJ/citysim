@@ -17,18 +17,18 @@
 
 namespace UI {
 
-bool TextInput::isEmpty()
+bool TextInput::isEmpty() const
 {
     return byteLength == 0;
 }
 
-String TextInput::getLastWord()
+String TextInput::getLastWord() const
 {
     TextInputPos startOfWord = findStartOfWordLeft();
     return { buffer + startOfWord.bytePos, (size_t)(caret.bytePos - startOfWord.bytePos) };
 }
 
-String TextInput::toString()
+String TextInput::toString() const
 {
     return { buffer, (size_t)byteLength };
 }
@@ -211,7 +211,7 @@ void TextInput::deleteWholeWord()
     deleteChars(toDelete);
 }
 
-TextInputPos TextInput::findStartOfWordLeft()
+TextInputPos TextInput::findStartOfWordLeft() const
 {
     TextInputPos result = caret;
 
@@ -235,7 +235,7 @@ TextInputPos TextInput::findStartOfWordLeft()
     return result;
 }
 
-TextInputPos TextInput::findStartOfWordRight()
+TextInputPos TextInput::findStartOfWordRight() const
 {
     TextInputPos result = caret;
 
