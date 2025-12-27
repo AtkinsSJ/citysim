@@ -328,7 +328,7 @@ bool updateTextInput(TextInput* textInput)
         if (keyJustPressed(SDLK_v, ModifierKey::Ctrl)) {
             // Filter the input to remove any blacklisted characters
             String enteredText = getClipboardText();
-            for (s32 charIndex = 0; charIndex < enteredText.m_length; charIndex++) {
+            for (s32 charIndex = 0; charIndex < enteredText.length(); charIndex++) {
                 char c = enteredText[charIndex];
                 if (!textInput->characterBlacklist.contains(c)) {
                     textInput->insert(c);

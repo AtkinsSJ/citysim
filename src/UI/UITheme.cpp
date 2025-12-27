@@ -384,8 +384,7 @@ void loadUITheme(Blob data, Asset* asset)
 
         if (firstWord.starts_with(':')) {
             // define an item
-            ++firstWord.m_chars;
-            --firstWord.m_length;
+            firstWord = firstWord.view().substring(1).deprecated_to_string();
             currentSection = firstWord;
 
             if (firstWord == "Font"_s) {
