@@ -50,7 +50,7 @@ String formatDateTime(DateTime dateTime, DateTimeFormat format)
     s32 startOfSymbol = s32Max;
     bool isReadingSymbol = false;
     for (s32 i = 0; i < formatString.length; i++) {
-        switch (formatString.chars[i]) {
+        switch (formatString[i]) {
         case '{': {
             startOfSymbol = i + 1;
             isReadingSymbol = true;
@@ -121,7 +121,7 @@ String formatDateTime(DateTime dateTime, DateTimeFormat format)
                 s32 startIndex = i;
 
                 while (((i + 1) < formatString.length)
-                    && (formatString.chars[i + 1] != '{')) {
+                    && (formatString[i + 1] != '{')) {
                     i++;
                 }
 

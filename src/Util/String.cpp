@@ -149,14 +149,14 @@ String String::trimmed(TrimSide trim_side) const
     String result = *this;
 
     if (trim_side != TrimSide::End) {
-        while (!result.is_empty() && isWhitespace(result.chars[0], false)) {
+        while (!result.is_empty() && isWhitespace(result[0], false)) {
             ++result.chars;
             --result.length;
         }
     }
 
     if (trim_side != TrimSide::Start) {
-        while (!result.is_empty() && isWhitespace(result.chars[result.length - 1], false)) {
+        while (!result.is_empty() && isWhitespace(result[result.length - 1], false)) {
             --result.length;
         }
     }
@@ -326,7 +326,7 @@ bool splitInTwo(String input, char divider, String* leftResult, String* rightRes
     bool foundDivider = false;
 
     for (auto i = 0u; i < input.length; i++) {
-        if (input.chars[i] == divider) {
+        if (input[i] == divider) {
             // NB: We have to make sure we properly initialise leftResult/rightResult here, because we had a
             // bug before where we didn't, and it sometimes had old data in the "hasHash" field, which was
             // causing all kinds of weird stuff to happen!
@@ -397,14 +397,14 @@ String myprintf(String format, std::initializer_list<StringView> args, bool zero
     s32 positionalIndex = 0;
 
     for (s32 i = 0; i < format.length; i++) {
-        if (format.chars[i] == '{') {
+        if (format[i] == '{') {
             i++; // Skip the {
 
             s32 startOfNumber = i;
 
             // Run until the next character is a } or we're done
             while (((i + 1) < format.length)
-                && (format.chars[i] != '}')) {
+                && (format[i] != '}')) {
                 i++;
             }
 
@@ -438,7 +438,7 @@ String myprintf(String format, std::initializer_list<StringView> args, bool zero
 
             // Run until the next character is a { or we're done
             while (((i + 1) < format.length)
-                && (format.chars[i + 1] != '{')) {
+                && (format[i + 1] != '{')) {
                 i++;
             }
 
