@@ -1163,7 +1163,7 @@ void drawDataViewUI(GameState* gameState)
 
         s32 paletteBlockSize = font->lineHeight;
 
-        UI::Panel ui = UI::Panel(Rect2I::create_aligned(uiPos.x, uiPos.y, 240, 1000, { HAlign::Left, VAlign::Bottom }), nullptr, UI::PanelFlags::LayoutBottomToTop);
+        UI::Panel ui = UI::Panel(Rect2I::create_aligned(uiPos.x, uiPos.y, 300, 1000, { HAlign::Left, VAlign::Bottom }), nullptr, UI::PanelFlags::LayoutBottomToTop);
         {
             // We're working from bottom to top, so we start at the end.
 
@@ -1214,12 +1214,13 @@ void drawDataViewUI(GameState* gameState)
 
             // Title and close button
             // TODO: Probably want to make this a Window that can't be moved?
-            ui.addLabel(getText(dataView->title), "title"_s);
-
+            // Close button first to ensure it has space
             ui.alignWidgets(HAlign::Right);
             if (ui.addTextButton("X"_s)) {
                 gameState->dataLayerToDraw = DataView::None;
             }
+            ui.alignWidgets(HAlign::Left);
+            ui.addLabel(getText(dataView->title), "title"_s);
         }
         ui.end(true);
     }
