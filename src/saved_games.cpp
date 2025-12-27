@@ -90,7 +90,7 @@ void readSavedGamesInfo(SavedGamesCatalogue* catalogue)
 
         SavedGameInfo* savedGame = catalogue->savedGames.appendBlank();
 
-        savedGame->shortName = intern(&catalogue->stringsTable, getFileName(file_info.filename));
+        savedGame->shortName = intern(&catalogue->stringsTable, get_file_name(file_info.filename).deprecated_to_string());
         savedGame->fullPath = intern(&catalogue->stringsTable, constructPath({ catalogue->savedGamesPath, file_info.filename }));
         savedGame->isReadable = false;
 

@@ -55,14 +55,14 @@ struct FileInfo {
 // Returns the part of 'filename' after the final '.'
 // eg, getFileExtension("foo.bar.baz") would return "baz".
 // If there is no '.', we return an empty String.
-String getFileExtension(String filename);
+StringView get_file_extension(StringView filename);
 // Returns the part of filename WITHOUT the extension.
 // So, the opposite of getFileExtension()
-String getFileName(String filename);
+StringView get_file_name(StringView filename);
 String constructPath(std::initializer_list<String> parts, bool appendWildcard = false);
 
 // Locale-dependent files have the format "name.locale.extension"
-Optional<String> get_file_locale_segment(String filename);
+Optional<StringView> get_file_locale_segment(StringView filename);
 
 FileHandle openFile(String path, FileAccessMode mode);
 void closeFile(FileHandle* file);

@@ -193,7 +193,7 @@ Asset* addAsset(AssetType type, String shortName, Flags<AssetFlags> flags)
     if (flags.has(AssetFlags::IsAFile)) {
         asset->fullName = intern(&s_assets->assetStrings, getAssetPath(asset->type, internedShortName));
         if (auto locale_string = get_file_locale_segment(asset->fullName); locale_string.has_value()) {
-            asset->locale = locale_from_string(locale_string.value());
+            asset->locale = locale_from_string(locale_string.value().deprecated_to_string());
             if (!asset->locale.has_value())
                 logWarn("Unrecognized locale for asset '{0}'."_s, { asset->fullName });
         }
@@ -633,8 +633,8 @@ void addAssetsFromDirectory(String subDirectory, Optional<AssetType> manualAsset
             // Attempt to categorise the asset based on file extension
             if (manualAssetType.has_value())
                 return manualAssetType.value();
-            String fileExtension = getFileExtension(filename);
-            auto foundAssetType = s_assets->fileExtensionToType.find_value(fileExtension);
+            auto file_extension = get_file_extension(filename);
+            auto foundAssetType = s_assets->fileExtensionToType.find_value(file_extension.deprecated_to_string());
             return foundAssetType.value_or(AssetType::Misc);
         }();
 

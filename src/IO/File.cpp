@@ -13,39 +13,35 @@
 // Returns the part of 'filename' after the final '.'
 // eg, getFileExtension("foo.bar.baz") would return "baz".
 // If there is no '.', we return an empty String.
-String getFileExtension(String filename)
+StringView get_file_extension(StringView filename)
 {
     // FIXME: Use find() and substring(). Also return StringView.
-    s32 length = 0;
-    while ((length < filename.length) && (filename[filename.length - length - 1] != '.')) {
+    auto length = 0u;
+    while ((length < filename.length()) && (filename[filename.length() - length - 1] != '.')) {
         length++;
     }
 
-    if (length == filename.length) {
+    if (length == filename.length()) {
         // no extension!
-        length = 0;
+        return {};
     }
 
-    return { filename.chars + filename.length - length, (size_t)length };
+    return filename.substring(filename.length() - length, length);
 }
 
-String getFileName(String filename)
+StringView get_file_name(StringView filename)
 {
     // FIXME: Use find() and substring(). Also return StringView.
-    String result = filename;
-
-    s32 length = 0;
-    while ((length < filename.length) && (filename[filename.length - length - 1] != '.')) {
+    auto length = 0u;
+    while (length < filename.length() && filename[filename.length() - length - 1] != '.') {
         length++;
     }
 
-    if (length == filename.length) {
+    if (length == filename.length()) {
         // no extension!
-    } else {
-        result.length -= length + 1;
+        return filename;
     }
-
-    return result;
+    return filename.substring(0, filename.length() - length - 1);
 }
 
 String constructPath(std::initializer_list<String> parts, bool appendWildcard)
@@ -53,13 +49,13 @@ String constructPath(std::initializer_list<String> parts, bool appendWildcard)
     return platform_constructPath(parts, appendWildcard);
 }
 
-Optional<String> get_file_locale_segment(String filename)
+Optional<StringView> get_file_locale_segment(StringView filename)
 {
-    // FIXME: Use find() and substring(). Also return StringView.
+    // FIXME: Use find() and substring().
     // The locale is a section just before the file extension, eg `foo.en.txt`
     if (auto end_position = filename.find('.', SearchFrom::End); end_position.has_value()) {
         if (auto start_position = filename.find('.', SearchFrom::End, end_position.value() - 1); start_position.has_value()) {
-            return String { filename.chars + start_position.value() + 1, end_position.value() - start_position.value() - 1 };
+            return filename.substring(start_position.value() + 1, end_position.value() - start_position.value() - 1);
         }
     }
 
