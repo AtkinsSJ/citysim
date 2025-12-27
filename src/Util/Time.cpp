@@ -43,13 +43,13 @@ String formatDateTime(DateTime dateTime, DateTimeFormat format)
     } break;
     }
 
-    StringBuilder stb { formatString.m_length * 10 };
+    StringBuilder stb { formatString.length() * 10 };
 
     // @Copypasta from myprintf()!
 
     s32 startOfSymbol = s32Max;
     bool isReadingSymbol = false;
-    for (s32 i = 0; i < formatString.m_length; i++) {
+    for (s32 i = 0; i < formatString.length(); i++) {
         switch (formatString[i]) {
         case '{': {
             startOfSymbol = i + 1;
@@ -59,7 +59,7 @@ String formatDateTime(DateTime dateTime, DateTimeFormat format)
         case '}': {
             s32 endOfSymbol = i;
             if (isReadingSymbol && endOfSymbol > startOfSymbol) {
-                String symbol { formatString.m_chars + startOfSymbol, (size_t)(endOfSymbol - startOfSymbol), WithHash::Yes };
+                String symbol { formatString.raw_pointer_to_characters() + startOfSymbol, (size_t)(endOfSymbol - startOfSymbol), WithHash::Yes };
 
                 if (symbol == "year"_s) {
                     stb.append(formatInt(dateTime.year));
@@ -118,14 +118,16 @@ String formatDateTime(DateTime dateTime, DateTimeFormat format)
 
         default: {
             if (!isReadingSymbol) {
-                s32 startIndex = i;
-
-                while (((i + 1) < formatString.m_length)
-                    && (formatString[i + 1] != '{')) {
-                    i++;
+                auto start_index = i;
+                auto index_of_next_bracket = formatString.find('{', SearchFrom::Start, start_index);
+                if (index_of_next_bracket.has_value()) {
+                    stb.append(formatString.view().substring(start_index, index_of_next_bracket.value() - start_index));
+                    i = index_of_next_bracket.value() - 1;
+                } else {
+                    // Not found, so output the rest of the string.
+                    stb.append(formatString.view().substring(start_index));
+                    i = formatString.length();
                 }
-
-                stb.append(formatString.m_chars + startIndex, i + 1 - startIndex);
             }
         }
         }
