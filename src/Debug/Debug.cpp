@@ -201,7 +201,7 @@ void debugTextOut(DebugTextState* textState, String text, bool doHighlight = fal
 {
     Alignment align { textState->hAlign, textState->progressUpwards ? VAlign::Bottom : VAlign::Top };
 
-    textState->charsLastPrinted = text.m_length;
+    textState->charsLastPrinted = text.length();
     Colour textColor = (color != nullptr) ? *color : textState->color;
 
     V2I textSize = calculateTextSize(textState->font, text, textState->maxWidth);
