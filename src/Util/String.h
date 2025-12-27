@@ -46,8 +46,12 @@ struct String {
     operator StringView() const { return view(); }
 
     char operator[](s32 index) const;
+    char* raw_pointer_to_characters() const { return m_chars; }
 
     Hash hash() const;
+
+    size_t length() const { return m_length; }
+    void deprecated_set_length(size_t new_length) { m_length = new_length; }
 
     bool is_empty() const;
 
