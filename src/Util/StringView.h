@@ -17,8 +17,6 @@ public:
         : StringBase(chars, length)
     {
     }
-
-    StringView(String const&);
 };
 
 inline StringView operator""_sv(char const* chars, size_t length)

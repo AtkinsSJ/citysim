@@ -5,9 +5,3 @@
  */
 
 #include "StringView.h"
-#include "String.h"
-
-StringView::StringView(String const& string)
-    : StringBase(string.chars, string.length)
-{
-}

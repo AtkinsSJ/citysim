@@ -43,7 +43,7 @@ struct String {
     String(char* chars, size_t length, WithHash = WithHash::No);
 
     StringView view() const;
-    explicit operator StringView() const { return view(); }
+    operator StringView() const { return view(); }
 
     char operator[](s32 index) const;
 
