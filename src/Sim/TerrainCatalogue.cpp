@@ -53,7 +53,7 @@ void loadTerrainDefs(Blob data, Asset* asset)
     while (reader.load_next_line()) {
         String firstWord = reader.next_token();
 
-        if (firstWord.chars[0] == ':') // Definitions
+        if (firstWord.starts_with(':')) // Definitions
         {
             // Define something
             firstWord.chars++;

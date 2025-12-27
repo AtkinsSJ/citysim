@@ -57,7 +57,9 @@ struct String {
     Optional<u32> find(char needle, SearchFrom = SearchFrom::Start, Optional<u32> start_index = {}) const;
     bool contains(char) const;
     bool starts_with(String const& prefix) const;
+    bool starts_with(char prefix) const;
     bool ends_with(String const& suffix) const;
+    bool ends_with(char suffix) const;
 
     String trimmed(TrimSide = TrimSide::Both) const;
 

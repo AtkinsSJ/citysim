@@ -1051,7 +1051,7 @@ void loadSpriteDefs(Blob data, Asset* asset)
     while (reader.load_next_line()) {
         String command = reader.next_token();
 
-        if (command.chars[0] == ':') {
+        if (command.starts_with(':')) {
             childAssetCount++;
         }
     }
@@ -1063,7 +1063,7 @@ void loadSpriteDefs(Blob data, Asset* asset)
     while (reader.load_next_line()) {
         String command = reader.next_token();
 
-        if (command.chars[0] == ':') // Definitions
+        if (command.starts_with(':')) // Definitions
         {
             // Define something
             command.chars++;

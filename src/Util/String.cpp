@@ -257,6 +257,11 @@ bool String::starts_with(String const& prefix) const
     return result;
 }
 
+bool String::starts_with(char prefix) const
+{
+    return length >= 1 && chars[0] == prefix;
+}
+
 bool String::ends_with(String const& suffix) const
 {
     bool result = false;
@@ -271,6 +276,11 @@ bool String::ends_with(String const& suffix) const
     }
 
     return result;
+}
+
+bool String::ends_with(char suffix) const
+{
+    return length >= 1 && chars[length - 1] == suffix;
 }
 
 Optional<u32> String::find(char needle, SearchFrom search_direction, Optional<u32> start_index) const

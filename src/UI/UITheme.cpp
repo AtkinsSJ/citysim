@@ -382,7 +382,7 @@ void loadUITheme(Blob data, Asset* asset)
     while (reader.load_next_line()) {
         String firstWord = reader.next_token();
 
-        if (firstWord.chars[0] == ':') {
+        if (firstWord.starts_with(':')) {
             // define an item
             ++firstWord.chars;
             --firstWord.length;
