@@ -30,7 +30,7 @@ ErrorOr<NonnullOwnPtr<DirectoryWatcher>> DirectoryWatcher::watch(String path)
         return Error { error };
     }
 
-    if (inotify_add_watch(inotify_fd, path.m_chars, IN_CREATE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVED_FROM | IN_MOVED_TO) < 0) {
+    if (inotify_add_watch(inotify_fd, path.raw_pointer_to_characters(), IN_CREATE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVED_FROM | IN_MOVED_TO) < 0) {
         auto error_code = -errno;
         // FIXME: This should make a permanent copy of the string, see above.
         auto error = myprintf("Failed to add inotify watch to \"{}\". (Error {})"_s, { path, formatInt(error_code) });
