@@ -56,7 +56,6 @@ protected:
     {
     }
 
-private:
     char const* m_chars;
     size_t m_length;
 };

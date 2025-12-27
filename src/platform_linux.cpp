@@ -96,8 +96,8 @@ bool platform_createDirectory(String _path)
             // We do a similar hack to the win32 version: A duplicate path, which we then swap each
             // `/` with a null byte and then back, to mkdir() one path segment at a time.
             String path = pushString(&temp_arena(), _path);
-            char* pos = path.raw_pointer_to_characters();
-            char* afterEndOfPath = path.raw_pointer_to_characters() + path.length();
+            char* pos = path.deprecated_editable_characters();
+            char const* afterEndOfPath = path.raw_pointer_to_characters() + path.length();
 
             while (pos < afterEndOfPath) {
                 // This double loop is actually intentional, it's just... weird.

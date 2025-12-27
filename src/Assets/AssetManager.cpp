@@ -1225,14 +1225,14 @@ void loadTexts(HashTable<String>* texts, Asset* asset, Blob fileData)
             if (c == '\\') {
                 if (((charIndex + 1) < inputText.length())
                     && (inputText[charIndex + 1] == 'n')) {
-                    text.raw_pointer_to_characters()[text.length()] = '\n';
+                    text.deprecated_editable_characters()[text.length()] = '\n';
                     text.deprecated_set_length(text.length() + 1);
                     charIndex++;
                     continue;
                 }
             }
 
-            text.raw_pointer_to_characters()[text.length()] = c;
+            text.deprecated_editable_characters()[text.length()] = c;
             text.deprecated_set_length(text.length() + 1);
         }
 

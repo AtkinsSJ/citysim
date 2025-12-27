@@ -581,8 +581,8 @@ bool compileShader(ShaderProgram* glShader, String shaderName, Shader* shaderPro
     }
 
     GLint source_length = static_cast<GLint>(source.length());
-    char* source_characters = source.raw_pointer_to_characters();
-    glShaderSource(shaderID, 1, static_cast<char**>(&source_characters), &source_length);
+    char const* source_characters = source.raw_pointer_to_characters();
+    glShaderSource(shaderID, 1, static_cast<char const**>(&source_characters), &source_length);
 
     glCompileShader(shaderID);
 
@@ -599,7 +599,7 @@ bool compileShader(ShaderProgram* glShader, String shaderName, Shader* shaderPro
         glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &logMaxLength);
         String infoLog = pushString(&temp_arena(), logMaxLength);
         GLint infoLogLength = 0;
-        glGetShaderInfoLog(shaderID, logMaxLength, &infoLogLength, infoLog.raw_pointer_to_characters());
+        glGetShaderInfoLog(shaderID, logMaxLength, &infoLogLength, infoLog.deprecated_editable_characters());
         infoLog.deprecated_set_length(infoLogLength);
 
         if (infoLog.is_empty()) {
@@ -656,7 +656,7 @@ void loadShaderProgram(Asset* asset, ShaderProgram* glShader)
                 glGetProgramiv(glShader->shaderProgramID, GL_INFO_LOG_LENGTH, &logMaxLength);
                 String infoLog = pushString(&temp_arena(), logMaxLength);
                 GLint infoLogLength = 0;
-                glGetProgramInfoLog(glShader->shaderProgramID, logMaxLength, &infoLogLength, infoLog.raw_pointer_to_characters());
+                glGetProgramInfoLog(glShader->shaderProgramID, logMaxLength, &infoLogLength, infoLog.deprecated_editable_characters());
                 infoLog.deprecated_set_length(infoLogLength);
 
                 if (infoLog.is_empty()) {

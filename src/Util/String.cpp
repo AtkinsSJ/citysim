@@ -9,20 +9,17 @@
 #include <Util/Memory.h>
 #include <Util/MemoryArena.h>
 #include <Util/StringBuilder.h>
-#include <Util/Unicode.h>
 #include <stdio.h> // For snprintf
 
 String::String(char* chars, size_t length, WithHash with_hash)
-    : m_length(length)
-    , m_chars(chars)
+    : StringBase(chars, length)
 {
     if (with_hash == WithHash::Yes)
         m_hash = compute_hash();
 }
 
 String::String(char const* chars, size_t length, WithHash with_hash)
-    : m_length(length)
-    , m_chars(const_cast<char*>(chars))
+    : StringBase(chars, length)
 {
     if (with_hash == WithHash::Yes)
         m_hash = compute_hash();
@@ -45,19 +42,13 @@ String String::from_null_terminated(char const* chars)
 
 StringView String::view() const
 {
-    return StringView { m_chars, m_length };
-}
-
-char String::operator[](s32 index) const
-{
-    ASSERT(index >= 0 && index < this->m_length); // Index out of range!
-    return this->m_chars[index];
+    return StringView { raw_pointer_to_characters(), length() };
 }
 
 void copyString(char const* src, s32 srcLength, String* dest)
 {
     s32 copyLength = min(srcLength, dest->length());
-    copyMemory(src, dest->raw_pointer_to_characters(), copyLength);
+    copyMemory(src, dest->deprecated_editable_characters(), copyLength);
     dest->deprecated_set_length(copyLength);
 }
 
@@ -101,19 +92,16 @@ String pushString(MemoryArena* arena, StringView src)
 
 bool String::operator==(String const& other) const
 {
-    if (m_length != other.m_length)
-        return false;
     if (m_hash && other.m_hash && m_hash != other.m_hash)
         return false;
-
-    return isMemoryEqual(m_chars, other.m_chars, m_length);
+    return StringBase::operator==(other);
 }
 
 bool String::is_valid() const
 {
     // NB: The final char (length-1) is allowed to be null, so we only check until the one before that
-    for (s32 index = 0; index < m_length - 1; index++) {
-        if (m_chars[index] == 0)
+    for (s32 index = 0; index < length() - 1; index++) {
+        if (char_at(index) == 0)
             return false;
     }
 
@@ -125,8 +113,8 @@ String::Hash String::compute_hash() const
     // FNV-1a hash
     // http://www.isthe.com/chongo/tech/comp/fnv/
     Hash result = 2166136261;
-    for (s32 i = 0; i < m_length; i++) {
-        result ^= m_chars[i];
+    for (s32 i = 0; i < length(); i++) {
+        result ^= char_at(i);
         result *= 16777619;
     }
 
@@ -142,176 +130,12 @@ String::Hash String::hash() const
 
 String String::trimmed(TrimSide trim_side) const
 {
-    String result = *this;
-
-    if (trim_side != TrimSide::End) {
-        while (!result.is_empty() && isWhitespace(result[0], false)) {
-            ++result.m_chars;
-            --result.m_length;
-        }
-    }
-
-    if (trim_side != TrimSide::Start) {
-        while (!result.is_empty() && isWhitespace(result[result.m_length - 1], false)) {
-            --result.m_length;
-        }
-    }
-
-    return result;
-}
-
-Optional<s64> String::to_int() const
-{
-    if (is_empty())
-        return {};
-
-    s64 value = 0;
-    s32 startPosition = 0;
-    bool isNegative = false;
-    if (m_chars[0] == '-') {
-        isNegative = true;
-        startPosition++;
-    } else if (m_chars[0] == '+') {
-        // allow a leading + in case people want it for some reason.
-        startPosition++;
-    }
-
-    for (s32 position = startPosition; position < m_length; position++) {
-        value *= 10;
-
-        char c = m_chars[position];
-        if (c >= '0' && c <= '9') {
-            value += c - '0';
-        } else {
-            return {};
-        }
-    }
-
-    if (isNegative)
-        return -value;
-    return value;
-}
-
-Optional<double> String::to_float() const
-{
-    // TODO: Implement this properly!
-    // (c runtime functions atof / strtod don't tell you if they failed, they just return 0 which is a valid value!
-    String null_terminated = pushString(&temp_arena(), m_length + 1);
-    copyString(*this, &null_terminated);
-    null_terminated.m_chars[m_length] = '\0';
-
-    double double_value = atof(null_terminated.m_chars);
-    if (double_value == 0.0) {
-        // @Hack: 0.0 is returned by atof() if it fails. So, we see if the input really began with a '0' or not.
-        // If it didn't, we assume it failed. If it did, we assume it succeeded.
-        // Note that if it failed on a value beginning with a '0' character, (eg "0_0") then it will assume it succeeded...
-        // But, I don't know a more reliable way without just parsing the float value ourselves so eh!
-        // - Sam, 12/09/2019
-        if (m_chars[0] == '0')
-            return double_value;
-        return {};
-    }
-
-    return double_value;
-}
-
-Optional<bool> String::to_bool() const
-{
-    if (*this == "true"_s)
-        return true;
-    if (*this == "false"_s)
-        return false;
-    return {};
+    return with_whitespace_trimmed(trim_side).deprecated_to_string();
 }
 
 bool String::is_null_terminated() const
 {
-    // A 0-length string, by definition, can't have a null terminator
-    bool result = (m_length > 0) && (m_chars[m_length - 1] == 0);
-    return result;
-}
-
-bool String::is_empty() const
-{
-    return (m_length == 0);
-}
-
-bool String::starts_with(String const& prefix) const
-{
-    bool result = false;
-
-    if (m_length == prefix.m_length) {
-        result = *this == prefix;
-    } else if (m_length > prefix.m_length) {
-        result = isMemoryEqual<char>(prefix.m_chars, m_chars, prefix.m_length);
-    } else {
-        // Otherwise, prefix > s, so it can't end with it!
-        result = false;
-    }
-
-    return result;
-}
-
-bool String::starts_with(char prefix) const
-{
-    return m_length >= 1 && m_chars[0] == prefix;
-}
-
-bool String::ends_with(String const& suffix) const
-{
-    bool result = false;
-
-    if (m_length == suffix.m_length) {
-        result = *this == suffix;
-    } else if (m_length > suffix.m_length) {
-        result = isMemoryEqual<char>(suffix.m_chars, (m_chars + m_length - suffix.m_length), suffix.m_length);
-    } else {
-        // Otherwise, suffix > s, so it can't end with it!
-        result = false;
-    }
-
-    return result;
-}
-
-bool String::ends_with(char suffix) const
-{
-    return m_length >= 1 && m_chars[m_length - 1] == suffix;
-}
-
-Optional<u32> String::find(char needle, SearchFrom search_direction, Optional<u32> start_index) const
-{
-    if (is_empty())
-        return {};
-
-    switch (search_direction) {
-    case SearchFrom::Start: {
-        auto index = start_index.value_or(0);
-        while (index < m_length) {
-            if (m_chars[index] == needle)
-                return index;
-            index++;
-        }
-        break;
-    }
-    case SearchFrom::End: {
-        auto index = start_index.value_or(m_length - 1);
-        while (true) {
-            if (m_chars[index] == needle)
-                return index;
-            if (index == 0)
-                return {};
-            index--;
-        }
-        break;
-    }
-    }
-
-    return {};
-}
-
-bool String::contains(char c) const
-{
-    return find(c).has_value();
+    return ends_with(0);
 }
 
 // NB: You can pass null for leftResult or rightResult to ignore that part.
@@ -335,9 +159,9 @@ String String::join(std::initializer_list<String> strings, Optional<String> betw
 
     if (strings.size() > 0) {
         // Count up the resulting length
-        size_t resultLength = between.has_value() ? truncate32(between.value().m_length * (strings.size() - 1)) : 0;
+        size_t resultLength = between.has_value() ? truncate32(between.value().length() * (strings.size() - 1)) : 0;
         for (auto it = strings.begin(); it != strings.end(); it++) {
-            resultLength += it->m_length;
+            resultLength += it->length();
         }
 
         StringBuilder stb { resultLength };
@@ -518,19 +342,19 @@ String formatString(String value, s32 length, bool alignLeft, char paddingChar)
 
     if (alignLeft) {
         for (s32 i = 0; i < value.length(); i++) {
-            result.raw_pointer_to_characters()[i] = value[i];
+            result.deprecated_editable_characters()[i] = value[i];
         }
         for (s32 i = value.length(); i < length; i++) {
-            result.raw_pointer_to_characters()[i] = paddingChar;
+            result.deprecated_editable_characters()[i] = paddingChar;
         }
     } else // alignRight
     {
         s32 startPos = length - value.length();
         for (s32 i = 0; i < value.length(); i++) {
-            result.raw_pointer_to_characters()[i + startPos] = value[i];
+            result.deprecated_editable_characters()[i + startPos] = value[i];
         }
         for (s32 i = 0; i < startPos; i++) {
-            result.raw_pointer_to_characters()[i] = paddingChar;
+            result.deprecated_editable_characters()[i] = paddingChar;
         }
     }
 
@@ -550,7 +374,7 @@ String String::repeat(char c, u32 length)
     String result = pushString(&temp_arena(), length);
 
     for (s32 i = 0; i < length; i++) {
-        result.m_chars[i] = c;
+        result.deprecated_editable_characters()[i] = c;
     }
 
     return result;

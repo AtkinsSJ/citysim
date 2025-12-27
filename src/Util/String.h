@@ -25,8 +25,8 @@ enum class WithHash : u8 {
     Yes,
 };
 
-// FIXME: Distinguishing between owning and non-owning Strings would be good. (AKA, introduce StringView.)
-struct String {
+class String : public StringBase {
+public:
     using Hash = u32;
 
     // FIXME: initializer_list isn't the best option
@@ -43,42 +43,23 @@ struct String {
     StringView view() const;
     operator StringView() const { return view(); }
 
-    char operator[](s32 index) const;
-    char* raw_pointer_to_characters() const { return m_chars; }
-
     Hash hash() const;
 
-    size_t length() const { return m_length; }
     void deprecated_set_length(size_t new_length) { m_length = new_length; }
-
-    bool is_empty() const;
+    char* deprecated_editable_characters() { return const_cast<char*>(raw_pointer_to_characters()); }
 
     bool is_null_terminated() const;
     bool is_valid() const;
-
-    Optional<u32> find(char needle, SearchFrom = SearchFrom::Start, Optional<u32> start_index = {}) const;
-    bool contains(char) const;
-    bool starts_with(String const& prefix) const;
-    bool starts_with(char prefix) const;
-    bool ends_with(String const& suffix) const;
-    bool ends_with(char suffix) const;
 
     String trimmed(TrimSide = TrimSide::Both) const;
 
     // NB: You can pass null for leftResult or rightResult to ignore that part.
     bool split_in_two(char divider, String* left_result, String* right_result);
 
-    Optional<s64> to_int() const;
-    Optional<double> to_float() const;
-    Optional<bool> to_bool() const;
-
     bool operator==(String const&) const;
 
 private:
     Hash compute_hash() const;
-
-    size_t m_length;
-    char* m_chars;
     mutable Hash m_hash {};
 };
 

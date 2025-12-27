@@ -16,7 +16,7 @@ struct Padding;
 class Random;
 class Rect2;
 class Rect2I;
-struct String;
+class String;
 class StringBase;
 class StringView;
 class TokenReader;
