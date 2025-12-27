@@ -24,7 +24,7 @@ BinaryFileReader readBinaryFile(FileHandle* handle, FileIdentifier identifier, M
             logError("Binary file '{0}' has corrupted newline characters. This probably means the saving or loading code is incorrect."_s, { handle->path });
             reader.problems.add(BinaryFileReader::Problems::InvalidFormat);
         } else if (header.identifier != identifier) {
-            logError("Binary file '{0}' does not begin with the expected 4-byte sequence. Expected '{1}', got '{2}'"_s, { handle->path, toString(identifier), toString(header.identifier) });
+            logError("Binary file '{0}' does not begin with the expected 4-byte sequence. Expected '{1}', got '{2}'"_s, { handle->path, to_string(identifier), to_string(header.identifier) });
             reader.problems.add(BinaryFileReader::Problems::WrongIdentifier);
         } else if (header.version > BINARY_FILE_FORMAT_VERSION) {
             logError("Binary file '{0}' was created with a newer file format than we understand. File version is '{1}', maximum we support is '{2}'"_s, {
@@ -82,11 +82,11 @@ bool BinaryFileReader::startSection(FileIdentifier sectionID, u8 supportedSectio
                         currentSectionID = sectionID;
                         succeeded = true;
                     } else {
-                        logError("Section '{0}' in file '{1}' is a higher version than we support!"_s, { toString(sectionID), fileHandle->path });
+                        logError("Section '{0}' in file '{1}' is a higher version than we support!"_s, { to_string(sectionID), fileHandle->path });
                     }
                 }
             } else {
-                logError("Section '{0}' not found in TOC of '{1}'"_s, { toString(sectionID), fileHandle->path });
+                logError("Section '{0}' not found in TOC of '{1}'"_s, { to_string(sectionID), fileHandle->path });
             }
         } else {
             succeeded = true;

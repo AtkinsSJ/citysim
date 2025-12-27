@@ -62,11 +62,9 @@ inline FileIdentifier operator""_id(char const* chars, size_t length)
     return *((u32*)chars);
 }
 
-inline String toString(FileIdentifier identifier)
+inline StringView to_string(FileIdentifier identifier)
 {
-    String result = pushString(&temp_arena(), 4);
-    copyMemory<char>((char*)&identifier, result.chars, 4);
-    return result;
+    return StringView { reinterpret_cast<char const*>(&identifier), 4 };
 }
 
 struct FileArray {
