@@ -20,7 +20,7 @@ void WriteBuffer::init(s32 chunkSize_, MemoryArena* arena_)
     appendNewChunk();
 }
 
-WriteBufferRange WriteBuffer::appendBytes(s32 length, void* bytes)
+WriteBufferRange WriteBuffer::appendBytes(s32 length, void const* bytes)
 {
     WriteBufferRange result = {};
     result.start = getCurrentPosition();

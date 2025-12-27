@@ -65,7 +65,7 @@ struct WriteBuffer {
         return reserveBytes(sizeof(T));
     }
 
-    WriteBufferRange appendBytes(s32 length, void* bytes);
+    WriteBufferRange appendBytes(s32 length, void const* bytes);
     WriteBufferRange reserveBytes(s32 length);
 
     WriteBufferLocation getCurrentPosition();
