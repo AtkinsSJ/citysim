@@ -56,17 +56,3 @@ String platform_constructPath(std::initializer_list<String> parts, bool appendWi
 
     return result;
 }
-
-bool platform_deleteFile(String path)
-{
-    ASSERT(path.is_null_terminated());
-
-    if (unlink(path.raw_pointer_to_characters()) == 0)
-        return true;
-
-    if (errno == ENOENT) {
-        logInfo("Unable to delete file `{0}` - path does not exist"_s, { path });
-    }
-
-    return false;
-}

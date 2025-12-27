@@ -14,17 +14,6 @@ void openUrlUnsafe(char const* url)
     ShellExecute(nullptr, "open", url, nullptr, nullptr, SW_SHOWNORMAL);
 }
 
-bool platform_deleteFile(String path)
-{
-    bool succeeded = true;
-
-    if (DeleteFile(path.chars) == 0) {
-        succeeded = false;
-    }
-
-    return succeeded;
-}
-
 String platform_constructPath(std::initializer_list<String> parts, bool appendWildcard)
 {
     StringBuilder stb = newStringBuilder(256);

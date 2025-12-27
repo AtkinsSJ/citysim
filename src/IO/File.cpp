@@ -14,6 +14,7 @@
 #if OS_LINUX
 #    include <cerrno>
 #    include <sys/stat.h>
+#    include <unistd.h>
 #elif OS_WINDOWS
 #    define NOMINMAX
 #    include <windows.h>
@@ -124,7 +125,22 @@ smm getFileSize(FileHandle* file)
 bool deleteFile(String path)
 {
     ASSERT(path.is_null_terminated());
-    return platform_deleteFile(path);
+
+#if OS_LINUX
+    if (unlink(path.raw_pointer_to_characters()) == 0)
+        return true;
+
+    if (errno == ENOENT)
+        logInfo("Unable to delete file `{0}` - path does not exist"_s, { path });
+
+    return false;
+
+#elif OS_WINDOWS
+    if (DeleteFile(path.chars) == 0)
+        return false;
+
+    return true;
+#endif
 }
 
 bool createDirectory(String path)
