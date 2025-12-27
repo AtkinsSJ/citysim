@@ -9,6 +9,7 @@ add_library(Util STATIC
     Memory.cpp
     MemoryArena.cpp
     Padding.cpp
+    Platform.cpp
     Random.cpp
     Rectangle.cpp
     Splat.cpp

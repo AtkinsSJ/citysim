@@ -11,3 +11,7 @@
 #elif defined(_WIN32)
 #    define OS_WINDOWS 1
 #endif
+
+#include <Util/Forward.h>
+
+void open_url_unsafe(StringView url);

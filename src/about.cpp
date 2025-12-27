@@ -5,8 +5,8 @@
  */
 
 #include "about.h"
-#include "platform.h"
 #include <UI/Window.h>
+#include <Util/Platform.h>
 #include <Util/Vector.h>
 
 static void aboutWindowProc(UI::WindowContext* context, void* /*userData*/)
@@ -26,7 +26,7 @@ static void aboutWindowProc(UI::WindowContext* context, void* /*userData*/)
     ui->startNewLine(HAlign::Fill);
 
     if (ui->addTextButton(getText("button_website"_s))) {
-        openUrlUnsafe("http://samatkins.co.uk");
+        open_url_unsafe("http://samatkins.co.uk"_sv);
     }
 }
 

@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "../platform.h"
 #include <Assets/AssetManager.h>
 #include <Util/Log.h>
 #include <Util/StringBuilder.h>

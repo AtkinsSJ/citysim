@@ -5,7 +5,6 @@
  */
 
 #include "File.h"
-#include "../platform.h"
 #include <Debug/Debug.h>
 #include <Util/Locale.h>
 #include <Util/Log.h>

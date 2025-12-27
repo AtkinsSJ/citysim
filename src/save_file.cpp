@@ -6,7 +6,6 @@
 
 #include "save_file.h"
 #include "game.h"
-#include "platform.h"
 #include <Gfx/Renderer.h>
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
