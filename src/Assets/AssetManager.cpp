@@ -963,8 +963,7 @@ void loadPaletteDefs(Blob data, Asset* asset)
     while (reader.load_next_line()) {
         String command = reader.next_token();
         if (command[0] == ':') {
-            command.m_length--;
-            command.m_chars++;
+            command = command.view().substring(1).deprecated_to_string();
 
             if (command == "Palette"_s) {
                 paletteAsset = addAsset(AssetType::Palette, reader.next_token(), {});
@@ -1066,8 +1065,7 @@ void loadSpriteDefs(Blob data, Asset* asset)
         if (command.starts_with(':')) // Definitions
         {
             // Define something
-            command.m_chars++;
-            command.m_length--;
+            command = command.view().substring(1).deprecated_to_string();
 
             textureAsset = nullptr;
             spriteGroup = nullptr;
@@ -1212,34 +1210,34 @@ void loadTexts(HashTable<String>* texts, Asset* asset, Blob fileData)
         String inputText = reader.remainder_of_current_line();
 
         // Store the key
-        ASSERT(currentSize + inputKey.m_length <= asset->data.size());
-        String key { currentPos, (size_t)inputKey.m_length };
+        ASSERT(currentSize + inputKey.length() <= asset->data.size());
+        String key { currentPos, inputKey.length() };
         copyString(inputKey, &key);
-        currentSize += key.m_length;
-        currentPos += key.m_length;
+        currentSize += key.length();
+        currentPos += key.length();
 
         // Store the text
-        ASSERT(currentSize + inputText.m_length <= asset->data.size());
+        ASSERT(currentSize + inputText.length() <= asset->data.size());
         String text { currentPos, 0 };
 
-        for (s32 charIndex = 0; charIndex < inputText.m_length; charIndex++) {
+        for (s32 charIndex = 0; charIndex < inputText.length(); charIndex++) {
             char c = inputText[charIndex];
             if (c == '\\') {
-                if (((charIndex + 1) < inputText.m_length)
+                if (((charIndex + 1) < inputText.length())
                     && (inputText[charIndex + 1] == 'n')) {
-                    text.m_chars[text.m_length] = '\n';
-                    text.m_length++;
+                    text.raw_pointer_to_characters()[text.length()] = '\n';
+                    text.deprecated_set_length(text.length() + 1);
                     charIndex++;
                     continue;
                 }
             }
 
-            text.m_chars[text.m_length] = c;
-            text.m_length++;
+            text.raw_pointer_to_characters()[text.length()] = c;
+            text.deprecated_set_length(text.length() + 1);
         }
 
-        currentSize += text.m_length;
-        currentPos += text.m_length;
+        currentSize += text.length();
+        currentPos += text.length();
 
         // Check that we don't already have a text with that name.
         // If we do, one will overwrite the other, and that could be unpredictable if they're
