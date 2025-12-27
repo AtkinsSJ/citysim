@@ -73,18 +73,18 @@ void TextInput::moveCaretRightWholeWord()
     caret = findStartOfWordRight();
 }
 
-void TextInput::append(char const* source, s32 length)
+void TextInput::append(StringView source)
 {
-    s32 bytesToCopy = length;
-    if ((byteLength + length) > maxByteLength) {
-        s32 newByteLengthToCopy = maxByteLength - byteLength;
+    auto bytesToCopy = source.length();
+    if (byteLength + source.length() > maxByteLength) {
+        auto newByteLengthToCopy = maxByteLength - byteLength;
 
-        bytesToCopy = floorToWholeGlyphs(source, newByteLengthToCopy);
+        bytesToCopy = floorToWholeGlyphs(source.raw_pointer_to_characters(), newByteLengthToCopy);
     }
 
-    s32 glyphsToCopy = countGlyphs(source, bytesToCopy);
+    auto glyphsToCopy = countGlyphs(source.raw_pointer_to_characters(), bytesToCopy);
 
-    for (s32 i = 0; i < bytesToCopy; i++) {
+    for (auto i = 0; i < bytesToCopy; i++) {
         buffer[byteLength++] = source[i];
     }
 
@@ -94,35 +94,35 @@ void TextInput::append(char const* source, s32 length)
     glyphLength += glyphsToCopy;
 }
 
-void TextInput::append(String source)
+void TextInput::append(char c)
 {
-    append(source.chars, source.length);
+    append(StringView { &c, 1 });
 }
 
-void TextInput::insert(String source)
+void TextInput::insert(StringView source)
 {
     if (caret.bytePos == byteLength) {
         append(source);
         return;
     }
 
-    s32 bytesToCopy = source.length;
-    if ((byteLength + source.length) > maxByteLength) {
-        s32 newByteLengthToCopy = maxByteLength - byteLength;
+    auto bytesToCopy = source.length();
+    if (byteLength + source.length() > maxByteLength) {
+        auto newByteLengthToCopy = maxByteLength - byteLength;
 
-        bytesToCopy = floorToWholeGlyphs(source.chars, newByteLengthToCopy);
+        bytesToCopy = floorToWholeGlyphs(source.raw_pointer_to_characters(), newByteLengthToCopy);
     }
 
-    s32 glyphsToCopy = countGlyphs(source.chars, bytesToCopy);
+    auto glyphsToCopy = countGlyphs(source.raw_pointer_to_characters(), bytesToCopy);
 
     // move the existing chars by bytesToCopy
-    for (s32 i = byteLength - caret.bytePos - 1; i >= 0; i--) {
+    for (auto i = byteLength - caret.bytePos - 1; i >= 0; i--) {
         buffer[caret.bytePos + bytesToCopy + i] = buffer[caret.bytePos + i];
     }
 
     // write from source
-    for (s32 i = 0; i < bytesToCopy; i++) {
-        buffer[caret.bytePos + i] = source.chars[i];
+    for (auto i = 0; i < bytesToCopy; i++) {
+        buffer[caret.bytePos + i] = source[i];
     }
 
     byteLength += bytesToCopy;
@@ -134,7 +134,7 @@ void TextInput::insert(String source)
 
 void TextInput::insert(char c)
 {
-    insert(String { &c, 1 });
+    insert(StringView { &c, 1 });
 }
 
 void TextInput::clear()

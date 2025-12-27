@@ -44,9 +44,9 @@ struct TextInput {
     void moveCaretLeftWholeWord();
     void moveCaretRightWholeWord();
 
-    void append(char const* source, s32 length);
-    void append(String source);
-    void insert(String source);
+    void append(StringView source);
+    void append(char c);
+    void insert(StringView source);
     void insert(char c);
 
     void clear();
