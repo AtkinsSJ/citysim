@@ -164,7 +164,6 @@ Optional<double> StringBase::to_double() const
     // (c runtime functions atof / strtod don't tell you if they failed, they just return 0 which is a valid value!
     String null_terminated = pushString(&temp_arena(), length() + 1);
     copyString(m_chars, m_length, &null_terminated);
-    null_terminated.length++;
     null_terminated.chars[length()] = '\0';
 
     double double_value = atof(null_terminated.chars);

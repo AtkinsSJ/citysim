@@ -202,7 +202,6 @@ Optional<double> String::to_float() const
     // (c runtime functions atof / strtod don't tell you if they failed, they just return 0 which is a valid value!
     String null_terminated = pushString(&temp_arena(), length + 1);
     copyString(*this, &null_terminated);
-    null_terminated.length++;
     null_terminated.chars[length] = '\0';
 
     double double_value = atof(null_terminated.chars);
@@ -520,7 +519,6 @@ String formatString(String value, s32 length, bool alignLeft, char paddingChar)
         return { value.chars, (size_t)length };
 
     String result = pushString(&temp_arena(), length);
-    result.length = length;
 
     if (alignLeft) {
         for (s32 i = 0; i < value.length; i++) {
@@ -554,7 +552,6 @@ String formatBool(bool value)
 String String::repeat(char c, u32 length)
 {
     String result = pushString(&temp_arena(), length);
-    result.length = length;
 
     for (s32 i = 0; i < length; i++) {
         result.chars[i] = c;
