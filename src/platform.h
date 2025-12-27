@@ -14,5 +14,3 @@
 // NB: No check is done to ensure the URL is safe to use in a console command!
 // Only use this for URLs we know for sure are OK.
 void openUrlUnsafe(char const* url);
-
-String platform_constructPath(std::initializer_list<String> parts, bool appendWildcard);

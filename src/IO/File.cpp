@@ -10,6 +10,7 @@
 #include <Util/Locale.h>
 #include <Util/Log.h>
 #include <Util/Platform.h>
+#include <Util/StringBuilder.h>
 
 #if OS_LINUX
 #    include <cerrno>
@@ -56,7 +57,41 @@ StringView get_file_name(StringView filename)
 
 String constructPath(std::initializer_list<String> parts, bool appendWildcard)
 {
-    return platform_constructPath(parts, appendWildcard);
+#if OS_LINUX
+    auto path_separator = '/';
+    auto wildcard_character = '*';
+#elif OS_WINDOWS
+    auto path_separator = '\\';
+    auto wildcard_character = '*';
+#endif
+
+    StringBuilder stb;
+
+    if (parts.size() > 0) {
+        for (auto it = parts.begin(); it != parts.end(); it++) {
+            if (!stb.is_empty() && stb.char_at(stb.length() - 1) != path_separator)
+                stb.append(path_separator);
+
+            stb.append(*it);
+
+            // Trim off a trailing null that might be there.
+            if (stb.char_at(stb.length() - 1) == '\0')
+                stb.remove(1);
+        }
+    }
+
+    if (appendWildcard) {
+        stb.append(path_separator);
+        stb.append(wildcard_character);
+    }
+
+    stb.append('\0');
+
+    String result = stb.deprecated_to_string();
+
+    ASSERT(result.is_null_terminated()); // Path strings must be null-terminated!
+
+    return result;
 }
 
 Optional<StringView> get_file_locale_segment(StringView filename)
