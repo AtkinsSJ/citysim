@@ -141,8 +141,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
         if (firstWord[0] == ':') // Definitions
         {
             // Define something
-            firstWord.m_chars++;
-            firstWord.m_length--;
+            firstWord = firstWord.view().substring(1).deprecated_to_string();
 
             if (def != nullptr) {
                 // Now that the previous building is done, we can categorise it
@@ -386,13 +385,13 @@ void loadBuildingDefs(Blob data, Asset* asset)
                         String spriteName = intern(&asset_manager().assetStrings, reader.next_token());
 
                         // Check the values are valid first, because that's less verbose than checking each one individually.
-                        for (auto i = 0; i < directionFlags.m_length; i++) {
+                        for (auto i = 0; i < directionFlags.length(); i++) {
                             if (!connectionTypeOf(directionFlags[i]).has_value()) {
                                 reader.error("Unrecognized connection type character '{0}', valid values: '012*'"_s, { String::repeat(directionFlags[i], 1) });
                             }
                         }
 
-                        if (directionFlags.m_length == 8) {
+                        if (directionFlags.length() == 8) {
                             variant->connections[ConnectionDirection::N] = connectionTypeOf(directionFlags[0]).value();
                             variant->connections[ConnectionDirection::NE] = connectionTypeOf(directionFlags[1]).value();
                             variant->connections[ConnectionDirection::E] = connectionTypeOf(directionFlags[2]).value();
@@ -401,7 +400,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
                             variant->connections[ConnectionDirection::SW] = connectionTypeOf(directionFlags[5]).value();
                             variant->connections[ConnectionDirection::W] = connectionTypeOf(directionFlags[6]).value();
                             variant->connections[ConnectionDirection::NW] = connectionTypeOf(directionFlags[7]).value();
-                        } else if (directionFlags.m_length == 4) {
+                        } else if (directionFlags.length() == 4) {
                             // The 4 other directions don't matter
                             variant->connections[ConnectionDirection::NE] = ConnectionType::Anything;
                             variant->connections[ConnectionDirection::SE] = ConnectionType::Anything;
