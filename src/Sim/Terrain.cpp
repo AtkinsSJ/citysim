@@ -335,7 +335,7 @@ void saveTerrainLayer(TerrainLayer* layer, BinaryFileWriter* writer)
 
         SAVTerrainTypeEntry* entry = terrainTypeTable.append();
         entry->typeID = def->typeID;
-        entry->name = writer->appendString(def->name);
+        entry->name = writer->append_string(def->name);
     }
     terrainSection.terrainTypeTable = writer->writeArray<SAVTerrainTypeEntry>(terrainTypeTable, terrainTypeTableLoc);
 

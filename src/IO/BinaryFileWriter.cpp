@@ -137,13 +137,13 @@ FileBlob BinaryFileWriter::appendBlob(Array2<u8>* data, FileBlobCompressionSchem
     return appendBlob(data->w * data->h, data->items, scheme);
 }
 
-FileString BinaryFileWriter::appendString(String s)
+FileString BinaryFileWriter::append_string(StringView source)
 {
     FileString result = {};
 
-    result.length = s.length;
+    result.length = source.length();
     result.relativeOffset = getSectionRelativeOffset();
-    buffer.appendBytes(s.length, s.chars);
+    buffer.appendBytes(source.length(), source.raw_pointer_to_characters());
 
     return result;
 }

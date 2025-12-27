@@ -49,8 +49,8 @@ bool writeSaveFile(FileHandle* file, GameState* gameState)
             metaSection.population = getTotalResidents(city);
             metaSection.jobs = getTotalJobs(city);
 
-            metaSection.cityName = writer.appendString(city->name);
-            metaSection.playerName = writer.appendString(city->playerName);
+            metaSection.cityName = writer.append_string(city->name);
+            metaSection.playerName = writer.append_string(city->playerName);
 
             // Clock
             GameClock* clock = &gameState->gameClock;

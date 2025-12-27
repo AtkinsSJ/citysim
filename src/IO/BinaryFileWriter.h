@@ -101,7 +101,7 @@ struct BinaryFileWriter {
         return appendBlob(data.w * data.h, reinterpret_cast<EnumUnderlyingType<EnumT>*>(data.items), scheme);
     }
 
-    FileString appendString(String s);
+    FileString append_string(StringView);
 
     template<typename T>
     void endSection(T* sectionStruct)

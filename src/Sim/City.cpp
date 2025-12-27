@@ -522,7 +522,7 @@ void saveBuildings(City* city, BinaryFileWriter* writer)
 
         SAVBuildingTypeEntry* entry = buildingTypeTable.append();
         entry->typeID = def->typeID;
-        entry->name = writer->appendString(def->name);
+        entry->name = writer->append_string(def->name);
     }
     buildingSection.buildingTypeTable = writer->writeArray<SAVBuildingTypeEntry>(buildingTypeTable, buildingTypeTableLoc);
 
