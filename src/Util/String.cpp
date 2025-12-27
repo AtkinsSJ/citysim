@@ -320,31 +320,18 @@ bool String::contains(char c) const
 }
 
 // NB: You can pass null for leftResult or rightResult to ignore that part.
-bool splitInTwo(String input, char divider, String* leftResult, String* rightResult)
+bool String::split_in_two(char divider, String* left_result, String* right_result)
 {
+    if (auto divider_position = find(divider); divider_position.has_value()) {
+        if (left_result)
+            *left_result = view().substring(0, divider_position.value()).deprecated_to_string();
 
-    bool foundDivider = false;
+        if (right_result)
+            *right_result = view().substring(divider_position.value() + 1).deprecated_to_string();
 
-    for (auto i = 0u; i < input.length; i++) {
-        if (input[i] == divider) {
-            // NB: We have to make sure we properly initialise leftResult/rightResult here, because we had a
-            // bug before where we didn't, and it sometimes had old data in the "hasHash" field, which was
-            // causing all kinds of weird stuff to happen!
-            // Literally the exact same issue I fixed in nextToken() yesterday. /fp
-            if (leftResult != nullptr) {
-                *leftResult = String { input.chars, (size_t)i };
-            }
-
-            if (rightResult != nullptr) {
-                *rightResult = String { input.chars + i + 1, (size_t)(input.length - i - 1) };
-            }
-
-            foundDivider = true;
-            break;
-        }
+        return true;
     }
-
-    return foundDivider;
+    return false;
 }
 
 String String::join(std::initializer_list<String> strings, Optional<String> between)

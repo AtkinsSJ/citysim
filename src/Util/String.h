@@ -63,6 +63,9 @@ struct String {
 
     String trimmed(TrimSide = TrimSide::Both) const;
 
+    // NB: You can pass null for leftResult or rightResult to ignore that part.
+    bool split_in_two(char divider, String* left_result, String* right_result);
+
     Optional<s64> to_int() const;
     Optional<double> to_float() const;
     Optional<bool> to_bool() const;
@@ -94,9 +97,6 @@ String pushString(MemoryArena* arena, s32 length);
 String pushString(MemoryArena* arena, char const* src);
 String pushString(MemoryArena* arena, String src);
 String pushString(MemoryArena* arena, StringView src);
-
-// NB: You can pass null for leftResult or rightResult to ignore that part.
-bool splitInTwo(String input, char divider, String* leftResult, String* rightResult);
 
 String formatInt(u64 value, u8 base = 10, s32 zeroPadWidth = 0);
 inline String formatInt(u32 value, u8 base = 10, s32 zeroPadWidth = 0) { return formatInt((u64)value, base, zeroPadWidth); }
