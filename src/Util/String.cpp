@@ -252,7 +252,7 @@ String myprintf(String format, std::initializer_list<StringView> args, bool zero
         }
     }
 
-    if (zeroTerminate) {
+    if (zeroTerminate && (stb.is_empty() || stb.char_at(stb.length() - 1) != 0)) {
         stb.append('\0');
     }
 
