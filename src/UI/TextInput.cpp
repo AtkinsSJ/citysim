@@ -22,7 +22,7 @@ bool TextInput::isEmpty() const
     return byteLength == 0;
 }
 
-String TextInput::getLastWord() const
+StringView TextInput::last_word() const
 {
     TextInputPos startOfWord = findStartOfWordLeft();
     return { buffer + startOfWord.bytePos, (size_t)(caret.bytePos - startOfWord.bytePos) };

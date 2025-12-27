@@ -36,7 +36,7 @@ struct TextInput {
     // Methods
     bool isEmpty() const;
 
-    String getLastWord() const;
+    StringView last_word() const;
     String toString() const;
 
     void moveCaretLeft(s32 count);
