@@ -134,30 +134,26 @@ void updateAndRenderConsole(Console* console)
             console->input.clear();
         } else {
             // Tab completion
+            // FIXME: Move this behaviour into TextInput?
             if (keyJustPressed(SDLK_TAB)) {
-                auto wordToComplete = console->input.last_word();
-                if (!wordToComplete.is_empty()) {
+                auto word_to_complete = console->input.last_word();
+                if (!word_to_complete.is_empty()) {
                     // Search through our commands to find one that matches
                     // Eventually, we might want to cache an array of commands, but that's a low priority for now
-                    String completeCommand = nullString;
+                    Optional<StringView> command_to_complete;
 
                     for (auto it = console->commands.iterate();
                         it.hasNext();
                         it.next()) {
                         Command* c = it.get();
-                        if (c->name.view().starts_with(wordToComplete)) {
-                            completeCommand = c->name;
+                        if (c->name.view().starts_with(word_to_complete)) {
+                            command_to_complete = c->name.view();
                             break;
                         }
                     }
 
-                    if (!completeCommand.is_empty()) {
-                        String completion {
-                            completeCommand.chars + wordToComplete.length(),
-                            completeCommand.length - wordToComplete.length(),
-                        };
-                        console->input.insert(completion);
-                    }
+                    if (command_to_complete.has_value())
+                        console->input.insert(command_to_complete.value().substring(word_to_complete.length()));
                 }
             }
             // Command history
