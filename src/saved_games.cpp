@@ -105,7 +105,7 @@ void readSavedGamesInfo(SavedGamesCatalogue* catalogue)
                 if (readSection) {
                     SAVSection_Meta* meta = reader.readStruct<SAVSection_Meta>(0);
 
-                    savedGame->saveTime = getLocalTimeFromTimestamp(meta->saveTimestamp);
+                    savedGame->saveTime = DateTime::from_unix_timestamp(meta->saveTimestamp);
                     savedGame->cityName = intern(&catalogue->stringsTable, reader.readString(meta->cityName));
                     savedGame->playerName = intern(&catalogue->stringsTable, reader.readString(meta->playerName));
                     savedGame->citySize = v2i(meta->cityWidth, meta->cityHeight);

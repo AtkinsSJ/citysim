@@ -42,7 +42,7 @@ bool writeSaveFile(FileHandle* file, GameState* gameState)
             writer.startSection<SAVSection_Meta>(SAV_META_ID, SAV_META_VERSION);
             SAVSection_Meta metaSection = {};
 
-            metaSection.saveTimestamp = getCurrentUnixTimestamp();
+            metaSection.saveTimestamp = get_current_unix_timestamp();
             metaSection.cityWidth = (u16)city->bounds.width();
             metaSection.cityHeight = (u16)city->bounds.height();
             metaSection.funds = city->funds;

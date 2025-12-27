@@ -15,9 +15,6 @@
 // Only use this for URLs we know for sure are OK.
 void openUrlUnsafe(char const* url);
 
-u64 getCurrentUnixTimestamp();
-DateTime platform_getLocalTimeFromTimestamp(u64 unixTimestamp);
-
 String platform_constructPath(std::initializer_list<String> parts, bool appendWildcard);
 
 bool platform_createDirectory(String path);

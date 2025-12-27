@@ -27,31 +27,6 @@ void openUrlUnsafe(char const* url)
     delete[] buffer;
 }
 
-u64 getCurrentUnixTimestamp()
-{
-    return time(nullptr);
-}
-
-DateTime platform_getLocalTimeFromTimestamp(u64 unixTimestamp)
-{
-    DateTime result = {};
-    result.unixTimestamp = unixTimestamp;
-
-    time_t time = unixTimestamp;
-    struct tm* timeInfo = localtime(&time);
-
-    result.year = timeInfo->tm_year + 1900;
-    result.month = (MonthOfYear)(timeInfo->tm_mon);
-    result.dayOfMonth = timeInfo->tm_mday;
-    result.hour = timeInfo->tm_hour;
-    result.minute = timeInfo->tm_min;
-    result.second = timeInfo->tm_sec;
-    result.millisecond = 0;
-    result.dayOfWeek = (DayOfWeek)((timeInfo->tm_wday + 6) % 7); // NB: Sunday is 0 in tm, but is 6 for us.
-
-    return result;
-}
-
 String platform_constructPath(std::initializer_list<String> parts, bool appendWildcard)
 {
     // @Copypasta: This is identical to the win32 version except with '/' instead of '\\'!

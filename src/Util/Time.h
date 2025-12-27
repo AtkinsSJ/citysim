@@ -40,6 +40,8 @@ enum class MonthOfYear : u8 {
 };
 
 struct DateTime {
+    static DateTime from_unix_timestamp(u64);
+
     u64 unixTimestamp; // Global time. Only valid if this DateTime was read from the operating system
 
     s32 year;
@@ -85,8 +87,6 @@ EnumMap<MonthOfYear, String> const month_names {
     "date_part_month12"_s,
 };
 
-DateTime getLocalTimeFromTimestamp(u64 unixTimestamp);
-
 //
 // This runs like myprintf(), except with named sections instead of numbered ones.
 //
@@ -114,3 +114,5 @@ DateTime getLocalTimeFromTimestamp(u64 unixTimestamp);
 //   AM         AM/PM uppercase
 //
 String formatDateTime(DateTime dateTime, DateTimeFormat format);
+
+u32 get_current_unix_timestamp();

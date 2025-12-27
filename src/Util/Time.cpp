@@ -10,9 +10,71 @@
 #include <Util/StringBuilder.h>
 #include <Util/Time.h>
 
-DateTime getLocalTimeFromTimestamp(u64 unixTimestamp)
+#if OS_LINUX
+#    include <ctime>
+#elif OS_WINDOWS
+// FIXME: Add includes for windows time conversion here.
+#endif
+
+DateTime DateTime::from_unix_timestamp(u64 unix_timestamp)
 {
-    return platform_getLocalTimeFromTimestamp(unixTimestamp);
+#if OS_LINUX
+    DateTime result = {};
+    result.unixTimestamp = unix_timestamp;
+
+    time_t time = unix_timestamp;
+    struct tm* timeInfo = localtime(&time);
+
+    result.year = timeInfo->tm_year + 1900;
+    result.month = (MonthOfYear)(timeInfo->tm_mon);
+    result.dayOfMonth = timeInfo->tm_mday;
+    result.hour = timeInfo->tm_hour;
+    result.minute = timeInfo->tm_min;
+    result.second = timeInfo->tm_sec;
+    result.millisecond = 0;
+    result.dayOfWeek = (DayOfWeek)((timeInfo->tm_wday + 6) % 7); // NB: Sunday is 0 in tm, but is 6 for us.
+
+    return result;
+#elif OS_WINDOWS
+    DateTime result = {};
+    result.unixTimestamp = unixTimestamp;
+
+    // NB: Based on the microsoft code at https://support.microsoft.com/en-us/help/167296/how-to-convert-a-unix-time-t-to-a-win32-filetime-or-systemtime
+    FILETIME fileTime = {};
+    u64 temp = (unixTimestamp + 11644473600) * 10000000;
+    fileTime.dwLowDateTime = (DWORD)temp;
+    fileTime.dwHighDateTime = temp >> 32;
+
+    // We convert to a local FILETIME first, because I don't see a way to do that conversion later.
+    FILETIME localFileTime = {};
+    if (FileTimeToLocalFileTime(&fileTime, &localFileTime) == 0) {
+        // Error handling!
+        u32 errorCode = (u32)GetLastError();
+        logError("Failed to convert filetime ({0}) to local filetime. (Error {1})"_s, { formatInt(temp), formatInt(errorCode) });
+        return result;
+    }
+
+    // Now we can convert that into a SYSTEMTIME
+    SYSTEMTIME localSystemTime;
+    if (FileTimeToSystemTime(&localFileTime, &localSystemTime) == 0) {
+        // Error handling!
+        u32 errorCode = (u32)GetLastError();
+        logError("Failed to convert local filetime ({0}-{1}) to local systemtime. (Error {2})"_s, { formatInt((u32)localFileTime.dwLowDateTime), formatInt((u32)localFileTime.dwHighDateTime), formatInt(errorCode) });
+        return result;
+    }
+
+    // Finally, we can fill-in our own DateTime struct with the data
+    result.year = localSystemTime.wYear;
+    result.month = (MonthOfYear)(localSystemTime.wMonth - 1); // SYSTEMTIME month starts at 1 for January
+    result.dayOfMonth = localSystemTime.wDay;
+    result.hour = localSystemTime.wHour;
+    result.minute = localSystemTime.wMinute;
+    result.second = localSystemTime.wSecond;
+    result.millisecond = localSystemTime.wMilliseconds;
+    result.dayOfWeek = (DayOfWeek)((localSystemTime.wDayOfWeek + 6) % 7); // NB: Sunday is 0 in SYSTEMTIME, but is 6 for us.
+
+    return result;
+#endif
 }
 
 String formatDateTime(DateTime dateTime, DateTimeFormat format)
@@ -134,4 +196,25 @@ String formatDateTime(DateTime dateTime, DateTimeFormat format)
     }
 
     return stb.deprecated_to_string();
+}
+
+u32 get_current_unix_timestamp()
+{
+#if OS_LINUX
+    return time(nullptr);
+#elif OS_WINDOWS
+    FILETIME currentFileTime;
+    GetSystemTimeAsFileTime(&currentFileTime);
+
+    u64 currentTime = currentFileTime.dwLowDateTime | ((u64)currentFileTime.dwHighDateTime << 32);
+
+    // "File Time" measures 100nanosecond increments, so we divide to get a number of seconds
+    u64 seconds = (currentTime / 10000000);
+
+    // File Time counts from January 1, 1601 so we need to subtract the difference to align it with the unix epoch
+
+    u64 unixTime = seconds - 11644473600;
+
+    return unixTime;
+#endif
 }
