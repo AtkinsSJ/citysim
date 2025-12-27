@@ -5,3 +5,9 @@
  */
 
 #include "StringView.h"
+#include <Util/String.h>
+
+String StringView::deprecated_to_string() const
+{
+    return String { raw_pointer_to_characters(), length() };
+}

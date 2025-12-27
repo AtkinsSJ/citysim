@@ -148,8 +148,7 @@ String LineReader::current_line() const
 String LineReader::remainder_of_current_line() const
 {
     // FIXME: Return StringView instead.
-    auto trimmed_sv = m_state.current_line_reader.remaining_input().with_whitespace_trimmed();
-    return String { trimmed_sv.raw_pointer_to_characters(), trimmed_sv.length() };
+    return m_state.current_line_reader.remaining_input().with_whitespace_trimmed().deprecated_to_string();
 }
 
 void LineReader::warn(String message, std::initializer_list<StringView> args) const
@@ -170,7 +169,7 @@ String LineReader::next_token(Optional<char> split_char)
 {
     // FIXME: Return Optional<StringView> instead.
     if (auto result = m_state.current_line_reader.next_token(split_char); result.has_value())
-        return String { result.value().raw_pointer_to_characters(), result.value().length() };
+        return result.value().deprecated_to_string();
     return {};
 }
 
@@ -178,7 +177,7 @@ String LineReader::peek_token(Optional<char> split_char)
 {
     // FIXME: Return Optional<StringView> instead.
     if (auto result = m_state.current_line_reader.peek_token(split_char); result.has_value())
-        return String { result.value().raw_pointer_to_characters(), result.value().length() };
+        return result.value().deprecated_to_string();
     return {};
 }
 

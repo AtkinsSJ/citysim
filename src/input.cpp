@@ -359,7 +359,7 @@ KeyboardShortcut parseKeyboardShortcut(String shortcutString)
             result.modifiers.add(ModifierKey::Super);
         } else {
             // FIXME: Make HashTable compatible with StringViews.
-            String key_string { key_name.value().raw_pointer_to_characters(), key_name.value().length() };
+            auto key_string = key_name.value().deprecated_to_string();
             if (auto found_key = s_input_state.keyNames.find_value(key_string); found_key.has_value()) {
                 result.key = found_key.release_value();
             } else {

@@ -17,6 +17,8 @@ public:
         : StringBase(chars, length)
     {
     }
+
+    String deprecated_to_string() const;
 };
 
 inline StringView operator""_sv(char const* chars, size_t length)
