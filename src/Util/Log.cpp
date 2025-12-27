@@ -10,7 +10,7 @@
 void log(SDL_LogPriority priority, String format, std::initializer_list<StringView> args)
 {
     String text = myprintf(format, args, true);
-    SDL_LogMessage(SDL_LOG_CATEGORY_CUSTOM, priority, "%s", text.chars);
+    SDL_LogMessage(SDL_LOG_CATEGORY_CUSTOM, priority, "%s", text.m_chars);
 }
 
 void logVerbose(String format, std::initializer_list<StringView> args)

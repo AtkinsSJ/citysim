@@ -384,8 +384,8 @@ void loadUITheme(Blob data, Asset* asset)
 
         if (firstWord.starts_with(':')) {
             // define an item
-            ++firstWord.chars;
-            --firstWord.length;
+            ++firstWord.m_chars;
+            --firstWord.m_length;
             currentSection = firstWord;
 
             if (firstWord == "Font"_s) {

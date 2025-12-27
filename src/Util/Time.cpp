@@ -43,13 +43,13 @@ String formatDateTime(DateTime dateTime, DateTimeFormat format)
     } break;
     }
 
-    StringBuilder stb { formatString.length * 10 };
+    StringBuilder stb { formatString.m_length * 10 };
 
     // @Copypasta from myprintf()!
 
     s32 startOfSymbol = s32Max;
     bool isReadingSymbol = false;
-    for (s32 i = 0; i < formatString.length; i++) {
+    for (s32 i = 0; i < formatString.m_length; i++) {
         switch (formatString[i]) {
         case '{': {
             startOfSymbol = i + 1;
@@ -59,7 +59,7 @@ String formatDateTime(DateTime dateTime, DateTimeFormat format)
         case '}': {
             s32 endOfSymbol = i;
             if (isReadingSymbol && endOfSymbol > startOfSymbol) {
-                String symbol { formatString.chars + startOfSymbol, (size_t)(endOfSymbol - startOfSymbol), WithHash::Yes };
+                String symbol { formatString.m_chars + startOfSymbol, (size_t)(endOfSymbol - startOfSymbol), WithHash::Yes };
 
                 if (symbol == "year"_s) {
                     stb.append(formatInt(dateTime.year));
@@ -120,12 +120,12 @@ String formatDateTime(DateTime dateTime, DateTimeFormat format)
             if (!isReadingSymbol) {
                 s32 startIndex = i;
 
-                while (((i + 1) < formatString.length)
+                while (((i + 1) < formatString.m_length)
                     && (formatString[i + 1] != '{')) {
                     i++;
                 }
 
-                stb.append(formatString.chars + startIndex, i + 1 - startIndex);
+                stb.append(formatString.m_chars + startIndex, i + 1 - startIndex);
             }
         }
         }

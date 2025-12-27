@@ -86,7 +86,7 @@ bool platform_createDirectory(String _path)
 {
     ASSERT(_path.is_null_terminated());
 
-    if (mkdir(_path.chars, S_IRWXU) != 0) {
+    if (mkdir(_path.m_chars, S_IRWXU) != 0) {
         int result = errno;
         if (result == EEXIST)
             return true;
@@ -96,8 +96,8 @@ bool platform_createDirectory(String _path)
             // We do a similar hack to the win32 version: A duplicate path, which we then swap each
             // `/` with a null byte and then back, to mkdir() one path segment at a time.
             String path = pushString(&temp_arena(), _path);
-            char* pos = path.chars;
-            char* afterEndOfPath = path.chars + path.length;
+            char* pos = path.m_chars;
+            char* afterEndOfPath = path.m_chars + path.m_length;
 
             while (pos < afterEndOfPath) {
                 // This double loop is actually intentional, it's just... weird.
@@ -113,7 +113,7 @@ bool platform_createDirectory(String _path)
                 logInfo("Attempting to create directory: {0}"_s, { path });
 
                 // Create the path
-                if (mkdir(path.chars, S_IRWXU) != EEXIST) {
+                if (mkdir(path.m_chars, S_IRWXU) != EEXIST) {
                     logError("Unable to create directory `{0}` - failed to create `{1}`."_s, { _path, path });
                     return false;
                 }
@@ -134,7 +134,7 @@ bool platform_deleteFile(String path)
 {
     ASSERT(path.is_null_terminated());
 
-    if (unlink(path.chars) == 0)
+    if (unlink(path.m_chars) == 0)
         return true;
 
     if (errno == ENOENT) {

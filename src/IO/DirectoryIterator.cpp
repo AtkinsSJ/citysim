@@ -111,7 +111,7 @@ ErrorOr<DirectoryIteratorWrapper> iterate_directory(String const& path, Flags<Di
     ASSERT(path.is_null_terminated());
 
 #if OS_LINUX
-    auto* dir = opendir(path.chars);
+    auto* dir = opendir(path.m_chars);
     Deferred close_dir = [&dir] {
         if (dir)
             closedir(dir);

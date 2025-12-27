@@ -295,7 +295,7 @@ bool putButton(Rect2I bounds, ButtonStyle* style, ButtonState state, RenderBuffe
             backgroundStyle = &style->backgroundHover;
         }
 
-        if (tooltip.length) {
+        if (tooltip.m_length) {
             showTooltip(tooltip);
         }
     } else if (state == ButtonState::Active) {

@@ -30,7 +30,7 @@ ErrorOr<NonnullOwnPtr<DirectoryWatcher>> DirectoryWatcher::watch(String path)
         return Error { error };
     }
 
-    if (inotify_add_watch(inotify_fd, path.chars, IN_CREATE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVED_FROM | IN_MOVED_TO) < 0) {
+    if (inotify_add_watch(inotify_fd, path.m_chars, IN_CREATE | IN_DELETE | IN_DELETE_SELF | IN_MODIFY | IN_MOVED_FROM | IN_MOVED_TO) < 0) {
         auto error_code = -errno;
         // FIXME: This should make a permanent copy of the string, see above.
         auto error = myprintf("Failed to add inotify watch to \"{}\". (Error {})"_s, { path, formatInt(error_code) });
@@ -42,7 +42,7 @@ ErrorOr<NonnullOwnPtr<DirectoryWatcher>> DirectoryWatcher::watch(String path)
 
     return adopt_own(*new DirectoryWatcher { path, inotify_fd });
 #elif OS_WINDOWS
-    auto handle = FindFirstChangeNotification(path.chars, true, FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE);
+    auto handle = FindFirstChangeNotification(path.m_chars, true, FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_DIR_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE);
     if (handle == INVALID_HANDLE_VALUE) {
         auto error_code = GetLastError();
         // FIXME: This should make a permanent copy of the string, see above.

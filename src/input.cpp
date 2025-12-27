@@ -304,7 +304,7 @@ bool wasTextEntered()
 StringView getEnteredText()
 {
     s_input_state.hasUnhandledTextEntered = false;
-    return StringView { s_input_state.textEntered.chars, (size_t)s_input_state.textEnteredLength };
+    return StringView { s_input_state.textEntered.m_chars, (size_t)s_input_state.textEnteredLength };
 }
 
 String getClipboardText()

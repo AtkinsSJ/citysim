@@ -963,8 +963,8 @@ void loadPaletteDefs(Blob data, Asset* asset)
     while (reader.load_next_line()) {
         String command = reader.next_token();
         if (command[0] == ':') {
-            command.length--;
-            command.chars++;
+            command.m_length--;
+            command.m_chars++;
 
             if (command == "Palette"_s) {
                 paletteAsset = addAsset(AssetType::Palette, reader.next_token(), {});
@@ -1066,8 +1066,8 @@ void loadSpriteDefs(Blob data, Asset* asset)
         if (command.starts_with(':')) // Definitions
         {
             // Define something
-            command.chars++;
-            command.length--;
+            command.m_chars++;
+            command.m_length--;
 
             textureAsset = nullptr;
             spriteGroup = nullptr;
@@ -1212,34 +1212,34 @@ void loadTexts(HashTable<String>* texts, Asset* asset, Blob fileData)
         String inputText = reader.remainder_of_current_line();
 
         // Store the key
-        ASSERT(currentSize + inputKey.length <= asset->data.size());
-        String key { currentPos, (size_t)inputKey.length };
+        ASSERT(currentSize + inputKey.m_length <= asset->data.size());
+        String key { currentPos, (size_t)inputKey.m_length };
         copyString(inputKey, &key);
-        currentSize += key.length;
-        currentPos += key.length;
+        currentSize += key.m_length;
+        currentPos += key.m_length;
 
         // Store the text
-        ASSERT(currentSize + inputText.length <= asset->data.size());
+        ASSERT(currentSize + inputText.m_length <= asset->data.size());
         String text { currentPos, 0 };
 
-        for (s32 charIndex = 0; charIndex < inputText.length; charIndex++) {
+        for (s32 charIndex = 0; charIndex < inputText.m_length; charIndex++) {
             char c = inputText[charIndex];
             if (c == '\\') {
-                if (((charIndex + 1) < inputText.length)
+                if (((charIndex + 1) < inputText.m_length)
                     && (inputText[charIndex + 1] == 'n')) {
-                    text.chars[text.length] = '\n';
-                    text.length++;
+                    text.m_chars[text.m_length] = '\n';
+                    text.m_length++;
                     charIndex++;
                     continue;
                 }
             }
 
-            text.chars[text.length] = c;
-            text.length++;
+            text.m_chars[text.m_length] = c;
+            text.m_length++;
         }
 
-        currentSize += text.length;
-        currentPos += text.length;
+        currentSize += text.m_length;
+        currentPos += text.m_length;
 
         // Check that we don't already have a text with that name.
         // If we do, one will overwrite the other, and that could be unpredictable if they're

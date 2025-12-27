@@ -71,7 +71,7 @@ FileHandle openFile(String path, FileAccessMode mode)
     FileHandle result = {};
 
     result.path = path;
-    result.sdl_file = SDL_RWFromFile(path.chars, file_access_mode_strings[mode].chars);
+    result.sdl_file = SDL_RWFromFile(path.m_chars, file_access_mode_strings[mode].m_chars);
     result.isOpen = (result.sdl_file != nullptr);
 
     return result;
@@ -197,8 +197,8 @@ bool writeFile(String filePath, String contents)
     FileHandle file = openFile(filePath, FileAccessMode::Write);
 
     if (file.isOpen) {
-        smm bytesWritten = SDL_RWwrite(file.sdl_file, contents.chars, 1, contents.length);
-        succeeded = (bytesWritten == contents.length);
+        smm bytesWritten = SDL_RWwrite(file.sdl_file, contents.m_chars, 1, contents.m_length);
+        succeeded = (bytesWritten == contents.m_length);
         closeFile(&file);
     } else {
         logError("Failed to open file '{0}' for writing."_s, { filePath });

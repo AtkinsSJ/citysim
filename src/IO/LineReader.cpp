@@ -91,11 +91,11 @@ bool LineReader::load_next_line()
     do {
         // Get next line
         ++m_state.current_line_number;
-        line.chars = (char*)(m_data.data() + m_state.start_of_next_line);
-        line.length = 0;
+        line.m_chars = (char*)(m_data.data() + m_state.start_of_next_line);
+        line.m_length = 0;
         while ((m_state.start_of_next_line < m_data.size()) && !isNewline(m_data.data()[m_state.start_of_next_line])) {
             ++m_state.start_of_next_line;
-            ++line.length;
+            ++line.m_length;
         }
 
         // Handle Windows' stupid double-character newline.
@@ -108,9 +108,9 @@ bool LineReader::load_next_line()
 
         // Trim the comment
         if (m_remove_comments) {
-            for (s32 p = 0; p < line.length; p++) {
+            for (s32 p = 0; p < line.m_length; p++) {
                 if (line[p] == m_comment_char) {
-                    line.length = p;
+                    line.m_length = p;
                     break;
                 }
             }
@@ -213,8 +213,8 @@ Optional<double> LineReader::read_double(IsRequired is_required, Optional<char> 
         return {};
     }
 
-    if (token[token.length - 1] == '%') {
-        token.length--;
+    if (token[token.m_length - 1] == '%') {
+        token.m_length--;
 
         if (auto percent = token.to_float(); percent.has_value())
             return percent.value() * 0.01;
