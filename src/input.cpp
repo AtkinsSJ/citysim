@@ -26,26 +26,25 @@ void init_input_state()
 
     // Letters
     for (char c = 'A'; c <= 'Z'; c++) {
-        String key = pushString(systemArena, 1);
-        key.chars[0] = c;
-        s_input_state.keyNames.put(key, (SDL_Keycode)(SDLK_a + (c - 'A')));
+        String key = pushString(systemArena, StringView { &c, 1 });
+        s_input_state.keyNames.put(key, SDLK_a + (c - 'A'));
     }
 
     // Numbers
     for (char i = 0; i <= 9; i++) {
-        String key = pushString(systemArena, 1);
-        key.chars[0] = '0' + i;
-        s_input_state.keyNames.put(key, (SDL_Keycode)(SDLK_0 + i));
+        char c = '0' + i;
+        String key = pushString(systemArena, StringView { &c, 1 });
+        s_input_state.keyNames.put(key, SDLK_0 + i);
     }
 
     // F keys
     for (char i = 0; i <= 12; i++) {
         String key = pushString(systemArena, myprintf("F{0}"_s, { formatInt(i + 1) }));
-        s_input_state.keyNames.put(key, (SDL_Keycode)(SDLK_F1 + i));
+        s_input_state.keyNames.put(key, SDLK_F1 + i);
     }
 
     // Misc
-    s_input_state.keyNames.put(pushString(systemArena, "Home"), (SDL_Keycode)SDLK_HOME);
+    s_input_state.keyNames.put(pushString(systemArena, "Home"), SDLK_HOME);
 }
 
 InputState& input_state()
