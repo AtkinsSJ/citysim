@@ -17,5 +17,4 @@ void openUrlUnsafe(char const* url);
 
 String platform_constructPath(std::initializer_list<String> parts, bool appendWildcard);
 
-bool platform_createDirectory(String path);
 bool platform_deleteFile(String path);

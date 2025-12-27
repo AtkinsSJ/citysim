@@ -9,6 +9,15 @@
 #include <Debug/Debug.h>
 #include <Util/Locale.h>
 #include <Util/Log.h>
+#include <Util/Platform.h>
+
+#if OS_LINUX
+#    include <cerrno>
+#    include <sys/stat.h>
+#elif OS_WINDOWS
+#    define NOMINMAX
+#    include <windows.h>
+#endif
 
 // Returns the part of 'filename' after the final '.'
 // eg, getFileExtension("foo.bar.baz") would return "baz".
@@ -121,7 +130,102 @@ bool deleteFile(String path)
 bool createDirectory(String path)
 {
     ASSERT(path.is_null_terminated());
-    return platform_createDirectory(path);
+
+#if OS_LINUX
+    if (mkdir(path.raw_pointer_to_characters(), S_IRWXU) != 0) {
+        int result = errno;
+        if (result == EEXIST)
+            return true;
+
+        if (result == ENOENT) {
+            // Part of the path doesn't exist, so we have to create it, piece by piece
+            // We do a similar hack to the win32 version: A duplicate path, which we then swap each
+            // `/` with a null byte and then back, to mkdir() one path segment at a time.
+            String sub_path = pushString(&temp_arena(), path);
+            char* pos = sub_path.deprecated_editable_characters();
+            char const* afterEndOfPath = sub_path.raw_pointer_to_characters() + sub_path.length();
+
+            while (pos < afterEndOfPath) {
+                // This double loop is actually intentional, it's just... weird.
+                while (pos < afterEndOfPath) {
+                    if (*pos == '/') {
+                        *pos = '\0';
+                        break;
+                    }
+                    pos++;
+                }
+
+                logInfo("Attempting to create directory: {0}"_s, { sub_path });
+
+                // Create the path
+                if (mkdir(sub_path.raw_pointer_to_characters(), S_IRWXU) != EEXIST) {
+                    logError("Unable to create directory `{0}` - failed to create `{1}`."_s, { path, sub_path });
+                    return false;
+                }
+
+                *pos = '/';
+                pos++;
+            }
+
+            return true;
+        }
+    }
+
+    return false;
+#elif OS_WINDOWS
+    bool succeeded = true;
+
+    // First, we can skip a lot of work if the directory already exists, or all but the
+    // last path segment do.
+    if (CreateDirectory(path.chars, nullptr) || GetLastError() == ERROR_ALREADY_EXISTS) {
+        // Nothing left to do!
+    } else {
+        // https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createdirectorya
+        // We're only allowed to create the final section of the path.
+        // So, we start from the left and call CreateDirectory() for each section.
+        // If it fails, but the error is ERROR_ALREADY_EXISTS, that's fine.
+
+        // This is something of a hack...
+        // Rather than have to allocate a bunch of temporary strings, we can just allocate
+        // one, and then replace each '\' character with a null to terminate that string,
+        // then switch it back for the next one.
+        // The path is guaranteed to be null terminated at the end.
+
+        String sub_path = pushString(&temp_arena(), path);
+
+        char* pos = sub_path.chars;
+        char* afterEndOfPath = sub_path.chars + sub_path.length;
+
+        while (pos < afterEndOfPath) {
+            // This double loop is actually intentional, it's just... weird.
+            while (pos < afterEndOfPath) {
+                if (*pos == '\\') {
+                    *pos = '\0';
+                    break;
+                } else {
+                    pos++;
+                }
+            }
+
+            logInfo("Attempting to create directory: {0}"_s, { sub_path });
+
+            // Create the sub_path
+            if (!CreateDirectory(sub_path.chars, nullptr)) {
+                if (GetLastError() != ERROR_ALREADY_EXISTS) {
+                    succeeded = false;
+                    logError("Unable to create directory `{0}` - failed to create `{1}`."_s, { path, sub_path });
+                    break;
+                }
+            }
+
+            *pos = '\\';
+            pos++;
+            continue;
+        }
+    }
+
+    return succeeded;
+#endif
 }
 
 smm readFromFile(FileHandle* file, Blob& dest)

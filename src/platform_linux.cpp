@@ -57,54 +57,6 @@ String platform_constructPath(std::initializer_list<String> parts, bool appendWi
     return result;
 }
 
-bool platform_createDirectory(String _path)
-{
-    ASSERT(_path.is_null_terminated());
-
-    if (mkdir(_path.raw_pointer_to_characters(), S_IRWXU) != 0) {
-        int result = errno;
-        if (result == EEXIST)
-            return true;
-
-        if (result == ENOENT) {
-            // Part of the path doesn't exist, so we have to create it, piece by piece
-            // We do a similar hack to the win32 version: A duplicate path, which we then swap each
-            // `/` with a null byte and then back, to mkdir() one path segment at a time.
-            String path = pushString(&temp_arena(), _path);
-            char* pos = path.deprecated_editable_characters();
-            char const* afterEndOfPath = path.raw_pointer_to_characters() + path.length();
-
-            while (pos < afterEndOfPath) {
-                // This double loop is actually intentional, it's just... weird.
-                while (pos < afterEndOfPath) {
-                    if (*pos == '/') {
-                        *pos = '\0';
-                        break;
-                    } else {
-                        pos++;
-                    }
-                }
-
-                logInfo("Attempting to create directory: {0}"_s, { path });
-
-                // Create the path
-                if (mkdir(path.raw_pointer_to_characters(), S_IRWXU) != EEXIST) {
-                    logError("Unable to create directory `{0}` - failed to create `{1}`."_s, { _path, path });
-                    return false;
-                }
-
-                *pos = '/';
-                pos++;
-                continue;
-            }
-
-            return true;
-        }
-    }
-
-    return false;
-}
-
 bool platform_deleteFile(String path)
 {
     ASSERT(path.is_null_terminated());
