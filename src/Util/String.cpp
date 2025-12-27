@@ -56,14 +56,14 @@ char String::operator[](s32 index) const
 
 void copyString(char const* src, s32 srcLength, String* dest)
 {
-    s32 copyLength = min(srcLength, dest->m_length);
-    copyMemory(src, dest->m_chars, copyLength);
-    dest->m_length = copyLength;
+    s32 copyLength = min(srcLength, dest->length());
+    copyMemory(src, dest->raw_pointer_to_characters(), copyLength);
+    dest->deprecated_set_length(copyLength);
 }
 
 void copyString(String src, String* dest)
 {
-    copyString(src.m_chars, src.m_length, dest);
+    copyString(src.raw_pointer_to_characters(), src.length(), dest);
 }
 
 void copyString(StringView src, String* dest)
@@ -73,11 +73,7 @@ void copyString(StringView src, String* dest)
 
 String pushString(MemoryArena* arena, s32 length)
 {
-    String s = {};
-    s.m_chars = arena->allocate_multiple<char>(length);
-    s.m_length = length;
-
-    return s;
+    return String { arena->allocate_multiple<char>(length), static_cast<size_t>(length) };
 }
 
 String pushString(MemoryArena* arena, char const* src)
@@ -91,7 +87,7 @@ String pushString(MemoryArena* arena, char const* src)
 
 String pushString(MemoryArena* arena, String src)
 {
-    String s = pushString(arena, src.m_length);
+    String s = pushString(arena, src.length());
     copyString(src, &s);
     return s;
 }
@@ -375,21 +371,21 @@ String myprintf(String format, std::initializer_list<StringView> args, bool zero
     // Any nulls in-line will just be printed to the result, following the "garbage in, garbage out"
     // principle!
     if (format.is_null_terminated()) {
-        format.m_length--;
+        format.deprecated_set_length(format.length() - 1);
     }
 
-    StringBuilder stb { format.m_length * 4 };
+    StringBuilder stb { format.length() * 4 };
 
     s32 positionalIndex = 0;
 
-    for (s32 i = 0; i < format.m_length; i++) {
+    for (s32 i = 0; i < format.length(); i++) {
         if (format[i] == '{') {
             i++; // Skip the {
 
             s32 startOfNumber = i;
 
             // Run until the next character is a } or we're done
-            while (((i + 1) < format.m_length)
+            while (((i + 1) < format.length())
                 && (format[i] != '}')) {
                 i++;
             }
@@ -401,7 +397,7 @@ String myprintf(String format, std::initializer_list<StringView> args, bool zero
 
             if (indexLength > 0) {
                 // Positional
-                String index_string { format.m_chars + startOfNumber, (size_t)indexLength };
+                auto index_string = format.view().substring(startOfNumber, indexLength);
                 if (auto parsed_index = index_string.to_int(); parsed_index.has_value())
                     index = (s32)parsed_index.value();
             }
@@ -415,7 +411,7 @@ String myprintf(String format, std::initializer_list<StringView> args, bool zero
                 stb.append(arg);
             } else {
                 // If the index is invalid, show some kind of error. For now, we'll just insert the {n} as given.
-                stb.append(format.m_chars + startOfNumber - 1, indexLength + 2);
+                stb.append(format.view().substring(startOfNumber - 1, indexLength + 2));
             }
 
             positionalIndex++;
@@ -423,12 +419,12 @@ String myprintf(String format, std::initializer_list<StringView> args, bool zero
             auto startIndex = i;
 
             // Run until the next character is a { or we're done
-            while (((i + 1) < format.m_length)
+            while (((i + 1) < format.length())
                 && (format[i + 1] != '{')) {
                 i++;
             }
 
-            stb.append(format.m_chars + startIndex, i + 1 - startIndex);
+            stb.append(format.view().substring(startIndex, i + 1 - startIndex));
         }
     }
 
@@ -505,36 +501,36 @@ String formatFloat(double value, s32 decimalPlaces)
 
     size_t length = 100; // TODO: is 100 enough?
     char* buffer = temp_arena().allocate_multiple<char>(length);
-    size_t written = snprintf(buffer, length, formatString.m_chars, value);
+    size_t written = snprintf(buffer, length, formatString.raw_pointer_to_characters(), value);
 
     return { buffer, min(written, length) };
 }
 
 String formatString(String value, s32 length, bool alignLeft, char paddingChar)
 {
-    if ((value.m_length == length) || (length == -1))
+    if ((value.length() == length) || (length == -1))
         return value;
 
-    if (length < value.m_length)
-        return { value.m_chars, (size_t)length };
+    if (length < value.length())
+        return { value.raw_pointer_to_characters(), (size_t)length };
 
     String result = pushString(&temp_arena(), length);
 
     if (alignLeft) {
-        for (s32 i = 0; i < value.m_length; i++) {
-            result.m_chars[i] = value.m_chars[i];
+        for (s32 i = 0; i < value.length(); i++) {
+            result.raw_pointer_to_characters()[i] = value[i];
         }
-        for (s32 i = value.m_length; i < length; i++) {
-            result.m_chars[i] = paddingChar;
+        for (s32 i = value.length(); i < length; i++) {
+            result.raw_pointer_to_characters()[i] = paddingChar;
         }
     } else // alignRight
     {
-        s32 startPos = length - value.m_length;
-        for (s32 i = 0; i < value.m_length; i++) {
-            result.m_chars[i + startPos] = value.m_chars[i];
+        s32 startPos = length - value.length();
+        for (s32 i = 0; i < value.length(); i++) {
+            result.raw_pointer_to_characters()[i + startPos] = value[i];
         }
         for (s32 i = 0; i < startPos; i++) {
-            result.m_chars[i] = paddingChar;
+            result.raw_pointer_to_characters()[i] = paddingChar;
         }
     }
 
