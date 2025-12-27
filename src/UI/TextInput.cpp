@@ -33,6 +33,11 @@ String TextInput::toString() const
     return { buffer, (size_t)byteLength };
 }
 
+StringView TextInput::text() const
+{
+    return { buffer, (size_t)byteLength };
+}
+
 void TextInput::moveCaretLeft(s32 count)
 {
     if (count < 1)
@@ -352,8 +357,7 @@ V2I calculateTextInputSize(TextInput* textInput, TextInputStyle* style, s32 maxW
     s32 textMaxWidth = (maxWidth == 0) ? 0 : (maxWidth - (style->padding.left + style->padding.right));
 
     BitmapFont* font = getFont(style->font);
-    String text = textInput->toString();
-    V2I textSize = calculateTextSize(font, text, textMaxWidth);
+    V2I textSize = calculateTextSize(font, textInput->text(), textMaxWidth);
 
     s32 resultWidth = 0;
 
@@ -373,7 +377,6 @@ Rect2I drawTextInput(RenderBuffer* renderBuffer, TextInput* textInput, TextInput
     DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     auto& renderer = the_renderer();
-    String text = textInput->toString();
     BitmapFont* font = getFont(style->font);
 
     Drawable(&style->background).draw(renderBuffer, bounds);
@@ -384,9 +387,9 @@ Rect2I drawTextInput(RenderBuffer* renderBuffer, TextInput* textInput, TextInput
 
     Rect2I textBounds = bounds.shrunk(style->padding);
     DrawTextResult drawTextResult = {};
-    drawText(renderBuffer, font, text, textBounds, style->textAlignment, style->textColor, renderer.shaderIds.text, textInput->caret.glyphPos, &drawTextResult);
+    drawText(renderBuffer, font, textInput->text(), textBounds, style->textAlignment, style->textColor, renderer.shaderIds.text, textInput->caret.glyphPos, &drawTextResult);
 
-    textInput->caretFlashCounter = (float)fmod(textInput->caretFlashCounter + AppState::the().deltaTime, style->caretFlashCycleDuration);
+    textInput->caretFlashCounter = fmod(textInput->caretFlashCounter + AppState::the().deltaTime, style->caretFlashCycleDuration);
 
     if (showCaret) {
         Rect2 caretRect { textBounds.x(), textBounds.y(), 2, font->lineHeight };

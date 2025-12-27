@@ -38,6 +38,7 @@ struct TextInput {
 
     StringView last_word() const;
     String toString() const;
+    StringView text() const;
 
     void moveCaretLeft(s32 count);
     void moveCaretRight(s32 count);

@@ -129,7 +129,7 @@ void updateAndRenderConsole(Console* console)
 
     if (hasCapturedInput(&console->input)) {
         if (UI::updateTextInput(&console->input)) {
-            consoleHandleCommand(console, console->input.toString());
+            consoleHandleCommand(console, console->input.text());
             scrollToBottom = true;
             console->input.clear();
         } else {
