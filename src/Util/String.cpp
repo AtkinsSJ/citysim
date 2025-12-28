@@ -187,16 +187,15 @@ String String::join(std::initializer_list<String> strings, Optional<String> betw
  * You pass the arguments in an initializer-list, so like: myprintf("Hello {0}!", {name});
  * All arguments must already be Strings. Use the various formatXXX() functions to convert things to Strings.
  */
-String myprintf(String format, std::initializer_list<StringView> args, bool zeroTerminate)
+String myprintf(StringView format, std::initializer_list<StringView> args, bool zeroTerminate)
 {
     // Null bytes are a pain.
     // If we have a terminating one, just trim it off for now (and optionally re-attach it
     // based on the zeroTerminate param.
     // Any nulls in-line will just be printed to the result, following the "garbage in, garbage out"
     // principle!
-    if (format.is_null_terminated()) {
-        format.deprecated_set_length(format.length() - 1);
-    }
+    if (format.ends_with(0))
+        format = format.substring(0, format.length() - 1);
 
     StringBuilder stb { format.length() * 4 };
 
@@ -221,7 +220,7 @@ String myprintf(String format, std::initializer_list<StringView> args, bool zero
 
             if (indexLength > 0) {
                 // Positional
-                auto index_string = format.view().substring(startOfNumber, indexLength);
+                auto index_string = format.substring(startOfNumber, indexLength);
                 if (auto parsed_index = index_string.to_int(); parsed_index.has_value())
                     index = (s32)parsed_index.value();
             }
@@ -235,7 +234,7 @@ String myprintf(String format, std::initializer_list<StringView> args, bool zero
                 stb.append(arg);
             } else {
                 // If the index is invalid, show some kind of error. For now, we'll just insert the {n} as given.
-                stb.append(format.view().substring(startOfNumber - 1, indexLength + 2));
+                stb.append(format.substring(startOfNumber - 1, indexLength + 2));
             }
 
             positionalIndex++;
@@ -248,7 +247,7 @@ String myprintf(String format, std::initializer_list<StringView> args, bool zero
                 i++;
             }
 
-            stb.append(format.view().substring(startIndex, i + 1 - startIndex));
+            stb.append(format.substring(startIndex, i + 1 - startIndex));
         }
     }
 
