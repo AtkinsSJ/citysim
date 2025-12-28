@@ -211,4 +211,4 @@ void addChildAsset(Asset* parent, Asset* child);
 void loadCursorDefs(Blob data, Asset* asset);
 void loadPaletteDefs(Blob data, Asset* asset);
 void loadSpriteDefs(Blob data, Asset* asset);
-void loadTexts(HashTable<String>* texts, Asset* asset, Blob fileData);
+void loadTexts(HashTable<String>* texts, Asset* asset, Blob file_data);

@@ -18,6 +18,7 @@
 #include <Sim/Building.h>
 #include <Sim/BuildingCatalogue.h>
 #include <Sim/TerrainCatalogue.h>
+#include <Util/StringBuilder.h>
 
 AssetManager* s_assets;
 
@@ -1181,9 +1182,9 @@ void loadSpriteDefs(Blob data, Asset* asset)
     }
 }
 
-void loadTexts(HashTable<String>* texts, Asset* asset, Blob fileData)
+void loadTexts(HashTable<String>* texts, Asset* asset, Blob file_data)
 {
-    LineReader reader { asset->shortName, fileData };
+    LineReader reader { asset->shortName, file_data };
 
     // NB: We store the strings inside the asset data, so it's one block of memory instead of many small ones.
     // However, since we allocate before we parse the file, we need to make sure that the output texts are
@@ -1196,48 +1197,44 @@ void loadTexts(HashTable<String>* texts, Asset* asset, Blob fileData)
     // We use the number of lines in the file as a heuristic - we know it'll be slightly more than
     // the number of texts in the file, because they're 1 per line, and we don't have many blanks.
 
-    s32 lineCount = LineReader::count_lines(fileData);
-    smm keyArraySize = sizeof(String) * lineCount;
-    asset->data = assetsAllocate(s_assets, fileData.size() + keyArraySize);
+    auto line_count = LineReader::count_lines(file_data);
+    auto key_array_size = sizeof(String) * line_count;
+    asset->data = assetsAllocate(s_assets, file_data.size() + key_array_size);
+    asset->texts.keys = makeArray(line_count, reinterpret_cast<String*>(asset->data.writable_data()));
 
-    asset->texts.keys = makeArray(lineCount, (String*)asset->data.writable_data());
-
-    smm currentSize = keyArraySize;
-    char* currentPos = (char*)(asset->data.writable_data() + keyArraySize);
+    auto text_data = asset->data.sub_blob(key_array_size);
+    StringBuilder string_data_builder { text_data };
+    char* write_position = reinterpret_cast<char*>(text_data.writable_data());
 
     while (reader.load_next_line()) {
-        String inputKey = reader.next_token();
-        String inputText = reader.remainder_of_current_line();
+        String input_key = reader.next_token();
+        String input_text = reader.remainder_of_current_line();
 
         // Store the key
-        ASSERT(currentSize + inputKey.length() <= asset->data.size());
-        String key { currentPos, inputKey.length() };
-        copyString(inputKey, &key);
-        currentSize += key.length();
-        currentPos += key.length();
+        string_data_builder.append(input_key);
+        String key { write_position, input_key.length() };
+        write_position += key.length();
 
         // Store the text
-        ASSERT(currentSize + inputText.length() <= asset->data.size());
-        String text { currentPos, 0 };
+        auto* text_start = write_position;
+        auto text_length = 0u;
 
-        for (s32 charIndex = 0; charIndex < inputText.length(); charIndex++) {
-            char c = inputText[charIndex];
+        for (s32 charIndex = 0; charIndex < input_text.length(); charIndex++) {
+            char c = input_text[charIndex];
             if (c == '\\') {
-                if (((charIndex + 1) < inputText.length())
-                    && (inputText[charIndex + 1] == 'n')) {
-                    text.deprecated_editable_characters()[text.length()] = '\n';
-                    text.deprecated_set_length(text.length() + 1);
+                if (charIndex + 1 < input_text.length() && input_text[charIndex + 1] == 'n') {
+                    string_data_builder.append('\n');
+                    text_length++;
                     charIndex++;
                     continue;
                 }
             }
 
-            text.deprecated_editable_characters()[text.length()] = c;
-            text.deprecated_set_length(text.length() + 1);
+            string_data_builder.append(c);
+            text_length++;
         }
 
-        currentSize += text.length();
-        currentPos += text.length();
+        write_position += text_length;
 
         // Check that we don't already have a text with that name.
         // If we do, one will overwrite the other, and that could be unpredictable if they're
@@ -1249,7 +1246,7 @@ void loadTexts(HashTable<String>* texts, Asset* asset, Blob fileData)
 
         asset->texts.keys.append(key);
 
-        texts->put(key, text);
+        texts->put(key, String { text_start, text_length });
     }
 }
 
