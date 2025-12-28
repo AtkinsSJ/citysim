@@ -558,6 +558,22 @@ void GLAPIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum seve
     DEBUG_BREAK();
 }
 
+static String get_gl_info_log(auto get_log, auto get_log_length, auto id)
+{
+    int logMaxLength = 0;
+
+    get_log_length(id, GL_INFO_LOG_LENGTH, &logMaxLength);
+    String infoLog = pushString(&temp_arena(), logMaxLength);
+    GLint infoLogLength = 0;
+    get_log(id, logMaxLength, &infoLogLength, infoLog.deprecated_editable_characters());
+    infoLog.deprecated_set_length(infoLogLength);
+
+    if (infoLog.is_empty())
+        return "No error log provided by OpenGL. Sad panda."_s;
+
+    return infoLog;
+}
+
 bool compileShader(ShaderProgram* glShader, String shaderName, Shader* shaderProgram, ShaderPart shaderPart)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Renderer);
@@ -593,20 +609,8 @@ bool compileShader(ShaderProgram* glShader, String shaderName, Shader* shaderPro
     if (result) {
         glAttachShader(glShader->shaderProgramID, shaderID);
     } else {
-        // Print a big error message about this!
-        int logMaxLength = 0;
-
-        glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &logMaxLength);
-        String infoLog = pushString(&temp_arena(), logMaxLength);
-        GLint infoLogLength = 0;
-        glGetShaderInfoLog(shaderID, logMaxLength, &infoLogLength, infoLog.deprecated_editable_characters());
-        infoLog.deprecated_set_length(infoLogLength);
-
-        if (infoLog.is_empty()) {
-            infoLog = "No error log provided by OpenGL. Sad panda."_s;
-        }
-
-        logError("Unable to compile part {3} of shader {0}, \'{1}\'! ({2})"_s, { formatInt(shaderID), shaderName, infoLog, formatInt(shaderPart) });
+        auto info_log = get_gl_info_log(glGetShaderInfoLog, glGetShaderiv, shaderID);
+        logError("Unable to compile part {3} of shader {0}, \'{1}\'! ({2})"_s, { formatInt(shaderID), shaderName, info_log, formatInt(shaderPart) });
     }
 
     return result;
@@ -650,20 +654,8 @@ void loadShaderProgram(Asset* asset, ShaderProgram* glShader)
             glShader->isValid = (programSuccess == GL_TRUE);
 
             if (!glShader->isValid) {
-                // Print a big error message about this!
-                int logMaxLength = 0;
-
-                glGetProgramiv(glShader->shaderProgramID, GL_INFO_LOG_LENGTH, &logMaxLength);
-                String infoLog = pushString(&temp_arena(), logMaxLength);
-                GLint infoLogLength = 0;
-                glGetProgramInfoLog(glShader->shaderProgramID, logMaxLength, &infoLogLength, infoLog.deprecated_editable_characters());
-                infoLog.deprecated_set_length(infoLogLength);
-
-                if (infoLog.is_empty()) {
-                    infoLog = "No error log provided by OpenGL. Sad panda."_s;
-                }
-
-                logError("Unable to link shader program {0}! ({1})"_s, { asset->shortName, infoLog });
+                auto info_log = get_gl_info_log(glGetProgramInfoLog, glGetProgramiv, glShader->shaderProgramID);
+                logError("Unable to link shader program {0}! ({1})"_s, { asset->shortName, info_log });
             } else {
                 // Vertex attributes
                 loadShaderAttrib(glShader, "aPosition", &glShader->aPositionLoc);
