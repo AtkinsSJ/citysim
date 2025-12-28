@@ -30,6 +30,7 @@
 class StringBuilder {
 public:
     explicit StringBuilder(size_t initial_size = 256);
+    explicit StringBuilder(Blob buffer);
 
     void append(StringView);
     void append(char);
@@ -48,6 +49,7 @@ public:
 
 private:
     size_t m_capacity;
-    size_t m_length;
+    size_t m_length { 0 };
     char* m_buffer;
+    bool m_fixed_buffer { false };
 };

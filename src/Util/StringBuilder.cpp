@@ -10,8 +10,14 @@
 
 StringBuilder::StringBuilder(size_t initial_size)
     : m_capacity(max(initial_size, 256))
-    , m_length(0)
     , m_buffer(temp_arena().allocate_multiple<char>(m_capacity))
+{
+}
+
+StringBuilder::StringBuilder(Blob buffer)
+    : m_capacity(buffer.size())
+    , m_buffer(reinterpret_cast<char*>(buffer.writable_data()))
+    , m_fixed_buffer(true)
 {
 }
 
@@ -37,6 +43,8 @@ void StringBuilder::append(char const* chars, size_t length)
 
 void StringBuilder::ensure_capacity(size_t new_capacity)
 {
+    ASSERT(!m_fixed_buffer);
+
     logWarn("Expanding StringBuilder"_s);
 
     s32 target_capacity = max(new_capacity, m_capacity * 2);
