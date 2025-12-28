@@ -6,10 +6,18 @@
 
 #pragma once
 
-#if defined(__linux__)
+#ifdef __linux__
 #    define OS_LINUX 1
-#elif defined(_WIN32)
+#elifdef _WIN32
 #    define OS_WINDOWS 1
+#endif
+
+#ifndef OS_LINUX
+#    define OS_LINUX 0
+#endif
+
+#ifndef OS_WINDOWS
+#    define OS_WINDOWS 0
 #endif
 
 #include <Util/Forward.h>

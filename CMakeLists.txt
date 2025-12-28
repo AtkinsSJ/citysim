@@ -13,6 +13,7 @@ else()
         -Wno-exceptions
         -Wno-unknown-pragmas
         -Wno-unqualified-std-cast-call
+        -Wundef
     )
 endif()
 
