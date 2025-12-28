@@ -205,7 +205,7 @@ Optional<bool> LineReader::read_bool(IsRequired is_required, Optional<char> spli
 
 Optional<double> LineReader::read_double(IsRequired is_required, Optional<char> split_char)
 {
-    String token = next_token(split_char);
+    StringView token = next_token(split_char);
 
     if (token.is_empty()) {
         if (is_required == IsRequired::Yes)
@@ -214,7 +214,7 @@ Optional<double> LineReader::read_double(IsRequired is_required, Optional<char> 
     }
 
     if (token.ends_with('%')) {
-        token.deprecated_set_length(token.length() - 1);
+        token = token.substring(0, token.length() - 1);
 
         if (auto percent = token.to_float(); percent.has_value())
             return percent.value() * 0.01;
