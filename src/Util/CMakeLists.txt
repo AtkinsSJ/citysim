@@ -1,6 +1,7 @@
 add_library(Util STATIC
     Alignment.cpp
     BitArray.cpp
+    Blob.cpp
     Interpolate.cpp
     Locale.cpp
     Log.cpp

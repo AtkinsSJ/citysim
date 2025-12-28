@@ -7,6 +7,7 @@
 #pragma once
 
 #include <Util/Basic.h>
+#include <Util/Optional.h>
 
 class Blob {
 public:
@@ -26,6 +27,8 @@ public:
     size_t size() const { return m_size; }
     u8 const* data() const { return m_data; }
     u8* writable_data() { return m_data; }
+
+    Blob sub_blob(size_t start, Optional<size_t> length = {}) const;
 
 private:
     size_t m_size;
