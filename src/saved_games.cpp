@@ -11,6 +11,7 @@
 #include <IO/DirectoryIterator.h>
 #include <IO/DirectoryWatcher.h>
 #include <Settings/Settings.h>
+#include <UI/Toast.h>
 #include <UI/Window.h>
 #include <Util/Orientation.h>
 

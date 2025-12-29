@@ -10,6 +10,7 @@
 #include <Settings/Settings.h>
 #include <Sim/City.h>
 #include <Sim/Terrain.h>
+#include <UI/Toast.h>
 #include <UI/Window.h>
 #include <Util/TokenReader.h>
 

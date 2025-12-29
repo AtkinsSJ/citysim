@@ -45,18 +45,6 @@ struct ScrollbarState {
     s32 mouseWheelStepSize;
 };
 
-float const TOAST_APPEAR_TIME = 0.2f;
-float const TOAST_DISPLAY_TIME = 2.0f;
-float const TOAST_DISAPPEAR_TIME = 0.2f;
-s32 const MAX_TOAST_LENGTH = 1024;
-struct Toast {
-    float duration;
-    float time; // In seconds, from 0 to duration
-
-    String text;
-    char _chars[MAX_TOAST_LENGTH];
-};
-
 typedef void (*WindowProc)(WindowContext*, void*);
 
 struct UIState {
@@ -273,11 +261,6 @@ void putSlider(s32* currentValue, s32 minValue, s32 maxValue, Orientation orient
 
 // TextInputs
 bool putTextInput(TextInput* textInput, Rect2I bounds, TextInputStyle* style = nullptr, RenderBuffer* renderBuffer = nullptr);
-
-// Toasts
-// NB: `message` is copied into the UIState, so it can be a temporary allocation
-void pushToast(StringView message);
-void drawToast();
 
 // Tooltip
 void showTooltip(String text);
