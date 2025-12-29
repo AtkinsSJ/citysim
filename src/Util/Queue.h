@@ -42,7 +42,8 @@ template<typename T>
 struct Queue {
     bool isEmpty() { return count == 0; }
 
-    T* push()
+    template<typename... Args>
+    T& push(Args&&... args)
     {
         if (endChunk == nullptr) {
             // In case we don't yet have a chunk, or we became empty and removed it, add one.
@@ -62,18 +63,11 @@ struct Queue {
             endChunk = newChunk;
         }
 
-        T* result = endChunk->items + endChunk->startIndex + endChunk->count;
+        void* data = endChunk->items + endChunk->startIndex + endChunk->count;
         endChunk->count++;
         count++;
 
-        return result;
-    }
-
-    T* push(T item)
-    {
-        T* result = push();
-        *result = item;
-        return result;
+        return *new (data) T(forward<Args>(args)...);
     }
 
     Optional<T*> peek()

@@ -877,7 +877,7 @@ bool putTextInput(TextInput* textInput, Rect2I bounds, TextInputStyle* style, Re
 
 void pushToast(StringView message)
 {
-    Toast* newToast = uiState.toasts.push();
+    Toast* newToast = &uiState.toasts.push();
 
     *newToast = {};
     // FIXME: StringBuffer
