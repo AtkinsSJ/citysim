@@ -31,6 +31,7 @@ class StringBuilder {
 public:
     explicit StringBuilder(size_t initial_size = 256);
     explicit StringBuilder(Blob buffer);
+    explicit StringBuilder(char* buffer, size_t length);
 
     void append(StringBase const&);
     void append(char);

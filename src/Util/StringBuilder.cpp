@@ -15,8 +15,13 @@ StringBuilder::StringBuilder(size_t initial_size)
 }
 
 StringBuilder::StringBuilder(Blob buffer)
-    : m_capacity(buffer.size())
-    , m_buffer(reinterpret_cast<char*>(buffer.writable_data()))
+    : StringBuilder(reinterpret_cast<char*>(buffer.writable_data()), buffer.size())
+{
+}
+
+StringBuilder::StringBuilder(char* buffer, size_t length)
+    : m_capacity(length)
+    , m_buffer(buffer)
     , m_fixed_buffer(true)
 {
 }
