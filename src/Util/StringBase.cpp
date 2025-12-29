@@ -7,6 +7,7 @@
 #include "StringBase.h"
 #include <Util/Memory.h>
 #include <Util/MemoryArena.h>
+#include <Util/StringBuilder.h>
 #include <Util/StringView.h>
 #include <Util/Unicode.h>
 
@@ -162,11 +163,11 @@ Optional<double> StringBase::to_double() const
 {
     // TODO: Implement this properly!
     // (c runtime functions atof / strtod don't tell you if they failed, they just return 0 which is a valid value!
-    String null_terminated = pushString(&temp_arena(), length() + 1);
-    copyString(m_chars, m_length, &null_terminated);
-    null_terminated.deprecated_editable_characters()[length()] = '\0';
+    StringBuilder builder { length() + 1 };
+    builder.append(*this);
+    builder.append('\0');
 
-    double double_value = atof(null_terminated.raw_pointer_to_characters());
+    double double_value = atof(builder.to_string_view().raw_pointer_to_characters());
     if (double_value == 0.0) {
         // @Hack: 0.0 is returned by atof() if it fails. So, we see if the input really began with a '0' or not.
         // If it didn't, we assume it failed. If it did, we assume it succeeded.
