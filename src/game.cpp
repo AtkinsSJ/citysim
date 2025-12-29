@@ -696,7 +696,7 @@ AppStatus updateAndRenderGame(GameState* gameState, float deltaTime)
                         placeBuildingRect(city, buildingDef, dragResult.dragRect);
                         spend(city, buildCost);
                     } else {
-                        UI::pushToast(getText("msg_cannot_afford_construction"_s));
+                        UI::Toast::show(getText("msg_cannot_afford_construction"_s));
                     }
                 } break;
 
@@ -780,7 +780,7 @@ AppStatus updateAndRenderGame(GameState* gameState, float deltaTime)
                     demolishRect(city, dragResult.dragRect);
                     spend(city, demolishCost);
                 } else {
-                    UI::pushToast(getText("msg_cannot_afford_demolition"_s));
+                    UI::Toast::show(getText("msg_cannot_afford_demolition"_s));
                 }
             } break;
 

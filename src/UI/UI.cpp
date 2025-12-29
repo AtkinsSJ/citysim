@@ -59,7 +59,12 @@ void startFrame()
 
 void endFrame()
 {
-    drawToast();
+    auto current_toast = uiState.toasts.peek();
+    if (current_toast.has_value()) {
+        Toast* toast = current_toast.value();
+        if (toast->update_and_draw(AppState::the().deltaTime))
+            (void)uiState.toasts.pop();
+    }
 
     if (uiState.openDropDownListRenderBuffer != nullptr) {
         // If the buffer is empty, we didn't draw the dropdown this frame, so we should mark it as closed

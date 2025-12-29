@@ -339,7 +339,7 @@ void loadGame(SavedGameInfo* savedGame)
         u32 endTicks = SDL_GetTicks();
         logInfo("Loaded save '{0}' in {1} milliseconds."_s, { savedGame->shortName, formatInt(endTicks - startTicks) });
 
-        UI::pushToast(getText("msg_load_success"_s, { savedGame->shortName }));
+        UI::Toast::show(getText("msg_load_success"_s, { savedGame->shortName }));
 
         app_state.appStatus = AppStatus::Game;
 
@@ -348,7 +348,7 @@ void loadGame(SavedGameInfo* savedGame)
         // Filename is interned so it's safe to copy it
         savedGamesCatalogue.activeSavedGameName = savedGame->shortName;
     } else {
-        UI::pushToast(getText("msg_load_failure"_s, { savedGame->shortName }));
+        UI::Toast::show(getText("msg_load_failure"_s, { savedGame->shortName }));
     }
 }
 
@@ -367,12 +367,12 @@ bool saveGame(String saveName)
     closeFile(&saveFile);
 
     if (saveSucceeded) {
-        UI::pushToast(getText("msg_save_success"_s, { saveFile.path }));
+        UI::Toast::show(getText("msg_save_success"_s, { saveFile.path }));
 
         // Store that we saved it
         savedGamesCatalogue.activeSavedGameName = intern(&catalogue->stringsTable, saveName);
     } else {
-        UI::pushToast(getText("msg_save_failure"_s, { saveFile.path }));
+        UI::Toast::show(getText("msg_save_failure"_s, { saveFile.path }));
     }
 
     return saveSucceeded;
@@ -383,9 +383,9 @@ bool deleteSave(SavedGameInfo* savedGame)
     bool success = deleteFile(savedGame->fullPath);
 
     if (success) {
-        UI::pushToast(getText("msg_delete_save_success"_s, { savedGame->shortName }));
+        UI::Toast::show(getText("msg_delete_save_success"_s, { savedGame->shortName }));
     } else {
-        UI::pushToast(getText("msg_delete_save_failure"_s, { savedGame->shortName }));
+        UI::Toast::show(getText("msg_delete_save_failure"_s, { savedGame->shortName }));
     }
 
     return success;

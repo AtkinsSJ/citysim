@@ -232,7 +232,7 @@ ConsoleCommand(speed)
 
 ConsoleCommand(toast)
 {
-    UI::pushToast(arguments);
+    UI::Toast::show(arguments);
 }
 
 ConsoleCommand(zoom)

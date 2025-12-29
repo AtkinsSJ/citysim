@@ -21,7 +21,7 @@ struct ScrollbarStyle;
 struct SliderStyle;
 struct TextInput;
 struct TextInputStyle;
-struct Toast;
+class Toast;
 struct UIState;
 struct WidgetMouseState;
 struct Window;
