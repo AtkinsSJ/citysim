@@ -21,7 +21,7 @@ StringBuilder::StringBuilder(Blob buffer)
 {
 }
 
-void StringBuilder::append(StringView string)
+void StringBuilder::append(StringBase const& string)
 {
     auto new_length = m_length + string.length();
     if (new_length > m_capacity)
@@ -33,12 +33,12 @@ void StringBuilder::append(StringView string)
 
 void StringBuilder::append(char character)
 {
-    append({ &character, 1 });
+    append(StringView { &character, 1 });
 }
 
 void StringBuilder::append(char const* chars, size_t length)
 {
-    append({ chars, length });
+    append(StringView { chars, length });
 }
 
 void StringBuilder::ensure_capacity(size_t new_capacity)

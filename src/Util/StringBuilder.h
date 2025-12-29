@@ -32,7 +32,7 @@ public:
     explicit StringBuilder(size_t initial_size = 256);
     explicit StringBuilder(Blob buffer);
 
-    void append(StringView);
+    void append(StringBase const&);
     void append(char);
     void append(char const*, size_t length);
 
