@@ -182,46 +182,45 @@ bool createDirectory(String path)
     ASSERT(path.is_null_terminated());
 
 #if OS_LINUX
+    auto attempt_mkdir = [](StringView path) -> bool {
+        logInfo("Attempting to create parent directory: {0}"_s, { path });
+        if (mkdir(path.raw_pointer_to_characters(), S_IRWXU) != 0 && errno != EEXIST) {
+            logError("Unable to create directory `{0}` (errno={1})."_s, { path, formatInt(errno) });
+            return false;
+        }
+        return true;
+    };
+
     if (mkdir(path.raw_pointer_to_characters(), S_IRWXU) != 0) {
-        int result = errno;
-        if (result == EEXIST)
+        auto mkdir_result = errno;
+        if (mkdir_result == EEXIST)
             return true;
 
-        if (result == ENOENT) {
-            // Part of the path doesn't exist, so we have to create it, piece by piece
-            // We do a similar hack to the win32 version: A duplicate path, which we then swap each
-            // `/` with a null byte and then back, to mkdir() one path segment at a time.
-            String sub_path = pushString(&temp_arena(), path);
-            char* pos = sub_path.deprecated_editable_characters();
-            char const* afterEndOfPath = sub_path.raw_pointer_to_characters() + sub_path.length();
+        if (mkdir_result == ENOENT) {
+            // Part of the path doesn't exist, so we have to create it, piece by piece.
+            StringBuilder path_builder;
+            auto previous_separator_index = 0u;
+            while (true) {
+                auto next_separator_index = path.find('/', SearchFrom::Start, previous_separator_index + 1);
 
-            while (pos < afterEndOfPath) {
-                // This double loop is actually intentional, it's just... weird.
-                while (pos < afterEndOfPath) {
-                    if (*pos == '/') {
-                        *pos = '\0';
-                        break;
-                    }
-                    pos++;
-                }
+                // If there's no separator left, try the full path again.
+                if (!next_separator_index.has_value())
+                    return attempt_mkdir(path);
 
-                logInfo("Attempting to create directory: {0}"_s, { sub_path });
+                // Otherwise, try creating the next segment.
+                path_builder.append(path.substring(previous_separator_index, next_separator_index.value() - previous_separator_index));
+                previous_separator_index = next_separator_index.value();
+                path_builder.append('\0');
 
-                // Create the path
-                if (mkdir(sub_path.raw_pointer_to_characters(), S_IRWXU) != EEXIST) {
-                    logError("Unable to create directory `{0}` - failed to create `{1}`."_s, { path, sub_path });
+                auto sub_path = path_builder.to_string_view();
+                if (!attempt_mkdir(sub_path))
                     return false;
-                }
-
-                *pos = '/';
-                pos++;
+                path_builder.remove(1); // The null terminator.
             }
-
-            return true;
         }
     }
 
-    return false;
+    return true;
 #elif OS_WINDOWS
     bool succeeded = true;
 
