@@ -59,7 +59,7 @@ struct Panel {
     void enableVerticalScrolling(ScrollbarState* vScrollbar, bool expandWidth = false);
 
     // Add stuff to the panel
-    bool addTextButton(String text, ButtonState state = ButtonState::Normal, String styleName = nullString);
+    bool addTextButton(StringView text, ButtonState state = ButtonState::Normal, String styleName = nullString);
     bool addImageButton(Sprite* sprite, ButtonState state = ButtonState::Normal, String styleName = nullString);
 
     void addCheckbox(bool* checked, String styleName = nullString);
@@ -84,7 +84,7 @@ struct Panel {
         completeWidget(widgetBounds.size());
     }
 
-    void addLabel(String text, String styleName = nullString);
+    void addLabel(StringView text, String styleName = nullString);
 
     void addRadioButton(s32* currentValue, s32 myValue, String styleName = nullString);
 

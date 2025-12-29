@@ -59,7 +59,7 @@ void Panel::enableVerticalScrolling(ScrollbarState* scrollbarState, bool expandW
     }
 }
 
-bool Panel::addTextButton(String text, ButtonState state, String styleName)
+bool Panel::addTextButton(StringView text, ButtonState state, String styleName)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
@@ -125,7 +125,7 @@ void Panel::addCheckbox(bool* checked, String styleName)
     completeWidget(widgetBounds.size());
 }
 
-void Panel::addLabel(String text, String styleName)
+void Panel::addLabel(StringView text, String styleName)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
