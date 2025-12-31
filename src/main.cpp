@@ -28,13 +28,13 @@
 #endif
 
 #include "AppState.h"
-#include "credits.h"
-#include "game_mainmenu.h"
 #include "input.h"
 #include "saved_games.h"
 #include <Assets/AssetManager.h>
 #include <Debug/Console.h>
 #include <Gfx/Renderer.h>
+#include <Menus/Credits.h>
+#include <Menus/MainMenu.h>
 #include <Settings/Settings.h>
 #include <Sim/BuildingCatalogue.h>
 #include <Sim/TerrainCatalogue.h>

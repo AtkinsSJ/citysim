@@ -6,7 +6,7 @@
 
 #include "game.h"
 #include "AppState.h"
-#include "about.h"
+#include "Menus/About.h"
 #include "input.h"
 #include "saved_games.h"
 #include <Assets/AssetManager.h>

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "credits.h"
+#include "Credits.h"
 #include <Assets/AssetManager.h>
 #include <IO/LineReader.h>
 #include <UI/UI.h>

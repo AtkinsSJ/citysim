@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "about.h"
+#include "About.h"
 #include <UI/Window.h>
 #include <Util/Platform.h>
 #include <Util/Vector.h>

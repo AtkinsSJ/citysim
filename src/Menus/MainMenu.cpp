@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "game_mainmenu.h"
-#include "about.h"
+#include "MainMenu.h"
 #include "game.h"
 #include "saved_games.h"
 #include <Debug/Debug.h>
 #include <Gfx/Renderer.h>
+#include <Menus/About.h>
 #include <Settings/Settings.h>
 #include <UI/Panel.h>
 

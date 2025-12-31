@@ -7,6 +7,5 @@
 #pragma once
 
 #include "AppStatus.h"
-#include <Util/Basic.h>
 
-AppStatus updateAndRenderMainMenu(float deltaTime);
+AppStatus updateAndRenderCredits(float deltaTime);
