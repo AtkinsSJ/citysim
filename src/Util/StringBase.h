@@ -59,6 +59,8 @@ protected:
     {
     }
 
+    char* mutable_chars() { return const_cast<char*>(m_chars); }
+
     char const* m_chars;
     size_t m_length;
 };

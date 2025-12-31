@@ -16,6 +16,7 @@ add_library(Util STATIC
     Splat.cpp
     String.cpp
     StringBase.cpp
+    StringBuffer.cpp
     StringBuilder.cpp
     StringTable.cpp
     StringView.cpp
