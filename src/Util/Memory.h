@@ -22,13 +22,19 @@ u8* allocateRaw(smm size);
 void deallocateRaw(void* memory);
 
 template<typename T>
-void copyMemory(T const* source, T* dest, smm length)
+void copy_memory(T const* source, T* dest, size_t length)
 {
     memcpy(dest, source, length * sizeof(T));
 }
 
 template<typename T>
-void fillMemory(T* memory, T value, smm length)
+void copyMemory(T const* source, T* dest, smm length)
+{
+    return copy_memory(source, dest, length);
+}
+
+template<typename T>
+void fill_memory(T* memory, T const& value, size_t length)
 {
     T* currentElement = memory;
     smm remainingBytes = length * sizeof(T);
@@ -43,6 +49,12 @@ void fillMemory(T* memory, T value, smm length)
         remainingBytes -= toCopy;
         currentElement++;
     }
+}
+
+template<typename T>
+void fillMemory(T* memory, T value, smm length)
+{
+    return fill_memory(memory, value, length);
 }
 
 template<>
