@@ -6,6 +6,7 @@
 
 #include "Settings.h"
 #include <Assets/AssetManager.h>
+#include <IO/Paths.h>
 #include <SDL2/SDL_filesystem.h>
 #include <UI/Window.h>
 #include <Util/StringBuilder.h>
@@ -20,8 +21,6 @@ Settings& Settings::the()
 void Settings::initialize()
 {
     s_settings = MemoryArena::bootstrap<Settings>("Settings"_s);
-    s_settings->userDataPath = String::from_null_terminated(SDL_GetPrefPath("Baffled Badger Games", "CitySim"));
-    s_settings->userSettingsFilename = "settings.cnf"_s;
     s_settings->settings = s_settings->arena.allocate<SettingsState>(s_settings->arena);
     s_settings->workingState = s_settings->arena.allocate<SettingsState>(s_settings->arena);
     initChunkedArray(&s_settings->m_listeners, &s_settings->arena, 32);
@@ -30,22 +29,12 @@ void Settings::initialize()
     s_settings->load();
 }
 
-String getUserDataPath()
-{
-    return s_settings->userDataPath;
-}
-
-String getUserSettingsPath()
-{
-    return myprintf("{0}{1}"_s, { s_settings->userDataPath, s_settings->userSettingsFilename }, true);
-}
-
 void Settings::load()
 {
     arena.reset();
     settings->restore_default_values();
 
-    File userSettingsFile = readFile(&temp_arena(), getUserSettingsPath());
+    File userSettingsFile = readFile(&temp_arena(), Paths::user_settings_file());
     // User settings might not exist
     if (userSettingsFile.isLoaded) {
         settings->load_from_file(userSettingsFile.name, userSettingsFile.data);
@@ -69,7 +58,7 @@ void Settings::apply()
 
 bool Settings::save()
 {
-    return settings->save_to_file(getUserSettingsPath());
+    return settings->save_to_file(Paths::user_settings_file());
 }
 
 void Settings::register_listener(SettingsChangeListener& listener)

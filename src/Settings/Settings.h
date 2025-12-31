@@ -23,9 +23,6 @@ public:
 
     MemoryArena arena;
 
-    String userDataPath;
-    String userSettingsFilename;
-
     // FIXME: These are only pointers because of arena bootstrapping.
     SettingsState* settings;
     // FIXME: Replace this with storage in the settings window
@@ -50,6 +47,3 @@ Locale get_locale();
 // Menu
 void showSettingsWindow();
 void settingsWindowProc(UI::WindowContext*, void*);
-
-String getUserDataPath();
-String getUserSettingsPath();

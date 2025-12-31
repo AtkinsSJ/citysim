@@ -8,6 +8,7 @@
 #include "AppState.h"
 #include <IO/DirectoryIterator.h>
 #include <IO/DirectoryWatcher.h>
+#include <IO/Paths.h>
 #include <IO/SaveFile.h>
 #include <Input/Input.h>
 #include <Settings/Settings.h>
@@ -23,7 +24,7 @@ void initSavedGamesCatalogue()
 
     catalogue->savedGamesArena = { "SavedGames"_s };
 
-    catalogue->savedGamesPath = intern(&catalogue->stringsTable, constructPath({ getUserDataPath(), "saves"_s }));
+    catalogue->savedGamesPath = intern(&catalogue->stringsTable, constructPath({ Paths::user_data(), "saves"_s }));
     createDirectory(catalogue->savedGamesPath);
     auto saved_games_watcher = DirectoryWatcher::watch(catalogue->savedGamesPath);
     if (saved_games_watcher.is_error()) {
