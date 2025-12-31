@@ -82,33 +82,37 @@ void updateAndRenderConsole(Console* console)
     bool scrollToBottom = false;
     auto& renderer = the_renderer();
 
-    // Keyboard shortcuts for commands
-    for (auto it = console->commandShortcuts.iterate();
-        it.hasNext();
-        it.next()) {
-        CommandShortcut* shortcut = it.get();
+    if (!isInputCaptured()) {
+        // Keyboard shortcuts for commands
+        for (auto it = console->commandShortcuts.iterate();
+            it.hasNext();
+            it.next()) {
+            CommandShortcut* shortcut = it.get();
 
-        if (wasShortcutJustPressed(shortcut->shortcut)) {
-            consoleHandleCommand(console, shortcut->command);
-            scrollToBottom = true;
+            if (wasShortcutJustPressed(shortcut->shortcut)) {
+                consoleHandleCommand(console, shortcut->command);
+                scrollToBottom = true;
+            }
         }
     }
 
-    // Show/hide the console
-    if (keyJustPressed(SDLK_BACKQUOTE)) {
-        if (modifierKeyIsPressed(ModifierKey::Ctrl)) {
-            if (console->targetHeight == console->maximisedHeight) {
-                console->targetHeight = console->openHeight;
-            } else {
-                console->targetHeight = console->maximisedHeight;
-            }
-            scrollToBottom = true;
-        } else {
-            if (console->targetHeight > 0) {
-                console->targetHeight = 0;
-            } else {
-                console->targetHeight = console->openHeight;
+    if (!isInputCaptured() || hasCapturedInput(&console->input)) {
+        // Show/hide the console
+        if (keyJustPressed(SDLK_BACKQUOTE)) {
+            if (modifierKeyIsPressed(ModifierKey::Ctrl)) {
+                if (console->targetHeight == console->maximisedHeight) {
+                    console->targetHeight = console->openHeight;
+                } else {
+                    console->targetHeight = console->maximisedHeight;
+                }
                 scrollToBottom = true;
+            } else {
+                if (console->targetHeight > 0) {
+                    console->targetHeight = 0;
+                } else {
+                    console->targetHeight = console->openHeight;
+                    scrollToBottom = true;
+                }
             }
         }
     }
