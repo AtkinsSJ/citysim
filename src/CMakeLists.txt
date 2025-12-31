@@ -2,7 +2,6 @@ target_sources(CitySim PRIVATE
     AppState.cpp
     input.cpp
     main.cpp
-    save_file.cpp
     saved_games.cpp
 )
 

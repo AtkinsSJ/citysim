@@ -6,5 +6,6 @@ target_sources(CitySim PRIVATE
     DirectoryWatcher.cpp
     File.cpp
     LineReader.cpp
+    SaveFile.cpp
     WriteBuffer.cpp
 )

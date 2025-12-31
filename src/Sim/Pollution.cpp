@@ -5,10 +5,10 @@
  */
 
 #include "Pollution.h"
-#include "../save_file.h"
 #include <IO/BinaryFile.h>
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
+#include <IO/SaveFile.h>
 #include <Sim/Building.h>
 #include <Sim/City.h>
 #include <Sim/Effect.h>

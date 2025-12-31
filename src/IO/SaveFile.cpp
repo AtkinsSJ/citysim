@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "save_file.h"
+#include "SaveFile.h"
 #include <Gfx/Renderer.h>
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>

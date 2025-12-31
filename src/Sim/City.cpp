@@ -6,11 +6,11 @@
 
 #include "City.h"
 #include "../AppState.h"
-#include "../save_file.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/Renderer.h>
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
+#include <IO/SaveFile.h>
 #include <IO/WriteBuffer.h>
 #include <Sim/BuildingCatalogue.h>
 #include <Sim/TerrainCatalogue.h>
