@@ -6,7 +6,7 @@
 
 #pragma once
 
-struct BitmapFont;
+class BitmapFont;
 struct BitmapFontGlyph;
 class Camera;
 class Colour;

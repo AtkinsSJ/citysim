@@ -28,7 +28,6 @@ inline ButtonState buttonIsActive(bool isActive)
     return isActive ? ButtonState::Active : ButtonState::Normal;
 }
 
-struct BitmapFont;
 struct Sprite;
 
 namespace UI {

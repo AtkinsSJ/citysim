@@ -5,9 +5,9 @@
  */
 
 #include "AppState.h"
-#include <Gfx/BitmapFont.h>
 #include "input.h"
 #include <Assets/AssetManager.h>
+#include <Gfx/BitmapFont.h>
 #include <Gfx/Renderer.h>
 #include <UI/Drawable.h>
 #include <UI/TextInput.h>
@@ -357,7 +357,7 @@ V2I calculateTextInputSize(TextInput* textInput, TextInputStyle* style, s32 maxW
     s32 textMaxWidth = (maxWidth == 0) ? 0 : (maxWidth - (style->padding.left + style->padding.right));
 
     BitmapFont* font = getFont(style->font);
-    V2I textSize = calculateTextSize(font, textInput->text(), textMaxWidth);
+    V2I textSize = font->calculate_text_size(textInput->text(), textMaxWidth);
 
     s32 resultWidth = 0;
 
@@ -392,7 +392,7 @@ Rect2I drawTextInput(RenderBuffer* renderBuffer, TextInput* textInput, TextInput
     textInput->caretFlashCounter = fmod(textInput->caretFlashCounter + AppState::the().deltaTime, style->caretFlashCycleDuration);
 
     if (showCaret) {
-        Rect2 caretRect { textBounds.x(), textBounds.y(), 2, font->lineHeight };
+        Rect2 caretRect { textBounds.x(), textBounds.y(), 2, font->line_height() };
 
         if (textInput->caret.glyphPos != 0 && drawTextResult.isValid) {
             // Draw it to the right of the glyph

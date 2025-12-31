@@ -204,7 +204,7 @@ void debugTextOut(DebugTextState* textState, String text, bool doHighlight = fal
     textState->charsLastPrinted = text.length();
     Colour textColor = (color != nullptr) ? *color : textState->color;
 
-    V2I textSize = calculateTextSize(textState->font, text, textState->maxWidth);
+    V2I textSize = textState->font->calculate_text_size(text, textState->maxWidth);
     V2I topLeft = calculateTextPosition(textState->pos, textSize, align);
 
     Rect2I bounds { topLeft, textSize };

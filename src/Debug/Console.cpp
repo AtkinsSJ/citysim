@@ -213,7 +213,7 @@ void updateAndRenderConsole(Console* console)
         // Scrollbar
         Rect2I scrollbarBounds = getConsoleScrollbarBounds(console);
         if (scrollbarBounds.has_positive_area()) {
-            s32 fontLineHeight = getFont(consoleStyle->font)->lineHeight;
+            s32 fontLineHeight = getFont(consoleStyle->font)->line_height();
             s32 contentHeight = ((console->outputLines.count - 1) * fontLineHeight) + scrollbarBounds.height();
             if (scrollToBottom) {
                 console->scrollbar.scrollPercent = 1.0f;
@@ -236,7 +236,7 @@ void updateAndRenderConsole(Console* console)
             ConsoleOutputLine* line = it.get();
             auto outputTextColor = consoleStyle->outputTextColors[line->style];
 
-            V2I textSize = calculateTextSize(consoleFont, line->text, textMaxWidth);
+            V2I textSize = consoleFont->calculate_text_size(line->text, textMaxWidth);
             Rect2I textBounds = Rect2I::create_aligned(textPos, textSize, outputLinesAlign);
             drawText(renderBuffer, consoleFont, line->text, textBounds, outputLinesAlign, outputTextColor, renderer.shaderIds.text);
             textPos.y -= (textSize.y + consoleStyle->contentPadding);

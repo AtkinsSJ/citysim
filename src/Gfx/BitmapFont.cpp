@@ -10,66 +10,55 @@
 #include <Util/Log.h>
 #include <Util/Unicode.h>
 
-BitmapFontGlyphEntry* findGlyphInternal(BitmapFont* font, unichar targetChar)
+BitmapFontGlyphEntry* BitmapFont::find_glyph_entry(unichar target_char) const
 {
-    BitmapFontGlyphEntry* result = nullptr;
-
     // Protect against div-0 error if this is the empty placeholder font
-    if (font->glyphCapacity > 0) {
-        u32 index = targetChar % font->glyphCapacity;
+    if (m_glyph_capacity > 0) {
+        u32 index = target_char % m_glyph_capacity;
 
         while (true) {
-            BitmapFontGlyphEntry* entry = font->glyphEntries + index;
-            if (entry->codepoint == targetChar || !entry->isOccupied) {
-                result = entry;
-                break;
-            }
+            BitmapFontGlyphEntry* entry = m_glyph_entries + index;
+            if (entry->codepoint == target_char || !entry->isOccupied)
+                return entry;
 
-            index = (index + 1) % font->glyphCapacity;
+            index = (index + 1) % m_glyph_capacity;
         }
     }
 
-    return result;
+    return nullptr;
 }
 
-BitmapFontGlyph* addGlyph(BitmapFont* font, unichar targetChar)
+void BitmapFont::add_glyph(BitmapFontGlyph&& glyph)
 {
-    BitmapFontGlyphEntry* result = findGlyphInternal(font, targetChar);
+    BitmapFontGlyphEntry* result = find_glyph_entry(glyph.codepoint);
 
     ASSERT(result != nullptr); //, "Failed to add a glyph to font '{0}'!", {font->name});
-    result->codepoint = targetChar;
+    result->codepoint = glyph.codepoint;
     ASSERT(result->isOccupied == false); //, "Attempted to add glyph '{0}' to font '{1}' twice!", {formatInt(targetChar), font->name});
     result->isOccupied = true;
+    result->glyph = glyph;
 
-    font->glyphCount++;
-
-    return &result->glyph;
+    m_glyph_count++;
 }
 
-BitmapFontGlyph* findGlyph(BitmapFont* font, unichar targetChar)
+BitmapFontGlyph* BitmapFont::find_glyph(unichar target_char) const
 {
-    BitmapFontGlyph* result = nullptr;
-    BitmapFontGlyphEntry* entry = findGlyphInternal(font, targetChar);
+    if (auto* entry = find_glyph_entry(target_char))
+        return &entry->glyph;
 
-    if (entry == nullptr) {
-        logWarn("Failed to find char 0x{0} in font."_s, { formatInt(targetChar, 16) });
-    } else {
-        result = &entry->glyph;
-    }
-
-    return result;
+    logWarn("Failed to find char 0x{0} in font."_s, { formatInt(target_char, 16) });
+    return nullptr;
 }
 
-V2I calculateTextSize(BitmapFont* font, StringView text, s32 maxWidth)
+V2I BitmapFont::calculate_text_size(StringView text, s32 max_width) const
 {
     DEBUG_FUNCTION();
 
-    ASSERT(font != nullptr); // Font must be provided!
-    ASSERT(maxWidth >= 0);
+    ASSERT(max_width >= 0);
 
-    V2I result = v2i(maxWidth, font->lineHeight);
+    V2I result = v2i(max_width, m_line_height);
 
-    bool doWrap = (maxWidth > 0);
+    bool doWrap = (max_width > 0);
     s32 currentX = 0;
     s32 currentWordWidth = 0;
     s32 whitespaceWidthBeforeCurrentWord = 0;
@@ -117,7 +106,7 @@ V2I calculateTextSize(BitmapFont* font, StringView text, s32 maxWidth)
 
             do {
                 if (c != prevC) {
-                    glyph = findGlyph(font, c);
+                    glyph = find_glyph(c);
                     prevC = c;
                 }
 
@@ -132,9 +121,9 @@ V2I calculateTextSize(BitmapFont* font, StringView text, s32 maxWidth)
 
             continue;
         } else {
-            BitmapFontGlyph* glyph = findGlyph(font, c);
+            BitmapFontGlyph* glyph = find_glyph(c);
             if (glyph) {
-                if (doWrap && ((currentX + glyph->xAdvance) > maxWidth)) {
+                if (doWrap && ((currentX + glyph->xAdvance) > max_width)) {
                     // In case this word is the only one on the line, AND is longer than
                     // the max width, we add currentWordWidth to the max() equation below!
                     // Before I added this, it got super weird.
@@ -144,7 +133,7 @@ V2I calculateTextSize(BitmapFont* font, StringView text, s32 maxWidth)
 
                     lineCount++;
 
-                    if ((currentWordWidth + glyph->xAdvance) > maxWidth) {
+                    if ((currentWordWidth + glyph->xAdvance) > max_width) {
                         // The current word is longer than will fit on an entire line!
                         // So, split it at the maximum line length.
 
@@ -171,24 +160,24 @@ V2I calculateTextSize(BitmapFont* font, StringView text, s32 maxWidth)
         }
     }
 
-    // NB: Trailing whitespace can take currentX beyond maxWidth, because we don't adjust
-    // the line width after whitespace. So, I'm clamping currentX to maxWidth to make sure
+    // NB: Trailing whitespace can take currentX beyond max_width, because we don't adjust
+    // the line width after whitespace. So, I'm clamping currentX to max_width to make sure
     // we don't erroneously return a size that includes the out-of-bounds whitespace.
     // Maybe we should just wrap it, but I think wrapping whitespace isn't generally what
     // you want - it's better to just start the new line with the next printable character.
     // - Sam, 15/01/2020
-    result.x = max(longestLineWidth, doWrap ? min(currentX, maxWidth) : currentX);
-    result.y = (font->lineHeight * lineCount);
+    result.x = max(longestLineWidth, doWrap ? min(currentX, max_width) : currentX);
+    result.y = (m_line_height * lineCount);
 
-    ASSERT(maxWidth == 0 || maxWidth >= result.x); // Somehow we measured text that's too wide!
+    ASSERT(max_width == 0 || max_width >= result.x); // Somehow we measured text that's too wide!
     return result;
 }
 
-s32 calculateMaxTextWidth(BitmapFont* font, std::initializer_list<StringView> texts, s32 limit)
+s32 BitmapFont::calculate_max_text_width(std::initializer_list<StringView> texts, s32 limit) const
 {
     s32 result = 0;
     for (auto const& text : texts)
-        result = max(result, calculateTextSize(font, text, limit).x);
+        result = max(result, calculate_text_size(text, limit).x);
     return result;
 }
 
@@ -301,7 +290,7 @@ void drawText(RenderBuffer* renderBuffer, BitmapFont* font, StringView text, Rec
                         caretInfoResult->caretPosition = bounds.position() + v2i(currentX, currentY);
                     }
 
-                    currentY += font->lineHeight;
+                    currentY += font->line_height();
                 }
 
                 prevWasCR = (c == '\r');
@@ -317,7 +306,7 @@ void drawText(RenderBuffer* renderBuffer, BitmapFont* font, StringView text, Rec
 
             do {
                 if (c != prevC) {
-                    glyph = findGlyph(font, c);
+                    glyph = font->find_glyph(c);
                     prevC = c;
                 }
 
@@ -340,14 +329,14 @@ void drawText(RenderBuffer* renderBuffer, BitmapFont* font, StringView text, Rec
 
             do {
                 if (c != prevC) {
-                    glyph = findGlyph(font, c);
+                    glyph = font->find_glyph(c);
                     prevC = c;
                 }
 
                 if (glyph) {
                     if (doWrap && ((currentX + glyph->xAdvance) > maxWidth)) {
                         currentX = 0;
-                        currentY += font->lineHeight;
+                        currentY += font->line_height();
 
                         if (currentWordWidth + glyph->xAdvance > maxWidth) {
                             // The current word is longer than will fit on an entire line!
@@ -362,7 +351,7 @@ void drawText(RenderBuffer* renderBuffer, BitmapFont* font, StringView text, Rec
 
                             // Offset from where the word was, to its new position
                             float offsetX = (float)-(currentLineWidth + whitespaceWidthBeforeCurrentWord);
-                            float offsetY = (float)font->lineHeight;
+                            float offsetY = (float)font->line_height();
                             offsetRange(group, startOfCurrentWord, glyphCount - 1, offsetX, offsetY);
 
                             // Set the current position to where the next word will start

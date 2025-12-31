@@ -216,9 +216,9 @@ V2I calculateButtonSize(StringView text, ButtonStyle* style, s32 maxWidth, bool 
         DEBUG_BREAK();
 
         result.x = maxWidth;
-        result.y = font->lineHeight;
+        result.y = font->line_height();
     } else {
-        V2I textSize = calculateTextSize(font, text, textMaxWidth);
+        V2I textSize = font->calculate_text_size(text, textMaxWidth);
 
         s32 resultWidth = 0;
 
@@ -442,7 +442,7 @@ V2I calculateLabelSize(StringView text, LabelStyle* style, s32 maxWidth, bool fi
 
     s32 maxTextWidth = maxWidth - (style->padding.left + style->padding.right);
 
-    V2I textSize = calculateTextSize(getFont(style->font), text, maxTextWidth);
+    V2I textSize = getFont(style->font)->calculate_text_size(text, maxTextWidth);
 
     // Add padding
     V2I result = v2i(

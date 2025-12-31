@@ -406,7 +406,7 @@ void updateAndRenderGameUI(GameState* gameState)
         clockBounds = { right - clockWidth, uiPadding, clockWidth, toolbarHeight };
 
         String dateString = formatDateTime(clock->cosmeticDate, DateTimeFormat::ShortDate);
-        V2I dateStringSize = calculateTextSize(font, dateString, clockWidth);
+        V2I dateStringSize = font->calculate_text_size(dateString, clockWidth);
 
         // Draw a progress bar for the current day
         Rect2I dateRect { right - clockWidth, uiPadding, clockWidth, dateStringSize.y };
@@ -1162,7 +1162,7 @@ void drawDataViewUI(GameState* gameState)
 
         DataViewUI* dataView = &gameState->dataViewUI[gameState->dataLayerToDraw];
 
-        s32 paletteBlockSize = font->lineHeight;
+        s32 paletteBlockSize = font->line_height();
 
         UI::Panel ui = UI::Panel(Rect2I::create_aligned(uiPos.x, uiPos.y, 300, 1000, { HAlign::Left, VAlign::Bottom }), nullptr, UI::PanelFlags::LayoutBottomToTop);
         {

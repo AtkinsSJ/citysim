@@ -70,41 +70,40 @@ void loadBMFont(Blob data, Asset* asset)
             logError("BMFont file '{0}' defines a font with {1} texture pages, but we require only 1."_s, { asset->fullName, formatInt(common->pageCount) });
         } else {
             BitmapFont* font = &asset->bitmapFont;
-            font->lineHeight = common->lineHeight;
-            font->baseY = common->base;
-            font->glyphCount = 0;
+            font->m_line_height = common->lineHeight;
+            font->m_base_y = common->base;
+            font->m_glyph_count = 0;
 
-            font->glyphCapacity = ceil_s32(charCount * 2.0f);
-            smm glyphEntryMemorySize = font->glyphCapacity * sizeof(BitmapFontGlyphEntry);
+            font->m_glyph_capacity = ceil_s32(charCount * 2.0f);
+            smm glyphEntryMemorySize = font->m_glyph_capacity * sizeof(BitmapFontGlyphEntry);
             asset->data = assetsAllocate(&asset_manager(), glyphEntryMemorySize);
-            font->glyphEntries = (BitmapFontGlyphEntry*)(asset->data.data());
+            font->m_glyph_entries = (BitmapFontGlyphEntry*)(asset->data.data());
 
             String textureName = String::from_null_terminated((char*)pages);
-            font->texture = addTexture(textureName, false);
-            ensureAssetIsLoaded(font->texture);
+            font->m_texture = addTexture(textureName, false);
+            ensureAssetIsLoaded(font->m_texture);
 
-            float textureWidth = (float)font->texture->texture.surface->w;
-            float textureHeight = (float)font->texture->texture.surface->h;
+            float textureWidth = (float)font->m_texture->texture.surface->w;
+            float textureHeight = (float)font->m_texture->texture.surface->h;
 
             for (u32 charIndex = 0;
                 charIndex < charCount;
                 charIndex++) {
                 BMFont_Char* src = chars + charIndex;
 
-                BitmapFontGlyph* dest = addGlyph(font, src->id);
-
-                dest->codepoint = src->id;
-                dest->width = src->w;
-                dest->height = src->h;
-                dest->xOffset = src->xOffset;
-                dest->yOffset = src->yOffset;
-                dest->xAdvance = src->xAdvance;
-                dest->uv = {
-                    src->x / textureWidth,
-                    src->y / textureHeight,
-                    src->w / textureWidth,
-                    src->h / textureHeight
-                };
+                font->add_glyph(BitmapFontGlyph {
+                    .codepoint = static_cast<unichar>(src->id),
+                    .width = src->w,
+                    .height = src->h,
+                    .xOffset = src->xOffset,
+                    .yOffset = src->yOffset,
+                    .xAdvance = src->xAdvance,
+                    .uv = {
+                        src->x / textureWidth,
+                        src->y / textureHeight,
+                        src->w / textureWidth,
+                        src->h / textureHeight },
+                });
             }
         }
     }

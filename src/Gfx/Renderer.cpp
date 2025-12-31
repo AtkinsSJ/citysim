@@ -621,7 +621,7 @@ DrawRectsGroup* beginRectsGroupUntextured(RenderBuffer* buffer, s8 shaderID, s32
 
 DrawRectsGroup* beginRectsGroupForText(RenderBuffer* buffer, BitmapFont* font, s8 shaderID, s32 maxCount)
 {
-    return beginRectsGroupInternal(buffer, font->texture, shaderID, maxCount);
+    return beginRectsGroupInternal(buffer, font->texture(), shaderID, maxCount);
 }
 
 DrawRectsSubGroup beginRectsSubGroup(DrawRectsGroup* group)

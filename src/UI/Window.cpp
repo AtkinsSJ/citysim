@@ -307,7 +307,7 @@ void updateAndRenderWindows()
                 && (!isMouseInputHandled() || windowIndex == 0)) {
                 drawSingleRect(window->renderBuffer, closeButtonRect, renderer.shaderIds.untextured, closeButtonColorHover);
             }
-            V2I closeTextSize = calculateTextSize(titleFont, closeButtonString);
+            V2I closeTextSize = titleFont->calculate_text_size(closeButtonString);
             Rect2I closeTextBounds = Rect2I::create_aligned(v2i(closeButtonRect.centre()), closeTextSize, Alignment::centre());
             drawText(window->renderBuffer, titleFont, closeButtonString, closeTextBounds, Alignment::centre(), titleStyle->textColor, renderer.shaderIds.text);
 
