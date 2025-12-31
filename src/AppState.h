@@ -7,7 +7,7 @@
 #pragma once
 
 #include "AppStatus.h"
-#include "game.h"
+#include <Sim/Game.h>
 #include <Util/MemoryArena.h>
 #include <Util/Random.h>
 

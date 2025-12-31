@@ -5,12 +5,12 @@
  */
 
 #include "MainMenu.h"
-#include "game.h"
 #include "saved_games.h"
 #include <Debug/Debug.h>
 #include <Gfx/Renderer.h>
 #include <Menus/About.h>
 #include <Settings/Settings.h>
+#include <Sim/Game.h>
 #include <UI/Panel.h>
 
 AppStatus updateAndRenderMainMenu(float /*deltaTime*/)

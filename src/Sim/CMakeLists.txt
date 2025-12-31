@@ -8,6 +8,7 @@ target_sources(CitySim PRIVATE
     Education.cpp
     Effect.cpp
     Fire.cpp
+    Game.cpp
     GameClock.cpp
     Health.cpp
     LandValue.cpp

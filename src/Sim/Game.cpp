@@ -4,13 +4,13 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "game.h"
+#include "Game.h"
 #include "AppState.h"
-#include "Menus/About.h"
 #include "input.h"
 #include "saved_games.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/Renderer.h>
+#include <Menus/About.h>
 #include <Settings/Settings.h>
 #include <Sim/BuildingCatalogue.h>
 #include <Sim/City.h>

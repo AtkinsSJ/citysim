@@ -5,11 +5,11 @@
  */
 
 #include "save_file.h"
-#include "game.h"
 #include <Gfx/Renderer.h>
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
 #include <Sim/City.h>
+#include <Sim/Game.h>
 #include <Sim/Terrain.h>
 #include <Sim/Zone.h>
 
