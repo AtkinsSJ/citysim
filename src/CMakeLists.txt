@@ -2,7 +2,6 @@ target_sources(CitySim PRIVATE
     AppState.cpp
     input.cpp
     main.cpp
-    saved_games.cpp
 )
 
 add_subdirectory("Assets")

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "saved_games.h"
+#include "SavedGames.h"
 #include "AppState.h"
 #include "input.h"
 #include <IO/DirectoryIterator.h>
