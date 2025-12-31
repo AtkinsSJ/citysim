@@ -132,6 +132,8 @@ public:
         return makeArray2<T>(w, h, allocate_multiple<T>(w * h));
     }
 
+    String allocate_string(StringView input);
+
 private:
     bool allocate_block(size_t size);
     void free_current_block();

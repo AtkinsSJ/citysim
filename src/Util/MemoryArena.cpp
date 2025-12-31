@@ -127,6 +127,13 @@ Blob MemoryArena::allocate_blob(size_t size)
     return Blob { size, static_cast<u8*>(allocate_internal(size)) };
 }
 
+String MemoryArena::allocate_string(StringView input)
+{
+    auto character_data = allocate_multiple<char>(input.length());
+    copy_memory(input.raw_pointer_to_characters(), character_data, input.length());
+    return String { character_data, input.length() };
+}
+
 bool MemoryArena::allocate_block(size_t size)
 {
     size_t totalSize = size + sizeof(MemoryBlock);
