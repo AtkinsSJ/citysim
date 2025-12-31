@@ -45,9 +45,9 @@ void RenderBuffer::take_from(RenderBuffer& other)
     other.clear_for_pool(); // Make sure things are reset
 }
 
-void RenderBuffer::initialize_from_pool(MemoryArena& arena, String name, Pool<RenderBufferChunk>* chunk_pool)
+void RenderBuffer::initialize_from_pool(MemoryArena& arena, StringView source_name, Pool<RenderBufferChunk>* chunk_pool)
 {
-    this->name = arena.allocate_string(name);
+    this->name = arena.allocate_string(source_name);
     this->name.hash();
 
     this->hasRangeReserved = false;

@@ -35,7 +35,7 @@ struct RenderBuffer final : public Poolable<RenderBuffer> {
     void take_from(RenderBuffer& other);
 
     // Poolable
-    void initialize_from_pool(MemoryArena&, String name, Pool<RenderBufferChunk>*);
+    void initialize_from_pool(MemoryArena&, StringView source_name, Pool<RenderBufferChunk>*);
     virtual void clear_for_pool() override;
 
     String name;
