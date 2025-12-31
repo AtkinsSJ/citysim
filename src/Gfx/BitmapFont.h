@@ -32,6 +32,8 @@ struct BitmapFontGlyphEntry {
 
 class BitmapFont {
 public:
+    static bool load_from_bmf_data(Blob data, Asset& asset);
+
     void add_glyph(BitmapFontGlyph&&);
     BitmapFontGlyph* find_glyph(unichar target_char) const;
 
@@ -41,19 +43,19 @@ public:
     u16 line_height() const { return m_line_height; }
     Asset* texture() const { return m_texture; }
 
-    // FIXME: Should be private, but we poke at them in loadBMFont() which is a free function
-    u16 m_line_height;
-    u16 m_base_y;
-
-    // Hash-table style thing
-    u32 m_glyph_count;
-    u32 m_glyph_capacity;
-    BitmapFontGlyphEntry* m_glyph_entries;
-
-    Asset* m_texture;
-
 private:
     BitmapFontGlyphEntry* find_glyph_entry(unichar target_char) const;
+
+    // FIXME: Should be private, but we poke at them in loadBMFont() which is a free function
+    u16 m_line_height {};
+    u16 m_base_y {};
+
+    // Hash-table style thing
+    u32 m_glyph_count {};
+    u32 m_glyph_capacity {};
+    BitmapFontGlyphEntry* m_glyph_entries {};
+
+    Asset* m_texture {};
 };
 
 struct DrawTextResult {

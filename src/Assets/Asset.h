@@ -114,6 +114,7 @@ struct Asset {
     enum class State : u8 {
         Unloaded,
         Loaded,
+        Error,
     };
     State state { State::Unloaded };
     Optional<Locale> locale;

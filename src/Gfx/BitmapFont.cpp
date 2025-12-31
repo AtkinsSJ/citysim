@@ -5,10 +5,170 @@
  */
 
 #include "BitmapFont.h"
+#include <Assets/AssetManager.h>
 #include <Debug/Debug.h>
 #include <Gfx/Renderer.h>
 #include <Util/Log.h>
 #include <Util/Unicode.h>
+
+// See: http://www.angelcode.com/products/bmfont/doc/file_format.html
+
+#pragma pack(push, 1)
+struct BMFontHeader {
+    u8 tag[3];
+    u8 version;
+};
+u8 const BMFontTag[3] = { 'B', 'M', 'F' };
+u8 const BMFontSupportedVersion = 3;
+
+struct BMFontBlockHeader {
+    u8 type;
+    u32 size;
+};
+enum BMFontBlockTypes {
+    BMF_Block_Info = 1,
+    BMF_Block_Common = 2,
+    BMF_Block_Pages = 3,
+    BMF_Block_Chars = 4,
+    BMF_Block_KerningPairs = 5,
+};
+
+enum BMFont_ColorChannelType {
+    BMFont_CCT_Glyph = 0,
+    BMFont_CCT_Outline = 1,
+    BMFont_CCT_Combined = 2, // Glyph and outline
+    BMFont_CCT_Zero = 3,
+    BMFont_CCT_One = 4,
+};
+struct BMFontBlock_Common {
+    u16 lineHeight;
+    u16 base;           // Distance from top of line to the character baseline
+    u16 scaleW, scaleH; // GL_Texture dimensions
+    u16 pageCount;      // How many texture pages?
+
+    u8 bitfield; // 1 if 8-bit character data is packed into all channels
+    u8 alphaChannel;
+    u8 redChannel;
+    u8 greenChannel;
+    u8 blueChannel;
+};
+
+struct BMFont_Char {
+    u32 id;
+    u16 x, y;
+    u16 w, h;
+    s16 xOffset, yOffset; // Offset when rendering to the screen
+    s16 xAdvance;         // How far to move after rendering this character
+    u8 page;              // GL_Texture page
+    u8 channel;           // Bitfield, 1 = blue, 2 = green, 4 = red, 8 = alpha
+};
+
+#pragma pack(pop)
+
+bool BitmapFont::load_from_bmf_data(Blob data, Asset& asset)
+{
+    smm pos = 0;
+    BMFontHeader* header = (BMFontHeader*)(data.data() + pos);
+    pos += sizeof(BMFontHeader);
+
+    // Check it's a valid BMF
+    if (header->tag[0] != BMFontTag[0]
+        || header->tag[1] != BMFontTag[1]
+        || header->tag[2] != BMFontTag[2]) {
+        logError("Not a valid BMFont file: {0}"_s, { asset.fullName });
+        return false;
+    }
+
+    if (header->version != 3) {
+        logError("BMFont file version is unsupported: {0}, wanted {1} and got {2}"_s,
+            { asset.fullName, formatInt(BMFontSupportedVersion), formatInt(header->version) });
+        return false;
+    }
+
+    BMFontBlockHeader* blockHeader = nullptr;
+    BMFontBlock_Common* common = nullptr;
+    BMFont_Char* chars = nullptr;
+    u32 charCount = 0;
+    void const* pages = nullptr;
+
+    blockHeader = (BMFontBlockHeader*)(data.data() + pos);
+    pos += sizeof(BMFontBlockHeader);
+
+    while (pos < data.size()) {
+        switch (blockHeader->type) {
+        case BMF_Block_Info: {
+            // Ignored
+        } break;
+
+        case BMF_Block_Common: {
+            common = (BMFontBlock_Common*)(data.data() + pos);
+        } break;
+
+        case BMF_Block_Pages: {
+            pages = data.data() + pos;
+        } break;
+
+        case BMF_Block_Chars: {
+            chars = (BMFont_Char*)(data.data() + pos);
+            charCount = blockHeader->size / sizeof(BMFont_Char);
+        } break;
+
+        case BMF_Block_KerningPairs: {
+            // TODO: Kerning!
+        } break;
+        }
+
+        pos += blockHeader->size;
+
+        blockHeader = (BMFontBlockHeader*)(data.data() + pos);
+        pos += sizeof(BMFontBlockHeader);
+    }
+
+    if (!(common && chars && charCount && pages)) {
+        // Something didn't load correctly!
+        logError("BMFont file '{0}' seems to be lacking crucial data and could not be loaded!"_s, { asset.fullName });
+    } else if (common->pageCount != 1) {
+        logError("BMFont file '{0}' defines a font with {1} texture pages, but we require only 1."_s, { asset.fullName, formatInt(common->pageCount) });
+    } else {
+        BitmapFont* font = &asset.bitmapFont;
+        font->m_line_height = common->lineHeight;
+        font->m_base_y = common->base;
+        font->m_glyph_count = 0;
+
+        font->m_glyph_capacity = ceil_s32(charCount * 2.0f);
+        smm glyphEntryMemorySize = font->m_glyph_capacity * sizeof(BitmapFontGlyphEntry);
+        asset.data = assetsAllocate(&asset_manager(), glyphEntryMemorySize);
+        font->m_glyph_entries = (BitmapFontGlyphEntry*)(asset.data.data());
+
+        String textureName = String::from_null_terminated((char*)pages);
+        font->m_texture = addTexture(textureName, false);
+        ensureAssetIsLoaded(font->m_texture);
+
+        float textureWidth = (float)font->m_texture->texture.surface->w;
+        float textureHeight = (float)font->m_texture->texture.surface->h;
+
+        for (u32 charIndex = 0;
+            charIndex < charCount;
+            charIndex++) {
+            BMFont_Char* src = chars + charIndex;
+
+            font->add_glyph(BitmapFontGlyph {
+                .codepoint = static_cast<unichar>(src->id),
+                .width = src->w,
+                .height = src->h,
+                .xOffset = src->xOffset,
+                .yOffset = src->yOffset,
+                .xAdvance = src->xAdvance,
+                .uv = {
+                    src->x / textureWidth,
+                    src->y / textureHeight,
+                    src->w / textureWidth,
+                    src->h / textureHeight },
+            });
+        }
+    }
+    return true;
+}
 
 BitmapFontGlyphEntry* BitmapFont::find_glyph_entry(unichar target_char) const
 {

@@ -6,7 +6,7 @@
 
 #include <Assets/AssetManager.h>
 #include <Debug/Console.h>
-#include <Gfx/BMFont.h>
+#include <Gfx/BitmapFont.h>
 #include <Gfx/Renderer.h>
 #include <IO/DirectoryIterator.h>
 #include <IO/DirectoryWatcher.h>
@@ -285,8 +285,12 @@ void loadAsset(Asset* asset)
     // Type-specific loading
     switch (asset->type) {
     case AssetType::BitmapFont: {
-        loadBMFont(fileData, asset);
-        asset->state = Asset::State::Loaded;
+        if (BitmapFont::load_from_bmf_data(fileData, *asset)) {
+            asset->state = Asset::State::Loaded;
+        } else {
+            asset->state = Asset::State::Error;
+            return;
+        }
     } break;
 
     case AssetType::BuildingDefs: {
