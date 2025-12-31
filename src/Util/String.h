@@ -100,7 +100,7 @@ constexpr String formatInt(T e)
 String formatFloat(double value, s32 decimalPlaces);
 inline String formatFloat(float value, s32 decimalPlaces) { return formatFloat((double)value, decimalPlaces); }
 
-String formatString(String value, s32 length = -1, bool alignLeft = true, char paddingChar = ' ');
+String formatString(String value, s32 length = -1, bool align_left = true, char padding_char = ' ');
 inline String formatString(char const* value, s32 length = -1, bool alignLeft = true, char paddingChar = ' ')
 {
     return formatString(String::from_null_terminated(value), length, alignLeft, paddingChar);

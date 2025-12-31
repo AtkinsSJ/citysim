@@ -324,35 +324,29 @@ String formatFloat(double value, s32 decimalPlaces)
     return { buffer, min(written, length) };
 }
 
-String formatString(String value, s32 length, bool alignLeft, char paddingChar)
+String formatString(String value, s32 length, bool align_left, char padding_char)
 {
-    if ((value.length() == length) || (length == -1))
+    if (value.length() == length || length == -1)
         return value;
 
     if (length < value.length())
-        return { value.raw_pointer_to_characters(), (size_t)length };
+        return { value.raw_pointer_to_characters(), static_cast<size_t>(length) };
 
-    String result = pushString(&temp_arena(), length);
+    StringBuilder builder { static_cast<size_t>(length) };
 
-    if (alignLeft) {
-        for (s32 i = 0; i < value.length(); i++) {
-            result.deprecated_editable_characters()[i] = value[i];
-        }
-        for (s32 i = value.length(); i < length; i++) {
-            result.deprecated_editable_characters()[i] = paddingChar;
-        }
-    } else // alignRight
-    {
-        s32 startPos = length - value.length();
-        for (s32 i = 0; i < value.length(); i++) {
-            result.deprecated_editable_characters()[i + startPos] = value[i];
-        }
-        for (s32 i = 0; i < startPos; i++) {
-            result.deprecated_editable_characters()[i] = paddingChar;
-        }
+    // NB: At this point, we know there is *some* padding, so this subtraction is safe.
+    auto padding_count = length - value.length();
+    if (align_left) {
+        builder.append(value);
+        for (auto i = 0; i < padding_count; i++)
+            builder.append(padding_char);
+    } else {
+        for (auto i = 0; i < padding_count; i++)
+            builder.append(padding_char);
+        builder.append(value);
     }
 
-    return result;
+    return builder.deprecated_to_string();
 }
 
 String formatBool(bool value)
