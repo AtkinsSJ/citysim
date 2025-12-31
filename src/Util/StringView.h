@@ -18,6 +18,11 @@ public:
     {
     }
 
+    static StringView from_c_string(char const* chars)
+    {
+        return StringView { chars, strlen(chars) };
+    }
+
     String deprecated_to_string() const;
 };
 
