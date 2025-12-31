@@ -28,11 +28,11 @@
 #endif
 
 #include "AppState.h"
-#include "input.h"
 #include <Assets/AssetManager.h>
 #include <Debug/Console.h>
 #include <Gfx/Renderer.h>
 #include <IO/SavedGames.h>
+#include <Input/Input.h>
 #include <Menus/Credits.h>
 #include <Menus/MainMenu.h>
 #include <Settings/Settings.h>

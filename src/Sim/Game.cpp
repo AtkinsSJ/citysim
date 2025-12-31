@@ -6,10 +6,10 @@
 
 #include "Game.h"
 #include "AppState.h"
-#include "input.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/Renderer.h>
 #include <IO/SavedGames.h>
+#include <Input/Input.h>
 #include <Menus/About.h>
 #include <Settings/Settings.h>
 #include <Sim/BuildingCatalogue.h>

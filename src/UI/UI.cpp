@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
+#include <Input/Input.h>
 #include "AppState.h"
-#include "input.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/BitmapFont.h>
 #include <Gfx/Renderer.h>

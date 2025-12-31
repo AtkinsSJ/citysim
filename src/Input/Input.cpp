@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "input.h"
+#include "Input.h"
 #include "AppState.h"
 #include <Gfx/Renderer.h>
 #include <SDL2/SDL_clipboard.h>

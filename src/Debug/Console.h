@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "../input.h"
+#include <Input/Input.h>
 #include <UI/Forward.h>
 #include <UI/TextInput.h>
 #include <UI/UI.h>

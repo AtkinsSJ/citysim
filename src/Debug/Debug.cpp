@@ -5,10 +5,10 @@
  */
 
 #include "Debug.h"
-#include "../input.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/BitmapFont.h>
 #include <Gfx/Renderer.h>
+#include <Input/Input.h>
 #include <Util/Alignment.h>
 
 void debugInit()

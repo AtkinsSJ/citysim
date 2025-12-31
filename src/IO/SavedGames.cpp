@@ -6,10 +6,10 @@
 
 #include "SavedGames.h"
 #include "AppState.h"
-#include "input.h"
 #include <IO/DirectoryIterator.h>
 #include <IO/DirectoryWatcher.h>
 #include <IO/SaveFile.h>
+#include <Input/Input.h>
 #include <Settings/Settings.h>
 #include <UI/Toast.h>
 #include <UI/Window.h>

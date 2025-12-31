@@ -5,10 +5,10 @@
  */
 
 #include "AppState.h"
-#include "input.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/BitmapFont.h>
 #include <Gfx/Renderer.h>
+#include <Input/Input.h>
 #include <UI/Drawable.h>
 #include <UI/TextInput.h>
 #include <Util/Maths.h>

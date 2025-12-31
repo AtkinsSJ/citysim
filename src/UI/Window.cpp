@@ -5,7 +5,7 @@
  */
 
 #include "Window.h"
-#include "input.h"
+#include <Input/Input.h>
 #include <Debug/Debug.h>
 #include <Util/String.h>
 
