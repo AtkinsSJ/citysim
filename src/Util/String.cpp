@@ -363,13 +363,11 @@ String formatBool(bool value)
         return "false"_s;
 }
 
+// FIXME: The memory ownership here is dubious; figure that out at some point.
 String String::repeat(char c, u32 length)
 {
-    String result = pushString(&temp_arena(), length);
-
-    for (s32 i = 0; i < length; i++) {
-        result.deprecated_editable_characters()[i] = c;
-    }
-
-    return result;
+    StringBuilder builder { length };
+    for (s32 i = 0; i < length; i++)
+        builder.append(c);
+    return builder.deprecated_to_string();
 }
