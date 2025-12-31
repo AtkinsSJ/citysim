@@ -40,9 +40,6 @@ public:
     String(char const* chars, size_t length, WithHash = WithHash::No);
     String(char* chars, size_t length, WithHash = WithHash::No);
 
-    StringView view() const;
-    operator StringView() const { return view(); }
-
     Hash hash() const;
 
     void deprecated_set_length(size_t new_length) { m_length = new_length; }

@@ -41,6 +41,9 @@ public:
     bool ends_with(StringBase const& suffix) const;
     bool ends_with(char suffix) const;
 
+    StringView view() const;
+    operator StringView() const;
+
     StringView substring(size_t start, Optional<size_t> length = {}) const;
     StringView with_whitespace_trimmed(TrimSide = TrimSide::Both) const;
 

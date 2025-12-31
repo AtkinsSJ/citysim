@@ -100,6 +100,16 @@ bool StringBase::ends_with(char suffix) const
     return m_length >= 1 && m_chars[m_length - 1] == suffix;
 }
 
+StringView StringBase::view() const
+{
+    return StringView { m_chars, m_length };
+}
+
+StringBase::operator StringView() const
+{
+    return view();
+}
+
 StringView StringBase::substring(size_t start, Optional<size_t> length) const
 {
     auto substring_length = min(length.value_or(m_length), m_length - start);

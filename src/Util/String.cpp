@@ -40,11 +40,6 @@ String String::from_null_terminated(char const* chars)
     return { chars, strlen(chars) };
 }
 
-StringView String::view() const
-{
-    return StringView { raw_pointer_to_characters(), length() };
-}
-
 void copyString(char const* src, s32 srcLength, String* dest)
 {
     s32 copyLength = min(srcLength, dest->length());
