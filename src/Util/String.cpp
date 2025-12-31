@@ -105,7 +105,7 @@ bool String::split_in_two(char divider, String* left_result, String* right_resul
 
 String String::join(std::initializer_list<String> strings, Optional<String> between)
 {
-    String result = nullString;
+    String result = {};
 
     if (strings.size() > 0) {
         // Count up the resulting length

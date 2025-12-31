@@ -58,11 +58,11 @@ WindowTitle WindowTitle::fromLambda(String (*lambda)())
 
 String WindowTitle::getString()
 {
-    String result = nullString;
+    String result = {};
 
     switch (type) {
     case Type::None:
-        result = nullString;
+        result = {};
         break;
         ;
     case Type::TextAsset:

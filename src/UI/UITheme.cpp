@@ -376,7 +376,7 @@ void loadUITheme(Blob data, Asset* asset)
 
     EnumMap<UI::StyleType, s32> style_count;
 
-    String currentSection = nullString;
+    String currentSection = {};
     UI::Style* target = nullptr;
 
     while (reader.load_next_line()) {

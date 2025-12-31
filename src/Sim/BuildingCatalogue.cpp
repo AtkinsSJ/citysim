@@ -29,7 +29,7 @@ void initBuildingCatalogue()
     // Update 18/02/2020: We now use the null building def when failing to match an intersection part name.
     (void)catalogue->allBuildings.append(); // Null building def
 
-    catalogue->buildingNameToTypeID.put(nullString, 0);
+    catalogue->buildingNameToTypeID.put({}, 0);
 
     catalogue->maxRBuildingDim = 0;
     catalogue->maxCBuildingDim = 0;

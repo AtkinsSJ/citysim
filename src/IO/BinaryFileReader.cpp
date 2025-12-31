@@ -102,7 +102,7 @@ String BinaryFileReader::readString(FileString fileString)
         return { (char*)sectionMemoryAt(fileString.relativeOffset), fileString.length };
     }
 
-    return nullString;
+    return {};
 }
 
 bool BinaryFileReader::readBlob(FileBlob source, u8* dest, smm destSize)

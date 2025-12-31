@@ -138,9 +138,9 @@ bool mouseIsWithinUIRects();
 V2I calculateButtonSize(StringView text, ButtonStyle* style = nullptr, s32 maxWidth = 0, bool fillWidth = true);
 V2I calculateButtonSize(V2I contentSize, ButtonStyle* style = nullptr, s32 maxWidth = 0, bool fillWidth = true);
 Rect2I calculateButtonContentBounds(Rect2I bounds, ButtonStyle* style = nullptr);
-bool putButton(Rect2I bounds, ButtonStyle* style = nullptr, ButtonState state = ButtonState::Normal, RenderBuffer* renderBuffer = nullptr, String tooltip = nullString);
-bool putTextButton(StringView text, Rect2I bounds, ButtonStyle* style = nullptr, ButtonState state = ButtonState::Normal, RenderBuffer* renderBuffer = nullptr, String tooltip = nullString);
-bool putImageButton(Sprite* sprite, Rect2I bounds, ButtonStyle* style = nullptr, ButtonState state = ButtonState::Normal, RenderBuffer* renderBuffer = nullptr, String tooltip = nullString);
+bool putButton(Rect2I bounds, ButtonStyle* style = nullptr, ButtonState state = ButtonState::Normal, RenderBuffer* renderBuffer = nullptr, String tooltip = {});
+bool putTextButton(StringView text, Rect2I bounds, ButtonStyle* style = nullptr, ButtonState state = ButtonState::Normal, RenderBuffer* renderBuffer = nullptr, String tooltip = {});
+bool putImageButton(Sprite* sprite, Rect2I bounds, ButtonStyle* style = nullptr, ButtonState state = ButtonState::Normal, RenderBuffer* renderBuffer = nullptr, String tooltip = {});
 
 // Checkboxes
 V2I calculateCheckboxSize(CheckboxStyle* style = nullptr);

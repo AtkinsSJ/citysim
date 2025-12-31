@@ -57,8 +57,6 @@ private:
     mutable Hash m_hash {};
 };
 
-String const nullString = {};
-
 inline String operator""_s(char const* chars, size_t length)
 {
     return { chars, length };

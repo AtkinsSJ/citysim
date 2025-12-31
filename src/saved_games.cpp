@@ -35,7 +35,7 @@ void initSavedGamesCatalogue()
     initChunkedArray(&catalogue->savedGames, &catalogue->savedGamesArena, 64);
 
     // Window-related stuff
-    catalogue->selectedSavedGameName = nullString;
+    catalogue->selectedSavedGameName = {};
     catalogue->selectedSavedGameIndex = -1;
     catalogue->saveGameName = UI::newTextInput(&catalogue->savedGamesArena, 64, "\\/:*?\"'`<>|[]()^#%&!@+={}~."_s);
 
@@ -128,7 +128,7 @@ void readSavedGamesInfo(SavedGamesCatalogue* catalogue)
 void showLoadGameWindow()
 {
     SavedGamesCatalogue* catalogue = &savedGamesCatalogue;
-    catalogue->selectedSavedGameName = nullString;
+    catalogue->selectedSavedGameName = {};
     catalogue->selectedSavedGameIndex = -1;
 
     UI::showWindow(UI::WindowTitle::fromTextAsset("title_load_game"_s), 780, 580, {}, "default"_s, WindowFlags::Unique | WindowFlags::Modal, savedGamesWindowProc);
@@ -150,7 +150,7 @@ void showSaveGameWindow()
         catalogue->selectedSavedGameIndex = selected_saved_game.value().index();
         catalogue->saveGameName.append(catalogue->selectedSavedGameName);
     } else {
-        catalogue->selectedSavedGameName = nullString;
+        catalogue->selectedSavedGameName = {};
         catalogue->selectedSavedGameIndex = -1;
     }
 

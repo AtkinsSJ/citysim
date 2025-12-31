@@ -23,7 +23,7 @@ void initTerrainCatalogue()
     initOccupancyArray(&s_terrain_catalogue.terrainDefs, &AppState::the().systemArena, 128);
     (void)s_terrain_catalogue.terrainDefs.append(); // Null terrain def
 
-    s_terrain_catalogue.terrainNameToType.put(nullString, 0);
+    s_terrain_catalogue.terrainNameToType.put({}, 0);
 
     asset_manager().register_listener(&s_terrain_catalogue);
 }

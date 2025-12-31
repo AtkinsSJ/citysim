@@ -508,7 +508,7 @@ void GLAPIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum seve
     // Prevent warnings
     if (userParam && source) { }
 
-    String typeString = nullString;
+    String typeString = {};
     switch (type) {
     case GL_DEBUG_TYPE_ERROR:
         typeString = "ERROR"_s;
@@ -530,7 +530,7 @@ void GLAPIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum seve
         break;
     }
 
-    String severityString = nullString;
+    String severityString = {};
     SDL_LogPriority priority;
     switch (severity) {
     case GL_DEBUG_SEVERITY_HIGH:
@@ -581,7 +581,7 @@ bool compileShader(ShaderProgram* glShader, String shaderName, Shader* shaderPro
     GLuint shaderID = glCreateShader(to_underlying(shaderPart));
     Deferred defer_delete_shader = [shaderID] { glDeleteShader(shaderID); };
 
-    String source = nullString;
+    String source = {};
     switch (shaderPart) {
     case ShaderPart::Vertex: {
         source = shaderProgram->vertexShader;
@@ -889,7 +889,7 @@ void Renderer::flush_vertices()
         glDrawElements(GL_TRIANGLES, m_index_count, GL_UNSIGNED_INT, nullptr);
     }
 
-    DEBUG_DRAW_CALL(m_shaders.get(m_current_shader)->asset->shortName, (m_current_texture == nullptr) ? nullString : m_current_texture->shortName, (m_vertex_count >> 2));
+    DEBUG_DRAW_CALL(m_shaders.get(m_current_shader)->asset->shortName, (m_current_texture == nullptr) ? String {} : m_current_texture->shortName, (m_vertex_count >> 2));
 
     m_vertex_count = 0;
     m_index_count = 0;

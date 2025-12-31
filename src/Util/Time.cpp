@@ -80,7 +80,7 @@ String formatDateTime(DateTime dateTime, DateTimeFormat format)
 {
     DEBUG_FUNCTION();
 
-    String formatString = nullString;
+    String formatString = {};
 
     switch (format) {
     case DateTimeFormat::ShortDate: {

@@ -59,13 +59,13 @@ struct Panel {
     void enableVerticalScrolling(ScrollbarState* vScrollbar, bool expandWidth = false);
 
     // Add stuff to the panel
-    bool addTextButton(StringView text, ButtonState state = ButtonState::Normal, String styleName = nullString);
-    bool addImageButton(Sprite* sprite, ButtonState state = ButtonState::Normal, String styleName = nullString);
+    bool addTextButton(StringView text, ButtonState state = ButtonState::Normal, String styleName = {});
+    bool addImageButton(Sprite* sprite, ButtonState state = ButtonState::Normal, String styleName = {});
 
-    void addCheckbox(bool* checked, String styleName = nullString);
+    void addCheckbox(bool* checked, String styleName = {});
 
     template<typename T>
-    void addDropDownList(Array<T>* listOptions, s32* currentSelection, String (*getDisplayName)(T* data), String styleName = nullString)
+    void addDropDownList(Array<T>* listOptions, s32* currentSelection, String (*getDisplayName)(T* data), String styleName = {})
     {
         DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
@@ -84,12 +84,12 @@ struct Panel {
         completeWidget(widgetBounds.size());
     }
 
-    void addLabel(StringView text, String styleName = nullString);
+    void addLabel(StringView text, String styleName = {});
 
-    void addRadioButton(s32* currentValue, s32 myValue, String styleName = nullString);
+    void addRadioButton(s32* currentValue, s32 myValue, String styleName = {});
 
     template<CountedEnum EnumT, typename U, typename GetDisplayName>
-    void addRadioButtonGroup(EnumMap<EnumT, U>& listOptions, u32* currentSelection, GetDisplayName get_display_name, String styleName = nullString, String labelStyleName = nullString)
+    void addRadioButtonGroup(EnumMap<EnumT, U>& listOptions, u32* currentSelection, GetDisplayName get_display_name, String styleName = {}, String labelStyleName = {})
     {
         DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
@@ -151,7 +151,7 @@ struct Panel {
     }
 
     template<typename T>
-    void addSlider(T* currentValue, T minValue, T maxValue, String styleName = nullString)
+    void addSlider(T* currentValue, T minValue, T maxValue, String styleName = {})
     {
         DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
@@ -172,7 +172,7 @@ struct Panel {
 
     void addSprite(Sprite* sprite, s32 width = -1, s32 height = -1);
 
-    bool addTextInput(TextInput* textInput, String styleName = nullString);
+    bool addTextInput(TextInput* textInput, String styleName = {});
 
     // Add a blank rectangle as if it were a widget. (So, leaving padding between
     // it and other widgets.) The bounds are returned so you can draw your own
@@ -185,8 +185,8 @@ struct Panel {
 
     // Slice the remaining content area in two, with one part being the new Panel,
     // and the rest becoming the existing panel's content area.
-    Panel row(s32 height, VAlign vAlignment, String styleName = nullString);
-    Panel column(s32 width, HAlign hAlignment, String styleName = nullString);
+    Panel row(s32 height, VAlign vAlignment, String styleName = {});
+    Panel column(s32 width, HAlign hAlignment, String styleName = {});
 
     void end(bool shinkToContentHeight = false, bool shrinkToContentWidth = false);
 

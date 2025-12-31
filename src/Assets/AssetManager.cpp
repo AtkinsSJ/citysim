@@ -149,8 +149,8 @@ Asset* makePlaceholderAsset(AssetType type)
 {
     Asset* result = &s_assets->placeholderAssets[type];
     result->type = type;
-    result->shortName = nullString;
-    result->fullName = nullString;
+    result->shortName = {};
+    result->fullName = {};
     result->flags = {};
     result->state = Asset::State::Loaded;
     result->children = makeEmptyArray<AssetRef>();
@@ -647,7 +647,7 @@ void addAssets()
 {
     DEBUG_FUNCTION();
 
-    addAssetsFromDirectory(nullString);
+    addAssetsFromDirectory({});
 
     for (auto it = s_assets->directoryNameToType.iterate();
         it.hasNext();
