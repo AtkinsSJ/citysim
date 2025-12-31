@@ -72,15 +72,6 @@ inline String operator""_h(char const* chars, size_t length)
     return { chars, length, WithHash::Yes };
 }
 
-void copyString(char const* src, s32 srcLength, String* dest);
-void copyString(String src, String* dest);
-void copyString(StringView src, String* dest);
-
-String pushString(MemoryArena* arena, s32 length);
-String pushString(MemoryArena* arena, char const* src);
-String pushString(MemoryArena* arena, String src);
-String pushString(MemoryArena* arena, StringView src);
-
 String formatInt(u64 value, u8 base = 10, s32 zeroPadWidth = 0);
 inline String formatInt(u32 value, u8 base = 10, s32 zeroPadWidth = 0) { return formatInt((u64)value, base, zeroPadWidth); }
 inline String formatInt(u16 value, u8 base = 10, s32 zeroPadWidth = 0) { return formatInt((u64)value, base, zeroPadWidth); }

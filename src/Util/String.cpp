@@ -40,51 +40,6 @@ String String::from_null_terminated(char const* chars)
     return { chars, strlen(chars) };
 }
 
-void copyString(char const* src, s32 srcLength, String* dest)
-{
-    s32 copyLength = min(srcLength, dest->length());
-    copyMemory(src, dest->deprecated_editable_characters(), copyLength);
-    dest->deprecated_set_length(copyLength);
-}
-
-void copyString(String src, String* dest)
-{
-    copyString(src.raw_pointer_to_characters(), src.length(), dest);
-}
-
-void copyString(StringView src, String* dest)
-{
-    copyString(src.raw_pointer_to_characters(), src.length(), dest);
-}
-
-String pushString(MemoryArena* arena, s32 length)
-{
-    return String { arena->allocate_multiple<char>(length), static_cast<size_t>(length) };
-}
-
-String pushString(MemoryArena* arena, char const* src)
-{
-    s32 len = truncate32(strlen(src));
-
-    String s = pushString(arena, len);
-    copyString(src, len, &s);
-    return s;
-}
-
-String pushString(MemoryArena* arena, String src)
-{
-    String s = pushString(arena, src.length());
-    copyString(src, &s);
-    return s;
-}
-
-String pushString(MemoryArena* arena, StringView src)
-{
-    String s = pushString(arena, src.length());
-    copyString(src.raw_pointer_to_characters(), src.length(), &s);
-    return s;
-}
-
 bool String::operator==(String const& other) const
 {
     if (m_hash && other.m_hash && m_hash != other.m_hash)
