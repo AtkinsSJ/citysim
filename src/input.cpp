@@ -19,29 +19,29 @@ u32 keycodeToIndex(u32 key)
 
 void init_input_state()
 {
-    MemoryArena* systemArena = &AppState::the().systemArena;
+    MemoryArena& systemArena = AppState::the().systemArena;
 
     // Letters
     for (char c = 'A'; c <= 'Z'; c++) {
-        String key = pushString(systemArena, StringView { &c, 1 });
+        String key = systemArena.allocate_string(StringView { &c, 1 });
         s_input_state.keyNames.put(key, SDLK_a + (c - 'A'));
     }
 
     // Numbers
     for (char i = 0; i <= 9; i++) {
         char c = '0' + i;
-        String key = pushString(systemArena, StringView { &c, 1 });
+        String key = systemArena.allocate_string(StringView { &c, 1 });
         s_input_state.keyNames.put(key, SDLK_0 + i);
     }
 
     // F keys
     for (char i = 0; i <= 12; i++) {
-        String key = pushString(systemArena, myprintf("F{0}"_s, { formatInt(i + 1) }));
+        String key = systemArena.allocate_string(myprintf("F{0}"_s, { formatInt(i + 1) }));
         s_input_state.keyNames.put(key, SDLK_F1 + i);
     }
 
     // Misc
-    s_input_state.keyNames.put(pushString(systemArena, "Home"), SDLK_HOME);
+    s_input_state.keyNames.put(systemArena.allocate_string("Home"_sv), SDLK_HOME);
 }
 
 InputState& input_state()
@@ -308,10 +308,8 @@ String getClipboardText()
     String result = {};
 
     if (SDL_HasClipboardText()) {
-        char* clipboard = SDL_GetClipboardText();
-
-        if (clipboard) {
-            result = pushString(&temp_arena(), clipboard);
+        if (char* clipboard = SDL_GetClipboardText()) {
+            result = temp_arena().allocate_string(StringView::from_c_string(clipboard));
             SDL_free(clipboard);
         }
     }

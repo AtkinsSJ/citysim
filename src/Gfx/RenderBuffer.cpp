@@ -47,7 +47,7 @@ void RenderBuffer::take_from(RenderBuffer& other)
 
 void RenderBuffer::initialize_from_pool(MemoryArena& arena, String name, Pool<RenderBufferChunk>* chunk_pool)
 {
-    this->name = pushString(&arena, name);
+    this->name = arena.allocate_string(name);
     this->name.hash();
 
     this->hasRangeReserved = false;

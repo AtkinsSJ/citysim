@@ -274,7 +274,7 @@ struct HashTable {
             entry->isOccupied = true;
             entry->isGravestone = false;
 
-            String theKey = pushString(&keyDataArena, key);
+            String theKey = keyDataArena.allocate_string(key);
             theKey.hash();
             entry->key = theKey;
         }
@@ -291,7 +291,7 @@ struct HashTable {
             entry->isOccupied = true;
             entry->isGravestone = false;
 
-            String theKey = pushString(&keyDataArena, key);
+            String theKey = keyDataArena.allocate_string(key);
             theKey.hash();
             entry->key = theKey;
         }

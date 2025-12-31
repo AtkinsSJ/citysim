@@ -22,8 +22,8 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
     *city = {};
 
     // TODO: These want to be in some kind of buffer somewhere so they can be modified!
-    city->name = pushString(gameArena, name);
-    city->playerName = pushString(gameArena, playerName);
+    city->name = gameArena->allocate_string(name);
+    city->playerName = gameArena->allocate_string(playerName);
     city->funds = funds;
     city->bounds = { 0u, 0u, width, height };
 

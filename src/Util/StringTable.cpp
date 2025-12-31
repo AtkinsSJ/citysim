@@ -19,7 +19,7 @@ String intern(StringTable* table, String input)
         entry->isOccupied = true;
         entry->isGravestone = false;
 
-        String internedString = pushString(&hashTable->keyDataArena, input);
+        String internedString = hashTable->keyDataArena.allocate_string(input);
         internedString.hash();
         entry->key = internedString;
         entry->value = internedString;

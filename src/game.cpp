@@ -943,7 +943,7 @@ void setFixedColors(DataViewUI* dataView, String paletteName, std::initializer_l
     dataView->fixedPaletteName = paletteName;
     dataView->fixedColorNames = app_state.systemArena.allocate_array<String>(truncate32(names.size()), false);
     for (auto it = names.begin(); it != names.end(); it++) {
-        dataView->fixedColorNames.append(pushString(&app_state.systemArena, *it));
+        dataView->fixedColorNames.append(app_state.systemArena.allocate_string(*it));
     }
 }
 

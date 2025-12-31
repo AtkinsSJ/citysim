@@ -277,7 +277,7 @@ void consoleHandleCommand(Console* console, StringView commandInput)
 
     if (!commandInput.is_empty()) {
         // Add to history
-        console->inputHistory.append(pushString(console->inputHistory.memoryArena, commandInput));
+        console->inputHistory.append(console->inputHistory.memoryArena->allocate_string(commandInput));
         console->inputHistoryCursor = -1;
 
         TokenReader tokens { commandInput };
@@ -333,7 +333,7 @@ void consoleWriteLine(String text, ConsoleLineStyle style)
     if (globalConsole) {
         ConsoleOutputLine* line = globalConsole->outputLines.appendBlank();
         line->style = style;
-        line->text = pushString(globalConsole->outputLines.memoryArena, text);
+        line->text = globalConsole->outputLines.memoryArena->allocate_string(text);
     }
 }
 

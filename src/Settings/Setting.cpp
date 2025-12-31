@@ -127,7 +127,7 @@ void StringSetting::set_value_from(Setting const& other)
 
 bool StringSetting::set_from_file(LineReader& reader)
 {
-    String value = pushString(&Settings::the().arena, reader.next_token());
+    String value = Settings::the().arena.allocate_string(reader.next_token());
     set_value(value);
     return true;
 }

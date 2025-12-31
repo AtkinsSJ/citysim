@@ -180,7 +180,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
                     return;
                 }
 
-                def = templates.put(pushString(&temp_arena(), name));
+                def = templates.put(temp_arena().allocate_string(name));
             } else {
                 reader.warn("Only :Building, :Intersection or :Template definitions are supported right now."_s);
             }

@@ -240,7 +240,7 @@ bool createDirectory(String path)
         // then switch it back for the next one.
         // The path is guaranteed to be null terminated at the end.
 
-        String sub_path = pushString(&temp_arena(), path);
+        String sub_path = temp_arena().allocate_string(path);
 
         char* pos = sub_path.chars;
         char* afterEndOfPath = sub_path.chars + sub_path.length;
