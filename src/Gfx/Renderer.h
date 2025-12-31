@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include "font.h"
 #include <Assets/AssetManagerListener.h>
 #include <Assets/Forward.h>
 #include <Gfx/Camera.h>

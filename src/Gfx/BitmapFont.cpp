@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "font.h"
+#include "BitmapFont.h"
 #include <Debug/Debug.h>
 #include <Gfx/Renderer.h>
 #include <Util/Log.h>

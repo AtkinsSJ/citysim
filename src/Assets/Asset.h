@@ -6,10 +6,10 @@
 
 #pragma once
 
-#include "../font.h"
 #include <Assets/AssetType.h>
 #include <Assets/Forward.h>
 #include <Assets/Sprite.h>
+#include <Gfx/BitmapFont.h>
 #include <Gfx/Colour.h>
 #include <SDL2/SDL_mouse.h>
 #include <UI/UITheme.h>

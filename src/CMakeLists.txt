@@ -2,7 +2,6 @@ target_sources(CitySim PRIVATE
     AppState.cpp
     about.cpp
     credits.cpp
-    font.cpp
     game.cpp
     game_mainmenu.cpp
     input.cpp

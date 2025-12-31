@@ -5,9 +5,9 @@
  */
 
 #include "Debug.h"
-#include "../font.h"
 #include "../input.h"
 #include <Assets/AssetManager.h>
+#include <Gfx/BitmapFont.h>
 #include <Gfx/Renderer.h>
 #include <Util/Alignment.h>
 

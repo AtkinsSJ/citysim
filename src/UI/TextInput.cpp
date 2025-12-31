@@ -5,7 +5,7 @@
  */
 
 #include "AppState.h"
-#include "font.h"
+#include <Gfx/BitmapFont.h>
 #include "input.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/Renderer.h>
