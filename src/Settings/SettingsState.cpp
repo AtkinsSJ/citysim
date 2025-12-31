@@ -77,7 +77,6 @@ bool BaseSettingsState::save_to_file(String filename)
         stb.append('\n');
     }
 
-    String userSettingsPath = getUserSettingsPath();
     String fileData = stb.deprecated_to_string();
 
     if (writeFile(filename, fileData)) {
@@ -86,7 +85,7 @@ bool BaseSettingsState::save_to_file(String filename)
     }
 
     // TODO: Really really really need to display an error window to the user!
-    logError("Failed to save user settings to {0}."_s, { userSettingsPath });
+    logError("Failed to save user settings to {0}."_s, { filename });
     return false;
 }
 
