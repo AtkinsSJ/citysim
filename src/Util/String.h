@@ -42,9 +42,6 @@ public:
 
     Hash hash() const;
 
-    void deprecated_set_length(size_t new_length) { m_length = new_length; }
-    char* deprecated_editable_characters() { return const_cast<char*>(raw_pointer_to_characters()); }
-
     bool is_null_terminated() const;
     bool is_valid() const;
 
