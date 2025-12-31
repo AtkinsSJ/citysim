@@ -21,9 +21,6 @@ void init_input_state()
 {
     MemoryArena* systemArena = &AppState::the().systemArena;
 
-    s_input_state.textEntered = String { &s_input_state._textEntered[0], SDL_TEXTINPUTEVENT_TEXT_SIZE };
-    s_input_state.textEnteredLength = 0;
-
     // Letters
     for (char c = 'A'; c <= 'Z'; c++) {
         String key = pushString(systemArena, StringView { &c, 1 });
@@ -68,7 +65,7 @@ void updateInput()
     copyMemory(s_input_state._keyDown, s_input_state._keyWasDown, KEYBOARD_KEY_COUNT);
 
     s_input_state.hasUnhandledTextEntered = false;
-    s_input_state.textEnteredLength = 0;
+    s_input_state.textEntered.clear();
 
     s_input_state.receivedQuitSignal = false;
 
@@ -135,8 +132,7 @@ void updateInput()
         } break;
         case SDL_TEXTINPUT: {
             s_input_state.hasUnhandledTextEntered = true;
-            s_input_state.textEnteredLength = truncate32(strlen(event.text.text));
-            copyString(event.text.text, s_input_state.textEnteredLength, &s_input_state.textEntered);
+            s_input_state.textEntered.append(StringView::from_c_string(event.text.text));
         } break;
         }
     }
@@ -304,7 +300,7 @@ bool wasTextEntered()
 StringView getEnteredText()
 {
     s_input_state.hasUnhandledTextEntered = false;
-    return s_input_state.textEntered.view().substring(0, s_input_state.textEnteredLength);
+    return s_input_state.textEntered.view();
 }
 
 String getClipboardText()

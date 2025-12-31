@@ -16,6 +16,7 @@
 #include <Util/Flags.h>
 #include <Util/HashTable.h>
 #include <Util/String.h>
+#include <Util/StringBuffer.h>
 #include <Util/StringView.h>
 #include <Util/Vector.h>
 
@@ -62,9 +63,7 @@ struct InputState {
     bool _keyDownIsRepeat[KEYBOARD_KEY_COUNT];
 
     bool hasUnhandledTextEntered; // Has anyone requested the _textEntered?
-    String textEntered;
-    s32 textEnteredLength;
-    char _textEntered[SDL_TEXTINPUTEVENT_TEXT_SIZE];
+    StringBuffer<SDL_TEXTINPUTEVENT_TEXT_SIZE> textEntered;
 
     // Extra
     bool receivedQuitSignal;
