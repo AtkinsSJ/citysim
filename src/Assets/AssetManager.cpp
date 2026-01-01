@@ -747,7 +747,7 @@ Sprite* getSprite(String name, s32 offset)
     return result;
 }
 
-SpriteRef getSpriteRef(String groupName, s32 spriteIndex)
+SpriteRef getSpriteRef(StringView groupName, s32 spriteIndex)
 {
     SpriteRef result = {};
 

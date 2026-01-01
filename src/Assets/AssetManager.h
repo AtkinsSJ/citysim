@@ -104,7 +104,7 @@ Shader* getShader(String shaderName);
 Sprite* getSprite(String name, s32 offset = 0);
 SpriteGroup* getSpriteGroup(String name);
 
-SpriteRef getSpriteRef(String groupName, s32 spriteIndex);
+SpriteRef getSpriteRef(StringView groupName, s32 spriteIndex);
 Sprite* getSprite(SpriteRef* ref);
 
 String getText(String name);
