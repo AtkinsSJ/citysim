@@ -74,10 +74,10 @@ void initAssets();
 AssetManager& asset_manager();
 Asset* makePlaceholderAsset(AssetType type);
 
-Asset* addAsset(AssetType type, String shortName, Flags<AssetFlags> flags = default_asset_flags);
-Asset* addNinepatch(String name, String filename, s32 pu0, s32 pu1, s32 pu2, s32 pu3, s32 pv0, s32 pv1, s32 pv2, s32 pv3);
-Asset* addTexture(String filename, bool isAlphaPremultiplied);
-Asset* addSpriteGroup(String name, s32 spriteCount);
+Asset* addAsset(AssetType type, StringView shortName, Flags<AssetFlags> flags = default_asset_flags);
+Asset* addNinepatch(StringView name, StringView filename, s32 pu0, s32 pu1, s32 pu2, s32 pu3, s32 pv0, s32 pv1, s32 pv2, s32 pv3);
+Asset* addTexture(StringView filename, bool isAlphaPremultiplied);
+Asset* addSpriteGroup(StringView name, s32 spriteCount);
 
 void loadAssets();
 void loadAsset(Asset* asset);

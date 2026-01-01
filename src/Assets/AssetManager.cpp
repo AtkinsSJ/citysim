@@ -180,7 +180,7 @@ void addChildAsset(Asset* parent, Asset* child)
     parent->children.append(AssetRef { child->type, child->shortName });
 }
 
-Asset* addAsset(AssetType type, String shortName, Flags<AssetFlags> flags)
+Asset* addAsset(AssetType type, StringView shortName, Flags<AssetFlags> flags)
 {
     String internedShortName = s_assets->assetStrings.intern(shortName);
 
@@ -545,7 +545,7 @@ void removeAsset(AssetRef const& ref)
     removeAsset(ref.type(), ref.name());
 }
 
-Asset* addNinepatch(String name, String filename, s32 pu0, s32 pu1, s32 pu2, s32 pu3, s32 pv0, s32 pv1, s32 pv2, s32 pv3)
+Asset* addNinepatch(StringView name, StringView filename, s32 pu0, s32 pu1, s32 pu2, s32 pu3, s32 pv0, s32 pv1, s32 pv2, s32 pv3)
 {
     Asset* texture = addTexture(filename, false);
 
@@ -567,7 +567,7 @@ Asset* addNinepatch(String name, String filename, s32 pu0, s32 pu1, s32 pu2, s32
     return asset;
 }
 
-Asset* addSpriteGroup(String name, s32 spriteCount)
+Asset* addSpriteGroup(StringView name, s32 spriteCount)
 {
     ASSERT(spriteCount > 0); // Must have a positive number of sprites in a Sprite Group!
 
@@ -581,7 +581,7 @@ Asset* addSpriteGroup(String name, s32 spriteCount)
     return spriteGroup;
 }
 
-Asset* addTexture(String filename, bool isAlphaPremultiplied)
+Asset* addTexture(StringView filename, bool isAlphaPremultiplied)
 {
     Asset* asset = addAsset(AssetType::Texture, filename);
     asset->texture.isFileAlphaPremultiplied = isAlphaPremultiplied;
