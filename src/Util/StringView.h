@@ -18,6 +18,8 @@ public:
     {
     }
 
+    StringView view() = delete;
+
     static StringView from_c_string(char const* chars)
     {
         return StringView { chars, strlen(chars) };
