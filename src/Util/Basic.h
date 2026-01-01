@@ -11,7 +11,9 @@
 #include <cstdint>
 #include <utility>
 
-using std::move, std::forward;
+using std::declval;
+using std::forward;
+using std::move;
 
 typedef int8_t s8;
 typedef int16_t s16;
