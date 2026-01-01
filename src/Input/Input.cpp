@@ -287,11 +287,6 @@ bool keyJustPressed(SDL_Keycode key, Flags<ModifierKey> modifiers, bool ignoreRe
     return result;
 }
 
-bool wasShortcutJustPressed(KeyboardShortcut const& shortcut)
-{
-    return keyJustPressed(shortcut.key, shortcut.modifiers, true);
-}
-
 bool wasTextEntered()
 {
     return s_input_state.hasUnhandledTextEntered;
@@ -312,59 +307,6 @@ String getClipboardText()
             result = temp_arena().allocate_string(StringView::from_c_string(clipboard));
             SDL_free(clipboard);
         }
-    }
-
-    return result;
-}
-
-/**
- * NB: Right now, we only support a very small number of shortcut key types.
- * Add fancier stuff as needed.
- *
- * Basic format of a shortcut is, eg:
- * Ctrl+Alt+Shift+Super+Home
- *
- * If any key in the sequence is unrecognised, we return SDLK_UNKNOWN for the `key` field.
- *
- * Only one "key", plus any combination of modifiers, is supported.
- * Note that this means you can't bind something to just pressing a modifier key!
- */
-
-KeyboardShortcut parseKeyboardShortcut(String shortcutString)
-{
-    DEBUG_FUNCTION();
-
-    KeyboardShortcut result = {};
-
-    TokenReader tokens { shortcutString };
-
-    auto key_name = tokens.next_token('+');
-    while (key_name.has_value()) {
-        //
-        // MODIFIERS
-        //
-        if (key_name == "Alt"_s) {
-            result.modifiers.add(ModifierKey::Alt);
-        } else if (key_name == "Ctrl"_s) {
-            result.modifiers.add(ModifierKey::Ctrl);
-        } else if (key_name == "Shift"_s) {
-            result.modifiers.add(ModifierKey::Shift);
-        } else if (key_name == "Super"_s) {
-            result.modifiers.add(ModifierKey::Super);
-        } else {
-            // FIXME: Make HashTable compatible with StringViews.
-            auto key_string = key_name.value().deprecated_to_string();
-            if (auto found_key = s_input_state.keyNames.find_value(key_string); found_key.has_value()) {
-                result.key = found_key.release_value();
-            } else {
-                // Error!
-                logWarn("Unrecognised key name '{0}' in shortcut string '{1}'"_s, { key_name.value(), shortcutString });
-                result.key = SDLK_UNKNOWN;
-            }
-            break;
-        }
-
-        key_name = tokens.next_token('+');
     }
 
     return result;

@@ -5,10 +5,11 @@
  */
 
 #include "Console.h"
-#include "../AppState.h"
+#include "AppState.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/Renderer.h>
 #include <IO/LineReader.h>
+#include <Input/KeyboardShortcut.h>
 #include <UI/Drawable.h>
 #include <UI/TextInput.h>
 #include <Util/Orientation.h>
@@ -89,7 +90,7 @@ void updateAndRenderConsole(Console* console)
             it.next()) {
             CommandShortcut* shortcut = it.get();
 
-            if (wasShortcutJustPressed(shortcut->shortcut)) {
+            if (shortcut->shortcut.was_just_pressed()) {
                 consoleHandleCommand(console, shortcut->command);
                 scrollToBottom = true;
             }
@@ -263,13 +264,13 @@ void loadConsoleKeyboardShortcuts(Console* console, Blob data, String filename)
         String shortcutString = reader.next_token();
         auto command = reader.remainder_of_current_line();
 
-        KeyboardShortcut shortcut = parseKeyboardShortcut(shortcutString);
-        if (shortcut.key == SDLK_UNKNOWN) {
-            reader.error("Unrecognised key in keyboard shortcut sequence '{0}'"_s, { shortcutString });
+        if (auto shortcut = KeyboardShortcut::from_string(shortcutString); shortcut.has_value()) {
+            console->commandShortcuts.append({
+                .shortcut = shortcut.release_value(),
+                .command = command,
+            });
         } else {
-            CommandShortcut* commandShortcut = console->commandShortcuts.appendBlank();
-            commandShortcut->shortcut = shortcut;
-            commandShortcut->command = command;
+            reader.error("Unrecognised key in keyboard shortcut sequence '{0}'"_s, { shortcutString });
         }
     }
 }

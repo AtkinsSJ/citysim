@@ -6,8 +6,7 @@
 
 #pragma once
 
-#include <Input/Input.h>
-#include <UI/Forward.h>
+#include <Input/KeyboardShortcut.h>
 #include <UI/TextInput.h>
 #include <UI/UI.h>
 #include <UI/UITheme.h>

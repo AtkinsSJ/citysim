@@ -43,11 +43,6 @@ enum class ModifierKey : u8 {
     COUNT,
 };
 
-struct KeyboardShortcut {
-    SDL_Keycode key;
-    Flags<ModifierKey> modifiers;
-};
-
 struct InputState {
     // Mouse
     V2I mousePosRaw;
@@ -89,9 +84,6 @@ bool modifierKeyIsPressed(ModifierKey modifier);
 bool keyIsPressed(SDL_Keycode key, Flags<ModifierKey> modifiers = {});
 bool keyWasPressed(SDL_Keycode key, Flags<ModifierKey> modifiers = {});
 bool keyJustPressed(SDL_Keycode key, Flags<ModifierKey> modifiers = {}, bool ignoreRepeats = false);
-
-KeyboardShortcut parseKeyboardShortcut(String shortcutString);
-bool wasShortcutJustPressed(KeyboardShortcut const& shortcut);
 
 bool wasTextEntered();
 StringView getEnteredText();
