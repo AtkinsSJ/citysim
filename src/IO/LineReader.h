@@ -45,8 +45,8 @@ public:
     //        Or, for_each_line() with a callback?
     //        Or, an iterator of some sort?
     bool load_next_line();
-    String current_line() const;
-    String remainder_of_current_line() const;
+    StringView current_line() const;
+    StringView remainder_of_current_line() const;
 
     Optional<StringView> next_token(Optional<char> split_char = {});
     Optional<StringView> peek_token(Optional<char> split_char = {});

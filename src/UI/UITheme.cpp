@@ -406,7 +406,7 @@ void loadUITheme(Blob data, Asset* asset)
             if (firstWord == "Font"_s) {
                 target = nullptr;
                 auto fontName = reader.next_token();
-                String fontFilename = reader.remainder_of_current_line();
+                auto fontFilename = reader.remainder_of_current_line();
 
                 if (fontName.has_value() && !fontFilename.is_empty()) {
                     Asset* fontAsset = addAsset(AssetType::BitmapFont, fontFilename);

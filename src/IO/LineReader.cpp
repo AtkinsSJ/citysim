@@ -140,15 +140,14 @@ bool LineReader::load_next_line()
     return result;
 }
 
-String LineReader::current_line() const
+StringView LineReader::current_line() const
 {
     return m_state.current_line;
 }
 
-String LineReader::remainder_of_current_line() const
+StringView LineReader::remainder_of_current_line() const
 {
-    // FIXME: Return StringView instead.
-    return m_state.current_line_reader.remaining_input().with_whitespace_trimmed().deprecated_to_string();
+    return m_state.current_line_reader.remaining_input().with_whitespace_trimmed();
 }
 
 void LineReader::warn(String message, std::initializer_list<StringView> args) const

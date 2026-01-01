@@ -1236,7 +1236,7 @@ void loadTexts(HashTable<String>* texts, Asset* asset, Blob file_data)
         auto input_key = reader.next_token();
         if (!input_key.has_value())
             continue;
-        String input_text = reader.remainder_of_current_line();
+        auto input_text = reader.remainder_of_current_line();
 
         // Store the key
         string_data_builder.append(input_key.value());

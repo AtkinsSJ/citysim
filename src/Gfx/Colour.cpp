@@ -11,7 +11,7 @@ Optional<Colour> Colour::read(LineReader& reader, LineReader::IsRequired is_requ
     // TODO: Right now this only handles a sequence of 3 or 4 0-255 values for RGB(A).
     // We might want to handle other color definitions eventually which are more friendly, eg 0-1 fractions.
 
-    String all_arguments = reader.remainder_of_current_line();
+    auto all_arguments = reader.remainder_of_current_line();
 
     if (all_arguments.is_empty()) {
         if (is_required == LineReader::IsRequired::Yes)
