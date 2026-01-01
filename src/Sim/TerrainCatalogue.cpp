@@ -74,7 +74,7 @@ void loadTerrainDefs(Blob data, Asset* asset)
                 }
                 def->typeID = (u8)slot.index();
 
-                def->name = intern(&s_terrain_catalogue.terrainNames, name);
+                def->name = s_terrain_catalogue.terrainNames.intern(name);
                 asset->terrainDefs.terrainIDs.append(def->name);
                 s_terrain_catalogue.terrainDefsByName.put(def->name, def);
                 s_terrain_catalogue.terrainNameToType.put(def->name, def->typeID);
@@ -89,7 +89,7 @@ void loadTerrainDefs(Blob data, Asset* asset)
             } else if (firstWord == "borders"_s) {
                 def->borderSpriteNames = asset_manager().arena.allocate_array<String>(80);
             } else if (firstWord == "border"_s) {
-                def->borderSpriteNames.append(intern(&asset_manager().assetStrings, reader.next_token()));
+                def->borderSpriteNames.append(asset_manager().assetStrings.intern(reader.next_token()));
             } else if (firstWord == "can_build_on"_s) {
                 if (auto maybe_bool = reader.read_bool(); maybe_bool.has_value())
                     def->canBuildOn = maybe_bool.release_value();
@@ -97,9 +97,9 @@ void loadTerrainDefs(Blob data, Asset* asset)
                 if (auto maybe_bool = reader.read_bool(); maybe_bool.has_value())
                     def->drawBordersOver = maybe_bool.release_value();
             } else if (firstWord == "name"_s) {
-                def->textAssetName = intern(&asset_manager().assetStrings, reader.next_token());
+                def->textAssetName = asset_manager().assetStrings.intern(reader.next_token());
             } else if (firstWord == "sprite"_s) {
-                def->spriteName = intern(&asset_manager().assetStrings, reader.next_token());
+                def->spriteName = asset_manager().assetStrings.intern(reader.next_token());
             } else {
                 reader.warn("Unrecognised property '{0}' inside command ':Terrain'"_s, { firstWord });
             }

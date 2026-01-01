@@ -24,7 +24,7 @@ void initSavedGamesCatalogue()
 
     catalogue->savedGamesArena = { "SavedGames"_s };
 
-    catalogue->savedGamesPath = intern(&catalogue->stringsTable, constructPath({ Paths::user_data(), "saves"_s }));
+    catalogue->savedGamesPath = catalogue->stringsTable.intern(constructPath({ Paths::user_data(), "saves"_s }));
     createDirectory(catalogue->savedGamesPath);
     auto saved_games_watcher = DirectoryWatcher::watch(catalogue->savedGamesPath);
     if (saved_games_watcher.is_error()) {
@@ -92,8 +92,8 @@ void readSavedGamesInfo(SavedGamesCatalogue* catalogue)
 
         SavedGameInfo* savedGame = catalogue->savedGames.appendBlank();
 
-        savedGame->shortName = intern(&catalogue->stringsTable, get_file_name(file_info.filename).deprecated_to_string());
-        savedGame->fullPath = intern(&catalogue->stringsTable, constructPath({ catalogue->savedGamesPath, file_info.filename }));
+        savedGame->shortName = catalogue->stringsTable.intern(get_file_name(file_info.filename).deprecated_to_string());
+        savedGame->fullPath = catalogue->stringsTable.intern(constructPath({ catalogue->savedGamesPath, file_info.filename }));
         savedGame->isReadable = false;
 
         FileHandle savedFile = openFile(savedGame->fullPath, FileAccessMode::Read);
@@ -108,8 +108,8 @@ void readSavedGamesInfo(SavedGamesCatalogue* catalogue)
                     SAVSection_Meta* meta = reader.readStruct<SAVSection_Meta>(0);
 
                     savedGame->saveTime = DateTime::from_unix_timestamp(meta->saveTimestamp);
-                    savedGame->cityName = intern(&catalogue->stringsTable, reader.readString(meta->cityName));
-                    savedGame->playerName = intern(&catalogue->stringsTable, reader.readString(meta->playerName));
+                    savedGame->cityName = catalogue->stringsTable.intern(reader.readString(meta->cityName));
+                    savedGame->playerName = catalogue->stringsTable.intern(reader.readString(meta->playerName));
                     savedGame->citySize = v2i(meta->cityWidth, meta->cityHeight);
                     savedGame->funds = meta->funds;
                     savedGame->population = meta->population;
@@ -371,7 +371,7 @@ bool saveGame(String saveName)
         UI::Toast::show(getText("msg_save_success"_s, { saveFile.path }));
 
         // Store that we saved it
-        savedGamesCatalogue.activeSavedGameName = intern(&catalogue->stringsTable, saveName);
+        savedGamesCatalogue.activeSavedGameName = catalogue->stringsTable.intern(saveName);
     } else {
         UI::Toast::show(getText("msg_save_failure"_s, { saveFile.path }));
     }

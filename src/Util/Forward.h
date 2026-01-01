@@ -18,6 +18,7 @@ class Rect2;
 class Rect2I;
 class String;
 class StringBase;
+class StringTable;
 class StringView;
 class TokenReader;
 struct V2;

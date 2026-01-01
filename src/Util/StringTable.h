@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2015-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -16,8 +16,10 @@
 // But, that works and is fairly simple so I'm going with it.
 //
 
-struct StringTable {
-    HashTable<String> table;
-};
+class StringTable {
+public:
+    String intern(StringView input);
 
-String intern(StringTable* table, String input);
+private:
+    HashTable<String> m_table;
+};

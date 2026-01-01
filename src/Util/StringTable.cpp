@@ -1,29 +1,25 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2015-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "StringTable.h"
-#include <Util/Assert.h>
 
-String intern(StringTable* table, String input)
+String StringTable::intern(StringView input)
 {
-    ASSERT(input.is_valid());
+    String input_as_string = input.deprecated_to_string();
+    HashTableEntry<String>& entry = *m_table.findOrAddEntry(input_as_string);
+    if (!entry.isOccupied) {
+        m_table.count++;
+        entry.isOccupied = true;
+        entry.isGravestone = false;
 
-    HashTable<String>* hashTable = &table->table;
-
-    HashTableEntry<String>* entry = hashTable->findOrAddEntry(input);
-    if (!entry->isOccupied) {
-        hashTable->count++;
-        entry->isOccupied = true;
-        entry->isGravestone = false;
-
-        String internedString = hashTable->keyDataArena.allocate_string(input);
-        internedString.hash();
-        entry->key = internedString;
-        entry->value = internedString;
+        String interned_string = m_table.keyDataArena.allocate_string(input);
+        interned_string.hash();
+        entry.key = interned_string;
+        entry.value = interned_string;
     }
 
-    return entry->value;
+    return entry.value;
 }

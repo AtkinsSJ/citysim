@@ -27,23 +27,23 @@ void initAssets()
     s_assets = MemoryArena::bootstrap<AssetManager>("Assets"_s);
 
     String basePath = String::from_null_terminated(SDL_GetBasePath());
-    s_assets->assetsPath = intern(&s_assets->assetStrings, constructPath({ basePath, "assets"_s }));
+    s_assets->assetsPath = s_assets->assetStrings.intern(constructPath({ basePath, "assets"_s }));
 
     // NB: We only need to define these for s_assets in the root s_assets/ directory
     // Well, for now at least.
     // - Sam, 19/05/2019
-    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "buildings"_s), AssetType::BuildingDefs);
-    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "cursors"_s), AssetType::CursorDefs);
-    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "keymap"_s), AssetType::DevKeymap);
-    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "palettes"_s), AssetType::PaletteDefs);
-    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "sprites"_s), AssetType::SpriteDefs);
-    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "terrain"_s), AssetType::TerrainDefs);
-    s_assets->fileExtensionToType.put(intern(&s_assets->assetStrings, "theme"_s), AssetType::UITheme);
+    s_assets->fileExtensionToType.put(s_assets->assetStrings.intern("buildings"_s), AssetType::BuildingDefs);
+    s_assets->fileExtensionToType.put(s_assets->assetStrings.intern("cursors"_s), AssetType::CursorDefs);
+    s_assets->fileExtensionToType.put(s_assets->assetStrings.intern("keymap"_s), AssetType::DevKeymap);
+    s_assets->fileExtensionToType.put(s_assets->assetStrings.intern("palettes"_s), AssetType::PaletteDefs);
+    s_assets->fileExtensionToType.put(s_assets->assetStrings.intern("sprites"_s), AssetType::SpriteDefs);
+    s_assets->fileExtensionToType.put(s_assets->assetStrings.intern("terrain"_s), AssetType::TerrainDefs);
+    s_assets->fileExtensionToType.put(s_assets->assetStrings.intern("theme"_s), AssetType::UITheme);
 
-    s_assets->directoryNameToType.put(intern(&s_assets->assetStrings, "fonts"_s), AssetType::BitmapFont);
-    s_assets->directoryNameToType.put(intern(&s_assets->assetStrings, "shaders"_s), AssetType::Shader);
-    s_assets->directoryNameToType.put(intern(&s_assets->assetStrings, "textures"_s), AssetType::Texture);
-    s_assets->directoryNameToType.put(intern(&s_assets->assetStrings, "locale"_s), AssetType::Texts);
+    s_assets->directoryNameToType.put(s_assets->assetStrings.intern("fonts"_s), AssetType::BitmapFont);
+    s_assets->directoryNameToType.put(s_assets->assetStrings.intern("shaders"_s), AssetType::Shader);
+    s_assets->directoryNameToType.put(s_assets->assetStrings.intern("textures"_s), AssetType::Texture);
+    s_assets->directoryNameToType.put(s_assets->assetStrings.intern("locale"_s), AssetType::Texts);
 
     // NB: The arena block size is 1MB currently, so make sure that this number * sizeof(Asset) is less than that!
     // (Otherwise, we waste a LOT of memory with almost-empty memory blocks.)
@@ -182,7 +182,7 @@ void addChildAsset(Asset* parent, Asset* child)
 
 Asset* addAsset(AssetType type, String shortName, Flags<AssetFlags> flags)
 {
-    String internedShortName = intern(&s_assets->assetStrings, shortName);
+    String internedShortName = s_assets->assetStrings.intern(shortName);
 
     Asset* existing = getAssetIfExists(type, internedShortName);
     if (existing)
@@ -192,7 +192,7 @@ Asset* addAsset(AssetType type, String shortName, Flags<AssetFlags> flags)
     asset->type = type;
     asset->shortName = internedShortName;
     if (flags.has(AssetFlags::IsAFile)) {
-        asset->fullName = intern(&s_assets->assetStrings, getAssetPath(asset->type, internedShortName));
+        asset->fullName = s_assets->assetStrings.intern(getAssetPath(asset->type, internedShortName));
         if (auto locale_string = get_file_locale_segment(asset->fullName); locale_string.has_value()) {
             asset->locale = locale_from_string(locale_string.value().deprecated_to_string());
             if (!asset->locale.has_value())
@@ -633,7 +633,7 @@ void addAssetsFromDirectory(String subDirectory, Optional<AssetType> manualAsset
             continue;
         }
 
-        String filename = intern(&s_assets->assetStrings, file_info.filename);
+        String filename = s_assets->assetStrings.intern(file_info.filename);
         AssetType assetType = [&manualAssetType, &filename]() {
             // Attempt to categorise the asset based on file extension
             if (manualAssetType.has_value())
@@ -751,7 +751,7 @@ SpriteRef getSpriteRef(String groupName, s32 spriteIndex)
 {
     SpriteRef result = {};
 
-    result.spriteGroupName = intern(&s_assets->assetStrings, groupName);
+    result.spriteGroupName = s_assets->assetStrings.intern(groupName);
     result.spriteIndex = spriteIndex;
 
     // NB: We don't retrieve the sprite now, we just leave the pointerRetrievedTicks value at 0
@@ -925,7 +925,7 @@ void loadCursorDefs(Blob data, Asset* asset)
     reader.restart();
 
     while (reader.load_next_line()) {
-        String name = intern(&s_assets->assetStrings, reader.next_token());
+        String name = s_assets->assetStrings.intern(reader.next_token());
         String filename = reader.next_token();
 
         auto hot_x = reader.read_int<s32>();
@@ -934,7 +934,7 @@ void loadCursorDefs(Blob data, Asset* asset)
         if (hot_x.has_value() && hot_y.has_value()) {
             // Add the cursor
             Asset* cursorAsset = addAsset(AssetType::Cursor, name, {});
-            cursorAsset->cursor.imageFilePath = intern(&s_assets->assetStrings, getAssetPath(AssetType::Cursor, filename));
+            cursorAsset->cursor.imageFilePath = s_assets->assetStrings.intern(getAssetPath(AssetType::Cursor, filename));
             cursorAsset->cursor.hotspot = v2i(hot_x.release_value(), hot_y.release_value());
             addChildAsset(asset, cursorAsset);
         } else {

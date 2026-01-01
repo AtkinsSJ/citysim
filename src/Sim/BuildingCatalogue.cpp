@@ -92,7 +92,7 @@ BuildingDef* appendNewBuildingDef(String name)
 {
     Indexed<BuildingDef> newDef = buildingCatalogue.allBuildings.append();
     BuildingDef& result = newDef.value();
-    result.name = intern(&buildingCatalogue.buildingNames, name);
+    result.name = buildingCatalogue.buildingNames.intern(name);
     result.typeID = newDef.index();
 
     result.fireRisk = 1.0f;
@@ -171,8 +171,8 @@ void loadBuildingDefs(Blob data, Asset* asset)
                 asset->buildingDefs.buildingIDs.append(def->name);
 
                 def->isIntersection = true;
-                def->intersectionPart1Name = intern(&catalogue->buildingNames, part1Name);
-                def->intersectionPart2Name = intern(&catalogue->buildingNames, part2Name);
+                def->intersectionPart1Name = catalogue->buildingNames.intern(part1Name);
+                def->intersectionPart2Name = catalogue->buildingNames.intern(part2Name);
             } else if (firstWord == "Template"_s) {
                 String name = reader.next_token();
                 if (name.is_empty()) {
@@ -312,7 +312,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
                         def->landValueEffect = land_value.release_value();
                     }
                 } else if (firstWord == "name"_s) {
-                    def->textAssetName = intern(&asset_manager().assetStrings, reader.next_token());
+                    def->textAssetName = asset_manager().assetStrings.intern(reader.next_token());
                 } else if (firstWord == "pollution"_s) {
                     if (auto pollution = EffectRadius::read(reader); pollution.has_value()) {
                         def->pollutionEffect = pollution.release_value();
@@ -354,7 +354,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
                         return;
                     }
                 } else if (firstWord == "sprite"_s) {
-                    String spriteName = intern(&asset_manager().assetStrings, reader.next_token());
+                    String spriteName = asset_manager().assetStrings.intern(reader.next_token());
                     def->spriteName = spriteName;
                 } else if (firstWord == "variant"_s) {
                     //
@@ -382,7 +382,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
                         *variant = {};
 
                         String directionFlags = reader.next_token();
-                        String spriteName = intern(&asset_manager().assetStrings, reader.next_token());
+                        String spriteName = asset_manager().assetStrings.intern(reader.next_token());
 
                         // Check the values are valid first, because that's less verbose than checking each one individually.
                         for (auto i = 0; i < directionFlags.length(); i++) {

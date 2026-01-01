@@ -56,7 +56,7 @@ Optional<DrawableStyle> readDrawableStyle(LineReader* reader)
         DrawableStyle drawable = {};
         drawable.type = DrawableType::Ninepatch;
         drawable.color = color.value_or(Colour::white());
-        drawable.ninepatch = AssetRef { AssetType::Ninepatch, intern(&asset_manager().assetStrings, ninepatchName) };
+        drawable.ninepatch = AssetRef { AssetType::Ninepatch, asset_manager().assetStrings.intern(ninepatchName) };
 
         result = move(drawable);
     } else if (typeName == "sprite"_s) {
@@ -404,7 +404,7 @@ void loadUITheme(Blob data, Asset* asset)
                 if (foundStyleType.has_value()) {
                     UI::StyleType styleType = foundStyleType.release_value();
 
-                    String name = intern(&asset_manager().assetStrings, reader.next_token());
+                    String name = asset_manager().assetStrings.intern(reader.next_token());
 
                     auto& pack = *styles.findOrAdd(name);
                     target = &pack[styleType];
@@ -475,7 +475,7 @@ void loadUITheme(Blob data, Asset* asset)
                         } break;
 
                         case UI::PropType::Font: {
-                            String value = intern(&asset_manager().assetStrings, reader.next_token());
+                            String value = asset_manager().assetStrings.intern(reader.next_token());
                             Optional<String> fontFilename = fontNamesToAssetNames.find_value(value);
                             if (fontFilename.has_value()) {
                                 target->set_property(firstWord, fontFilename.value());
@@ -498,7 +498,7 @@ void loadUITheme(Blob data, Asset* asset)
 
                         case UI::PropType::Style: // NB: Style names are just Strings now
                         case UI::PropType::String: {
-                            String value = intern(&asset_manager().assetStrings, reader.next_token());
+                            String value = asset_manager().assetStrings.intern(reader.next_token());
                             // Strings are read directly, so we don't need an if(valid) check
                             target->set_property(firstWord, value);
                         } break;
