@@ -43,6 +43,22 @@ public:
         return *this;
     }
 
+    template<typename U>
+    OwnPtr& operator=(OwnPtr<U>&& other)
+    {
+        clear();
+        m_ptr = other.leak_ptr();
+        return *this;
+    }
+
+    template<typename U>
+    OwnPtr& operator=(NonnullOwnPtr<U>&& other)
+    {
+        clear();
+        m_ptr = other.leak_ptr();
+        return *this;
+    }
+
     static OwnPtr adopt(T* pointer)
     {
         return OwnPtr { pointer };
@@ -131,8 +147,14 @@ public:
 
     NonnullOwnPtr& operator=(NonnullOwnPtr&& other)
     {
-        m_ptr = other.m_ptr;
-        other.m_ptr = nullptr;
+        m_ptr = other.leak_ptr();
+        return *this;
+    }
+
+    template<typename U>
+    NonnullOwnPtr& operator=(NonnullOwnPtr<U>&& other)
+    {
+        m_ptr = other.leak_ptr();
         return *this;
     }
 

@@ -130,4 +130,29 @@ void test_main()
     EXPECT(times_constructed == 2);
     EXPECT(times_destructed == 2);
     reset();
+
+    // Assigning from a different but compatible type.
+    {
+        struct A {
+            int foo { 0 };
+        };
+        struct B : A { };
+
+        NonnullOwnPtr<A> nonnull_a = adopt_own(*new A);
+        EXPECT(nonnull_a->foo == 0);
+        nonnull_a->foo = 17;
+        EXPECT(nonnull_a->foo == 17);
+        nonnull_a = adopt_own(*new B);
+        EXPECT(nonnull_a->foo == 0);
+        nonnull_a->foo = 23;
+        EXPECT(nonnull_a->foo == 23);
+
+        // And ownptr
+        OwnPtr<A> a = move(nonnull_a);
+        EXPECT(a->foo == 23);
+        a = adopt_own(*new B);
+        EXPECT(a->foo == 0);
+        a->foo = 1337;
+        EXPECT(a->foo == 1337);
+    }
 }
