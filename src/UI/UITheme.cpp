@@ -100,64 +100,64 @@ V2I DrawableStyle::getSize()
     return result;
 }
 
-void Style::set_property(String const& property, PropertyValue&& value)
+void Style::set_property(StringView property, PropertyValue&& value)
 {
-    m_properties.put(property, move(value));
+    m_properties.put(property.deprecated_to_string(), move(value));
 }
 
-bool Style::get_bool(String const& property, bool default_value) const
+bool Style::get_bool(StringView property, bool default_value) const
 {
     return get_property_value<bool>(property).value_or(default_value);
 }
 
-float Style::get_float(String const& property, float default_value) const
+float Style::get_float(StringView property, float default_value) const
 {
     return get_property_value<float>(property).value_or(default_value);
 }
 
-s32 Style::get_s32(String const& property, s32 default_value) const
+s32 Style::get_s32(StringView property, s32 default_value) const
 {
     return get_property_value<s32>(property).value_or(default_value);
 }
 
-Alignment Style::get_alignment(String const& property, Alignment const& default_value) const
+Alignment Style::get_alignment(StringView property, Alignment const& default_value) const
 {
     return get_property_value<Alignment>(property).value_or(default_value);
 }
 
-AssetRef Style::get_asset_ref(String const& property, AssetType asset_type, String const& default_name) const
+AssetRef Style::get_asset_ref(StringView property, AssetType asset_type, String const& default_name) const
 {
     if (auto asset_name = get_property_value<String>(property); asset_name.has_value())
         return AssetRef { asset_type, asset_name.release_value() };
     return AssetRef { asset_type, default_name };
 }
 
-Colour Style::get_colour(String const& property, Colour const& default_value) const
+Colour Style::get_colour(StringView property, Colour const& default_value) const
 {
     return get_property_value<Colour>(property).value_or(default_value);
 }
 
-DrawableStyle Style::get_drawable_style(String const& property, DrawableStyle const& default_value) const
+DrawableStyle Style::get_drawable_style(StringView property, DrawableStyle const& default_value) const
 {
     return get_property_value<DrawableStyle>(property).value_or(default_value);
 }
 
-Padding Style::get_padding(String const& property, Padding const& default_value) const
+Padding Style::get_padding(StringView property, Padding const& default_value) const
 {
     return get_property_value<Padding>(property).value_or(default_value);
 }
 
-String Style::get_string(String const& property, String const& default_value) const
+String Style::get_string(StringView property, String const& default_value) const
 {
     return get_property_value<String>(property).value_or(default_value);
 }
 
-V2I Style::get_v2i(String const& property, V2I const& default_value) const
+V2I Style::get_v2i(StringView property, V2I const& default_value) const
 {
     return get_v2i(property).value_or(default_value);
 }
 
-Optional<V2I> Style::get_v2i(String const& property) const
+Optional<V2I> Style::get_v2i(StringView property) const
 {
     return get_property_value<V2I>(property);
 }

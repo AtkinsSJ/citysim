@@ -276,28 +276,28 @@ public:
 
     using PropertyValue = Variant<bool, float, s32, Alignment, Colour, DrawableStyle, Padding, String, V2I>;
 
-    void set_property(String const& property, PropertyValue&& value);
+    void set_property(StringView property, PropertyValue&& value);
 
-    bool get_bool(String const& property, bool default_value) const;
-    float get_float(String const& property, float default_value) const;
-    s32 get_s32(String const& property, s32 default_value) const;
-    Alignment get_alignment(String const& property, Alignment const& default_value) const;
-    AssetRef get_asset_ref(String const& property, AssetType, String const& default_name = "default"_h) const;
-    Colour get_colour(String const& property, Colour const& default_value) const;
-    DrawableStyle get_drawable_style(String const& property, DrawableStyle const& default_value) const;
-    Padding get_padding(String const& property, Padding const& default_value) const;
-    String get_string(String const& property, String const& default_value) const;
-    V2I get_v2i(String const& property, V2I const& default_value) const;
-    Optional<V2I> get_v2i(String const& property) const;
+    bool get_bool(StringView property, bool default_value) const;
+    float get_float(StringView property, float default_value) const;
+    s32 get_s32(StringView property, s32 default_value) const;
+    Alignment get_alignment(StringView property, Alignment const& default_value) const;
+    AssetRef get_asset_ref(StringView property, AssetType, String const& default_name = "default"_h) const;
+    Colour get_colour(StringView property, Colour const& default_value) const;
+    DrawableStyle get_drawable_style(StringView property, DrawableStyle const& default_value) const;
+    Padding get_padding(StringView property, Padding const& default_value) const;
+    String get_string(StringView property, String const& default_value) const;
+    V2I get_v2i(StringView property, V2I const& default_value) const;
+    Optional<V2I> get_v2i(StringView property) const;
 
 private:
     // FIXME: Remove `mutable` once HashTable is const-correct
     mutable HashTable<PropertyValue> m_properties;
 
     template<typename T>
-    Optional<T> get_property_value(String const& property) const
+    Optional<T> get_property_value(StringView property) const
     {
-        if (auto property_value = m_properties.find(property); property_value.has_value()) {
+        if (auto property_value = m_properties.find(property.deprecated_to_string()); property_value.has_value()) {
             if (auto* value = property_value->try_get<T>())
                 return *value;
         }
