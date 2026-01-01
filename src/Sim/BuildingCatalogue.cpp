@@ -88,7 +88,7 @@ void _assignBuildingCategories(BuildingCatalogue* catalogue, BuildingDef* def)
     ASSERT(catalogue->allBuildings.count == (catalogue->buildingsByName.count + 1)); // NB: +1 for the null building.
 }
 
-BuildingDef* appendNewBuildingDef(String name)
+BuildingDef* appendNewBuildingDef(StringView name)
 {
     Indexed<BuildingDef> newDef = buildingCatalogue.allBuildings.append();
     BuildingDef& result = newDef.value();
