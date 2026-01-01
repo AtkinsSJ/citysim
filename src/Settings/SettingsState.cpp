@@ -46,15 +46,20 @@ void BaseSettingsState::load_from_file(String filename, Blob data)
     LineReader reader { filename, data };
 
     while (reader.load_next_line()) {
-        String settingName = reader.next_token('=');
-
-        auto maybe_setting = m_settings_by_name.find(settingName);
-
-        if (!maybe_setting.has_value()) {
-            reader.warn("Unrecognized setting: {0}"_s, { settingName });
-        } else {
-            (*maybe_setting.value())->set_from_file(reader);
+        auto maybe_setting_name = reader.next_token('=');
+        if (!maybe_setting_name.has_value()) {
+            reader.warn("Setting has no name"_s);
+            continue;
         }
+
+        auto setting_name = maybe_setting_name.value().deprecated_to_string();
+        auto maybe_setting = m_settings_by_name.find(setting_name);
+        if (!maybe_setting.has_value()) {
+            reader.warn("Unrecognized setting: {0}"_s, { setting_name });
+            continue;
+        }
+
+        (*maybe_setting.value())->set_from_file(reader);
     }
 }
 

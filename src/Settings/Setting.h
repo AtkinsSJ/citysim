@@ -132,16 +132,23 @@ private:
 
     virtual bool set_from_file(LineReader& reader) override
     {
-        String token = reader.next_token();
+        auto token = reader.next_token();
+        if (!token.has_value()) {
+            reader.error("Missing value for setting `{}`"_s, { name() });
+            return false;
+        }
+
+        auto value = token.release_value();
+
         // Look it up in the enum data
         for (auto it : enum_values<E>()) {
-            if (m_enum_data[it].id == token) {
+            if (m_enum_data[it].id == value) {
                 set_value(to_underlying(it));
                 return true;
             }
         }
 
-        reader.error("Couldn't find '{0}' in the list of valid values for setting '{1}'."_s, { token, name() });
+        reader.error("Couldn't find '{0}' in the list of valid values for setting '{1}'."_s, { value, name() });
         return false;
     }
 

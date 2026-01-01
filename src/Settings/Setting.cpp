@@ -127,9 +127,13 @@ void StringSetting::set_value_from(Setting const& other)
 
 bool StringSetting::set_from_file(LineReader& reader)
 {
-    String value = Settings::the().arena.allocate_string(reader.next_token());
-    set_value(value);
-    return true;
+    if (auto token = reader.next_token(); token.has_value()) {
+        String value = Settings::the().arena.allocate_string(token.value());
+        set_value(value);
+        return true;
+    }
+    reader.error("Missing value for setting `{}`"_s, { name() });
+    return false;
 }
 
 String StringSetting::serialize_value() const

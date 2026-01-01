@@ -48,8 +48,8 @@ public:
     String current_line() const;
     String remainder_of_current_line() const;
 
-    String next_token(Optional<char> split_char = {});
-    String peek_token(Optional<char> split_char = {});
+    Optional<StringView> next_token(Optional<char> split_char = {});
+    Optional<StringView> peek_token(Optional<char> split_char = {});
 
     s32 count_remaining_tokens_in_current_line(Optional<char> split_char = {}) const;
     u32 count_occurrences_of_property_in_current_command(String const& property_name) const;
@@ -67,13 +67,14 @@ public:
     template<typename T>
     Optional<T> read_int(IsRequired is_required = IsRequired::Yes, Optional<char> split_char = {})
     {
-        String token = next_token(split_char);
+        auto maybe_token = next_token(split_char);
 
-        if (token.is_empty()) {
+        if (!maybe_token.has_value()) {
             if (is_required == IsRequired::Yes)
                 error("Expected an integer value."_s);
             return {};
         }
+        auto& token = maybe_token.value();
 
         if (auto maybe_s64 = token.to_int(); maybe_s64.has_value()) {
             if (canCastIntTo<T>(maybe_s64.value()))

@@ -115,7 +115,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
     // Same for variants as they have their own structs
     s32 totalVariantCount = 0;
     while (reader.load_next_line()) {
-        String command = reader.next_token();
+        auto command = reader.next_token();
         if (command == ":Building"_s || command == ":Intersection"_s) {
             buildingCount++;
         } else if (command == "variant"_s) {
@@ -136,12 +136,15 @@ void loadBuildingDefs(Blob data, Asset* asset)
     BuildingDef* def = nullptr;
 
     while (reader.load_next_line()) {
-        String firstWord = reader.next_token();
+        auto maybe_first_word = reader.next_token();
+        if (!maybe_first_word.has_value())
+            break;
+        auto& firstWord = maybe_first_word.value();
 
-        if (firstWord[0] == ':') // Definitions
+        if (firstWord.starts_with(':')) // Definitions
         {
             // Define something
-            firstWord = firstWord.view().substring(1).deprecated_to_string();
+            firstWord = firstWord.substring(1);
 
             if (def != nullptr) {
                 // Now that the previous building is done, we can categorise it
@@ -149,38 +152,38 @@ void loadBuildingDefs(Blob data, Asset* asset)
             }
 
             if (firstWord == "Building"_s) {
-                String name = reader.next_token();
-                if (name.is_empty()) {
+                auto name = reader.next_token();
+                if (!name.has_value()) {
                     reader.error("Couldn't parse Building. Expected: ':Building identifier'"_s);
                     return;
                 }
 
-                def = appendNewBuildingDef(name);
+                def = appendNewBuildingDef(name.value());
                 asset->buildingDefs.buildingIDs.append(def->name);
             } else if (firstWord == "Intersection"_s) {
-                String name = reader.next_token();
-                String part1Name = reader.next_token();
-                String part2Name = reader.next_token();
+                auto name = reader.next_token();
+                auto part1Name = reader.next_token();
+                auto part2Name = reader.next_token();
 
-                if (name.is_empty() || part1Name.is_empty() || part2Name.is_empty()) {
+                if (!name.has_value() || !part1Name.has_value() || !part2Name.has_value()) {
                     reader.error("Couldn't parse Intersection. Expected: ':Intersection identifier part1 part2'"_s);
                     return;
                 }
 
-                def = appendNewBuildingDef(name);
+                def = appendNewBuildingDef(name.value());
                 asset->buildingDefs.buildingIDs.append(def->name);
 
                 def->isIntersection = true;
-                def->intersectionPart1Name = catalogue->buildingNames.intern(part1Name);
-                def->intersectionPart2Name = catalogue->buildingNames.intern(part2Name);
+                def->intersectionPart1Name = catalogue->buildingNames.intern(part1Name.value());
+                def->intersectionPart2Name = catalogue->buildingNames.intern(part2Name.value());
             } else if (firstWord == "Template"_s) {
-                String name = reader.next_token();
-                if (name.is_empty()) {
+                auto name = reader.next_token();
+                if (!name.has_value()) {
                     reader.error("Couldn't parse Template. Expected: ':Template identifier'"_s);
                     return;
                 }
 
-                def = templates.put(temp_arena().allocate_string(name));
+                def = templates.put(name.value().deprecated_to_string());
             } else {
                 reader.warn("Only :Building, :Intersection or :Template definitions are supported right now."_s);
             }
@@ -199,7 +202,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
                 return;
             } else {
                 if (firstWord == "build"_s) {
-                    String buildMethodString = reader.next_token();
+                    auto buildMethodString = reader.next_token();
                     if (auto cost = reader.read_int<s32>(); cost.has_value()) {
                         if (buildMethodString == "paint"_s) {
                             def->buildMethod = BuildMethod::Paint;
@@ -230,7 +233,7 @@ void loadBuildingDefs(Blob data, Asset* asset)
                 } else if (firstWord == "carries_transport"_s) {
                     auto token_count = reader.count_remaining_tokens_in_current_line();
                     for (auto tokenIndex = 0u; tokenIndex < token_count; tokenIndex++) {
-                        String transportName = reader.next_token();
+                        auto transportName = reader.next_token().release_value();
 
                         if (transportName == "road"_s) {
                             def->transportTypes.add(TransportType::Road);
@@ -243,17 +246,26 @@ void loadBuildingDefs(Blob data, Asset* asset)
                 } else if (firstWord == "crime_protection"_s) {
                     if (auto crime_protection = EffectRadius::read(reader); crime_protection.has_value()) {
                         def->policeEffect = crime_protection.release_value();
+                    } else {
+                        return;
                     }
                 } else if (firstWord == "demolish_cost"_s) {
                     if (auto demolish_cost = reader.read_int<s32>(); demolish_cost.has_value()) {
                         def->demolishCost = demolish_cost.release_value();
+                    } else {
+                        return;
                     }
                 } else if (firstWord == "extends"_s) {
-                    String templateName = reader.next_token();
+                    auto templateName = reader.next_token();
+                    if (!templateName.has_value()) {
+                        reader.error("Missing template name in `extends`"_s);
+                        return;
+                    }
 
-                    auto templateDef = templates.find(templateName);
+                    auto templateDef = templates.find(templateName.value().deprecated_to_string());
                     if (!templateDef.has_value()) {
-                        reader.error("Could not find template named '{0}'. Templates must be defined before the buildings that use them, and in the same file."_s, { templateName });
+                        reader.error("Could not find template named '{0}'. Templates must be defined before the buildings that use them, and in the same file."_s, { templateName.value() });
+                        return;
                     } else {
                         BuildingDef* tDef = templateDef.value();
 
@@ -278,13 +290,17 @@ void loadBuildingDefs(Blob data, Asset* asset)
                 } else if (firstWord == "fire_protection"_s) {
                     if (auto fire_protection = EffectRadius::read(reader); fire_protection.has_value()) {
                         def->fireProtection = fire_protection.release_value();
+                    } else {
+                        return;
                     }
                 } else if (firstWord == "fire_risk"_s) {
                     if (auto fire_risk = reader.read_float(); fire_risk.has_value()) {
                         def->fireRisk = fire_risk.release_value();
+                    } else {
+                        return;
                     }
                 } else if (firstWord == "grows_in"_s) {
-                    String zoneName = reader.next_token();
+                    auto zoneName = reader.next_token();
                     if (zoneName == "r"_s) {
                         def->growsInZone = ZoneType::Residential;
                     } else if (zoneName == "c"_s) {
@@ -298,32 +314,51 @@ void loadBuildingDefs(Blob data, Asset* asset)
                 } else if (firstWord == "health_effect"_s) {
                     if (auto health_effect = EffectRadius::read(reader); health_effect.has_value()) {
                         def->healthEffect = health_effect.release_value();
+                    } else {
+                        return;
                     }
                 } else if (firstWord == "jail_size"_s) {
                     if (auto jail_size = reader.read_int<s32>(); jail_size.has_value()) {
                         def->jailCapacity = jail_size.release_value();
+                    } else {
+                        return;
                     }
                 } else if (firstWord == "jobs"_s) {
                     if (auto jobs = reader.read_int<s32>(); jobs.has_value()) {
                         def->jobs = jobs.release_value();
+                    } else {
+                        return;
                     }
                 } else if (firstWord == "land_value"_s) {
                     if (auto land_value = EffectRadius::read(reader); land_value.has_value()) {
                         def->landValueEffect = land_value.release_value();
+                    } else {
+                        return;
                     }
                 } else if (firstWord == "name"_s) {
-                    def->textAssetName = asset_manager().assetStrings.intern(reader.next_token());
+                    if (auto name = reader.next_token(); name.has_value()) {
+                        def->textAssetName = asset_manager().assetStrings.intern(name.value());
+                    } else {
+                        reader.error("Missing value for `name`"_s);
+                        return;
+                    }
                 } else if (firstWord == "pollution"_s) {
                     if (auto pollution = EffectRadius::read(reader); pollution.has_value()) {
                         def->pollutionEffect = pollution.release_value();
+                    } else {
+                        return;
                     }
                 } else if (firstWord == "power_gen"_s) {
                     if (auto power_gen = reader.read_int<s32>(); power_gen.has_value()) {
                         def->power = power_gen.release_value();
+                    } else {
+                        return;
                     }
                 } else if (firstWord == "power_use"_s) {
                     if (auto power_use = reader.read_int<s32>(); power_use.has_value()) {
                         def->power = -power_use.release_value();
+                    } else {
+                        return;
                     }
                 } else if (firstWord == "requires_transport_connection"_s) {
                     if (auto requires_transport_connection = reader.read_bool(); requires_transport_connection.has_value()) {
@@ -332,10 +367,14 @@ void loadBuildingDefs(Blob data, Asset* asset)
                         } else {
                             def->flags.remove(BuildingFlags::RequiresTransportConnection);
                         }
+                    } else {
+                        return;
                     }
                 } else if (firstWord == "residents"_s) {
                     if (auto residents = reader.read_int<s32>(); residents.has_value()) {
                         def->residents = residents.release_value();
+                    } else {
+                        return;
                     }
                 } else if (firstWord == "size"_s) {
                     auto w = reader.read_int<s32>();
@@ -354,8 +393,13 @@ void loadBuildingDefs(Blob data, Asset* asset)
                         return;
                     }
                 } else if (firstWord == "sprite"_s) {
-                    String spriteName = asset_manager().assetStrings.intern(reader.next_token());
-                    def->spriteName = spriteName;
+                    if (auto name = reader.next_token(); name.has_value()) {
+                        String spriteName = asset_manager().assetStrings.intern(name.value());
+                        def->spriteName = spriteName;
+                    } else {
+                        reader.error("Missing name in `sprite`"_s);
+                        return;
+                    }
                 } else if (firstWord == "variant"_s) {
                     //
                     // NB: Not really related to this code but I needed somewhere to put this:
@@ -381,8 +425,14 @@ void loadBuildingDefs(Blob data, Asset* asset)
 
                         *variant = {};
 
-                        String directionFlags = reader.next_token();
-                        String spriteName = asset_manager().assetStrings.intern(reader.next_token());
+                        auto maybe_direction_flags = reader.next_token();
+                        auto maybe_sprite_name = reader.next_token();
+                        if (!maybe_direction_flags.has_value() || !maybe_sprite_name.has_value()) {
+                            reader.error("`variant` missing direction flags or sprite name"_s);
+                            return;
+                        }
+                        auto directionFlags = maybe_direction_flags.release_value();
+                        auto spriteName = asset_manager().assetStrings.intern(maybe_sprite_name.value());
 
                         // Check the values are valid first, because that's less verbose than checking each one individually.
                         for (auto i = 0; i < directionFlags.length(); i++) {
@@ -419,9 +469,11 @@ void loadBuildingDefs(Blob data, Asset* asset)
                         variant->spriteName = spriteName;
                     } else {
                         reader.error("Too many variants for building '{0}'!"_s, { def->name });
+                        return;
                     }
                 } else {
                     reader.error("Unrecognized token: {0}"_s, { firstWord });
+                    return;
                 }
             }
         }

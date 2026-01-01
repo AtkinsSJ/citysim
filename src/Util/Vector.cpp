@@ -75,7 +75,7 @@ V2I v2i(V2 source)
 
 Optional<V2I> V2I::read(LineReader& reader)
 {
-    String token = reader.peek_token();
+    auto token = reader.peek_token();
 
     auto x = reader.read_int<s32>(LineReader::IsRequired::Yes, 'x');
     auto y = reader.read_int<s32>();
@@ -83,7 +83,7 @@ Optional<V2I> V2I::read(LineReader& reader)
     if (x.has_value() && y.has_value())
         return v2i(x.release_value(), y.release_value());
 
-    reader.error("Couldn't parse '{0}' as a V2I, expected 2 integers with an 'x' between, eg '8x12'"_s, { token });
+    reader.error("Couldn't parse '{0}' as a V2I, expected 2 integers with an 'x' between, eg '8x12'"_s, { token.value_or({}) });
     return {};
 }
 

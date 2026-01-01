@@ -144,8 +144,13 @@ ConsoleCommand(setting)
     LineReader reader { "console"_s, Blob { static_cast<smm>(arguments.length()), const_cast<u8*>(reinterpret_cast<u8 const*>(arguments.raw_pointer_to_characters())) } };
     reader.load_next_line();
 
-    auto setting_name = reader.next_token();
-    auto maybe_setting = settings.setting_by_name(setting_name);
+    auto maybe_setting_name = reader.next_token();
+    if (!maybe_setting_name.has_value()) {
+        consoleWriteLine("Missing setting name."_s, ConsoleLineStyle::Error);
+        return;
+    }
+    auto setting_name = maybe_setting_name.release_value();
+    auto maybe_setting = settings.setting_by_name(setting_name.deprecated_to_string());
     if (!maybe_setting.has_value()) {
         consoleWriteLine(myprintf("Unrecognized setting name '{}'."_s, { setting_name }), ConsoleLineStyle::Error);
         return;

@@ -925,8 +925,12 @@ void loadCursorDefs(Blob data, Asset* asset)
     reader.restart();
 
     while (reader.load_next_line()) {
-        String name = s_assets->assetStrings.intern(reader.next_token());
-        String filename = reader.next_token();
+        auto name_token = reader.next_token();
+        auto filename = reader.next_token();
+        if (!name_token.has_value() || !filename.has_value())
+            continue;
+
+        String name = s_assets->assetStrings.intern(name_token.release_value());
 
         auto hot_x = reader.read_int<s32>();
         auto hot_y = reader.read_int<s32>();
@@ -934,7 +938,7 @@ void loadCursorDefs(Blob data, Asset* asset)
         if (hot_x.has_value() && hot_y.has_value()) {
             // Add the cursor
             Asset* cursorAsset = addAsset(AssetType::Cursor, name, {});
-            cursorAsset->cursor.imageFilePath = s_assets->assetStrings.intern(getAssetPath(AssetType::Cursor, filename));
+            cursorAsset->cursor.imageFilePath = s_assets->assetStrings.intern(getAssetPath(AssetType::Cursor, filename.value()));
             cursorAsset->cursor.hotspot = v2i(hot_x.release_value(), hot_y.release_value());
             addChildAsset(asset, cursorAsset);
         } else {
@@ -954,10 +958,8 @@ void loadPaletteDefs(Blob data, Asset* asset)
     // So, we first need to scan through the file to see how many palettes there are in it!
     s32 paletteCount = 0;
     while (reader.load_next_line()) {
-        String command = reader.next_token();
-        if (command == ":Palette"_s) {
+        if (auto command = reader.next_token(); command == ":Palette"_s)
             paletteCount++;
-        }
     }
 
     allocateChildren(asset, paletteCount);
@@ -966,13 +968,22 @@ void loadPaletteDefs(Blob data, Asset* asset)
 
     Asset* paletteAsset = nullptr;
     while (reader.load_next_line()) {
-        String command = reader.next_token();
-        if (command[0] == ':') {
-            command = command.view().substring(1).deprecated_to_string();
+        auto command_token = reader.next_token();
+        if (!command_token.has_value())
+            continue;
+        auto command = command_token.release_value();
+
+        if (command.starts_with(':')) {
+            command = command.substring(1);
 
             if (command == "Palette"_s) {
-                paletteAsset = addAsset(AssetType::Palette, reader.next_token(), {});
-                addChildAsset(asset, paletteAsset);
+                if (auto palette_name = reader.next_token(); palette_name.has_value()) {
+                    paletteAsset = addAsset(AssetType::Palette, palette_name.release_value(), {});
+                    addChildAsset(asset, paletteAsset);
+                } else {
+                    reader.error("Missing name for Palette"_s);
+                    return;
+                }
             } else {
                 reader.error("Unexpected command ':{0}' in palette-definitions file. Only :Palette is allowed!"_s, { command });
                 return;
@@ -984,18 +995,25 @@ void loadPaletteDefs(Blob data, Asset* asset)
             }
 
             if (command == "type"_s) {
-                String type = reader.next_token();
+                auto type = reader.next_token();
+                if (!type.has_value()) {
+                    reader.error("Missing palette type"_s);
+                    return;
+                }
 
                 if (type == "fixed"_s) {
                     paletteAsset->palette.type = Palette::Type::Fixed;
                 } else if (type == "gradient"_s) {
                     paletteAsset->palette.type = Palette::Type::Gradient;
                 } else {
-                    reader.error("Unrecognised palette type '{0}', allowed values are: fixed, gradient"_s, { type });
+                    reader.error("Unrecognised palette type '{0}', allowed values are: fixed, gradient"_s, { type.value() });
+                    return;
                 }
             } else if (command == "size"_s) {
                 if (auto size = reader.read_int<s32>(); size.has_value()) {
                     paletteAsset->palette.size = size.release_value();
+                } else {
+                    return;
                 }
             } else if (command == "color"_s) {
                 if (auto color = Colour::read(reader); color.has_value()) {
@@ -1008,11 +1026,12 @@ void loadPaletteDefs(Blob data, Asset* asset)
                         s32 colorIndex = paletteAsset->palette.paletteData.count;
                         if (colorIndex >= paletteAsset->palette.size) {
                             reader.error("Too many 'color' definitions! 'size' must be large enough."_s);
-                        } else {
-                            paletteAsset->palette.paletteData.append(color.release_value());
+                            return;
                         }
+                        paletteAsset->palette.paletteData.append(color.release_value());
                     } else {
                         reader.error("'color' is only a valid command for fixed palettes."_s);
+                        return;
                     }
                 }
             } else if (command == "from"_s) {
@@ -1021,6 +1040,7 @@ void loadPaletteDefs(Blob data, Asset* asset)
                         paletteAsset->palette.gradient.from = from.release_value();
                     } else {
                         reader.error("'from' is only a valid command for gradient palettes."_s);
+                        return;
                     }
                 }
             } else if (command == "to"_s) {
@@ -1029,10 +1049,12 @@ void loadPaletteDefs(Blob data, Asset* asset)
                         paletteAsset->palette.gradient.to = to.release_value();
                     } else {
                         reader.error("'to' is only a valid command for gradient palettes."_s);
+                        return;
                     }
                 }
             } else {
                 reader.error("Unrecognised command '{0}'"_s, { command });
+                return;
             }
         }
     }
@@ -1053,11 +1075,8 @@ void loadSpriteDefs(Blob data, Asset* asset)
     // Count the number of child s_assets, so we can allocate our spriteNames array
     s32 childAssetCount = 0;
     while (reader.load_next_line()) {
-        String command = reader.next_token();
-
-        if (command.starts_with(':')) {
+        if (auto command = reader.next_token(); command.has_value() && command.value().starts_with(':'))
             childAssetCount++;
-        }
     }
     allocateChildren(asset, childAssetCount);
 
@@ -1065,19 +1084,22 @@ void loadSpriteDefs(Blob data, Asset* asset)
 
     // Now, actually read things
     while (reader.load_next_line()) {
-        String command = reader.next_token();
+        auto maybe_command = reader.next_token();
+        if (!maybe_command.has_value())
+            continue;
+        auto command = maybe_command.release_value();
 
         if (command.starts_with(':')) // Definitions
         {
             // Define something
-            command = command.view().substring(1).deprecated_to_string();
+            command = command.substring(1).deprecated_to_string();
 
             textureAsset = nullptr;
             spriteGroup = nullptr;
 
             if (command == "Ninepatch"_s) {
-                String name = reader.next_token();
-                String filename = reader.next_token();
+                auto name = reader.next_token();
+                auto filename = reader.next_token();
                 auto pu0 = reader.read_int<s32>();
                 auto pu1 = reader.read_int<s32>();
                 auto pu2 = reader.read_int<s32>();
@@ -1087,47 +1109,47 @@ void loadSpriteDefs(Blob data, Asset* asset)
                 auto pv2 = reader.read_int<s32>();
                 auto pv3 = reader.read_int<s32>();
 
-                if (name.is_empty() || filename.is_empty() || !all_have_values(pu0, pu1, pu2, pu3, pv0, pv1, pv2, pv3)) {
+                if (!all_have_values(name, filename, pu0, pu1, pu2, pu3, pv0, pv1, pv2, pv3)) {
                     reader.error("Couldn't parse Ninepatch. Expected: ':Ninepatch identifier filename.png pu0 pu1 pu2 pu3 pv0 pv1 pv2 pv3'"_s);
                     return;
                 }
 
-                Asset* ninepatch = addNinepatch(name, filename, pu0.release_value(), pu1.release_value(), pu2.release_value(), pu3.release_value(), pv0.release_value(), pv1.release_value(), pv2.release_value(), pv3.release_value());
+                Asset* ninepatch = addNinepatch(name.release_value(), filename.release_value(), pu0.release_value(), pu1.release_value(), pu2.release_value(), pu3.release_value(), pv0.release_value(), pv1.release_value(), pv2.release_value(), pv3.release_value());
 
                 addChildAsset(asset, ninepatch);
             } else if (command == "Sprite"_s) {
                 // @Copypasta from the SpriteGroup branch, and the 'sprite' property
-                String name = reader.next_token();
-                String filename = reader.next_token();
+                auto name = reader.next_token();
+                auto filename = reader.next_token();
                 auto spriteSizeIn = V2I::read(reader);
 
-                if (name.is_empty() || filename.is_empty() || !spriteSizeIn.has_value()) {
+                if (!all_have_values(name, filename, spriteSizeIn)) {
                     reader.error("Couldn't parse Sprite. Expected: ':Sprite identifier filename.png SWxSH'"_s);
                     return;
                 }
 
                 spriteSize = spriteSizeIn.release_value();
 
-                Asset* group = addSpriteGroup(name, 1);
+                Asset* group = addSpriteGroup(name.release_value(), 1);
 
                 Sprite* sprite = group->spriteGroup.sprites;
-                sprite->texture = addTexture(filename, false);
+                sprite->texture = addTexture(filename.release_value(), false);
                 sprite->uv = { 0, 0, spriteSize.x, spriteSize.y };
                 sprite->pixelWidth = spriteSize.x;
                 sprite->pixelHeight = spriteSize.y;
 
                 addChildAsset(asset, group);
             } else if (command == "SpriteGroup"_s) {
-                String name = reader.next_token();
-                String filename = reader.next_token();
+                auto name = reader.next_token();
+                auto filename = reader.next_token();
                 auto spriteSizeIn = V2I::read(reader);
 
-                if (name.is_empty() || filename.is_empty() || !spriteSizeIn.has_value()) {
+                if (!all_have_values(name, filename, spriteSizeIn)) {
                     reader.error("Couldn't parse SpriteGroup. Expected: ':SpriteGroup identifier filename.png SWxSH'"_s);
                     return;
                 }
 
-                textureAsset = addTexture(filename, false);
+                textureAsset = addTexture(filename.release_value(), false);
                 spriteSize = spriteSizeIn.release_value();
 
                 s32 spriteCount = reader.count_occurrences_of_property_in_current_command("sprite"_s);
@@ -1135,7 +1157,7 @@ void loadSpriteDefs(Blob data, Asset* asset)
                     reader.error("SpriteGroup must contain at least 1 sprite!"_s);
                     return;
                 }
-                spriteGroup = addSpriteGroup(name, spriteCount);
+                spriteGroup = addSpriteGroup(name.release_value(), spriteCount);
                 spriteIndex = 0;
 
                 addChildAsset(asset, spriteGroup);
@@ -1211,12 +1233,14 @@ void loadTexts(HashTable<String>* texts, Asset* asset, Blob file_data)
     char* write_position = reinterpret_cast<char*>(text_data.writable_data());
 
     while (reader.load_next_line()) {
-        String input_key = reader.next_token();
+        auto input_key = reader.next_token();
+        if (!input_key.has_value())
+            continue;
         String input_text = reader.remainder_of_current_line();
 
         // Store the key
-        string_data_builder.append(input_key);
-        String key { write_position, input_key.length() };
+        string_data_builder.append(input_key.value());
+        String key { write_position, input_key.value().length() };
         write_position += key.length();
 
         // Store the text

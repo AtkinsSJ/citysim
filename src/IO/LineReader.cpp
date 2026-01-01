@@ -70,9 +70,9 @@ u32 LineReader::count_occurrences_of_property_in_current_command(String const& p
 
     auto saved_position = save_state();
     while (mutable_this.load_next_line()) {
-        String first_word = mutable_this.next_token();
-        if (first_word[0] == ':')
-            break; // We've reached the next :Command
+        auto first_word = mutable_this.next_token();
+        if (!first_word.has_value() || first_word.value().starts_with(':'))
+            break; // We're done with this :Command
 
         if (first_word == property_name)
             result++;
@@ -165,20 +165,14 @@ void LineReader::error(String message, std::initializer_list<StringView> args) c
     logError("{0}:{1} - {2}"_s, { m_filename, lineNumber, text });
 }
 
-String LineReader::next_token(Optional<char> split_char)
+Optional<StringView> LineReader::next_token(Optional<char> split_char)
 {
-    // FIXME: Return Optional<StringView> instead.
-    if (auto result = m_state.current_line_reader.next_token(split_char); result.has_value())
-        return result.value().deprecated_to_string();
-    return {};
+    return m_state.current_line_reader.next_token(split_char);
 }
 
-String LineReader::peek_token(Optional<char> split_char)
+Optional<StringView> LineReader::peek_token(Optional<char> split_char)
 {
-    // FIXME: Return Optional<StringView> instead.
-    if (auto result = m_state.current_line_reader.peek_token(split_char); result.has_value())
-        return result.value().deprecated_to_string();
-    return {};
+    return m_state.current_line_reader.peek_token(split_char);
 }
 
 s32 LineReader::count_remaining_tokens_in_current_line(Optional<char> split_char) const
@@ -188,13 +182,14 @@ s32 LineReader::count_remaining_tokens_in_current_line(Optional<char> split_char
 
 Optional<bool> LineReader::read_bool(IsRequired is_required, Optional<char> split_char)
 {
-    String token = next_token(split_char);
+    auto maybe_token = next_token(split_char);
 
-    if (token.is_empty()) {
+    if (!maybe_token.has_value()) {
         if (is_required == IsRequired::Yes)
             error("Expected a boolean value."_s);
         return {};
     }
+    auto& token = maybe_token.value();
 
     if (auto maybe_bool = token.to_bool(); maybe_bool.has_value())
         return maybe_bool.value();
@@ -205,13 +200,14 @@ Optional<bool> LineReader::read_bool(IsRequired is_required, Optional<char> spli
 
 Optional<double> LineReader::read_double(IsRequired is_required, Optional<char> split_char)
 {
-    StringView token = next_token(split_char);
+    auto maybe_token = next_token(split_char);
 
-    if (token.is_empty()) {
+    if (!maybe_token.has_value()) {
         if (is_required == IsRequired::Yes)
             error("Expected a floating-point or percentage value."_s);
         return {};
     }
+    auto& token = maybe_token.value();
 
     if (token.ends_with('%')) {
         token = token.substring(0, token.length() - 1);

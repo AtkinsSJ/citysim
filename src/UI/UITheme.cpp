@@ -15,7 +15,12 @@ static HashTable<StyleType> styleTypesByName { 256 };
 
 Optional<DrawableStyle> readDrawableStyle(LineReader* reader)
 {
-    String typeName = reader->next_token();
+    auto maybe_type_name = reader->next_token();
+    if (!maybe_type_name.has_value()) {
+        reader->error("Missing drawable type name"_s);
+        return {};
+    }
+    auto typeName = maybe_type_name.release_value();
     Optional<DrawableStyle> result;
 
     if (typeName == "none"_s) {
@@ -49,29 +54,37 @@ Optional<DrawableStyle> readDrawableStyle(LineReader* reader)
             result = move(drawable);
         }
     } else if (typeName == "ninepatch"_s) {
-        String ninepatchName = reader->next_token();
+        auto ninepatchName = reader->next_token();
+        if (!ninepatchName.has_value()) {
+            reader->error("Missing name for `ninepatch` drawable"_s);
+            return {};
+        }
 
         auto color = Colour::read(*reader, LineReader::IsRequired::No);
 
         DrawableStyle drawable = {};
         drawable.type = DrawableType::Ninepatch;
         drawable.color = color.value_or(Colour::white());
-        drawable.ninepatch = AssetRef { AssetType::Ninepatch, asset_manager().assetStrings.intern(ninepatchName) };
+        drawable.ninepatch = AssetRef { AssetType::Ninepatch, asset_manager().assetStrings.intern(ninepatchName.value()) };
 
         result = move(drawable);
     } else if (typeName == "sprite"_s) {
-        String spriteName = reader->next_token();
+        auto spriteName = reader->next_token();
+        if (!spriteName.has_value()) {
+            reader->error("Missing name for `sprite` drawable"_s);
+            return {};
+        }
 
         auto color = Colour::read(*reader, LineReader::IsRequired::No);
 
         DrawableStyle drawable = {};
         drawable.type = DrawableType::Sprite;
         drawable.color = color.value_or(Colour::white());
-        drawable.sprite = getSpriteRef(spriteName, 0);
+        drawable.sprite = getSpriteRef(spriteName.value(), 0);
 
         result = move(drawable);
     } else {
-        reader->error("Unrecognised background type '{0}'"_s, { typeName });
+        reader->error("Unrecognised drawable type '{0}'"_s, { typeName });
     }
 
     return result;
@@ -376,35 +389,43 @@ void loadUITheme(Blob data, Asset* asset)
 
     EnumMap<UI::StyleType, s32> style_count;
 
-    String currentSection = {};
+    StringView currentSection;
     UI::Style* target = nullptr;
 
     while (reader.load_next_line()) {
-        String firstWord = reader.next_token();
+        auto maybe_first_word = reader.next_token();
+        if (!maybe_first_word.has_value())
+            continue;
+        auto firstWord = maybe_first_word.release_value();
 
         if (firstWord.starts_with(':')) {
             // define an item
-            firstWord = firstWord.view().substring(1).deprecated_to_string();
+            firstWord = firstWord.substring(1);
             currentSection = firstWord;
 
             if (firstWord == "Font"_s) {
                 target = nullptr;
-                String fontName = reader.next_token();
+                auto fontName = reader.next_token();
                 String fontFilename = reader.remainder_of_current_line();
 
-                if (!fontName.is_empty() && !fontFilename.is_empty()) {
+                if (fontName.has_value() && !fontFilename.is_empty()) {
                     Asset* fontAsset = addAsset(AssetType::BitmapFont, fontFilename);
-                    fontNamesToAssetNames.put(fontName, fontAsset->shortName);
+                    fontNamesToAssetNames.put(fontName.value().deprecated_to_string(), fontAsset->shortName);
                 } else {
                     reader.error("Invalid font declaration: '{0}'"_s, { reader.current_line() });
                 }
             } else {
                 // Create a new style entry if the name matches a style type
-                Optional<UI::StyleType> foundStyleType = UI::styleTypesByName.find_value(firstWord);
+                Optional<UI::StyleType> foundStyleType = UI::styleTypesByName.find_value(firstWord.deprecated_to_string());
                 if (foundStyleType.has_value()) {
                     UI::StyleType styleType = foundStyleType.release_value();
+                    auto name_token = reader.next_token();
+                    if (!name_token.has_value()) {
+                        reader.error("Missing name for `{}`"_s, { firstWord });
+                        continue;
+                    }
 
-                    String name = asset_manager().assetStrings.intern(reader.next_token());
+                    String name = asset_manager().assetStrings.intern(name_token.value());
 
                     auto& pack = *styles.findOrAdd(name);
                     target = &pack[styleType];
@@ -422,10 +443,15 @@ void loadUITheme(Blob data, Asset* asset)
             // These are arranged alphabetically
             if (firstWord == "extends"_s) {
                 // Clones an existing style
-                String parentStyle = reader.next_token();
-                auto parentPack = styles.find(parentStyle);
+                auto parent_style_token = reader.next_token();
+                if (!parent_style_token.has_value()) {
+                    reader.error("Missing style name for `extends`"_s);
+                    continue;
+                }
+                auto parent_style = parent_style_token.release_value().deprecated_to_string();
+                auto parentPack = styles.find(parent_style);
                 if (!parentPack.has_value()) {
-                    reader.error("Unable to find style named '{0}'"_s, { parentStyle });
+                    reader.error("Unable to find style named '{0}'"_s, { parent_style });
                 } else {
                     UI::Style const& parent = (*parentPack.value())[target->type];
                     // For undefined styles, the parent struct will be all nulls, so the type will not match
@@ -439,46 +465,52 @@ void loadUITheme(Blob data, Asset* asset)
                 }
             } else {
                 // Check our properties map for a match
-                UI::Property* property = UI::styleProperties.find(firstWord).value_or(nullptr);
+                auto property_name = firstWord.deprecated_to_string();
+                UI::Property* property = UI::styleProperties.find(property_name).value_or(nullptr);
                 if (property) {
                     if (property->existsInStyle[target->type]) {
                         switch (property->type) {
                         case UI::PropType::Alignment: {
                             if (auto value = Alignment::read(reader); value.has_value()) {
-                                target->set_property(firstWord, value.release_value());
+                                target->set_property(property_name, value.release_value());
                             }
                         } break;
 
                         case UI::PropType::Bool: {
                             if (auto value = reader.read_bool(); value.has_value()) {
-                                target->set_property(firstWord, value.release_value());
+                                target->set_property(property_name, value.release_value());
                             }
                         } break;
 
                         case UI::PropType::Color: {
                             if (Optional value = Colour::read(reader); value.has_value()) {
-                                target->set_property(firstWord, value.release_value());
+                                target->set_property(property_name, value.release_value());
                             }
                         } break;
 
                         case UI::PropType::Drawable: {
                             Optional<UI::DrawableStyle> value = UI::readDrawableStyle(&reader);
                             if (value.has_value()) {
-                                target->set_property(firstWord, value.release_value());
+                                target->set_property(property_name, value.release_value());
                             }
                         } break;
 
                         case UI::PropType::Float: {
                             if (auto value = reader.read_float(); value.has_value()) {
-                                target->set_property(firstWord, value.release_value());
+                                target->set_property(property_name, value.release_value());
                             }
                         } break;
 
                         case UI::PropType::Font: {
-                            String value = asset_manager().assetStrings.intern(reader.next_token());
+                            auto name_token = reader.next_token();
+                            if (!name_token.has_value()) {
+                                reader.error("Missing font name in `{}`"_s, { property_name });
+                                continue;
+                            }
+                            String value = asset_manager().assetStrings.intern(name_token.value());
                             Optional<String> fontFilename = fontNamesToAssetNames.find_value(value);
                             if (fontFilename.has_value()) {
-                                target->set_property(firstWord, fontFilename.value());
+                                target->set_property(property_name, fontFilename.value());
                             } else {
                                 reader.error("Unrecognised font name '{0}'. Make sure to declare the :Font before it is used!"_s, { value });
                             }
@@ -486,21 +518,26 @@ void loadUITheme(Blob data, Asset* asset)
 
                         case UI::PropType::Int: {
                             if (auto value = reader.read_int<s32>(); value.has_value()) {
-                                target->set_property(firstWord, value.release_value());
+                                target->set_property(property_name, value.release_value());
                             }
                         } break;
 
                         case UI::PropType::Padding: {
                             if (auto value = Padding::read(reader); value.has_value()) {
-                                target->set_property(firstWord, value.release_value());
+                                target->set_property(property_name, value.release_value());
                             }
                         } break;
 
                         case UI::PropType::Style: // NB: Style names are just Strings now
                         case UI::PropType::String: {
-                            String value = asset_manager().assetStrings.intern(reader.next_token());
+                            auto string_token = reader.next_token();
+                            if (!string_token.has_value()) {
+                                reader.error("Missing string in `{}`"_s, { property_name });
+                                continue;
+                            }
+                            String value = asset_manager().assetStrings.intern(string_token.value());
                             // Strings are read directly, so we don't need an if(valid) check
-                            target->set_property(firstWord, value);
+                            target->set_property(property_name, value);
                         } break;
 
                         case UI::PropType::V2I: {
@@ -508,18 +545,18 @@ void loadUITheme(Blob data, Asset* asset)
                             auto offsetY = reader.read_int<s32>();
                             if (offsetX.has_value() && offsetY.has_value()) {
                                 V2I vector = v2i(offsetX.value(), offsetY.value());
-                                target->set_property(firstWord, vector);
+                                target->set_property(property_name, vector);
                             }
                         } break;
 
                         default:
-                            logCritical("Invalid property type for '{0}'"_s, { firstWord });
+                            logCritical("Invalid property type for '{0}'"_s, { property_name });
                         }
                     } else {
-                        reader.error("Property '{0}' is not allowed in '{1}'"_s, { firstWord, currentSection });
+                        reader.error("Property '{0}' is not allowed in '{1}'"_s, { property_name, currentSection });
                     }
                 } else {
-                    reader.error("Unrecognized property '{0}'"_s, { firstWord });
+                    reader.error("Unrecognized property '{0}'"_s, { property_name });
                 }
             }
         }

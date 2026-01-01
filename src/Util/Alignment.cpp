@@ -12,8 +12,13 @@ Optional<Alignment> Alignment::read(LineReader& reader)
     Optional<HAlign> h;
     Optional<VAlign> v;
 
-    String token = reader.next_token();
-    while (!token.is_empty()) {
+    auto token = reader.next_token();
+    if (!token.has_value()) {
+        reader.error("Expected alignment keywords"_s);
+        return {};
+    }
+
+    while (token.has_value()) {
         if (token == "LEFT"_s) {
             if (h.has_value()) {
                 reader.error("Multiple horizontal alignment keywords given!"_s);
@@ -63,7 +68,7 @@ Optional<Alignment> Alignment::read(LineReader& reader)
             }
             v = VAlign::Fill;
         } else {
-            reader.error("Unrecognized alignment keyword '{0}'"_s, { token });
+            reader.error("Unrecognized alignment keyword '{0}'"_s, { token.value() });
 
             return {};
         }
