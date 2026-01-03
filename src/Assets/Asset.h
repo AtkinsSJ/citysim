@@ -14,18 +14,12 @@
 #include <Gfx/Cursor.h>
 #include <Gfx/Ninepatch.h>
 #include <Gfx/Palette.h>
+#include <Gfx/Shader.h>
 #include <UI/UITheme.h>
 #include <Util/Array.h>
 #include <Util/Flags.h>
 #include <Util/Locale.h>
 #include <Util/Memory.h>
-
-struct Shader {
-    s8 rendererShaderID;
-
-    String vertexShader;
-    String fragmentShader;
-};
 
 struct Texture {
     bool isFileAlphaPremultiplied;
