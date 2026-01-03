@@ -147,9 +147,8 @@ T* getStyle(AssetRef const& ref)
 {
     ASSERT(checkStyleMatchesType<T>(ref));
 
-    Asset* asset = ref.get();
-
-    return (T*)&asset->_localData;
+    auto& asset = ref.get();
+    return (T*)&asset._localData;
 }
 
 template<typename T>

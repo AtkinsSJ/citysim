@@ -18,7 +18,7 @@ public:
     {
     }
 
-    Asset* get() const;
+    Asset& get() const;
 
     AssetType type() const { return m_type; }
     String const& name() const { return m_name; }
