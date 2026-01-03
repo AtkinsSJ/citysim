@@ -789,15 +789,7 @@ BitmapFont* getFont(String fontName)
 BitmapFont* getFont(AssetRef const& fontRef)
 {
     ASSERT(fontRef.type() == AssetType::BitmapFont);
-
-    BitmapFont* result = nullptr;
-    Asset* asset = fontRef.get();
-
-    if (asset != nullptr) {
-        result = &asset->bitmapFont;
-    }
-
-    return result;
+    return &fontRef.get().bitmapFont;
 }
 
 String getText(String name)

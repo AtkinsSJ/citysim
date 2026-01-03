@@ -7,7 +7,7 @@
 #include "AssetRef.h"
 #include <Assets/AssetManager.h>
 
-Asset* AssetRef::get() const
+Asset& AssetRef::get() const
 {
     auto& assets = asset_manager();
     if (!m_pointer || assets.asset_generation() > m_asset_generation) {
@@ -15,5 +15,5 @@ Asset* AssetRef::get() const
         m_asset_generation = assets.asset_generation();
     }
 
-    return m_pointer;
+    return *m_pointer;
 }
