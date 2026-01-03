@@ -18,5 +18,5 @@ class Renderer;
 struct Shader;
 struct Sprite;
 struct SpriteGroup;
-struct SpriteRef;
+class SpriteRef;
 struct Texture;

@@ -22,10 +22,23 @@ struct SpriteGroup {
     Sprite* sprites;
 };
 
-struct SpriteRef {
-    String spriteGroupName;
-    s32 spriteIndex;
+class SpriteRef {
+public:
+    explicit SpriteRef(StringView group_name, u32 sprite_index)
+        : m_sprite_group_name(group_name)
+        , m_sprite_index(sprite_index)
+    {
+    }
 
-    Sprite* pointer;
-    u32 asset_generation;
+    // FIXME: This is only needed because of how we allocate arrays. Fix that, and we can remove this invalid state.
+    SpriteRef() = default;
+
+    Sprite& get() const;
+
+private:
+    StringView m_sprite_group_name;
+    u32 m_sprite_index;
+
+    mutable Sprite* m_pointer { nullptr };
+    mutable u32 m_asset_generation { 0 };
 };

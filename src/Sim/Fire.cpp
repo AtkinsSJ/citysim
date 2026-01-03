@@ -208,7 +208,7 @@ void addFireRaw(City* city, s32 x, s32 y, GameTimestamp startDate)
     fire->entity = addEntity(city, Entity::Type::Fire, fire);
     // TODO: Probably most of this wants to be moved into addEntity()
     fire->entity->bounds = { x, y, 1, 1 };
-    fire->entity->sprite = getSpriteRef("e_fire_1x1"_s, AppState::the().cosmeticRandom->next());
+    fire->entity->sprite =  SpriteRef { "e_fire_1x1"_s, AppState::the().cosmeticRandom->next()};
 
     layer->activeFireCount++;
 

@@ -7,4 +7,5 @@ target_sources(CitySim PRIVATE
     RenderBuffer.cpp
     Renderer.cpp
     Shader.cpp
+    Sprite.cpp
 )

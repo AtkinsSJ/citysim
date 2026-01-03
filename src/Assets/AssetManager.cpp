@@ -741,36 +741,6 @@ Sprite* getSprite(String name)
     return result;
 }
 
-SpriteRef getSpriteRef(StringView groupName, s32 spriteIndex)
-{
-    SpriteRef result = {};
-
-    result.spriteGroupName = s_assets->assetStrings.intern(groupName);
-    result.spriteIndex = spriteIndex;
-
-    // NB: We don't retrieve the sprite now, we just leave the pointerRetrievedTicks value at 0
-    // so that it WILL be retrieved the first time we call getSprite().
-
-    return result;
-}
-
-Sprite* getSprite(SpriteRef* ref)
-{
-    if (s_assets->asset_generation() > ref->asset_generation) {
-        SpriteGroup* group = getSpriteGroup(ref->spriteGroupName);
-        if (group != nullptr) {
-            ref->pointer = group->sprites + (ref->spriteIndex % group->count);
-        } else {
-            // TODO: Dummy sprite!
-            ASSERT(!"Sprite group missing");
-        }
-
-        ref->asset_generation = s_assets->asset_generation();
-    }
-
-    return ref->pointer;
-}
-
 BitmapFont& getFont(AssetRef const& fontRef)
 {
     ASSERT(fontRef.type() == AssetType::BitmapFont);
