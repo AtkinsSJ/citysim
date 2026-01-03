@@ -11,6 +11,7 @@
 #include <Assets/Sprite.h>
 #include <Gfx/BitmapFont.h>
 #include <Gfx/Colour.h>
+#include <Gfx/Palette.h>
 #include <SDL2/SDL_mouse.h>
 #include <UI/UITheme.h>
 #include <Util/Array.h>
@@ -57,23 +58,6 @@ struct Ninepatch {
     float v1;
     float v2;
     float v3;
-};
-
-struct Palette {
-    enum class Type : u8 {
-        Fixed,
-        Gradient,
-    };
-    Type type;
-    s32 size;
-
-    struct
-    {
-        Colour from;
-        Colour to;
-    } gradient;
-
-    Array<Colour> paletteData;
 };
 
 struct Shader {
