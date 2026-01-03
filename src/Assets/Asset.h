@@ -8,13 +8,13 @@
 
 #include <Assets/AssetType.h>
 #include <Assets/Forward.h>
-#include <Assets/Sprite.h>
 #include <Gfx/BitmapFont.h>
 #include <Gfx/Colour.h>
 #include <Gfx/Cursor.h>
 #include <Gfx/Ninepatch.h>
 #include <Gfx/Palette.h>
 #include <Gfx/Shader.h>
+#include <Gfx/Sprite.h>
 #include <Gfx/Texture.h>
 #include <UI/UITheme.h>
 #include <Util/Array.h>

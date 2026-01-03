@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <Assets/Sprite.h>
+#include <Gfx/Sprite.h>
 #include <IO/Forward.h>
 #include <Sim/Forward.h>
 #include <UI/Forward.h>

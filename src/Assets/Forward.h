@@ -17,7 +17,4 @@ struct Cursor;
 struct Ninepatch;
 struct Palette;
 struct Shader;
-struct Sprite;
-struct SpriteGroup;
-struct SpriteRef;
 struct Texture;
