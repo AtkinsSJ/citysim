@@ -22,7 +22,7 @@ struct TerrainLayer {
 
     Array2<u8> tileSpriteOffset;
     Array2<SpriteRef> tileSprite;
-    Array2<SpriteRef> tileBorderSprite;
+    Array2<Optional<SpriteRef>> tileBorderSprite;
 };
 
 void initTerrainLayer(TerrainLayer* layer, City* city, MemoryArena* gameArena);

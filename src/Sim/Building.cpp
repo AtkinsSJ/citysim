@@ -343,9 +343,9 @@ void loadBuildingSprite(Building* building)
     BuildingDef* def = getBuildingDef(building);
 
     if (building->variantIndex.has_value()) {
-        building->entity->sprite = getSpriteRef(def->variants[building->variantIndex.value()].spriteName, building->spriteOffset);
+        building->entity->sprite = SpriteRef { def->variants[building->variantIndex.value()].spriteName, building->spriteOffset };
     } else {
-        building->entity->sprite = getSpriteRef(def->spriteName, building->spriteOffset);
+        building->entity->sprite = SpriteRef { def->spriteName, building->spriteOffset };
     }
 }
 
