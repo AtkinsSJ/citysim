@@ -372,7 +372,7 @@ void updateAndRenderGameUI(GameState* gameState)
     auto& renderer = the_renderer();
     RenderBuffer* uiBuffer = &renderer.ui_buffer();
     UI::LabelStyle* labelStyle = getStyle<UI::LabelStyle>("title"_s);
-    BitmapFont* font = getFont(labelStyle->font);
+    auto& font = getFont(labelStyle->font);
     City* city = &gameState->city;
 
     s32 const uiPadding = 4; // TODO: Move this somewhere sensible!
@@ -406,7 +406,7 @@ void updateAndRenderGameUI(GameState* gameState)
         clockBounds = { right - clockWidth, uiPadding, clockWidth, toolbarHeight };
 
         String dateString = formatDateTime(clock->cosmeticDate, DateTimeFormat::ShortDate);
-        V2I dateStringSize = font->calculate_text_size(dateString, clockWidth);
+        V2I dateStringSize = font.calculate_text_size(dateString, clockWidth);
 
         // Draw a progress bar for the current day
         Rect2I dateRect { right - clockWidth, uiPadding, clockWidth, dateStringSize.y };
@@ -1098,7 +1098,7 @@ void drawDataViewUI(GameState* gameState)
     auto& renderer = the_renderer();
     RenderBuffer* uiBuffer = &renderer.ui_buffer();
     UI::LabelStyle* labelStyle = getStyle<UI::LabelStyle>("title"_s);
-    BitmapFont* font = getFont(labelStyle->font);
+    auto& font = getFont(labelStyle->font);
 
     s32 const uiPadding = 4; // TODO: Move this somewhere sensible!
     UI::ButtonStyle* buttonStyle = getStyle<UI::ButtonStyle>("default"_s);
@@ -1162,7 +1162,7 @@ void drawDataViewUI(GameState* gameState)
 
         DataViewUI* dataView = &gameState->dataViewUI[gameState->dataLayerToDraw];
 
-        s32 paletteBlockSize = font->line_height();
+        s32 paletteBlockSize = font.line_height();
 
         UI::Panel ui = UI::Panel(Rect2I::create_aligned(uiPos.x, uiPos.y, 300, 1000, { HAlign::Left, VAlign::Bottom }), nullptr, UI::PanelFlags::LayoutBottomToTop);
         {

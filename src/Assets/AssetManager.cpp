@@ -781,15 +781,15 @@ Shader* getShader(String shaderName)
     return &getAsset(AssetType::Shader, shaderName).shader;
 }
 
-BitmapFont* getFont(String fontName)
+BitmapFont& getFont(String fontName)
 {
-    return &getAsset(AssetType::BitmapFont, fontName).bitmapFont;
+    return getAsset(AssetType::BitmapFont, fontName).bitmapFont;
 }
 
-BitmapFont* getFont(AssetRef const& fontRef)
+BitmapFont& getFont(AssetRef const& fontRef)
 {
     ASSERT(fontRef.type() == AssetType::BitmapFont);
-    return &fontRef.get().bitmapFont;
+    return fontRef.get().bitmapFont;
 }
 
 String getText(String name)

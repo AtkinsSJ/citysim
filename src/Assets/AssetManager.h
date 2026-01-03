@@ -96,8 +96,8 @@ String getAssetPath(AssetType type, StringView shortName);
 Asset& getAsset(AssetType type, String shortName);
 Asset* getAssetIfExists(AssetType type, String shortName);
 
-BitmapFont* getFont(String fontName);
-BitmapFont* getFont(AssetRef const& fontRef);
+BitmapFont& getFont(String fontName);
+BitmapFont& getFont(AssetRef const& fontRef);
 
 Array<Colour>* getPalette(String name);
 Shader* getShader(String shaderName);
