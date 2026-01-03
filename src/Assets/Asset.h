@@ -11,20 +11,13 @@
 #include <Assets/Sprite.h>
 #include <Gfx/BitmapFont.h>
 #include <Gfx/Colour.h>
+#include <Gfx/Cursor.h>
 #include <Gfx/Palette.h>
-#include <SDL2/SDL_mouse.h>
 #include <UI/UITheme.h>
 #include <Util/Array.h>
 #include <Util/Flags.h>
 #include <Util/Locale.h>
 #include <Util/Memory.h>
-#include <Util/Vector.h>
-
-struct Cursor {
-    String imageFilePath; // Full path
-    V2I hotspot;
-    SDL_Cursor* sdlCursor;
-};
 
 struct Ninepatch {
     Asset* texture;

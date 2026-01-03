@@ -10,6 +10,7 @@ class BitmapFont;
 struct BitmapFontGlyph;
 class Camera;
 class Colour;
+struct Cursor;
 struct Palette;
 struct RenderBuffer;
 class Renderer;
