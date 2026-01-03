@@ -16,3 +16,4 @@ struct Palette;
 struct RenderBuffer;
 class Renderer;
 struct Shader;
+struct Texture;
