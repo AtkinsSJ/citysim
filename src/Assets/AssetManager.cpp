@@ -707,13 +707,14 @@ void reloadAssets()
 Asset& getAsset(AssetType type, String shortName)
 {
     DEBUG_FUNCTION();
-    // FIXME: Also check that it's loaded and usable.
-    if (Asset* asset = getAssetIfExists(type, shortName))
+    Asset* asset = getAssetIfExists(type, shortName);
+    if (asset && asset->state == Asset::State::Loaded)
         return *asset;
 
     if (s_assets->missingAssetNames[type].add(shortName)) {
-        logWarn("Requested {0} asset '{1}' was not found! Using placeholder."_s, { asset_type_names[type], shortName });
+        logWarn("Requested {0} asset '{1}' was missing or unusable! Using placeholder."_s, { asset_type_names[type], shortName });
     }
+
     return s_assets->placeholderAssets[type];
 }
 
