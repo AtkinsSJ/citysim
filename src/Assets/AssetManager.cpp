@@ -788,11 +788,6 @@ Shader* getShader(String shaderName)
     return &getAsset(AssetType::Shader, shaderName).shader;
 }
 
-BitmapFont& getFont(String fontName)
-{
-    return getAsset(AssetType::BitmapFont, fontName).bitmapFont;
-}
-
 BitmapFont& getFont(AssetRef const& fontRef)
 {
     ASSERT(fontRef.type() == AssetType::BitmapFont);
