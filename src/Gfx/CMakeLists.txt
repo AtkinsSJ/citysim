@@ -3,6 +3,7 @@ target_sources(CitySim PRIVATE
     Camera.cpp
     Colour.cpp
     OpenGL.cpp
+    Palette.cpp
     RenderBuffer.cpp
     Renderer.cpp
     Shader.cpp
