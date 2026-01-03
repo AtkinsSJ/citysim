@@ -729,13 +729,13 @@ SpriteGroup* getSpriteGroup(String name)
     return &getAsset(AssetType::Sprite, name).spriteGroup;
 }
 
-Sprite* getSprite(String name, s32 offset)
+Sprite* getSprite(String name)
 {
     Sprite* result = nullptr;
 
     SpriteGroup* group = getSpriteGroup(name);
     if (group != nullptr) {
-        result = group->sprites + (offset % group->count);
+        result = group->sprites;
     }
 
     return result;

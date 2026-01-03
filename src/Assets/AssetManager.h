@@ -98,7 +98,7 @@ Asset* getAssetIfExists(AssetType type, String shortName);
 
 BitmapFont& getFont(AssetRef const& fontRef);
 
-Sprite* getSprite(String name, s32 offset = 0);
+Sprite* getSprite(String name);
 SpriteGroup* getSpriteGroup(String name);
 
 SpriteRef getSpriteRef(StringView groupName, s32 spriteIndex);
