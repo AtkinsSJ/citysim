@@ -99,7 +99,6 @@ Asset* getAssetIfExists(AssetType type, String shortName);
 BitmapFont& getFont(AssetRef const& fontRef);
 
 Array<Colour>* getPalette(String name);
-Shader* getShader(String shaderName);
 Sprite* getSprite(String name, s32 offset = 0);
 SpriteGroup* getSpriteGroup(String name);
 

@@ -10,6 +10,8 @@
 #include <Util/String.h>
 
 struct Shader {
+    static Shader& get(StringView name);
+
     s8 rendererShaderID;
 
     String vertexShader;
