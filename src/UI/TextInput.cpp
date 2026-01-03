@@ -356,8 +356,8 @@ V2I calculateTextInputSize(TextInput* textInput, TextInputStyle* style, s32 maxW
 {
     s32 textMaxWidth = (maxWidth == 0) ? 0 : (maxWidth - (style->padding.left + style->padding.right));
 
-    BitmapFont* font = getFont(style->font);
-    V2I textSize = font->calculate_text_size(textInput->text(), textMaxWidth);
+    auto& font = getFont(style->font);
+    V2I textSize = font.calculate_text_size(textInput->text(), textMaxWidth);
 
     s32 resultWidth = 0;
 
@@ -377,7 +377,7 @@ Rect2I drawTextInput(RenderBuffer* renderBuffer, TextInput* textInput, TextInput
     DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     auto& renderer = the_renderer();
-    BitmapFont* font = getFont(style->font);
+    auto& font = getFont(style->font);
 
     Drawable(&style->background).draw(renderBuffer, bounds);
 
@@ -387,12 +387,12 @@ Rect2I drawTextInput(RenderBuffer* renderBuffer, TextInput* textInput, TextInput
 
     Rect2I textBounds = bounds.shrunk(style->padding);
     DrawTextResult drawTextResult = {};
-    drawText(renderBuffer, font, textInput->text(), textBounds, style->textAlignment, style->textColor, renderer.shaderIds.text, textInput->caret.glyphPos, &drawTextResult);
+    drawText(renderBuffer, &font, textInput->text(), textBounds, style->textAlignment, style->textColor, renderer.shaderIds.text, textInput->caret.glyphPos, &drawTextResult);
 
     textInput->caretFlashCounter = fmod(textInput->caretFlashCounter + AppState::the().deltaTime, style->caretFlashCycleDuration);
 
     if (showCaret) {
-        Rect2 caretRect { textBounds.x(), textBounds.y(), 2, font->line_height() };
+        Rect2 caretRect { textBounds.x(), textBounds.y(), 2, font.line_height() };
 
         if (textInput->caret.glyphPos != 0 && drawTextResult.isValid) {
             // Draw it to the right of the glyph

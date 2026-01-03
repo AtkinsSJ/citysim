@@ -235,7 +235,7 @@ void renderDebugData(DebugState* debugState)
     // string it's given, so it crashes if the Asset system isn't initialised.)
     // So for now, we're keeping this old method.
     // - Sam, 18/02/2020
-    BitmapFont* font = getFont("debug.fnt"_s);
+    auto& font = getFont("debug.fnt"_s);
     RenderBuffer* renderBuffer = &renderer.debug_buffer();
     auto& ui_camera = renderer.ui_camera();
 
@@ -266,7 +266,7 @@ void renderDebugData(DebugState* debugState)
     }
 
     DebugTextState textState;
-    initDebugTextState(&textState, font, Colour::white(), 16, false, HAlign::Left);
+    initDebugTextState(&textState, &font, Colour::white(), 16, false, HAlign::Left);
 
     u32 framesAgo = wrap<u32>(debugState->writingFrameIndex - rfi, DEBUG_FRAMES_COUNT);
     debugTextOut(&textState, myprintf("Examining {0} frames ago"_s, { formatInt(framesAgo) }));
@@ -347,7 +347,7 @@ void renderDebugData(DebugState* debugState)
     }
 
     // Put FPS in top right
-    initDebugTextState(&textState, font, Colour::white(), 16, false, HAlign::Right);
+    initDebugTextState(&textState, &font, Colour::white(), 16, false, HAlign::Right);
     {
         String smsForFrame = "???"_s;
         String sfps = "???"_s;

@@ -5,8 +5,8 @@
  */
 
 #include "Window.h"
-#include <Input/Input.h>
 #include <Debug/Debug.h>
+#include <Input/Input.h>
 #include <Util/String.h>
 
 namespace UI {
@@ -302,14 +302,14 @@ void updateAndRenderWindows()
             putLabel(titleString, barArea.create_aligned_within(titleSize, titleStyle->textAlignment), titleStyle, window->renderBuffer);
 
             // TODO: Replace this with an actual Button?
-            auto titleFont = getFont(titleStyle->font);
+            auto& titleFont = getFont(titleStyle->font);
             if (hoveringOverCloseButton
                 && (!isMouseInputHandled() || windowIndex == 0)) {
                 drawSingleRect(window->renderBuffer, closeButtonRect, renderer.shaderIds.untextured, closeButtonColorHover);
             }
-            V2I closeTextSize = titleFont->calculate_text_size(closeButtonString);
+            V2I closeTextSize = titleFont.calculate_text_size(closeButtonString);
             Rect2I closeTextBounds = Rect2I::create_aligned(v2i(closeButtonRect.centre()), closeTextSize, Alignment::centre());
-            drawText(window->renderBuffer, titleFont, closeButtonString, closeTextBounds, Alignment::centre(), titleStyle->textColor, renderer.shaderIds.text);
+            drawText(window->renderBuffer, &titleFont, closeButtonString, closeTextBounds, Alignment::centre(), titleStyle->textColor, renderer.shaderIds.text);
 
             if ((!isMouseInputHandled() || windowIndex == 0)
                 && wholeWindowArea.contains(mousePos)
