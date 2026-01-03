@@ -19,8 +19,8 @@ AppStatus updateAndRenderCredits(float /*deltaTime*/)
 
     UI::LabelStyle* labelStyle = getStyle<UI::LabelStyle>("title"_s);
 
-    Asset* creditsText = getAsset(AssetType::Misc, "credits.txt"_s);
-    LineReader reader { creditsText->shortName, creditsText->data, {} };
+    auto& creditsText = getAsset(AssetType::Misc, "credits.txt"_s);
+    LineReader reader { creditsText.shortName, creditsText.data, {} };
     while (reader.load_next_line()) {
         auto line = reader.current_line();
         V2I labelSize = UI::calculateLabelSize(line, labelStyle, maxLabelWidth);

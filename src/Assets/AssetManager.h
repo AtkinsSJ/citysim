@@ -93,7 +93,7 @@ void reloadAssets();
 
 String getAssetPath(AssetType type, StringView shortName);
 
-Asset* getAsset(AssetType type, String shortName);
+Asset& getAsset(AssetType type, String shortName);
 Asset* getAssetIfExists(AssetType type, String shortName);
 
 BitmapFont* getFont(String fontName);
@@ -163,8 +163,6 @@ T* getStyle(String styleName, AssetRef const& defaultStyle)
 template<typename T>
 T* getStyle(String styleName)
 {
-    T* result = nullptr;
-
     AssetType styleType = [] {
         if constexpr (typeid(T) == typeid(UI::ButtonStyle))
             return AssetType::ButtonStyle;
@@ -192,12 +190,8 @@ T* getStyle(String styleName)
             static_assert(false);
     }();
 
-    Asset* asset = getAsset(styleType, styleName);
-    if (asset != nullptr) {
-        result = (T*)&asset->_localData;
-    }
-
-    return result;
+    Asset& asset = getAsset(styleType, styleName);
+    return reinterpret_cast<T*>(&asset._localData);
 }
 
 //
