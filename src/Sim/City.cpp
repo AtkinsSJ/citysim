@@ -102,7 +102,7 @@ void drawEntities(City* city, Rect2I visibleTileBounds)
                 drawColor = drawColor.multiplied_by(drawColorDemolish);
             }
 
-            drawSingleSprite(&the_renderer().world_buffer(), getSprite(&entity->sprite), entity->bounds, shaderID, drawColor);
+            drawSingleSprite(&the_renderer().world_buffer(), &entity->sprite.get(), entity->bounds, shaderID, drawColor);
         }
     }
 }

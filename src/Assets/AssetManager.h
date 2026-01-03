@@ -101,9 +101,6 @@ BitmapFont& getFont(AssetRef const& fontRef);
 Sprite* getSprite(String name);
 SpriteGroup* getSpriteGroup(String name);
 
-SpriteRef getSpriteRef(StringView groupName, s32 spriteIndex);
-Sprite* getSprite(SpriteRef* ref);
-
 String getText(String name);
 String getText(String name, std::initializer_list<StringView> args);
 

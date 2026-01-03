@@ -25,7 +25,7 @@ void initTerrainLayer(TerrainLayer* layer, City* city, MemoryArena* gameArena)
 
     layer->tileSpriteOffset = gameArena->allocate_array_2d<u8>(city->bounds.size());
     layer->tileSprite = gameArena->allocate_array_2d<SpriteRef>(city->bounds.size());
-    layer->tileBorderSprite = gameArena->allocate_array_2d<SpriteRef>(city->bounds.size());
+    layer->tileBorderSprite = gameArena->allocate_array_2d<Optional<SpriteRef>>(city->bounds.size());
 }
 
 TerrainDef* getTerrainAt(City* city, s32 x, s32 y)
@@ -98,10 +98,6 @@ void drawTerrain(City* city, Rect2I visibleArea, s8 shaderID)
     Rect2 spriteBounds { 0.0f, 0.0f, 1.0f, 1.0f };
     auto white = Colour::white();
 
-    // s32 tilesToDraw = areaOf(visibleArea);
-    // Asset *terrainTexture = getSprite(getTerrainDef(1)->sprites, 0)->texture;
-    // DrawRectsGroup *group = beginRectsGroupTextured(&renderer.world_buffer(), terrainTexture, shaderID, tilesToDraw);
-
     for (s32 y = visibleArea.y();
         y < visibleArea.y() + visibleArea.height();
         y++) {
@@ -110,20 +106,16 @@ void drawTerrain(City* city, Rect2I visibleArea, s8 shaderID)
         for (s32 x = visibleArea.x();
             x < visibleArea.x() + visibleArea.width();
             x++) {
-            Sprite* sprite = getSprite(&layer->tileSprite.get(x, y));
+            Sprite* sprite = &layer->tileSprite.get(x, y).get();
             spriteBounds.set_x(x);
             drawSingleSprite(&renderer.world_buffer(), sprite, spriteBounds, shaderID, white);
-            // addSpriteRect(group, sprite, spriteBounds, white);
 
-            SpriteRef* borderSpriteRef = &layer->tileBorderSprite.get(x, y);
-            if (!borderSpriteRef->spriteGroupName.is_empty()) {
-                Sprite* borderSprite = getSprite(borderSpriteRef);
-                drawSingleSprite(&renderer.world_buffer(), borderSprite, spriteBounds, shaderID, white);
-                // addSpriteRect(group, borderSprite, spriteBounds, white);
+            if (auto& border_sprite_ref = layer->tileBorderSprite.get(x, y); border_sprite_ref.has_value()) {
+                auto& border_sprite = border_sprite_ref.value().get();
+                drawSingleSprite(&renderer.world_buffer(), &border_sprite, spriteBounds, shaderID, white);
             }
         }
     }
-    // endRectsGroup(group);
 }
 
 void generateTerrain(City* city, Random* gameRandom)
@@ -244,7 +236,7 @@ void assignTerrainSprites(City* city, Rect2I bounds)
             x++) {
             TerrainDef* def = getTerrainAt(city, x, y);
 
-            layer->tileSprite.set(x, y, getSpriteRef(def->spriteName, layer->tileSpriteOffset.get(x, y)));
+            layer->tileSprite.set(x, y, SpriteRef { def->spriteName, layer->tileSpriteOffset.get(x, y) });
 
             if (def->drawBordersOver) {
                 // First, determine if we have a bordering type
@@ -281,7 +273,7 @@ void assignTerrainSprites(City* city, Rect2I bounds)
 
                     u8 borderSpriteIndex = w + (s * 3) + (e * 9) + (n * 27) - 1;
                     ASSERT(borderSpriteIndex >= 0 && borderSpriteIndex <= 80);
-                    layer->tileBorderSprite.set(x, y, getSpriteRef(borderTerrain->borderSpriteNames[borderSpriteIndex], layer->tileSpriteOffset.get(x, y)));
+                    layer->tileBorderSprite.set(x, y, SpriteRef { borderTerrain->borderSpriteNames[borderSpriteIndex], layer->tileSpriteOffset.get(x, y) });
                 } else {
                     layer->tileBorderSprite.set(x, y, {});
                 }
