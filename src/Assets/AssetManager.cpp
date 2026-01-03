@@ -724,11 +724,6 @@ Asset* getAssetIfExists(AssetType type, String shortName)
     return asset.value_or(nullptr);
 }
 
-Array<Colour>* getPalette(String name)
-{
-    return &getAsset(AssetType::Palette, name).palette.paletteData;
-}
-
 SpriteGroup* getSpriteGroup(String name)
 {
     return &getAsset(AssetType::Sprite, name).spriteGroup;

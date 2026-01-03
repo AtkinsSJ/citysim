@@ -14,6 +14,9 @@ struct Palette {
         Fixed,
         Gradient,
     };
+
+    static Palette& get(StringView name);
+
     Type type;
     s32 size;
 
