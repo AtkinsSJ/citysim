@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2016-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -774,11 +774,6 @@ Sprite* getSprite(SpriteRef* ref)
     }
 
     return ref->pointer;
-}
-
-Shader* getShader(String shaderName)
-{
-    return &getAsset(AssetType::Shader, shaderName).shader;
 }
 
 BitmapFont& getFont(AssetRef const& fontRef)

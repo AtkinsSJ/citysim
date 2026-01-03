@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2015-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -7,6 +7,7 @@
 #include <Assets/Asset.h>
 #include <Assets/AssetManager.h>
 #include <Gfx/OpenGL.h>
+#include <Gfx/Shader.h>
 #include <Util/Deferred.h>
 #include <Util/Log.h>
 
@@ -460,10 +461,10 @@ void Renderer::after_assets_loaded()
     }
 
     // Cache the shader IDs so we don't have to do so many hash lookups
-    shaderIds.pixelArt = getShader("pixelart.glsl"_s)->rendererShaderID;
-    shaderIds.text = getShader("textured.glsl"_s)->rendererShaderID;
-    shaderIds.textured = getShader("textured.glsl"_s)->rendererShaderID;
-    shaderIds.untextured = getShader("untextured.glsl"_s)->rendererShaderID;
+    shaderIds.pixelArt = Shader::get("pixelart.glsl"_s).rendererShaderID;
+    shaderIds.text = Shader::get("textured.glsl"_s).rendererShaderID;
+    shaderIds.textured = Shader::get("textured.glsl"_s).rendererShaderID;
+    shaderIds.untextured = Shader::get("untextured.glsl"_s).rendererShaderID;
 }
 
 void Renderer::before_assets_unloaded()
