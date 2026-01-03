@@ -10,8 +10,6 @@
 #include <Util/String.h>
 
 enum class AssetType : u8 {
-    Misc,
-
     BitmapFont,
     BuildingDefs,
     Cursor,
@@ -24,6 +22,7 @@ enum class AssetType : u8 {
     Sprite,
     SpriteDefs,
     TerrainDefs,
+    TextFile,
     Texts,
     Texture,
     UITheme,
