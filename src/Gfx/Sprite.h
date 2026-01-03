@@ -11,6 +11,8 @@
 #include <Util/String.h>
 
 struct Sprite {
+    static Sprite& get(StringView name);
+
     Asset* texture;
     Rect2 uv; // in (0 to 1) space
     s32 pixelWidth;
@@ -18,6 +20,8 @@ struct Sprite {
 };
 
 struct SpriteGroup {
+    static SpriteGroup& get(StringView name);
+
     s32 count;
     Sprite* sprites;
 };

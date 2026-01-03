@@ -724,23 +724,6 @@ Asset* getAssetIfExists(AssetType type, String shortName)
     return asset.value_or(nullptr);
 }
 
-SpriteGroup* getSpriteGroup(String name)
-{
-    return &getAsset(AssetType::Sprite, name).spriteGroup;
-}
-
-Sprite* getSprite(String name)
-{
-    Sprite* result = nullptr;
-
-    SpriteGroup* group = getSpriteGroup(name);
-    if (group != nullptr) {
-        result = group->sprites;
-    }
-
-    return result;
-}
-
 BitmapFont& getFont(AssetRef const& fontRef)
 {
     ASSERT(fontRef.type() == AssetType::BitmapFont);
