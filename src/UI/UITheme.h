@@ -7,8 +7,8 @@
 #pragma once
 
 #include <Assets/AssetRef.h>
-#include <Assets/Sprite.h>
 #include <Gfx/Colour.h>
+#include <Gfx/Sprite.h>
 #include <IO/Forward.h>
 #include <Util/HashTable.h>
 #include <Util/Optional.h>
