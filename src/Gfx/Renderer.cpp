@@ -204,10 +204,9 @@ void Renderer::set_cursor(String name)
 {
     DEBUG_FUNCTION();
 
-    if (Asset const* new_cursor_asset = getAsset(AssetType::Cursor, name)) {
-        m_current_cursor_name = name;
-        SDL_SetCursor(new_cursor_asset->cursor.sdlCursor);
-    }
+    auto& new_cursor_asset = getAsset(AssetType::Cursor, name);
+    m_current_cursor_name = name;
+    SDL_SetCursor(new_cursor_asset.cursor.sdlCursor);
 }
 
 void Renderer::set_cursor_visible(bool visible)

@@ -704,19 +704,17 @@ void reloadAssets()
     logInfo("AssetManager reloaded successfully!"_s);
 }
 
-Asset* getAsset(AssetType type, String shortName)
+Asset& getAsset(AssetType type, String shortName)
 {
     DEBUG_FUNCTION();
-    Asset* result = getAssetIfExists(type, shortName);
+    // FIXME: Also check that it's loaded and usable.
+    if (Asset* asset = getAssetIfExists(type, shortName))
+        return *asset;
 
-    if (result == nullptr) {
-        if (s_assets->missingAssetNames[type].add(shortName)) {
-            logWarn("Requested {0} asset '{1}' was not found! Using placeholder."_s, { asset_type_names[type], shortName });
-        }
-        result = &s_assets->placeholderAssets[type];
+    if (s_assets->missingAssetNames[type].add(shortName)) {
+        logWarn("Requested {0} asset '{1}' was not found! Using placeholder."_s, { asset_type_names[type], shortName });
     }
-
-    return result;
+    return s_assets->placeholderAssets[type];
 }
 
 Asset* getAssetIfExists(AssetType type, String shortName)
@@ -727,12 +725,12 @@ Asset* getAssetIfExists(AssetType type, String shortName)
 
 Array<Colour>* getPalette(String name)
 {
-    return &getAsset(AssetType::Palette, name)->palette.paletteData;
+    return &getAsset(AssetType::Palette, name).palette.paletteData;
 }
 
 SpriteGroup* getSpriteGroup(String name)
 {
-    return &getAsset(AssetType::Sprite, name)->spriteGroup;
+    return &getAsset(AssetType::Sprite, name).spriteGroup;
 }
 
 Sprite* getSprite(String name, s32 offset)
@@ -779,21 +777,12 @@ Sprite* getSprite(SpriteRef* ref)
 
 Shader* getShader(String shaderName)
 {
-    return &getAsset(AssetType::Shader, shaderName)->shader;
+    return &getAsset(AssetType::Shader, shaderName).shader;
 }
 
 BitmapFont* getFont(String fontName)
 {
-    BitmapFont* result = nullptr;
-
-    Asset* fontAsset = getAsset(AssetType::BitmapFont, fontName);
-    if (fontAsset != nullptr) {
-        result = &fontAsset->bitmapFont;
-    } else {
-        logError("Failed to find font named '{0}'."_s, { fontName });
-    }
-
-    return result;
+    return &getAsset(AssetType::BitmapFont, fontName).bitmapFont;
 }
 
 BitmapFont* getFont(AssetRef const& fontRef)
