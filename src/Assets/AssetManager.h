@@ -98,9 +98,6 @@ Asset* getAssetIfExists(AssetType type, String shortName);
 
 BitmapFont& getFont(AssetRef const& fontRef);
 
-Sprite* getSprite(String name);
-SpriteGroup* getSpriteGroup(String name);
-
 String getText(String name);
 String getText(String name, std::initializer_list<StringView> args);
 

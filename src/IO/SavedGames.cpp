@@ -205,7 +205,7 @@ void savedGamesWindowProc(UI::WindowContext* context, void* userData)
     // Now we have the saved-game info
     if (selectedSavedGame) {
         ui->alignWidgets(HAlign::Right);
-        if (ui->addImageButton(getSprite("icon_delete"_s), ButtonState::Normal, "delete"_s)) {
+        if (ui->addImageButton(&Sprite::get("icon_delete"_s), ButtonState::Normal, "delete"_s)) {
             UI::showWindow(UI::WindowTitle::fromTextAsset("title_delete_save"_s), 300, 300, v2i(0, 0), "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Modal | WindowFlags::Unique, confirmDeleteSaveWindowProc);
         }
 
