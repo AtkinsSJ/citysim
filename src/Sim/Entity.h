@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include <Assets/Sprite.h>
 #include <Gfx/Colour.h>
+#include <Gfx/Sprite.h>
 #include <Util/Basic.h>
 #include <Util/Rectangle.h>
 
