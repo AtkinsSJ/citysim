@@ -235,7 +235,7 @@ void renderDebugData(DebugState* debugState)
     // string it's given, so it crashes if the Asset system isn't initialised.)
     // So for now, we're keeping this old method.
     // - Sam, 18/02/2020
-    auto& font = getFont("debug.fnt"_s);
+    auto& font = BitmapFont::get("debug.fnt"_s);
     RenderBuffer* renderBuffer = &renderer.debug_buffer();
     auto& ui_camera = renderer.ui_camera();
 

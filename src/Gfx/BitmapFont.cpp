@@ -65,6 +65,11 @@ struct BMFont_Char {
 
 #pragma pack(pop)
 
+BitmapFont& BitmapFont::get(StringView name)
+{
+    return getAsset(AssetType::BitmapFont, name.deprecated_to_string()).bitmapFont;
+}
+
 bool BitmapFont::load_from_bmf_data(Blob data, Asset& asset)
 {
     smm pos = 0;

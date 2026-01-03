@@ -32,6 +32,8 @@ struct BitmapFontGlyphEntry {
 
 class BitmapFont {
 public:
+    static BitmapFont& get(StringView name);
+
     static bool load_from_bmf_data(Blob data, Asset& asset);
 
     void add_glyph(BitmapFontGlyph&&);
