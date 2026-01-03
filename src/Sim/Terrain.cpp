@@ -308,7 +308,7 @@ void modifyTerrainWindowProc(UI::WindowContext* context, void*)
         if (terrain->typeID == 0)
             continue; // Skip the null terrain
 
-        if (ui->addImageButton(getSprite(terrain->spriteName, 1), buttonIsActive(terrainToolIsActive && gameState->selectedTerrainID == terrain->typeID))) {
+        if (ui->addImageButton(getSprite(terrain->spriteName), buttonIsActive(terrainToolIsActive && gameState->selectedTerrainID == terrain->typeID))) {
             gameState->actionMode = ActionMode::SetTerrain;
             gameState->selectedTerrainID = terrain->typeID;
         }

@@ -677,7 +677,7 @@ AppStatus updateAndRenderGame(GameState* gameState, float deltaTime)
                     if (!mouseIsOverUI)
                         showCostTooltip(buildCost);
 
-                    Sprite* sprite = getSprite(buildingDef->spriteName, 0);
+                    Sprite* sprite = getSprite(buildingDef->spriteName);
                     auto color = canPlace ? ghostColorValid : ghostColorInvalid;
                     drawSingleSprite(&renderer.world_overlay_buffer(), sprite, footprint, renderer.shaderIds.pixelArt, color);
                 }
@@ -705,7 +705,7 @@ AppStatus updateAndRenderGame(GameState* gameState, float deltaTime)
                         showCostTooltip(buildCost);
 
                     if (canAfford(city, buildCost)) {
-                        Sprite* sprite = getSprite(buildingDef->spriteName, 0);
+                        Sprite* sprite = getSprite(buildingDef->spriteName);
                         s32 maxGhosts = (dragResult.dragRect.width() / buildingDef->size.x) * (dragResult.dragRect.height() / buildingDef->size.y);
                         // TODO: If maxGhosts is 1, just draw 1!
                         DrawRectsGroup* rectsGroup = beginRectsGroupTextured(&renderer.world_overlay_buffer(), sprite->texture, renderer.shaderIds.pixelArt, maxGhosts);
