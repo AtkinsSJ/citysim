@@ -677,9 +677,9 @@ AppStatus updateAndRenderGame(GameState* gameState, float deltaTime)
                     if (!mouseIsOverUI)
                         showCostTooltip(buildCost);
 
-                    Sprite* sprite = getSprite(buildingDef->spriteName);
+                    auto& sprite = Sprite::get(buildingDef->spriteName);
                     auto color = canPlace ? ghostColorValid : ghostColorInvalid;
-                    drawSingleSprite(&renderer.world_overlay_buffer(), sprite, footprint, renderer.shaderIds.pixelArt, color);
+                    drawSingleSprite(&renderer.world_overlay_buffer(), &sprite, footprint, renderer.shaderIds.pixelArt, color);
                 }
             } break;
 
@@ -705,10 +705,10 @@ AppStatus updateAndRenderGame(GameState* gameState, float deltaTime)
                         showCostTooltip(buildCost);
 
                     if (canAfford(city, buildCost)) {
-                        Sprite* sprite = getSprite(buildingDef->spriteName);
+                        auto& sprite = Sprite::get(buildingDef->spriteName);
                         s32 maxGhosts = (dragResult.dragRect.width() / buildingDef->size.x) * (dragResult.dragRect.height() / buildingDef->size.y);
                         // TODO: If maxGhosts is 1, just draw 1!
-                        DrawRectsGroup* rectsGroup = beginRectsGroupTextured(&renderer.world_overlay_buffer(), sprite->texture, renderer.shaderIds.pixelArt, maxGhosts);
+                        DrawRectsGroup* rectsGroup = beginRectsGroupTextured(&renderer.world_overlay_buffer(), sprite.texture, renderer.shaderIds.pixelArt, maxGhosts);
                         for (s32 y = 0; y + buildingDef->size.y <= dragResult.dragRect.height(); y += buildingDef->size.y) {
                             for (s32 x = 0; x + buildingDef->size.x <= dragResult.dragRect.width(); x += buildingDef->size.x) {
                                 bool canPlace = canPlaceBuilding(city, buildingDef, dragResult.dragRect.x() + x, dragResult.dragRect.y() + y);
@@ -718,7 +718,7 @@ AppStatus updateAndRenderGame(GameState* gameState, float deltaTime)
                                 auto color = canPlace ? ghostColorValid : ghostColorInvalid;
                                 // TODO: All the sprites are the same, so we could optimise this!
                                 // Then again, eventually we might want ghosts to not be identical, eg ghost roads that visually connect.
-                                addSpriteRect(rectsGroup, sprite, rect, color);
+                                addSpriteRect(rectsGroup, &sprite, rect, color);
                             }
                         }
                         endRectsGroup(rectsGroup);

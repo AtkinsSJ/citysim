@@ -15,7 +15,7 @@ static void aboutWindowProc(UI::WindowContext* context, void* /*userData*/)
 
     UI::Panel leftColumn = ui->column(64, HAlign::Left, "plain"_s);
     leftColumn.alignWidgets(HAlign::Centre);
-    leftColumn.addSprite(getSprite("b_hospital"_s));
+    leftColumn.addSprite(&Sprite::get("b_hospital"_s));
     leftColumn.end();
 
     ui->addLabel(getText("game_title"_s), "title"_s);

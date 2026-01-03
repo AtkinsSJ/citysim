@@ -7,17 +7,21 @@
 #include "Sprite.h"
 #include <Assets/AssetManager.h>
 
+Sprite& Sprite::get(StringView name)
+{
+    return SpriteGroup::get(name).sprites[0];
+}
+
+SpriteGroup& SpriteGroup::get(StringView name)
+{
+    return getAsset(AssetType::Sprite, name.deprecated_to_string()).spriteGroup;
+}
+
 Sprite& SpriteRef::get() const
 {
     if (asset_manager().asset_generation() > m_asset_generation) {
-        SpriteGroup* group = getSpriteGroup(m_sprite_group_name.deprecated_to_string());
-        if (group != nullptr) {
-            m_pointer = group->sprites + (m_sprite_index % group->count);
-        } else {
-            // TODO: Dummy sprite!
-            ASSERT(!"Sprite group missing");
-        }
-
+        auto& group = SpriteGroup::get(m_sprite_group_name);
+        m_pointer = &group.sprites[m_sprite_index % group.count];
         m_asset_generation = asset_manager().asset_generation();
     }
 
