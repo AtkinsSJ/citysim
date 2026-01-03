@@ -15,22 +15,12 @@
 #include <Gfx/Ninepatch.h>
 #include <Gfx/Palette.h>
 #include <Gfx/Shader.h>
+#include <Gfx/Texture.h>
 #include <UI/UITheme.h>
 #include <Util/Array.h>
 #include <Util/Flags.h>
 #include <Util/Locale.h>
 #include <Util/Memory.h>
-
-struct Texture {
-    bool isFileAlphaPremultiplied;
-    SDL_Surface* surface;
-
-    // Renderer-specific stuff.
-    struct {
-        u32 glTextureID;
-        bool isLoaded;
-    } gl;
-};
 
 enum class AssetFlags : u8 {
     IsAFile, // The file at Asset.fullName should be loaded into memory when loading this Asset
