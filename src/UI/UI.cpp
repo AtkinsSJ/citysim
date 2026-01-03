@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include <Input/Input.h>
 #include "AppState.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/BitmapFont.h>
 #include <Gfx/Renderer.h>
+#include <Input/Input.h>
 #include <UI/Drawable.h>
 #include <UI/Panel.h>
 #include <UI/TextInput.h>
@@ -208,7 +208,7 @@ V2I calculateButtonSize(StringView text, ButtonStyle* style, s32 maxWidth, bool 
     }
 
     V2I result = {};
-    BitmapFont* font = getFont(style->font);
+    auto& font = getFont(style->font);
 
     if (textMaxWidth < 0) {
         // ERROR! Negative text width means we can't fit any so give up.
@@ -216,9 +216,9 @@ V2I calculateButtonSize(StringView text, ButtonStyle* style, s32 maxWidth, bool 
         DEBUG_BREAK();
 
         result.x = maxWidth;
-        result.y = font->line_height();
+        result.y = font.line_height();
     } else {
-        V2I textSize = font->calculate_text_size(text, textMaxWidth);
+        V2I textSize = font.calculate_text_size(text, textMaxWidth);
 
         s32 resultWidth = 0;
 
@@ -343,7 +343,7 @@ bool putTextButton(StringView text, Rect2I bounds, ButtonStyle* style, ButtonSta
 
     Rect2I contentBounds = calculateButtonContentBounds(bounds, style);
 
-    drawText(renderBuffer, getFont(style->font), text, contentBounds, style->textAlignment, style->textColor, renderer.shaderIds.text);
+    drawText(renderBuffer, &getFont(style->font), text, contentBounds, style->textAlignment, style->textColor, renderer.shaderIds.text);
 
     return result;
 }
@@ -442,7 +442,7 @@ V2I calculateLabelSize(StringView text, LabelStyle* style, s32 maxWidth, bool fi
 
     s32 maxTextWidth = maxWidth - (style->padding.left + style->padding.right);
 
-    V2I textSize = getFont(style->font)->calculate_text_size(text, maxTextWidth);
+    V2I textSize = getFont(style->font).calculate_text_size(text, maxTextWidth);
 
     // Add padding
     V2I result = v2i(
@@ -470,7 +470,7 @@ void putLabel(StringView text, Rect2I bounds, LabelStyle* style, RenderBuffer* r
 
     Drawable(&style->background).draw(renderBuffer, bounds);
 
-    drawText(renderBuffer, getFont(style->font), text, textBounds, style->textAlignment, style->textColor, renderer.shaderIds.text);
+    drawText(renderBuffer, &getFont(style->font), text, textBounds, style->textAlignment, style->textColor, renderer.shaderIds.text);
 }
 
 void showMenu(s32 menuID)

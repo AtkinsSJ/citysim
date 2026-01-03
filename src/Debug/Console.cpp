@@ -218,7 +218,7 @@ void updateAndRenderConsole(Console* console)
         // Scrollbar
         Rect2I scrollbarBounds = getConsoleScrollbarBounds(console);
         if (scrollbarBounds.has_positive_area()) {
-            s32 fontLineHeight = getFont(consoleStyle->font)->line_height();
+            s32 fontLineHeight = getFont(consoleStyle->font).line_height();
             s32 contentHeight = ((console->outputLines.count - 1) * fontLineHeight) + scrollbarBounds.height();
             if (scrollToBottom) {
                 console->scrollbar.scrollPercent = 1.0f;
@@ -232,7 +232,7 @@ void updateAndRenderConsole(Console* console)
         textPos.y -= consoleStyle->padding.bottom;
 
         // print output lines
-        BitmapFont* consoleFont = getFont(consoleStyle->font);
+        auto& consoleFont = getFont(consoleStyle->font);
         s32 scrollLinePos = clamp(floor_s32(console->scrollbar.scrollPercent * console->outputLines.count), 0, console->outputLines.count - 1);
         Alignment outputLinesAlign { HAlign::Left, VAlign::Bottom };
         for (auto it = console->outputLines.iterate(scrollLinePos, false, true);
@@ -241,9 +241,9 @@ void updateAndRenderConsole(Console* console)
             ConsoleOutputLine* line = it.get();
             auto outputTextColor = consoleStyle->outputTextColors[line->style];
 
-            V2I textSize = consoleFont->calculate_text_size(line->text, textMaxWidth);
+            V2I textSize = consoleFont.calculate_text_size(line->text, textMaxWidth);
             Rect2I textBounds = Rect2I::create_aligned(textPos, textSize, outputLinesAlign);
-            drawText(renderBuffer, consoleFont, line->text, textBounds, outputLinesAlign, outputTextColor, renderer.shaderIds.text);
+            drawText(renderBuffer, &consoleFont, line->text, textBounds, outputLinesAlign, outputTextColor, renderer.shaderIds.text);
             textPos.y -= (textSize.y + consoleStyle->contentPadding);
 
             // If we've gone off the screen, stop!
