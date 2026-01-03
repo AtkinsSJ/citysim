@@ -11,6 +11,7 @@ struct BitmapFontGlyph;
 class Camera;
 class Colour;
 struct Cursor;
+struct Ninepatch;
 struct Palette;
 struct RenderBuffer;
 class Renderer;
