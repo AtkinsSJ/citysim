@@ -31,7 +31,8 @@ enum class AssetFlags : u8 {
 
 constexpr Flags<AssetFlags> default_asset_flags { AssetFlags::IsAFile };
 
-struct Asset {
+class Asset {
+public:
     void ensure_is_loaded();
 
     AssetType type;
