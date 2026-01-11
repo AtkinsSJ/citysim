@@ -10,8 +10,6 @@
 #include <Util/String.h>
 
 enum class AssetType : u8 {
-    Misc,
-
     BitmapFont,
     BuildingDefs,
     Cursor,
@@ -24,6 +22,7 @@ enum class AssetType : u8 {
     Sprite,
     SpriteDefs,
     TerrainDefs,
+    TextDocument,
     Texts,
     Texture,
     UITheme,
@@ -44,7 +43,6 @@ enum class AssetType : u8 {
 };
 
 EnumMap<AssetType, String> const asset_type_names {
-    "Misc"_s,
     "BitmapFont"_s,
     "BuildingDefs"_s,
     "Cursor"_s,
@@ -56,6 +54,7 @@ EnumMap<AssetType, String> const asset_type_names {
     "Shader"_s,
     "Sprite"_s,
     "SpriteDefs"_s,
+    "TextDocument"_s,
     "Texts"_s,
     "Texture"_s,
     "TerrainDefs"_s,

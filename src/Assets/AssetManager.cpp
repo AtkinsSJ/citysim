@@ -39,6 +39,7 @@ void initAssets()
     s_assets->fileExtensionToType.put(s_assets->assetStrings.intern("sprites"_s), AssetType::SpriteDefs);
     s_assets->fileExtensionToType.put(s_assets->assetStrings.intern("terrain"_s), AssetType::TerrainDefs);
     s_assets->fileExtensionToType.put(s_assets->assetStrings.intern("theme"_s), AssetType::UITheme);
+    s_assets->fileExtensionToType.put(s_assets->assetStrings.intern("txt"_s), AssetType::TextDocument);
 
     s_assets->directoryNameToType.put(s_assets->assetStrings.intern("fonts"_s), AssetType::BitmapFont);
     s_assets->directoryNameToType.put(s_assets->assetStrings.intern("shaders"_s), AssetType::Shader);
@@ -110,6 +111,9 @@ void initAssets()
 
         // TerrainDefs
         makePlaceholderAsset(AssetType::TerrainDefs);
+
+        // TextDocument
+        makePlaceholderAsset(AssetType::TextDocument);
 
         // Texts
         makePlaceholderAsset(AssetType::Texts);
@@ -634,16 +638,19 @@ void addAssetsFromDirectory(String subDirectory, Optional<AssetType> manualAsset
         }
 
         String filename = s_assets->assetStrings.intern(file_info.filename);
-        AssetType assetType = [&manualAssetType, &filename]() {
+        auto assetType = [&manualAssetType, &filename]() -> Optional<AssetType> {
             // Attempt to categorise the asset based on file extension
             if (manualAssetType.has_value())
                 return manualAssetType.value();
             auto file_extension = get_file_extension(filename);
-            auto foundAssetType = s_assets->fileExtensionToType.find_value(file_extension.deprecated_to_string());
-            return foundAssetType.value_or(AssetType::Misc);
+            return s_assets->fileExtensionToType.find_value(file_extension.deprecated_to_string());
         }();
 
-        addAsset(assetType, filename, assetFlags);
+        if (assetType.has_value()) {
+            addAsset(assetType.value(), filename, assetFlags);
+        } else {
+            logInfo("Skipping unrecognized asset file `{}`"_s, { filename });
+        }
     }
 }
 
