@@ -147,7 +147,7 @@ bool BitmapFont::load_from_bmf_data(Blob data, Asset& asset)
 
         String textureName = String::from_null_terminated((char*)pages);
         font->m_texture = addTexture(textureName, false);
-        ensureAssetIsLoaded(font->m_texture);
+        font->m_texture->ensure_is_loaded();
 
         float textureWidth = (float)font->m_texture->texture.surface->w;
         float textureHeight = (float)font->m_texture->texture.surface->h;

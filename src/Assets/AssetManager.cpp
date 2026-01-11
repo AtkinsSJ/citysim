@@ -246,18 +246,6 @@ SDL_Surface* createSurfaceFromFileData(Blob fileData, String name)
     return result;
 }
 
-void ensureAssetIsLoaded(Asset* asset)
-{
-    if (asset->state == Asset::State::Loaded)
-        return;
-
-    loadAsset(asset);
-
-    if (asset->state != Asset::State::Loaded) {
-        logError("Failed to load asset '{0}'"_s, { asset->shortName });
-    }
-}
-
 void loadAsset(Asset* asset)
 {
     DEBUG_FUNCTION();
@@ -329,7 +317,7 @@ void loadAsset(Asset* asset)
     case AssetType::Ninepatch: {
         // Convert UVs from pixel space to 0-1 space
         Asset* t = asset->ninepatch.texture;
-        ensureAssetIsLoaded(t);
+        t->ensure_is_loaded();
         float textureWidth = (float)t->texture.surface->w;
         float textureHeight = (float)t->texture.surface->h;
 
@@ -383,7 +371,7 @@ void loadAsset(Asset* asset)
         for (s32 i = 0; i < asset->spriteGroup.count; i++) {
             Sprite* sprite = asset->spriteGroup.sprites + i;
             Asset* t = sprite->texture;
-            ensureAssetIsLoaded(t);
+            t->ensure_is_loaded();
             float textureWidth = (float)t->texture.surface->w;
             float textureHeight = (float)t->texture.surface->h;
 
