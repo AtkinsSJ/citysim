@@ -11,6 +11,8 @@
 #include <Util/Vector.h>
 
 struct Cursor {
+    static Cursor& get(StringView name);
+
     String imageFilePath; // Full path
     V2I hotspot;
     SDL_Cursor* sdlCursor;
