@@ -1150,7 +1150,7 @@ void loadTexts(HashTable<String>* texts, Asset* asset, Blob file_data)
     // We use the number of lines in the file as a heuristic - we know it'll be slightly more than
     // the number of texts in the file, because they're 1 per line, and we don't have many blanks.
 
-    auto line_count = LineReader::count_lines(file_data);
+    auto line_count = reader.line_count();
     auto key_array_size = sizeof(String) * line_count;
     asset->data = assetsAllocate(s_assets, file_data.size() + key_array_size);
     asset->texts.keys = makeArray(line_count, reinterpret_cast<String*>(asset->data.writable_data()));

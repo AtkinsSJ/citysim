@@ -91,7 +91,7 @@ public:
     void warn(String message, std::initializer_list<StringView> args = {}) const;
     void error(String message, std::initializer_list<StringView> args = {}) const;
 
-    static u32 count_lines(Blob const& data);
+    u32 line_count() const;
 
 private:
     String m_filename;
@@ -102,4 +102,5 @@ private:
     bool m_skip_blank_lines;
     bool m_remove_comments;
     char m_comment_char;
+    mutable Optional<u32> m_line_count;
 };
