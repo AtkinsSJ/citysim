@@ -19,7 +19,7 @@ AppStatus updateAndRenderCredits(float /*deltaTime*/)
 
     UI::LabelStyle* labelStyle = getStyle<UI::LabelStyle>("title"_s);
 
-    auto& creditsText = getAsset(AssetType::Misc, "credits.txt"_s);
+    auto& creditsText = getAsset(AssetType::TextDocument, "credits.txt"_s);
     LineReader reader { creditsText.shortName, creditsText.data, {} };
     while (reader.load_next_line()) {
         auto line = reader.current_line();
