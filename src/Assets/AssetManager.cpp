@@ -408,6 +408,21 @@ void loadAsset(Asset* asset)
         asset->state = Asset::State::Loaded;
     } break;
 
+    case AssetType::TextDocument: {
+        // FIXME: Combine things into one allocation?
+        copyFileIntoAsset(&fileData, asset);
+        LineReader reader { asset->shortName, asset->data, {} };
+        auto line_count = reader.line_count();
+        auto lines_data = assetsAllocate(s_assets, line_count * sizeof(TextDocument::Line));
+        auto lines_array = makeArray(line_count, reinterpret_cast<TextDocument::Line*>(lines_data.writable_data()));
+        while (reader.load_next_line()) {
+            auto line = reader.current_line();
+            lines_array.append({ .text = line });
+        }
+        asset->text_document = TextDocument { lines_data, move(lines_array) };
+        asset->state = Asset::State::Loaded;
+    } break;
+
     case AssetType::Texts: {
         HashTable<String>* textsTable = (asset->texts.isFallbackLocale ? &s_assets->defaultTexts : &s_assets->texts);
         loadTexts(textsTable, asset, fileData);
@@ -497,6 +512,10 @@ void unloadAsset(Asset* asset)
         // Remove all of our terrain defs
         removeTerrainDefs(asset->terrainDefs.terrainIDs);
         asset->terrainDefs.terrainIDs = makeEmptyArray<String>();
+    } break;
+
+    case AssetType::TextDocument: {
+        asset->text_document.unload();
     } break;
 
     case AssetType::Texts: {

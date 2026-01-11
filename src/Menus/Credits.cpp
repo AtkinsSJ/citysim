@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2016-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2016-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "Credits.h"
 #include <Assets/AssetManager.h>
-#include <IO/LineReader.h>
+#include <Gfx/TextDocument.h>
 #include <UI/UI.h>
 #include <Util/Vector.h>
 
@@ -19,13 +19,11 @@ AppStatus updateAndRenderCredits(float /*deltaTime*/)
 
     UI::LabelStyle* labelStyle = getStyle<UI::LabelStyle>("title"_s);
 
-    auto& creditsText = getAsset(AssetType::TextDocument, "credits.txt"_s);
-    LineReader reader { creditsText.shortName, creditsText.data, {} };
-    while (reader.load_next_line()) {
-        auto line = reader.current_line();
-        V2I labelSize = UI::calculateLabelSize(line, labelStyle, maxLabelWidth);
+    auto& credits_text = TextDocument::get("credits.txt"_s);
+    for (auto& line : credits_text.lines()) {
+        V2I labelSize = UI::calculateLabelSize(line.text, labelStyle, maxLabelWidth);
         Rect2I labelBounds = Rect2I::create_aligned(position, labelSize, labelStyle->textAlignment);
-        UI::putLabel(line, labelBounds, labelStyle);
+        UI::putLabel(line.text, labelBounds, labelStyle);
         position.y += labelBounds.height();
     }
 

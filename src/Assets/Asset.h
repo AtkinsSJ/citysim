@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2015-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -15,6 +15,7 @@
 #include <Gfx/Palette.h>
 #include <Gfx/Shader.h>
 #include <Gfx/Sprite.h>
+#include <Gfx/TextDocument.h>
 #include <Gfx/Texture.h>
 #include <UI/UITheme.h>
 #include <Util/Array.h>
@@ -84,6 +85,8 @@ struct Asset {
         struct {
             Array<String> terrainIDs;
         } terrainDefs;
+
+        TextDocument text_document;
 
         struct {
             Array<String> keys;
