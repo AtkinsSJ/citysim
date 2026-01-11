@@ -33,31 +33,32 @@ void LineReader::restart()
     m_state = {};
 }
 
-u32 LineReader::count_lines(Blob const& data)
+u32 LineReader::line_count() const
 {
-    // FIXME: This should be some kind of Span type instead of Blob.
+    if (!m_line_count.has_value()) {
+        u32 result = 0;
 
-    s32 result = 0;
+        smm startOfNextLine = 0;
 
-    smm startOfNextLine = 0;
-
-    // Code originally based on loadNextLine() but with a lot of alterations!
-    do {
-        ++result;
-        while ((startOfNextLine < data.size()) && !isNewline(data.data()[startOfNextLine])) {
-            ++startOfNextLine;
-        }
-
-        // Handle Windows' stupid double-character newline.
-        if (startOfNextLine < data.size()) {
-            ++startOfNextLine;
-            if (isNewline(data.data()[startOfNextLine]) && (data.data()[startOfNextLine] != data.data()[startOfNextLine - 1])) {
+        // Code originally based on loadNextLine() but with a lot of alterations!
+        do {
+            ++result;
+            while ((startOfNextLine < m_data.size()) && !isNewline(m_data.data()[startOfNextLine])) {
                 ++startOfNextLine;
             }
-        }
-    } while (!(startOfNextLine >= data.size()));
 
-    return result;
+            // Handle Windows' stupid double-character newline.
+            if (startOfNextLine < m_data.size()) {
+                ++startOfNextLine;
+                if (isNewline(m_data.data()[startOfNextLine]) && (m_data.data()[startOfNextLine] != m_data.data()[startOfNextLine - 1])) {
+                    ++startOfNextLine;
+                }
+            }
+        } while (!(startOfNextLine >= m_data.size()));
+        m_line_count = result;
+    }
+
+    return m_line_count.value();
 }
 
 u32 LineReader::count_occurrences_of_property_in_current_command(String const& property_name) const
