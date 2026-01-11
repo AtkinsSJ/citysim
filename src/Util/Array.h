@@ -140,12 +140,12 @@ struct Array {
         T* m_pointer;
     };
 
-    Iterator begin()
+    Iterator begin() const
     {
         return Iterator({}, items);
     }
 
-    Iterator end()
+    Iterator end() const
     {
         return Iterator({}, items + count);
     }
