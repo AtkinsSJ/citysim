@@ -81,7 +81,6 @@ Asset* addSpriteGroup(StringView name, s32 spriteCount);
 
 void loadAssets();
 void loadAsset(Asset* asset);
-void ensureAssetIsLoaded(Asset* asset);
 void unloadAsset(Asset* asset);
 void removeAsset(AssetType type, String name);
 void removeAsset(AssetRef const&);

@@ -32,6 +32,8 @@ enum class AssetFlags : u8 {
 constexpr Flags<AssetFlags> default_asset_flags { AssetFlags::IsAFile };
 
 struct Asset {
+    void ensure_is_loaded();
+
     AssetType type;
 
     // shortName = "foo.png", fullName = "c:/mygame/assets/textures/foo.png"
