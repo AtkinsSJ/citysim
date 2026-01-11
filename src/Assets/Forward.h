@@ -9,7 +9,7 @@
 #include <Util/Basic.h>
 
 enum class AssetType : u8;
-struct Asset;
+class Asset;
 struct AssetManager;
 class AssetManagerListener;
 class AssetRef;
