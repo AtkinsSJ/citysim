@@ -171,10 +171,10 @@ struct ChunkedArray {
 
     // Filter is a function with signature: bool filter(T *value)
     template<typename Filter>
-    Optional<Indexed<T*>> find_first(Filter filter)
+    Optional<Indexed<T>> find_first(Filter filter)
     {
         for (auto it = iterate(); it.hasNext(); it.next()) {
-            T* entry = it.get();
+            auto& entry = it.get();
             if (filter(entry))
                 return Indexed { it.getIndex(), entry };
         }
@@ -570,7 +570,7 @@ struct ChunkedArrayIterator {
         ASSERT(isDone || indexInChunk >= 0 && indexInChunk < currentChunk->count); // Bounds check
     }
 
-    T* get() { return &currentChunk->items[indexInChunk]; }
+    T& get() { return currentChunk->items[indexInChunk]; }
     s32 getIndex() { return (chunkIndex * array->itemsPerChunk) + indexInChunk; }
     T getValue() { return currentChunk->items[indexInChunk]; }
 };

@@ -95,9 +95,9 @@ void showWindow(WindowTitle title, s32 width, s32 height, V2I position, String s
         for (auto it = uiState.openWindows.iterate();
             it.hasNext();
             it.next()) {
-            Window* oldWindow = it.get();
-            if (oldWindow->windowProc == window_proc) {
-                existing_window = oldWindow;
+            auto& old_window = it.get();
+            if (old_window.windowProc == window_proc) {
+                existing_window = &old_window;
                 existing_window_index = it.getIndex();
                 break;
             }
@@ -141,14 +141,14 @@ bool hasPauseWindowOpen()
 
 bool isWindowOpen(WindowProc windowProc)
 {
-    auto window_to_remove = uiState.openWindows.find_first([&](Window* window) { return window->windowProc == windowProc; });
+    auto window_to_remove = uiState.openWindows.find_first([&](Window& window) { return window.windowProc == windowProc; });
 
     return window_to_remove.has_value();
 }
 
 void closeWindow(WindowProc windowProc)
 {
-    auto window_to_remove = uiState.openWindows.find_first([&](Window* window) { return window->windowProc == windowProc; });
+    auto window_to_remove = uiState.openWindows.find_first([&](Window& window) { return window.windowProc == windowProc; });
 
     if (window_to_remove.has_value()) {
         uiState.windowsToClose.add(window_to_remove.value().index());
@@ -179,109 +179,109 @@ void updateAndRenderWindows()
     for (auto it = uiState.openWindows.iterate();
         it.hasNext();
         it.next()) {
-        Window* window = it.get();
+        auto& window = it.get();
         s32 windowIndex = it.getIndex();
 
         // Skip this Window if we've requested to close it.
         if (uiState.windowsToClose.contains(windowIndex))
             continue;
 
-        bool isModal = (window->flags & WindowFlags::Modal) != 0;
-        bool hasTitleBar = (window->flags & WindowFlags::Headless) == 0;
-        bool isTooltip = (window->flags & WindowFlags::Tooltip) != 0;
+        bool isModal = (window.flags & WindowFlags::Modal) != 0;
+        bool hasTitleBar = (window.flags & WindowFlags::Headless) == 0;
+        bool isTooltip = (window.flags & WindowFlags::Tooltip) != 0;
 
         if (isTooltip) {
             ASSERT(tooltipIndex == -1); // Multiple tooltips???
             tooltipIndex = windowIndex;
         }
 
-        bool shrinkWidth = (window->flags & WindowFlags::ShrinkWidth) != 0;
-        bool shrinkHeight = (window->flags & WindowFlags::AutomaticHeight) != 0;
+        bool shrinkWidth = (window.flags & WindowFlags::ShrinkWidth) != 0;
+        bool shrinkHeight = (window.flags & WindowFlags::AutomaticHeight) != 0;
 
-        WindowStyle* windowStyle = getStyle<WindowStyle>(window->styleName);
+        WindowStyle* windowStyle = getStyle<WindowStyle>(window.styleName);
 
         s32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
 
         // Modal windows get a translucent colour over everything behind them
         if (isModal) {
-            drawSingleRect(window->renderBuffer, Rect2 { v2(0, 0), renderer.ui_camera().size() }, renderer.shaderIds.untextured, Colour::from_rgb_255(64, 64, 64, 128));
+            drawSingleRect(window.renderBuffer, Rect2 { v2(0, 0), renderer.ui_camera().size() }, renderer.shaderIds.untextured, Colour::from_rgb_255(64, 64, 64, 128));
         }
 
         // If the window is new, make sure it has a valid area by running the WindowProc once
         // (Otherwise, windows may appear in the wrong place or at the wrong size on the frame they are created.)
-        if (!window->isInitialised) {
-            window->isInitialised = true;
+        if (!window.isInitialised) {
+            window.isInitialised = true;
 
-            WindowContext context = WindowContext(window, windowStyle, true, nullptr);
-            window->windowProc(&context, window->userData);
+            WindowContext context = WindowContext(&window, windowStyle, true, nullptr);
+            window.windowProc(&context, window.userData);
             context.windowPanel.end(shrinkHeight, shrinkWidth);
 
             if (shrinkHeight) {
-                window->area.set_height(barHeight + context.windowPanel.bounds.height());
+                window.area.set_height(barHeight + context.windowPanel.bounds.height());
             }
 
             if (shrinkWidth) {
-                window->area.set_width(context.windowPanel.bounds.width());
-                window->area.set_x(context.windowPanel.bounds.x());
+                window.area.set_width(context.windowPanel.bounds.width());
+                window.area.set_x(context.windowPanel.bounds.x());
             }
         }
 
         // Handle dragging the window
         if (isModal) {
             // Modal windows can't be moved, they just auto-centre
-            window->area = validWindowArea.create_centred_within(window->area.size());
-        } else if (isDragging((void*)window->id)) {
-            window->area.set_position(getDraggingObjectPos());
+            window.area = validWindowArea.create_centred_within(window.area.size());
+        } else if (isDragging((void*)window.id)) {
+            window.area.set_position(getDraggingObjectPos());
         } else if (isTooltip) {
-            window->area.set_position(mousePos + windowStyle->offsetFromMouse);
+            window.area.set_position(mousePos + windowStyle->offsetFromMouse);
         }
 
         // Keep window on screen
         {
             // X
-            if (window->area.width() > validWindowArea.width()) {
+            if (window.area.width() > validWindowArea.width()) {
                 // If it's too big, centre it.
-                window->area.set_x(validWindowArea.x() - ((window->area.width() - validWindowArea.width()) / 2));
-            } else if (window->area.x() < validWindowArea.x()) {
-                window->area.set_x(validWindowArea.x());
-            } else if ((window->area.x() + window->area.width()) > (validWindowArea.x() + validWindowArea.width())) {
-                window->area.set_x(validWindowArea.x() + validWindowArea.width() - window->area.width());
+                window.area.set_x(validWindowArea.x() - ((window.area.width() - validWindowArea.width()) / 2));
+            } else if (window.area.x() < validWindowArea.x()) {
+                window.area.set_x(validWindowArea.x());
+            } else if ((window.area.x() + window.area.width()) > (validWindowArea.x() + validWindowArea.width())) {
+                window.area.set_x(validWindowArea.x() + validWindowArea.width() - window.area.width());
             }
 
             // Y
-            if (window->area.height() > validWindowArea.height()) {
+            if (window.area.height() > validWindowArea.height()) {
                 // If it's too big, centre it.
-                window->area.set_y(validWindowArea.y() - ((window->area.height() - validWindowArea.height()) / 2));
-            } else if (window->area.y() < validWindowArea.y()) {
-                window->area.set_y(validWindowArea.y());
-            } else if ((window->area.y() + window->area.height()) > (validWindowArea.y() + validWindowArea.height())) {
-                window->area.set_y(validWindowArea.y() + validWindowArea.height() - window->area.height());
+                window.area.set_y(validWindowArea.y() - ((window.area.height() - validWindowArea.height()) / 2));
+            } else if (window.area.y() < validWindowArea.y()) {
+                window.area.set_y(validWindowArea.y());
+            } else if ((window.area.y() + window.area.height()) > (validWindowArea.y() + validWindowArea.height())) {
+                window.area.set_y(validWindowArea.y() + validWindowArea.height() - window.area.height());
             }
         }
 
         // Actually run the window proc
-        WindowContext context = WindowContext(window, windowStyle, false, window->renderBuffer);
-        window->windowProc(&context, window->userData);
+        WindowContext context = WindowContext(&window, windowStyle, false, window.renderBuffer);
+        window.windowProc(&context, window.userData);
         context.windowPanel.end(shrinkHeight, shrinkWidth);
 
         if (shrinkHeight) {
-            window->area.set_height(barHeight + context.windowPanel.bounds.height());
+            window.area.set_height(barHeight + context.windowPanel.bounds.height());
         }
 
         if (shrinkWidth) {
-            window->area.set_width(context.windowPanel.bounds.width());
-            window->area.set_x(context.windowPanel.bounds.x());
+            window.area.set_width(context.windowPanel.bounds.width());
+            window.area.set_x(context.windowPanel.bounds.x());
         }
 
         if (context.closeRequested) {
             uiState.windowsToClose.add(windowIndex);
         }
 
-        if (!context.closeRequested && ((window->flags & WindowFlags::Pause) != 0)) {
+        if (!context.closeRequested && ((window.flags & WindowFlags::Pause) != 0)) {
             uiState.isAPauseWindowOpen = true;
         }
 
-        Rect2I wholeWindowArea = window->area;
+        Rect2I wholeWindowArea = window.area;
         Rect2I barArea { wholeWindowArea.x(), wholeWindowArea.y(), wholeWindowArea.width(), barHeight };
         Rect2I closeButtonRect { wholeWindowArea.x() + wholeWindowArea.width() - barHeight, wholeWindowArea.y(), barHeight, barHeight };
 
@@ -293,23 +293,23 @@ void updateAndRenderWindows()
             String closeButtonString = "X"_s;
             auto closeButtonColorHover = windowStyle->titleBarButtonHoverColor;
 
-            drawSingleRect(window->renderBuffer, barArea, renderer.shaderIds.untextured, barColor);
-            String titleString = window->title.getString();
+            drawSingleRect(window.renderBuffer, barArea, renderer.shaderIds.untextured, barColor);
+            String titleString = window.title.getString();
 
             LabelStyle* titleStyle = getStyle<LabelStyle>(windowStyle->titleLabelStyle);
             // TODO: Take close-button size into account
             V2I titleSize = calculateLabelSize(titleString, titleStyle, barArea.width(), false);
-            putLabel(titleString, barArea.create_aligned_within(titleSize, titleStyle->textAlignment), titleStyle, window->renderBuffer);
+            putLabel(titleString, barArea.create_aligned_within(titleSize, titleStyle->textAlignment), titleStyle, window.renderBuffer);
 
             // TODO: Replace this with an actual Button?
             auto& titleFont = getFont(titleStyle->font);
             if (hoveringOverCloseButton
                 && (!isMouseInputHandled() || windowIndex == 0)) {
-                drawSingleRect(window->renderBuffer, closeButtonRect, renderer.shaderIds.untextured, closeButtonColorHover);
+                drawSingleRect(window.renderBuffer, closeButtonRect, renderer.shaderIds.untextured, closeButtonColorHover);
             }
             V2I closeTextSize = titleFont.calculate_text_size(closeButtonString);
             Rect2I closeTextBounds = Rect2I::create_aligned(v2i(closeButtonRect.centre()), closeTextSize, Alignment::centre());
-            drawText(window->renderBuffer, &titleFont, closeButtonString, closeTextBounds, Alignment::centre(), titleStyle->textColor, renderer.shaderIds.text);
+            drawText(window.renderBuffer, &titleFont, closeButtonString, closeTextBounds, Alignment::centre(), titleStyle->textColor, renderer.shaderIds.text);
 
             if ((!isMouseInputHandled() || windowIndex == 0)
                 && wholeWindowArea.contains(mousePos)
@@ -327,7 +327,7 @@ void updateAndRenderWindows()
                         //
                         // The solution would be to either allocate windows individually, or store their order in
                         // an array that's separate abd just uses pointers.
-                        startDragging((void*)window->id, window->area.position());
+                        startDragging((void*)window.id, window.area.position());
                     }
 
                     // Make this the active window!
@@ -412,8 +412,8 @@ void updateAndRenderWindows()
     for (auto it = uiState.openWindows.iterateBackwards();
         it.hasNext();
         it.next()) {
-        Window* window = it.get();
-        the_renderer().window_buffer().take_from(*window->renderBuffer);
+        auto& window = it.get();
+        the_renderer().window_buffer().take_from(*window.renderBuffer);
     }
 
     // Remove the tooltip now that it's been shown

@@ -70,11 +70,11 @@ void updateFireLayer(City* city, FireLayer* layer)
                     FireSector* sector = getSector(&layer->sectors, sx, sy);
 
                     for (auto it = sector->activeFires.iterate(); it.hasNext(); it.next()) {
-                        Fire* fire = it.get();
-                        if (expandedRect.contains(fire->pos)) {
+                        auto& fire = it.get();
+                        if (expandedRect.contains(fire.pos)) {
                             // TODO: Different "strengths" of fire should have different effects
                             EffectRadius fireEffect { layer->maxFireRadius, 255, 20 };
-                            fireEffect.apply(layer->tileFireProximityEffect, dirtyRect, v2(fire->pos), EffectType::Add);
+                            fireEffect.apply(layer->tileFireProximityEffect, dirtyRect, v2(fire.pos), EffectType::Add);
                         }
                     }
                 }
@@ -143,7 +143,7 @@ void updateFireLayer(City* city, FireLayer* layer)
     }
 }
 
-Optional<Indexed<Fire*>> find_fire_at(City* city, s32 x, s32 y)
+Optional<Indexed<Fire>> find_fire_at(City* city, s32 x, s32 y)
 {
     FireLayer& layer = city->fireLayer;
 
@@ -152,7 +152,7 @@ Optional<Indexed<Fire*>> find_fire_at(City* city, s32 x, s32 y)
         return {};
 
     FireSector* sector = getSectorAtTilePos(&layer.sectors, x, y);
-    return sector->activeFires.find_first([=](Fire* fire) { return fire->pos.x == x && fire->pos.y == y; });
+    return sector->activeFires.find_first([=](Fire& fire) { return fire.pos.x == x && fire.pos.y == y; });
 }
 
 bool doesAreaContainFire(City* city, Rect2I bounds)
@@ -169,9 +169,9 @@ bool doesAreaContainFire(City* city, Rect2I bounds)
             sx++) {
             FireSector* sector = getSector(&layer->sectors, sx, sy);
             for (auto it = sector->activeFires.iterate(); it.hasNext(); it.next()) {
-                Fire* fire = it.get();
+                auto& fire = it.get();
 
-                if (bounds.contains(fire->pos)) {
+                if (bounds.contains(fire.pos)) {
                     foundFire = true;
                     break;
                 }
@@ -208,7 +208,7 @@ void addFireRaw(City* city, s32 x, s32 y, GameTimestamp startDate)
     fire->entity = addEntity(city, Entity::Type::Fire, fire);
     // TODO: Probably most of this wants to be moved into addEntity()
     fire->entity->bounds = { x, y, 1, 1 };
-    fire->entity->sprite =  SpriteRef { "e_fire_1x1"_s, AppState::the().cosmeticRandom->next()};
+    fire->entity->sprite = SpriteRef { "e_fire_1x1"_s, AppState::the().cosmeticRandom->next() };
 
     layer->activeFireCount++;
 
@@ -226,12 +226,12 @@ void removeFireAt(City* city, s32 x, s32 y)
     FireLayer* layer = &city->fireLayer;
 
     FireSector* sectorAtPosition = getSectorAtTilePos(&layer->sectors, x, y);
-    auto existing_fire = sectorAtPosition->activeFires.find_first([=](Fire* fire) { return fire->pos.x == x && fire->pos.y == y; });
+    auto existing_fire = sectorAtPosition->activeFires.find_first([=](Fire& fire) { return fire.pos.x == x && fire.pos.y == y; });
 
     if (existing_fire.has_value()) {
         // Remove it!
         auto& [index, fire] = existing_fire.value();
-        removeEntity(city, fire->entity);
+        removeEntity(city, fire.entity);
         sectorAtPosition->activeFires.removeIndex(index);
         layer->activeFireCount--;
 
@@ -299,12 +299,12 @@ void saveFireLayer(FireLayer* layer, BinaryFileWriter* writer)
         FireSector* sector = getSectorByIndex(&layer->sectors, sectorIndex);
 
         for (auto it = sector->activeFires.iterate(); it.hasNext(); it.next()) {
-            Fire* fire = it.get();
+            auto& fire = it.get();
             SAVFire* savFire = tempFires.append();
             *savFire = {};
-            savFire->x = (u16)fire->pos.x;
-            savFire->y = (u16)fire->pos.y;
-            savFire->startDate = fire->startDate;
+            savFire->x = (u16)fire.pos.x;
+            savFire->y = (u16)fire.pos.y;
+            savFire->startDate = fire.startDate;
         }
     }
     fireSection.activeFires = writer->appendArray<SAVFire>(tempFires);
