@@ -110,9 +110,9 @@ void updateSectorPowerValues(City* city, PowerSector* sector)
     for (auto it = sector->powerGroups.iterate();
         it.hasNext();
         it.next()) {
-        PowerGroup* powerGroup = it.get();
-        powerGroup->production = 0;
-        powerGroup->consumption = 0;
+        auto& powerGroup = it.get();
+        powerGroup.production = 0;
+        powerGroup.consumption = 0;
     }
 
     // Count power from buildings
@@ -261,8 +261,8 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
 
     // Step 0: Remove the old PowerGroups.
     for (auto it = sector->powerGroups.iterate(); it.hasNext(); it.next()) {
-        PowerGroup* powerGroup = it.get();
-        powerGroup->sectorBoundaries.clear();
+        auto& powerGroup = it.get();
+        powerGroup.sectorBoundaries.clear();
     }
     sector->powerGroups.clear();
     fill<u8>(&sector->tilePowerGroup, 0);
@@ -508,16 +508,16 @@ void recalculatePowerConnectivity(PowerLayer* layer)
     for (auto networkIt = layer->networks.iterate();
         networkIt.hasNext();
         networkIt.next()) {
-        PowerNetwork* powerNetwork = networkIt.get();
+        auto& powerNetwork = networkIt.get();
 
-        for (auto groupIt = powerNetwork->groups.iterate();
+        for (auto groupIt = powerNetwork.groups.iterate();
             groupIt.hasNext();
             groupIt.next()) {
             PowerGroup* group = groupIt.getValue();
             group->networkID = 0;
         }
 
-        freePowerNetwork(powerNetwork);
+        freePowerNetwork(&powerNetwork);
     }
     layer->networks.clear();
 
@@ -534,10 +534,10 @@ void recalculatePowerConnectivity(PowerLayer* layer)
         for (auto it = sector->powerGroups.iterate();
             it.hasNext();
             it.next()) {
-            PowerGroup* powerGroup = it.get();
-            if (powerGroup->networkID == 0) {
+            auto& powerGroup = it.get();
+            if (powerGroup.networkID == 0) {
                 PowerNetwork* network = newPowerNetwork(layer);
-                floodFillCityPowerNetwork(layer, powerGroup, network);
+                floodFillCityPowerNetwork(layer, &powerGroup, network);
             }
         }
     }
@@ -613,28 +613,28 @@ void updatePowerLayer(City* city, PowerLayer* layer)
     for (auto networkIt = layer->networks.iterate();
         networkIt.hasNext();
         networkIt.next()) {
-        PowerNetwork* network = networkIt.get();
-        network->cachedProduction = 0;
-        network->cachedConsumption = 0;
+        auto& network = networkIt.get();
+        network.cachedProduction = 0;
+        network.cachedConsumption = 0;
 
-        for (auto groupIt = network->groups.iterate();
+        for (auto groupIt = network.groups.iterate();
             groupIt.hasNext();
             groupIt.next()) {
             PowerGroup* powerGroup = groupIt.getValue();
-            network->cachedProduction += powerGroup->production;
-            network->cachedConsumption += powerGroup->consumption;
+            network.cachedProduction += powerGroup->production;
+            network.cachedConsumption += powerGroup->consumption;
         }
 
         // City-wide power totals
-        layer->cachedCombinedProduction += network->cachedProduction;
-        layer->cachedCombinedConsumption += network->cachedConsumption;
+        layer->cachedCombinedProduction += network.cachedProduction;
+        layer->cachedCombinedConsumption += network.cachedConsumption;
     }
 
     // Supply power to buildings
     for (auto networkIt = layer->networks.iterate();
         networkIt.hasNext();
         networkIt.next()) {
-        PowerNetwork* network = networkIt.get();
+        auto& network = networkIt.get();
 
         // Figure out which mode this network is in.
         enum class NetworkMode : u8 {
@@ -642,21 +642,21 @@ void updatePowerLayer(City* city, PowerLayer* layer)
             Brownout,    // Not enough production
             FullCoverage // Enough
         } networkMode;
-        if (network->cachedConsumption == 0) {
+        if (network.cachedConsumption == 0) {
             // No iteration of buildings is necessary!
             continue;
         }
-        if (network->cachedProduction == 0) {
+        if (network.cachedProduction == 0) {
             networkMode = NetworkMode::Blackout;
-        } else if (network->cachedProduction < network->cachedConsumption) {
+        } else if (network.cachedProduction < network.cachedConsumption) {
             networkMode = NetworkMode::Brownout;
         } else {
             networkMode = NetworkMode::FullCoverage;
         }
 
         // Now, iterate the buildings and give them power based on that mode.
-        s32 powerRemaining = network->cachedProduction;
-        for (auto groupIt = network->groups.iterate();
+        s32 powerRemaining = network.cachedProduction;
+        for (auto groupIt = network.groups.iterate();
             groupIt.hasNext();
             groupIt.next()) {
             PowerGroup* powerGroup = groupIt.getValue();

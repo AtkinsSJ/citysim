@@ -88,10 +88,10 @@ void updateAndRenderConsole(Console* console)
         for (auto it = console->commandShortcuts.iterate();
             it.hasNext();
             it.next()) {
-            CommandShortcut* shortcut = it.get();
+            auto& shortcut = it.get();
 
-            if (shortcut->shortcut.was_just_pressed()) {
-                consoleHandleCommand(console, shortcut->command);
+            if (shortcut.shortcut.was_just_pressed()) {
+                consoleHandleCommand(console, shortcut.command);
                 scrollToBottom = true;
             }
         }
@@ -238,12 +238,12 @@ void updateAndRenderConsole(Console* console)
         for (auto it = console->outputLines.iterate(scrollLinePos, false, true);
             it.hasNext();
             it.next()) {
-            ConsoleOutputLine* line = it.get();
-            auto outputTextColor = consoleStyle->outputTextColors[line->style];
+            auto& line = it.get();
+            auto outputTextColor = consoleStyle->outputTextColors[line.style];
 
-            V2I textSize = consoleFont.calculate_text_size(line->text, textMaxWidth);
+            V2I textSize = consoleFont.calculate_text_size(line.text, textMaxWidth);
             Rect2I textBounds = Rect2I::create_aligned(textPos, textSize, outputLinesAlign);
-            drawText(renderBuffer, &consoleFont, line->text, textBounds, outputLinesAlign, outputTextColor, renderer.shaderIds.text);
+            drawText(renderBuffer, &consoleFont, line.text, textBounds, outputLinesAlign, outputTextColor, renderer.shaderIds.text);
             textPos.y -= (textSize.y + consoleStyle->contentPadding);
 
             // If we've gone off the screen, stop!

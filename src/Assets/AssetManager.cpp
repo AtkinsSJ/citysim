@@ -605,8 +605,8 @@ void loadAssets()
     DEBUG_FUNCTION();
 
     for (auto it = s_assets->allAssets.iterate(); it.hasNext(); it.next()) {
-        Asset* asset = it.get();
-        loadAsset(asset);
+        auto& asset = it.get();
+        loadAsset(&asset);
     }
 
     s_assets->fixme_increment_asset_generation();
@@ -697,8 +697,8 @@ void reloadAssets()
 
     // Clear managed s_assets
     for (auto it = s_assets->allAssets.iterate(); it.hasNext(); it.next()) {
-        Asset* asset = it.get();
-        unloadAsset(asset);
+        auto& asset = it.get();
+        unloadAsset(&asset);
     }
 
     // Clear the hash tables
@@ -826,17 +826,17 @@ void AssetManager::on_settings_changed()
     s_assets->missingTextIDs.clear();
 
     for (auto it = s_assets->allAssets.iterate(); it.hasNext(); it.next()) {
-        Asset* asset = it.get();
-        if (asset->locale.has_value()) {
-            unloadAsset(asset);
+        auto& asset = it.get();
+        if (asset.locale.has_value()) {
+            unloadAsset(&asset);
         }
     }
 
     for (auto it = s_assets->allAssets.iterate(); it.hasNext(); it.next()) {
-        Asset* asset = it.get();
+        auto& asset = it.get();
         // FIXME: Only try to load if the locale matches.
-        if (asset->locale.has_value()) {
-            loadAsset(asset);
+        if (asset.locale.has_value()) {
+            loadAsset(&asset);
         }
     }
 }

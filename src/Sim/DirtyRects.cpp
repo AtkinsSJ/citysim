@@ -35,9 +35,9 @@ void markRectAsDirty(DirtyRects* dirtyRects, Rect2I rect)
         for (auto it = dirtyRects->rects.iterate();
             it.hasNext();
             it.next()) {
-            Rect2I* existingRect = it.get();
+            auto& existingRect = it.get();
 
-            if (existingRect->contains(rectToAdd)) {
+            if (existingRect.contains(rectToAdd)) {
                 added = true;
                 break;
             }

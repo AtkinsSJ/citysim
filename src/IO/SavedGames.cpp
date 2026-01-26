@@ -143,8 +143,8 @@ void showSaveGameWindow()
     captureInput(&catalogue->saveGameName);
 
     // If we're playing a save file, select that by default
-    auto selected_saved_game = catalogue->savedGames.find_first([&](SavedGameInfo* info) {
-        return info->shortName == catalogue->activeSavedGameName;
+    auto selected_saved_game = catalogue->savedGames.find_first([&](SavedGameInfo& info) {
+        return info.shortName == catalogue->activeSavedGameName;
     });
     if (selected_saved_game.has_value()) {
         catalogue->selectedSavedGameName = catalogue->activeSavedGameName;
@@ -185,17 +185,17 @@ void savedGamesWindowProc(UI::WindowContext* context, void* userData)
         } else {
             // for (s32 duplicates = 0; duplicates < 5; duplicates++)
             for (auto it = catalogue->savedGames.iterate(); it.hasNext(); it.next()) {
-                SavedGameInfo* savedGame = it.get();
+                auto& saved_game = it.get();
                 s32 index = it.getIndex();
 
-                if (savesList.addTextButton(savedGame->shortName, buttonIsActive(catalogue->selectedSavedGameIndex == index))) {
+                if (savesList.addTextButton(saved_game.shortName, buttonIsActive(catalogue->selectedSavedGameIndex == index))) {
                     // Select it and show information in the details pane
                     catalogue->selectedSavedGameIndex = index;
                     justClickedSavedGame = true;
                 }
 
                 if (catalogue->selectedSavedGameIndex == index) {
-                    selectedSavedGame = savedGame;
+                    selectedSavedGame = &saved_game;
                 }
             }
         }
@@ -248,8 +248,8 @@ void savedGamesWindowProc(UI::WindowContext* context, void* userData)
             // Show a warning if we're overwriting an existing save that ISN'T the active one
             bool showOverwriteWarning = false;
             if (!inputName.is_empty() && inputName != catalogue->activeSavedGameName) {
-                auto file_to_overwrite = catalogue->savedGames.find_first([&](SavedGameInfo* info) {
-                    return inputName == info->shortName;
+                auto file_to_overwrite = catalogue->savedGames.find_first([&](SavedGameInfo& info) {
+                    return inputName == info.shortName;
                 });
 
                 if (file_to_overwrite.has_value()) {

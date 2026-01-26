@@ -50,7 +50,7 @@ struct Set {
         bool result = false;
 
         for (auto it = items.iterate(); it.hasNext(); it.next()) {
-            if (areItemsEqual(&item, it.get())) {
+            if (areItemsEqual(&item, &it.get())) {
                 result = true;
                 break;
             }
