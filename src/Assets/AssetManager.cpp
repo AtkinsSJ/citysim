@@ -184,19 +184,18 @@ void addChildAsset(AssetMetadata* parent, AssetMetadata* child)
     parent->children.append(AssetRef { child->type, child->shortName });
 }
 
-AssetMetadata* addAsset(AssetType type, StringView shortName, Flags<AssetFlags> flags)
+AssetMetadata* AssetManager::add_asset(AssetType type, StringView short_name, Flags<AssetFlags> flags)
 {
-    String internedShortName = s_assets->assetStrings.intern(shortName);
+    String internedShortName = assetStrings.intern(short_name);
 
-    AssetMetadata* existing = getAssetIfExists(type, internedShortName);
-    if (existing)
+    if (AssetMetadata* existing = getAssetIfExists(type, internedShortName))
         return existing;
 
-    AssetMetadata* asset = s_assets->allAssets.appendBlank();
+    AssetMetadata* asset = allAssets.appendBlank();
     asset->type = type;
     asset->shortName = internedShortName;
     if (flags.has(AssetFlags::IsAFile)) {
-        asset->fullName = s_assets->assetStrings.intern(getAssetPath(asset->type, internedShortName));
+        asset->fullName = assetStrings.intern(make_asset_path(asset->type, internedShortName));
         if (auto locale_string = get_file_locale_segment(asset->fullName); locale_string.has_value()) {
             asset->locale = locale_from_string(locale_string.value().deprecated_to_string());
             if (!asset->locale.has_value())
@@ -207,7 +206,7 @@ AssetMetadata* addAsset(AssetType type, StringView shortName, Flags<AssetFlags> 
     asset->data = {};
     asset->flags = flags;
 
-    s_assets->assetsByType[type].put(internedShortName, asset);
+    assetsByType[type].put(internedShortName, asset);
 
     return asset;
 }
@@ -560,7 +559,7 @@ AssetMetadata* addNinepatch(StringView name, StringView filename, s32 pu0, s32 p
 {
     AssetMetadata* texture = addTexture(filename, false);
 
-    AssetMetadata* asset = addAsset(AssetType::Ninepatch, name, {});
+    AssetMetadata* asset = asset_manager().add_asset(AssetType::Ninepatch, name, {});
 
     Ninepatch* ninepatch = &asset->ninepatch;
     ninepatch->texture = texture;
@@ -582,7 +581,7 @@ AssetMetadata* addSpriteGroup(StringView name, s32 spriteCount)
 {
     ASSERT(spriteCount > 0); // Must have a positive number of sprites in a Sprite Group!
 
-    AssetMetadata* spriteGroup = addAsset(AssetType::Sprite, name, {});
+    AssetMetadata* spriteGroup = asset_manager().add_asset(AssetType::Sprite, name, {});
     if (spriteGroup->data.size() != 0)
         DEBUG_BREAK(); // @Leak! Creating the sprite group multiple times is probably a bad idea for other reasons too.
     spriteGroup->data = assetsAllocate(s_assets, spriteCount * sizeof(Sprite));
@@ -594,35 +593,35 @@ AssetMetadata* addSpriteGroup(StringView name, s32 spriteCount)
 
 AssetMetadata* addTexture(StringView filename, bool isAlphaPremultiplied)
 {
-    AssetMetadata* asset = addAsset(AssetType::Texture, filename);
+    AssetMetadata* asset = asset_manager().add_asset(AssetType::Texture, filename);
     asset->texture.isFileAlphaPremultiplied = isAlphaPremultiplied;
 
     return asset;
 }
 
-void loadAssets()
+void AssetManager::load_assets()
 {
     DEBUG_FUNCTION();
 
-    for (auto it = s_assets->allAssets.iterate(); it.hasNext(); it.next()) {
+    for (auto it = allAssets.iterate(); it.hasNext(); it.next()) {
         auto& asset = it.get();
         loadAsset(&asset);
     }
 
-    s_assets->fixme_increment_asset_generation();
+    m_asset_generation++;
 
-    for (auto it = s_assets->listeners.iterate(); it.hasNext(); it.next()) {
+    for (auto it = listeners.iterate(); it.hasNext(); it.next()) {
         it.getValue()->after_assets_loaded();
     }
 }
 
-void addAssetsFromDirectory(String subDirectory, Optional<AssetType> manualAssetType)
+void AssetManager::scan_assets_from_directory(String subdirectory, Optional<AssetType> manual_asset_type)
 {
     String pathToScan;
-    if (subDirectory.is_empty()) {
+    if (subdirectory.is_empty()) {
         pathToScan = constructPath({ s_assets->assetsPath });
     } else {
-        pathToScan = constructPath({ s_assets->assetsPath, subDirectory });
+        pathToScan = constructPath({ s_assets->assetsPath, subdirectory });
     }
 
     auto assetFlags = default_asset_flags;
@@ -644,40 +643,40 @@ void addAssetsFromDirectory(String subDirectory, Optional<AssetType> manualAsset
             continue;
         }
 
-        String filename = s_assets->assetStrings.intern(file_info.filename);
-        auto assetType = [&manualAssetType, &filename]() -> Optional<AssetType> {
+        String filename = assetStrings.intern(file_info.filename);
+        auto assetType = [this, &manual_asset_type, &filename]() -> Optional<AssetType> {
             // Attempt to categorise the asset based on file extension
-            if (manualAssetType.has_value())
-                return manualAssetType.value();
+            if (manual_asset_type.has_value())
+                return manual_asset_type.value();
             auto file_extension = get_file_extension(filename);
-            return s_assets->fileExtensionToType.find_value(file_extension.deprecated_to_string());
+            return fileExtensionToType.find_value(file_extension.deprecated_to_string());
         }();
 
         if (assetType.has_value()) {
-            addAsset(assetType.value(), filename, assetFlags);
+            add_asset(assetType.value(), filename, assetFlags);
         } else {
             logInfo("Skipping unrecognized asset file `{}`"_s, { filename });
         }
     }
 }
 
-void addAssets()
+void AssetManager::scan_assets()
 {
     DEBUG_FUNCTION();
 
-    addAssetsFromDirectory({});
+    scan_assets_from_directory({});
 
     for (auto it = s_assets->directoryNameToType.iterate();
         it.hasNext();
         it.next()) {
         auto entry = it.getEntry();
-        addAssetsFromDirectory(entry->key, entry->value);
+        scan_assets_from_directory(entry->key, entry->value);
     }
 }
 
-bool haveAssetFilesChanged()
+bool AssetManager::have_asset_files_changed() const
 {
-    auto result = s_assets->asset_change_handle->has_changed();
+    auto result = asset_change_handle->has_changed();
     if (result.is_error()) {
         logError("Failed to check for asset changes: {}"_s, { result.error() });
         return false;
@@ -685,36 +684,36 @@ bool haveAssetFilesChanged()
     return result.value();
 }
 
-void reloadAssets()
+void AssetManager::reload()
 {
     DEBUG_FUNCTION();
 
     // Preparation
     logInfo("Reloading assets..."_s);
-    for (auto it = s_assets->listeners.iterate(); it.hasNext(); it.next()) {
+    for (auto it = listeners.iterate(); it.hasNext(); it.next()) {
         it.getValue()->before_assets_unloaded();
     }
 
     // Clear managed s_assets
-    for (auto it = s_assets->allAssets.iterate(); it.hasNext(); it.next()) {
+    for (auto it = allAssets.iterate(); it.hasNext(); it.next()) {
         auto& asset = it.get();
         unloadAsset(&asset);
     }
 
     // Clear the hash tables
     for (auto asset_type : enum_values<AssetType>()) {
-        s_assets->assetsByType[asset_type].clear();
+        assetsByType[asset_type].clear();
 
         // Reset missing text warnings
-        s_assets->missingAssetNames[asset_type].clear();
+        missingAssetNames[asset_type].clear();
     }
 
-    s_assets->missingTextIDs.clear();
+    missingTextIDs.clear();
 
     // Regenerate asset catalogue
-    s_assets->allAssets.clear();
-    addAssets();
-    loadAssets();
+    allAssets.clear();
+    scan_assets();
+    load_assets();
     logInfo("AssetManager reloaded successfully!"_s);
 }
 
@@ -800,21 +799,21 @@ String getText(String name, std::initializer_list<StringView> args)
     return myprintf(format, args);
 }
 
-String getAssetPath(AssetType type, StringView shortName)
+String AssetManager::make_asset_path(AssetType type, StringView short_name) const
 {
     switch (type) {
     case AssetType::Cursor:
-        return myprintf("{0}/cursors/{1}"_s, { s_assets->assetsPath, shortName }, true);
+        return myprintf("{0}/cursors/{1}"_s, { s_assets->assetsPath, short_name }, true);
     case AssetType::BitmapFont:
-        return myprintf("{0}/fonts/{1}"_s, { s_assets->assetsPath, shortName }, true);
+        return myprintf("{0}/fonts/{1}"_s, { s_assets->assetsPath, short_name }, true);
     case AssetType::Shader:
-        return myprintf("{0}/shaders/{1}"_s, { s_assets->assetsPath, shortName }, true);
+        return myprintf("{0}/shaders/{1}"_s, { s_assets->assetsPath, short_name }, true);
     case AssetType::Texts:
-        return myprintf("{0}/locale/{1}"_s, { s_assets->assetsPath, shortName }, true);
+        return myprintf("{0}/locale/{1}"_s, { s_assets->assetsPath, short_name }, true);
     case AssetType::Texture:
-        return myprintf("{0}/textures/{1}"_s, { s_assets->assetsPath, shortName }, true);
+        return myprintf("{0}/textures/{1}"_s, { s_assets->assetsPath, short_name }, true);
     default:
-        return myprintf("{0}/{1}"_s, { s_assets->assetsPath, shortName }, true);
+        return myprintf("{0}/{1}"_s, { s_assets->assetsPath, short_name }, true);
     }
 }
 
@@ -871,8 +870,8 @@ void loadCursorDefs(Blob data, AssetMetadata* asset)
 
         if (hot_x.has_value() && hot_y.has_value()) {
             // Add the cursor
-            AssetMetadata* cursorAsset = addAsset(AssetType::Cursor, name, {});
-            cursorAsset->cursor.imageFilePath = s_assets->assetStrings.intern(getAssetPath(AssetType::Cursor, filename.value()));
+            AssetMetadata* cursorAsset = asset_manager().add_asset(AssetType::Cursor, name, {});
+            cursorAsset->cursor.imageFilePath = s_assets->assetStrings.intern(asset_manager().make_asset_path(AssetType::Cursor, filename.value()));
             cursorAsset->cursor.hotspot = v2i(hot_x.release_value(), hot_y.release_value());
             addChildAsset(asset, cursorAsset);
         } else {
@@ -912,7 +911,7 @@ void loadPaletteDefs(Blob data, AssetMetadata* asset)
 
             if (command == "Palette"_s) {
                 if (auto palette_name = reader.next_token(); palette_name.has_value()) {
-                    paletteAsset = addAsset(AssetType::Palette, palette_name.release_value(), {});
+                    paletteAsset = asset_manager().add_asset(AssetType::Palette, palette_name.release_value(), {});
                     addChildAsset(asset, paletteAsset);
                 } else {
                     reader.error("Missing name for Palette"_s);

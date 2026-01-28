@@ -120,10 +120,11 @@ int main(int argc, char* argv[])
     }
 
     auto& renderer = the_renderer();
-    asset_manager().register_listener(&renderer);
+    auto& assets = asset_manager();
+    assets.register_listener(&renderer);
 
-    addAssets();
-    loadAssets();
+    assets.scan_assets();
+    assets.load_assets();
 
     renderer.set_cursor("default"_s);
     renderer.set_cursor_visible(true);
@@ -150,8 +151,8 @@ int main(int argc, char* argv[])
                 updateAndRenderConsole(globalConsole);
             }
 
-            if (haveAssetFilesChanged()) {
-                reloadAssets();
+            if (assets.have_asset_files_changed()) {
+                assets.reload();
             }
 
             updateSavedGamesCatalogue();
