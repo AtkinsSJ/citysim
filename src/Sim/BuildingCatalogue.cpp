@@ -102,7 +102,7 @@ BuildingDef* appendNewBuildingDef(StringView name)
     return &result;
 }
 
-void loadBuildingDefs(Blob data, Asset* asset)
+void loadBuildingDefs(Blob data, AssetMetadata* asset)
 {
     DEBUG_FUNCTION();
 

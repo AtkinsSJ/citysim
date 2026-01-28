@@ -48,5 +48,5 @@ struct RenderBuffer final : public Poolable<RenderBuffer> {
     bool hasRangeReserved;
     s32 scissorCount;
     s8 currentShader;
-    Asset* currentTexture;
+    AssetMetadata* currentTexture;
 };

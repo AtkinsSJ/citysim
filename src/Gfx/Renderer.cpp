@@ -297,9 +297,9 @@ void addSetShader(RenderBuffer* buffer, s8 shaderID)
     }
 }
 
-void addSetTexture(RenderBuffer* buffer, Asset* texture)
+void addSetTexture(RenderBuffer* buffer, AssetMetadata* texture)
 {
-    ASSERT(texture->state == Asset::State::Loaded);
+    ASSERT(texture->state == AssetMetadata::State::Loaded);
 
     if (buffer->currentTexture != texture) {
         RenderItem_SetTexture* textureItem = appendRenderItem<RenderItem_SetTexture>(buffer, RenderItemType::SetTexture);
@@ -505,7 +505,7 @@ void drawNinepatch(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, Ninepatch* 
     endRectsGroup(group);
 }
 
-DrawNinepatchPlaceholder appendDrawNinepatchPlaceholder(RenderBuffer* buffer, Asset* texture, s8 shaderID)
+DrawNinepatchPlaceholder appendDrawNinepatchPlaceholder(RenderBuffer* buffer, AssetMetadata* texture, s8 shaderID)
 {
     DrawNinepatchPlaceholder placeholder = {};
 
@@ -588,7 +588,7 @@ void fillDrawNinepatchPlaceholder(DrawNinepatchPlaceholder* placeholder, Rect2I 
     rect->uv = Rect2::create_min_max(ninepatch->u2, ninepatch->v2, ninepatch->u3, ninepatch->v3);
 }
 
-DrawRectsGroup* beginRectsGroupInternal(RenderBuffer* buffer, Asset* texture, s8 shaderID, s32 maxCount)
+DrawRectsGroup* beginRectsGroupInternal(RenderBuffer* buffer, AssetMetadata* texture, s8 shaderID, s32 maxCount)
 {
     addSetShader(buffer, shaderID);
     if (texture != nullptr)
@@ -608,7 +608,7 @@ DrawRectsGroup* beginRectsGroupInternal(RenderBuffer* buffer, Asset* texture, s8
     return result;
 }
 
-DrawRectsGroup* beginRectsGroupTextured(RenderBuffer* buffer, Asset* texture, s8 shaderID, s32 maxCount)
+DrawRectsGroup* beginRectsGroupTextured(RenderBuffer* buffer, AssetMetadata* texture, s8 shaderID, s32 maxCount)
 {
     return beginRectsGroupInternal(buffer, texture, shaderID, maxCount);
 }

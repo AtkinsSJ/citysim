@@ -6,7 +6,7 @@
 
 #include "TerrainCatalogue.h"
 #include "AppState.h"
-#include <Assets/Asset.h>
+#include <Assets/AssetMetadata.h>
 #include <Debug/Debug.h>
 #include <IO/LineReader.h>
 #include <Sim/City.h>
@@ -28,7 +28,7 @@ void initTerrainCatalogue()
     asset_manager().register_listener(&s_terrain_catalogue);
 }
 
-void loadTerrainDefs(Blob data, Asset* asset)
+void loadTerrainDefs(Blob data, AssetMetadata* asset)
 {
     DEBUG_FUNCTION();
 

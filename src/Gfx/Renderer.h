@@ -180,7 +180,7 @@ T* readRenderData(RenderBufferChunk* renderBufferChunk, smm* pos, s32 count)
 
 void addSetCamera(RenderBuffer* buffer, Camera* camera);
 void addSetShader(RenderBuffer* buffer, s8 shaderID);
-void addSetTexture(RenderBuffer* buffer, Asset* texture);
+void addSetTexture(RenderBuffer* buffer, AssetMetadata* texture);
 void addSetTextureRaw(RenderBuffer* buffer, s32 width, s32 height, u8 bytesPerPixel, u8* pixels);
 
 void addClear(RenderBuffer* buffer, Colour clearColor = {});
@@ -204,13 +204,13 @@ struct DrawNinepatchPlaceholder {
     RenderItem_DrawRects_Item* firstRect;
 };
 void drawNinepatch(RenderBuffer* buffer, Rect2I bounds, s8 shaderID, Ninepatch* ninepatch, Colour color = Colour::white());
-DrawNinepatchPlaceholder appendDrawNinepatchPlaceholder(RenderBuffer* buffer, Asset* texture, s8 shaderID);
+DrawNinepatchPlaceholder appendDrawNinepatchPlaceholder(RenderBuffer* buffer, AssetMetadata* texture, s8 shaderID);
 void fillDrawNinepatchPlaceholder(DrawNinepatchPlaceholder* placeholder, Rect2I bounds, Ninepatch* ninepatch, Colour color = Colour::white());
 
 // NB: The Rects drawn must all have the same Texture!
-DrawRectsGroup* beginRectsGroupInternal(RenderBuffer* buffer, Asset* texture, s8 shaderID, s32 maxCount);
+DrawRectsGroup* beginRectsGroupInternal(RenderBuffer* buffer, AssetMetadata* texture, s8 shaderID, s32 maxCount);
 // TODO: Have the shaderID default to a sensible value for these like beginRectsGroupForText
-DrawRectsGroup* beginRectsGroupTextured(RenderBuffer* buffer, Asset* texture, s8 shaderID, s32 maxCount);
+DrawRectsGroup* beginRectsGroupTextured(RenderBuffer* buffer, AssetMetadata* texture, s8 shaderID, s32 maxCount);
 DrawRectsGroup* beginRectsGroupUntextured(RenderBuffer* buffer, s8 shaderID, s32 maxCount);
 // TODO: Have the shaderID be last and default to the standard text shader, so I don't have to always pass it
 DrawRectsGroup* beginRectsGroupForText(RenderBuffer* buffer, BitmapFont* font, s8 shaderID, s32 maxCount);

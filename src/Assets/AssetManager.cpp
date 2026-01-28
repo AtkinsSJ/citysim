@@ -73,7 +73,7 @@ void initAssets()
         makePlaceholderAsset(AssetType::BuildingDefs);
 
         // Cursor
-        Asset* placeholderCursor = makePlaceholderAsset(AssetType::Cursor);
+        AssetMetadata* placeholderCursor = makePlaceholderAsset(AssetType::Cursor);
         placeholderCursor->cursor.sdlCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
 
         // CursorDefs
@@ -83,11 +83,11 @@ void initAssets()
         makePlaceholderAsset(AssetType::DevKeymap);
 
         // Ninepatch
-        Asset* placeholderNinepatch = makePlaceholderAsset(AssetType::Ninepatch);
+        AssetMetadata* placeholderNinepatch = makePlaceholderAsset(AssetType::Ninepatch);
         placeholderNinepatch->ninepatch.texture = &s_assets->placeholderAssets[AssetType::Texture];
 
         // Palette
-        Asset* placeholderPalette = makePlaceholderAsset(AssetType::Palette);
+        AssetMetadata* placeholderPalette = makePlaceholderAsset(AssetType::Palette);
         placeholderPalette->palette.type = Palette::Type::Fixed;
         placeholderPalette->palette.size = 0;
         placeholderPalette->palette.paletteData = makeEmptyArray<Colour>();
@@ -99,7 +99,7 @@ void initAssets()
         makePlaceholderAsset(AssetType::Shader);
 
         // Sprite!
-        Asset* placeholderSprite = makePlaceholderAsset(AssetType::Sprite);
+        AssetMetadata* placeholderSprite = makePlaceholderAsset(AssetType::Sprite);
         placeholderSprite->data = assetsAllocate(s_assets, 1 * sizeof(Sprite));
         placeholderSprite->spriteGroup.count = 1;
         placeholderSprite->spriteGroup.sprites = (Sprite*)placeholderSprite->data.writable_data();
@@ -119,7 +119,7 @@ void initAssets()
         makePlaceholderAsset(AssetType::Texts);
 
         // Texture
-        Asset* placeholderTexture = makePlaceholderAsset(AssetType::Texture);
+        AssetMetadata* placeholderTexture = makePlaceholderAsset(AssetType::Texture);
         placeholderTexture->data = assetsAllocate(s_assets, 2 * 2 * sizeof(u32));
         u32* pixels = (u32*)placeholderTexture->data.writable_data();
         pixels[0] = pixels[3] = 0xffff00ff;
@@ -149,14 +149,14 @@ AssetManager& asset_manager()
     return *s_assets;
 }
 
-Asset* makePlaceholderAsset(AssetType type)
+AssetMetadata* makePlaceholderAsset(AssetType type)
 {
-    Asset* result = &s_assets->placeholderAssets[type];
+    AssetMetadata* result = &s_assets->placeholderAssets[type];
     result->type = type;
     result->shortName = {};
     result->fullName = {};
     result->flags = {};
-    result->state = Asset::State::Loaded;
+    result->state = AssetMetadata::State::Loaded;
     result->children = makeEmptyArray<AssetRef>();
     result->data = {};
 
@@ -173,26 +173,26 @@ Blob assetsAllocate(AssetManager* theAssets, smm size)
     return result;
 }
 
-void allocateChildren(Asset* asset, s32 childCount)
+void allocateChildren(AssetMetadata* asset, s32 childCount)
 {
     asset->data = assetsAllocate(s_assets, childCount * sizeof(AssetRef));
     asset->children = makeArray(childCount, reinterpret_cast<AssetRef*>(asset->data.writable_data()));
 }
 
-void addChildAsset(Asset* parent, Asset* child)
+void addChildAsset(AssetMetadata* parent, AssetMetadata* child)
 {
     parent->children.append(AssetRef { child->type, child->shortName });
 }
 
-Asset* addAsset(AssetType type, StringView shortName, Flags<AssetFlags> flags)
+AssetMetadata* addAsset(AssetType type, StringView shortName, Flags<AssetFlags> flags)
 {
     String internedShortName = s_assets->assetStrings.intern(shortName);
 
-    Asset* existing = getAssetIfExists(type, internedShortName);
+    AssetMetadata* existing = getAssetIfExists(type, internedShortName);
     if (existing)
         return existing;
 
-    Asset* asset = s_assets->allAssets.appendBlank();
+    AssetMetadata* asset = s_assets->allAssets.appendBlank();
     asset->type = type;
     asset->shortName = internedShortName;
     if (flags.has(AssetFlags::IsAFile)) {
@@ -203,7 +203,7 @@ Asset* addAsset(AssetType type, StringView shortName, Flags<AssetFlags> flags)
                 logWarn("Unrecognized locale for asset '{0}'."_s, { asset->fullName });
         }
     }
-    asset->state = Asset::State::Unloaded;
+    asset->state = AssetMetadata::State::Unloaded;
     asset->data = {};
     asset->flags = flags;
 
@@ -212,7 +212,7 @@ Asset* addAsset(AssetType type, StringView shortName, Flags<AssetFlags> flags)
     return asset;
 }
 
-void copyFileIntoAsset(Blob* fileData, Asset* asset)
+void copyFileIntoAsset(Blob* fileData, AssetMetadata* asset)
 {
     asset->data = assetsAllocate(s_assets, fileData->size());
     memcpy(asset->data.writable_data(), fileData->data(), fileData->size());
@@ -246,10 +246,10 @@ SDL_Surface* createSurfaceFromFileData(Blob fileData, String name)
     return result;
 }
 
-void loadAsset(Asset* asset)
+void loadAsset(AssetMetadata* asset)
 {
     DEBUG_FUNCTION();
-    if (asset->state != Asset::State::Unloaded)
+    if (asset->state != AssetMetadata::State::Unloaded)
         return;
 
     if (asset->locale.has_value()) {
@@ -278,16 +278,16 @@ void loadAsset(Asset* asset)
     switch (asset->type) {
     case AssetType::BitmapFont: {
         if (BitmapFont::load_from_bmf_data(fileData, *asset)) {
-            asset->state = Asset::State::Loaded;
+            asset->state = AssetMetadata::State::Loaded;
         } else {
-            asset->state = Asset::State::Error;
+            asset->state = AssetMetadata::State::Error;
             return;
         }
     } break;
 
     case AssetType::BuildingDefs: {
         loadBuildingDefs(fileData, asset);
-        asset->state = Asset::State::Loaded;
+        asset->state = AssetMetadata::State::Loaded;
     } break;
 
     case AssetType::Cursor: {
@@ -295,12 +295,12 @@ void loadAsset(Asset* asset)
         SDL_Surface* cursorSurface = createSurfaceFromFileData(fileData, asset->shortName);
         asset->cursor.sdlCursor = SDL_CreateColorCursor(cursorSurface, asset->cursor.hotspot.x, asset->cursor.hotspot.y);
         SDL_FreeSurface(cursorSurface);
-        asset->state = Asset::State::Loaded;
+        asset->state = AssetMetadata::State::Loaded;
     } break;
 
     case AssetType::CursorDefs: {
         loadCursorDefs(fileData, asset);
-        asset->state = Asset::State::Loaded;
+        asset->state = AssetMetadata::State::Loaded;
     } break;
 
     case AssetType::DevKeymap: {
@@ -311,12 +311,12 @@ void loadAsset(Asset* asset)
             copyFileIntoAsset(&fileData, asset);
             loadConsoleKeyboardShortcuts(globalConsole, fileData, asset->shortName);
         }
-        asset->state = Asset::State::Loaded;
+        asset->state = AssetMetadata::State::Loaded;
     } break;
 
     case AssetType::Ninepatch: {
         // Convert UVs from pixel space to 0-1 space
-        Asset* t = asset->ninepatch.texture;
+        AssetMetadata* t = asset->ninepatch.texture;
         t->ensure_is_loaded();
         float textureWidth = (float)t->texture.surface->w;
         float textureHeight = (float)t->texture.surface->h;
@@ -331,7 +331,7 @@ void loadAsset(Asset* asset)
         asset->ninepatch.v2 = asset->ninepatch.pv2 / textureHeight;
         asset->ninepatch.v3 = asset->ninepatch.pv3 / textureHeight;
 
-        asset->state = Asset::State::Loaded;
+        asset->state = AssetMetadata::State::Loaded;
     } break;
 
     case AssetType::Palette: {
@@ -352,25 +352,25 @@ void loadAsset(Asset* asset)
 
             INVALID_DEFAULT_CASE;
         }
-        asset->state = Asset::State::Loaded;
+        asset->state = AssetMetadata::State::Loaded;
     } break;
 
     case AssetType::PaletteDefs: {
         loadPaletteDefs(fileData, asset);
-        asset->state = Asset::State::Loaded;
+        asset->state = AssetMetadata::State::Loaded;
     } break;
 
     case AssetType::Shader: {
         copyFileIntoAsset(&fileData, asset);
         String::from_blob(fileData).value().split_in_two('$', &asset->shader.vertexShader, &asset->shader.fragmentShader);
-        asset->state = Asset::State::Loaded;
+        asset->state = AssetMetadata::State::Loaded;
     } break;
 
     case AssetType::Sprite: {
         // Convert UVs from pixel space to 0-1 space
         for (s32 i = 0; i < asset->spriteGroup.count; i++) {
             Sprite* sprite = asset->spriteGroup.sprites + i;
-            Asset* t = sprite->texture;
+            AssetMetadata* t = sprite->texture;
             t->ensure_is_loaded();
             float textureWidth = (float)t->texture.surface->w;
             float textureHeight = (float)t->texture.surface->h;
@@ -383,17 +383,17 @@ void loadAsset(Asset* asset)
             };
         }
 
-        asset->state = Asset::State::Loaded;
+        asset->state = AssetMetadata::State::Loaded;
     } break;
 
     case AssetType::SpriteDefs: {
         loadSpriteDefs(fileData, asset);
-        asset->state = Asset::State::Loaded;
+        asset->state = AssetMetadata::State::Loaded;
     } break;
 
     case AssetType::TerrainDefs: {
         loadTerrainDefs(fileData, asset);
-        asset->state = Asset::State::Loaded;
+        asset->state = AssetMetadata::State::Loaded;
     } break;
 
     case AssetType::TextDocument: {
@@ -408,13 +408,13 @@ void loadAsset(Asset* asset)
             lines_array.append({ .text = line });
         }
         asset->text_document = TextDocument { lines_data, move(lines_array) };
-        asset->state = Asset::State::Loaded;
+        asset->state = AssetMetadata::State::Loaded;
     } break;
 
     case AssetType::Texts: {
         HashTable<String>* textsTable = (asset->texts.isFallbackLocale ? &s_assets->defaultTexts : &s_assets->texts);
         loadTexts(textsTable, asset, fileData);
-        asset->state = Asset::State::Loaded;
+        asset->state = AssetMetadata::State::Loaded;
     } break;
 
     case AssetType::Texture: {
@@ -457,12 +457,12 @@ void loadAsset(Asset* asset)
         }
 
         asset->texture.surface = surface;
-        asset->state = Asset::State::Loaded;
+        asset->state = AssetMetadata::State::Loaded;
     } break;
 
     case AssetType::UITheme: {
         loadUITheme(fileData, asset);
-        asset->state = Asset::State::Loaded;
+        asset->state = AssetMetadata::State::Loaded;
     } break;
 
     default: {
@@ -470,16 +470,16 @@ void loadAsset(Asset* asset)
             copyFileIntoAsset(&fileData, asset);
         }
 
-        asset->state = Asset::State::Loaded;
+        asset->state = AssetMetadata::State::Loaded;
     } break;
     }
 }
 
-void unloadAsset(Asset* asset)
+void unloadAsset(AssetMetadata* asset)
 {
     DEBUG_FUNCTION();
 
-    if (asset->state == Asset::State::Unloaded)
+    if (asset->state == AssetMetadata::State::Unloaded)
         return;
 
     switch (asset->type) {
@@ -537,12 +537,12 @@ void unloadAsset(Asset* asset)
         asset->data = {};
     }
 
-    asset->state = Asset::State::Unloaded;
+    asset->state = AssetMetadata::State::Unloaded;
 }
 
 void removeAsset(AssetType type, String name)
 {
-    Asset* asset = getAssetIfExists(type, name);
+    AssetMetadata* asset = getAssetIfExists(type, name);
     if (asset == nullptr) {
         logError("Attempted to remove an asset (name `{0}`, type {1}) which doesn't exist!"_s, { name, formatInt(type) });
     } else {
@@ -556,11 +556,11 @@ void removeAsset(AssetRef const& ref)
     removeAsset(ref.type(), ref.name());
 }
 
-Asset* addNinepatch(StringView name, StringView filename, s32 pu0, s32 pu1, s32 pu2, s32 pu3, s32 pv0, s32 pv1, s32 pv2, s32 pv3)
+AssetMetadata* addNinepatch(StringView name, StringView filename, s32 pu0, s32 pu1, s32 pu2, s32 pu3, s32 pv0, s32 pv1, s32 pv2, s32 pv3)
 {
-    Asset* texture = addTexture(filename, false);
+    AssetMetadata* texture = addTexture(filename, false);
 
-    Asset* asset = addAsset(AssetType::Ninepatch, name, {});
+    AssetMetadata* asset = addAsset(AssetType::Ninepatch, name, {});
 
     Ninepatch* ninepatch = &asset->ninepatch;
     ninepatch->texture = texture;
@@ -578,11 +578,11 @@ Asset* addNinepatch(StringView name, StringView filename, s32 pu0, s32 pu1, s32 
     return asset;
 }
 
-Asset* addSpriteGroup(StringView name, s32 spriteCount)
+AssetMetadata* addSpriteGroup(StringView name, s32 spriteCount)
 {
     ASSERT(spriteCount > 0); // Must have a positive number of sprites in a Sprite Group!
 
-    Asset* spriteGroup = addAsset(AssetType::Sprite, name, {});
+    AssetMetadata* spriteGroup = addAsset(AssetType::Sprite, name, {});
     if (spriteGroup->data.size() != 0)
         DEBUG_BREAK(); // @Leak! Creating the sprite group multiple times is probably a bad idea for other reasons too.
     spriteGroup->data = assetsAllocate(s_assets, spriteCount * sizeof(Sprite));
@@ -592,9 +592,9 @@ Asset* addSpriteGroup(StringView name, s32 spriteCount)
     return spriteGroup;
 }
 
-Asset* addTexture(StringView filename, bool isAlphaPremultiplied)
+AssetMetadata* addTexture(StringView filename, bool isAlphaPremultiplied)
 {
-    Asset* asset = addAsset(AssetType::Texture, filename);
+    AssetMetadata* asset = addAsset(AssetType::Texture, filename);
     asset->texture.isFileAlphaPremultiplied = isAlphaPremultiplied;
 
     return asset;
@@ -718,11 +718,11 @@ void reloadAssets()
     logInfo("AssetManager reloaded successfully!"_s);
 }
 
-Asset& getAsset(AssetType type, String shortName)
+AssetMetadata& getAsset(AssetType type, String shortName)
 {
     DEBUG_FUNCTION();
-    Asset* asset = getAssetIfExists(type, shortName);
-    if (asset && asset->state == Asset::State::Loaded)
+    AssetMetadata* asset = getAssetIfExists(type, shortName);
+    if (asset && asset->state == AssetMetadata::State::Loaded)
         return *asset;
 
     if (s_assets->missingAssetNames[type].add(shortName)) {
@@ -732,7 +732,7 @@ Asset& getAsset(AssetType type, String shortName)
     return s_assets->placeholderAssets[type];
 }
 
-Asset* getAssetIfExists(AssetType type, String shortName)
+AssetMetadata* getAssetIfExists(AssetType type, String shortName)
 {
     auto asset = s_assets->assetsByType[type].find_value(shortName);
     return asset.value_or(nullptr);
@@ -841,7 +841,7 @@ void AssetManager::on_settings_changed()
     }
 }
 
-void loadCursorDefs(Blob data, Asset* asset)
+void loadCursorDefs(Blob data, AssetMetadata* asset)
 {
     DEBUG_FUNCTION();
 
@@ -871,7 +871,7 @@ void loadCursorDefs(Blob data, Asset* asset)
 
         if (hot_x.has_value() && hot_y.has_value()) {
             // Add the cursor
-            Asset* cursorAsset = addAsset(AssetType::Cursor, name, {});
+            AssetMetadata* cursorAsset = addAsset(AssetType::Cursor, name, {});
             cursorAsset->cursor.imageFilePath = s_assets->assetStrings.intern(getAssetPath(AssetType::Cursor, filename.value()));
             cursorAsset->cursor.hotspot = v2i(hot_x.release_value(), hot_y.release_value());
             addChildAsset(asset, cursorAsset);
@@ -882,7 +882,7 @@ void loadCursorDefs(Blob data, Asset* asset)
     }
 }
 
-void loadPaletteDefs(Blob data, Asset* asset)
+void loadPaletteDefs(Blob data, AssetMetadata* asset)
 {
     DEBUG_FUNCTION();
 
@@ -900,7 +900,7 @@ void loadPaletteDefs(Blob data, Asset* asset)
 
     reader.restart();
 
-    Asset* paletteAsset = nullptr;
+    AssetMetadata* paletteAsset = nullptr;
     while (reader.load_next_line()) {
         auto command_token = reader.next_token();
         if (!command_token.has_value())
@@ -994,16 +994,16 @@ void loadPaletteDefs(Blob data, Asset* asset)
     }
 }
 
-void loadSpriteDefs(Blob data, Asset* asset)
+void loadSpriteDefs(Blob data, AssetMetadata* asset)
 {
     DEBUG_FUNCTION();
 
     LineReader reader { asset->shortName, data };
 
-    Asset* textureAsset = nullptr;
+    AssetMetadata* textureAsset = nullptr;
     V2I spriteSize = v2i(0, 0);
     V2I spriteBorder = v2i(0, 0);
-    Asset* spriteGroup = nullptr;
+    AssetMetadata* spriteGroup = nullptr;
     s32 spriteIndex = 0;
 
     // Count the number of child s_assets, so we can allocate our spriteNames array
@@ -1048,7 +1048,7 @@ void loadSpriteDefs(Blob data, Asset* asset)
                     return;
                 }
 
-                Asset* ninepatch = addNinepatch(name.release_value(), filename.release_value(), pu0.release_value(), pu1.release_value(), pu2.release_value(), pu3.release_value(), pv0.release_value(), pv1.release_value(), pv2.release_value(), pv3.release_value());
+                AssetMetadata* ninepatch = addNinepatch(name.release_value(), filename.release_value(), pu0.release_value(), pu1.release_value(), pu2.release_value(), pu3.release_value(), pv0.release_value(), pv1.release_value(), pv2.release_value(), pv3.release_value());
 
                 addChildAsset(asset, ninepatch);
             } else if (command == "Sprite"_s) {
@@ -1064,7 +1064,7 @@ void loadSpriteDefs(Blob data, Asset* asset)
 
                 spriteSize = spriteSizeIn.release_value();
 
-                Asset* group = addSpriteGroup(name.release_value(), 1);
+                AssetMetadata* group = addSpriteGroup(name.release_value(), 1);
 
                 Sprite* sprite = group->spriteGroup.sprites;
                 sprite->texture = addTexture(filename.release_value(), false);
@@ -1142,7 +1142,7 @@ void loadSpriteDefs(Blob data, Asset* asset)
     }
 }
 
-void loadTexts(HashTable<String>* texts, Asset* asset, Blob file_data)
+void loadTexts(HashTable<String>* texts, AssetMetadata* asset, Blob file_data)
 {
     LineReader reader { asset->shortName, file_data };
 

@@ -34,7 +34,7 @@ class BitmapFont {
 public:
     static BitmapFont& get(StringView name);
 
-    static bool load_from_bmf_data(Blob data, Asset& asset);
+    static bool load_from_bmf_data(Blob data, AssetMetadata& asset);
 
     void add_glyph(BitmapFontGlyph&&);
     BitmapFontGlyph* find_glyph(unichar target_char) const;
@@ -43,7 +43,7 @@ public:
     s32 calculate_max_text_width(std::initializer_list<StringView> texts, s32 limit = 0) const;
 
     u16 line_height() const { return m_line_height; }
-    Asset* texture() const { return m_texture; }
+    AssetMetadata* texture() const { return m_texture; }
 
 private:
     BitmapFontGlyphEntry* find_glyph_entry(unichar target_char) const;
@@ -57,7 +57,7 @@ private:
     u32 m_glyph_capacity {};
     BitmapFontGlyphEntry* m_glyph_entries {};
 
-    Asset* m_texture {};
+    AssetMetadata* m_texture {};
 };
 
 struct DrawTextResult {

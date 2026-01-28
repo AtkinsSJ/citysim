@@ -43,7 +43,7 @@ struct RenderItem_SetShader {
 };
 
 struct RenderItem_SetTexture {
-    Asset* texture;
+    AssetMetadata* texture;
 
     // These are only set for "raw" textures, AKA ones that have the data inline.
     // The pixel data follows directly after this struct
@@ -105,7 +105,7 @@ struct DrawRectsGroup {
     s32 count;
     s32 maxCount;
 
-    Asset* texture;
+    AssetMetadata* texture;
 };
 
 struct RenderItem_DrawRings {

@@ -18,7 +18,7 @@ public:
     {
     }
 
-    Asset& get() const;
+    AssetMetadata& get() const;
 
     AssetType type() const { return m_type; }
     String const& name() const { return m_name; }
@@ -27,6 +27,6 @@ private:
     AssetType m_type;
     String m_name;
 
-    mutable Asset* m_pointer { nullptr };
+    mutable AssetMetadata* m_pointer { nullptr };
     mutable u32 m_asset_generation { 0 };
 };

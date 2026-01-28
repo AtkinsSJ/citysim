@@ -38,7 +38,7 @@ struct ShaderProgram {
     GLuint shaderProgramID;
     bool isValid;
 
-    Asset* asset;
+    AssetMetadata* asset;
 
     // Uniforms
     GLint uPaletteLoc;
@@ -100,13 +100,13 @@ private:
     Stack<Rect2I> m_scissor_stack {};
 
     // For debugging only
-    Asset* m_current_texture { nullptr };
+    AssetMetadata* m_current_texture { nullptr };
 };
 
 void logGLError(GLenum errorCode);
 void GLAPIENTRY debugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, GLchar const* message, void const* userParam);
 
-void loadShaderProgram(Asset* asset, ShaderProgram* glShader);
+void loadShaderProgram(AssetMetadata* asset, ShaderProgram* glShader);
 bool compileShader(ShaderProgram* glShader, String shaderName, Shader* shaderProgram, ShaderPart shaderPart);
 // NB: Using char* because we have to pass the names to GL!
 void loadShaderAttrib(ShaderProgram* glShader, char const* attribName, int* attribLocation);

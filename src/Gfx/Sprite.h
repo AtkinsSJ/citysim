@@ -13,7 +13,7 @@
 struct Sprite {
     static Sprite& get(StringView name);
 
-    Asset* texture;
+    AssetMetadata* texture;
     Rect2 uv; // in (0 to 1) space
     s32 pixelWidth;
     s32 pixelHeight;
