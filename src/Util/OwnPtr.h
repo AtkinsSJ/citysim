@@ -139,10 +139,16 @@ public:
     enum class AdoptTag : u8 { Adopt };
 
     NonnullOwnPtr(NonnullOwnPtr&& other)
-        : m_ptr(other.m_ptr)
+        : m_ptr(other.leak_ptr())
     {
         ASSERT(m_ptr);
-        other.m_ptr = nullptr;
+    }
+
+    template<typename U>
+    NonnullOwnPtr(NonnullOwnPtr<U>&& other)
+        : m_ptr(other.leak_ptr())
+    {
+        ASSERT(m_ptr);
     }
 
     NonnullOwnPtr& operator=(NonnullOwnPtr&& other)
