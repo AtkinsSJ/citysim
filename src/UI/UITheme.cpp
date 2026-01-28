@@ -409,7 +409,7 @@ void loadUITheme(Blob data, AssetMetadata* asset)
                 auto fontFilename = reader.remainder_of_current_line();
 
                 if (fontName.has_value() && !fontFilename.is_empty()) {
-                    AssetMetadata* fontAsset = addAsset(AssetType::BitmapFont, fontFilename);
+                    AssetMetadata* fontAsset = asset_manager().add_asset(AssetType::BitmapFont, fontFilename);
                     fontNamesToAssetNames.put(fontName.value().deprecated_to_string(), fontAsset->shortName);
                 } else {
                     reader.error("Invalid font declaration: '{0}'"_s, { reader.current_line() });
@@ -587,7 +587,7 @@ void loadUITheme(Blob data, AssetMetadata* asset)
             if (style->type == style_type) {
                 switch (style->type) {
                 case UI::StyleType::Button: {
-                    AssetMetadata* childAsset = addAsset(AssetType::ButtonStyle, style->name, {});
+                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::ButtonStyle, style->name, {});
                     addChildAsset(asset, childAsset);
 
                     UI::ButtonStyle* button = &childAsset->buttonStyle;
@@ -619,7 +619,7 @@ void loadUITheme(Blob data, AssetMetadata* asset)
                 } break;
 
                 case UI::StyleType::Checkbox: {
-                    AssetMetadata* childAsset = addAsset(AssetType::CheckboxStyle, style->name, {});
+                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::CheckboxStyle, style->name, {});
                     addChildAsset(asset, childAsset);
 
                     UI::CheckboxStyle* checkbox = &childAsset->checkboxStyle;
@@ -648,7 +648,7 @@ void loadUITheme(Blob data, AssetMetadata* asset)
                 } break;
 
                 case UI::StyleType::Console: {
-                    AssetMetadata* childAsset = addAsset(AssetType::ConsoleStyle, style->name, {});
+                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::ConsoleStyle, style->name, {});
                     addChildAsset(asset, childAsset);
 
                     UI::ConsoleStyle* console = &childAsset->consoleStyle;
@@ -671,7 +671,7 @@ void loadUITheme(Blob data, AssetMetadata* asset)
                 } break;
 
                 case UI::StyleType::DropDownList: {
-                    AssetMetadata* childAsset = addAsset(AssetType::DropDownListStyle, style->name, {});
+                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::DropDownListStyle, style->name, {});
                     addChildAsset(asset, childAsset);
 
                     UI::DropDownListStyle* ddl = &childAsset->dropDownListStyle;
@@ -682,7 +682,7 @@ void loadUITheme(Blob data, AssetMetadata* asset)
                 } break;
 
                 case UI::StyleType::Label: {
-                    AssetMetadata* childAsset = addAsset(AssetType::LabelStyle, style->name, {});
+                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::LabelStyle, style->name, {});
                     addChildAsset(asset, childAsset);
 
                     UI::LabelStyle* label = &childAsset->labelStyle;
@@ -696,7 +696,7 @@ void loadUITheme(Blob data, AssetMetadata* asset)
                 } break;
 
                 case UI::StyleType::Panel: {
-                    AssetMetadata* childAsset = addAsset(AssetType::PanelStyle, style->name, {});
+                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::PanelStyle, style->name, {});
                     addChildAsset(asset, childAsset);
 
                     UI::PanelStyle* panel = &childAsset->panelStyle;
@@ -718,7 +718,7 @@ void loadUITheme(Blob data, AssetMetadata* asset)
                 } break;
 
                 case UI::StyleType::RadioButton: {
-                    AssetMetadata* childAsset = addAsset(AssetType::RadioButtonStyle, style->name, {});
+                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::RadioButtonStyle, style->name, {});
                     addChildAsset(asset, childAsset);
 
                     UI::RadioButtonStyle* radioButton = &childAsset->radioButtonStyle;
@@ -738,7 +738,7 @@ void loadUITheme(Blob data, AssetMetadata* asset)
                 } break;
 
                 case UI::StyleType::Scrollbar: {
-                    AssetMetadata* childAsset = addAsset(AssetType::ScrollbarStyle, style->name, {});
+                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::ScrollbarStyle, style->name, {});
                     addChildAsset(asset, childAsset);
 
                     UI::ScrollbarStyle* scrollbar = &childAsset->scrollbarStyle;
@@ -753,7 +753,7 @@ void loadUITheme(Blob data, AssetMetadata* asset)
                 } break;
 
                 case UI::StyleType::Slider: {
-                    AssetMetadata* childAsset = addAsset(AssetType::SliderStyle, style->name, {});
+                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::SliderStyle, style->name, {});
                     addChildAsset(asset, childAsset);
 
                     UI::SliderStyle* slider = &childAsset->sliderStyle;
@@ -769,7 +769,7 @@ void loadUITheme(Blob data, AssetMetadata* asset)
                 } break;
 
                 case UI::StyleType::TextInput: {
-                    AssetMetadata* childAsset = addAsset(AssetType::TextInputStyle, style->name, {});
+                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::TextInputStyle, style->name, {});
                     addChildAsset(asset, childAsset);
 
                     UI::TextInputStyle* textInput = &childAsset->textInputStyle;
@@ -787,7 +787,7 @@ void loadUITheme(Blob data, AssetMetadata* asset)
                 } break;
 
                 case UI::StyleType::Window: {
-                    AssetMetadata* childAsset = addAsset(AssetType::WindowStyle, style->name, {});
+                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::WindowStyle, style->name, {});
                     addChildAsset(asset, childAsset);
 
                     UI::WindowStyle* window = &childAsset->windowStyle;

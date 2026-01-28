@@ -119,7 +119,7 @@ ConsoleCommand(mark_all_dirty)
 
 ConsoleCommand(reload_assets)
 {
-    reloadAssets();
+    asset_manager().reload();
 }
 
 ConsoleCommand(reload_settings)

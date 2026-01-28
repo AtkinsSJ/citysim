@@ -24,7 +24,7 @@ struct AssetManager final : public SettingsChangeListener {
     OwnPtr<DirectoryWatcher> asset_change_handle;
 
     u32 asset_generation() const { return m_asset_generation; }
-    void fixme_increment_asset_generation() { m_asset_generation++; }
+    bool have_asset_files_changed() const;
 
     // TODO: Also include size of the UITheme, somehow.
     smm assetMemoryAllocated;
@@ -63,9 +63,18 @@ struct AssetManager final : public SettingsChangeListener {
     void register_listener(AssetManagerListener*);
     void unregister_listener(AssetManagerListener*);
 
+    String make_asset_path(AssetType, StringView short_name) const;
+
+    void scan_assets();
+    AssetMetadata* add_asset(AssetType type, StringView short_name, Flags<AssetFlags> flags = default_asset_flags);
+    void load_assets();
+    void reload();
+
 private:
     // ^SettingsChangeListener
     virtual void on_settings_changed() override;
+
+    void scan_assets_from_directory(String subdirectory, Optional<AssetType> manual_asset_type = {});
 
     u32 m_asset_generation { 0 };
 };
@@ -74,23 +83,14 @@ void initAssets();
 AssetManager& asset_manager();
 AssetMetadata* makePlaceholderAsset(AssetType type);
 
-AssetMetadata* addAsset(AssetType type, StringView shortName, Flags<AssetFlags> flags = default_asset_flags);
 AssetMetadata* addNinepatch(StringView name, StringView filename, s32 pu0, s32 pu1, s32 pu2, s32 pu3, s32 pv0, s32 pv1, s32 pv2, s32 pv3);
 AssetMetadata* addTexture(StringView filename, bool isAlphaPremultiplied);
 AssetMetadata* addSpriteGroup(StringView name, s32 spriteCount);
 
-void loadAssets();
 void loadAsset(AssetMetadata* asset);
 void unloadAsset(AssetMetadata* asset);
 void removeAsset(AssetType type, String name);
 void removeAsset(AssetRef const&);
-
-void addAssets();
-void addAssetsFromDirectory(String subDirectory, Optional<AssetType> manualAssetType = {});
-bool haveAssetFilesChanged();
-void reloadAssets();
-
-String getAssetPath(AssetType type, StringView shortName);
 
 AssetMetadata& getAsset(AssetType type, String shortName);
 AssetMetadata* getAssetIfExists(AssetType type, String shortName);
