@@ -379,9 +379,9 @@ void assignStyleProperties(StyleType type, std::initializer_list<String> propert
 
 }
 
-void loadUITheme(Blob data, AssetMetadata* asset)
+void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
 {
-    LineReader reader { asset->shortName, data };
+    LineReader reader { metadata.shortName, data };
 
     HashTable<EnumMap<UI::StyleType, UI::Style>> styles;
 
@@ -568,7 +568,7 @@ void loadUITheme(Blob data, AssetMetadata* asset)
     for (auto style_type : enum_values<UI::StyleType>()) {
         totalStyleCount += style_count[style_type];
     }
-    allocateChildren(asset, totalStyleCount);
+    allocateChildren(&metadata, totalStyleCount);
 
     // Some default values to use
     auto transparent = Colour::from_rgb_255(0, 0, 0, 0);
@@ -587,10 +587,10 @@ void loadUITheme(Blob data, AssetMetadata* asset)
             if (style->type == style_type) {
                 switch (style->type) {
                 case UI::StyleType::Button: {
-                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::ButtonStyle, style->name, {});
-                    addChildAsset(asset, childAsset);
+                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::ButtonStyle, style->name, {});
+                    addChildAsset(&metadata, child_metadata);
 
-                    UI::ButtonStyle* button = &childAsset->buttonStyle;
+                    UI::ButtonStyle* button = &reinterpret_cast<DeprecatedAsset&>(*child_metadata->loaded_asset).buttonStyle;
                     button->name = style->name;
 
                     button->font = style->get_asset_ref("font"_h, AssetType::BitmapFont, default_font_name);
@@ -619,10 +619,10 @@ void loadUITheme(Blob data, AssetMetadata* asset)
                 } break;
 
                 case UI::StyleType::Checkbox: {
-                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::CheckboxStyle, style->name, {});
-                    addChildAsset(asset, childAsset);
+                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::CheckboxStyle, style->name, {});
+                    addChildAsset(&metadata, child_metadata);
 
-                    UI::CheckboxStyle* checkbox = &childAsset->checkboxStyle;
+                    UI::CheckboxStyle* checkbox = &reinterpret_cast<DeprecatedAsset&>(*child_metadata->loaded_asset).checkboxStyle;
                     checkbox->name = style->name;
 
                     checkbox->padding = style->get_padding("padding"_h, {});
@@ -648,10 +648,10 @@ void loadUITheme(Blob data, AssetMetadata* asset)
                 } break;
 
                 case UI::StyleType::Console: {
-                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::ConsoleStyle, style->name, {});
-                    addChildAsset(asset, childAsset);
+                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::ConsoleStyle, style->name, {});
+                    addChildAsset(&metadata, child_metadata);
 
-                    UI::ConsoleStyle* console = &childAsset->consoleStyle;
+                    UI::ConsoleStyle* console = &reinterpret_cast<DeprecatedAsset&>(*child_metadata->loaded_asset).consoleStyle;
                     console->name = style->name;
 
                     console->font = style->get_asset_ref("font"_h, AssetType::BitmapFont, default_font_name);
@@ -671,10 +671,10 @@ void loadUITheme(Blob data, AssetMetadata* asset)
                 } break;
 
                 case UI::StyleType::DropDownList: {
-                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::DropDownListStyle, style->name, {});
-                    addChildAsset(asset, childAsset);
+                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::DropDownListStyle, style->name, {});
+                    addChildAsset(&metadata, child_metadata);
 
-                    UI::DropDownListStyle* ddl = &childAsset->dropDownListStyle;
+                    UI::DropDownListStyle* ddl = &reinterpret_cast<DeprecatedAsset&>(*child_metadata->loaded_asset).dropDownListStyle;
                     ddl->name = style->name;
 
                     ddl->buttonStyle = style->get_asset_ref("buttonStyle"_h, AssetType::ButtonStyle);
@@ -682,10 +682,10 @@ void loadUITheme(Blob data, AssetMetadata* asset)
                 } break;
 
                 case UI::StyleType::Label: {
-                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::LabelStyle, style->name, {});
-                    addChildAsset(asset, childAsset);
+                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::LabelStyle, style->name, {});
+                    addChildAsset(&metadata, child_metadata);
 
-                    UI::LabelStyle* label = &childAsset->labelStyle;
+                    UI::LabelStyle* label = &reinterpret_cast<DeprecatedAsset&>(*child_metadata->loaded_asset).labelStyle;
                     label->name = style->name;
 
                     label->padding = style->get_padding("padding"_h, {});
@@ -696,10 +696,10 @@ void loadUITheme(Blob data, AssetMetadata* asset)
                 } break;
 
                 case UI::StyleType::Panel: {
-                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::PanelStyle, style->name, {});
-                    addChildAsset(asset, childAsset);
+                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::PanelStyle, style->name, {});
+                    addChildAsset(&metadata, child_metadata);
 
-                    UI::PanelStyle* panel = &childAsset->panelStyle;
+                    UI::PanelStyle* panel = &reinterpret_cast<DeprecatedAsset&>(*child_metadata->loaded_asset).panelStyle;
                     panel->name = style->name;
 
                     panel->padding = style->get_padding("padding"_h, {});
@@ -718,10 +718,10 @@ void loadUITheme(Blob data, AssetMetadata* asset)
                 } break;
 
                 case UI::StyleType::RadioButton: {
-                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::RadioButtonStyle, style->name, {});
-                    addChildAsset(asset, childAsset);
+                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::RadioButtonStyle, style->name, {});
+                    addChildAsset(&metadata, child_metadata);
 
-                    UI::RadioButtonStyle* radioButton = &childAsset->radioButtonStyle;
+                    UI::RadioButtonStyle* radioButton = &reinterpret_cast<DeprecatedAsset&>(*child_metadata->loaded_asset).radioButtonStyle;
                     radioButton->name = style->name;
 
                     radioButton->size = style->get_v2i("size"_h, {});
@@ -738,10 +738,10 @@ void loadUITheme(Blob data, AssetMetadata* asset)
                 } break;
 
                 case UI::StyleType::Scrollbar: {
-                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::ScrollbarStyle, style->name, {});
-                    addChildAsset(asset, childAsset);
+                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::ScrollbarStyle, style->name, {});
+                    addChildAsset(&metadata, child_metadata);
 
-                    UI::ScrollbarStyle* scrollbar = &childAsset->scrollbarStyle;
+                    UI::ScrollbarStyle* scrollbar = &reinterpret_cast<DeprecatedAsset&>(*child_metadata->loaded_asset).scrollbarStyle;
                     scrollbar->name = style->name;
 
                     scrollbar->background = style->get_drawable_style("background"_h, {});
@@ -753,10 +753,10 @@ void loadUITheme(Blob data, AssetMetadata* asset)
                 } break;
 
                 case UI::StyleType::Slider: {
-                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::SliderStyle, style->name, {});
-                    addChildAsset(asset, childAsset);
+                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::SliderStyle, style->name, {});
+                    addChildAsset(&metadata, child_metadata);
 
-                    UI::SliderStyle* slider = &childAsset->sliderStyle;
+                    UI::SliderStyle* slider = &reinterpret_cast<DeprecatedAsset&>(*child_metadata->loaded_asset).sliderStyle;
                     slider->name = style->name;
 
                     slider->track = style->get_drawable_style("track"_h, {});
@@ -769,10 +769,10 @@ void loadUITheme(Blob data, AssetMetadata* asset)
                 } break;
 
                 case UI::StyleType::TextInput: {
-                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::TextInputStyle, style->name, {});
-                    addChildAsset(asset, childAsset);
+                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::TextInputStyle, style->name, {});
+                    addChildAsset(&metadata, child_metadata);
 
-                    UI::TextInputStyle* textInput = &childAsset->textInputStyle;
+                    UI::TextInputStyle* textInput = &reinterpret_cast<DeprecatedAsset&>(*child_metadata->loaded_asset).textInputStyle;
                     textInput->name = style->name;
 
                     textInput->font = style->get_asset_ref("font"_h, AssetType::BitmapFont, default_font_name);
@@ -787,10 +787,10 @@ void loadUITheme(Blob data, AssetMetadata* asset)
                 } break;
 
                 case UI::StyleType::Window: {
-                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::WindowStyle, style->name, {});
-                    addChildAsset(asset, childAsset);
+                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::WindowStyle, style->name, {});
+                    addChildAsset(&metadata, child_metadata);
 
-                    UI::WindowStyle* window = &childAsset->windowStyle;
+                    UI::WindowStyle* window = &reinterpret_cast<DeprecatedAsset&>(*child_metadata->loaded_asset).windowStyle;
                     window->name = style->name;
 
                     window->titleBarHeight = style->get_s32("titleBarHeight"_h, 16);

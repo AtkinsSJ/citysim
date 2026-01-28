@@ -8,6 +8,7 @@
 
 #include <Assets/AssetManagerListener.h>
 #include <Assets/AssetMetadata.h>
+#include <Assets/DeprecatedAsset.h>
 #include <IO/DirectoryWatcher.h>
 #include <IO/File.h>
 #include <Settings/SettingsChangeListener.h>
@@ -70,6 +71,11 @@ struct AssetManager final : public SettingsChangeListener {
     void load_assets();
     void reload();
 
+    ChunkedArray<NonnullOwnPtr<AssetLoader>> asset_loaders;
+    EnumMap<AssetType, AssetLoader*> asset_loaders_by_type;
+    void register_asset_loader(NonnullOwnPtr<AssetLoader>&&);
+    AssetLoader& get_asset_loader_for_type(AssetType) const;
+
 private:
     // ^SettingsChangeListener
     virtual void on_settings_changed() override;
@@ -81,13 +87,12 @@ private:
 
 void initAssets();
 AssetManager& asset_manager();
-AssetMetadata* makePlaceholderAsset(AssetType type);
 
 AssetMetadata* addNinepatch(StringView name, StringView filename, s32 pu0, s32 pu1, s32 pu2, s32 pu3, s32 pv0, s32 pv1, s32 pv2, s32 pv3);
 AssetMetadata* addTexture(StringView filename, bool isAlphaPremultiplied);
 AssetMetadata* addSpriteGroup(StringView name, s32 spriteCount);
 
-void loadAsset(AssetMetadata* asset);
+void loadAsset(AssetMetadata* metadata);
 void unloadAsset(AssetMetadata* asset);
 void removeAsset(AssetType type, String name);
 void removeAsset(AssetRef const&);
@@ -138,7 +143,8 @@ T* getStyle(AssetRef const& ref)
     ASSERT(checkStyleMatchesType<T>(ref));
 
     auto& asset = ref.get();
-    return (T*)&asset._localData;
+    auto& deprecated_asset = reinterpret_cast<DeprecatedAsset&>(asset.loaded_asset);
+    return (T*)&deprecated_asset._localData;
 }
 
 template<typename T>
@@ -179,7 +185,7 @@ T* getStyle(String styleName)
             static_assert(false);
     }();
 
-    AssetMetadata& asset = getAsset(styleType, styleName);
+    auto& asset = reinterpret_cast<DeprecatedAsset&>(*getAsset(styleType, styleName).loaded_asset);
     return reinterpret_cast<T*>(&asset._localData);
 }
 
@@ -191,7 +197,6 @@ Blob assetsAllocate(AssetManager* theAssets, smm size);
 void allocateChildren(AssetMetadata* asset, s32 childCount);
 void addChildAsset(AssetMetadata* parent, AssetMetadata* child);
 
-void loadCursorDefs(Blob data, AssetMetadata* asset);
-void loadPaletteDefs(Blob data, AssetMetadata* asset);
-void loadSpriteDefs(Blob data, AssetMetadata* asset);
-void loadTexts(HashTable<String>* texts, AssetMetadata* asset, Blob file_data);
+void loadCursorDefs(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset);
+void loadPaletteDefs(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset);
+void loadSpriteDefs(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset);
