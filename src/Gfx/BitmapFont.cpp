@@ -70,7 +70,7 @@ BitmapFont& BitmapFont::get(StringView name)
     return getAsset(AssetType::BitmapFont, name.deprecated_to_string()).bitmapFont;
 }
 
-bool BitmapFont::load_from_bmf_data(Blob data, Asset& asset)
+bool BitmapFont::load_from_bmf_data(Blob data, AssetMetadata& asset)
 {
     smm pos = 0;
     BMFontHeader* header = (BMFontHeader*)(data.data() + pos);

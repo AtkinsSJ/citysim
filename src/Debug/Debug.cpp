@@ -278,7 +278,7 @@ void renderDebugData(DebugState* debugState)
         smm usedAssetMemory = assetData->assetMemoryAllocated[rfi] + assetData->assetsByNameSize[rfi] + assetData->arenaUsedSize[rfi];
         debugTextOut(&textState, myprintf("Asset system: {0}/{1} assets loaded, using {2} bytes ({3} allocated)\n    {4} bytes in arena, {5} bytes in assets, {6} bytes in hashtables\n    sizeof(Asset) = {7}"_s, { formatInt(assetData->loadedAssetCount[rfi]), formatInt(assetData->assetCount[rfi]), formatInt(usedAssetMemory), formatInt(totalAssetMemory),
 
-                                                                                                                                                                                                                       formatInt(assetData->arenaUsedSize[rfi]), formatInt(assetData->assetMemoryAllocated[rfi]), formatInt(assetData->assetsByNameSize[rfi]), formatInt(sizeof(Asset)) }));
+                                                                                                                                                                                                                       formatInt(assetData->arenaUsedSize[rfi]), formatInt(assetData->assetMemoryAllocated[rfi]), formatInt(assetData->assetsByNameSize[rfi]), formatInt(sizeof(AssetMetadata)) }));
     }
 
     // Memory arenas
@@ -447,7 +447,7 @@ void debugTrackAssets(DebugState* debugState)
     for (auto it = asset_manager().allAssets.iterate(); it.hasNext(); it.next()) {
         auto& asset = it.get();
 
-        if (asset.state == Asset::State::Loaded)
+        if (asset.state == AssetMetadata::State::Loaded)
             assetData->loadedAssetCount[frameIndex]++;
     }
     assetData->assetMemoryAllocated[frameIndex] = asset_manager().assetMemoryAllocated;

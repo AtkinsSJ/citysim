@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include <Assets/Asset.h>
 #include <Assets/AssetManager.h>
+#include <Assets/AssetMetadata.h>
 #include <Gfx/OpenGL.h>
 #include <Gfx/Shader.h>
 #include <Util/Deferred.h>
@@ -242,7 +242,7 @@ void Renderer::render_internal()
 
                     upload_texture_2d(pixelFormat, header->width, header->height, pixelData);
                 } else {
-                    ASSERT(header->texture->state == Asset::State::Loaded);
+                    ASSERT(header->texture->state == AssetMetadata::State::Loaded);
 
                     Texture* texture = &header->texture->texture;
 
@@ -434,7 +434,7 @@ void Renderer::after_assets_loaded()
     for (auto it = asset_manager().assetsByType[AssetType::Texture].iterate();
         it.hasNext();
         it.next()) {
-        Asset* asset = *it.get();
+        AssetMetadata* asset = *it.get();
         Texture* texture = &asset->texture;
 
         glGenTextures(1, &texture->gl.glTextureID);
@@ -447,7 +447,7 @@ void Renderer::after_assets_loaded()
     for (auto it = asset_manager().assetsByType[AssetType::Shader].iterate();
         it.hasNext();
         it.next()) {
-        Asset* asset = *it.get();
+        AssetMetadata* asset = *it.get();
 
         s8 shaderIndex = (s8)m_shaders.count;
         ShaderProgram* shader = m_shaders.appendBlank();
@@ -477,7 +477,7 @@ void Renderer::before_assets_unloaded()
     for (auto it = asset_manager().assetsByType[AssetType::Texture].iterate();
         it.hasNext();
         it.next()) {
-        Asset* asset = *it.get();
+        AssetMetadata* asset = *it.get();
         Texture* texture = &asset->texture;
 
         if (texture->gl.isLoaded && texture->gl.glTextureID != 0) {
@@ -635,7 +635,7 @@ void loadShaderUniform(ShaderProgram* glShader, char const* uniformName, int* un
     }
 }
 
-void loadShaderProgram(Asset* asset, ShaderProgram* glShader)
+void loadShaderProgram(AssetMetadata* asset, ShaderProgram* glShader)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Renderer);
 

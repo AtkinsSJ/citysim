@@ -10,7 +10,7 @@
 #include <Util/Basic.h>
 
 struct Ninepatch {
-    Asset* texture;
+    AssetMetadata* texture;
 
     s32 pu0;
     s32 pu1;

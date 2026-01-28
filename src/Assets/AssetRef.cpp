@@ -7,7 +7,7 @@
 #include "AssetRef.h"
 #include <Assets/AssetManager.h>
 
-Asset& AssetRef::get() const
+AssetMetadata& AssetRef::get() const
 {
     auto& assets = asset_manager();
     if (!m_pointer || assets.asset_generation() > m_asset_generation) {

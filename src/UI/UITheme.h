@@ -311,4 +311,4 @@ void assignStyleProperties(StyleType type, std::initializer_list<String> propert
 
 }
 
-void loadUITheme(Blob data, Asset* asset);
+void loadUITheme(Blob data, AssetMetadata* asset);

@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include <Assets/Asset.h>
 #include <Assets/AssetManagerListener.h>
+#include <Assets/AssetMetadata.h>
 #include <IO/DirectoryWatcher.h>
 #include <IO/File.h>
 #include <Settings/SettingsChangeListener.h>
@@ -34,14 +34,14 @@ struct AssetManager final : public SettingsChangeListener {
     HashTable<AssetType> fileExtensionToType;
     HashTable<AssetType> directoryNameToType;
 
-    ChunkedArray<Asset> allAssets;
-    EnumMap<AssetType, HashTable<Asset*>> assetsByType;
+    ChunkedArray<AssetMetadata> allAssets;
+    EnumMap<AssetType, HashTable<AssetMetadata*>> assetsByType;
 
     // If a requested asset is not found, the one here is used instead.
     // Probably most of these will be empty, but we do need a placeholder sprite at least,
     // so I figure it's better to put this in place for all types while I'm at it.
     // - Sam, 27/03/2020
-    EnumMap<AssetType, Asset> placeholderAssets;
+    EnumMap<AssetType, AssetMetadata> placeholderAssets;
     // The missing assets are logged here!
     EnumMap<AssetType, Set<String>> missingAssetNames;
 
@@ -72,16 +72,16 @@ private:
 
 void initAssets();
 AssetManager& asset_manager();
-Asset* makePlaceholderAsset(AssetType type);
+AssetMetadata* makePlaceholderAsset(AssetType type);
 
-Asset* addAsset(AssetType type, StringView shortName, Flags<AssetFlags> flags = default_asset_flags);
-Asset* addNinepatch(StringView name, StringView filename, s32 pu0, s32 pu1, s32 pu2, s32 pu3, s32 pv0, s32 pv1, s32 pv2, s32 pv3);
-Asset* addTexture(StringView filename, bool isAlphaPremultiplied);
-Asset* addSpriteGroup(StringView name, s32 spriteCount);
+AssetMetadata* addAsset(AssetType type, StringView shortName, Flags<AssetFlags> flags = default_asset_flags);
+AssetMetadata* addNinepatch(StringView name, StringView filename, s32 pu0, s32 pu1, s32 pu2, s32 pu3, s32 pv0, s32 pv1, s32 pv2, s32 pv3);
+AssetMetadata* addTexture(StringView filename, bool isAlphaPremultiplied);
+AssetMetadata* addSpriteGroup(StringView name, s32 spriteCount);
 
 void loadAssets();
-void loadAsset(Asset* asset);
-void unloadAsset(Asset* asset);
+void loadAsset(AssetMetadata* asset);
+void unloadAsset(AssetMetadata* asset);
 void removeAsset(AssetType type, String name);
 void removeAsset(AssetRef const&);
 
@@ -92,8 +92,8 @@ void reloadAssets();
 
 String getAssetPath(AssetType type, StringView shortName);
 
-Asset& getAsset(AssetType type, String shortName);
-Asset* getAssetIfExists(AssetType type, String shortName);
+AssetMetadata& getAsset(AssetType type, String shortName);
+AssetMetadata* getAssetIfExists(AssetType type, String shortName);
 
 BitmapFont& getFont(AssetRef const& fontRef);
 
@@ -179,7 +179,7 @@ T* getStyle(String styleName)
             static_assert(false);
     }();
 
-    Asset& asset = getAsset(styleType, styleName);
+    AssetMetadata& asset = getAsset(styleType, styleName);
     return reinterpret_cast<T*>(&asset._localData);
 }
 
@@ -188,10 +188,10 @@ T* getStyle(String styleName)
 //
 
 Blob assetsAllocate(AssetManager* theAssets, smm size);
-void allocateChildren(Asset* asset, s32 childCount);
-void addChildAsset(Asset* parent, Asset* child);
+void allocateChildren(AssetMetadata* asset, s32 childCount);
+void addChildAsset(AssetMetadata* parent, AssetMetadata* child);
 
-void loadCursorDefs(Blob data, Asset* asset);
-void loadPaletteDefs(Blob data, Asset* asset);
-void loadSpriteDefs(Blob data, Asset* asset);
-void loadTexts(HashTable<String>* texts, Asset* asset, Blob file_data);
+void loadCursorDefs(Blob data, AssetMetadata* asset);
+void loadPaletteDefs(Blob data, AssetMetadata* asset);
+void loadSpriteDefs(Blob data, AssetMetadata* asset);
+void loadTexts(HashTable<String>* texts, AssetMetadata* asset, Blob file_data);
