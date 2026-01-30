@@ -5,6 +5,9 @@
  */
 
 #include "BitmapFont.h"
+
+#include "Assets/DeprecatedAsset.h"
+
 #include <Assets/AssetManager.h>
 #include <Debug/Debug.h>
 #include <Gfx/Renderer.h>
@@ -67,10 +70,10 @@ struct BMFont_Char {
 
 BitmapFont& BitmapFont::get(StringView name)
 {
-    return getAsset(AssetType::BitmapFont, name.deprecated_to_string()).bitmapFont;
+    return dynamic_cast<DeprecatedAsset&>(*getAsset(AssetType::BitmapFont, name.deprecated_to_string()).loaded_asset).bitmapFont;
 }
 
-bool BitmapFont::load_from_bmf_data(Blob data, AssetMetadata& asset)
+bool BitmapFont::load_from_bmf_data(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
 {
     smm pos = 0;
     BMFontHeader* header = (BMFontHeader*)(data.data() + pos);
@@ -80,13 +83,13 @@ bool BitmapFont::load_from_bmf_data(Blob data, AssetMetadata& asset)
     if (header->tag[0] != BMFontTag[0]
         || header->tag[1] != BMFontTag[1]
         || header->tag[2] != BMFontTag[2]) {
-        logError("Not a valid BMFont file: {0}"_s, { asset.fullName });
+        logError("Not a valid BMFont file: {0}"_s, { metadata.fullName });
         return false;
     }
 
     if (header->version != 3) {
         logError("BMFont file version is unsupported: {0}, wanted {1} and got {2}"_s,
-            { asset.fullName, formatInt(BMFontSupportedVersion), formatInt(header->version) });
+            { metadata.fullName, formatInt(BMFontSupportedVersion), formatInt(header->version) });
         return false;
     }
 
@@ -131,9 +134,9 @@ bool BitmapFont::load_from_bmf_data(Blob data, AssetMetadata& asset)
 
     if (!(common && chars && charCount && pages)) {
         // Something didn't load correctly!
-        logError("BMFont file '{0}' seems to be lacking crucial data and could not be loaded!"_s, { asset.fullName });
+        logError("BMFont file '{0}' seems to be lacking crucial data and could not be loaded!"_s, { metadata.fullName });
     } else if (common->pageCount != 1) {
-        logError("BMFont file '{0}' defines a font with {1} texture pages, but we require only 1."_s, { asset.fullName, formatInt(common->pageCount) });
+        logError("BMFont file '{0}' defines a font with {1} texture pages, but we require only 1."_s, { metadata.fullName, formatInt(common->pageCount) });
     } else {
         BitmapFont* font = &asset.bitmapFont;
         font->m_line_height = common->lineHeight;
@@ -149,8 +152,10 @@ bool BitmapFont::load_from_bmf_data(Blob data, AssetMetadata& asset)
         font->m_texture = asset_manager().add_asset(AssetType::Texture, textureName);
         font->m_texture->ensure_is_loaded();
 
-        float textureWidth = (float)font->m_texture->texture.surface->w;
-        float textureHeight = (float)font->m_texture->texture.surface->h;
+        auto& texture = dynamic_cast<DeprecatedAsset&>(*font->m_texture->loaded_asset);
+
+        float textureWidth = (float)texture.texture.surface->w;
+        float textureHeight = (float)texture.texture.surface->h;
 
         for (u32 charIndex = 0;
             charIndex < charCount;

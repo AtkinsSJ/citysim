@@ -123,6 +123,7 @@ int main(int argc, char* argv[])
     auto& assets = asset_manager();
     assets.register_listener(&renderer);
 
+    assets.register_asset_loader(adopt_own(*new DeprecatedAssetLoader));
     assets.scan_assets();
     assets.load_assets();
 

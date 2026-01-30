@@ -32,6 +32,7 @@ struct Ninepatch {
     // these 8 floats is the best option. If creating the UV rects every time
     // becomes a bottleneck, we can switch over.
     // - Sam, 16/02/2021
+    // FIXME: Produce those rectangles instead once we ditch the Asset mega-union.
     float u0;
     float u1;
     float u2;

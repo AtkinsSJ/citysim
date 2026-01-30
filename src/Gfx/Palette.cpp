@@ -3,11 +3,12 @@
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
+
 #include "Palette.h"
 #include <Assets/AssetManager.h>
 #include <Assets/AssetType.h>
 
 Palette& Palette::get(StringView name)
 {
-    return getAsset(AssetType::Palette, name.deprecated_to_string()).palette;
+    return dynamic_cast<DeprecatedAsset&>(*getAsset(AssetType::Palette, name.deprecated_to_string()).loaded_asset).palette;
 }

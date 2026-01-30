@@ -9,7 +9,7 @@
 
 TextDocument& TextDocument::get(StringView name)
 {
-    return getAsset(AssetType::TextDocument, name.deprecated_to_string()).text_document;
+    return dynamic_cast<DeprecatedAsset&>(*getAsset(AssetType::TextDocument, name.deprecated_to_string()).loaded_asset).text_document;
 }
 
 TextDocument::TextDocument(Blob lines_data, Array<Line> lines)

@@ -42,7 +42,7 @@ inline BuildingCatalogue buildingCatalogue = {};
 void initBuildingCatalogue();
 
 BuildingDef* appendNewBuildingDef(StringView name);
-void loadBuildingDefs(Blob data, AssetMetadata* asset);
+void loadBuildingDefs(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset);
 void removeBuildingDefs(Array<String> idsToRemove);
 BuildingDef* getBuildingDef(s32 buildingTypeID);
 BuildingDef* findBuildingDef(String name);

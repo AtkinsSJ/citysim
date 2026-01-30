@@ -9,5 +9,5 @@
 
 Cursor& Cursor::get(StringView name)
 {
-    return getAsset(AssetType::Cursor, name.deprecated_to_string()).cursor;
+    return dynamic_cast<DeprecatedAsset&>(*getAsset(AssetType::Cursor, name.deprecated_to_string()).loaded_asset).cursor;
 }

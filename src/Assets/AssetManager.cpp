@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include <Assets/AssetManager.h>
+#include "AssetManager.h"
+#include <Assets/Asset.h>
 #include <Debug/Console.h>
-#include <Gfx/BitmapFont.h>
 #include <Gfx/Renderer.h>
 #include <IO/DirectoryIterator.h>
 #include <IO/DirectoryWatcher.h>
@@ -17,7 +17,6 @@
 #include <Settings/Settings.h>
 #include <Sim/Building.h>
 #include <Sim/BuildingCatalogue.h>
-#include <Sim/TerrainCatalogue.h>
 #include <Util/StringBuilder.h>
 
 AssetManager* s_assets;
@@ -28,23 +27,6 @@ void initAssets()
 
     String basePath = String::from_null_terminated(SDL_GetBasePath());
     s_assets->assetsPath = s_assets->assetStrings.intern(constructPath({ basePath, "assets"_s }));
-
-    // NB: We only need to define these for s_assets in the root s_assets/ directory
-    // Well, for now at least.
-    // - Sam, 19/05/2019
-    s_assets->fileExtensionToType.put(s_assets->assetStrings.intern("buildings"_s), AssetType::BuildingDefs);
-    s_assets->fileExtensionToType.put(s_assets->assetStrings.intern("cursors"_s), AssetType::CursorDefs);
-    s_assets->fileExtensionToType.put(s_assets->assetStrings.intern("keymap"_s), AssetType::DevKeymap);
-    s_assets->fileExtensionToType.put(s_assets->assetStrings.intern("palettes"_s), AssetType::PaletteDefs);
-    s_assets->fileExtensionToType.put(s_assets->assetStrings.intern("sprites"_s), AssetType::SpriteDefs);
-    s_assets->fileExtensionToType.put(s_assets->assetStrings.intern("terrain"_s), AssetType::TerrainDefs);
-    s_assets->fileExtensionToType.put(s_assets->assetStrings.intern("theme"_s), AssetType::UITheme);
-    s_assets->fileExtensionToType.put(s_assets->assetStrings.intern("txt"_s), AssetType::TextDocument);
-
-    s_assets->directoryNameToType.put(s_assets->assetStrings.intern("fonts"_s), AssetType::BitmapFont);
-    s_assets->directoryNameToType.put(s_assets->assetStrings.intern("shaders"_s), AssetType::Shader);
-    s_assets->directoryNameToType.put(s_assets->assetStrings.intern("textures"_s), AssetType::Texture);
-    s_assets->directoryNameToType.put(s_assets->assetStrings.intern("locale"_s), AssetType::Texts);
 
     // NB: The arena block size is 1MB currently, so make sure that this number * sizeof(Asset) is less than that!
     // (Otherwise, we waste a LOT of memory with almost-empty memory blocks.)
@@ -63,73 +45,7 @@ void initAssets()
     initSet<String>(&s_assets->missingTextIDs, &s_assets->arena, compareStrings);
 
     initChunkedArray(&s_assets->listeners, &s_assets->arena, 32);
-
-    // Placeholder s_assets!
-    {
-        // BitmapFont
-        makePlaceholderAsset(AssetType::BitmapFont);
-
-        // BuildingDefs
-        makePlaceholderAsset(AssetType::BuildingDefs);
-
-        // Cursor
-        AssetMetadata* placeholderCursor = makePlaceholderAsset(AssetType::Cursor);
-        placeholderCursor->cursor.sdlCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
-
-        // CursorDefs
-        makePlaceholderAsset(AssetType::CursorDefs);
-
-        // DevKeymap
-        makePlaceholderAsset(AssetType::DevKeymap);
-
-        // Ninepatch
-        AssetMetadata* placeholderNinepatch = makePlaceholderAsset(AssetType::Ninepatch);
-        placeholderNinepatch->ninepatch.texture = &s_assets->placeholderAssets[AssetType::Texture];
-
-        // Palette
-        AssetMetadata* placeholderPalette = makePlaceholderAsset(AssetType::Palette);
-        placeholderPalette->palette.type = Palette::Type::Fixed;
-        placeholderPalette->palette.size = 0;
-        placeholderPalette->palette.paletteData = makeEmptyArray<Colour>();
-
-        // PaletteDefs
-        makePlaceholderAsset(AssetType::PaletteDefs);
-
-        // Shader
-        makePlaceholderAsset(AssetType::Shader);
-
-        // Sprite!
-        AssetMetadata* placeholderSprite = makePlaceholderAsset(AssetType::Sprite);
-        placeholderSprite->data = assetsAllocate(s_assets, 1 * sizeof(Sprite));
-        placeholderSprite->spriteGroup.count = 1;
-        placeholderSprite->spriteGroup.sprites = (Sprite*)placeholderSprite->data.writable_data();
-        placeholderSprite->spriteGroup.sprites[0].texture = &s_assets->placeholderAssets[AssetType::Texture];
-        placeholderSprite->spriteGroup.sprites[0].uv = { 0.0f, 0.0f, 1.0f, 1.0f };
-
-        // SpriteDefs
-        makePlaceholderAsset(AssetType::SpriteDefs);
-
-        // TerrainDefs
-        makePlaceholderAsset(AssetType::TerrainDefs);
-
-        // TextDocument
-        makePlaceholderAsset(AssetType::TextDocument);
-
-        // Texts
-        makePlaceholderAsset(AssetType::Texts);
-
-        // Texture
-        AssetMetadata* placeholderTexture = makePlaceholderAsset(AssetType::Texture);
-        placeholderTexture->data = assetsAllocate(s_assets, 2 * 2 * sizeof(u32));
-        u32* pixels = (u32*)placeholderTexture->data.writable_data();
-        pixels[0] = pixels[3] = 0xffff00ff;
-        pixels[1] = pixels[2] = 0xff000000;
-        placeholderTexture->texture.surface = SDL_CreateRGBSurfaceFrom(pixels, 2, 2, 32, 2 * sizeof(u32),
-            0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
-
-        // UITheme
-        makePlaceholderAsset(AssetType::UITheme);
-    }
+    initChunkedArray(&s_assets->asset_loaders, &s_assets->arena, 32);
 
     // NB: This might fail, or we might be on a platform where it isn't implemented.
     // That's OK though!
@@ -148,20 +64,6 @@ AssetManager& asset_manager()
     return *s_assets;
 }
 
-AssetMetadata* makePlaceholderAsset(AssetType type)
-{
-    AssetMetadata* result = &s_assets->placeholderAssets[type];
-    result->type = type;
-    result->shortName = {};
-    result->fullName = {};
-    result->flags = {};
-    result->state = AssetMetadata::State::Loaded;
-    result->children = makeEmptyArray<AssetRef>();
-    result->data = {};
-
-    return result;
-}
-
 Blob assetsAllocate(AssetManager* theAssets, smm size)
 {
     Blob result { size, allocateRaw(size) };
@@ -174,13 +76,15 @@ Blob assetsAllocate(AssetManager* theAssets, smm size)
 
 void allocateChildren(AssetMetadata* asset, s32 childCount)
 {
-    asset->data = assetsAllocate(s_assets, childCount * sizeof(AssetRef));
-    asset->children = makeArray(childCount, reinterpret_cast<AssetRef*>(asset->data.writable_data()));
+    asset->children_data = assetsAllocate(s_assets, childCount * sizeof(AssetRef));
+    asset->children = makeArray(childCount, reinterpret_cast<AssetRef*>(asset->children_data.writable_data()));
 }
 
 void addChildAsset(AssetMetadata* parent, AssetMetadata* child)
 {
     parent->children.append(AssetRef { child->type, child->shortName });
+    if (child->loaded_asset)
+        child->state = AssetMetadata::State::Loaded;
 }
 
 AssetMetadata* AssetManager::add_asset(AssetType type, StringView short_name, Flags<AssetFlags> flags)
@@ -202,7 +106,7 @@ AssetMetadata* AssetManager::add_asset(AssetType type, StringView short_name, Fl
         }
     }
     asset->state = AssetMetadata::State::Unloaded;
-    asset->data = {};
+    asset->children_data = {};
     asset->flags = flags;
 
     assetsByType[type].put(internedShortName, asset);
@@ -210,265 +114,39 @@ AssetMetadata* AssetManager::add_asset(AssetType type, StringView short_name, Fl
     return asset;
 }
 
-void copyFileIntoAsset(Blob* fileData, AssetMetadata* asset)
-{
-    asset->data = assetsAllocate(s_assets, fileData->size());
-    memcpy(asset->data.writable_data(), fileData->data(), fileData->size());
-
-    // NB: We set the fileData to point at the new copy, so that code after calling copyFileIntoAsset()
-    // can still use fileData without having to mess with it. Already had one bug caused by not doing this!
-    // FIXME: Stop doing this?
-    *fileData = asset->data;
-}
-
-SDL_Surface* createSurfaceFromFileData(Blob fileData, String name)
-{
-    SDL_Surface* result = nullptr;
-
-    ASSERT(fileData.size() > 0);      //, "Attempted to create a surface from an unloaded asset! ({0})", {name});
-    ASSERT(fileData.size() < s32Max); //, "File '{0}' is too big for SDL's RWOps!", {name});
-
-    SDL_RWops* rw = SDL_RWFromConstMem(fileData.data(), truncate32(fileData.size()));
-    if (rw) {
-        result = IMG_Load_RW(rw, 0);
-
-        if (result == nullptr) {
-            logError("Failed to create SDL_Surface from asset '{0}'!\n{1}"_s, { name, String::from_null_terminated(IMG_GetError()) });
-        }
-
-        SDL_RWclose(rw);
-    } else {
-        logError("Failed to create SDL_RWops from asset '{0}'!\n{1}"_s, { name, String::from_null_terminated(SDL_GetError()) });
-    }
-
-    return result;
-}
-
-void loadAsset(AssetMetadata* asset)
+void loadAsset(AssetMetadata* metadata)
 {
     DEBUG_FUNCTION();
-    if (asset->state != AssetMetadata::State::Unloaded)
+    if (metadata->state != AssetMetadata::State::Unloaded)
         return;
 
-    if (asset->locale.has_value()) {
+    if (metadata->locale.has_value()) {
         // Only load assets that match our locale
-        if (asset->locale == get_locale()) {
-            asset->texts.isFallbackLocale = false;
-        } else {
-            if (asset->locale == Locale::En) {
-                logInfo("Loading asset {0} as a default-locale fallback. (Locale {1}, current is {2})"_s, { asset->fullName, to_string(asset->locale.value()), to_string(get_locale()) });
-                asset->texts.isFallbackLocale = true;
+        if (metadata->locale != get_locale()) {
+            if (metadata->locale == Locale::En) {
+                logInfo("Loading asset {0} as a default-locale fallback. (Locale {1}, current is {2})"_s, { metadata->fullName, to_string(metadata->locale.value()), to_string(get_locale()) });
             } else {
-                logInfo("Skipping asset {0} because it's the wrong locale. ({1}, current is {2})"_s, { asset->fullName, to_string(asset->locale.value()), to_string(get_locale()) });
+                logInfo("Skipping asset {0} because it's the wrong locale. ({1}, current is {2})"_s, { metadata->fullName, to_string(metadata->locale.value()), to_string(get_locale()) });
                 return;
             }
         }
     }
 
-    Blob fileData = {};
-    // Some s_assets (meta-s_assets?) have no file associated with them, because they are composed of other s_assets.
+    Blob file_data = {};
+    // Some assets (meta-assets?) have no file associated with them, because they are composed of other assets.
     // eg, ShaderPrograms are made of several ShaderParts.
-    if (asset->flags.has(AssetFlags::IsAFile)) {
-        fileData = readTempFile(asset->fullName);
+    if (metadata->flags.has(AssetFlags::IsAFile)) {
+        file_data = readTempFile(metadata->fullName);
     }
 
-    // Type-specific loading
-    switch (asset->type) {
-    case AssetType::BitmapFont: {
-        if (BitmapFont::load_from_bmf_data(fileData, *asset)) {
-            asset->state = AssetMetadata::State::Loaded;
-        } else {
-            asset->state = AssetMetadata::State::Error;
-            return;
-        }
-    } break;
-
-    case AssetType::BuildingDefs: {
-        loadBuildingDefs(fileData, asset);
-        asset->state = AssetMetadata::State::Loaded;
-    } break;
-
-    case AssetType::Cursor: {
-        fileData = readTempFile(asset->cursor.imageFilePath);
-        SDL_Surface* cursorSurface = createSurfaceFromFileData(fileData, asset->shortName);
-        asset->cursor.sdlCursor = SDL_CreateColorCursor(cursorSurface, asset->cursor.hotspot.x, asset->cursor.hotspot.y);
-        SDL_FreeSurface(cursorSurface);
-        asset->state = AssetMetadata::State::Loaded;
-    } break;
-
-    case AssetType::CursorDefs: {
-        loadCursorDefs(fileData, asset);
-        asset->state = AssetMetadata::State::Loaded;
-    } break;
-
-    case AssetType::DevKeymap: {
-        if (globalConsole != nullptr) {
-            // NB: We keep the keymap file in the asset memory, so that the CommandShortcut.command can
-            // directly refer to the string data from the file, instead of having to assetsAllocate a copy
-            // and not be able to free it ever. This is more memory efficient.
-            copyFileIntoAsset(&fileData, asset);
-            loadConsoleKeyboardShortcuts(globalConsole, fileData, asset->shortName);
-        }
-        asset->state = AssetMetadata::State::Loaded;
-    } break;
-
-    case AssetType::Ninepatch: {
-        // Convert UVs from pixel space to 0-1 space
-        AssetMetadata* t = asset->ninepatch.texture;
-        t->ensure_is_loaded();
-        float textureWidth = (float)t->texture.surface->w;
-        float textureHeight = (float)t->texture.surface->h;
-
-        asset->ninepatch.u0 = asset->ninepatch.pu0 / textureWidth;
-        asset->ninepatch.u1 = asset->ninepatch.pu1 / textureWidth;
-        asset->ninepatch.u2 = asset->ninepatch.pu2 / textureWidth;
-        asset->ninepatch.u3 = asset->ninepatch.pu3 / textureWidth;
-
-        asset->ninepatch.v0 = asset->ninepatch.pv0 / textureHeight;
-        asset->ninepatch.v1 = asset->ninepatch.pv1 / textureHeight;
-        asset->ninepatch.v2 = asset->ninepatch.pv2 / textureHeight;
-        asset->ninepatch.v3 = asset->ninepatch.pv3 / textureHeight;
-
-        asset->state = AssetMetadata::State::Loaded;
-    } break;
-
-    case AssetType::Palette: {
-        Palette* palette = &asset->palette;
-        switch (palette->type) {
-        case Palette::Type::Gradient: {
-            asset->data = assetsAllocate(s_assets, palette->size * sizeof(Colour));
-            palette->paletteData = makeArray<Colour>(palette->size, reinterpret_cast<Colour*>(asset->data.writable_data()), palette->size);
-
-            float ratio = 1.0f / (float)(palette->size);
-            for (s32 i = 0; i < palette->size; i++) {
-                palette->paletteData[i] = lerp(palette->gradient.from, palette->gradient.to, i * ratio);
-            }
-        } break;
-
-        case Palette::Type::Fixed: {
-        } break;
-
-            INVALID_DEFAULT_CASE;
-        }
-        asset->state = AssetMetadata::State::Loaded;
-    } break;
-
-    case AssetType::PaletteDefs: {
-        loadPaletteDefs(fileData, asset);
-        asset->state = AssetMetadata::State::Loaded;
-    } break;
-
-    case AssetType::Shader: {
-        copyFileIntoAsset(&fileData, asset);
-        String::from_blob(fileData).value().split_in_two('$', &asset->shader.vertexShader, &asset->shader.fragmentShader);
-        asset->state = AssetMetadata::State::Loaded;
-    } break;
-
-    case AssetType::Sprite: {
-        // Convert UVs from pixel space to 0-1 space
-        for (s32 i = 0; i < asset->spriteGroup.count; i++) {
-            Sprite* sprite = asset->spriteGroup.sprites + i;
-            AssetMetadata* t = sprite->texture;
-            t->ensure_is_loaded();
-            float textureWidth = (float)t->texture.surface->w;
-            float textureHeight = (float)t->texture.surface->h;
-
-            sprite->uv = {
-                sprite->uv.x() / textureWidth,
-                sprite->uv.y() / textureHeight,
-                sprite->uv.width() / textureWidth,
-                sprite->uv.height() / textureHeight
-            };
-        }
-
-        asset->state = AssetMetadata::State::Loaded;
-    } break;
-
-    case AssetType::SpriteDefs: {
-        loadSpriteDefs(fileData, asset);
-        asset->state = AssetMetadata::State::Loaded;
-    } break;
-
-    case AssetType::TerrainDefs: {
-        loadTerrainDefs(fileData, asset);
-        asset->state = AssetMetadata::State::Loaded;
-    } break;
-
-    case AssetType::TextDocument: {
-        // FIXME: Combine things into one allocation?
-        copyFileIntoAsset(&fileData, asset);
-        LineReader reader { asset->shortName, asset->data, {} };
-        auto line_count = reader.line_count();
-        auto lines_data = assetsAllocate(s_assets, line_count * sizeof(TextDocument::Line));
-        auto lines_array = makeArray(line_count, reinterpret_cast<TextDocument::Line*>(lines_data.writable_data()));
-        while (reader.load_next_line()) {
-            auto line = reader.current_line();
-            lines_array.append({ .text = line });
-        }
-        asset->text_document = TextDocument { lines_data, move(lines_array) };
-        asset->state = AssetMetadata::State::Loaded;
-    } break;
-
-    case AssetType::Texts: {
-        HashTable<String>* textsTable = (asset->texts.isFallbackLocale ? &s_assets->defaultTexts : &s_assets->texts);
-        loadTexts(textsTable, asset, fileData);
-        asset->state = AssetMetadata::State::Loaded;
-    } break;
-
-    case AssetType::Texture: {
-        // TODO: Emergency debug texture that's used if loading a file fails.
-        // Right now, we just crash! (Not shippable)
-        SDL_Surface* surface = createSurfaceFromFileData(fileData, asset->fullName);
-        if (surface->format->BytesPerPixel != 4) {
-            logError("Texture asset '{0}' is not 32bit, which is all we support right now. (BytesPerPixel = {1})"_s, { asset->shortName, formatInt(surface->format->BytesPerPixel) });
-            return;
-        }
-
-        // Premultiply alpha
-        // NOTE: We always assume the data isn't premultiplied.
-        u32 Rmask = surface->format->Rmask,
-            Gmask = surface->format->Gmask,
-            Bmask = surface->format->Bmask,
-            Amask = surface->format->Amask;
-        float rRmask = (float)Rmask,
-              rGmask = (float)Gmask,
-              rBmask = (float)Bmask,
-              rAmask = (float)Amask;
-
-        u32 pixelCount = surface->w * surface->h;
-        for (u32 pixelIndex = 0;
-            pixelIndex < pixelCount;
-            pixelIndex++) {
-            u32 pixel = ((u32*)surface->pixels)[pixelIndex];
-            float rr = (float)(pixel & Rmask) / rRmask;
-            float rg = (float)(pixel & Gmask) / rGmask;
-            float rb = (float)(pixel & Bmask) / rBmask;
-            float ra = (float)(pixel & Amask) / rAmask;
-
-            u32 r = (u32)(rr * ra * rRmask) & Rmask;
-            u32 g = (u32)(rg * ra * rGmask) & Gmask;
-            u32 b = (u32)(rb * ra * rBmask) & Bmask;
-            u32 a = (u32)(ra * rAmask) & Amask;
-
-            ((u32*)surface->pixels)[pixelIndex] = (u32)r | (u32)g | (u32)b | (u32)a;
-        }
-
-        asset->texture.surface = surface;
-        asset->state = AssetMetadata::State::Loaded;
-    } break;
-
-    case AssetType::UITheme: {
-        loadUITheme(fileData, asset);
-        asset->state = AssetMetadata::State::Loaded;
-    } break;
-
-    default: {
-        if (asset->flags.has(AssetFlags::IsAFile)) {
-            copyFileIntoAsset(&fileData, asset);
-        }
-
-        asset->state = AssetMetadata::State::Loaded;
-    } break;
+    auto& loader = asset_manager().get_asset_loader_for_type(metadata->type);
+    auto asset = loader.load_asset(*metadata, file_data);
+    if (asset.is_error()) {
+        logError("Failed to load asset {}: {}"_s, { metadata->fullName, asset.error() });
+        metadata->state = AssetMetadata::State::Error;
+    } else {
+        metadata->loaded_asset = asset.release_value();
+        metadata->state = AssetMetadata::State::Loaded;
     }
 }
 
@@ -479,61 +157,18 @@ void unloadAsset(AssetMetadata* asset)
     if (asset->state == AssetMetadata::State::Unloaded)
         return;
 
-    switch (asset->type) {
-    case AssetType::BuildingDefs: {
-        // Remove all of our terrain defs
-        removeBuildingDefs(asset->buildingDefs.buildingIDs);
-        asset->buildingDefs.buildingIDs = makeEmptyArray<String>();
-    } break;
-
-    case AssetType::Cursor: {
-        if (asset->cursor.sdlCursor != nullptr) {
-            SDL_FreeCursor(asset->cursor.sdlCursor);
-            asset->cursor.sdlCursor = nullptr;
-        }
-    } break;
-
-    case AssetType::TerrainDefs: {
-        // Remove all of our terrain defs
-        removeTerrainDefs(asset->terrainDefs.terrainIDs);
-        asset->terrainDefs.terrainIDs = makeEmptyArray<String>();
-    } break;
-
-    case AssetType::TextDocument: {
-        asset->text_document.unload();
-    } break;
-
-    case AssetType::Texts: {
-        // Remove all of our texts from the table
-        HashTable<String>* textsTable = (asset->texts.isFallbackLocale ? &s_assets->defaultTexts : &s_assets->texts);
-        for (auto const& key : asset->texts.keys)
-            textsTable->removeKey(key);
-        asset->texts.keys = makeEmptyArray<String>();
-    } break;
-
-    case AssetType::Texture: {
-        if (asset->texture.surface != nullptr) {
-            SDL_FreeSurface(asset->texture.surface);
-            asset->texture.surface = nullptr;
-        }
-    } break;
-
-    default:
-        break;
-    }
-
     if (!asset->children.isEmpty()) {
         for (auto const& child : asset->children)
             removeAsset(child);
         asset->children = makeEmptyArray<AssetRef>();
     }
 
-    if (asset->data.data() != nullptr) {
-        s_assets->assetMemoryAllocated -= asset->data.size();
-        deallocateRaw(asset->data.writable_data());
-        asset->data = {};
+    asset->loaded_asset->unload(*asset);
+    if (asset->children_data.data() != nullptr) {
+        s_assets->assetMemoryAllocated -= asset->children_data.size();
+        deallocateRaw(asset->children_data.writable_data());
+        asset->children_data = {};
     }
-
     asset->state = AssetMetadata::State::Unloaded;
 }
 
@@ -551,42 +186,6 @@ void removeAsset(AssetType type, String name)
 void removeAsset(AssetRef const& ref)
 {
     removeAsset(ref.type(), ref.name());
-}
-
-AssetMetadata* addNinepatch(StringView name, StringView filename, s32 pu0, s32 pu1, s32 pu2, s32 pu3, s32 pv0, s32 pv1, s32 pv2, s32 pv3)
-{
-    AssetMetadata* texture = asset_manager().add_asset(AssetType::Texture, filename);
-
-    AssetMetadata* asset = asset_manager().add_asset(AssetType::Ninepatch, name, {});
-
-    Ninepatch* ninepatch = &asset->ninepatch;
-    ninepatch->texture = texture;
-
-    ninepatch->pu0 = pu0;
-    ninepatch->pu1 = pu1;
-    ninepatch->pu2 = pu2;
-    ninepatch->pu3 = pu3;
-
-    ninepatch->pv0 = pv0;
-    ninepatch->pv1 = pv1;
-    ninepatch->pv2 = pv2;
-    ninepatch->pv3 = pv3;
-
-    return asset;
-}
-
-AssetMetadata* addSpriteGroup(StringView name, s32 spriteCount)
-{
-    ASSERT(spriteCount > 0); // Must have a positive number of sprites in a Sprite Group!
-
-    AssetMetadata* spriteGroup = asset_manager().add_asset(AssetType::Sprite, name, {});
-    if (spriteGroup->data.size() != 0)
-        DEBUG_BREAK(); // @Leak! Creating the sprite group multiple times is probably a bad idea for other reasons too.
-    spriteGroup->data = assetsAllocate(s_assets, spriteCount * sizeof(Sprite));
-    spriteGroup->spriteGroup.count = spriteCount;
-    spriteGroup->spriteGroup.sprites = (Sprite*)spriteGroup->data.writable_data();
-
-    return spriteGroup;
 }
 
 void AssetManager::load_assets()
@@ -730,7 +329,7 @@ AssetMetadata* getAssetIfExists(AssetType type, String shortName)
 BitmapFont& getFont(AssetRef const& fontRef)
 {
     ASSERT(fontRef.type() == AssetType::BitmapFont);
-    return fontRef.get().bitmapFont;
+    return dynamic_cast<DeprecatedAsset&>(*fontRef.get().loaded_asset).bitmapFont;
 }
 
 String getText(String name)
@@ -807,6 +406,22 @@ String AssetManager::make_asset_path(AssetType type, StringView short_name) cons
     }
 }
 
+void AssetManager::register_asset_loader(NonnullOwnPtr<AssetLoader>&& asset_loader_ptr)
+{
+    auto& asset_loader = *asset_loader_ptr;
+    asset_loaders.append(move(asset_loader_ptr));
+
+    asset_loader.register_types(*this);
+    asset_loader.create_placeholder_assets(*this);
+}
+
+AssetLoader& AssetManager::get_asset_loader_for_type(AssetType type) const
+{
+    auto* result = asset_loaders_by_type[type];
+    ASSERT(result);
+    return *result;
+}
+
 void AssetManager::on_settings_changed()
 {
     // Reload locale-specific assets
@@ -827,377 +442,6 @@ void AssetManager::on_settings_changed()
         if (asset.locale.has_value()) {
             loadAsset(&asset);
         }
-    }
-}
-
-void loadCursorDefs(Blob data, AssetMetadata* asset)
-{
-    DEBUG_FUNCTION();
-
-    LineReader reader { asset->shortName, data };
-
-    // We store the cursorNames array in the defs asset
-    // So, we first need to scan through the file to see how many cursors there are in it!
-    s32 cursorCount = 0;
-    while (reader.load_next_line()) {
-        cursorCount++;
-    }
-
-    allocateChildren(asset, cursorCount);
-
-    reader.restart();
-
-    while (reader.load_next_line()) {
-        auto name_token = reader.next_token();
-        auto filename = reader.next_token();
-        if (!name_token.has_value() || !filename.has_value())
-            continue;
-
-        String name = s_assets->assetStrings.intern(name_token.release_value());
-
-        auto hot_x = reader.read_int<s32>();
-        auto hot_y = reader.read_int<s32>();
-
-        if (hot_x.has_value() && hot_y.has_value()) {
-            // Add the cursor
-            AssetMetadata* cursorAsset = asset_manager().add_asset(AssetType::Cursor, name, {});
-            cursorAsset->cursor.imageFilePath = s_assets->assetStrings.intern(asset_manager().make_asset_path(AssetType::Cursor, filename.value()));
-            cursorAsset->cursor.hotspot = v2i(hot_x.release_value(), hot_y.release_value());
-            addChildAsset(asset, cursorAsset);
-        } else {
-            reader.error("Couldn't parse cursor definition. Expected 'name filename.png hot-x hot-y'."_s);
-            return;
-        }
-    }
-}
-
-void loadPaletteDefs(Blob data, AssetMetadata* asset)
-{
-    DEBUG_FUNCTION();
-
-    LineReader reader { asset->shortName, data };
-
-    // We store the paletteNames array in the defs asset
-    // So, we first need to scan through the file to see how many palettes there are in it!
-    s32 paletteCount = 0;
-    while (reader.load_next_line()) {
-        if (auto command = reader.next_token(); command == ":Palette"_s)
-            paletteCount++;
-    }
-
-    allocateChildren(asset, paletteCount);
-
-    reader.restart();
-
-    AssetMetadata* paletteAsset = nullptr;
-    while (reader.load_next_line()) {
-        auto command_token = reader.next_token();
-        if (!command_token.has_value())
-            continue;
-        auto command = command_token.release_value();
-
-        if (command.starts_with(':')) {
-            command = command.substring(1);
-
-            if (command == "Palette"_s) {
-                if (auto palette_name = reader.next_token(); palette_name.has_value()) {
-                    paletteAsset = asset_manager().add_asset(AssetType::Palette, palette_name.release_value(), {});
-                    addChildAsset(asset, paletteAsset);
-                } else {
-                    reader.error("Missing name for Palette"_s);
-                    return;
-                }
-            } else {
-                reader.error("Unexpected command ':{0}' in palette-definitions file. Only :Palette is allowed!"_s, { command });
-                return;
-            }
-        } else {
-            if (paletteAsset == nullptr) {
-                reader.error("Unexpected command '{0}' before the start of a :Palette"_s, { command });
-                return;
-            }
-
-            if (command == "type"_s) {
-                auto type = reader.next_token();
-                if (!type.has_value()) {
-                    reader.error("Missing palette type"_s);
-                    return;
-                }
-
-                if (type == "fixed"_s) {
-                    paletteAsset->palette.type = Palette::Type::Fixed;
-                } else if (type == "gradient"_s) {
-                    paletteAsset->palette.type = Palette::Type::Gradient;
-                } else {
-                    reader.error("Unrecognised palette type '{0}', allowed values are: fixed, gradient"_s, { type.value() });
-                    return;
-                }
-            } else if (command == "size"_s) {
-                if (auto size = reader.read_int<s32>(); size.has_value()) {
-                    paletteAsset->palette.size = size.release_value();
-                } else {
-                    return;
-                }
-            } else if (command == "color"_s) {
-                if (auto color = Colour::read(reader); color.has_value()) {
-                    if (paletteAsset->palette.type == Palette::Type::Fixed) {
-                        if (!paletteAsset->palette.paletteData.isInitialised()) {
-                            paletteAsset->data = assetsAllocate(s_assets, paletteAsset->palette.size * sizeof(Colour));
-                            paletteAsset->palette.paletteData = makeArray<Colour>(paletteAsset->palette.size, reinterpret_cast<Colour*>(paletteAsset->data.writable_data()));
-                        }
-
-                        s32 colorIndex = paletteAsset->palette.paletteData.count;
-                        if (colorIndex >= paletteAsset->palette.size) {
-                            reader.error("Too many 'color' definitions! 'size' must be large enough."_s);
-                            return;
-                        }
-                        paletteAsset->palette.paletteData.append(color.release_value());
-                    } else {
-                        reader.error("'color' is only a valid command for fixed palettes."_s);
-                        return;
-                    }
-                }
-            } else if (command == "from"_s) {
-                if (auto from = Colour::read(reader); from.has_value()) {
-                    if (paletteAsset->palette.type == Palette::Type::Gradient) {
-                        paletteAsset->palette.gradient.from = from.release_value();
-                    } else {
-                        reader.error("'from' is only a valid command for gradient palettes."_s);
-                        return;
-                    }
-                }
-            } else if (command == "to"_s) {
-                if (auto to = Colour::read(reader); to.has_value()) {
-                    if (paletteAsset->palette.type == Palette::Type::Gradient) {
-                        paletteAsset->palette.gradient.to = to.release_value();
-                    } else {
-                        reader.error("'to' is only a valid command for gradient palettes."_s);
-                        return;
-                    }
-                }
-            } else {
-                reader.error("Unrecognised command '{0}'"_s, { command });
-                return;
-            }
-        }
-    }
-}
-
-void loadSpriteDefs(Blob data, AssetMetadata* asset)
-{
-    DEBUG_FUNCTION();
-
-    LineReader reader { asset->shortName, data };
-
-    AssetMetadata* textureAsset = nullptr;
-    V2I spriteSize = v2i(0, 0);
-    V2I spriteBorder = v2i(0, 0);
-    AssetMetadata* spriteGroup = nullptr;
-    s32 spriteIndex = 0;
-
-    // Count the number of child s_assets, so we can allocate our spriteNames array
-    s32 childAssetCount = 0;
-    while (reader.load_next_line()) {
-        if (auto command = reader.next_token(); command.has_value() && command.value().starts_with(':'))
-            childAssetCount++;
-    }
-    allocateChildren(asset, childAssetCount);
-
-    reader.restart();
-
-    // Now, actually read things
-    while (reader.load_next_line()) {
-        auto maybe_command = reader.next_token();
-        if (!maybe_command.has_value())
-            continue;
-        auto command = maybe_command.release_value();
-
-        if (command.starts_with(':')) // Definitions
-        {
-            // Define something
-            command = command.substring(1).deprecated_to_string();
-
-            textureAsset = nullptr;
-            spriteGroup = nullptr;
-
-            if (command == "Ninepatch"_s) {
-                auto name = reader.next_token();
-                auto filename = reader.next_token();
-                auto pu0 = reader.read_int<s32>();
-                auto pu1 = reader.read_int<s32>();
-                auto pu2 = reader.read_int<s32>();
-                auto pu3 = reader.read_int<s32>();
-                auto pv0 = reader.read_int<s32>();
-                auto pv1 = reader.read_int<s32>();
-                auto pv2 = reader.read_int<s32>();
-                auto pv3 = reader.read_int<s32>();
-
-                if (!all_have_values(name, filename, pu0, pu1, pu2, pu3, pv0, pv1, pv2, pv3)) {
-                    reader.error("Couldn't parse Ninepatch. Expected: ':Ninepatch identifier filename.png pu0 pu1 pu2 pu3 pv0 pv1 pv2 pv3'"_s);
-                    return;
-                }
-
-                AssetMetadata* ninepatch = addNinepatch(name.release_value(), filename.release_value(), pu0.release_value(), pu1.release_value(), pu2.release_value(), pu3.release_value(), pv0.release_value(), pv1.release_value(), pv2.release_value(), pv3.release_value());
-
-                addChildAsset(asset, ninepatch);
-            } else if (command == "Sprite"_s) {
-                // @Copypasta from the SpriteGroup branch, and the 'sprite' property
-                auto name = reader.next_token();
-                auto filename = reader.next_token();
-                auto spriteSizeIn = V2I::read(reader);
-
-                if (!all_have_values(name, filename, spriteSizeIn)) {
-                    reader.error("Couldn't parse Sprite. Expected: ':Sprite identifier filename.png SWxSH'"_s);
-                    return;
-                }
-
-                spriteSize = spriteSizeIn.release_value();
-
-                AssetMetadata* group = addSpriteGroup(name.release_value(), 1);
-
-                Sprite* sprite = group->spriteGroup.sprites;
-                sprite->texture = asset_manager().add_asset(AssetType::Texture, filename.release_value());
-                sprite->uv = { 0, 0, spriteSize.x, spriteSize.y };
-                sprite->pixelWidth = spriteSize.x;
-                sprite->pixelHeight = spriteSize.y;
-
-                addChildAsset(asset, group);
-            } else if (command == "SpriteGroup"_s) {
-                auto name = reader.next_token();
-                auto filename = reader.next_token();
-                auto spriteSizeIn = V2I::read(reader);
-
-                if (!all_have_values(name, filename, spriteSizeIn)) {
-                    reader.error("Couldn't parse SpriteGroup. Expected: ':SpriteGroup identifier filename.png SWxSH'"_s);
-                    return;
-                }
-
-                textureAsset = asset_manager().add_asset(AssetType::Texture, filename.release_value());
-                spriteSize = spriteSizeIn.release_value();
-
-                s32 spriteCount = reader.count_occurrences_of_property_in_current_command("sprite"_s);
-                if (spriteCount < 1) {
-                    reader.error("SpriteGroup must contain at least 1 sprite!"_s);
-                    return;
-                }
-                spriteGroup = addSpriteGroup(name.release_value(), spriteCount);
-                spriteIndex = 0;
-
-                addChildAsset(asset, spriteGroup);
-            } else {
-                reader.error("Unrecognised command: '{0}'"_s, { command });
-                return;
-            }
-        } else // Properties!
-        {
-            if (spriteGroup == nullptr) {
-                reader.error("Found a property outside of a :SpriteGroup!"_s);
-                return;
-            } else if (command == "border"_s) {
-                auto borderW = reader.read_int<s32>();
-                auto borderH = reader.read_int<s32>();
-                if (borderW.has_value() && borderH.has_value()) {
-                    spriteBorder = v2i(borderW.release_value(), borderH.release_value());
-                } else {
-                    reader.error("Couldn't parse border. Expected 'border width height'."_s);
-                    return;
-                }
-            } else if (command == "sprite"_s) {
-                auto mx = reader.read_int<s32>();
-                auto my = reader.read_int<s32>();
-
-                if (mx.has_value() && my.has_value()) {
-                    s32 x = mx.release_value();
-                    s32 y = my.release_value();
-
-                    Sprite* sprite = spriteGroup->spriteGroup.sprites + spriteIndex;
-                    sprite->texture = textureAsset;
-                    sprite->uv = { spriteBorder.x + x * (spriteSize.x + spriteBorder.x + spriteBorder.x),
-                        spriteBorder.y + y * (spriteSize.y + spriteBorder.y + spriteBorder.y),
-                        spriteSize.x, spriteSize.y };
-                    sprite->pixelWidth = spriteSize.x;
-                    sprite->pixelHeight = spriteSize.y;
-
-                    spriteIndex++;
-                } else {
-                    reader.error("Couldn't parse {0}. Expected '{0} x y'."_s, { command });
-                    return;
-                }
-            } else {
-                reader.error("Unrecognised command '{0}'"_s, { command });
-                return;
-            }
-        }
-    }
-}
-
-void loadTexts(HashTable<String>* texts, AssetMetadata* asset, Blob file_data)
-{
-    LineReader reader { asset->shortName, file_data };
-
-    // NB: We store the strings inside the asset data, so it's one block of memory instead of many small ones.
-    // However, since we allocate before we parse the file, we need to make sure that the output texts are
-    // never longer than the input texts, or we could run out of space!
-    // Right now, the only processing we do is replacing \n with a newline character, and similar, so the
-    // output can only ever be smaller or the same size as the input.
-    // - Sam, 01/10/2019
-
-    // We also put an array of keys into the same allocation.
-    // We use the number of lines in the file as a heuristic - we know it'll be slightly more than
-    // the number of texts in the file, because they're 1 per line, and we don't have many blanks.
-
-    auto line_count = reader.line_count();
-    auto key_array_size = sizeof(String) * line_count;
-    asset->data = assetsAllocate(s_assets, file_data.size() + key_array_size);
-    asset->texts.keys = makeArray(line_count, reinterpret_cast<String*>(asset->data.writable_data()));
-
-    auto text_data = asset->data.sub_blob(key_array_size);
-    StringBuilder string_data_builder { text_data };
-    char* write_position = reinterpret_cast<char*>(text_data.writable_data());
-
-    while (reader.load_next_line()) {
-        auto input_key = reader.next_token();
-        if (!input_key.has_value())
-            continue;
-        auto input_text = reader.remainder_of_current_line();
-
-        // Store the key
-        string_data_builder.append(input_key.value());
-        String key { write_position, input_key.value().length() };
-        write_position += key.length();
-
-        // Store the text
-        auto* text_start = write_position;
-        auto text_length = 0u;
-
-        for (s32 charIndex = 0; charIndex < input_text.length(); charIndex++) {
-            char c = input_text[charIndex];
-            if (c == '\\') {
-                if (charIndex + 1 < input_text.length() && input_text[charIndex + 1] == 'n') {
-                    string_data_builder.append('\n');
-                    text_length++;
-                    charIndex++;
-                    continue;
-                }
-            }
-
-            string_data_builder.append(c);
-            text_length++;
-        }
-
-        write_position += text_length;
-
-        // Check that we don't already have a text with that name.
-        // If we do, one will overwrite the other, and that could be unpredictable if they're
-        // in different files. Things will still work, but it would be confusing! And unintended.
-        auto existing_text = texts->find_value(key);
-        if (existing_text.has_value() && existing_text != key) {
-            reader.warn("Text asset with ID '{0}' already exists in the texts table! Existing value: \"{1}\""_s, { key, existing_text.value() });
-        }
-
-        asset->texts.keys.append(key);
-
-        texts->put(key, String { text_start, text_length });
     }
 }
 

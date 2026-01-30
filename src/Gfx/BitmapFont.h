@@ -34,7 +34,7 @@ class BitmapFont {
 public:
     static BitmapFont& get(StringView name);
 
-    static bool load_from_bmf_data(Blob data, AssetMetadata& asset);
+    static bool load_from_bmf_data(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset);
 
     void add_glyph(BitmapFontGlyph&&);
     BitmapFontGlyph* find_glyph(unichar target_char) const;

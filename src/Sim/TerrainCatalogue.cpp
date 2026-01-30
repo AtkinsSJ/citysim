@@ -28,11 +28,11 @@ void initTerrainCatalogue()
     asset_manager().register_listener(&s_terrain_catalogue);
 }
 
-void loadTerrainDefs(Blob data, AssetMetadata* asset)
+void loadTerrainDefs(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
 {
     DEBUG_FUNCTION();
 
-    LineReader reader { asset->shortName, data };
+    LineReader reader { metadata.shortName, data };
 
     // Pre scan for the number of Terrains, so we can allocate enough space in the asset.
     s32 terrainCount = 0;
@@ -41,8 +41,8 @@ void loadTerrainDefs(Blob data, AssetMetadata* asset)
             terrainCount++;
     }
 
-    asset->data = assetsAllocate(&asset_manager(), sizeof(String) * terrainCount);
-    asset->terrainDefs.terrainIDs = makeArray(terrainCount, (String*)asset->data.writable_data());
+    asset.data = assetsAllocate(&asset_manager(), sizeof(String) * terrainCount);
+    asset.terrainDefs.terrainIDs = makeArray(terrainCount, (String*)asset.data.writable_data());
 
     reader.restart();
 
@@ -76,7 +76,7 @@ void loadTerrainDefs(Blob data, AssetMetadata* asset)
                 def->typeID = (u8)slot.index();
 
                 def->name = s_terrain_catalogue.terrainNames.intern(name.value());
-                asset->terrainDefs.terrainIDs.append(def->name);
+                asset.terrainDefs.terrainIDs.append(def->name);
                 s_terrain_catalogue.terrainDefsByName.put(def->name, def);
                 s_terrain_catalogue.terrainNameToType.put(def->name, def->typeID);
             } else {

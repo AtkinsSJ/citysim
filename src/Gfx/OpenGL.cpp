@@ -244,12 +244,12 @@ void Renderer::render_internal()
                 } else {
                     ASSERT(header->texture->state == AssetMetadata::State::Loaded);
 
-                    Texture* texture = &header->texture->texture;
+                    Texture& texture = dynamic_cast<DeprecatedAsset&>(*header->texture->loaded_asset).texture;
 
                     glActiveTexture(GL_TEXTURE0 + 0);
-                    glBindTexture(GL_TEXTURE_2D, texture->gl.glTextureID);
+                    glBindTexture(GL_TEXTURE_2D, texture.gl.glTextureID);
 
-                    if (!texture->gl.isLoaded) {
+                    if (!texture.gl.isLoaded) {
                         // Load texture into GPU
                         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
                         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -257,8 +257,8 @@ void Renderer::render_internal()
                         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
                         // Upload texture
-                        upload_texture_2d(GL_RGBA, texture->surface->w, texture->surface->h, texture->surface->pixels);
-                        texture->gl.isLoaded = true;
+                        upload_texture_2d(GL_RGBA, texture.surface->w, texture.surface->h, texture.surface->pixels);
+                        texture.gl.isLoaded = true;
                     }
                 }
 
@@ -435,10 +435,9 @@ void Renderer::after_assets_loaded()
         it.hasNext();
         it.next()) {
         AssetMetadata* asset = *it.get();
-        Texture* texture = &asset->texture;
-
-        glGenTextures(1, &texture->gl.glTextureID);
-        texture->gl.isLoaded = false;
+        auto& texture = dynamic_cast<DeprecatedAsset&>(*asset->loaded_asset).texture;
+        glGenTextures(1, &texture.gl.glTextureID);
+        texture.gl.isLoaded = false;
     }
 
     // Shaders
@@ -452,7 +451,7 @@ void Renderer::after_assets_loaded()
         s8 shaderIndex = (s8)m_shaders.count;
         ShaderProgram* shader = m_shaders.appendBlank();
         shader->asset = asset;
-        asset->shader.rendererShaderID = shaderIndex;
+        dynamic_cast<DeprecatedAsset&>(*asset->loaded_asset).shader.rendererShaderID = shaderIndex;
 
         loadShaderProgram(asset, shader);
         if (!shader->isValid) {
@@ -478,12 +477,12 @@ void Renderer::before_assets_unloaded()
         it.hasNext();
         it.next()) {
         AssetMetadata* asset = *it.get();
-        Texture* texture = &asset->texture;
+        Texture& texture = dynamic_cast<DeprecatedAsset&>(*asset->loaded_asset).texture;
 
-        if (texture->gl.isLoaded && texture->gl.glTextureID != 0) {
-            glDeleteTextures(1, &texture->gl.glTextureID);
-            texture->gl.glTextureID = 0;
-            texture->gl.isLoaded = false;
+        if (texture.gl.isLoaded && texture.gl.glTextureID != 0) {
+            glDeleteTextures(1, &texture.gl.glTextureID);
+            texture.gl.glTextureID = 0;
+            texture.gl.isLoaded = false;
         }
     }
 
@@ -642,8 +641,9 @@ void loadShaderProgram(AssetMetadata* asset, ShaderProgram* glShader)
     glShader->shaderProgramID = glCreateProgram();
 
     if (glShader->shaderProgramID) {
-        bool isVertexShaderCompiled = compileShader(glShader, asset->shortName, &asset->shader, ShaderPart::Vertex);
-        bool isFragmentShaderCompiled = compileShader(glShader, asset->shortName, &asset->shader, ShaderPart::Fragment);
+        auto& shader = dynamic_cast<DeprecatedAsset&>(*asset->loaded_asset).shader;
+        bool isVertexShaderCompiled = compileShader(glShader, asset->shortName, &shader, ShaderPart::Vertex);
+        bool isFragmentShaderCompiled = compileShader(glShader, asset->shortName, &shader, ShaderPart::Fragment);
 
         // Link shader programs
         if (isVertexShaderCompiled && isFragmentShaderCompiled) {

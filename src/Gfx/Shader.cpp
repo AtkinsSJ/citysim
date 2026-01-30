@@ -9,5 +9,5 @@
 
 Shader& Shader::get(StringView name)
 {
-    return getAsset(AssetType::Shader, name.deprecated_to_string()).shader;
+    return dynamic_cast<DeprecatedAsset&>(*getAsset(AssetType::Shader, name.deprecated_to_string()).loaded_asset).shader;
 }
