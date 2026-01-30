@@ -379,9 +379,9 @@ void assignStyleProperties(StyleType type, std::initializer_list<String> propert
 
 }
 
-void loadUITheme(Blob data, AssetMetadata* asset)
+void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
 {
-    LineReader reader { asset->shortName, data };
+    LineReader reader { metadata.shortName, data };
 
     HashTable<EnumMap<UI::StyleType, UI::Style>> styles;
 
@@ -568,7 +568,7 @@ void loadUITheme(Blob data, AssetMetadata* asset)
     for (auto style_type : enum_values<UI::StyleType>()) {
         totalStyleCount += style_count[style_type];
     }
-    allocateChildren(asset, totalStyleCount);
+    allocateChildren(&metadata, totalStyleCount);
 
     // Some default values to use
     auto transparent = Colour::from_rgb_255(0, 0, 0, 0);
@@ -587,222 +587,254 @@ void loadUITheme(Blob data, AssetMetadata* asset)
             if (style->type == style_type) {
                 switch (style->type) {
                 case UI::StyleType::Button: {
-                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::ButtonStyle, style->name, {});
-                    addChildAsset(asset, childAsset);
+                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::ButtonStyle, style->name, {});
+                    auto child_asset = adopt_own(*new DeprecatedAsset);
 
-                    UI::ButtonStyle* button = &childAsset->buttonStyle;
-                    button->name = style->name;
+                    auto& button = child_asset->buttonStyle;
+                    button.name = style->name;
 
-                    button->font = style->get_asset_ref("font"_h, AssetType::BitmapFont, default_font_name);
-                    button->textColor = style->get_colour("textColor"_h, white);
-                    button->textAlignment = style->get_alignment("textAlignment"_h, { HAlign::Left, VAlign::Top });
+                    button.font = style->get_asset_ref("font"_h, AssetType::BitmapFont, default_font_name);
+                    button.textColor = style->get_colour("textColor"_h, white);
+                    button.textAlignment = style->get_alignment("textAlignment"_h, { HAlign::Left, VAlign::Top });
 
-                    button->padding = style->get_padding("padding"_h, {});
-                    button->contentPadding = style->get_s32("contentPadding"_h, {});
+                    button.padding = style->get_padding("padding"_h, {});
+                    button.contentPadding = style->get_s32("contentPadding"_h, {});
 
-                    button->startIcon = style->get_drawable_style("startIcon"_h, {});
-                    button->startIconAlignment = style->get_alignment("startIconAlignment"_h, { HAlign::Left, VAlign::Top });
-                    button->endIcon = style->get_drawable_style("endIcon"_h, {});
-                    button->endIconAlignment = style->get_alignment("endIconAlignment"_h, { HAlign::Right, VAlign::Top });
+                    button.startIcon = style->get_drawable_style("startIcon"_h, {});
+                    button.startIconAlignment = style->get_alignment("startIconAlignment"_h, { HAlign::Left, VAlign::Top });
+                    button.endIcon = style->get_drawable_style("endIcon"_h, {});
+                    button.endIconAlignment = style->get_alignment("endIconAlignment"_h, { HAlign::Right, VAlign::Top });
 
-                    button->background = style->get_drawable_style("background"_h, {});
-                    button->backgroundHover = style->get_drawable_style("backgroundHover"_h, button->background);
-                    button->backgroundPressed = style->get_drawable_style("backgroundPressed"_h, button->background);
-                    button->backgroundDisabled = style->get_drawable_style("backgroundDisabled"_h, button->background);
+                    button.background = style->get_drawable_style("background"_h, {});
+                    button.backgroundHover = style->get_drawable_style("backgroundHover"_h, button.background);
+                    button.backgroundPressed = style->get_drawable_style("backgroundPressed"_h, button.background);
+                    button.backgroundDisabled = style->get_drawable_style("backgroundDisabled"_h, button.background);
 
-                    if (!button->startIcon.hasFixedSize()) {
-                        reader.error("Start icon for button '{0}' has no fixed size. Defaulting to 0 x 0"_s, { button->name });
-                    }
-                    if (!button->endIcon.hasFixedSize()) {
-                        reader.error("End icon for button '{0}' has no fixed size. Defaulting to 0 x 0"_s, { button->name });
-                    }
+                    if (!button.startIcon.hasFixedSize())
+                        reader.error("Start icon for button '{0}' has no fixed size. Defaulting to 0 x 0"_s, { button.name });
+
+                    if (!button.endIcon.hasFixedSize())
+                        reader.error("End icon for button '{0}' has no fixed size. Defaulting to 0 x 0"_s, { button.name });
+
+                    child_metadata->loaded_asset = move(child_asset);
+                    addChildAsset(&metadata, child_metadata);
                 } break;
 
                 case UI::StyleType::Checkbox: {
-                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::CheckboxStyle, style->name, {});
-                    addChildAsset(asset, childAsset);
+                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::CheckboxStyle, style->name, {});
+                    auto child_asset = adopt_own(*new DeprecatedAsset);
 
-                    UI::CheckboxStyle* checkbox = &childAsset->checkboxStyle;
-                    checkbox->name = style->name;
+                    auto& checkbox = child_asset->checkboxStyle;
+                    checkbox.name = style->name;
 
-                    checkbox->padding = style->get_padding("padding"_h, {});
+                    checkbox.padding = style->get_padding("padding"_h, {});
 
-                    checkbox->background = style->get_drawable_style("background"_h, {});
-                    checkbox->backgroundHover = style->get_drawable_style("backgroundHover"_h, checkbox->background);
-                    checkbox->backgroundPressed = style->get_drawable_style("backgroundPressed"_h, checkbox->background);
-                    checkbox->backgroundDisabled = style->get_drawable_style("backgroundDisabled"_h, checkbox->background);
+                    checkbox.background = style->get_drawable_style("background"_h, {});
+                    checkbox.backgroundHover = style->get_drawable_style("backgroundHover"_h, checkbox.background);
+                    checkbox.backgroundPressed = style->get_drawable_style("backgroundPressed"_h, checkbox.background);
+                    checkbox.backgroundDisabled = style->get_drawable_style("backgroundDisabled"_h, checkbox.background);
 
-                    checkbox->check = style->get_drawable_style("check"_h, {});
-                    checkbox->checkHover = style->get_drawable_style("checkHover"_h, checkbox->check);
-                    checkbox->checkPressed = style->get_drawable_style("checkPressed"_h, checkbox->check);
-                    checkbox->checkDisabled = style->get_drawable_style("checkDisabled"_h, checkbox->check);
+                    checkbox.check = style->get_drawable_style("check"_h, {});
+                    checkbox.checkHover = style->get_drawable_style("checkHover"_h, checkbox.check);
+                    checkbox.checkPressed = style->get_drawable_style("checkPressed"_h, checkbox.check);
+                    checkbox.checkDisabled = style->get_drawable_style("checkDisabled"_h, checkbox.check);
 
                     // Default checkSize to the check image's size if it has one
                     if (auto check_size = style->get_v2i("checkSize"_h); check_size.has_value()) {
-                        checkbox->checkSize = check_size.release_value();
-                    } else if (checkbox->check.hasFixedSize()) {
-                        checkbox->checkSize = checkbox->check.getSize();
+                        checkbox.checkSize = check_size.release_value();
+                    } else if (checkbox.check.hasFixedSize()) {
+                        checkbox.checkSize = checkbox.check.getSize();
                     } else {
-                        reader.error("Check for checkbox '{0}' has no fixed size, and no checkSize was provided. Defaulting to 0 x 0"_s, { checkbox->name });
+                        reader.error("Check for checkbox '{0}' has no fixed size, and no checkSize was provided. Defaulting to 0 x 0"_s, { checkbox.name });
                     }
+
+                    child_metadata->loaded_asset = move(child_asset);
+                    addChildAsset(&metadata, child_metadata);
                 } break;
 
                 case UI::StyleType::Console: {
-                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::ConsoleStyle, style->name, {});
-                    addChildAsset(asset, childAsset);
+                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::ConsoleStyle, style->name, {});
+                    auto child_asset = adopt_own(*new DeprecatedAsset);
 
-                    UI::ConsoleStyle* console = &childAsset->consoleStyle;
-                    console->name = style->name;
+                    auto& console = child_asset->consoleStyle;
+                    console.name = style->name;
 
-                    console->font = style->get_asset_ref("font"_h, AssetType::BitmapFont, default_font_name);
+                    console.font = style->get_asset_ref("font"_h, AssetType::BitmapFont, default_font_name);
 
-                    console->outputTextColor = style->get_colour("outputTextColor"_h, white);
-                    console->outputTextColorInputEcho = style->get_colour("outputTextColorInputEcho"_h, console->outputTextColor);
-                    console->outputTextColorError = style->get_colour("outputTextColorError"_h, console->outputTextColor);
-                    console->outputTextColorWarning = style->get_colour("outputTextColorWarning"_h, console->outputTextColor);
-                    console->outputTextColorSuccess = style->get_colour("outputTextColorSuccess"_h, console->outputTextColor);
+                    console.outputTextColor = style->get_colour("outputTextColor"_h, white);
+                    console.outputTextColorInputEcho = style->get_colour("outputTextColorInputEcho"_h, console.outputTextColor);
+                    console.outputTextColorError = style->get_colour("outputTextColorError"_h, console.outputTextColor);
+                    console.outputTextColorWarning = style->get_colour("outputTextColorWarning"_h, console.outputTextColor);
+                    console.outputTextColorSuccess = style->get_colour("outputTextColorSuccess"_h, console.outputTextColor);
 
-                    console->background = style->get_drawable_style("background"_h, {});
-                    console->padding = style->get_padding("padding"_h, {});
-                    console->contentPadding = style->get_s32("contentPadding"_h, 0);
+                    console.background = style->get_drawable_style("background"_h, {});
+                    console.padding = style->get_padding("padding"_h, {});
+                    console.contentPadding = style->get_s32("contentPadding"_h, 0);
 
-                    console->scrollbarStyle = style->get_asset_ref("scrollbarStyle"_h, AssetType::ScrollbarStyle);
-                    console->textInputStyle = style->get_asset_ref("textInputStyle"_h, AssetType::TextInputStyle);
+                    console.scrollbarStyle = style->get_asset_ref("scrollbarStyle"_h, AssetType::ScrollbarStyle);
+                    console.textInputStyle = style->get_asset_ref("textInputStyle"_h, AssetType::TextInputStyle);
+
+                    child_metadata->loaded_asset = move(child_asset);
+                    addChildAsset(&metadata, child_metadata);
                 } break;
 
                 case UI::StyleType::DropDownList: {
-                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::DropDownListStyle, style->name, {});
-                    addChildAsset(asset, childAsset);
+                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::DropDownListStyle, style->name, {});
+                    auto child_asset = adopt_own(*new DeprecatedAsset);
 
-                    UI::DropDownListStyle* ddl = &childAsset->dropDownListStyle;
-                    ddl->name = style->name;
+                    auto& ddl = child_asset->dropDownListStyle;
+                    ddl.name = style->name;
 
-                    ddl->buttonStyle = style->get_asset_ref("buttonStyle"_h, AssetType::ButtonStyle);
-                    ddl->panelStyle = style->get_asset_ref("panelStyle"_h, AssetType::PanelStyle);
+                    ddl.buttonStyle = style->get_asset_ref("buttonStyle"_h, AssetType::ButtonStyle);
+                    ddl.panelStyle = style->get_asset_ref("panelStyle"_h, AssetType::PanelStyle);
+
+                    child_metadata->loaded_asset = move(child_asset);
+                    addChildAsset(&metadata, child_metadata);
                 } break;
 
                 case UI::StyleType::Label: {
-                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::LabelStyle, style->name, {});
-                    addChildAsset(asset, childAsset);
+                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::LabelStyle, style->name, {});
+                    auto child_asset = adopt_own(*new DeprecatedAsset);
 
-                    UI::LabelStyle* label = &childAsset->labelStyle;
-                    label->name = style->name;
+                    auto& label = child_asset->labelStyle;
+                    label.name = style->name;
 
-                    label->padding = style->get_padding("padding"_h, {});
-                    label->background = style->get_drawable_style("background"_h, {});
-                    label->font = style->get_asset_ref("font"_h, AssetType::BitmapFont, default_font_name);
-                    label->textColor = style->get_colour("textColor"_h, white);
-                    label->textAlignment = style->get_alignment("textAlignment"_h, { HAlign::Left, VAlign::Top });
+                    label.padding = style->get_padding("padding"_h, {});
+                    label.background = style->get_drawable_style("background"_h, {});
+                    label.font = style->get_asset_ref("font"_h, AssetType::BitmapFont, default_font_name);
+                    label.textColor = style->get_colour("textColor"_h, white);
+                    label.textAlignment = style->get_alignment("textAlignment"_h, { HAlign::Left, VAlign::Top });
+
+                    child_metadata->loaded_asset = move(child_asset);
+                    addChildAsset(&metadata, child_metadata);
                 } break;
 
                 case UI::StyleType::Panel: {
-                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::PanelStyle, style->name, {});
-                    addChildAsset(asset, childAsset);
+                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::PanelStyle, style->name, {});
+                    auto child_asset = adopt_own(*new DeprecatedAsset);
 
-                    UI::PanelStyle* panel = &childAsset->panelStyle;
-                    panel->name = style->name;
+                    auto& panel = child_asset->panelStyle;
+                    panel.name = style->name;
 
-                    panel->padding = style->get_padding("padding"_h, {});
-                    panel->contentPadding = style->get_s32("contentPadding"_h, {});
-                    panel->widgetAlignment = style->get_alignment("widgetAlignment"_h, { HAlign::Fill, VAlign::Top });
-                    panel->background = style->get_drawable_style("background"_h, {});
+                    panel.padding = style->get_padding("padding"_h, {});
+                    panel.contentPadding = style->get_s32("contentPadding"_h, {});
+                    panel.widgetAlignment = style->get_alignment("widgetAlignment"_h, { HAlign::Fill, VAlign::Top });
+                    panel.background = style->get_drawable_style("background"_h, {});
 
-                    panel->buttonStyle = style->get_asset_ref("buttonStyle"_h, AssetType::ButtonStyle);
-                    panel->checkboxStyle = style->get_asset_ref("checkboxStyle"_h, AssetType::CheckboxStyle);
-                    panel->dropDownListStyle = style->get_asset_ref("dropDownListStyle"_h, AssetType::DropDownListStyle);
-                    panel->labelStyle = style->get_asset_ref("labelStyle"_h, AssetType::LabelStyle);
-                    panel->radioButtonStyle = style->get_asset_ref("radioButtonStyle"_h, AssetType::RadioButtonStyle);
-                    panel->scrollbarStyle = style->get_asset_ref("scrollbarStyle"_h, AssetType::ScrollbarStyle);
-                    panel->sliderStyle = style->get_asset_ref("sliderStyle"_h, AssetType::SliderStyle);
-                    panel->textInputStyle = style->get_asset_ref("textInputStyle"_h, AssetType::TextInputStyle);
+                    panel.buttonStyle = style->get_asset_ref("buttonStyle"_h, AssetType::ButtonStyle);
+                    panel.checkboxStyle = style->get_asset_ref("checkboxStyle"_h, AssetType::CheckboxStyle);
+                    panel.dropDownListStyle = style->get_asset_ref("dropDownListStyle"_h, AssetType::DropDownListStyle);
+                    panel.labelStyle = style->get_asset_ref("labelStyle"_h, AssetType::LabelStyle);
+                    panel.radioButtonStyle = style->get_asset_ref("radioButtonStyle"_h, AssetType::RadioButtonStyle);
+                    panel.scrollbarStyle = style->get_asset_ref("scrollbarStyle"_h, AssetType::ScrollbarStyle);
+                    panel.sliderStyle = style->get_asset_ref("sliderStyle"_h, AssetType::SliderStyle);
+                    panel.textInputStyle = style->get_asset_ref("textInputStyle"_h, AssetType::TextInputStyle);
+
+                    child_metadata->loaded_asset = move(child_asset);
+                    addChildAsset(&metadata, child_metadata);
                 } break;
 
                 case UI::StyleType::RadioButton: {
-                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::RadioButtonStyle, style->name, {});
-                    addChildAsset(asset, childAsset);
+                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::RadioButtonStyle, style->name, {});
+                    auto child_asset = adopt_own(*new DeprecatedAsset);
 
-                    UI::RadioButtonStyle* radioButton = &childAsset->radioButtonStyle;
-                    radioButton->name = style->name;
+                    auto& radio_button = child_asset->radioButtonStyle;
+                    radio_button.name = style->name;
 
-                    radioButton->size = style->get_v2i("size"_h, {});
-                    radioButton->background = style->get_drawable_style("background"_h, {});
-                    radioButton->backgroundDisabled = style->get_drawable_style("backgroundDisabled"_h, radioButton->background);
-                    radioButton->backgroundHover = style->get_drawable_style("backgroundHover"_h, radioButton->background);
-                    radioButton->backgroundPressed = style->get_drawable_style("backgroundPressed"_h, radioButton->background);
+                    radio_button.size = style->get_v2i("size"_h, {});
+                    radio_button.background = style->get_drawable_style("background"_h, {});
+                    radio_button.backgroundDisabled = style->get_drawable_style("backgroundDisabled"_h, radio_button.background);
+                    radio_button.backgroundHover = style->get_drawable_style("backgroundHover"_h, radio_button.background);
+                    radio_button.backgroundPressed = style->get_drawable_style("backgroundPressed"_h, radio_button.background);
 
-                    radioButton->dotSize = style->get_v2i("dotSize"_h, {});
-                    radioButton->dot = style->get_drawable_style("dot"_h, {});
-                    radioButton->dotDisabled = style->get_drawable_style("dotDisabled"_h, radioButton->dot);
-                    radioButton->dotHover = style->get_drawable_style("dotHover"_h, radioButton->dot);
-                    radioButton->dotPressed = style->get_drawable_style("dotPressed"_h, radioButton->dot);
+                    radio_button.dotSize = style->get_v2i("dotSize"_h, {});
+                    radio_button.dot = style->get_drawable_style("dot"_h, {});
+                    radio_button.dotDisabled = style->get_drawable_style("dotDisabled"_h, radio_button.dot);
+                    radio_button.dotHover = style->get_drawable_style("dotHover"_h, radio_button.dot);
+                    radio_button.dotPressed = style->get_drawable_style("dotPressed"_h, radio_button.dot);
+
+                    child_metadata->loaded_asset = move(child_asset);
+                    addChildAsset(&metadata, child_metadata);
                 } break;
 
                 case UI::StyleType::Scrollbar: {
-                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::ScrollbarStyle, style->name, {});
-                    addChildAsset(asset, childAsset);
+                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::ScrollbarStyle, style->name, {});
+                    auto child_asset = adopt_own(*new DeprecatedAsset);
 
-                    UI::ScrollbarStyle* scrollbar = &childAsset->scrollbarStyle;
-                    scrollbar->name = style->name;
+                    auto& scrollbar = child_asset->scrollbarStyle;
+                    scrollbar.name = style->name;
 
-                    scrollbar->background = style->get_drawable_style("background"_h, {});
-                    scrollbar->thumb = style->get_drawable_style("thumb"_h, {});
-                    scrollbar->thumbDisabled = style->get_drawable_style("thumbDisabled"_h, scrollbar->thumb);
-                    scrollbar->thumbHover = style->get_drawable_style("thumbHover"_h, scrollbar->thumb);
-                    scrollbar->thumbPressed = style->get_drawable_style("thumbPressed"_h, scrollbar->thumb);
-                    scrollbar->width = style->get_s32("width"_h, 8);
+                    scrollbar.background = style->get_drawable_style("background"_h, {});
+                    scrollbar.thumb = style->get_drawable_style("thumb"_h, {});
+                    scrollbar.thumbDisabled = style->get_drawable_style("thumbDisabled"_h, scrollbar.thumb);
+                    scrollbar.thumbHover = style->get_drawable_style("thumbHover"_h, scrollbar.thumb);
+                    scrollbar.thumbPressed = style->get_drawable_style("thumbPressed"_h, scrollbar.thumb);
+                    scrollbar.width = style->get_s32("width"_h, 8);
+
+                    child_metadata->loaded_asset = move(child_asset);
+                    addChildAsset(&metadata, child_metadata);
                 } break;
 
                 case UI::StyleType::Slider: {
-                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::SliderStyle, style->name, {});
-                    addChildAsset(asset, childAsset);
+                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::SliderStyle, style->name, {});
+                    auto child_asset = adopt_own(*new DeprecatedAsset);
 
-                    UI::SliderStyle* slider = &childAsset->sliderStyle;
-                    slider->name = style->name;
+                    auto& slider = child_asset->sliderStyle;
+                    slider.name = style->name;
 
-                    slider->track = style->get_drawable_style("track"_h, {});
-                    slider->trackThickness = style->get_s32("trackThickness"_h, 3);
-                    slider->thumb = style->get_drawable_style("thumb"_h, {});
-                    slider->thumbDisabled = style->get_drawable_style("thumbDisabled"_h, slider->thumb);
-                    slider->thumbHover = style->get_drawable_style("thumbHover"_h, slider->thumb);
-                    slider->thumbPressed = style->get_drawable_style("thumbPressed"_h, slider->thumb);
-                    slider->thumbSize = style->get_v2i("thumbSize"_h, v2i(8, 8));
+                    slider.track = style->get_drawable_style("track"_h, {});
+                    slider.trackThickness = style->get_s32("trackThickness"_h, 3);
+                    slider.thumb = style->get_drawable_style("thumb"_h, {});
+                    slider.thumbDisabled = style->get_drawable_style("thumbDisabled"_h, slider.thumb);
+                    slider.thumbHover = style->get_drawable_style("thumbHover"_h, slider.thumb);
+                    slider.thumbPressed = style->get_drawable_style("thumbPressed"_h, slider.thumb);
+                    slider.thumbSize = style->get_v2i("thumbSize"_h, v2i(8, 8));
+
+                    child_metadata->loaded_asset = move(child_asset);
+                    addChildAsset(&metadata, child_metadata);
                 } break;
 
                 case UI::StyleType::TextInput: {
-                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::TextInputStyle, style->name, {});
-                    addChildAsset(asset, childAsset);
+                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::TextInputStyle, style->name, {});
+                    auto child_asset = adopt_own(*new DeprecatedAsset);
 
-                    UI::TextInputStyle* textInput = &childAsset->textInputStyle;
-                    textInput->name = style->name;
+                    auto& text_input = child_asset->textInputStyle;
+                    text_input.name = style->name;
 
-                    textInput->font = style->get_asset_ref("font"_h, AssetType::BitmapFont, default_font_name);
-                    textInput->textColor = style->get_colour("textColor"_h, white);
-                    textInput->textAlignment = style->get_alignment("textAlignment"_h, { HAlign::Left, VAlign::Top });
+                    text_input.font = style->get_asset_ref("font"_h, AssetType::BitmapFont, default_font_name);
+                    text_input.textColor = style->get_colour("textColor"_h, white);
+                    text_input.textAlignment = style->get_alignment("textAlignment"_h, { HAlign::Left, VAlign::Top });
 
-                    textInput->background = style->get_drawable_style("background"_h, {});
-                    textInput->padding = style->get_padding("padding"_h, {});
+                    text_input.background = style->get_drawable_style("background"_h, {});
+                    text_input.padding = style->get_padding("padding"_h, {});
 
-                    textInput->showCaret = style->get_bool("showCaret"_h, true);
-                    textInput->caretFlashCycleDuration = style->get_float("caretFlashCycleDuration"_h, 1.0f);
+                    text_input.showCaret = style->get_bool("showCaret"_h, true);
+                    text_input.caretFlashCycleDuration = style->get_float("caretFlashCycleDuration"_h, 1.0f);
+
+                    child_metadata->loaded_asset = move(child_asset);
+                    addChildAsset(&metadata, child_metadata);
                 } break;
 
                 case UI::StyleType::Window: {
-                    AssetMetadata* childAsset = asset_manager().add_asset(AssetType::WindowStyle, style->name, {});
-                    addChildAsset(asset, childAsset);
+                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::WindowStyle, style->name, {});
+                    auto child_asset = adopt_own(*new DeprecatedAsset);
 
-                    UI::WindowStyle* window = &childAsset->windowStyle;
-                    window->name = style->name;
+                    auto& window = child_asset->windowStyle;
+                    window.name = style->name;
 
-                    window->titleBarHeight = style->get_s32("titleBarHeight"_h, 16);
-                    window->titleBarColor = style->get_colour("titleBarColor"_h, Colour::from_rgb_255(128, 128, 128, 255));
-                    window->titleBarColorInactive = style->get_colour("titleBarColorInactive"_h, window->titleBarColor);
-                    window->titleBarButtonHoverColor = style->get_colour("titleBarButtonHoverColor"_h, transparent);
+                    window.titleBarHeight = style->get_s32("titleBarHeight"_h, 16);
+                    window.titleBarColor = style->get_colour("titleBarColor"_h, Colour::from_rgb_255(128, 128, 128, 255));
+                    window.titleBarColorInactive = style->get_colour("titleBarColorInactive"_h, window.titleBarColor);
+                    window.titleBarButtonHoverColor = style->get_colour("titleBarButtonHoverColor"_h, transparent);
 
-                    window->titleLabelStyle = style->get_asset_ref("titleLabelStyle"_h, AssetType::LabelStyle);
+                    window.titleLabelStyle = style->get_asset_ref("titleLabelStyle"_h, AssetType::LabelStyle);
 
-                    window->offsetFromMouse = style->get_v2i("offsetFromMouse"_h, {});
+                    window.offsetFromMouse = style->get_v2i("offsetFromMouse"_h, {});
 
-                    window->panelStyle = style->get_asset_ref("panelStyle"_h, AssetType::PanelStyle);
+                    window.panelStyle = style->get_asset_ref("panelStyle"_h, AssetType::PanelStyle);
+
+                    child_metadata->loaded_asset = move(child_asset);
+                    addChildAsset(&metadata, child_metadata);
                 } break;
 
                     INVALID_DEFAULT_CASE;

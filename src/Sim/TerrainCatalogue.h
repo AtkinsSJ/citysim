@@ -44,7 +44,7 @@ struct TerrainCatalogue final : public AssetManagerListener {
 };
 
 void initTerrainCatalogue();
-void loadTerrainDefs(Blob data, AssetMetadata* asset);
+void loadTerrainDefs(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset);
 void removeTerrainDefs(Array<String> namesToRemove);
 TerrainDef* getTerrainDef(u8 terrainType);
 
