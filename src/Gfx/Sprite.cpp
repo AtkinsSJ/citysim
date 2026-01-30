@@ -14,7 +14,7 @@ Sprite& Sprite::get(StringView name)
 
 SpriteGroup& SpriteGroup::get(StringView name)
 {
-    return getAsset(AssetType::Sprite, name.deprecated_to_string()).spriteGroup;
+    return dynamic_cast<DeprecatedAsset&>(*getAsset(AssetType::Sprite, name.deprecated_to_string()).loaded_asset).spriteGroup;
 }
 
 Sprite& SpriteRef::get() const

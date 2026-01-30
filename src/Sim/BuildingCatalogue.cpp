@@ -102,11 +102,11 @@ BuildingDef* appendNewBuildingDef(StringView name)
     return &result;
 }
 
-void loadBuildingDefs(Blob data, AssetMetadata* asset)
+void loadBuildingDefs(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
 {
     DEBUG_FUNCTION();
 
-    LineReader reader { asset->shortName, data };
+    LineReader reader { metadata.shortName, data };
 
     BuildingCatalogue* catalogue = &buildingCatalogue;
 
@@ -125,9 +125,9 @@ void loadBuildingDefs(Blob data, AssetMetadata* asset)
 
     smm buildingNamesSize = sizeof(String) * buildingCount;
     smm variantsSize = sizeof(BuildingVariant) * totalVariantCount;
-    asset->data = assetsAllocate(&asset_manager(), buildingNamesSize + variantsSize);
-    asset->buildingDefs.buildingIDs = makeArray(buildingCount, (String*)asset->data.writable_data());
-    u8* variantsMemory = asset->data.writable_data() + buildingNamesSize;
+    asset.data = assetsAllocate(&asset_manager(), buildingNamesSize + variantsSize);
+    asset.buildingDefs.buildingIDs = makeArray(buildingCount, (String*)asset.data.writable_data());
+    u8* variantsMemory = asset.data.writable_data() + buildingNamesSize;
 
     reader.restart();
 
@@ -159,7 +159,7 @@ void loadBuildingDefs(Blob data, AssetMetadata* asset)
                 }
 
                 def = appendNewBuildingDef(name.value());
-                asset->buildingDefs.buildingIDs.append(def->name);
+                asset.buildingDefs.buildingIDs.append(def->name);
             } else if (firstWord == "Intersection"_s) {
                 auto name = reader.next_token();
                 auto part1Name = reader.next_token();
@@ -171,7 +171,7 @@ void loadBuildingDefs(Blob data, AssetMetadata* asset)
                 }
 
                 def = appendNewBuildingDef(name.value());
-                asset->buildingDefs.buildingIDs.append(def->name);
+                asset.buildingDefs.buildingIDs.append(def->name);
 
                 def->isIntersection = true;
                 def->intersectionPart1Name = catalogue->buildingNames.intern(part1Name.value());
