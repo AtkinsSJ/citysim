@@ -84,7 +84,6 @@ AssetManager& asset_manager();
 AssetMetadata* makePlaceholderAsset(AssetType type);
 
 AssetMetadata* addNinepatch(StringView name, StringView filename, s32 pu0, s32 pu1, s32 pu2, s32 pu3, s32 pv0, s32 pv1, s32 pv2, s32 pv3);
-AssetMetadata* addTexture(StringView filename, bool isAlphaPremultiplied);
 AssetMetadata* addSpriteGroup(StringView name, s32 spriteCount);
 
 void loadAsset(AssetMetadata* asset);

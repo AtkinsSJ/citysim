@@ -126,7 +126,6 @@ void initAssets()
         pixels[1] = pixels[2] = 0xff000000;
         placeholderTexture->texture.surface = SDL_CreateRGBSurfaceFrom(pixels, 2, 2, 32, 2 * sizeof(u32),
             0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
-        placeholderTexture->texture.isFileAlphaPremultiplied = true;
 
         // UITheme
         makePlaceholderAsset(AssetType::UITheme);
@@ -425,34 +424,33 @@ void loadAsset(AssetMetadata* asset)
             return;
         }
 
-        if (!asset->texture.isFileAlphaPremultiplied) {
-            // Premultiply alpha
-            u32 Rmask = surface->format->Rmask,
-                Gmask = surface->format->Gmask,
-                Bmask = surface->format->Bmask,
-                Amask = surface->format->Amask;
-            float rRmask = (float)Rmask,
-                  rGmask = (float)Gmask,
-                  rBmask = (float)Bmask,
-                  rAmask = (float)Amask;
+        // Premultiply alpha
+        // NOTE: We always assume the data isn't premultiplied.
+        u32 Rmask = surface->format->Rmask,
+            Gmask = surface->format->Gmask,
+            Bmask = surface->format->Bmask,
+            Amask = surface->format->Amask;
+        float rRmask = (float)Rmask,
+              rGmask = (float)Gmask,
+              rBmask = (float)Bmask,
+              rAmask = (float)Amask;
 
-            u32 pixelCount = surface->w * surface->h;
-            for (u32 pixelIndex = 0;
-                pixelIndex < pixelCount;
-                pixelIndex++) {
-                u32 pixel = ((u32*)surface->pixels)[pixelIndex];
-                float rr = (float)(pixel & Rmask) / rRmask;
-                float rg = (float)(pixel & Gmask) / rGmask;
-                float rb = (float)(pixel & Bmask) / rBmask;
-                float ra = (float)(pixel & Amask) / rAmask;
+        u32 pixelCount = surface->w * surface->h;
+        for (u32 pixelIndex = 0;
+            pixelIndex < pixelCount;
+            pixelIndex++) {
+            u32 pixel = ((u32*)surface->pixels)[pixelIndex];
+            float rr = (float)(pixel & Rmask) / rRmask;
+            float rg = (float)(pixel & Gmask) / rGmask;
+            float rb = (float)(pixel & Bmask) / rBmask;
+            float ra = (float)(pixel & Amask) / rAmask;
 
-                u32 r = (u32)(rr * ra * rRmask) & Rmask;
-                u32 g = (u32)(rg * ra * rGmask) & Gmask;
-                u32 b = (u32)(rb * ra * rBmask) & Bmask;
-                u32 a = (u32)(ra * rAmask) & Amask;
+            u32 r = (u32)(rr * ra * rRmask) & Rmask;
+            u32 g = (u32)(rg * ra * rGmask) & Gmask;
+            u32 b = (u32)(rb * ra * rBmask) & Bmask;
+            u32 a = (u32)(ra * rAmask) & Amask;
 
-                ((u32*)surface->pixels)[pixelIndex] = (u32)r | (u32)g | (u32)b | (u32)a;
-            }
+            ((u32*)surface->pixels)[pixelIndex] = (u32)r | (u32)g | (u32)b | (u32)a;
         }
 
         asset->texture.surface = surface;
@@ -557,7 +555,7 @@ void removeAsset(AssetRef const& ref)
 
 AssetMetadata* addNinepatch(StringView name, StringView filename, s32 pu0, s32 pu1, s32 pu2, s32 pu3, s32 pv0, s32 pv1, s32 pv2, s32 pv3)
 {
-    AssetMetadata* texture = addTexture(filename, false);
+    AssetMetadata* texture = asset_manager().add_asset(AssetType::Texture, filename);
 
     AssetMetadata* asset = asset_manager().add_asset(AssetType::Ninepatch, name, {});
 
@@ -589,14 +587,6 @@ AssetMetadata* addSpriteGroup(StringView name, s32 spriteCount)
     spriteGroup->spriteGroup.sprites = (Sprite*)spriteGroup->data.writable_data();
 
     return spriteGroup;
-}
-
-AssetMetadata* addTexture(StringView filename, bool isAlphaPremultiplied)
-{
-    AssetMetadata* asset = asset_manager().add_asset(AssetType::Texture, filename);
-    asset->texture.isFileAlphaPremultiplied = isAlphaPremultiplied;
-
-    return asset;
 }
 
 void AssetManager::load_assets()
@@ -1066,7 +1056,7 @@ void loadSpriteDefs(Blob data, AssetMetadata* asset)
                 AssetMetadata* group = addSpriteGroup(name.release_value(), 1);
 
                 Sprite* sprite = group->spriteGroup.sprites;
-                sprite->texture = addTexture(filename.release_value(), false);
+                sprite->texture = asset_manager().add_asset(AssetType::Texture, filename.release_value());
                 sprite->uv = { 0, 0, spriteSize.x, spriteSize.y };
                 sprite->pixelWidth = spriteSize.x;
                 sprite->pixelHeight = spriteSize.y;
@@ -1082,7 +1072,7 @@ void loadSpriteDefs(Blob data, AssetMetadata* asset)
                     return;
                 }
 
-                textureAsset = addTexture(filename.release_value(), false);
+                textureAsset = asset_manager().add_asset(AssetType::Texture, filename.release_value());
                 spriteSize = spriteSizeIn.release_value();
 
                 s32 spriteCount = reader.count_occurrences_of_property_in_current_command("sprite"_s);
