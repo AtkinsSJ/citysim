@@ -10,7 +10,6 @@
 #include <Util/Basic.h>
 
 struct Texture {
-    bool isFileAlphaPremultiplied;
     SDL_Surface* surface;
 
     // Renderer-specific stuff.

@@ -146,7 +146,7 @@ bool BitmapFont::load_from_bmf_data(Blob data, AssetMetadata& asset)
         font->m_glyph_entries = (BitmapFontGlyphEntry*)(asset.data.data());
 
         String textureName = String::from_null_terminated((char*)pages);
-        font->m_texture = addTexture(textureName, false);
+        font->m_texture = asset_manager().add_asset(AssetType::Texture, textureName);
         font->m_texture->ensure_is_loaded();
 
         float textureWidth = (float)font->m_texture->texture.surface->w;
