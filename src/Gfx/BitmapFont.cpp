@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2015-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -70,10 +70,10 @@ struct BMFont_Char {
 
 BitmapFont& BitmapFont::get(StringView name)
 {
-    return dynamic_cast<DeprecatedAsset&>(*getAsset(AssetType::BitmapFont, name.deprecated_to_string()).loaded_asset).bitmapFont;
+    return dynamic_cast<BitmapFont&>(*getAsset(AssetType::BitmapFont, name.deprecated_to_string()).loaded_asset);
 }
 
-bool BitmapFont::load_from_bmf_data(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
+ErrorOr<NonnullOwnPtr<BitmapFont>> BitmapFont::load_from_bmf_data(AssetMetadata& metadata, Blob data)
 {
     smm pos = 0;
     BMFontHeader* header = (BMFontHeader*)(data.data() + pos);
@@ -83,14 +83,12 @@ bool BitmapFont::load_from_bmf_data(Blob data, AssetMetadata& metadata, Deprecat
     if (header->tag[0] != BMFontTag[0]
         || header->tag[1] != BMFontTag[1]
         || header->tag[2] != BMFontTag[2]) {
-        logError("Not a valid BMFont file: {0}"_s, { metadata.fullName });
-        return false;
+        return myprintf("Not a valid BMFont file: {0}"_s, { metadata.fullName });
     }
 
     if (header->version != 3) {
-        logError("BMFont file version is unsupported: {0}, wanted {1} and got {2}"_s,
+        return myprintf("BMFont file version is unsupported: {0}, wanted {1} and got {2}"_s,
             { metadata.fullName, formatInt(BMFontSupportedVersion), formatInt(header->version) });
-        return false;
     }
 
     BMFontBlockHeader* blockHeader = nullptr;
@@ -134,50 +132,51 @@ bool BitmapFont::load_from_bmf_data(Blob data, AssetMetadata& metadata, Deprecat
 
     if (!(common && chars && charCount && pages)) {
         // Something didn't load correctly!
-        logError("BMFont file '{0}' seems to be lacking crucial data and could not be loaded!"_s, { metadata.fullName });
-    } else if (common->pageCount != 1) {
-        logError("BMFont file '{0}' defines a font with {1} texture pages, but we require only 1."_s, { metadata.fullName, formatInt(common->pageCount) });
-    } else {
-        BitmapFont* font = &asset.bitmapFont;
-        font->m_line_height = common->lineHeight;
-        font->m_base_y = common->base;
-        font->m_glyph_count = 0;
-
-        font->m_glyph_capacity = ceil_s32(charCount * 2.0f);
-        smm glyphEntryMemorySize = font->m_glyph_capacity * sizeof(BitmapFontGlyphEntry);
-        asset.data = Assets::assets_allocate(glyphEntryMemorySize);
-        font->m_glyph_entries = (BitmapFontGlyphEntry*)(asset.data.data());
-
-        String textureName = String::from_null_terminated((char*)pages);
-        font->m_texture = asset_manager().add_asset(AssetType::Texture, textureName);
-        font->m_texture->ensure_is_loaded();
-
-        auto& texture = dynamic_cast<DeprecatedAsset&>(*font->m_texture->loaded_asset);
-
-        float textureWidth = (float)texture.texture.surface->w;
-        float textureHeight = (float)texture.texture.surface->h;
-
-        for (u32 charIndex = 0;
-            charIndex < charCount;
-            charIndex++) {
-            BMFont_Char* src = chars + charIndex;
-
-            font->add_glyph(BitmapFontGlyph {
-                .codepoint = static_cast<unichar>(src->id),
-                .width = src->w,
-                .height = src->h,
-                .xOffset = src->xOffset,
-                .yOffset = src->yOffset,
-                .xAdvance = src->xAdvance,
-                .uv = {
-                    src->x / textureWidth,
-                    src->y / textureHeight,
-                    src->w / textureWidth,
-                    src->h / textureHeight },
-            });
-        }
+        return myprintf("BMFont file '{0}' seems to be lacking crucial data and could not be loaded!"_s, { metadata.fullName });
     }
-    return true;
+    if (common->pageCount != 1) {
+        return myprintf("BMFont file '{0}' defines a font with {1} texture pages, but we require only 1."_s, { metadata.fullName, formatInt(common->pageCount) });
+    }
+
+    auto font = adopt_own(*new BitmapFont);
+    font->m_line_height = common->lineHeight;
+    font->m_base_y = common->base;
+    font->m_glyph_count = 0;
+
+    font->m_glyph_capacity = ceil_s32(charCount * 2.0f);
+    smm glyphEntryMemorySize = font->m_glyph_capacity * sizeof(BitmapFontGlyphEntry);
+    font->m_data = Assets::assets_allocate(glyphEntryMemorySize);
+    font->m_glyph_entries = (BitmapFontGlyphEntry*)(font->m_data.data());
+
+    String textureName = String::from_null_terminated((char*)pages);
+    font->m_texture = asset_manager().add_asset(AssetType::Texture, textureName);
+    font->m_texture->ensure_is_loaded();
+
+    auto& texture = dynamic_cast<DeprecatedAsset&>(*font->m_texture->loaded_asset);
+
+    float textureWidth = (float)texture.texture.surface->w;
+    float textureHeight = (float)texture.texture.surface->h;
+
+    for (u32 charIndex = 0;
+        charIndex < charCount;
+        charIndex++) {
+        BMFont_Char* src = chars + charIndex;
+
+        font->add_glyph(BitmapFontGlyph {
+            .codepoint = static_cast<unichar>(src->id),
+            .width = src->w,
+            .height = src->h,
+            .xOffset = src->xOffset,
+            .yOffset = src->yOffset,
+            .xAdvance = src->xAdvance,
+            .uv = {
+                src->x / textureWidth,
+                src->y / textureHeight,
+                src->w / textureWidth,
+                src->h / textureHeight },
+        });
+    }
+    return font;
 }
 
 BitmapFontGlyphEntry* BitmapFont::find_glyph_entry(unichar target_char) const
@@ -349,6 +348,11 @@ s32 BitmapFont::calculate_max_text_width(std::initializer_list<StringView> texts
     for (auto const& text : texts)
         result = max(result, calculate_text_size(text, limit).x);
     return result;
+}
+
+void BitmapFont::unload(AssetMetadata&)
+{
+    Assets::assets_deallocate(m_data);
 }
 
 void _alignText(DrawRectsGroup* state, s32 startIndex, s32 endIndexInclusive, s32 lineWidth, s32 boundsWidth, Alignment align)

@@ -8,7 +8,6 @@
 
 #include <Assets/Asset.h>
 #include <Assets/AssetLoader.h>
-#include <Gfx/BitmapFont.h>
 #include <Gfx/Cursor.h>
 #include <Gfx/Ninepatch.h>
 #include <Gfx/Shader.h>
@@ -43,8 +42,6 @@ public:
         u8 _localData;
 
         // Actual local data follows
-
-        BitmapFont bitmapFont;
 
         struct {
             Array<String> buildingIDs;
