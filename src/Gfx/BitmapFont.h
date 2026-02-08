@@ -1,14 +1,16 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2015-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #pragma once
 
+#include <Assets/Asset.h>
 #include <Assets/Forward.h>
 #include <Gfx/Forward.h>
 #include <Util/Alignment.h>
+#include <Util/Blob.h>
 #include <Util/Rectangle.h>
 #include <Util/String.h>
 #include <Util/Vector.h>
@@ -30,11 +32,14 @@ struct BitmapFontGlyphEntry {
     BitmapFontGlyph glyph;
 };
 
-class BitmapFont {
+class BitmapFont final : public Asset {
 public:
     static BitmapFont& get(StringView name);
 
-    static bool load_from_bmf_data(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset);
+    BitmapFont() = default;
+    virtual ~BitmapFont() override = default;
+
+    static ErrorOr<NonnullOwnPtr<BitmapFont>> load_from_bmf_data(AssetMetadata& metadata, Blob data);
 
     void add_glyph(BitmapFontGlyph&&);
     BitmapFontGlyph* find_glyph(unichar target_char) const;
@@ -45,10 +50,13 @@ public:
     u16 line_height() const { return m_line_height; }
     AssetMetadata* texture() const { return m_texture; }
 
+    virtual void unload(AssetMetadata&) override;
+
 private:
     BitmapFontGlyphEntry* find_glyph_entry(unichar target_char) const;
 
-    // FIXME: Should be private, but we poke at them in loadBMFont() which is a free function
+    Blob m_data {};
+
     u16 m_line_height {};
     u16 m_base_y {};
 

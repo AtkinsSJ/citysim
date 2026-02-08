@@ -189,12 +189,10 @@ void DeprecatedAssetLoader::register_types(AssetManager& assets)
     assets.fileExtensionToType.put(assets.assetStrings.intern("terrain"_s), AssetType::TerrainDefs);
     assets.fileExtensionToType.put(assets.assetStrings.intern("theme"_s), AssetType::UITheme);
 
-    assets.directoryNameToType.put(assets.assetStrings.intern("fonts"_s), AssetType::BitmapFont);
     assets.directoryNameToType.put(assets.assetStrings.intern("shaders"_s), AssetType::Shader);
     assets.directoryNameToType.put(assets.assetStrings.intern("textures"_s), AssetType::Texture);
     assets.directoryNameToType.put(assets.assetStrings.intern("locale"_s), AssetType::Texts);
 
-    assets.asset_loaders_by_type[AssetType::BitmapFont] = this;
     assets.asset_loaders_by_type[AssetType::BuildingDefs] = this;
     assets.asset_loaders_by_type[AssetType::Cursor] = this;
     assets.asset_loaders_by_type[AssetType::CursorDefs] = this;
@@ -211,9 +209,6 @@ void DeprecatedAssetLoader::register_types(AssetManager& assets)
 
 void DeprecatedAssetLoader::create_placeholder_assets(AssetManager& assets)
 {
-    // BitmapFont
-    make_placeholder_asset(assets, AssetType::BitmapFont);
-
     // BuildingDefs
     make_placeholder_asset(assets, AssetType::BuildingDefs);
 
@@ -552,13 +547,6 @@ ErrorOr<NonnullOwnPtr<Asset>> DeprecatedAssetLoader::load_asset(AssetMetadata& m
     auto asset = adopt_own(*new DeprecatedAsset);
 
     switch (metadata.type) {
-    case AssetType::BitmapFont: {
-        if (BitmapFont::load_from_bmf_data(file_data, metadata, *asset))
-            return { move(asset) };
-
-        return Error { "Failed to load bitmap font"_s };
-    }
-
     case AssetType::BuildingDefs: {
         loadBuildingDefs(file_data, metadata, *asset);
         return { move(asset) };

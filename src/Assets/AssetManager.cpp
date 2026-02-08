@@ -342,7 +342,7 @@ AssetMetadata* getAssetIfExists(AssetType type, String shortName)
 BitmapFont& getFont(AssetRef const& fontRef)
 {
     ASSERT(fontRef.type() == AssetType::BitmapFont);
-    return dynamic_cast<DeprecatedAsset&>(*fontRef.get().loaded_asset).bitmapFont;
+    return dynamic_cast<BitmapFont&>(*fontRef.get().loaded_asset);
 }
 
 String getText(String name)
