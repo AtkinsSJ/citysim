@@ -66,19 +66,34 @@ AssetManager& asset_manager()
     return *s_assets;
 }
 
-Blob assetsAllocate(AssetManager* theAssets, smm size)
+Blob assets_allocate(smm size)
 {
+    if (size == 0)
+        return {};
+
     Blob result { size, allocateRaw(size) };
 
-    theAssets->assetMemoryAllocated += size;
-    theAssets->maxAssetMemoryAllocated = max(theAssets->assetMemoryAllocated, theAssets->maxAssetMemoryAllocated);
+    auto& assets = asset_manager();
+    assets.assetMemoryAllocated += size;
+    assets.maxAssetMemoryAllocated = max(assets.assetMemoryAllocated, assets.maxAssetMemoryAllocated);
 
     return result;
 }
 
+void assets_deallocate(Blob& data)
+{
+    if (data.size() == 0)
+        return;
+
+    auto& assets = asset_manager();
+    assets.assetMemoryAllocated -= data.size();
+    deallocateRaw(data.writable_data());
+    data = {};
+}
+
 void allocateChildren(AssetMetadata* asset, s32 childCount)
 {
-    asset->children_data = assetsAllocate(s_assets, childCount * sizeof(AssetRef));
+    asset->children_data = assets_allocate(childCount * sizeof(AssetRef));
     asset->children = makeArray(childCount, reinterpret_cast<AssetRef*>(asset->children_data.writable_data()));
 }
 
@@ -166,11 +181,7 @@ void unloadAsset(AssetMetadata* asset)
     }
 
     asset->loaded_asset->unload(*asset);
-    if (asset->children_data.data() != nullptr) {
-        s_assets->assetMemoryAllocated -= asset->children_data.size();
-        deallocateRaw(asset->children_data.writable_data());
-        asset->children_data = {};
-    }
+    assets_deallocate(asset->children_data);
     asset->state = AssetMetadata::State::Unloaded;
 }
 

@@ -193,7 +193,10 @@ T* getStyle(String styleName)
 // Internal
 //
 
-Blob assetsAllocate(AssetManager* theAssets, smm size);
+// FIXME: Some kind of smart pointer to handle memory allocation tracking.
+Blob assets_allocate(smm size);
+void assets_deallocate(Blob& data);
+
 void allocateChildren(AssetMetadata* asset, s32 childCount);
 void addChildAsset(AssetMetadata* parent, AssetMetadata* child);
 

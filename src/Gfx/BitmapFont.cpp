@@ -145,7 +145,7 @@ bool BitmapFont::load_from_bmf_data(Blob data, AssetMetadata& metadata, Deprecat
 
         font->m_glyph_capacity = ceil_s32(charCount * 2.0f);
         smm glyphEntryMemorySize = font->m_glyph_capacity * sizeof(BitmapFontGlyphEntry);
-        asset.data = assetsAllocate(&asset_manager(), glyphEntryMemorySize);
+        asset.data = Assets::assets_allocate(glyphEntryMemorySize);
         font->m_glyph_entries = (BitmapFontGlyphEntry*)(asset.data.data());
 
         String textureName = String::from_null_terminated((char*)pages);

@@ -125,7 +125,7 @@ void loadBuildingDefs(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset
 
     smm buildingNamesSize = sizeof(String) * buildingCount;
     smm variantsSize = sizeof(BuildingVariant) * totalVariantCount;
-    asset.data = assetsAllocate(&asset_manager(), buildingNamesSize + variantsSize);
+    asset.data = Assets::assets_allocate(buildingNamesSize + variantsSize);
     asset.buildingDefs.buildingIDs = makeArray(buildingCount, (String*)asset.data.writable_data());
     u8* variantsMemory = asset.data.writable_data() + buildingNamesSize;
 
