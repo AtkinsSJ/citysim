@@ -59,7 +59,7 @@ struct Set {
         return result;
     }
 
-    bool isEmpty() { return items.isEmpty(); }
+    bool is_empty() const { return items.is_empty(); }
     void clear() { items.clear(); }
 
     SetIterator<T> iterate()
@@ -75,7 +75,7 @@ struct Set {
     {
         Array<T> result = makeEmptyArray<T>();
 
-        if (!isEmpty()) {
+        if (!is_empty()) {
             result = temp_arena().allocate_array<T>(items.count, false);
 
             // Gather

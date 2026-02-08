@@ -288,7 +288,7 @@ void Renderer::render_internal()
                     flush_vertices();
                 }
 
-                if (isEmpty(&m_scissor_stack)) {
+                if (is_empty(&m_scissor_stack)) {
                     glEnable(GL_SCISSOR_TEST);
                 }
 
@@ -310,7 +310,7 @@ void Renderer::render_internal()
                 (void)pop(&m_scissor_stack);
 
                 // Restore previous scissor
-                if (!isEmpty(&m_scissor_stack)) {
+                if (!is_empty(&m_scissor_stack)) {
                     Rect2I* previousScissor = peek(&m_scissor_stack);
                     glScissor(previousScissor->x(), previousScissor->y(), previousScissor->width(), previousScissor->height());
                 } else {
@@ -421,7 +421,7 @@ void Renderer::render_internal()
         DEBUG_END_RENDER_BUFFER();
     }
 
-    ASSERT(isEmpty(&m_scissor_stack));
+    ASSERT(is_empty(&m_scissor_stack));
 }
 
 void Renderer::after_assets_loaded()

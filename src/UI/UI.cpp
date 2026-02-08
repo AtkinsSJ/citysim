@@ -161,7 +161,7 @@ void popInputScissorRect()
 
 bool isInputScissorActive()
 {
-    return !isEmpty(&uiState.inputScissorRects);
+    return !is_empty(&uiState.inputScissorRects);
 }
 
 Rect2I getInputScissorRect()

@@ -308,7 +308,7 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
     }
 
     // At this point, if there are no power groups we can just stop.
-    if (sector->powerGroups.isEmpty())
+    if (sector->powerGroups.is_empty())
         return;
 
     // Store references to the buildings in each group, for faster updating later
