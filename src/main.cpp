@@ -30,6 +30,7 @@
 #include "AppState.h"
 #include <Assets/AssetManager.h>
 #include <Debug/Console.h>
+#include <Gfx/AssetLoader.h>
 #include <Gfx/Renderer.h>
 #include <IO/SavedGames.h>
 #include <Input/Input.h>
@@ -124,6 +125,7 @@ int main(int argc, char* argv[])
     assets.register_listener(&renderer);
 
     assets.register_asset_loader(adopt_own(*new Assets::DeprecatedAssetLoader));
+    assets.register_asset_loader(adopt_own(*new Gfx::AssetLoader));
     assets.scan_assets();
     assets.load_assets();
 

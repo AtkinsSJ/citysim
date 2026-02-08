@@ -14,7 +14,6 @@
 #include <Gfx/Palette.h>
 #include <Gfx/Shader.h>
 #include <Gfx/Sprite.h>
-#include <Gfx/TextDocument.h>
 #include <Gfx/Texture.h>
 #include <UI/UITheme.h>
 #include <Util/Array.h>
@@ -65,8 +64,6 @@ public:
         struct {
             Array<String> terrainIDs;
         } terrainDefs;
-
-        TextDocument text_document;
 
         struct {
             Array<String> keys;
