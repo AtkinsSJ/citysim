@@ -180,7 +180,7 @@ void savedGamesWindowProc(UI::WindowContext* context, void* userData)
         savesList.enableVerticalScrolling(&catalogue->savedGamesListScrollbar);
         savesList.alignWidgets(HAlign::Fill);
 
-        if (catalogue->savedGames.isEmpty()) {
+        if (catalogue->savedGames.is_empty()) {
             savesList.addLabel(getText("msg_no_saved_games"_s));
         } else {
             // for (s32 duplicates = 0; duplicates < 5; duplicates++)

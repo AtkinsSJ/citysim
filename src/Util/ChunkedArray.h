@@ -62,7 +62,7 @@ struct ChunkedArray {
     ArrayChunk<T>* lastChunk;
 
     // Methods
-    bool isEmpty() { return count == 0; }
+    bool is_empty() const { return count == 0; }
     T* get(s32 index)
     {
         ASSERT(index >= 0 && index < count); // Index out of array bounds!

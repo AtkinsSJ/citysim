@@ -32,9 +32,9 @@ void initStack(Stack<T>* stack, MemoryArena* arena, s32 itemsPerChunk = 32)
 }
 
 template<typename T>
-bool isEmpty(Stack<T>* stack)
+bool is_empty(Stack<T>* stack)
 {
-    return (stack->_array.isEmpty());
+    return (stack->_array.is_empty());
 }
 
 template<typename T>
@@ -48,7 +48,7 @@ T* peek(Stack<T>* stack)
 {
     T* result = nullptr;
 
-    if (!isEmpty(stack)) {
+    if (!is_empty(stack)) {
         result = stack->_array.get(stack->_array.count - 1);
     }
 
@@ -58,7 +58,7 @@ T* peek(Stack<T>* stack)
 template<typename T>
 Optional<T> pop(Stack<T>* stack)
 {
-    if (!isEmpty(stack)) {
+    if (!is_empty(stack)) {
         Optional<T> result { *stack->_array.get(stack->_array.count - 1) };
         stack->_array.removeIndex(stack->_array.count - 1);
         return result;

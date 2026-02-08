@@ -152,7 +152,7 @@ void closeWindow(WindowProc windowProc)
 
     if (window_to_remove.has_value()) {
         uiState.windowsToClose.add(window_to_remove.value().index());
-    } else if (!uiState.openWindows.isEmpty()) {
+    } else if (!uiState.openWindows.is_empty()) {
         logInfo("closeWindow() call didn't find any windows that matched the WindowProc."_s);
     }
 }
@@ -378,7 +378,7 @@ void updateAndRenderWindows()
     }
 
     // Close any windows that were requested
-    if (!uiState.windowsToClose.isEmpty()) {
+    if (!uiState.windowsToClose.is_empty()) {
         Array<s32> windowsToClose = uiState.windowsToClose.asSortedArray();
 
         for (s32 i = windowsToClose.count - 1; i >= 0; i--) {
@@ -390,7 +390,7 @@ void updateAndRenderWindows()
     }
 
     // Activate any windows
-    if (!uiState.windowsToMakeActive.isEmpty()) {
+    if (!uiState.windowsToMakeActive.is_empty()) {
         Array<s32> windowsToMakeActive = uiState.windowsToMakeActive.asSortedArray();
 
         // NB: Because the windowsToMakeActive are in ascending index order, and we always move them to a lower position,
