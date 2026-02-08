@@ -17,6 +17,8 @@
 #include <Util/Set.h>
 #include <Util/StringTable.h>
 
+namespace Assets {
+
 struct AssetManager final : public SettingsChangeListener {
     MemoryArena arena;
     StringTable assetStrings;
@@ -194,3 +196,12 @@ T* getStyle(String styleName)
 Blob assetsAllocate(AssetManager* theAssets, smm size);
 void allocateChildren(AssetMetadata* asset, s32 childCount);
 void addChildAsset(AssetMetadata* parent, AssetMetadata* child);
+
+}
+
+using Assets::AssetManager;
+
+using Assets::asset_manager;
+using Assets::getAsset;
+using Assets::getStyle;
+using Assets::getText;

@@ -19,6 +19,8 @@
 #include <UI/UITheme.h>
 #include <Util/Array.h>
 
+namespace Assets {
+
 // Stop-gap which preserves the old Asset behaviour of them all being data stored in a union, until all the asset types
 // are converted into subclasses.
 class DeprecatedAsset final : public Asset {
@@ -96,3 +98,7 @@ public:
 
     virtual ErrorOr<NonnullOwnPtr<Asset>> load_asset(AssetMetadata& metadata, Blob file_data) override;
 };
+
+}
+
+using Assets::DeprecatedAsset;

@@ -110,7 +110,7 @@ int main(int argc, char* argv[])
     init_input_state();
     auto& input = input_state();
 
-    initAssets();
+    Assets::initAssets();
     initBuildingCatalogue();
     initTerrainCatalogue();
 
@@ -123,7 +123,7 @@ int main(int argc, char* argv[])
     auto& assets = asset_manager();
     assets.register_listener(&renderer);
 
-    assets.register_asset_loader(adopt_own(*new DeprecatedAssetLoader));
+    assets.register_asset_loader(adopt_own(*new Assets::DeprecatedAssetLoader));
     assets.scan_assets();
     assets.load_assets();
 

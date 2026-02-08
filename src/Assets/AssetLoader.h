@@ -9,6 +9,8 @@
 #include <Assets/Forward.h>
 #include <Util/OwnPtr.h>
 
+namespace Assets {
+
 class AssetLoader {
 public:
     virtual ~AssetLoader() = default;
@@ -18,3 +20,7 @@ public:
 
     virtual ErrorOr<NonnullOwnPtr<Asset>> load_asset(AssetMetadata& metadata, Blob file_data) = 0;
 };
+
+}
+
+using Assets::AssetLoader;

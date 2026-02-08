@@ -6,9 +6,15 @@
 
 #pragma once
 
+namespace Assets {
+
 class AssetManagerListener {
 public:
     virtual ~AssetManagerListener() = default;
     virtual void after_assets_loaded() { }
     virtual void before_assets_unloaded() { }
 };
+
+}
+
+using Assets::AssetManagerListener;

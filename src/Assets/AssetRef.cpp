@@ -7,6 +7,8 @@
 #include "AssetRef.h"
 #include <Assets/AssetManager.h>
 
+namespace Assets {
+
 AssetMetadata& AssetRef::get() const
 {
     auto& assets = asset_manager();
@@ -16,4 +18,6 @@ AssetMetadata& AssetRef::get() const
     }
 
     return *m_pointer;
+}
+
 }

@@ -16,6 +16,8 @@
 #include <Util/Locale.h>
 #include <Util/OwnPtr.h>
 
+namespace Assets {
+
 enum class AssetFlags : u8 {
     IsAFile, // The file at Asset.fullName should be loaded into memory when loading this Asset
 
@@ -49,3 +51,7 @@ public:
 
     OwnPtr<Asset> loaded_asset;
 };
+
+}
+
+using Assets::AssetMetadata;

@@ -9,6 +9,8 @@
 #include <Util/EnumMap.h>
 #include <Util/String.h>
 
+namespace Assets {
+
 enum class AssetType : u8 {
     BitmapFont,
     BuildingDefs,
@@ -72,3 +74,7 @@ EnumMap<AssetType, String> const asset_type_names {
     "TextInputStyle"_s,
     "WindowStyle"_s,
 };
+
+}
+
+using Assets::AssetType;

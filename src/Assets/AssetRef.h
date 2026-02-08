@@ -10,6 +10,8 @@
 #include <Assets/Forward.h>
 #include <Util/String.h>
 
+namespace Assets {
+
 class AssetRef {
 public:
     explicit AssetRef(AssetType type, String short_name)
@@ -30,3 +32,7 @@ private:
     mutable AssetMetadata* m_pointer { nullptr };
     mutable u32 m_asset_generation { 0 };
 };
+
+}
+
+using Assets::AssetRef;
