@@ -11,7 +11,6 @@
 #include <Gfx/BitmapFont.h>
 #include <Gfx/Cursor.h>
 #include <Gfx/Ninepatch.h>
-#include <Gfx/Palette.h>
 #include <Gfx/Shader.h>
 #include <Gfx/Sprite.h>
 #include <Gfx/Texture.h>
@@ -54,8 +53,6 @@ public:
         Cursor cursor;
 
         Ninepatch ninepatch;
-
-        Palette palette;
 
         Shader shader;
 

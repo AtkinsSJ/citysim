@@ -12,7 +12,7 @@ class Camera;
 class Colour;
 struct Cursor;
 struct Ninepatch;
-struct Palette;
+class Palette;
 struct RenderBuffer;
 class Renderer;
 struct Shader;
