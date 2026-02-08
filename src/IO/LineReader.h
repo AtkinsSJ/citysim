@@ -90,6 +90,7 @@ public:
 
     void warn(String message, std::initializer_list<StringView> args = {}) const;
     void error(String message, std::initializer_list<StringView> args = {}) const;
+    Error make_error_message(String message, std::initializer_list<StringView> args = {}) const;
 
     u32 line_count() const;
 

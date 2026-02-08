@@ -160,9 +160,16 @@ void LineReader::warn(String message, std::initializer_list<StringView> args) co
 
 void LineReader::error(String message, std::initializer_list<StringView> args) const
 {
+    logError("{}"_s, { make_error_message(message, args) });
+}
+
+Error LineReader::make_error_message(String message, std::initializer_list<StringView> args) const
+{
     String text = myprintf(message, args, false);
     String lineNumber = m_state.at_end_of_file ? "EOF"_s : formatInt(m_state.current_line_number);
-    logError("{0}:{1} - {2}"_s, { m_filename, lineNumber, text });
+    auto error = myprintf("{0}:{1} - {2}"_s, { m_filename, lineNumber, text });
+    logError("{}"_s, { error });
+    return error;
 }
 
 Optional<StringView> LineReader::next_token(Optional<char> split_char)
