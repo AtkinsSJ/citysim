@@ -41,7 +41,7 @@ void loadTerrainDefs(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
             terrainCount++;
     }
 
-    asset.data = assetsAllocate(&asset_manager(), sizeof(String) * terrainCount);
+    asset.data = Assets::assets_allocate(sizeof(String) * terrainCount);
     asset.terrainDefs.terrainIDs = makeArray(terrainCount, (String*)asset.data.writable_data());
 
     reader.restart();

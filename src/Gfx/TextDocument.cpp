@@ -20,6 +20,5 @@ TextDocument::TextDocument(Blob lines_data, Array<Line> lines)
 
 void TextDocument::unload()
 {
-    asset_manager().assetMemoryAllocated -= m_lines_data.size();
-    deallocateRaw(m_lines_data.writable_data());
+    Assets::assets_deallocate(m_lines_data);
 }

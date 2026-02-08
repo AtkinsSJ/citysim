@@ -50,7 +50,7 @@ static SDL_Surface* createSurfaceFromFileData(Blob fileData, String name)
 
 static void copyFileIntoAsset(Blob* fileData, DeprecatedAsset& asset)
 {
-    asset.data = assetsAllocate(&asset_manager(), fileData->size());
+    asset.data = assets_allocate(fileData->size());
     memcpy(asset.data.writable_data(), fileData->data(), fileData->size());
 
     // NB: We set the fileData to point at the new copy, so that code after calling copyFileIntoAsset()
@@ -76,7 +76,7 @@ static void loadTexts(HashTable<String>* texts, AssetMetadata* metadata, Blob fi
 
     auto line_count = reader.line_count();
     auto key_array_size = sizeof(String) * line_count;
-    asset.data = assetsAllocate(&asset_manager(), file_data.size() + key_array_size);
+    asset.data = assets_allocate(file_data.size() + key_array_size);
     asset.texts.keys = makeArray(line_count, reinterpret_cast<String*>(asset.data.writable_data()));
 
     auto text_data = asset.data.sub_blob(key_array_size);
@@ -174,11 +174,7 @@ void DeprecatedAsset::unload(AssetMetadata& metadata)
         break;
     }
 
-    if (data.data() != nullptr) {
-        asset_manager().assetMemoryAllocated -= data.size();
-        deallocateRaw(data.writable_data());
-        data = {};
-    }
+    assets_deallocate(data);
 }
 
 static DeprecatedAsset& make_placeholder_asset(AssetManager& assets, AssetType type)
@@ -258,7 +254,7 @@ void DeprecatedAssetLoader::create_placeholder_assets(AssetManager& assets)
 
     // Sprite!
     auto& placeholderSprite = make_placeholder_asset(assets, AssetType::Sprite);
-    placeholderSprite.data = assetsAllocate(&assets, 1 * sizeof(Sprite));
+    placeholderSprite.data = assets_allocate(1 * sizeof(Sprite));
     placeholderSprite.spriteGroup.count = 1;
     placeholderSprite.spriteGroup.sprites = (Sprite*)placeholderSprite.data.writable_data();
     placeholderSprite.spriteGroup.sprites[0].texture = &assets.placeholderAssets[AssetType::Texture];
@@ -278,7 +274,7 @@ void DeprecatedAssetLoader::create_placeholder_assets(AssetManager& assets)
 
     // Texture
     auto& placeholderTexture = make_placeholder_asset(assets, AssetType::Texture);
-    placeholderTexture.data = assetsAllocate(&assets, 2 * 2 * sizeof(u32));
+    placeholderTexture.data = assets_allocate(2 * 2 * sizeof(u32));
     u32* pixels = (u32*)placeholderTexture.data.writable_data();
     pixels[0] = pixels[3] = 0xffff00ff;
     pixels[1] = pixels[2] = 0xff000000;
@@ -414,7 +410,7 @@ static void load_palette_defs(Blob data, AssetMetadata& metadata, DeprecatedAsse
                 if (auto color = Colour::read(reader); color.has_value()) {
                     if (palette_asset.palette.type == Palette::Type::Fixed) {
                         if (!palette_array_is_initialized) {
-                            palette_asset.data = assetsAllocate(&asset_manager(), palette_asset.palette.size * sizeof(Colour));
+                            palette_asset.data = assets_allocate(palette_asset.palette.size * sizeof(Colour));
                             palette_asset.palette.paletteData = makeArray<Colour>(palette_asset.palette.size, reinterpret_cast<Colour*>(palette_asset.data.writable_data()));
                             palette_array_is_initialized = true;
                         }
@@ -462,7 +458,7 @@ static void load_palette_defs(Blob data, AssetMetadata& metadata, DeprecatedAsse
         auto& palette = palette_asset.palette;
         switch (palette.type) {
         case Palette::Type::Gradient: {
-            palette_asset.data = assetsAllocate(&asset_manager(), palette.size * sizeof(Colour));
+            palette_asset.data = assets_allocate(palette.size * sizeof(Colour));
             palette.paletteData = makeArray<Colour>(palette.size, reinterpret_cast<Colour*>(palette_asset.data.writable_data()), palette.size);
 
             float ratio = 1.0f / (float)(palette.size);
@@ -485,7 +481,7 @@ static AssetMetadata* add_sprite_group(StringView name, s32 spriteCount)
     auto asset = adopt_own(*new DeprecatedAsset);
     if (asset->data.size() != 0)
         DEBUG_BREAK(); // @Leak! Creating the sprite group multiple times is probably a bad idea for other reasons too.
-    asset->data = assetsAllocate(&asset_manager(), spriteCount * sizeof(Sprite));
+    asset->data = assets_allocate(spriteCount * sizeof(Sprite));
     asset->spriteGroup.count = spriteCount;
     asset->spriteGroup.sprites = (Sprite*)asset->data.writable_data();
 
@@ -769,7 +765,7 @@ ErrorOr<NonnullOwnPtr<Asset>> DeprecatedAssetLoader::load_asset(AssetMetadata& m
         copyFileIntoAsset(&file_data, *asset);
         LineReader reader { metadata.shortName, asset->data, {} };
         auto line_count = reader.line_count();
-        auto lines_data = assetsAllocate(&asset_manager(), line_count * sizeof(TextDocument::Line));
+        auto lines_data = assets_allocate(line_count * sizeof(TextDocument::Line));
         auto lines_array = makeArray(line_count, reinterpret_cast<TextDocument::Line*>(lines_data.writable_data()));
         while (reader.load_next_line()) {
             auto line = reader.current_line();
