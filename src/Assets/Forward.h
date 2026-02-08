@@ -8,6 +8,8 @@
 
 #include <Util/Basic.h>
 
+namespace Assets {
+
 enum class AssetType : u8;
 
 class Asset;
@@ -15,9 +17,14 @@ class AssetMetadata;
 struct AssetManager;
 class AssetManagerListener;
 class AssetRef;
-struct Cursor;
 class DeprecatedAsset;
-struct Ninepatch;
-struct Palette;
-struct Shader;
-struct Texture;
+
+}
+
+using Assets::Asset;
+using Assets::AssetManager;
+using Assets::AssetManagerListener;
+using Assets::AssetMetadata;
+using Assets::AssetRef;
+using Assets::AssetType;
+using Assets::DeprecatedAsset;

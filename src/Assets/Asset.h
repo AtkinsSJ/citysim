@@ -8,9 +8,15 @@
 
 #include <Assets/Forward.h>
 
+namespace Assets {
+
 class Asset {
 public:
     virtual ~Asset() = default;
 
     virtual void unload(AssetMetadata& metadata) = 0;
 };
+
+}
+
+using Assets::Asset;

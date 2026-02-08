@@ -15,6 +15,8 @@
 #include <Sim/TerrainCatalogue.h>
 #include <Util/StringBuilder.h>
 
+namespace Assets {
+
 DeprecatedAsset::DeprecatedAsset()
     : data()
     , _localData()
@@ -841,4 +843,6 @@ ErrorOr<NonnullOwnPtr<Asset>> DeprecatedAssetLoader::load_asset(AssetMetadata& m
         VERIFY_NOT_REACHED();
     }
     }
+}
+
 }

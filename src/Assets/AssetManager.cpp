@@ -19,6 +19,8 @@
 #include <Sim/BuildingCatalogue.h>
 #include <Util/StringBuilder.h>
 
+namespace Assets {
+
 AssetManager* s_assets;
 
 void initAssets()
@@ -466,4 +468,6 @@ void AssetManager::register_listener(AssetManagerListener* listener)
 void AssetManager::unregister_listener(AssetManagerListener* listener)
 {
     listeners.findAndRemove(listener);
+}
+
 }

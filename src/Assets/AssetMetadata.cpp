@@ -7,6 +7,8 @@
 #include "AssetMetadata.h"
 #include <Assets/AssetManager.h>
 
+namespace Assets {
+
 void AssetMetadata::ensure_is_loaded()
 {
     if (state == State::Loaded)
@@ -17,4 +19,6 @@ void AssetMetadata::ensure_is_loaded()
     if (state != State::Loaded) {
         logError("Failed to load asset '{0}'"_s, { shortName });
     }
+}
+
 }
