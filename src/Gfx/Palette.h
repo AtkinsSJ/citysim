@@ -6,10 +6,12 @@
 
 #pragma once
 
+#include <Assets/Asset.h>
 #include <Gfx/Colour.h>
 #include <Util/Array.h>
 
-struct Palette {
+class Palette final : public Asset {
+public:
     enum class Type : u8 {
         Fixed,
         Gradient,
@@ -17,14 +19,21 @@ struct Palette {
 
     static Palette& get(StringView name);
 
-    Type type;
-    s32 size;
+    Palette() = default;
+    Palette(Blob data, Type, Array<Colour>);
+    static ErrorOr<NonnullOwnPtr<Asset>> load_defs(AssetMetadata&, Blob);
 
-    struct
-    {
-        Colour from;
-        Colour to;
-    } gradient;
+    Type type() const { return m_type; }
+    size_t size() const;
+    Colour colour_at(size_t index) const;
+    Colour first() const;
+    Colour last() const;
+    Colour* raw_colour_data() const;
 
-    Array<Colour> paletteData;
+    virtual void unload(AssetMetadata&) override;
+
+private:
+    Blob m_data;
+    Type m_type { Type::Fixed };
+    Array<Colour> m_colours;
 };

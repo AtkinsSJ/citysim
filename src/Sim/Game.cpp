@@ -7,6 +7,7 @@
 #include "Game.h"
 #include "AppState.h"
 #include <Assets/AssetManager.h>
+#include <Gfx/Palette.h>
 #include <Gfx/Renderer.h>
 #include <IO/SavedGames.h>
 #include <Input/Input.h>
@@ -982,7 +983,7 @@ static void drawBuildingHighlights(City* city, Iterable* buildingRefs)
             // NB: If we're doing this in a separate loop, we could crop out buildings that aren't in the visible tile bounds
             if (building != nullptr) {
                 s32 paletteIndex = (buildingHasPower(building) ? paletteIndexPowered : paletteIndexUnpowered);
-                addUntexturedRect(buildingHighlights, building->footprint, buildingsPalette.paletteData[paletteIndex]);
+                addUntexturedRect(buildingHighlights, building->footprint, buildingsPalette.colour_at(paletteIndex));
             }
         }
         endRectsGroup(buildingHighlights);
@@ -1033,7 +1034,7 @@ static void drawBuildingEffectRadii(City* city, Iterable* buildingRefs, EffectRa
                 EffectRadius* effect = &(def->*effectMember);
                 if (effect->has_effect()) {
                     s32 paletteIndex = (buildingHasPower(building) ? paletteIndexPowered : paletteIndexUnpowered);
-                    addRing(buildingRadii, building->footprint.centre(), static_cast<float>(effect->radius()), 0.5f, ringsPalette.paletteData[paletteIndex]);
+                    addRing(buildingRadii, building->footprint.centre(), static_cast<float>(effect->radius()), 0.5f, ringsPalette.colour_at(paletteIndex));
                 }
             }
         }
@@ -1066,7 +1067,7 @@ void drawDataViewOverlay(GameState* gameState, Rect2I visibleTileBounds)
         Rect2I bounds = city->bounds;
 
         auto& overlayPalette = Palette::get(dataView->overlayPaletteName);
-        drawGrid(&renderer.world_overlay_buffer(), bounds, bounds.width(), bounds.height(), *dataView->overlayTileData, (u16)overlayPalette.paletteData.count, overlayPalette.paletteData.items);
+        drawGrid(&renderer.world_overlay_buffer(), bounds, bounds.width(), bounds.height(), *dataView->overlayTileData, (u16)overlayPalette.size(), overlayPalette.raw_colour_data());
     } else if (dataView->calculateTileValue) {
         // The per-tile overlay data is generated
         Array2<u8> overlayTileData = temp_arena().allocate_array_2d<u8>(visibleTileBounds.size());
@@ -1079,7 +1080,7 @@ void drawDataViewOverlay(GameState* gameState, Rect2I visibleTileBounds)
         }
 
         auto& overlayPalette = Palette::get(dataView->overlayPaletteName);
-        drawGrid(&renderer.world_overlay_buffer(), visibleTileBounds, overlayTileData.w, overlayTileData.h, overlayTileData.items, (u16)overlayPalette.paletteData.count, overlayPalette.paletteData.items);
+        drawGrid(&renderer.world_overlay_buffer(), visibleTileBounds, overlayTileData.w, overlayTileData.h, overlayTileData.items, (u16)overlayPalette.size(), overlayPalette.raw_colour_data());
     }
 
     if (dataView->highlightedBuildings) {
@@ -1171,11 +1172,11 @@ void drawDataViewUI(GameState* gameState)
             // First, the named colors
             if (dataView->hasFixedColors) {
                 auto& fixedPalette = Palette::get(dataView->fixedPaletteName);
-                ASSERT(fixedPalette.paletteData.count >= dataView->fixedColorNames.count);
+                ASSERT(fixedPalette.size() >= dataView->fixedColorNames.count);
 
                 for (s32 fixedColorIndex = dataView->fixedColorNames.count - 1; fixedColorIndex >= 0; fixedColorIndex--) {
                     Rect2I paletteBlockBounds = ui.addBlank(paletteBlockSize, paletteBlockSize);
-                    drawSingleRect(uiBuffer, paletteBlockBounds, renderer.shaderIds.untextured, fixedPalette.paletteData[fixedColorIndex].as_opaque());
+                    drawSingleRect(uiBuffer, paletteBlockBounds, renderer.shaderIds.untextured, fixedPalette.colour_at(fixedColorIndex).as_opaque());
 
                     ui.addLabel(getText(dataView->fixedColorNames[fixedColorIndex]));
                     ui.startNewLine();
@@ -1193,8 +1194,8 @@ void drawDataViewUI(GameState* gameState)
                     Rect2I gradientBounds = gradientColumn.addBlank(paletteBlockSize, gradientHeight);
 
                     auto& gradientPalette = Palette::get(dataView->gradientPaletteName);
-                    auto minColor = gradientPalette.paletteData.first().as_opaque();
-                    auto maxColor = gradientPalette.paletteData.last().as_opaque();
+                    auto minColor = gradientPalette.first().as_opaque();
+                    auto maxColor = gradientPalette.last().as_opaque();
 
                     drawSingleRect(uiBuffer, gradientBounds, renderer.shaderIds.untextured, maxColor, maxColor, minColor, minColor);
                 }

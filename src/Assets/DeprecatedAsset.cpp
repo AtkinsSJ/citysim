@@ -185,7 +185,6 @@ void DeprecatedAssetLoader::register_types(AssetManager& assets)
     assets.fileExtensionToType.put(assets.assetStrings.intern("buildings"_s), AssetType::BuildingDefs);
     assets.fileExtensionToType.put(assets.assetStrings.intern("cursors"_s), AssetType::CursorDefs);
     assets.fileExtensionToType.put(assets.assetStrings.intern("keymap"_s), AssetType::DevKeymap);
-    assets.fileExtensionToType.put(assets.assetStrings.intern("palettes"_s), AssetType::PaletteDefs);
     assets.fileExtensionToType.put(assets.assetStrings.intern("sprites"_s), AssetType::SpriteDefs);
     assets.fileExtensionToType.put(assets.assetStrings.intern("terrain"_s), AssetType::TerrainDefs);
     assets.fileExtensionToType.put(assets.assetStrings.intern("theme"_s), AssetType::UITheme);
@@ -201,8 +200,6 @@ void DeprecatedAssetLoader::register_types(AssetManager& assets)
     assets.asset_loaders_by_type[AssetType::CursorDefs] = this;
     assets.asset_loaders_by_type[AssetType::DevKeymap] = this;
     assets.asset_loaders_by_type[AssetType::Ninepatch] = this;
-    assets.asset_loaders_by_type[AssetType::Palette] = this;
-    assets.asset_loaders_by_type[AssetType::PaletteDefs] = this;
     assets.asset_loaders_by_type[AssetType::Shader] = this;
     assets.asset_loaders_by_type[AssetType::Sprite] = this;
     assets.asset_loaders_by_type[AssetType::SpriteDefs] = this;
@@ -233,15 +230,6 @@ void DeprecatedAssetLoader::create_placeholder_assets(AssetManager& assets)
     // Ninepatch
     auto& placeholderNinepatch = make_placeholder_asset(assets, AssetType::Ninepatch);
     placeholderNinepatch.ninepatch.texture = &assets.placeholderAssets[AssetType::Texture];
-
-    // Palette
-    auto& placeholderPalette = make_placeholder_asset(assets, AssetType::Palette);
-    placeholderPalette.palette.type = Palette::Type::Fixed;
-    placeholderPalette.palette.size = 0;
-    placeholderPalette.palette.paletteData = makeEmptyArray<Colour>();
-
-    // PaletteDefs
-    make_placeholder_asset(assets, AssetType::PaletteDefs);
 
     // Shader
     make_placeholder_asset(assets, AssetType::Shader);
@@ -322,144 +310,6 @@ static void load_cursor_defs(Blob data, AssetMetadata& metadata, DeprecatedAsset
             // FIXME: Return an Error too.
             reader.error("Couldn't parse cursor definition. Expected 'name filename.png hot-x hot-y'."_s);
             return;
-        }
-    }
-}
-
-static void load_palette_defs(Blob data, AssetMetadata& metadata, DeprecatedAsset&)
-{
-    DEBUG_FUNCTION();
-
-    LineReader reader { metadata.shortName, data };
-
-    // We store the paletteNames array in the defs asset
-    // So, we first need to scan through the file to see how many palettes there are in it!
-    s32 paletteCount = 0;
-    while (reader.load_next_line()) {
-        if (auto command = reader.next_token(); command == ":Palette"_s)
-            paletteCount++;
-    }
-
-    allocateChildren(&metadata, paletteCount);
-
-    reader.restart();
-
-    AssetMetadata* current_palette_metadata = nullptr;
-    bool palette_array_is_initialized = false;
-    while (reader.load_next_line()) {
-        auto command_token = reader.next_token();
-        if (!command_token.has_value())
-            continue;
-        auto command = command_token.release_value();
-
-        if (command.starts_with(':')) {
-            command = command.substring(1);
-
-            if (command == "Palette"_s) {
-                if (auto palette_name = reader.next_token(); palette_name.has_value()) {
-                    current_palette_metadata = asset_manager().add_asset(AssetType::Palette, palette_name.release_value(), {});
-                    current_palette_metadata->loaded_asset = adopt_own(*new DeprecatedAsset);
-                    palette_array_is_initialized = false;
-                    addChildAsset(&metadata, current_palette_metadata);
-                } else {
-                    reader.error("Missing name for Palette"_s);
-                    return;
-                }
-            } else {
-                reader.error("Unexpected command ':{0}' in palette-definitions file. Only :Palette is allowed!"_s, { command });
-                return;
-            }
-        } else {
-            if (current_palette_metadata == nullptr) {
-                reader.error("Unexpected command '{0}' before the start of a :Palette"_s, { command });
-                return;
-            }
-            auto& palette_asset = dynamic_cast<DeprecatedAsset&>(*current_palette_metadata->loaded_asset);
-
-            if (command == "type"_s) {
-                auto type = reader.next_token();
-                if (!type.has_value()) {
-                    reader.error("Missing palette type"_s);
-                    return;
-                }
-
-                if (type == "fixed"_s) {
-                    palette_asset.palette.type = Palette::Type::Fixed;
-                } else if (type == "gradient"_s) {
-                    palette_asset.palette.type = Palette::Type::Gradient;
-                } else {
-                    reader.error("Unrecognised palette type '{0}', allowed values are: fixed, gradient"_s, { type.value() });
-                    return;
-                }
-            } else if (command == "size"_s) {
-                if (auto size = reader.read_int<s32>(); size.has_value()) {
-                    palette_asset.palette.size = size.release_value();
-                } else {
-                    return;
-                }
-            } else if (command == "color"_s) {
-                if (auto color = Colour::read(reader); color.has_value()) {
-                    if (palette_asset.palette.type == Palette::Type::Fixed) {
-                        if (!palette_array_is_initialized) {
-                            palette_asset.data = assets_allocate(palette_asset.palette.size * sizeof(Colour));
-                            palette_asset.palette.paletteData = makeArray<Colour>(palette_asset.palette.size, reinterpret_cast<Colour*>(palette_asset.data.writable_data()));
-                            palette_array_is_initialized = true;
-                        }
-
-                        s32 colorIndex = palette_asset.palette.paletteData.count;
-                        if (colorIndex >= palette_asset.palette.size) {
-                            reader.error("Too many 'color' definitions! 'size' must be large enough."_s);
-                            return;
-                        }
-                        palette_asset.palette.paletteData.append(color.release_value());
-                    } else {
-                        reader.error("'color' is only a valid command for fixed palettes."_s);
-                        return;
-                    }
-                }
-            } else if (command == "from"_s) {
-                if (auto from = Colour::read(reader); from.has_value()) {
-                    if (palette_asset.palette.type == Palette::Type::Gradient) {
-                        palette_asset.palette.gradient.from = from.release_value();
-                    } else {
-                        reader.error("'from' is only a valid command for gradient palettes."_s);
-                        return;
-                    }
-                }
-            } else if (command == "to"_s) {
-                if (auto to = Colour::read(reader); to.has_value()) {
-                    if (palette_asset.palette.type == Palette::Type::Gradient) {
-                        palette_asset.palette.gradient.to = to.release_value();
-                    } else {
-                        reader.error("'to' is only a valid command for gradient palettes."_s);
-                        return;
-                    }
-                }
-            } else {
-                reader.error("Unrecognised command '{0}'"_s, { command });
-                return;
-            }
-        }
-    }
-
-    // Load all the palettes, now that we know their properties are all set.
-    for (auto& child : metadata.children) {
-        auto& palette_metadata = child.get();
-        auto& palette_asset = dynamic_cast<DeprecatedAsset&>(*palette_metadata.loaded_asset);
-        auto& palette = palette_asset.palette;
-        switch (palette.type) {
-        case Palette::Type::Gradient: {
-            palette_asset.data = assets_allocate(palette.size * sizeof(Colour));
-            palette.paletteData = makeArray<Colour>(palette.size, reinterpret_cast<Colour*>(palette_asset.data.writable_data()), palette.size);
-
-            float ratio = 1.0f / (float)(palette.size);
-            for (s32 i = 0; i < palette.size; i++) {
-                palette.paletteData[i] = lerp(palette.gradient.from, palette.gradient.to, i * ratio);
-            }
-        } break;
-
-        case Palette::Type::Fixed: {
-        } break;
         }
     }
 }
@@ -727,11 +577,6 @@ ErrorOr<NonnullOwnPtr<Asset>> DeprecatedAssetLoader::load_asset(AssetMetadata& m
             copyFileIntoAsset(&file_data, *asset);
             loadConsoleKeyboardShortcuts(globalConsole, file_data, metadata.shortName);
         }
-        return { move(asset) };
-    }
-
-    case AssetType::PaletteDefs: {
-        load_palette_defs(file_data, metadata, *asset);
         return { move(asset) };
     }
 
