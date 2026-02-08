@@ -17,6 +17,7 @@ class AssetMetadata;
 struct AssetManager;
 class AssetManagerListener;
 class AssetRef;
+class ContainerAsset;
 class DeprecatedAsset;
 
 }
@@ -27,4 +28,5 @@ using Assets::AssetManagerListener;
 using Assets::AssetMetadata;
 using Assets::AssetRef;
 using Assets::AssetType;
+using Assets::ContainerAsset;
 using Assets::DeprecatedAsset;
