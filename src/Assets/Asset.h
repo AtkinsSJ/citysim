@@ -17,6 +17,14 @@ public:
     virtual void unload(AssetMetadata& metadata) = 0;
 };
 
+// FIXME: Move child-asset concept into this.
+class ContainerAsset final : public Asset {
+public:
+    virtual ~ContainerAsset() override = default;
+    virtual void unload(AssetMetadata&) override { }
+};
+
 }
 
 using Assets::Asset;
+using Assets::ContainerAsset;
