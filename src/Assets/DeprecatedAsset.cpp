@@ -138,13 +138,6 @@ void DeprecatedAsset::unload(AssetMetadata& metadata)
         buildingDefs.buildingIDs = makeEmptyArray<String>();
     } break;
 
-    case AssetType::Cursor: {
-        if (cursor.sdlCursor != nullptr) {
-            SDL_FreeCursor(cursor.sdlCursor);
-            cursor.sdlCursor = nullptr;
-        }
-    } break;
-
     case AssetType::TerrainDefs: {
         // Remove all of our terrain defs
         removeTerrainDefs(terrainDefs.terrainIDs);
@@ -183,7 +176,6 @@ static DeprecatedAsset& make_placeholder_asset(AssetManager& assets, AssetType t
 void DeprecatedAssetLoader::register_types(AssetManager& assets)
 {
     assets.fileExtensionToType.put(assets.assetStrings.intern("buildings"_s), AssetType::BuildingDefs);
-    assets.fileExtensionToType.put(assets.assetStrings.intern("cursors"_s), AssetType::CursorDefs);
     assets.fileExtensionToType.put(assets.assetStrings.intern("keymap"_s), AssetType::DevKeymap);
     assets.fileExtensionToType.put(assets.assetStrings.intern("sprites"_s), AssetType::SpriteDefs);
     assets.fileExtensionToType.put(assets.assetStrings.intern("terrain"_s), AssetType::TerrainDefs);
@@ -194,8 +186,6 @@ void DeprecatedAssetLoader::register_types(AssetManager& assets)
     assets.directoryNameToType.put(assets.assetStrings.intern("locale"_s), AssetType::Texts);
 
     assets.asset_loaders_by_type[AssetType::BuildingDefs] = this;
-    assets.asset_loaders_by_type[AssetType::Cursor] = this;
-    assets.asset_loaders_by_type[AssetType::CursorDefs] = this;
     assets.asset_loaders_by_type[AssetType::DevKeymap] = this;
     assets.asset_loaders_by_type[AssetType::Ninepatch] = this;
     assets.asset_loaders_by_type[AssetType::Shader] = this;
@@ -211,13 +201,6 @@ void DeprecatedAssetLoader::create_placeholder_assets(AssetManager& assets)
 {
     // BuildingDefs
     make_placeholder_asset(assets, AssetType::BuildingDefs);
-
-    // Cursor
-    auto& placeholderCursor = make_placeholder_asset(assets, AssetType::Cursor);
-    placeholderCursor.cursor.sdlCursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
-
-    // CursorDefs
-    make_placeholder_asset(assets, AssetType::CursorDefs);
 
     // DevKeymap
     make_placeholder_asset(assets, AssetType::DevKeymap);
@@ -257,56 +240,6 @@ void DeprecatedAssetLoader::create_placeholder_assets(AssetManager& assets)
 
     // UITheme
     make_placeholder_asset(assets, AssetType::UITheme);
-}
-
-static void load_cursor_defs(Blob data, AssetMetadata& metadata, DeprecatedAsset&)
-{
-    DEBUG_FUNCTION();
-
-    LineReader reader { metadata.shortName, data };
-
-    // We store the cursorNames array in the defs asset
-    // So, we first need to scan through the file to see how many cursors there are in it!
-    s32 cursorCount = 0;
-    while (reader.load_next_line()) {
-        cursorCount++;
-    }
-
-    allocateChildren(&metadata, cursorCount);
-
-    reader.restart();
-
-    while (reader.load_next_line()) {
-        auto name_token = reader.next_token();
-        auto filename = reader.next_token();
-        if (!name_token.has_value() || !filename.has_value())
-            continue;
-
-        String name = asset_manager().assetStrings.intern(name_token.release_value());
-
-        auto hot_x = reader.read_int<s32>();
-        auto hot_y = reader.read_int<s32>();
-
-        if (hot_x.has_value() && hot_y.has_value()) {
-            // Add the cursor
-            AssetMetadata* cursor_metadata = asset_manager().add_asset(AssetType::Cursor, name, {});
-            auto cursor_asset = adopt_own(*new DeprecatedAsset);
-            cursor_asset->cursor.imageFilePath = asset_manager().assetStrings.intern(asset_manager().make_asset_path(AssetType::Cursor, filename.value()));
-            cursor_asset->cursor.hotspot = v2i(hot_x.release_value(), hot_y.release_value());
-
-            auto image_data = readTempFile(cursor_asset->cursor.imageFilePath);
-            SDL_Surface* cursorSurface = createSurfaceFromFileData(image_data, metadata.shortName);
-            cursor_asset->cursor.sdlCursor = SDL_CreateColorCursor(cursorSurface, cursor_asset->cursor.hotspot.x, cursor_asset->cursor.hotspot.y);
-            SDL_FreeSurface(cursorSurface);
-
-            cursor_metadata->loaded_asset = move(cursor_asset);
-            addChildAsset(&metadata, cursor_metadata);
-        } else {
-            // FIXME: Return an Error too.
-            reader.error("Couldn't parse cursor definition. Expected 'name filename.png hot-x hot-y'."_s);
-            return;
-        }
-    }
 }
 
 static AssetMetadata* add_sprite_group(StringView name, s32 spriteCount)
@@ -549,11 +482,6 @@ ErrorOr<NonnullOwnPtr<Asset>> DeprecatedAssetLoader::load_asset(AssetMetadata& m
     switch (metadata.type) {
     case AssetType::BuildingDefs: {
         loadBuildingDefs(file_data, metadata, *asset);
-        return { move(asset) };
-    }
-
-    case AssetType::CursorDefs: {
-        load_cursor_defs(file_data, metadata, *asset);
         return { move(asset) };
     }
 
