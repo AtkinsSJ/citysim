@@ -7,6 +7,7 @@
 #include "Renderer.h"
 #include <Assets/AssetManager.h>
 #include <Debug/Debug.h>
+#include <Gfx/Cursor.h>
 #include <Gfx/OpenGL.h>
 #include <Settings/Settings.h>
 
@@ -206,7 +207,7 @@ void Renderer::set_cursor(String name)
 
     auto& new_cursor_asset = Cursor::get(name);
     m_current_cursor_name = name;
-    SDL_SetCursor(new_cursor_asset.sdlCursor);
+    new_cursor_asset.set_as_cursor();
 }
 
 void Renderer::set_cursor_visible(bool visible)

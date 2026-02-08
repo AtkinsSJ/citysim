@@ -8,7 +8,6 @@
 
 #include <Assets/Asset.h>
 #include <Assets/AssetLoader.h>
-#include <Gfx/Cursor.h>
 #include <Gfx/Ninepatch.h>
 #include <Gfx/Shader.h>
 #include <Gfx/Sprite.h>
@@ -46,8 +45,6 @@ public:
         struct {
             Array<String> buildingIDs;
         } buildingDefs;
-
-        Cursor cursor;
 
         Ninepatch ninepatch;
 
