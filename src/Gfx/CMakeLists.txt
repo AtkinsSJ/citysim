@@ -1,4 +1,5 @@
 target_sources(CitySim PRIVATE
+    AssetLoader.cpp
     BitmapFont.cpp
     Camera.cpp
     Colour.cpp

@@ -151,10 +151,6 @@ void DeprecatedAsset::unload(AssetMetadata& metadata)
         terrainDefs.terrainIDs = makeEmptyArray<String>();
     } break;
 
-    case AssetType::TextDocument: {
-        text_document.unload();
-    } break;
-
     case AssetType::Texts: {
         // Remove all of our texts from the table
         HashTable<String>* textsTable = (texts.isFallbackLocale ? &asset_manager().defaultTexts : &asset_manager().texts);
@@ -193,7 +189,6 @@ void DeprecatedAssetLoader::register_types(AssetManager& assets)
     assets.fileExtensionToType.put(assets.assetStrings.intern("sprites"_s), AssetType::SpriteDefs);
     assets.fileExtensionToType.put(assets.assetStrings.intern("terrain"_s), AssetType::TerrainDefs);
     assets.fileExtensionToType.put(assets.assetStrings.intern("theme"_s), AssetType::UITheme);
-    assets.fileExtensionToType.put(assets.assetStrings.intern("txt"_s), AssetType::TextDocument);
 
     assets.directoryNameToType.put(assets.assetStrings.intern("fonts"_s), AssetType::BitmapFont);
     assets.directoryNameToType.put(assets.assetStrings.intern("shaders"_s), AssetType::Shader);
@@ -212,7 +207,6 @@ void DeprecatedAssetLoader::register_types(AssetManager& assets)
     assets.asset_loaders_by_type[AssetType::Sprite] = this;
     assets.asset_loaders_by_type[AssetType::SpriteDefs] = this;
     assets.asset_loaders_by_type[AssetType::TerrainDefs] = this;
-    assets.asset_loaders_by_type[AssetType::TextDocument] = this;
     assets.asset_loaders_by_type[AssetType::Texts] = this;
     assets.asset_loaders_by_type[AssetType::Texture] = this;
     assets.asset_loaders_by_type[AssetType::UITheme] = this;
@@ -265,9 +259,6 @@ void DeprecatedAssetLoader::create_placeholder_assets(AssetManager& assets)
 
     // TerrainDefs
     make_placeholder_asset(assets, AssetType::TerrainDefs);
-
-    // TextDocument
-    make_placeholder_asset(assets, AssetType::TextDocument);
 
     // Texts
     make_placeholder_asset(assets, AssetType::Texts);
@@ -757,21 +748,6 @@ ErrorOr<NonnullOwnPtr<Asset>> DeprecatedAssetLoader::load_asset(AssetMetadata& m
 
     case AssetType::TerrainDefs: {
         loadTerrainDefs(file_data, metadata, *asset);
-        return { move(asset) };
-    }
-
-    case AssetType::TextDocument: {
-        // FIXME: Combine things into one allocation?
-        copyFileIntoAsset(&file_data, *asset);
-        LineReader reader { metadata.shortName, asset->data, {} };
-        auto line_count = reader.line_count();
-        auto lines_data = assets_allocate(line_count * sizeof(TextDocument::Line));
-        auto lines_array = makeArray(line_count, reinterpret_cast<TextDocument::Line*>(lines_data.writable_data()));
-        while (reader.load_next_line()) {
-            auto line = reader.current_line();
-            lines_array.append({ .text = line });
-        }
-        asset->text_document = TextDocument { lines_data, move(lines_array) };
         return { move(asset) };
     }
 

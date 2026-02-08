@@ -6,12 +6,13 @@
 
 #pragma once
 
+#include <Assets/Asset.h>
 #include <Util/Array.h>
 #include <Util/Blob.h>
 #include <Util/StringView.h>
 
 // TODO: This wants some kind of text formatting and fanciness, but for now it's just lines.
-class TextDocument {
+class TextDocument final : public Asset {
 public:
     static TextDocument& get(StringView name);
 
@@ -19,15 +20,19 @@ public:
         StringView text;
     };
 
-    explicit TextDocument(Blob lines_data, Array<Line> lines);
-    TextDocument() = default; // FIXME: Temporary until we remove Asset's big union.
+    TextDocument() = default;
+    static ErrorOr<NonnullOwnPtr<TextDocument>> load(AssetMetadata&, Blob file_data);
+    virtual ~TextDocument() override;
 
     // FIXME: ReadonlySpan
     Array<Line> const& lines() const { return m_lines; }
 
-    void unload();
+    virtual void unload(AssetMetadata&) override;
 
 private:
+    TextDocument(Blob source_data, Blob lines_data, Array<Line> lines);
+
+    Blob m_source_data;
     Blob m_lines_data;
     Array<Line> m_lines;
 };
