@@ -9,6 +9,8 @@
 #include <Util/Assert.h>
 #include <Util/Badge.h>
 #include <Util/Basic.h>
+#include <Util/Forward.h>
+#include <Util/Span.h>
 
 template<typename T>
 struct Array {
@@ -102,6 +104,19 @@ struct Array {
             sortInternal(compareElements, partitionIndex + 1, highIndex);
         }
     }
+
+    Span<T> span()
+    {
+        return { static_cast<size_t>(count), items };
+    }
+
+    ReadonlySpan<T> span() const
+    {
+        return { static_cast<size_t>(count), items };
+    }
+
+    operator Span<T>() { return span(); }
+    operator ReadonlySpan<T>() const { return span(); }
 
     class Iterator {
     public:
