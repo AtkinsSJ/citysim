@@ -46,3 +46,9 @@ class NonnullOwnPtr;
 
 template<typename T>
 class Ref;
+
+template<typename T>
+class Span;
+
+template<typename T>
+using ReadonlySpan = Span<T const>;
