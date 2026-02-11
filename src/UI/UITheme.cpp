@@ -591,7 +591,6 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                     auto child_asset = adopt_own(*new DeprecatedAsset);
 
                     auto& button = child_asset->buttonStyle;
-                    button.name = style->name;
 
                     button.font = style->get_asset_ref("font"_h, AssetType::BitmapFont, default_font_name);
                     button.textColor = style->get_colour("textColor"_h, white);
@@ -611,10 +610,10 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                     button.backgroundDisabled = style->get_drawable_style("backgroundDisabled"_h, button.background);
 
                     if (!button.startIcon.hasFixedSize())
-                        reader.error("Start icon for button '{0}' has no fixed size. Defaulting to 0 x 0"_s, { button.name });
+                        reader.error("Start icon for button '{0}' has no fixed size. Defaulting to 0 x 0"_s, { style->name });
 
                     if (!button.endIcon.hasFixedSize())
-                        reader.error("End icon for button '{0}' has no fixed size. Defaulting to 0 x 0"_s, { button.name });
+                        reader.error("End icon for button '{0}' has no fixed size. Defaulting to 0 x 0"_s, { style->name });
 
                     child_metadata->loaded_asset = move(child_asset);
                     addChildAsset(&metadata, child_metadata);
@@ -625,7 +624,6 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                     auto child_asset = adopt_own(*new DeprecatedAsset);
 
                     auto& checkbox = child_asset->checkboxStyle;
-                    checkbox.name = style->name;
 
                     checkbox.padding = style->get_padding("padding"_h, {});
 
@@ -645,7 +643,7 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                     } else if (checkbox.check.hasFixedSize()) {
                         checkbox.checkSize = checkbox.check.getSize();
                     } else {
-                        reader.error("Check for checkbox '{0}' has no fixed size, and no checkSize was provided. Defaulting to 0 x 0"_s, { checkbox.name });
+                        reader.error("Check for checkbox '{0}' has no fixed size, and no checkSize was provided. Defaulting to 0 x 0"_s, { style->name });
                     }
 
                     child_metadata->loaded_asset = move(child_asset);
@@ -657,7 +655,6 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                     auto child_asset = adopt_own(*new DeprecatedAsset);
 
                     auto& console = child_asset->consoleStyle;
-                    console.name = style->name;
 
                     console.font = style->get_asset_ref("font"_h, AssetType::BitmapFont, default_font_name);
 
@@ -683,7 +680,6 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                     auto child_asset = adopt_own(*new DeprecatedAsset);
 
                     auto& ddl = child_asset->dropDownListStyle;
-                    ddl.name = style->name;
 
                     ddl.buttonStyle = style->get_asset_ref("buttonStyle"_h, AssetType::ButtonStyle);
                     ddl.panelStyle = style->get_asset_ref("panelStyle"_h, AssetType::PanelStyle);
@@ -697,7 +693,6 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                     auto child_asset = adopt_own(*new DeprecatedAsset);
 
                     auto& label = child_asset->labelStyle;
-                    label.name = style->name;
 
                     label.padding = style->get_padding("padding"_h, {});
                     label.background = style->get_drawable_style("background"_h, {});
@@ -714,7 +709,6 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                     auto child_asset = adopt_own(*new DeprecatedAsset);
 
                     auto& panel = child_asset->panelStyle;
-                    panel.name = style->name;
 
                     panel.padding = style->get_padding("padding"_h, {});
                     panel.contentPadding = style->get_s32("contentPadding"_h, {});
@@ -739,7 +733,6 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                     auto child_asset = adopt_own(*new DeprecatedAsset);
 
                     auto& radio_button = child_asset->radioButtonStyle;
-                    radio_button.name = style->name;
 
                     radio_button.size = style->get_v2i("size"_h, {});
                     radio_button.background = style->get_drawable_style("background"_h, {});
@@ -762,7 +755,6 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                     auto child_asset = adopt_own(*new DeprecatedAsset);
 
                     auto& scrollbar = child_asset->scrollbarStyle;
-                    scrollbar.name = style->name;
 
                     scrollbar.background = style->get_drawable_style("background"_h, {});
                     scrollbar.thumb = style->get_drawable_style("thumb"_h, {});
@@ -780,7 +772,6 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                     auto child_asset = adopt_own(*new DeprecatedAsset);
 
                     auto& slider = child_asset->sliderStyle;
-                    slider.name = style->name;
 
                     slider.track = style->get_drawable_style("track"_h, {});
                     slider.trackThickness = style->get_s32("trackThickness"_h, 3);
@@ -799,7 +790,6 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                     auto child_asset = adopt_own(*new DeprecatedAsset);
 
                     auto& text_input = child_asset->textInputStyle;
-                    text_input.name = style->name;
 
                     text_input.font = style->get_asset_ref("font"_h, AssetType::BitmapFont, default_font_name);
                     text_input.textColor = style->get_colour("textColor"_h, white);
@@ -820,7 +810,6 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                     auto child_asset = adopt_own(*new DeprecatedAsset);
 
                     auto& window = child_asset->windowStyle;
-                    window.name = style->name;
 
                     window.titleBarHeight = style->get_s32("titleBarHeight"_h, 16);
                     window.titleBarColor = style->get_colour("titleBarColor"_h, Colour::from_rgb_255(128, 128, 128, 255));

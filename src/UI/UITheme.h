@@ -78,8 +78,6 @@ enum class StyleType : u8 {
 };
 
 struct ButtonStyle {
-    String name;
-
     AssetRef font;
     Colour textColor;
     Alignment textAlignment;
@@ -100,8 +98,6 @@ struct ButtonStyle {
 };
 
 struct CheckboxStyle {
-    String name;
-
     Padding padding;
 
     DrawableStyle background;
@@ -117,8 +113,6 @@ struct CheckboxStyle {
 };
 
 struct ConsoleStyle {
-    String name;
-
     AssetRef font;
     union {
         EnumMap<ConsoleLineStyle, Colour> outputTextColors;
@@ -142,16 +136,12 @@ struct ConsoleStyle {
 };
 
 struct DropDownListStyle {
-    String name;
-
     // For now, we'll just piggy-back off of other styles:
     AssetRef buttonStyle; // For the normal state
     AssetRef panelStyle;  // For the drop-down state
 };
 
 struct LabelStyle {
-    String name;
-
     Padding padding;
     DrawableStyle background;
 
@@ -161,8 +151,6 @@ struct LabelStyle {
 };
 
 struct PanelStyle {
-    String name;
-
     Padding padding;
     s32 contentPadding;
     Alignment widgetAlignment;
@@ -180,8 +168,6 @@ struct PanelStyle {
 };
 
 struct RadioButtonStyle {
-    String name;
-
     V2I size;
     DrawableStyle background;
     DrawableStyle backgroundHover;
@@ -196,8 +182,6 @@ struct RadioButtonStyle {
 };
 
 struct ScrollbarStyle {
-    String name;
-
     s32 width;
 
     DrawableStyle background;
@@ -209,8 +193,6 @@ struct ScrollbarStyle {
 };
 
 struct SliderStyle {
-    String name;
-
     DrawableStyle track;
     s32 trackThickness;
 
@@ -222,8 +204,6 @@ struct SliderStyle {
 };
 
 struct TextInputStyle {
-    String name;
-
     AssetRef font;
     Colour textColor;
     Alignment textAlignment;
@@ -236,8 +216,6 @@ struct TextInputStyle {
 };
 
 struct WindowStyle {
-    String name;
-
     AssetRef titleLabelStyle;
     s32 titleBarHeight;
     Colour titleBarColor;
