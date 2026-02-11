@@ -6,11 +6,14 @@
 
 #pragma once
 
+#include <Assets/Asset.h>
 #include <Assets/Forward.h>
+#include <Util/Blob.h>
 #include <Util/Rectangle.h>
 #include <Util/String.h>
 
-struct Sprite {
+class Sprite {
+public:
     static Sprite& get(StringView name);
 
     AssetMetadata* texture;
@@ -19,9 +22,16 @@ struct Sprite {
     s32 pixelHeight;
 };
 
-struct SpriteGroup {
+class SpriteGroup final : public Asset {
+public:
     static SpriteGroup& get(StringView name);
 
+    static NonnullOwnPtr<SpriteGroup> make_placeholder();
+    virtual ~SpriteGroup() override = default;
+
+    virtual void unload(AssetMetadata& metadata) override;
+
+    Blob data {};
     s32 count;
     Sprite* sprites;
 };
@@ -46,3 +56,5 @@ private:
     mutable Sprite* m_pointer { nullptr };
     mutable u32 m_asset_generation { 0 };
 };
+
+ErrorOr<NonnullOwnPtr<Asset>> load_sprite_defs(AssetMetadata&, Blob);

@@ -8,9 +8,7 @@
 
 #include <Assets/Asset.h>
 #include <Assets/AssetLoader.h>
-#include <Gfx/Ninepatch.h>
 #include <Gfx/Shader.h>
-#include <Gfx/Sprite.h>
 #include <Gfx/Texture.h>
 #include <UI/UITheme.h>
 #include <Util/Array.h>
@@ -46,11 +44,7 @@ public:
             Array<String> buildingIDs;
         } buildingDefs;
 
-        Ninepatch ninepatch;
-
         Shader shader;
-
-        SpriteGroup spriteGroup;
 
         struct {
             Array<String> terrainIDs;

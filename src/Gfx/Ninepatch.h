@@ -6,10 +6,17 @@
 
 #pragma once
 
-#include <Assets/Forward.h>
+#include <Assets/Asset.h>
 #include <Util/Basic.h>
+#include <Util/OwnPtr.h>
 
-struct Ninepatch {
+class Ninepatch final : public Asset {
+public:
+    static NonnullOwnPtr<Ninepatch> make_placeholder();
+    virtual ~Ninepatch() override = default;
+
+    virtual void unload(AssetMetadata&) override;
+
     AssetMetadata* texture;
 
     s32 pu0;

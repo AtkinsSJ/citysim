@@ -28,8 +28,6 @@ inline ButtonState buttonIsActive(bool isActive)
     return isActive ? ButtonState::Active : ButtonState::Normal;
 }
 
-struct Sprite;
-
 namespace UI {
 
 // Annoyingly, we have to predeclare all the style types. Yay for C++
