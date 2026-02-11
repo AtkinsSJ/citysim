@@ -8,6 +8,7 @@
 #include <Assets/AssetMetadata.h>
 #include <Gfx/OpenGL.h>
 #include <Gfx/Shader.h>
+#include <Gfx/Texture.h>
 #include <Util/Deferred.h>
 #include <Util/Log.h>
 
@@ -244,7 +245,7 @@ void Renderer::render_internal()
                 } else {
                     ASSERT(header->texture->state == AssetMetadata::State::Loaded);
 
-                    Texture& texture = dynamic_cast<DeprecatedAsset&>(*header->texture->loaded_asset).texture;
+                    auto& texture = dynamic_cast<Texture&>(*header->texture->loaded_asset);
 
                     glActiveTexture(GL_TEXTURE0 + 0);
                     glBindTexture(GL_TEXTURE_2D, texture.gl.glTextureID);
@@ -435,7 +436,7 @@ void Renderer::after_assets_loaded()
         it.hasNext();
         it.next()) {
         AssetMetadata* asset = *it.get();
-        auto& texture = dynamic_cast<DeprecatedAsset&>(*asset->loaded_asset).texture;
+        auto& texture = dynamic_cast<Texture&>(*asset->loaded_asset);
         glGenTextures(1, &texture.gl.glTextureID);
         texture.gl.isLoaded = false;
     }
@@ -477,7 +478,7 @@ void Renderer::before_assets_unloaded()
         it.hasNext();
         it.next()) {
         AssetMetadata* asset = *it.get();
-        Texture& texture = dynamic_cast<DeprecatedAsset&>(*asset->loaded_asset).texture;
+        Texture& texture = dynamic_cast<Texture&>(*asset->loaded_asset);
 
         if (texture.gl.isLoaded && texture.gl.glTextureID != 0) {
             glDeleteTextures(1, &texture.gl.glTextureID);

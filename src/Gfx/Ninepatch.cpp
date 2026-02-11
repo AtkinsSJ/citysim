@@ -6,6 +6,7 @@
 
 #include "Ninepatch.h"
 #include <Assets/AssetManager.h>
+#include <Gfx/Texture.h>
 #include <Util/OwnPtr.h>
 
 Ninepatch::Ninepatch(AssetMetadata& texture_metadata, s32 pu0, s32 pu1, s32 pu2, s32 pu3, s32 pv0, s32 pv1, s32 pv2, s32 pv3)
@@ -21,7 +22,7 @@ Ninepatch::Ninepatch(AssetMetadata& texture_metadata, s32 pu0, s32 pu1, s32 pu2,
 {
     texture_metadata.ensure_is_loaded();
 
-    auto& surface = *dynamic_cast<DeprecatedAsset&>(*texture_metadata.loaded_asset).texture.surface;
+    auto& surface = *dynamic_cast<Texture&>(*texture_metadata.loaded_asset).surface;
     float texture_width = surface.w;
     float texture_height = surface.h;
 
@@ -39,7 +40,7 @@ Ninepatch::Ninepatch(AssetMetadata& texture_metadata, s32 pu0, s32 pu1, s32 pu2,
 NonnullOwnPtr<Ninepatch> Ninepatch::make_placeholder()
 {
     auto& texture_metadata = asset_manager().placeholderAssets[AssetType::Texture];
-    auto& surface = *dynamic_cast<DeprecatedAsset&>(*texture_metadata.loaded_asset).texture.surface;
+    auto& surface = *dynamic_cast<Texture&>(*texture_metadata.loaded_asset).surface;
     return adopt_own(*new Ninepatch(asset_manager().placeholderAssets[AssetType::Texture], 0, 0, surface.w, surface.w, 0, 0, surface.h, surface.h));
 }
 
