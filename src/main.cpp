@@ -39,6 +39,7 @@
 #include <Settings/Settings.h>
 #include <Sim/BuildingCatalogue.h>
 #include <Sim/TerrainCatalogue.h>
+#include <UI/AssetLoader.h>
 #include <UI/UI.h>
 #include <UI/Window.h>
 #include <Util/Log.h>
@@ -126,6 +127,7 @@ int main(int argc, char* argv[])
 
     assets.register_asset_loader(adopt_own(*new Assets::DeprecatedAssetLoader));
     assets.register_asset_loader(adopt_own(*new Gfx::AssetLoader));
+    assets.register_asset_loader(adopt_own(*new UI::AssetLoader));
     assets.scan_assets();
     assets.load_assets();
 

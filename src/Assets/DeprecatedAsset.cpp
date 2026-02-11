@@ -148,7 +148,6 @@ void DeprecatedAssetLoader::register_types(AssetManager& assets)
     assets.fileExtensionToType.put(assets.assetStrings.intern("buildings"_s), AssetType::BuildingDefs);
     assets.fileExtensionToType.put(assets.assetStrings.intern("keymap"_s), AssetType::DevKeymap);
     assets.fileExtensionToType.put(assets.assetStrings.intern("terrain"_s), AssetType::TerrainDefs);
-    assets.fileExtensionToType.put(assets.assetStrings.intern("theme"_s), AssetType::UITheme);
 
     assets.directoryNameToType.put(assets.assetStrings.intern("locale"_s), AssetType::Texts);
 
@@ -156,7 +155,6 @@ void DeprecatedAssetLoader::register_types(AssetManager& assets)
     assets.asset_loaders_by_type[AssetType::DevKeymap] = this;
     assets.asset_loaders_by_type[AssetType::TerrainDefs] = this;
     assets.asset_loaders_by_type[AssetType::Texts] = this;
-    assets.asset_loaders_by_type[AssetType::UITheme] = this;
 }
 
 void DeprecatedAssetLoader::create_placeholder_assets(AssetManager& assets)
@@ -172,9 +170,6 @@ void DeprecatedAssetLoader::create_placeholder_assets(AssetManager& assets)
 
     // Texts
     make_placeholder_asset(assets, AssetType::Texts);
-
-    // UITheme
-    make_placeholder_asset(assets, AssetType::UITheme);
 }
 
 ErrorOr<NonnullOwnPtr<Asset>> DeprecatedAssetLoader::load_asset(AssetMetadata& metadata, Blob file_data)
@@ -215,11 +210,6 @@ ErrorOr<NonnullOwnPtr<Asset>> DeprecatedAssetLoader::load_asset(AssetMetadata& m
 
         HashTable<String>* textsTable = (asset->texts.isFallbackLocale ? &asset_manager().defaultTexts : &asset_manager().texts);
         loadTexts(textsTable, &metadata, file_data, *asset);
-        return { move(asset) };
-    }
-
-    case AssetType::UITheme: {
-        loadUITheme(file_data, metadata, *asset);
         return { move(asset) };
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2015-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -287,6 +287,6 @@ private:
 void initStyleConstants();
 void assignStyleProperties(StyleType type, std::initializer_list<String> properties);
 
-}
+ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data);
 
-void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset);
+}
