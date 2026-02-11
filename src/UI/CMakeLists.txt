@@ -1,4 +1,5 @@
 target_sources(CitySim PRIVATE
+    AssetLoader.cpp
     Drawable.cpp
     Panel.cpp
     TextInput.cpp

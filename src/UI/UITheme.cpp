@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2017-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -377,20 +377,18 @@ void assignStyleProperties(StyleType type, std::initializer_list<String> propert
     }
 }
 
-}
-
-void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
+ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
 {
     LineReader reader { metadata.shortName, data };
 
-    HashTable<EnumMap<UI::StyleType, UI::Style>> styles;
+    HashTable<EnumMap<StyleType, Style>> styles;
 
     HashTable<String> fontNamesToAssetNames;
 
-    EnumMap<UI::StyleType, s32> style_count;
+    EnumMap<StyleType, s32> style_count;
 
     StringView currentSection;
-    UI::Style* target = nullptr;
+    Style* target = nullptr;
 
     while (reader.load_next_line()) {
         auto maybe_first_word = reader.next_token();
@@ -416,9 +414,9 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                 }
             } else {
                 // Create a new style entry if the name matches a style type
-                Optional<UI::StyleType> foundStyleType = UI::styleTypesByName.find_value(firstWord.deprecated_to_string());
+                Optional<StyleType> foundStyleType = styleTypesByName.find_value(firstWord.deprecated_to_string());
                 if (foundStyleType.has_value()) {
-                    UI::StyleType styleType = foundStyleType.release_value();
+                    StyleType styleType = foundStyleType.release_value();
                     auto name_token = reader.next_token();
                     if (!name_token.has_value()) {
                         reader.error("Missing name for `{}`"_s, { firstWord });
@@ -453,7 +451,7 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                 if (!parentPack.has_value()) {
                     reader.error("Unable to find style named '{0}'"_s, { parent_style });
                 } else {
-                    UI::Style const& parent = (*parentPack.value())[target->type];
+                    Style const& parent = (*parentPack.value())[target->type];
                     // For undefined styles, the parent struct will be all nulls, so the type will not match
                     if (parent.type != target->type) {
                         reader.error("Attempting to extend a style of the wrong type."_s);
@@ -466,42 +464,42 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
             } else {
                 // Check our properties map for a match
                 auto property_name = firstWord.deprecated_to_string();
-                UI::Property* property = UI::styleProperties.find(property_name).value_or(nullptr);
+                Property* property = styleProperties.find(property_name).value_or(nullptr);
                 if (property) {
                     if (property->existsInStyle[target->type]) {
                         switch (property->type) {
-                        case UI::PropType::Alignment: {
+                        case PropType::Alignment: {
                             if (auto value = Alignment::read(reader); value.has_value()) {
                                 target->set_property(property_name, value.release_value());
                             }
                         } break;
 
-                        case UI::PropType::Bool: {
+                        case PropType::Bool: {
                             if (auto value = reader.read_bool(); value.has_value()) {
                                 target->set_property(property_name, value.release_value());
                             }
                         } break;
 
-                        case UI::PropType::Color: {
+                        case PropType::Color: {
                             if (Optional value = Colour::read(reader); value.has_value()) {
                                 target->set_property(property_name, value.release_value());
                             }
                         } break;
 
-                        case UI::PropType::Drawable: {
-                            Optional<UI::DrawableStyle> value = UI::readDrawableStyle(&reader);
+                        case PropType::Drawable: {
+                            Optional<DrawableStyle> value = readDrawableStyle(&reader);
                             if (value.has_value()) {
                                 target->set_property(property_name, value.release_value());
                             }
                         } break;
 
-                        case UI::PropType::Float: {
+                        case PropType::Float: {
                             if (auto value = reader.read_float(); value.has_value()) {
                                 target->set_property(property_name, value.release_value());
                             }
                         } break;
 
-                        case UI::PropType::Font: {
+                        case PropType::Font: {
                             auto name_token = reader.next_token();
                             if (!name_token.has_value()) {
                                 reader.error("Missing font name in `{}`"_s, { property_name });
@@ -516,20 +514,20 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                             }
                         } break;
 
-                        case UI::PropType::Int: {
+                        case PropType::Int: {
                             if (auto value = reader.read_int<s32>(); value.has_value()) {
                                 target->set_property(property_name, value.release_value());
                             }
                         } break;
 
-                        case UI::PropType::Padding: {
+                        case PropType::Padding: {
                             if (auto value = Padding::read(reader); value.has_value()) {
                                 target->set_property(property_name, value.release_value());
                             }
                         } break;
 
-                        case UI::PropType::Style: // NB: Style names are just Strings now
-                        case UI::PropType::String: {
+                        case PropType::Style: // NB: Style names are just Strings now
+                        case PropType::String: {
                             auto string_token = reader.next_token();
                             if (!string_token.has_value()) {
                                 reader.error("Missing string in `{}`"_s, { property_name });
@@ -540,7 +538,7 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                             target->set_property(property_name, value);
                         } break;
 
-                        case UI::PropType::V2I: {
+                        case PropType::V2I: {
                             auto offsetX = reader.read_int<s32>();
                             auto offsetY = reader.read_int<s32>();
                             if (offsetX.has_value() && offsetY.has_value()) {
@@ -565,7 +563,7 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
     // Actually write out the styles into the UITheme
 
     s32 totalStyleCount = 0;
-    for (auto style_type : enum_values<UI::StyleType>()) {
+    for (auto style_type : enum_values<StyleType>()) {
         totalStyleCount += style_count[style_type];
     }
     allocateChildren(&metadata, totalStyleCount);
@@ -577,16 +575,16 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
 
     for (auto it = styles.iterate(); it.hasNext(); it.next()) {
         auto* stylePack = it.get();
-        for (auto style_type : enum_values<UI::StyleType>()) {
-            if (style_type == UI::StyleType::None)
+        for (auto style_type : enum_values<StyleType>()) {
+            if (style_type == StyleType::None)
                 continue;
 
-            UI::Style* style = &(*stylePack)[style_type];
+            Style* style = &(*stylePack)[style_type];
             // For undefined styles, the parent struct will be all nulls, so the type will not match
             // FIXME: This seems really sketchy.
             if (style->type == style_type) {
                 switch (style->type) {
-                case UI::StyleType::Button: {
+                case StyleType::Button: {
                     AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::ButtonStyle, style->name, {});
                     auto child_asset = adopt_own(*new DeprecatedAsset);
 
@@ -619,7 +617,7 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                     addChildAsset(&metadata, child_metadata);
                 } break;
 
-                case UI::StyleType::Checkbox: {
+                case StyleType::Checkbox: {
                     AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::CheckboxStyle, style->name, {});
                     auto child_asset = adopt_own(*new DeprecatedAsset);
 
@@ -650,7 +648,7 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                     addChildAsset(&metadata, child_metadata);
                 } break;
 
-                case UI::StyleType::Console: {
+                case StyleType::Console: {
                     AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::ConsoleStyle, style->name, {});
                     auto child_asset = adopt_own(*new DeprecatedAsset);
 
@@ -675,7 +673,7 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                     addChildAsset(&metadata, child_metadata);
                 } break;
 
-                case UI::StyleType::DropDownList: {
+                case StyleType::DropDownList: {
                     AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::DropDownListStyle, style->name, {});
                     auto child_asset = adopt_own(*new DeprecatedAsset);
 
@@ -688,7 +686,7 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                     addChildAsset(&metadata, child_metadata);
                 } break;
 
-                case UI::StyleType::Label: {
+                case StyleType::Label: {
                     AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::LabelStyle, style->name, {});
                     auto child_asset = adopt_own(*new DeprecatedAsset);
 
@@ -704,7 +702,7 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                     addChildAsset(&metadata, child_metadata);
                 } break;
 
-                case UI::StyleType::Panel: {
+                case StyleType::Panel: {
                     AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::PanelStyle, style->name, {});
                     auto child_asset = adopt_own(*new DeprecatedAsset);
 
@@ -728,7 +726,7 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                     addChildAsset(&metadata, child_metadata);
                 } break;
 
-                case UI::StyleType::RadioButton: {
+                case StyleType::RadioButton: {
                     AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::RadioButtonStyle, style->name, {});
                     auto child_asset = adopt_own(*new DeprecatedAsset);
 
@@ -750,7 +748,7 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                     addChildAsset(&metadata, child_metadata);
                 } break;
 
-                case UI::StyleType::Scrollbar: {
+                case StyleType::Scrollbar: {
                     AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::ScrollbarStyle, style->name, {});
                     auto child_asset = adopt_own(*new DeprecatedAsset);
 
@@ -767,7 +765,7 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                     addChildAsset(&metadata, child_metadata);
                 } break;
 
-                case UI::StyleType::Slider: {
+                case StyleType::Slider: {
                     AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::SliderStyle, style->name, {});
                     auto child_asset = adopt_own(*new DeprecatedAsset);
 
@@ -785,7 +783,7 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                     addChildAsset(&metadata, child_metadata);
                 } break;
 
-                case UI::StyleType::TextInput: {
+                case StyleType::TextInput: {
                     AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::TextInputStyle, style->name, {});
                     auto child_asset = adopt_own(*new DeprecatedAsset);
 
@@ -805,7 +803,7 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
                     addChildAsset(&metadata, child_metadata);
                 } break;
 
-                case UI::StyleType::Window: {
+                case StyleType::Window: {
                     AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::WindowStyle, style->name, {});
                     auto child_asset = adopt_own(*new DeprecatedAsset);
 
@@ -831,4 +829,8 @@ void loadUITheme(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
             }
         }
     }
+
+    return { adopt_own(*new ContainerAsset) };
+}
+
 }
