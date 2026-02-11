@@ -77,6 +77,8 @@ enum class StyleType : u8 {
 
 class ButtonStyle final : public Asset {
 public:
+    static ButtonStyle& get(StringView name);
+
     ButtonStyle(
         AssetRef font,
         Colour text_color,
@@ -116,6 +118,8 @@ public:
 
 class CheckboxStyle final : public Asset {
 public:
+    static CheckboxStyle& get(StringView name);
+
     CheckboxStyle(
         Padding padding,
         DrawableStyle background,
@@ -146,6 +150,8 @@ public:
 
 class ConsoleStyle final : public Asset {
 public:
+    static ConsoleStyle& get(StringView name);
+
     ConsoleStyle(
         AssetRef font,
         EnumMap<ConsoleLineStyle, Colour> output_text_colors,
@@ -170,6 +176,8 @@ public:
 
 class DropDownListStyle final : public Asset {
 public:
+    static DropDownListStyle& get(StringView name);
+
     DropDownListStyle(AssetRef button_style, AssetRef panel_style);
     virtual ~DropDownListStyle() override = default;
     virtual void unload(AssetMetadata&) override { }
@@ -181,6 +189,8 @@ public:
 
 class LabelStyle final : public Asset {
 public:
+    static LabelStyle& get(StringView name);
+
     LabelStyle(
         Padding padding,
         DrawableStyle background,
@@ -200,6 +210,8 @@ public:
 
 class PanelStyle final : public Asset {
 public:
+    static PanelStyle& get(StringView name);
+
     PanelStyle(
         Padding padding,
         s32 content_padding,
@@ -234,6 +246,8 @@ public:
 
 class RadioButtonStyle final : public Asset {
 public:
+    static RadioButtonStyle& get(StringView name);
+
     RadioButtonStyle(
         V2I size,
         DrawableStyle background,
@@ -263,6 +277,8 @@ public:
 
 class ScrollbarStyle final : public Asset {
 public:
+    static ScrollbarStyle& get(StringView name);
+
     ScrollbarStyle(
         s32 width,
         DrawableStyle background,
@@ -285,6 +301,8 @@ public:
 
 class SliderStyle final : public Asset {
 public:
+    static SliderStyle& get(StringView name);
+
     SliderStyle(
         DrawableStyle track,
         s32 track_thickness,
@@ -308,6 +326,8 @@ public:
 
 class TextInputStyle final : public Asset {
 public:
+    static TextInputStyle& get(StringView name);
+
     TextInputStyle(
         AssetRef font,
         Colour text_color,
@@ -332,6 +352,8 @@ public:
 
 class WindowStyle final : public Asset {
 public:
+    static WindowStyle& get(StringView name);
+
     WindowStyle(
         AssetRef title_label_style,
         s32 title_bar_height,

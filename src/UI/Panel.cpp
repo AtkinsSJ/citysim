@@ -11,7 +11,7 @@
 namespace UI {
 
 Panel::Panel(Rect2I bounds, PanelStyle* panelStyle, u32 flags, RenderBuffer* renderBuffer)
-    : style(panelStyle ? panelStyle : getStyle<PanelStyle>("default"_s))
+    : style(panelStyle ? panelStyle : &PanelStyle::get("default"_s))
     , flags(flags)
     , allowClickThrough((flags & PanelFlags::AllowClickThrough) != 0)
     , hideWidgets((flags & PanelFlags::HideWidgets) != 0)
@@ -509,7 +509,7 @@ PanelStyle* Panel::getPanelStyle(String styleName)
 {
     PanelStyle* result = nullptr;
     if (!styleName.is_empty())
-        result = getStyle<PanelStyle>(styleName);
+        result = &PanelStyle::get(styleName);
     if (result == nullptr)
         result = this->style;
 

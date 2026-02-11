@@ -50,7 +50,7 @@ enum {
 struct Panel {
     Panel(Rect2I bounds, PanelStyle* style = nullptr, u32 flags = 0, RenderBuffer* renderBuffer = &the_renderer().ui_buffer());
     Panel(Rect2I bounds, String styleName, u32 flags = 0, RenderBuffer* renderBuffer = &the_renderer().ui_buffer())
-        : Panel(bounds, getStyle<PanelStyle>(styleName), flags, renderBuffer)
+        : Panel(bounds, &PanelStyle::get(styleName), flags, renderBuffer)
     {
     }
 
