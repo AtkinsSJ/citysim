@@ -150,12 +150,10 @@ void DeprecatedAssetLoader::register_types(AssetManager& assets)
     assets.fileExtensionToType.put(assets.assetStrings.intern("terrain"_s), AssetType::TerrainDefs);
     assets.fileExtensionToType.put(assets.assetStrings.intern("theme"_s), AssetType::UITheme);
 
-    assets.directoryNameToType.put(assets.assetStrings.intern("shaders"_s), AssetType::Shader);
     assets.directoryNameToType.put(assets.assetStrings.intern("locale"_s), AssetType::Texts);
 
     assets.asset_loaders_by_type[AssetType::BuildingDefs] = this;
     assets.asset_loaders_by_type[AssetType::DevKeymap] = this;
-    assets.asset_loaders_by_type[AssetType::Shader] = this;
     assets.asset_loaders_by_type[AssetType::TerrainDefs] = this;
     assets.asset_loaders_by_type[AssetType::Texts] = this;
     assets.asset_loaders_by_type[AssetType::UITheme] = this;
@@ -168,9 +166,6 @@ void DeprecatedAssetLoader::create_placeholder_assets(AssetManager& assets)
 
     // DevKeymap
     make_placeholder_asset(assets, AssetType::DevKeymap);
-
-    // Shader
-    make_placeholder_asset(assets, AssetType::Shader);
 
     // TerrainDefs
     make_placeholder_asset(assets, AssetType::TerrainDefs);
@@ -201,12 +196,6 @@ ErrorOr<NonnullOwnPtr<Asset>> DeprecatedAssetLoader::load_asset(AssetMetadata& m
             copyFileIntoAsset(&file_data, *asset);
             loadConsoleKeyboardShortcuts(globalConsole, file_data, metadata.shortName);
         }
-        return { move(asset) };
-    }
-
-    case AssetType::Shader: {
-        copyFileIntoAsset(&file_data, *asset);
-        String::from_blob(file_data).value().split_in_two('$', &asset->shader.vertexShader, &asset->shader.fragmentShader);
         return { move(asset) };
     }
 

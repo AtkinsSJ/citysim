@@ -6,14 +6,26 @@
 
 #pragma once
 
-#include <Util/Basic.h>
+#include <Assets/Asset.h>
+#include <Util/Blob.h>
 #include <Util/String.h>
 
-struct Shader {
+class Shader final : public Asset {
+public:
     static Shader& get(StringView name);
+
+    static NonnullOwnPtr<Shader> make_placeholder();
+    static ErrorOr<NonnullOwnPtr<Shader>> load(AssetMetadata&, Blob data);
+    virtual ~Shader() override = default;
+
+    virtual void unload(AssetMetadata& metadata) override;
 
     s8 rendererShaderID;
 
     String vertexShader;
     String fragmentShader;
+
+private:
+    Shader(Blob data, String vertex_source, String fragment_source);
+    Blob m_data;
 };

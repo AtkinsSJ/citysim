@@ -452,7 +452,7 @@ void Renderer::after_assets_loaded()
         s8 shaderIndex = (s8)m_shaders.count;
         ShaderProgram* shader = m_shaders.appendBlank();
         shader->asset = asset;
-        dynamic_cast<DeprecatedAsset&>(*asset->loaded_asset).shader.rendererShaderID = shaderIndex;
+        dynamic_cast<Shader&>(*asset->loaded_asset).rendererShaderID = shaderIndex;
 
         loadShaderProgram(asset, shader);
         if (!shader->isValid) {
@@ -642,7 +642,7 @@ void loadShaderProgram(AssetMetadata* asset, ShaderProgram* glShader)
     glShader->shaderProgramID = glCreateProgram();
 
     if (glShader->shaderProgramID) {
-        auto& shader = dynamic_cast<DeprecatedAsset&>(*asset->loaded_asset).shader;
+        auto& shader = dynamic_cast<Shader&>(*asset->loaded_asset);
         bool isVertexShaderCompiled = compileShader(glShader, asset->shortName, &shader, ShaderPart::Vertex);
         bool isFragmentShaderCompiled = compileShader(glShader, asset->shortName, &shader, ShaderPart::Fragment);
 
