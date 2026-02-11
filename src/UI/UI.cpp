@@ -281,7 +281,7 @@ bool putButton(Rect2I bounds, ButtonStyle* style, ButtonState state, RenderBuffe
     DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     if (style == nullptr)
-        style = getStyle<ButtonStyle>("default"_s);
+        style = &ButtonStyle::get("default"_s);
     if (renderBuffer == nullptr)
         renderBuffer = &the_renderer().ui_buffer();
 
@@ -377,7 +377,7 @@ void putCheckbox(bool* checked, Rect2I bounds, CheckboxStyle* style, bool isDisa
     DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     if (style == nullptr)
-        style = getStyle<CheckboxStyle>("default"_s);
+        style = &CheckboxStyle::get("default"_s);
     if (renderBuffer == nullptr)
         renderBuffer = &the_renderer().ui_buffer();
 
@@ -438,7 +438,7 @@ bool isDropDownListOpen(void* pointer)
 V2I calculateLabelSize(StringView text, LabelStyle* style, s32 maxWidth, bool fillWidth)
 {
     if (style == nullptr)
-        style = getStyle<LabelStyle>("default"_s);
+        style = &LabelStyle::get("default"_s);
 
     s32 maxTextWidth = maxWidth - (style->padding.left + style->padding.right);
 
@@ -462,7 +462,7 @@ void putLabel(StringView text, Rect2I bounds, LabelStyle* style, RenderBuffer* r
 
     auto& renderer = the_renderer();
     if (style == nullptr)
-        style = getStyle<LabelStyle>("default"_s);
+        style = &LabelStyle::get("default"_s);
     if (renderBuffer == nullptr)
         renderBuffer = &renderer.ui_buffer();
 
@@ -507,7 +507,7 @@ ScrollbarState* getMenuScrollbar()
 V2I calculateRadioButtonSize(RadioButtonStyle* style)
 {
     if (style == nullptr)
-        style = getStyle<RadioButtonStyle>("default"_s);
+        style = &RadioButtonStyle::get("default"_s);
 
     V2I result = style->size;
 
@@ -520,7 +520,7 @@ void putRadioButton(s32* selectedValue, s32 value, Rect2I bounds, RadioButtonSty
 
     auto& renderer = the_renderer();
     if (style == nullptr)
-        style = getStyle<RadioButtonStyle>("default"_s);
+        style = &RadioButtonStyle::get("default"_s);
     if (renderBuffer == nullptr)
         renderBuffer = &renderer.ui_buffer();
 
@@ -614,7 +614,7 @@ void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, Scrollb
 
     auto& renderer = the_renderer();
     if (style == nullptr)
-        style = getStyle<ScrollbarStyle>("default"_s);
+        style = &ScrollbarStyle::get("default"_s);
     if (renderBuffer == nullptr)
         renderBuffer = &renderer.ui_buffer();
 
@@ -710,7 +710,7 @@ s32 getScrollbarContentOffset(ScrollbarState* state, s32 scrollbarSize)
 V2I calculateSliderSize(Orientation orientation, SliderStyle* style, V2I availableSpace, bool fillSpace)
 {
     if (style == nullptr)
-        style = getStyle<SliderStyle>("default"_s);
+        style = &SliderStyle::get("default"_s);
 
     V2I result = {};
 
@@ -735,7 +735,7 @@ void putSlider(float* currentValue, float minValue, float maxValue, Orientation 
 
     auto& renderer = the_renderer();
     if (style == nullptr)
-        style = getStyle<SliderStyle>("default"_s);
+        style = &SliderStyle::get("default"_s);
     if (renderBuffer == nullptr)
         renderBuffer = &renderer.ui_buffer();
 
@@ -862,7 +862,7 @@ bool putTextInput(TextInput* textInput, Rect2I bounds, TextInputStyle* style, Re
 {
     auto& renderer = the_renderer();
     if (style == nullptr)
-        style = getStyle<TextInputStyle>("default"_s);
+        style = &TextInputStyle::get("default"_s);
     if (renderBuffer == nullptr)
         renderBuffer = &renderer.ui_buffer();
 

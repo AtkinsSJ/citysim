@@ -32,17 +32,17 @@ bool Toast::update_and_draw(float delta_time)
     if (m_current_time_seconds >= m_duration_seconds)
         return true;
 
-    PanelStyle* style = getStyle<PanelStyle>("toast"_s);
+    auto& style = PanelStyle::get("toast"_s);
     V2I origin = v2i(windowSize.x / 2, windowSize.y - 8);
     auto text = m_buffer.view();
 
-    LabelStyle* labelStyle = getStyle<LabelStyle>(style->labelStyle);
+    LabelStyle* labelStyle = getStyle<LabelStyle>(style.labelStyle);
     s32 maxWidth = min(floor_s32(windowSize.x * 0.8f), 500);
-    V2I textSize = getFont(labelStyle->font).calculate_text_size(text, maxWidth - (style->padding.left + style->padding.right));
+    V2I textSize = getFont(labelStyle->font).calculate_text_size(text, maxWidth - (style.padding.left + style.padding.right));
 
     V2I toastSize = v2i(
-        textSize.x + (style->padding.left + style->padding.right),
-        textSize.y + (style->padding.top + style->padding.bottom));
+        textSize.x + (style.padding.left + style.padding.right),
+        textSize.y + (style.padding.top + style.padding.bottom));
 
     float animationDistance = toastSize.y + 16.0f;
 
@@ -57,7 +57,7 @@ bool Toast::update_and_draw(float delta_time)
     }
     Rect2I toastBounds = Rect2I::create_aligned(origin, toastSize, { HAlign::Centre, VAlign::Bottom });
 
-    Panel panel = Panel(toastBounds, style);
+    Panel panel = Panel(toastBounds, &style);
     panel.addLabel(text);
     panel.end();
     return false;

@@ -198,9 +198,9 @@ void updateAndRenderWindows()
         bool shrinkWidth = (window.flags & WindowFlags::ShrinkWidth) != 0;
         bool shrinkHeight = (window.flags & WindowFlags::AutomaticHeight) != 0;
 
-        WindowStyle* windowStyle = getStyle<WindowStyle>(window.styleName);
+        auto& window_style = WindowStyle::get(window.styleName);
 
-        s32 barHeight = hasTitleBar ? windowStyle->titleBarHeight : 0;
+        s32 barHeight = hasTitleBar ? window_style.titleBarHeight : 0;
 
         // Modal windows get a translucent colour over everything behind them
         if (isModal) {
@@ -212,7 +212,7 @@ void updateAndRenderWindows()
         if (!window.isInitialised) {
             window.isInitialised = true;
 
-            WindowContext context = WindowContext(&window, windowStyle, true, nullptr);
+            WindowContext context = WindowContext(&window, &window_style, true, nullptr);
             window.windowProc(&context, window.userData);
             context.windowPanel.end(shrinkHeight, shrinkWidth);
 
@@ -233,7 +233,7 @@ void updateAndRenderWindows()
         } else if (isDragging((void*)window.id)) {
             window.area.set_position(getDraggingObjectPos());
         } else if (isTooltip) {
-            window.area.set_position(mousePos + windowStyle->offsetFromMouse);
+            window.area.set_position(mousePos + window_style.offsetFromMouse);
         }
 
         // Keep window on screen
@@ -260,7 +260,7 @@ void updateAndRenderWindows()
         }
 
         // Actually run the window proc
-        WindowContext context = WindowContext(&window, windowStyle, false, window.renderBuffer);
+        WindowContext context = WindowContext(&window, &window_style, false, window.renderBuffer);
         window.windowProc(&context, window.userData);
         context.windowPanel.end(shrinkHeight, shrinkWidth);
 
@@ -288,15 +288,15 @@ void updateAndRenderWindows()
         if (hasTitleBar) {
             bool hoveringOverCloseButton = closeButtonRect.contains(mousePos);
 
-            auto barColor = (isActive ? windowStyle->titleBarColor : windowStyle->titleBarColorInactive);
+            auto barColor = (isActive ? window_style.titleBarColor : window_style.titleBarColorInactive);
 
             String closeButtonString = "X"_s;
-            auto closeButtonColorHover = windowStyle->titleBarButtonHoverColor;
+            auto closeButtonColorHover = window_style.titleBarButtonHoverColor;
 
             drawSingleRect(window.renderBuffer, barArea, renderer.shaderIds.untextured, barColor);
             String titleString = window.title.getString();
 
-            LabelStyle* titleStyle = getStyle<LabelStyle>(windowStyle->titleLabelStyle);
+            LabelStyle* titleStyle = getStyle<LabelStyle>(window_style.titleLabelStyle);
             // TODO: Take close-button size into account
             V2I titleSize = calculateLabelSize(titleString, titleStyle, barArea.width(), false);
             putLabel(titleString, barArea.create_aligned_within(titleSize, titleStyle->textAlignment), titleStyle, window.renderBuffer);

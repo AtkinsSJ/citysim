@@ -151,40 +151,7 @@ T* getStyle(String styleName, AssetRef const& defaultStyle)
 {
     if (styleName.is_empty())
         return getStyle<T>(defaultStyle);
-    return getStyle<T>(styleName);
-}
-
-template<typename T>
-T* getStyle(String styleName)
-{
-    AssetType styleType = [] {
-        if constexpr (typeid(T) == typeid(UI::ButtonStyle))
-            return AssetType::ButtonStyle;
-        else if constexpr (typeid(T) == typeid(UI::CheckboxStyle))
-            return AssetType::CheckboxStyle;
-        else if constexpr (typeid(T) == typeid(UI::ConsoleStyle))
-            return AssetType::ConsoleStyle;
-        else if constexpr (typeid(T) == typeid(UI::DropDownListStyle))
-            return AssetType::DropDownListStyle;
-        else if constexpr (typeid(T) == typeid(UI::LabelStyle))
-            return AssetType::LabelStyle;
-        else if constexpr (typeid(T) == typeid(UI::PanelStyle))
-            return AssetType::PanelStyle;
-        else if constexpr (typeid(T) == typeid(UI::RadioButtonStyle))
-            return AssetType::RadioButtonStyle;
-        else if constexpr (typeid(T) == typeid(UI::ScrollbarStyle))
-            return AssetType::ScrollbarStyle;
-        else if constexpr (typeid(T) == typeid(UI::SliderStyle))
-            return AssetType::SliderStyle;
-        else if constexpr (typeid(T) == typeid(UI::TextInputStyle))
-            return AssetType::TextInputStyle;
-        else if constexpr (typeid(T) == typeid(UI::WindowStyle))
-            return AssetType::WindowStyle;
-        else
-            static_assert(false);
-    }();
-
-    return dynamic_cast<T*>(getAsset(styleType, styleName).loaded_asset.ptr());
+    return &T::get(styleName);
 }
 
 //
