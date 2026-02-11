@@ -10,6 +10,7 @@
 #include <Gfx/Cursor.h>
 #include <Gfx/Ninepatch.h>
 #include <Gfx/Palette.h>
+#include <Gfx/Shader.h>
 #include <Gfx/Sprite.h>
 #include <Gfx/TextDocument.h>
 #include <Gfx/Texture.h>
@@ -30,6 +31,9 @@ void AssetLoader::register_types(AssetManager& assets)
     assets.fileExtensionToType.put(assets.assetStrings.intern("palettes"_s), AssetType::PaletteDefs);
     assets.asset_loaders_by_type[AssetType::PaletteDefs] = this;
     assets.asset_loaders_by_type[AssetType::Palette] = this;
+
+    assets.directoryNameToType.put(assets.assetStrings.intern("shaders"_s), AssetType::Shader);
+    assets.asset_loaders_by_type[AssetType::Shader] = this;
 
     assets.fileExtensionToType.put(assets.assetStrings.intern("sprites"_s), AssetType::SpriteDefs);
     assets.asset_loaders_by_type[AssetType::SpriteDefs] = this;
@@ -52,6 +56,7 @@ void AssetLoader::create_placeholder_assets(AssetManager& assets)
     assets.set_placeholder_asset(AssetType::Cursor, adopt_own(*new Cursor));
     assets.set_placeholder_asset(AssetType::Ninepatch, Ninepatch::make_placeholder());
     assets.set_placeholder_asset(AssetType::Palette, adopt_own(*new Palette));
+    assets.set_placeholder_asset(AssetType::Shader, Shader::make_placeholder());
     assets.set_placeholder_asset(AssetType::Sprite, SpriteGroup::make_placeholder());
     assets.set_placeholder_asset(AssetType::TextDocument, adopt_own(*new TextDocument));
 }
@@ -72,6 +77,9 @@ ErrorOr<NonnullOwnPtr<Asset>> AssetLoader::load_asset(AssetMetadata& metadata, B
 
     if (metadata.type == AssetType::PaletteDefs)
         return to_error_or_asset(Palette::load_defs(metadata, file_data));
+
+    if (metadata.type == AssetType::Shader)
+        return to_error_or_asset(Shader::load(metadata, file_data));
 
     if (metadata.type == AssetType::SpriteDefs)
         return to_error_or_asset(load_sprite_defs(metadata, file_data));

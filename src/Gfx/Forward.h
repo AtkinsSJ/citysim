@@ -15,7 +15,7 @@ class Ninepatch;
 class Palette;
 struct RenderBuffer;
 class Renderer;
-struct Shader;
+class Shader;
 class Sprite;
 class SpriteGroup;
 class SpriteRef;

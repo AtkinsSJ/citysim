@@ -8,7 +8,6 @@
 
 #include <Assets/Asset.h>
 #include <Assets/AssetLoader.h>
-#include <Gfx/Shader.h>
 #include <UI/UITheme.h>
 #include <Util/Array.h>
 
@@ -42,8 +41,6 @@ public:
         struct {
             Array<String> buildingIDs;
         } buildingDefs;
-
-        Shader shader;
 
         struct {
             Array<String> terrainIDs;
