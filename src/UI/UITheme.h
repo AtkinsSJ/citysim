@@ -12,7 +12,6 @@
 #include <IO/Forward.h>
 #include <Util/HashTable.h>
 #include <Util/Optional.h>
-#include <Util/Ref.h>
 #include <Util/Variant.h>
 #include <Util/Vector.h>
 
@@ -76,7 +75,26 @@ enum class StyleType : u8 {
     COUNT
 };
 
-struct ButtonStyle {
+class ButtonStyle final : public Asset {
+public:
+    ButtonStyle(
+        AssetRef font,
+        Colour text_color,
+        Alignment text_alignment,
+        Padding padding,
+        s32 content_padding,
+        DrawableStyle start_icon,
+        Alignment start_icon_alignment,
+        DrawableStyle end_icon,
+        Alignment end_icon_alignment,
+        DrawableStyle background,
+        DrawableStyle background_hover,
+        DrawableStyle background_pressed,
+        DrawableStyle background_disabled);
+
+    virtual ~ButtonStyle() override = default;
+    virtual void unload(AssetMetadata&) override { }
+
     AssetRef font;
     Colour textColor;
     Alignment textAlignment;
@@ -96,7 +114,22 @@ struct ButtonStyle {
     DrawableStyle backgroundDisabled;
 };
 
-struct CheckboxStyle {
+class CheckboxStyle final : public Asset {
+public:
+    CheckboxStyle(
+        Padding padding,
+        DrawableStyle background,
+        DrawableStyle background_hover,
+        DrawableStyle background_pressed,
+        DrawableStyle background_disabled,
+        V2I check_size,
+        DrawableStyle check,
+        DrawableStyle check_hover,
+        DrawableStyle check_pressed,
+        DrawableStyle check_disabled);
+    virtual ~CheckboxStyle() override = default;
+    virtual void unload(AssetMetadata&) override { }
+
     Padding padding;
 
     DrawableStyle background;
@@ -111,7 +144,19 @@ struct CheckboxStyle {
     DrawableStyle checkDisabled;
 };
 
-struct ConsoleStyle {
+class ConsoleStyle final : public Asset {
+public:
+    ConsoleStyle(
+        AssetRef font,
+        EnumMap<ConsoleLineStyle, Colour> output_text_colors,
+        DrawableStyle background,
+        Padding padding,
+        s32 content_padding,
+        AssetRef scrollbar_style,
+        AssetRef text_input_style);
+    virtual ~ConsoleStyle() override = default;
+    virtual void unload(AssetMetadata&) override { }
+
     AssetRef font;
     EnumMap<ConsoleLineStyle, Colour> outputTextColors;
 
@@ -123,13 +168,28 @@ struct ConsoleStyle {
     AssetRef textInputStyle;
 };
 
-struct DropDownListStyle {
+class DropDownListStyle final : public Asset {
+public:
+    DropDownListStyle(AssetRef button_style, AssetRef panel_style);
+    virtual ~DropDownListStyle() override = default;
+    virtual void unload(AssetMetadata&) override { }
+
     // For now, we'll just piggy-back off of other styles:
     AssetRef buttonStyle; // For the normal state
     AssetRef panelStyle;  // For the drop-down state
 };
 
-struct LabelStyle {
+class LabelStyle final : public Asset {
+public:
+    LabelStyle(
+        Padding padding,
+        DrawableStyle background,
+        AssetRef font,
+        Colour text_color,
+        Alignment text_alignment);
+    virtual ~LabelStyle() override = default;
+    virtual void unload(AssetMetadata&) override { }
+
     Padding padding;
     DrawableStyle background;
 
@@ -138,7 +198,24 @@ struct LabelStyle {
     Alignment textAlignment;
 };
 
-struct PanelStyle {
+class PanelStyle final : public Asset {
+public:
+    PanelStyle(
+        Padding padding,
+        s32 content_padding,
+        Alignment widget_alignment,
+        DrawableStyle background,
+        AssetRef button_style,
+        AssetRef checkbox_style,
+        AssetRef drop_down_list_style,
+        AssetRef label_style,
+        AssetRef radio_button_style,
+        AssetRef scrollbar_style,
+        AssetRef slider_style,
+        AssetRef text_input_style);
+    virtual ~PanelStyle() override = default;
+    virtual void unload(AssetMetadata&) override { }
+
     Padding padding;
     s32 contentPadding;
     Alignment widgetAlignment;
@@ -155,7 +232,22 @@ struct PanelStyle {
     AssetRef textInputStyle;
 };
 
-struct RadioButtonStyle {
+class RadioButtonStyle final : public Asset {
+public:
+    RadioButtonStyle(
+        V2I size,
+        DrawableStyle background,
+        DrawableStyle background_hover,
+        DrawableStyle background_pressed,
+        DrawableStyle background_disabled,
+        V2I dot_size,
+        DrawableStyle dot,
+        DrawableStyle dot_hover,
+        DrawableStyle dot_pressed,
+        DrawableStyle dot_disabled);
+    virtual ~RadioButtonStyle() override = default;
+    virtual void unload(AssetMetadata&) override { }
+
     V2I size;
     DrawableStyle background;
     DrawableStyle backgroundHover;
@@ -169,7 +261,18 @@ struct RadioButtonStyle {
     DrawableStyle dotDisabled;
 };
 
-struct ScrollbarStyle {
+class ScrollbarStyle final : public Asset {
+public:
+    ScrollbarStyle(
+        s32 width,
+        DrawableStyle background,
+        DrawableStyle thumb,
+        DrawableStyle thumb_hover,
+        DrawableStyle thumb_pressed,
+        DrawableStyle thumb_disabled);
+    virtual ~ScrollbarStyle() override = default;
+    virtual void unload(AssetMetadata&) override { }
+
     s32 width;
 
     DrawableStyle background;
@@ -180,7 +283,19 @@ struct ScrollbarStyle {
     DrawableStyle thumbDisabled;
 };
 
-struct SliderStyle {
+class SliderStyle final : public Asset {
+public:
+    SliderStyle(
+        DrawableStyle track,
+        s32 track_thickness,
+        DrawableStyle thumb,
+        DrawableStyle thumb_hover,
+        DrawableStyle thumb_pressed,
+        DrawableStyle thumb_disabled,
+        V2I thumb_size);
+    virtual ~SliderStyle() override = default;
+    virtual void unload(AssetMetadata&) override { }
+
     DrawableStyle track;
     s32 trackThickness;
 
@@ -191,7 +306,19 @@ struct SliderStyle {
     V2I thumbSize;
 };
 
-struct TextInputStyle {
+class TextInputStyle final : public Asset {
+public:
+    TextInputStyle(
+        AssetRef font,
+        Colour text_color,
+        Alignment text_alignment,
+        DrawableStyle background,
+        Padding padding,
+        bool show_caret,
+        float caret_flash_cycle_duration);
+    virtual ~TextInputStyle() override = default;
+    virtual void unload(AssetMetadata&) override { }
+
     AssetRef font;
     Colour textColor;
     Alignment textAlignment;
@@ -203,7 +330,19 @@ struct TextInputStyle {
     float caretFlashCycleDuration;
 };
 
-struct WindowStyle {
+class WindowStyle final : public Asset {
+public:
+    WindowStyle(
+        AssetRef title_label_style,
+        s32 title_bar_height,
+        Colour title_bar_color,
+        Colour title_bar_color_inactive,
+        Colour title_bar_button_hover_color,
+        V2I offset_from_mouse,
+        AssetRef panel_style);
+    virtual ~WindowStyle() override = default;
+    virtual void unload(AssetMetadata&) override { }
+
     AssetRef titleLabelStyle;
     s32 titleBarHeight;
     Colour titleBarColor;
