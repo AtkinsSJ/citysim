@@ -25,29 +25,6 @@ DeprecatedAsset::DeprecatedAsset()
 
 DeprecatedAsset::~DeprecatedAsset() = default;
 
-static SDL_Surface* createSurfaceFromFileData(Blob fileData, String name)
-{
-    SDL_Surface* result = nullptr;
-
-    ASSERT(fileData.size() > 0);      //, "Attempted to create a surface from an unloaded asset! ({0})", {name});
-    ASSERT(fileData.size() < s32Max); //, "File '{0}' is too big for SDL's RWOps!", {name});
-
-    SDL_RWops* rw = SDL_RWFromConstMem(fileData.data(), truncate32(fileData.size()));
-    if (rw) {
-        result = IMG_Load_RW(rw, 0);
-
-        if (result == nullptr) {
-            logError("Failed to create SDL_Surface from asset '{0}'!\n{1}"_s, { name, String::from_null_terminated(IMG_GetError()) });
-        }
-
-        SDL_RWclose(rw);
-    } else {
-        logError("Failed to create SDL_RWops from asset '{0}'!\n{1}"_s, { name, String::from_null_terminated(SDL_GetError()) });
-    }
-
-    return result;
-}
-
 static void copyFileIntoAsset(Blob* fileData, DeprecatedAsset& asset)
 {
     asset.data = assets_allocate(fileData->size());
@@ -152,13 +129,6 @@ void DeprecatedAsset::unload(AssetMetadata& metadata)
         texts.keys = makeEmptyArray<String>();
     } break;
 
-    case AssetType::Texture: {
-        if (texture.surface != nullptr) {
-            SDL_FreeSurface(texture.surface);
-            texture.surface = nullptr;
-        }
-    } break;
-
     default:
         break;
     }
@@ -181,7 +151,6 @@ void DeprecatedAssetLoader::register_types(AssetManager& assets)
     assets.fileExtensionToType.put(assets.assetStrings.intern("theme"_s), AssetType::UITheme);
 
     assets.directoryNameToType.put(assets.assetStrings.intern("shaders"_s), AssetType::Shader);
-    assets.directoryNameToType.put(assets.assetStrings.intern("textures"_s), AssetType::Texture);
     assets.directoryNameToType.put(assets.assetStrings.intern("locale"_s), AssetType::Texts);
 
     assets.asset_loaders_by_type[AssetType::BuildingDefs] = this;
@@ -189,7 +158,6 @@ void DeprecatedAssetLoader::register_types(AssetManager& assets)
     assets.asset_loaders_by_type[AssetType::Shader] = this;
     assets.asset_loaders_by_type[AssetType::TerrainDefs] = this;
     assets.asset_loaders_by_type[AssetType::Texts] = this;
-    assets.asset_loaders_by_type[AssetType::Texture] = this;
     assets.asset_loaders_by_type[AssetType::UITheme] = this;
 }
 
@@ -209,15 +177,6 @@ void DeprecatedAssetLoader::create_placeholder_assets(AssetManager& assets)
 
     // Texts
     make_placeholder_asset(assets, AssetType::Texts);
-
-    // Texture
-    auto& placeholderTexture = make_placeholder_asset(assets, AssetType::Texture);
-    placeholderTexture.data = assets_allocate(2 * 2 * sizeof(u32));
-    u32* pixels = (u32*)placeholderTexture.data.writable_data();
-    pixels[0] = pixels[3] = 0xffff00ff;
-    pixels[1] = pixels[2] = 0xff000000;
-    placeholderTexture.texture.surface = SDL_CreateRGBSurfaceFrom(pixels, 2, 2, 32, 2 * sizeof(u32),
-        0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
 
     // UITheme
     make_placeholder_asset(assets, AssetType::UITheme);
@@ -267,47 +226,6 @@ ErrorOr<NonnullOwnPtr<Asset>> DeprecatedAssetLoader::load_asset(AssetMetadata& m
 
         HashTable<String>* textsTable = (asset->texts.isFallbackLocale ? &asset_manager().defaultTexts : &asset_manager().texts);
         loadTexts(textsTable, &metadata, file_data, *asset);
-        return { move(asset) };
-    }
-
-    case AssetType::Texture: {
-        // TODO: Emergency debug texture that's used if loading a file fails.
-        // Right now, we just crash! (Not shippable)
-        SDL_Surface* surface = createSurfaceFromFileData(file_data, metadata.fullName);
-        if (surface->format->BytesPerPixel != 4) {
-            return Error { myprintf("Texture asset '{0}' is not 32bit, which is all we support right now. (BytesPerPixel = {1})"_s, { metadata.shortName, formatInt(surface->format->BytesPerPixel) }) };
-        }
-
-        // Premultiply alpha
-        // NOTE: We always assume the data isn't premultiplied.
-        u32 Rmask = surface->format->Rmask,
-            Gmask = surface->format->Gmask,
-            Bmask = surface->format->Bmask,
-            Amask = surface->format->Amask;
-        float rRmask = (float)Rmask,
-              rGmask = (float)Gmask,
-              rBmask = (float)Bmask,
-              rAmask = (float)Amask;
-
-        u32 pixelCount = surface->w * surface->h;
-        for (u32 pixelIndex = 0;
-            pixelIndex < pixelCount;
-            pixelIndex++) {
-            u32 pixel = ((u32*)surface->pixels)[pixelIndex];
-            float rr = (float)(pixel & Rmask) / rRmask;
-            float rg = (float)(pixel & Gmask) / rGmask;
-            float rb = (float)(pixel & Bmask) / rBmask;
-            float ra = (float)(pixel & Amask) / rAmask;
-
-            u32 r = (u32)(rr * ra * rRmask) & Rmask;
-            u32 g = (u32)(rg * ra * rGmask) & Gmask;
-            u32 b = (u32)(rb * ra * rBmask) & Bmask;
-            u32 a = (u32)(ra * rAmask) & Amask;
-
-            ((u32*)surface->pixels)[pixelIndex] = r | g | b | a;
-        }
-
-        asset->texture.surface = surface;
         return { move(asset) };
     }
 

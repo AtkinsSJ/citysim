@@ -7,6 +7,7 @@
 #include "Sprite.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/Ninepatch.h>
+#include <Gfx/Texture.h>
 
 Sprite& Sprite::get(StringView name)
 {
@@ -222,7 +223,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_sprite_defs(AssetMetadata& metadata, Blob dat
             // FIXME: Should refer to textures some other way!
             AssetMetadata* texture_metadata = sprite->texture;
             texture_metadata->ensure_is_loaded();
-            auto& texture = dynamic_cast<DeprecatedAsset&>(*texture_metadata->loaded_asset).texture;
+            auto& texture = dynamic_cast<Texture&>(*texture_metadata->loaded_asset);
             float textureWidth = texture.surface->w;
             float textureHeight = texture.surface->h;
 

@@ -12,6 +12,7 @@
 #include <Gfx/Palette.h>
 #include <Gfx/Sprite.h>
 #include <Gfx/TextDocument.h>
+#include <Gfx/Texture.h>
 #include <Util/Blob.h>
 #include <Util/ErrorOr.h>
 
@@ -37,10 +38,16 @@ void AssetLoader::register_types(AssetManager& assets)
 
     assets.fileExtensionToType.put(assets.assetStrings.intern("txt"_s), AssetType::TextDocument);
     assets.asset_loaders_by_type[AssetType::TextDocument] = this;
+
+    assets.directoryNameToType.put(assets.assetStrings.intern("textures"_s), AssetType::Texture);
+    assets.asset_loaders_by_type[AssetType::Texture] = this;
 }
 
 void AssetLoader::create_placeholder_assets(AssetManager& assets)
 {
+    // NB: Texture needs creating first, as other placeholder assets rely on it.
+    assets.set_placeholder_asset(AssetType::Texture, Texture::make_placeholder());
+
     assets.set_placeholder_asset(AssetType::BitmapFont, adopt_own(*new BitmapFont));
     assets.set_placeholder_asset(AssetType::Cursor, adopt_own(*new Cursor));
     assets.set_placeholder_asset(AssetType::Ninepatch, Ninepatch::make_placeholder());
@@ -71,6 +78,9 @@ ErrorOr<NonnullOwnPtr<Asset>> AssetLoader::load_asset(AssetMetadata& metadata, B
 
     if (metadata.type == AssetType::TextDocument)
         return to_error_or_asset(TextDocument::load(metadata, file_data));
+
+    if (metadata.type == AssetType::Texture)
+        return to_error_or_asset(Texture::load(metadata, file_data));
 
     VERIFY_NOT_REACHED();
 }

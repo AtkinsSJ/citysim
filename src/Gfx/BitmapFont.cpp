@@ -5,12 +5,11 @@
  */
 
 #include "BitmapFont.h"
-
-#include "Assets/DeprecatedAsset.h"
-
 #include <Assets/AssetManager.h>
+#include <Assets/DeprecatedAsset.h>
 #include <Debug/Debug.h>
 #include <Gfx/Renderer.h>
+#include <Gfx/Texture.h>
 #include <Util/Log.h>
 #include <Util/Unicode.h>
 
@@ -152,10 +151,10 @@ ErrorOr<NonnullOwnPtr<BitmapFont>> BitmapFont::load_from_bmf_data(AssetMetadata&
     font->m_texture = asset_manager().add_asset(AssetType::Texture, textureName);
     font->m_texture->ensure_is_loaded();
 
-    auto& texture = dynamic_cast<DeprecatedAsset&>(*font->m_texture->loaded_asset);
+    auto& texture = dynamic_cast<Texture&>(*font->m_texture->loaded_asset);
 
-    float textureWidth = (float)texture.texture.surface->w;
-    float textureHeight = (float)texture.texture.surface->h;
+    float textureWidth = (float)texture.surface->w;
+    float textureHeight = (float)texture.surface->h;
 
     for (u32 charIndex = 0;
         charIndex < charCount;

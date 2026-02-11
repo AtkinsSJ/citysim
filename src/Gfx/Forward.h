@@ -19,4 +19,4 @@ struct Shader;
 class Sprite;
 class SpriteGroup;
 class SpriteRef;
-struct Texture;
+class Texture;

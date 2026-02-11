@@ -9,7 +9,6 @@
 #include <Assets/Asset.h>
 #include <Assets/AssetLoader.h>
 #include <Gfx/Shader.h>
-#include <Gfx/Texture.h>
 #include <UI/UITheme.h>
 #include <Util/Array.h>
 
@@ -54,8 +53,6 @@ public:
             Array<String> keys;
             bool isFallbackLocale;
         } texts;
-
-        Texture texture;
 
         UI::ButtonStyle buttonStyle;
         UI::CheckboxStyle checkboxStyle;

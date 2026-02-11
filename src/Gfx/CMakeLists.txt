@@ -12,4 +12,5 @@ target_sources(CitySim PRIVATE
     Shader.cpp
     Sprite.cpp
     TextDocument.cpp
+    Texture.cpp
 )
