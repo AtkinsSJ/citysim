@@ -66,35 +66,7 @@ static AssetMetadata* add_ninepatch(StringView name, StringView filename, s32 pu
     texture_metadata->ensure_is_loaded();
 
     AssetMetadata* metadata = asset_manager().add_asset(AssetType::Ninepatch, name, {});
-    auto ninepatch = adopt_own(*new Ninepatch);
-
-    ninepatch->texture = texture_metadata;
-
-    auto& texture = dynamic_cast<DeprecatedAsset&>(*texture_metadata->loaded_asset).texture;
-    float textureWidth = texture.surface->w;
-    float textureHeight = texture.surface->h;
-
-    ninepatch->pu0 = pu0;
-    ninepatch->pu1 = pu1;
-    ninepatch->pu2 = pu2;
-    ninepatch->pu3 = pu3;
-
-    ninepatch->pv0 = pv0;
-    ninepatch->pv1 = pv1;
-    ninepatch->pv2 = pv2;
-    ninepatch->pv3 = pv3;
-
-    ninepatch->u0 = ninepatch->pu0 / textureWidth;
-    ninepatch->u1 = ninepatch->pu1 / textureWidth;
-    ninepatch->u2 = ninepatch->pu2 / textureWidth;
-    ninepatch->u3 = ninepatch->pu3 / textureWidth;
-
-    ninepatch->v0 = ninepatch->pv0 / textureHeight;
-    ninepatch->v1 = ninepatch->pv1 / textureHeight;
-    ninepatch->v2 = ninepatch->pv2 / textureHeight;
-    ninepatch->v3 = ninepatch->pv3 / textureHeight;
-
-    metadata->loaded_asset = move(ninepatch);
+    metadata->loaded_asset = adopt_own(*new Ninepatch(*texture_metadata, pu0, pu1, pu2, pu3, pv0, pv1, pv2, pv3));
     return metadata;
 }
 
