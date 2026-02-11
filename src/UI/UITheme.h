@@ -17,7 +17,6 @@
 #include <Util/Vector.h>
 
 enum class ConsoleLineStyle : u8 {
-    // Must match the order in ConsoleStyle!
     Default,
     InputEcho,
     Error,
@@ -114,18 +113,7 @@ struct CheckboxStyle {
 
 struct ConsoleStyle {
     AssetRef font;
-    union {
-        EnumMap<ConsoleLineStyle, Colour> outputTextColors;
-
-        struct {
-            // Must match the order in ConsoleLineStyle!
-            Colour outputTextColor;
-            Colour outputTextColorInputEcho;
-            Colour outputTextColorError;
-            Colour outputTextColorSuccess;
-            Colour outputTextColorWarning;
-        };
-    };
+    EnumMap<ConsoleLineStyle, Colour> outputTextColors;
 
     DrawableStyle background;
     Padding padding;

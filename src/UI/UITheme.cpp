@@ -656,11 +656,12 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
 
                     console.font = style->get_asset_ref("font"_h, AssetType::BitmapFont, default_font_name);
 
-                    console.outputTextColor = style->get_colour("outputTextColor"_h, white);
-                    console.outputTextColorInputEcho = style->get_colour("outputTextColorInputEcho"_h, console.outputTextColor);
-                    console.outputTextColorError = style->get_colour("outputTextColorError"_h, console.outputTextColor);
-                    console.outputTextColorWarning = style->get_colour("outputTextColorWarning"_h, console.outputTextColor);
-                    console.outputTextColorSuccess = style->get_colour("outputTextColorSuccess"_h, console.outputTextColor);
+                    auto default_color = style->get_colour("outputTextColor"_h, white);
+                    console.outputTextColors[ConsoleLineStyle::Default] = default_color;
+                    console.outputTextColors[ConsoleLineStyle::InputEcho] = style->get_colour("outputTextColorInputEcho"_h, default_color);
+                    console.outputTextColors[ConsoleLineStyle::Error] = style->get_colour("outputTextColorError"_h, default_color);
+                    console.outputTextColors[ConsoleLineStyle::Warning] = style->get_colour("outputTextColorWarning"_h, default_color);
+                    console.outputTextColors[ConsoleLineStyle::Success] = style->get_colour("outputTextColorSuccess"_h, default_color);
 
                     console.background = style->get_drawable_style("background"_h, {});
                     console.padding = style->get_padding("padding"_h, {});
