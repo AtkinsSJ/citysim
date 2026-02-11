@@ -143,8 +143,7 @@ T* getStyle(AssetRef const& ref)
     ASSERT(checkStyleMatchesType<T>(ref));
 
     auto& asset = ref.get();
-    auto& deprecated_asset = dynamic_cast<DeprecatedAsset&>(*asset.loaded_asset);
-    return (T*)&deprecated_asset._localData;
+    return dynamic_cast<T*>(asset.loaded_asset.ptr());
 }
 
 template<typename T>
@@ -185,8 +184,7 @@ T* getStyle(String styleName)
             static_assert(false);
     }();
 
-    auto& asset = dynamic_cast<DeprecatedAsset&>(*getAsset(styleType, styleName).loaded_asset);
-    return reinterpret_cast<T*>(&asset._localData);
+    return dynamic_cast<T*>(getAsset(styleType, styleName).loaded_asset.ptr());
 }
 
 //

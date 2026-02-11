@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2025-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -8,25 +8,25 @@
 
 namespace UI {
 
-struct ButtonStyle;
-struct CheckboxStyle;
+class ButtonStyle;
+class CheckboxStyle;
 struct Drawable;
-struct DropDownListStyle;
-struct LabelStyle;
+class DropDownListStyle;
+class LabelStyle;
 struct Panel;
-struct PanelStyle;
-struct RadioButtonStyle;
+class PanelStyle;
+class RadioButtonStyle;
 struct ScrollbarState;
-struct ScrollbarStyle;
-struct SliderStyle;
+class ScrollbarStyle;
+class SliderStyle;
 struct TextInput;
-struct TextInputStyle;
+class TextInputStyle;
 class Toast;
 struct UIState;
 struct WidgetMouseState;
 struct Window;
 struct WindowContext;
-struct WindowStyle;
+class WindowStyle;
 struct WindowTitle;
 
 };

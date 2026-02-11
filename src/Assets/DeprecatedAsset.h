@@ -8,8 +8,8 @@
 
 #include <Assets/Asset.h>
 #include <Assets/AssetLoader.h>
-#include <UI/UITheme.h>
 #include <Util/Array.h>
+#include <Util/Blob.h>
 
 namespace Assets {
 
@@ -50,18 +50,6 @@ public:
             Array<String> keys;
             bool isFallbackLocale;
         } texts;
-
-        UI::ButtonStyle buttonStyle;
-        UI::CheckboxStyle checkboxStyle;
-        UI::ConsoleStyle consoleStyle;
-        UI::DropDownListStyle dropDownListStyle;
-        UI::LabelStyle labelStyle;
-        UI::PanelStyle panelStyle;
-        UI::RadioButtonStyle radioButtonStyle;
-        UI::ScrollbarStyle scrollbarStyle;
-        UI::SliderStyle sliderStyle;
-        UI::TextInputStyle textInputStyle;
-        UI::WindowStyle windowStyle;
     };
 };
 
