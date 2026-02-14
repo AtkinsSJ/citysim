@@ -16,7 +16,7 @@ enum class AssetType : u8 {
     BuildingDefs,
     Cursor,
     CursorDefs,
-    DevKeymap,
+    Keymap,
     Ninepatch,
     Palette,
     PaletteDefs,
