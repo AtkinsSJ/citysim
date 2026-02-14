@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2017-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -7,6 +7,7 @@
 #include "Console.h"
 #include "AppState.h"
 #include <Assets/AssetManager.h>
+#include <Debug/Keymap.h>
 #include <Gfx/Renderer.h>
 #include <IO/LineReader.h>
 #include <Input/KeyboardShortcut.h>
@@ -356,4 +357,18 @@ Rect2I getConsoleScrollbarBounds(Console* console)
     Rect2I scrollbarBounds { static_cast<s32>(renderer.window_width() - scrollbarStyle->width), 0, scrollbarStyle->width, floor_s32(console->currentHeight * renderer.window_height()) - textInputSize.y };
 
     return scrollbarBounds;
+}
+
+void Console::after_assets_loaded()
+{
+    // Load the dev keymap
+    auto const& keymap = Keymap::get("dev.keymap"_sv);
+    for (auto const& shortcut : keymap.shortcuts())
+        commandShortcuts.append(shortcut);
+}
+
+void Console::before_assets_unloaded()
+{
+    // Unload the dev keymap
+    commandShortcuts.clear();
 }

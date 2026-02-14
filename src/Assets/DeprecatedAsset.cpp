@@ -8,7 +8,6 @@
 #include <Assets/AssetManager.h>
 #include <Assets/AssetMetadata.h>
 #include <Debug/Console.h>
-#include <IO/File.h>
 #include <SDL_image.h>
 #include <Settings/Settings.h>
 #include <Sim/BuildingCatalogue.h>
@@ -24,17 +23,6 @@ DeprecatedAsset::DeprecatedAsset()
 }
 
 DeprecatedAsset::~DeprecatedAsset() = default;
-
-static void copyFileIntoAsset(Blob* fileData, DeprecatedAsset& asset)
-{
-    asset.data = assets_allocate(fileData->size());
-    memcpy(asset.data.writable_data(), fileData->data(), fileData->size());
-
-    // NB: We set the fileData to point at the new copy, so that code after calling copyFileIntoAsset()
-    // can still use fileData without having to mess with it. Already had one bug caused by not doing this!
-    // FIXME: Stop doing this?
-    *fileData = asset.data;
-}
 
 static void loadTexts(HashTable<String>* texts, AssetMetadata* metadata, Blob file_data, DeprecatedAsset& asset)
 {
@@ -146,13 +134,11 @@ static DeprecatedAsset& make_placeholder_asset(AssetManager& assets, AssetType t
 void DeprecatedAssetLoader::register_types(AssetManager& assets)
 {
     assets.fileExtensionToType.put(assets.assetStrings.intern("buildings"_s), AssetType::BuildingDefs);
-    assets.fileExtensionToType.put(assets.assetStrings.intern("keymap"_s), AssetType::DevKeymap);
     assets.fileExtensionToType.put(assets.assetStrings.intern("terrain"_s), AssetType::TerrainDefs);
 
     assets.directoryNameToType.put(assets.assetStrings.intern("locale"_s), AssetType::Texts);
 
     assets.asset_loaders_by_type[AssetType::BuildingDefs] = this;
-    assets.asset_loaders_by_type[AssetType::DevKeymap] = this;
     assets.asset_loaders_by_type[AssetType::TerrainDefs] = this;
     assets.asset_loaders_by_type[AssetType::Texts] = this;
 }
@@ -161,9 +147,6 @@ void DeprecatedAssetLoader::create_placeholder_assets(AssetManager& assets)
 {
     // BuildingDefs
     make_placeholder_asset(assets, AssetType::BuildingDefs);
-
-    // DevKeymap
-    make_placeholder_asset(assets, AssetType::DevKeymap);
 
     // TerrainDefs
     make_placeholder_asset(assets, AssetType::TerrainDefs);
@@ -180,17 +163,6 @@ ErrorOr<NonnullOwnPtr<Asset>> DeprecatedAssetLoader::load_asset(AssetMetadata& m
     switch (metadata.type) {
     case AssetType::BuildingDefs: {
         loadBuildingDefs(file_data, metadata, *asset);
-        return { move(asset) };
-    }
-
-    case AssetType::DevKeymap: {
-        if (globalConsole != nullptr) {
-            // NB: We keep the keymap file in the asset memory, so that the CommandShortcut.command can
-            // directly refer to the string data from the file, instead of having to assetsAllocate a copy
-            // and not be able to free it ever. This is more memory efficient.
-            copyFileIntoAsset(&file_data, *asset);
-            loadConsoleKeyboardShortcuts(globalConsole, file_data, metadata.shortName);
-        }
         return { move(asset) };
     }
 

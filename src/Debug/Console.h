@@ -40,7 +40,12 @@ struct Command {
     }
 };
 
-struct Console {
+struct Console : public AssetManagerListener {
+    virtual ~Console() override = default;
+
+    virtual void after_assets_loaded() override;
+    virtual void before_assets_unloaded() override;
+
     AssetRef style { AssetType::ConsoleStyle, "default"_s };
 
     float currentHeight;

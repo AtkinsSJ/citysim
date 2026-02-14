@@ -30,6 +30,7 @@
 #include "AppState.h"
 #include <Assets/AssetManager.h>
 #include <Debug/Console.h>
+#include <Debug/DebugAssetLoader.h>
 #include <Gfx/AssetLoader.h>
 #include <Gfx/Renderer.h>
 #include <IO/SavedGames.h>
@@ -124,10 +125,15 @@ int main(int argc, char* argv[])
     auto& renderer = the_renderer();
     auto& assets = asset_manager();
     assets.register_listener(&renderer);
+    if (globalConsole) {
+        assets.register_listener(globalConsole);
+    }
 
     assets.register_asset_loader(adopt_own(*new Assets::DeprecatedAssetLoader));
     assets.register_asset_loader(adopt_own(*new Gfx::AssetLoader));
     assets.register_asset_loader(adopt_own(*new UI::AssetLoader));
+    assets.register_asset_loader(adopt_own(*new DebugAssetLoader));
+
     assets.scan_assets();
     assets.load_assets();
 
