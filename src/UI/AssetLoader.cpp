@@ -7,6 +7,7 @@
 #include "AssetLoader.h"
 #include <Assets/AssetManager.h>
 #include <Assets/AssetMetadata.h>
+#include <Assets/ContainerAsset.h>
 #include <UI/UITheme.h>
 
 namespace UI {

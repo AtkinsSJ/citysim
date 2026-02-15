@@ -11,6 +11,7 @@
 #include <Input/Input.h>
 #include <UI/Drawable.h>
 #include <UI/TextInput.h>
+#include <UI/UITheme.h>
 #include <Util/Maths.h>
 #include <Util/MemoryArena.h>
 #include <Util/Unicode.h>

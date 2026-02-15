@@ -7,6 +7,7 @@
 #include "AssetManager.h"
 #include <Assets/Asset.h>
 #include <Debug/Console.h>
+#include <Gfx/BitmapFont.h>
 #include <Gfx/Renderer.h>
 #include <IO/DirectoryIterator.h>
 #include <IO/DirectoryWatcher.h>
@@ -93,19 +94,6 @@ void assets_deallocate(Blob& data)
     data = {};
 }
 
-void allocateChildren(AssetMetadata* asset, s32 childCount)
-{
-    asset->children_data = assets_allocate(childCount * sizeof(AssetRef));
-    asset->children = makeArray(childCount, reinterpret_cast<AssetRef*>(asset->children_data.writable_data()));
-}
-
-void addChildAsset(AssetMetadata* parent, AssetMetadata* child)
-{
-    parent->children.append(AssetRef { child->type, child->shortName });
-    if (child->loaded_asset)
-        child->state = AssetMetadata::State::Loaded;
-}
-
 AssetMetadata* AssetManager::add_asset(AssetType type, StringView short_name, Flags<AssetFlags> flags)
 {
     String internedShortName = assetStrings.intern(short_name);
@@ -125,7 +113,6 @@ AssetMetadata* AssetManager::add_asset(AssetType type, StringView short_name, Fl
         }
     }
     asset->state = AssetMetadata::State::Unloaded;
-    asset->children_data = {};
     asset->flags = flags;
 
     assetsByType[type].put(internedShortName, asset);
@@ -176,14 +163,7 @@ void unloadAsset(AssetMetadata* asset)
     if (asset->state != AssetMetadata::State::Loaded)
         return;
 
-    if (!asset->children.isEmpty()) {
-        for (auto const& child : asset->children)
-            removeAsset(child);
-        asset->children = makeEmptyArray<AssetRef>();
-    }
-
     asset->loaded_asset->unload(*asset);
-    assets_deallocate(asset->children_data);
     asset->state = AssetMetadata::State::Unloaded;
 }
 
@@ -435,7 +415,6 @@ void AssetManager::set_placeholder_asset(AssetType type, NonnullOwnPtr<Asset> as
     metadata.fullName = {};
     metadata.flags = {};
     metadata.state = AssetMetadata::State::Loaded;
-    metadata.children = makeEmptyArray<AssetRef>();
 
     metadata.loaded_asset = move(asset);
 }

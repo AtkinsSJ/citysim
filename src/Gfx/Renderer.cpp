@@ -7,6 +7,7 @@
 #include "Renderer.h"
 #include <Assets/AssetManager.h>
 #include <Debug/Debug.h>
+#include <Gfx/BitmapFont.h>
 #include <Gfx/Cursor.h>
 #include <Gfx/Ninepatch.h>
 #include <Gfx/OpenGL.h>

@@ -6,6 +6,7 @@
 
 #include "Window.h"
 #include <Debug/Debug.h>
+#include <Gfx/BitmapFont.h>
 #include <Input/Input.h>
 #include <Util/String.h>
 

@@ -10,6 +10,7 @@ namespace UI {
 
 class ButtonStyle;
 class CheckboxStyle;
+class ConsoleStyle;
 struct Drawable;
 class DropDownListStyle;
 class LabelStyle;

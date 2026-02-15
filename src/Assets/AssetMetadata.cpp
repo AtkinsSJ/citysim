@@ -21,4 +21,9 @@ void AssetMetadata::ensure_is_loaded()
     }
 }
 
+AssetRef AssetMetadata::get_ref() const
+{
+    return AssetRef { type, shortName };
+}
+
 }

@@ -8,10 +8,6 @@
 
 #include <Assets/AssetType.h>
 #include <Assets/Forward.h>
-#include <Gfx/BitmapFont.h>
-#include <Gfx/Colour.h>
-#include <UI/UITheme.h>
-#include <Util/Array.h>
 #include <Util/Flags.h>
 #include <Util/Locale.h>
 #include <Util/OwnPtr.h>
@@ -30,6 +26,8 @@ class AssetMetadata {
 public:
     void ensure_is_loaded();
 
+    AssetRef get_ref() const;
+
     AssetType type;
 
     // shortName = "foo.png", fullName = "c:/mygame/assets/textures/foo.png"
@@ -45,9 +43,6 @@ public:
     };
     State state { State::Unloaded };
     Optional<Locale> locale;
-
-    Blob children_data {};
-    Array<AssetRef> children;
 
     OwnPtr<Asset> loaded_asset;
 };
