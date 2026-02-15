@@ -19,6 +19,7 @@ class AssetManagerListener;
 class AssetRef;
 class ContainerAsset;
 class DeprecatedAsset;
+class Texts;
 
 }
 
@@ -30,3 +31,4 @@ using Assets::AssetRef;
 using Assets::AssetType;
 using Assets::ContainerAsset;
 using Assets::DeprecatedAsset;
+using Assets::Texts;

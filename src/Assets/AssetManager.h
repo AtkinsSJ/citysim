@@ -8,7 +8,7 @@
 
 #include <Assets/AssetManagerListener.h>
 #include <Assets/AssetMetadata.h>
-#include <Assets/DeprecatedAsset.h>
+#include <Assets/BuiltinAssetLoader.h>
 #include <IO/DirectoryWatcher.h>
 #include <IO/File.h>
 #include <Settings/SettingsChangeListener.h>

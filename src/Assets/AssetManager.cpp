@@ -59,6 +59,8 @@ void initAssets()
     }
 
     Settings::the().register_listener(*s_assets);
+
+    s_assets->register_asset_loader(adopt_own(*new BuiltinAssetLoader));
 }
 
 AssetManager& asset_manager()
