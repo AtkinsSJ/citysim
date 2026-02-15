@@ -80,7 +80,7 @@ Optional<DrawableStyle> readDrawableStyle(LineReader* reader)
         DrawableStyle drawable = {};
         drawable.type = DrawableType::Sprite;
         drawable.color = color.value_or(Colour::white());
-        drawable.sprite = SpriteRef { spriteName.value(), 0 };
+        drawable.sprite = SpriteRef { asset_manager().assetStrings.intern(spriteName.value()), 0 };
 
         result = move(drawable);
     } else {
