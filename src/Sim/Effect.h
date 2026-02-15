@@ -10,6 +10,7 @@
 #include <IO/Forward.h>
 #include <Util/Array2.h>
 #include <Util/Basic.h>
+#include <Util/ErrorOr.h>
 #include <Util/Vector.h>
 
 enum class EffectType : u8 {
@@ -27,7 +28,7 @@ public:
     {
     }
 
-    static Optional<EffectRadius> read(LineReader&);
+    static ErrorOr<EffectRadius> read(LineReader&);
 
     s32 radius() const { return m_radius; }
     bool has_effect() const { return m_radius > 0; }

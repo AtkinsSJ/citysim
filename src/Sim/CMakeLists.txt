@@ -1,7 +1,9 @@
 target_sources(CitySim PRIVATE
+    AssetLoader.cpp
     Budget.cpp
     Building.cpp
     BuildingCatalogue.cpp
+    BuildingDefs.cpp
     City.cpp
     Crime.cpp
     DirtyRects.cpp

@@ -39,10 +39,6 @@ public:
         // Actual local data follows
 
         struct {
-            Array<String> buildingIDs;
-        } buildingDefs;
-
-        struct {
             Array<String> terrainIDs;
         } terrainDefs;
 

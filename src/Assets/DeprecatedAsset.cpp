@@ -10,7 +10,6 @@
 #include <Debug/Console.h>
 #include <SDL_image.h>
 #include <Settings/Settings.h>
-#include <Sim/BuildingCatalogue.h>
 #include <Sim/TerrainCatalogue.h>
 #include <Util/StringBuilder.h>
 
@@ -97,12 +96,6 @@ static void loadTexts(HashTable<String>* texts, AssetMetadata* metadata, Blob fi
 void DeprecatedAsset::unload(AssetMetadata& metadata)
 {
     switch (metadata.type) {
-    case AssetType::BuildingDefs: {
-        // Remove all of our terrain defs
-        removeBuildingDefs(buildingDefs.buildingIDs);
-        buildingDefs.buildingIDs = makeEmptyArray<String>();
-    } break;
-
     case AssetType::TerrainDefs: {
         // Remove all of our terrain defs
         removeTerrainDefs(terrainDefs.terrainIDs);
@@ -133,21 +126,16 @@ static DeprecatedAsset& make_placeholder_asset(AssetManager& assets, AssetType t
 
 void DeprecatedAssetLoader::register_types(AssetManager& assets)
 {
-    assets.fileExtensionToType.put(assets.assetStrings.intern("buildings"_s), AssetType::BuildingDefs);
     assets.fileExtensionToType.put(assets.assetStrings.intern("terrain"_s), AssetType::TerrainDefs);
 
     assets.directoryNameToType.put(assets.assetStrings.intern("locale"_s), AssetType::Texts);
 
-    assets.asset_loaders_by_type[AssetType::BuildingDefs] = this;
     assets.asset_loaders_by_type[AssetType::TerrainDefs] = this;
     assets.asset_loaders_by_type[AssetType::Texts] = this;
 }
 
 void DeprecatedAssetLoader::create_placeholder_assets(AssetManager& assets)
 {
-    // BuildingDefs
-    make_placeholder_asset(assets, AssetType::BuildingDefs);
-
     // TerrainDefs
     make_placeholder_asset(assets, AssetType::TerrainDefs);
 
@@ -161,11 +149,6 @@ ErrorOr<NonnullOwnPtr<Asset>> DeprecatedAssetLoader::load_asset(AssetMetadata& m
     auto asset = adopt_own(*new DeprecatedAsset);
 
     switch (metadata.type) {
-    case AssetType::BuildingDefs: {
-        loadBuildingDefs(file_data, metadata, *asset);
-        return { move(asset) };
-    }
-
     case AssetType::TerrainDefs: {
         loadTerrainDefs(file_data, metadata, *asset);
         return { move(asset) };

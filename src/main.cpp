@@ -38,6 +38,7 @@
 #include <Menus/Credits.h>
 #include <Menus/MainMenu.h>
 #include <Settings/Settings.h>
+#include <Sim/AssetLoader.h>
 #include <Sim/BuildingCatalogue.h>
 #include <Sim/TerrainCatalogue.h>
 #include <UI/AssetLoader.h>
@@ -133,6 +134,7 @@ int main(int argc, char* argv[])
     assets.register_asset_loader(adopt_own(*new Gfx::AssetLoader));
     assets.register_asset_loader(adopt_own(*new UI::AssetLoader));
     assets.register_asset_loader(adopt_own(*new DebugAssetLoader));
+    assets.register_asset_loader(adopt_own(*new Sim::AssetLoader));
 
     assets.scan_assets();
     assets.load_assets();
