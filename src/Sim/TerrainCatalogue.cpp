@@ -6,9 +6,7 @@
 
 #include "TerrainCatalogue.h"
 #include "AppState.h"
-#include <Assets/AssetMetadata.h>
 #include <Debug/Debug.h>
-#include <IO/LineReader.h>
 #include <Sim/City.h>
 
 static TerrainCatalogue s_terrain_catalogue = {};
@@ -26,113 +24,6 @@ void initTerrainCatalogue()
     s_terrain_catalogue.terrainNameToType.put({}, 0);
 
     asset_manager().register_listener(&s_terrain_catalogue);
-}
-
-void loadTerrainDefs(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
-{
-    DEBUG_FUNCTION();
-
-    LineReader reader { metadata.shortName, data };
-
-    // Pre scan for the number of Terrains, so we can allocate enough space in the asset.
-    s32 terrainCount = 0;
-    while (reader.load_next_line()) {
-        if (auto command = reader.next_token(); command == ":Terrain"_s)
-            terrainCount++;
-    }
-
-    asset.data = Assets::assets_allocate(sizeof(String) * terrainCount);
-    asset.terrainDefs.terrainIDs = makeArray(terrainCount, (String*)asset.data.writable_data());
-
-    reader.restart();
-
-    TerrainDef* def = nullptr;
-
-    while (reader.load_next_line()) {
-        auto maybe_first_word = reader.next_token();
-        if (!maybe_first_word.has_value())
-            continue;
-        auto firstWord = maybe_first_word.release_value();
-
-        if (firstWord.starts_with(':')) // Definitions
-        {
-            // Define something
-            firstWord = firstWord.substring(1).deprecated_to_string();
-
-            if (firstWord == "Terrain"_s) {
-                auto name = reader.next_token();
-                if (!name.has_value()) {
-                    reader.error("Couldn't parse Terrain. Expected: ':Terrain identifier'"_s);
-                    return;
-                }
-
-                Indexed<TerrainDef> slot = s_terrain_catalogue.terrainDefs.append();
-                def = &slot.value();
-
-                if (slot.index() > u8Max) {
-                    reader.error("Too many Terrain definitions! The most we support is {0}."_s, { formatInt(u8Max) });
-                    return;
-                }
-                def->typeID = (u8)slot.index();
-
-                def->name = s_terrain_catalogue.terrainNames.intern(name.value());
-                asset.terrainDefs.terrainIDs.append(def->name);
-                s_terrain_catalogue.terrainDefsByName.put(def->name, def);
-                s_terrain_catalogue.terrainNameToType.put(def->name, def->typeID);
-            } else {
-                reader.error("Unrecognised command: '{0}'"_s, { firstWord });
-            }
-        } else // Properties!
-        {
-            if (def == nullptr) {
-                reader.error("Found a property before starting a :Terrain!"_s);
-                return;
-            } else if (firstWord == "borders"_s) {
-                def->borderSpriteNames = asset_manager().arena.allocate_array<String>(80);
-            } else if (firstWord == "border"_s) {
-                if (auto token = reader.next_token(); token.has_value()) {
-                    def->borderSpriteNames.append(asset_manager().assetStrings.intern(token.release_value()));
-                } else {
-                    reader.error("Missing sprite name for `border`"_s);
-                    return;
-                }
-            } else if (firstWord == "can_build_on"_s) {
-                if (auto maybe_bool = reader.read_bool(); maybe_bool.has_value())
-                    def->canBuildOn = maybe_bool.release_value();
-            } else if (firstWord == "draw_borders_over"_s) {
-                if (auto maybe_bool = reader.read_bool(); maybe_bool.has_value())
-                    def->drawBordersOver = maybe_bool.release_value();
-            } else if (firstWord == "name"_s) {
-                if (auto token = reader.next_token(); token.has_value()) {
-                    def->textAssetName = asset_manager().assetStrings.intern(token.release_value());
-                } else {
-                    reader.error("Missing name for `name`"_s);
-                    return;
-                }
-            } else if (firstWord == "sprite"_s) {
-                if (auto token = reader.next_token(); token.has_value()) {
-                    def->spriteName = asset_manager().assetStrings.intern(token.release_value());
-                } else {
-                    reader.error("Missing name for `sprite`"_s);
-                    return;
-                }
-            } else {
-                reader.warn("Unrecognised property '{0}' inside command ':Terrain'"_s, { firstWord });
-            }
-        }
-    }
-}
-
-void removeTerrainDefs(Array<String> namesToRemove)
-{
-    for (auto const& terrainName : namesToRemove) {
-        s32 terrainIndex = findTerrainTypeByName(terrainName);
-        if (terrainIndex > 0) {
-            s_terrain_catalogue.terrainDefs.removeIndex(terrainIndex);
-
-            s_terrain_catalogue.terrainNameToType.removeKey(terrainName);
-        }
-    }
 }
 
 TerrainDef* getTerrainDef(u8 terrainType)

@@ -39,10 +39,6 @@ public:
         // Actual local data follows
 
         struct {
-            Array<String> terrainIDs;
-        } terrainDefs;
-
-        struct {
             Array<String> keys;
             bool isFallbackLocale;
         } texts;
