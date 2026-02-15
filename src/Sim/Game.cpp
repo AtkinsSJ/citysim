@@ -7,6 +7,7 @@
 #include "Game.h"
 #include "AppState.h"
 #include <Assets/AssetManager.h>
+#include <Gfx/BitmapFont.h>
 #include <Gfx/Palette.h>
 #include <Gfx/Renderer.h>
 #include <IO/SavedGames.h>

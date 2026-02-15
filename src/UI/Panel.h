@@ -9,6 +9,7 @@
 #include <UI/Drawable.h>
 #include <UI/Forward.h>
 #include <UI/UI.h>
+#include <UI/UITheme.h>
 #include <Util/Orientation.h>
 #include <Util/Rectangle.h>
 #include <Util/String.h>

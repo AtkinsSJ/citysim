@@ -6,6 +6,7 @@
 
 #include "Toast.h"
 #include "AppState.h"
+#include <Gfx/BitmapFont.h>
 #include <UI/Panel.h>
 #include <UI/UI.h>
 #include <Util/Interpolate.h>

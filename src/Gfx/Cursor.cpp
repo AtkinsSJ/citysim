@@ -6,6 +6,8 @@
 
 #include "Cursor.h"
 #include <Assets/AssetManager.h>
+#include <Assets/AssetRef.h>
+#include <Assets/ContainerAsset.h>
 #include <SDL_image.h>
 
 Cursor& Cursor::get(StringView name)
@@ -67,7 +69,9 @@ ErrorOr<NonnullOwnPtr<Asset>> Cursor::load_defs(AssetMetadata& metadata, Blob da
         });
     }
 
-    Assets::allocateChildren(&metadata, cursor_defs.count);
+    auto children_data = Assets::assets_allocate(cursor_defs.count * sizeof(AssetRef));
+    auto children = makeArray(cursor_defs.count, reinterpret_cast<AssetRef*>(children_data.writable_data()));
+
     for (auto it = cursor_defs.iterate(); it.hasNext(); it.next()) {
         auto& cursor_def = it.get();
 
@@ -80,10 +84,11 @@ ErrorOr<NonnullOwnPtr<Asset>> Cursor::load_defs(AssetMetadata& metadata, Blob da
         SDL_FreeSurface(cursor_surface);
 
         cursor_metadata->loaded_asset = adopt_own(*new Cursor(sdl_cursor));
-        addChildAsset(&metadata, cursor_metadata);
+        cursor_metadata->state = AssetMetadata::State::Loaded;
+        children.append(cursor_metadata->get_ref());
     }
 
-    return { adopt_own(*new ContainerAsset) };
+    return { adopt_own(*new ContainerAsset(move(children_data), move(children))) };
 }
 
 Cursor::Cursor()

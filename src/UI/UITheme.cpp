@@ -5,6 +5,7 @@
  */
 
 #include <Assets/AssetManager.h>
+#include <Assets/ContainerAsset.h>
 #include <IO/LineReader.h>
 #include <UI/UITheme.h>
 
@@ -751,7 +752,8 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
     for (auto style_type : enum_values<StyleType>()) {
         totalStyleCount += style_count[style_type];
     }
-    allocateChildren(&metadata, totalStyleCount);
+    auto children_data = Assets::assets_allocate(totalStyleCount * sizeof(AssetRef));
+    auto children = makeArray(totalStyleCount, reinterpret_cast<AssetRef*>(children_data.writable_data()));
 
     // Some default values to use
     auto transparent = Colour::from_rgb_255(0, 0, 0, 0);
@@ -798,7 +800,8 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                         move(font), move(text_color), move(text_alignment), move(padding), move(content_padding),
                         move(start_icon), move(start_icon_alignment), move(end_icon), move(end_icon_alignment),
                         move(background), move(background_hover), move(background_pressed), move(background_disabled)));
-                    addChildAsset(&metadata, child_metadata);
+                    child_metadata->state = AssetMetadata::State::Loaded;
+                    children.append(child_metadata->get_ref());
                 } break;
 
                 case StyleType::Checkbox: {
@@ -829,7 +832,8 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                         move(padding),
                         move(background), move(background_hover), move(background_pressed), move(background_disabled),
                         move(check_size), move(check), move(check_hover), move(check_pressed), move(check_disabled)));
-                    addChildAsset(&metadata, child_metadata);
+                    child_metadata->state = AssetMetadata::State::Loaded;
+                    children.append(child_metadata->get_ref());
                 } break;
 
                 case StyleType::Console: {
@@ -853,7 +857,8 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                     AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::ConsoleStyle, style->name, {});
                     child_metadata->loaded_asset = adopt_own(*new ConsoleStyle(
                         move(font), move(output_text_colors), move(background), move(padding), move(content_padding), move(scrollbar_style), move(text_input_style)));
-                    addChildAsset(&metadata, child_metadata);
+                    child_metadata->state = AssetMetadata::State::Loaded;
+                    children.append(child_metadata->get_ref());
                 } break;
 
                 case StyleType::DropDownList: {
@@ -862,7 +867,8 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
 
                     AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::DropDownListStyle, style->name, {});
                     child_metadata->loaded_asset = adopt_own(*new DropDownListStyle(move(button_style), move(panel_style)));
-                    addChildAsset(&metadata, child_metadata);
+                    child_metadata->state = AssetMetadata::State::Loaded;
+                    children.append(child_metadata->get_ref());
                 } break;
 
                 case StyleType::Label: {
@@ -874,7 +880,8 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
 
                     AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::LabelStyle, style->name, {});
                     child_metadata->loaded_asset = adopt_own(*new LabelStyle(move(padding), move(background), move(font), move(text_color), move(text_alignment)));
-                    addChildAsset(&metadata, child_metadata);
+                    child_metadata->state = AssetMetadata::State::Loaded;
+                    children.append(child_metadata->get_ref());
                 } break;
 
                 case StyleType::Panel: {
@@ -896,7 +903,8 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                     child_metadata->loaded_asset = adopt_own(*new PanelStyle(
                         move(padding), move(content_padding), move(widget_alignment), move(background),
                         move(button_style), move(checkbox_style), move(drop_down_list_style), move(label_style), move(radio_button_style), move(scrollbar_style), move(slider_style), move(text_input_style)));
-                    addChildAsset(&metadata, child_metadata);
+                    child_metadata->state = AssetMetadata::State::Loaded;
+                    children.append(child_metadata->get_ref());
                 } break;
 
                 case StyleType::RadioButton: {
@@ -916,7 +924,8 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                         move(size),
                         move(background), move(background_hover), move(background_pressed), move(background_disabled),
                         move(dot_size), move(dot), move(dot_hover), move(dot_pressed), move(dot_disabled)));
-                    addChildAsset(&metadata, child_metadata);
+                    child_metadata->state = AssetMetadata::State::Loaded;
+                    children.append(child_metadata->get_ref());
                 } break;
 
                 case StyleType::Scrollbar: {
@@ -931,7 +940,8 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                     child_metadata->loaded_asset = adopt_own(*new ScrollbarStyle(
                         width, move(background),
                         move(thumb), move(thumb_hover), move(thumb_pressed), move(thumb_disabled)));
-                    addChildAsset(&metadata, child_metadata);
+                    child_metadata->state = AssetMetadata::State::Loaded;
+                    children.append(child_metadata->get_ref());
                 } break;
 
                 case StyleType::Slider: {
@@ -947,7 +957,8 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                     child_metadata->loaded_asset = adopt_own(*new SliderStyle(
                         move(track), move(track_thickness),
                         move(thumb), move(thumb_hover), move(thumb_pressed), move(thumb_disabled), move(thumb_size)));
-                    addChildAsset(&metadata, child_metadata);
+                    child_metadata->state = AssetMetadata::State::Loaded;
+                    children.append(child_metadata->get_ref());
                 } break;
 
                 case StyleType::TextInput: {
@@ -964,7 +975,8 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                         move(font), move(text_color), move(text_alignment),
                         move(background), move(padding),
                         move(show_caret), move(caret_flash_cycle_duration)));
-                    addChildAsset(&metadata, child_metadata);
+                    child_metadata->state = AssetMetadata::State::Loaded;
+                    children.append(child_metadata->get_ref());
                 } break;
 
                 case StyleType::Window: {
@@ -980,7 +992,8 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                     child_metadata->loaded_asset = adopt_own(*new WindowStyle(
                         move(title_label_style), move(title_bar_height), move(title_bar_color), move(title_bar_color_inactive), move(title_bar_button_hover_color),
                         move(offset_from_mouse), move(panel_style)));
-                    addChildAsset(&metadata, child_metadata);
+                    child_metadata->state = AssetMetadata::State::Loaded;
+                    children.append(child_metadata->get_ref());
                 } break;
 
                     INVALID_DEFAULT_CASE;
@@ -989,7 +1002,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
         }
     }
 
-    return { adopt_own(*new ContainerAsset) };
+    return { adopt_own(*new ContainerAsset(move(children_data), move(children))) };
 }
 
 }

@@ -6,7 +6,9 @@
 
 #include "Palette.h"
 #include <Assets/AssetManager.h>
+#include <Assets/AssetRef.h>
 #include <Assets/AssetType.h>
+#include <Assets/ContainerAsset.h>
 
 Palette& Palette::get(StringView name)
 {
@@ -115,7 +117,9 @@ ErrorOr<NonnullOwnPtr<Asset>> Palette::load_defs(AssetMetadata& metadata, Blob f
     }
 
     // Load all the palettes, now that we know their properties are all set.
-    Assets::allocateChildren(&metadata, palettes.count);
+    auto children_data = Assets::assets_allocate(palettes.count * sizeof(AssetRef));
+    auto children = makeArray(palettes.count, reinterpret_cast<AssetRef*>(children_data.writable_data()));
+
     for (auto it = palettes.iterate(); it.hasNext(); it.next()) {
         auto& palette = it.get();
 
@@ -131,7 +135,8 @@ ErrorOr<NonnullOwnPtr<Asset>> Palette::load_defs(AssetMetadata& metadata, Blob f
 
             auto& palette_metadata = *asset_manager().add_asset(AssetType::Palette, palette.name, {});
             palette_metadata.loaded_asset = adopt_own(*new Palette(move(data), palette.type, move(colours_array)));
-            addChildAsset(&metadata, &palette_metadata);
+            palette_metadata.state = AssetMetadata::State::Loaded;
+            children.append(palette_metadata.get_ref());
         } break;
 
         case Type::Fixed: {
@@ -142,12 +147,13 @@ ErrorOr<NonnullOwnPtr<Asset>> Palette::load_defs(AssetMetadata& metadata, Blob f
 
             auto& palette_metadata = *asset_manager().add_asset(AssetType::Palette, palette.name, {});
             palette_metadata.loaded_asset = adopt_own(*new Palette(move(data), palette.type, move(colours_array)));
-            addChildAsset(&metadata, &palette_metadata);
+            palette_metadata.state = AssetMetadata::State::Loaded;
+            children.append(palette_metadata.get_ref());
         } break;
         }
     }
 
-    return { adopt_own(*new ContainerAsset) };
+    return { adopt_own(*new ContainerAsset(move(children_data), move(children))) };
 }
 
 Colour Palette::colour_at(size_t index) const

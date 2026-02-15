@@ -3,5 +3,6 @@ target_sources(CitySim PRIVATE
     AssetMetadata.cpp
     AssetRef.cpp
     BuiltinAssetLoader.cpp
+    ContainerAsset.cpp
     Texts.cpp
 )

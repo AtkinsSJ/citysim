@@ -8,6 +8,7 @@
 #include "AppState.h"
 #include <Assets/AssetManager.h>
 #include <Debug/Keymap.h>
+#include <Gfx/BitmapFont.h>
 #include <Gfx/Renderer.h>
 #include <IO/LineReader.h>
 #include <Input/KeyboardShortcut.h>

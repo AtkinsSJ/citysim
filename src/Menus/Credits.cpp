@@ -8,6 +8,7 @@
 #include <Assets/AssetManager.h>
 #include <Gfx/TextDocument.h>
 #include <UI/UI.h>
+#include <UI/UITheme.h>
 #include <Util/Vector.h>
 
 AppStatus updateAndRenderCredits(float /*deltaTime*/)

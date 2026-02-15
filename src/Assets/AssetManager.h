@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2015-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -8,10 +8,13 @@
 
 #include <Assets/AssetManagerListener.h>
 #include <Assets/AssetMetadata.h>
+#include <Assets/AssetRef.h>
 #include <Assets/BuiltinAssetLoader.h>
+#include <Gfx/Forward.h>
 #include <IO/DirectoryWatcher.h>
 #include <IO/File.h>
 #include <Settings/SettingsChangeListener.h>
+#include <UI/Forward.h>
 #include <Util/ChunkedArray.h>
 #include <Util/EnumMap.h>
 #include <Util/Set.h>
@@ -161,9 +164,6 @@ T* getStyle(String styleName, AssetRef const& defaultStyle)
 // FIXME: Some kind of smart pointer to handle memory allocation tracking.
 Blob assets_allocate(smm size);
 void assets_deallocate(Blob& data);
-
-void allocateChildren(AssetMetadata* asset, s32 childCount);
-void addChildAsset(AssetMetadata* parent, AssetMetadata* child);
 
 }
 

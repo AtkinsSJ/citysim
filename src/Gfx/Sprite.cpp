@@ -6,6 +6,8 @@
 
 #include "Sprite.h"
 #include <Assets/AssetManager.h>
+#include <Assets/AssetRef.h>
+#include <Assets/ContainerAsset.h>
 #include <Gfx/Ninepatch.h>
 #include <Gfx/Texture.h>
 
@@ -58,6 +60,7 @@ static AssetMetadata* add_sprite_group(StringView name, s32 spriteCount)
     asset->sprites = (Sprite*)asset->data.writable_data();
 
     metadata->loaded_asset = move(asset);
+    metadata->state = AssetMetadata::State::Loaded;
     return metadata;
 }
 
@@ -68,6 +71,7 @@ static AssetMetadata* add_ninepatch(StringView name, StringView filename, s32 pu
 
     AssetMetadata* metadata = asset_manager().add_asset(AssetType::Ninepatch, name, {});
     metadata->loaded_asset = adopt_own(*new Ninepatch(*texture_metadata, pu0, pu1, pu2, pu3, pv0, pv1, pv2, pv3));
+    metadata->state = AssetMetadata::State::Loaded;
     return metadata;
 }
 
@@ -87,7 +91,8 @@ ErrorOr<NonnullOwnPtr<Asset>> load_sprite_defs(AssetMetadata& metadata, Blob dat
         if (auto command = reader.next_token(); command.has_value() && command.value().starts_with(':'))
             childAssetCount++;
     }
-    allocateChildren(&metadata, childAssetCount);
+    auto children_data = Assets::assets_allocate(childAssetCount * sizeof(AssetRef));
+    auto children = makeArray(childAssetCount, reinterpret_cast<AssetRef*>(children_data.writable_data()));
     reader.restart();
 
     // Now, actually read things
@@ -123,7 +128,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_sprite_defs(AssetMetadata& metadata, Blob dat
 
                 AssetMetadata* ninepatch = add_ninepatch(name.release_value(), filename.release_value(), pu0.release_value(), pu1.release_value(), pu2.release_value(), pu3.release_value(), pv0.release_value(), pv1.release_value(), pv2.release_value(), pv3.release_value());
 
-                addChildAsset(&metadata, ninepatch);
+                children.append(ninepatch->get_ref());
             } else if (command == "Sprite"_s) {
                 // @Copypasta from the SpriteGroup branch, and the 'sprite' property
                 auto name = reader.next_token();
@@ -145,7 +150,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_sprite_defs(AssetMetadata& metadata, Blob dat
                 sprite->pixelWidth = spriteSize.x;
                 sprite->pixelHeight = spriteSize.y;
 
-                addChildAsset(&metadata, group);
+                children.append(group->get_ref());
             } else if (command == "SpriteGroup"_s) {
                 auto name = reader.next_token();
                 auto filename = reader.next_token();
@@ -165,7 +170,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_sprite_defs(AssetMetadata& metadata, Blob dat
                 current_sprite_group_metadata = add_sprite_group(name.release_value(), spriteCount);
                 spriteIndex = 0;
 
-                addChildAsset(&metadata, current_sprite_group_metadata);
+                children.append(current_sprite_group_metadata->get_ref());
             } else {
                 return reader.make_error_message("Unrecognised command: '{0}'"_s, { command });
             }
@@ -210,7 +215,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_sprite_defs(AssetMetadata& metadata, Blob dat
     }
 
     // Load all the sprites, now that we know their properties are all set.
-    for (auto& child : metadata.children) {
+    for (auto& child : children) {
         auto& sprite_group_metadata = child.get();
         if (sprite_group_metadata.type != AssetType::Sprite)
             continue;
@@ -236,5 +241,5 @@ ErrorOr<NonnullOwnPtr<Asset>> load_sprite_defs(AssetMetadata& metadata, Blob dat
         }
     }
 
-    return { adopt_own(*new ContainerAsset) };
+    return { adopt_own(*new ContainerAsset(move(children_data), move(children))) };
 }
