@@ -176,16 +176,5 @@ Optional<ConnectionType> connectionTypeOf(char c);
 char asChar(ConnectionType connectionType);
 bool matchesVariant(BuildingDef* def, BuildingVariant* variant, BuildingDef** neighbourDefs);
 
-Optional<BuildingDef*> find_building_intersection(BuildingDef* defA, BuildingDef* defB);
-
-// TODO: These are a bit hacky... I want to hide the implementation details of the catalogue, but
-// creating a whole set of iterator stuff which is almost identical to the regular iterators seems
-// a bit excessive?
-// I guess maybe I could use one that would work for all of these. eh, maybe worth trying later.
-// - Sam, 15/06/2019
-ChunkedArray<BuildingDef*>* getConstructibleBuildings();
-
-s32 getMaxBuildingSize(ZoneType zoneType);
-
 void updateBuildingVariant(City* city, Building* building, BuildingDef* def = nullptr);
 void updateAdjacentBuildingVariants(City* city, Rect2I footprint);

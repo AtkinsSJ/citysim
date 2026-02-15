@@ -200,6 +200,8 @@ bool canPlaceBuilding(City* city, BuildingDef* def, s32 left, s32 top)
         return false;
     }
 
+    auto& catalogue = BuildingCatalogue::the();
+
     // Check terrain is buildable and empty
     // TODO: Optimise this per-sector!
     for (s32 y = footprint.y(); y < footprint.y() + footprint.height(); y++) {
@@ -213,7 +215,7 @@ bool canPlaceBuilding(City* city, BuildingDef* def, s32 left, s32 top)
             Building* buildingAtPos = getBuildingAt(city, x, y);
             if (buildingAtPos != nullptr) {
                 // Check if we can combine this with the building that's already there
-                if (find_building_intersection(getBuildingDef(buildingAtPos), def).has_value()) {
+                if (catalogue.find_building_intersection(*getBuildingDef(buildingAtPos), *def).has_value()) {
                     // We can!
                     // TODO: We want to check if there is a valid variant, before we build.
                     // But that means matching against buildings that aren't constructed yet,
@@ -241,10 +243,10 @@ void placeBuilding(City* city, BuildingDef* def, s32 left, s32 top, bool markAre
         // NB: We're keeping the old building's id. I think that's preferable, but might want to change that later.
         BuildingDef* oldDef = getBuildingDef(building);
 
-        auto* intersection_def = find_building_intersection(oldDef, def).release_value();
+        auto& intersection_def = BuildingCatalogue::the().find_building_intersection(*oldDef, *def).release_value();
 
-        building->typeID = intersection_def->typeID;
-        def = intersection_def; // I really don't like this but I don't want to rewrite this entire function right now!
+        building->typeID = intersection_def.typeID;
+        def = const_cast<BuildingDef*>(&intersection_def); // I really don't like this but I don't want to rewrite this entire function right now!
 
         city->zoneLayer.population[oldDef->growsInZone] -= building->currentResidents + building->currentJobs;
     } else {
@@ -367,7 +369,8 @@ void demolishRect(City* city, Rect2I area)
     }
 
     // Expand the area to account for buildings to the left or up from it
-    Rect2I expandedArea = area.expanded(buildingCatalogue.overallMaxBuildingDim, 0, 0, buildingCatalogue.overallMaxBuildingDim);
+    auto& building_catalogue = BuildingCatalogue::the();
+    Rect2I expandedArea = area.expanded(building_catalogue.overallMaxBuildingDim, 0, 0, building_catalogue.overallMaxBuildingDim);
     Rect2I sectorsArea = getSectorsCovered(&city->sectors, expandedArea);
 
     for (s32 sY = sectorsArea.y();
@@ -415,7 +418,7 @@ ChunkedArray<Building*> findBuildingsOverlappingArea(City* city, Rect2I area, Fl
 
     // Expand the area to account for buildings to the left or up from it
     // (but don't do that if we only care about origins)
-    s32 expansion = flags.has(BuildingQueryFlag::RequireOriginInArea) ? 0 : buildingCatalogue.overallMaxBuildingDim;
+    s32 expansion = flags.has(BuildingQueryFlag::RequireOriginInArea) ? 0 : BuildingCatalogue::the().overallMaxBuildingDim;
     Rect2I expandedArea = area.expanded(expansion, 0, 0, expansion);
     Rect2I sectorsArea = getSectorsCovered(&city->sectors, expandedArea);
 
@@ -512,10 +515,11 @@ void saveBuildings(City* city, BinaryFileWriter* writer)
     SAVSection_Buildings buildingSection = {};
 
     // Building types table
-    s32 buildingDefCount = buildingCatalogue.allBuildings.count - 1; // Skip the null def
+    auto& building_catalogue = BuildingCatalogue::the();
+    s32 buildingDefCount = building_catalogue.allBuildings.count - 1; // Skip the null def
     WriteBufferRange buildingTypeTableLoc = writer->reserveArray<SAVBuildingTypeEntry>(buildingDefCount);
     Array<SAVBuildingTypeEntry> buildingTypeTable = writer->arena->allocate_array<SAVBuildingTypeEntry>(buildingDefCount);
-    for (auto it = buildingCatalogue.allBuildings.iterate(); it.hasNext(); it.next()) {
+    for (auto it = building_catalogue.allBuildings.iterate(); it.hasNext(); it.next()) {
         BuildingDef* def = it.get();
         if (def->typeID == 0)
             continue; // Skip the null building def!

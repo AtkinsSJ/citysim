@@ -410,55 +410,13 @@ bool isZoneAcceptable(City* city, ZoneType zoneType, s32 x, s32 y)
     return true;
 }
 
-template<typename Filter>
-static BuildingDef* findRandomZoneBuilding(ZoneType zoneType, Random* random, Filter filter)
-{
-    DEBUG_FUNCTION();
-
-    // Choose a random building, then carry on checking buildings until one is acceptable
-    ChunkedArray<BuildingDef*>* buildings = nullptr;
-    switch (zoneType) {
-    case ZoneType::Residential:
-        buildings = &buildingCatalogue.rGrowableBuildings;
-        break;
-    case ZoneType::Commercial:
-        buildings = &buildingCatalogue.cGrowableBuildings;
-        break;
-    case ZoneType::Industrial:
-        buildings = &buildingCatalogue.iGrowableBuildings;
-        break;
-
-        INVALID_DEFAULT_CASE;
-    }
-
-    BuildingDef* result = nullptr;
-
-    // TODO: @RandomIterate - This random selection is biased, and wants replacing with an iteration only over valid options,
-    // like in "growSomeZoneBuildings - find a valid zone".
-    // Well, it does if growing buildings one at a time is how we want to do things. I'm not sure.
-    // Growing a whole "block" of a building might make more sense for residential at least.
-    // Something to decide on later.
-    // - Sam, 18/08/2019
-    for (auto it = buildings->iterate(random->random_below(truncate32(buildings->count)));
-        it.hasNext();
-        it.next()) {
-        BuildingDef* def = it.getValue();
-
-        if (filter(def)) {
-            result = def;
-            break;
-        }
-    }
-
-    return result;
-}
-
 void growSomeZoneBuildings(City* city)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
     ZoneLayer* layer = &city->zoneLayer;
     Random* random = AppState::the().gameState->gameRandom;
+    auto& building_catalogue = BuildingCatalogue::the();
 
     for (auto zone_type : enum_values<ZoneType>()) {
         if (layer->demand[zone_type] > 0) {
@@ -466,7 +424,7 @@ void growSomeZoneBuildings(City* city)
             s32 remainingDemand = layer->demand[zone_type];
             s32 minimumDemand = layer->demand[zone_type] / 20; // Stop when we're below 20% of the original demand
 
-            s32 maxRBuildingDim = getMaxBuildingSize(zone_type);
+            s32 maxRBuildingDim = BuildingCatalogue::the().get_max_building_size(zone_type);
             s32 savedPositionInMostDesirableSectorsTable = 0;
 
             while ((remainingBuildingCount > 0)
@@ -622,25 +580,27 @@ void growSomeZoneBuildings(City* city)
 
                 // Pick a building def that fits the space and is not more than 10% more than the remaining demand
                 s32 maxPopulation = (s32)((float)remainingDemand * 1.1f);
-                BuildingDef* buildingDef = findRandomZoneBuilding(zone_type, random, [=](BuildingDef* it) -> bool {
-                    if ((it->size.x > zoneFootprint.width()) || (it->size.y > zoneFootprint.height()))
+                auto buildingDef = building_catalogue.find_random_zone_building(zone_type, *random, [=](BuildingDef const& it) -> bool {
+                    if (it.size.x > zoneFootprint.width() || it.size.y > zoneFootprint.height())
                         return false;
 
-                    if (it->growsInZone == ZoneType::Residential) {
-                        return (it->residents > 0) && (it->residents <= maxPopulation);
-                    } else {
-                        return (it->jobs > 0) && (it->jobs <= maxPopulation);
-                    }
+                    if (it.growsInZone == ZoneType::Residential)
+                        return it.residents > 0 && it.residents <= maxPopulation;
+
+                    return it.jobs > 0 && it.jobs <= maxPopulation;
                 });
 
-                if (buildingDef) {
+                if (buildingDef.has_value()) {
                     // Place it!
                     // TODO: This picks a random spot within the zoneFootprint; we should probably pick the most desirable part? @Desirability
                     Rect2I footprint = Rect2I::placed_randomly_within(*random, buildingDef->size, zoneFootprint);
 
-                    Building* building = addBuilding(city, buildingDef, footprint);
+                    // FIXME: Oh boy do we need to do some const-correctness.
+                    auto* building_def_ptr = const_cast<BuildingDef*>(&buildingDef.value());
+
+                    Building* building = addBuilding(city, building_def_ptr, footprint);
                     layer->population[zone_type] += building->currentResidents + building->currentJobs;
-                    updateBuildingVariant(city, building, buildingDef);
+                    updateBuildingVariant(city, building, building_def_ptr);
 
                     markAreaDirty(city, footprint);
 
