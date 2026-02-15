@@ -173,7 +173,7 @@ void unloadAsset(AssetMetadata* asset)
 {
     DEBUG_FUNCTION();
 
-    if (asset->state == AssetMetadata::State::Unloaded)
+    if (asset->state != AssetMetadata::State::Loaded)
         return;
 
     if (!asset->children.isEmpty()) {
