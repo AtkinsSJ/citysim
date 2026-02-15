@@ -130,7 +130,6 @@ int main(int argc, char* argv[])
         assets.register_listener(globalConsole);
     }
 
-    assets.register_asset_loader(adopt_own(*new Assets::DeprecatedAssetLoader));
     assets.register_asset_loader(adopt_own(*new Gfx::AssetLoader));
     assets.register_asset_loader(adopt_own(*new UI::AssetLoader));
     assets.register_asset_loader(adopt_own(*new DebugAssetLoader));

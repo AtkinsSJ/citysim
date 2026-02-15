@@ -6,7 +6,6 @@
 
 #include "BitmapFont.h"
 #include <Assets/AssetManager.h>
-#include <Assets/DeprecatedAsset.h>
 #include <Debug/Debug.h>
 #include <Gfx/Renderer.h>
 #include <Gfx/Texture.h>
