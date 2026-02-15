@@ -86,6 +86,64 @@ private:
 };
 
 template<typename T>
+class [[nodiscard]] Optional<T&> {
+public:
+    Optional() = default;
+
+    Optional(T& value)
+        : m_value(&value)
+    {
+    }
+
+    ~Optional() = default;
+
+    bool has_value() const { return m_value != nullptr; }
+
+    T const& value() const
+    {
+        ASSERT(m_value);
+        return *m_value;
+    }
+
+    T& value()
+    {
+        ASSERT(m_value);
+        return *m_value;
+    }
+
+    T const* operator->() const { return m_value; }
+    T* operator->() { return m_value; }
+
+    T& release_value()
+    {
+        ASSERT(m_value);
+        auto& result = *m_value;
+        m_value = nullptr;
+        return result;
+    }
+
+    T value_or(T alternative) const
+    {
+        if (has_value())
+            return value();
+        return alternative;
+    }
+
+    bool operator==(Optional const& other) const
+    {
+        return m_value == other.m_value;
+    }
+
+    bool operator==(T const& other) const
+    {
+        return m_value == other;
+    }
+
+private:
+    T* m_value { nullptr };
+};
+
+template<typename T>
 bool all_have_values(Optional<T> const& input)
 {
     return input.has_value();
