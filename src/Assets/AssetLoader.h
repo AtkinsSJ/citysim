@@ -7,6 +7,7 @@
 #pragma once
 
 #include <Assets/Forward.h>
+#include <Util/ErrorOr.h>
 #include <Util/OwnPtr.h>
 
 namespace Assets {

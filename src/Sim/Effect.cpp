@@ -7,7 +7,7 @@
 #include "Effect.h"
 #include <IO/LineReader.h>
 
-Optional<EffectRadius> EffectRadius::read(LineReader& reader)
+ErrorOr<EffectRadius> EffectRadius::read(LineReader& reader)
 {
     auto radius = reader.read_int<s32>();
 
@@ -22,7 +22,5 @@ Optional<EffectRadius> EffectRadius::read(LineReader& reader)
         };
     }
 
-    reader.error("Couldn't parse effect radius. Expected \"{0} radius [effectAtCentre] [effectAtEdge]\" where radius, effectAtCentre, and effectAtEdge are ints."_s);
-
-    return {};
+    return reader.make_error_message("Couldn't parse effect radius. Expected \"radius [effectAtCentre] [effectAtEdge]\" where radius, effectAtCentre, and effectAtEdge are ints."_s);
 }
