@@ -164,7 +164,17 @@ struct ChunkedArray {
         return iterator;
     }
 
-    inline ChunkedArrayIterator<T> iterateBackwards()
+    ChunkedArrayIterator<T> iterate(s32 initialIndex = 0, bool wrapAround = true, bool goBackwards = false) const
+    {
+        return const_cast<ChunkedArray&>(*this).iterate(initialIndex, wrapAround, goBackwards);
+    }
+
+    ChunkedArrayIterator<T> iterateBackwards()
+    {
+        return iterate(count - 1, false, true);
+    }
+
+    ChunkedArrayIterator<T> iterateBackwards() const
     {
         return iterate(count - 1, false, true);
     }
