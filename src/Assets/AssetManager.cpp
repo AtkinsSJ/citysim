@@ -405,20 +405,10 @@ String getText(String name, std::initializer_list<StringView> args)
 
 String AssetManager::make_asset_path(AssetType type, StringView short_name) const
 {
-    switch (type) {
-    case AssetType::Cursor:
-        return myprintf("{0}/cursors/{1}"_s, { s_assets->assetsPath, short_name }, true);
-    case AssetType::BitmapFont:
-        return myprintf("{0}/fonts/{1}"_s, { s_assets->assetsPath, short_name }, true);
-    case AssetType::Shader:
-        return myprintf("{0}/shaders/{1}"_s, { s_assets->assetsPath, short_name }, true);
-    case AssetType::Texts:
-        return myprintf("{0}/locale/{1}"_s, { s_assets->assetsPath, short_name }, true);
-    case AssetType::Texture:
-        return myprintf("{0}/textures/{1}"_s, { s_assets->assetsPath, short_name }, true);
-    default:
-        return myprintf("{0}/{1}"_s, { s_assets->assetsPath, short_name }, true);
-    }
+    auto& loader = *asset_loaders_by_type[type];
+    if (auto path = loader.make_asset_path(*this, type, short_name); path.has_value())
+        return path.release_value();
+    return myprintf("{0}/{1}"_s, { s_assets->assetsPath, short_name }, true);
 }
 
 void AssetManager::register_asset_loader(NonnullOwnPtr<AssetLoader>&& asset_loader_ptr)

@@ -16,6 +16,7 @@ public:
 
     virtual void register_types(AssetManager&) override;
     virtual void create_placeholder_assets(AssetManager&) override;
+    virtual Optional<String> make_asset_path(AssetManager const&, AssetType, StringView short_name) override;
 
     virtual ErrorOr<NonnullOwnPtr<Asset>> load_asset(AssetMetadata&, Blob file_data) override;
 };

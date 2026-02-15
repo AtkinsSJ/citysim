@@ -61,6 +61,22 @@ void AssetLoader::create_placeholder_assets(AssetManager& assets)
     assets.set_placeholder_asset(AssetType::TextDocument, adopt_own(*new TextDocument));
 }
 
+Optional<String> AssetLoader::make_asset_path(AssetManager const& assets, AssetType type, StringView short_name)
+{
+    switch (type) {
+    case AssetType::Cursor:
+        return myprintf("{0}/cursors/{1}"_s, { assets.assetsPath, short_name }, true);
+    case AssetType::BitmapFont:
+        return myprintf("{0}/fonts/{1}"_s, { assets.assetsPath, short_name }, true);
+    case AssetType::Shader:
+        return myprintf("{0}/shaders/{1}"_s, { assets.assetsPath, short_name }, true);
+    case AssetType::Texture:
+        return myprintf("{0}/textures/{1}"_s, { assets.assetsPath, short_name }, true);
+    default:
+        return {};
+    }
+}
+
 ErrorOr<NonnullOwnPtr<Asset>> AssetLoader::load_asset(AssetMetadata& metadata, Blob file_data)
 {
     auto to_error_or_asset = [](auto error_or_asset_subclass) -> ErrorOr<NonnullOwnPtr<Asset>> {

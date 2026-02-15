@@ -23,6 +23,16 @@ void BuiltinAssetLoader::create_placeholder_assets(AssetManager& assets)
     assets.set_placeholder_asset(AssetType::Texts, adopt_own(*new Texts));
 }
 
+Optional<String> BuiltinAssetLoader::make_asset_path(AssetManager const& assets, AssetType type, StringView short_name)
+{
+    switch (type) {
+    case AssetType::Texts:
+        return myprintf("{0}/locale/{1}"_s, { assets.assetsPath, short_name }, true);
+    default:
+        return {};
+    }
+}
+
 ErrorOr<NonnullOwnPtr<Asset>> BuiltinAssetLoader::load_asset(AssetMetadata& metadata, Blob file_data)
 {
     auto to_error_or_asset = [](auto error_or_asset_subclass) -> ErrorOr<NonnullOwnPtr<Asset>> {

@@ -8,7 +8,9 @@
 
 #include <Assets/Forward.h>
 #include <Util/ErrorOr.h>
+#include <Util/Optional.h>
 #include <Util/OwnPtr.h>
+#include <Util/String.h>
 
 namespace Assets {
 
@@ -18,6 +20,7 @@ public:
 
     virtual void register_types(AssetManager&) = 0;
     virtual void create_placeholder_assets(AssetManager&) = 0;
+    virtual Optional<String> make_asset_path(AssetManager const&, AssetType, StringView short_name) { return {}; }
 
     virtual ErrorOr<NonnullOwnPtr<Asset>> load_asset(AssetMetadata& metadata, Blob file_data) = 0;
 };
