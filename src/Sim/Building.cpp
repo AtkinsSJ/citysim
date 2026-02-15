@@ -33,32 +33,6 @@ bool buildingDefHasType(BuildingDef* def, s32 typeID)
     return result;
 }
 
-ChunkedArray<BuildingDef*>* getConstructibleBuildings()
-{
-    return &buildingCatalogue.constructibleBuildings;
-}
-
-s32 getMaxBuildingSize(ZoneType zoneType)
-{
-    s32 result = 0;
-
-    switch (zoneType) {
-    case ZoneType::Residential:
-        result = buildingCatalogue.maxRBuildingDim;
-        break;
-    case ZoneType::Commercial:
-        result = buildingCatalogue.maxCBuildingDim;
-        break;
-    case ZoneType::Industrial:
-        result = buildingCatalogue.maxIBuildingDim;
-        break;
-
-        INVALID_DEFAULT_CASE;
-    }
-
-    return result;
-}
-
 bool matchesVariant(BuildingDef* def, BuildingVariant* variant, EnumMap<ConnectionDirection, BuildingDef*> const& neighbourDefs)
 {
     DEBUG_FUNCTION();
@@ -213,25 +187,6 @@ void updateAdjacentBuildingVariants(City* city, Rect2I footprint)
                 updateBuildingVariant(city, buildingD, defR);
         }
     }
-}
-
-Optional<BuildingDef*> find_building_intersection(BuildingDef* defA, BuildingDef* defB)
-{
-    DEBUG_FUNCTION();
-
-    // It's horrible linear search time!
-    for (auto it = buildingCatalogue.intersectionBuildings.iterate(); it.hasNext(); it.next()) {
-        BuildingDef* itDef = it.getValue();
-
-        if (itDef->isIntersection) {
-            if (((itDef->intersectionPart1TypeID == defA->typeID) && (itDef->intersectionPart2TypeID == defB->typeID))
-                || ((itDef->intersectionPart2TypeID == defA->typeID) && (itDef->intersectionPart1TypeID == defB->typeID))) {
-                return itDef;
-            }
-        }
-    }
-
-    return {};
 }
 
 void initBuilding(Building* building, s32 id, BuildingDef* def, Rect2I footprint, GameTimestamp creationDate)

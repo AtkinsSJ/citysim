@@ -501,14 +501,14 @@ void updateAndRenderGameUI(GameState* gameState)
         }
 
         if (UI::isMenuVisible(to_underlying(GameMenuID::Build))) {
-            ChunkedArray<BuildingDef*>* constructibleBuildings = getConstructibleBuildings();
+            auto& constructibleBuildings = BuildingCatalogue::the().constructible_buildings();
 
             s32 popupMenuWidth = 150;
             s32 popupMenuMaxHeight = UI::windowSize.y - (buttonRect.y() + buttonRect.height());
 
             UI::Panel menu = UI::Panel({ buttonRect.x() - popup_menu_panel_style.padding.left, buttonRect.y() + buttonRect.height(), popupMenuWidth, popupMenuMaxHeight }, &popup_menu_panel_style);
 
-            for (auto it = constructibleBuildings->iterate();
+            for (auto it = constructibleBuildings.iterate();
                 it.hasNext();
                 it.next()) {
                 BuildingDef* buildingDef = it.getValue();

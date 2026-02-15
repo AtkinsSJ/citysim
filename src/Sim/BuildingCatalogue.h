@@ -1,20 +1,31 @@
 /*
- * Copyright (c) 2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2018-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #pragma once
 
+#include "Util/Function.h"
+
 #include <Assets/AssetManagerListener.h>
 #include <Assets/Forward.h>
 #include <Sim/Forward.h>
+#include <Sim/Zone.h>
 #include <Util/ChunkedArray.h>
 #include <Util/HashTable.h>
 #include <Util/OccupancyArray.h>
 #include <Util/StringTable.h>
 
 struct BuildingCatalogue final : public AssetManagerListener {
+    static BuildingCatalogue& the();
+
+    ChunkedArray<BuildingDef*> const& constructible_buildings() const { return constructibleBuildings; }
+    s32 get_max_building_size(ZoneType) const;
+    Optional<BuildingDef const&> find_building_intersection(BuildingDef const&, BuildingDef const&) const;
+
+    Optional<BuildingDef const&> find_random_zone_building(ZoneType, Random&, Function<bool(BuildingDef const&)> filter) const;
+
     OccupancyArray<BuildingDef> allBuildings;
     HashTable<BuildingDef*> buildingsByName { 128 };
     StringTable buildingNames;
@@ -36,8 +47,6 @@ struct BuildingCatalogue final : public AssetManagerListener {
     // ^AssetManagerListener
     virtual void after_assets_loaded() override;
 };
-
-inline BuildingCatalogue buildingCatalogue = {};
 
 void initBuildingCatalogue();
 
