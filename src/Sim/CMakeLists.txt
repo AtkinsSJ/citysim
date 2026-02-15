@@ -18,6 +18,7 @@ target_sources(CitySim PRIVATE
     Power.cpp
     Terrain.cpp
     TerrainCatalogue.cpp
+    TerrainDefs.cpp
     TileUtils.cpp
     Transport.cpp
     Zone.cpp

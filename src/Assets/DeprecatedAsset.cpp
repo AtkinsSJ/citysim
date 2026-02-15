@@ -10,7 +10,6 @@
 #include <Debug/Console.h>
 #include <SDL_image.h>
 #include <Settings/Settings.h>
-#include <Sim/TerrainCatalogue.h>
 #include <Util/StringBuilder.h>
 
 namespace Assets {
@@ -96,12 +95,6 @@ static void loadTexts(HashTable<String>* texts, AssetMetadata* metadata, Blob fi
 void DeprecatedAsset::unload(AssetMetadata& metadata)
 {
     switch (metadata.type) {
-    case AssetType::TerrainDefs: {
-        // Remove all of our terrain defs
-        removeTerrainDefs(terrainDefs.terrainIDs);
-        terrainDefs.terrainIDs = makeEmptyArray<String>();
-    } break;
-
     case AssetType::Texts: {
         // Remove all of our texts from the table
         HashTable<String>* textsTable = (texts.isFallbackLocale ? &asset_manager().defaultTexts : &asset_manager().texts);
@@ -126,19 +119,13 @@ static DeprecatedAsset& make_placeholder_asset(AssetManager& assets, AssetType t
 
 void DeprecatedAssetLoader::register_types(AssetManager& assets)
 {
-    assets.fileExtensionToType.put(assets.assetStrings.intern("terrain"_s), AssetType::TerrainDefs);
-
     assets.directoryNameToType.put(assets.assetStrings.intern("locale"_s), AssetType::Texts);
 
-    assets.asset_loaders_by_type[AssetType::TerrainDefs] = this;
     assets.asset_loaders_by_type[AssetType::Texts] = this;
 }
 
 void DeprecatedAssetLoader::create_placeholder_assets(AssetManager& assets)
 {
-    // TerrainDefs
-    make_placeholder_asset(assets, AssetType::TerrainDefs);
-
     // Texts
     make_placeholder_asset(assets, AssetType::Texts);
 }
@@ -149,11 +136,6 @@ ErrorOr<NonnullOwnPtr<Asset>> DeprecatedAssetLoader::load_asset(AssetMetadata& m
     auto asset = adopt_own(*new DeprecatedAsset);
 
     switch (metadata.type) {
-    case AssetType::TerrainDefs: {
-        loadTerrainDefs(file_data, metadata, *asset);
-        return { move(asset) };
-    }
-
     case AssetType::Texts: {
         // Only load assets that match our locale
         if (metadata.locale == get_locale()) {
