@@ -9,7 +9,7 @@
 
 namespace Assets {
 
-AssetMetadata& AssetRef::get() const
+AssetMetadata& AssetRef::metadata() const
 {
     auto& assets = asset_manager();
     if (!m_pointer || assets.asset_generation() > m_asset_generation) {
