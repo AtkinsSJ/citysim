@@ -145,7 +145,7 @@ T* getStyle(AssetRef const& ref)
 {
     ASSERT(checkStyleMatchesType<T>(ref));
 
-    auto& asset = ref.get();
+    auto& asset = ref.metadata();
     return dynamic_cast<T*>(asset.loaded_asset.ptr());
 }
 

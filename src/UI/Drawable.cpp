@@ -28,7 +28,7 @@ void Drawable::preparePlaceholder(RenderBuffer* buffer)
     } break;
 
     case DrawableType::Ninepatch: {
-        placeholder = appendDrawNinepatchPlaceholder(buffer, dynamic_cast<Ninepatch&>(*style->ninepatch.get().loaded_asset).texture, renderer.shaderIds.textured);
+        placeholder = appendDrawNinepatchPlaceholder(buffer, dynamic_cast<Ninepatch&>(*style->ninepatch.metadata().loaded_asset).texture, renderer.shaderIds.textured);
     } break;
 
     case DrawableType::Sprite: {
@@ -55,7 +55,7 @@ void Drawable::fillPlaceholder(Rect2I bounds)
     } break;
 
     case DrawableType::Ninepatch: {
-        fillDrawNinepatchPlaceholder(&placeholder.get<DrawNinepatchPlaceholder>(), bounds, &dynamic_cast<Ninepatch&>(*style->ninepatch.get().loaded_asset), style->color);
+        fillDrawNinepatchPlaceholder(&placeholder.get<DrawNinepatchPlaceholder>(), bounds, &dynamic_cast<Ninepatch&>(*style->ninepatch.metadata().loaded_asset), style->color);
     } break;
 
     case DrawableType::Sprite: {
@@ -83,7 +83,7 @@ void Drawable::draw(RenderBuffer* buffer, Rect2I bounds)
     } break;
 
     case DrawableType::Ninepatch: {
-        drawNinepatch(buffer, bounds, renderer.shaderIds.textured, &dynamic_cast<Ninepatch&>(*style->ninepatch.get().loaded_asset), style->color);
+        drawNinepatch(buffer, bounds, renderer.shaderIds.textured, &dynamic_cast<Ninepatch&>(*style->ninepatch.metadata().loaded_asset), style->color);
     } break;
 
     case DrawableType::Sprite: {

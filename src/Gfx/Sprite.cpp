@@ -216,7 +216,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_sprite_defs(AssetMetadata& metadata, Blob dat
 
     // Load all the sprites, now that we know their properties are all set.
     for (auto& child : children) {
-        auto& sprite_group_metadata = child.get();
+        auto& sprite_group_metadata = child.metadata();
         if (sprite_group_metadata.type != AssetType::Sprite)
             continue;
 
