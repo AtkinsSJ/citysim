@@ -357,7 +357,7 @@ V2I calculateTextInputSize(TextInput* textInput, TextInputStyle* style, s32 maxW
 {
     s32 textMaxWidth = (maxWidth == 0) ? 0 : (maxWidth - (style->padding.left + style->padding.right));
 
-    auto& font = getFont(style->font);
+    auto& font = style->font.get();
     V2I textSize = font.calculate_text_size(textInput->text(), textMaxWidth);
 
     s32 resultWidth = 0;
@@ -378,7 +378,7 @@ Rect2I drawTextInput(RenderBuffer* renderBuffer, TextInput* textInput, TextInput
     DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     auto& renderer = the_renderer();
-    auto& font = getFont(style->font);
+    auto& font = style->font.get();
 
     Drawable(&style->background).draw(renderBuffer, bounds);
 

@@ -16,6 +16,7 @@ void BuiltinAssetLoader::register_types(AssetManager& assets)
 {
     assets.directoryNameToType.put(assets.assetStrings.intern("locale"_s), AssetType::Texts);
     assets.asset_loaders_by_type[AssetType::Texts] = this;
+    Texts::set_asset_type(AssetType::Texts);
 }
 
 void BuiltinAssetLoader::create_placeholder_assets(AssetManager& assets)

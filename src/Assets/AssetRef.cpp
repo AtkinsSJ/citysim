@@ -9,11 +9,16 @@
 
 namespace Assets {
 
+Asset& AssetRef::asset() const
+{
+    return *metadata().loaded_asset;
+}
+
 AssetMetadata& AssetRef::metadata() const
 {
     auto& assets = asset_manager();
     if (!m_pointer || assets.asset_generation() > m_asset_generation) {
-        m_pointer = &getAsset(m_type, m_name);
+        m_pointer = &getAsset(type(), m_name);
         m_asset_generation = assets.asset_generation();
     }
 

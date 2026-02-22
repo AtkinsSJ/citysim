@@ -16,6 +16,17 @@ void AssetLoader::register_types(AssetManager& assets)
 {
     assets.fileExtensionToType.put(assets.assetStrings.intern("theme"_s), AssetType::UITheme);
     assets.asset_loaders_by_type[AssetType::UITheme] = this;
+    ButtonStyle::set_asset_type(AssetType::ButtonStyle);
+    CheckboxStyle::set_asset_type(AssetType::CheckboxStyle);
+    ConsoleStyle::set_asset_type(AssetType::ConsoleStyle);
+    DropDownListStyle::set_asset_type(AssetType::DropDownListStyle);
+    LabelStyle::set_asset_type(AssetType::LabelStyle);
+    PanelStyle::set_asset_type(AssetType::PanelStyle);
+    RadioButtonStyle::set_asset_type(AssetType::RadioButtonStyle);
+    ScrollbarStyle::set_asset_type(AssetType::ScrollbarStyle);
+    SliderStyle::set_asset_type(AssetType::SliderStyle);
+    TextInputStyle::set_asset_type(AssetType::TextInputStyle);
+    WindowStyle::set_asset_type(AssetType::WindowStyle);
 }
 
 void AssetLoader::create_placeholder_assets(AssetManager& assets)

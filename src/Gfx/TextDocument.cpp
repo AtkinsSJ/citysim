@@ -7,11 +7,6 @@
 #include "TextDocument.h"
 #include <Assets/AssetManager.h>
 
-TextDocument& TextDocument::get(StringView name)
-{
-    return dynamic_cast<TextDocument&>(*getAsset(AssetType::TextDocument, name.deprecated_to_string()).loaded_asset);
-}
-
 ErrorOr<NonnullOwnPtr<TextDocument>> TextDocument::load(AssetMetadata& metadata, Blob file_data)
 {
     // FIXME: Combine things into one allocation?

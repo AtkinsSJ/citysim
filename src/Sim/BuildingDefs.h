@@ -12,6 +12,8 @@
 #include <Util/String.h>
 
 class BuildingDefs final : public Asset {
+    ASSET_SUBCLASS_METHODS(BuildingDefs);
+
 public:
     static ErrorOr<NonnullOwnPtr<BuildingDefs>> load(AssetMetadata&, Blob data);
     BuildingDefs() = default;

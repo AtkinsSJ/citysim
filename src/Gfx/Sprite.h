@@ -23,9 +23,9 @@ public:
 };
 
 class SpriteGroup final : public Asset {
-public:
-    static SpriteGroup& get(StringView name);
+    ASSET_SUBCLASS_METHODS(SpriteGroup);
 
+public:
     static NonnullOwnPtr<SpriteGroup> make_placeholder();
     virtual ~SpriteGroup() override = default;
 

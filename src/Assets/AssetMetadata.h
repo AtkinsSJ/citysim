@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <Assets/AssetRef.h>
 #include <Assets/AssetType.h>
 #include <Assets/Forward.h>
 #include <Util/Flags.h>
@@ -26,7 +27,18 @@ class AssetMetadata {
 public:
     void ensure_is_loaded();
 
-    AssetRef get_ref() const;
+    template<typename T>
+    TypedAssetRef<T> get_ref() const
+    {
+        auto ref = T::get_ref(shortName);
+        ASSERT(ref.type() == type);
+        return ref;
+    }
+
+    GenericAssetRef get_ref() const
+    {
+        return { shortName, type };
+    }
 
     AssetType type;
 

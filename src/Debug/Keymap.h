@@ -12,9 +12,9 @@
 #include <Util/Span.h>
 
 class Keymap final : public Asset {
-public:
-    static Keymap& get(StringView name);
+    ASSET_SUBCLASS_METHODS(Keymap);
 
+public:
     Keymap() = default;
     static ErrorOr<NonnullOwnPtr<Keymap>> load(AssetMetadata&, Blob data);
     virtual ~Keymap() override = default;

@@ -6,6 +6,7 @@
 
 #include <Assets/AssetManager.h>
 #include <Assets/ContainerAsset.h>
+#include <Gfx/BitmapFont.h>
 #include <IO/LineReader.h>
 #include <UI/UITheme.h>
 
@@ -54,7 +55,7 @@ Optional<DrawableStyle> readDrawableStyle(LineReader* reader)
         auto color = Colour::read(*reader, LineReader::IsRequired::No);
 
         result = DrawableStyle { DrawableStyle::Ninepatch {
-            .ref = AssetRef { AssetType::Ninepatch, asset_manager().assetStrings.intern(ninepatchName.value()) },
+            .ref = TypedAssetRef<Ninepatch> { asset_manager().assetStrings.intern(ninepatchName.value()) },
             .colour = color.value_or(Colour::white()),
         } };
     } else if (typeName == "sprite"_s) {
@@ -101,12 +102,7 @@ bool DrawableStyle::is_visible() const
     return !value.has<Empty>();
 }
 
-ButtonStyle& ButtonStyle::get(StringView name)
-{
-    return dynamic_cast<ButtonStyle&>(*getAsset(AssetType::ButtonStyle, name.deprecated_to_string()).loaded_asset);
-}
-
-ButtonStyle::ButtonStyle(AssetRef font, Colour text_color, Alignment text_alignment, Padding padding, s32 content_padding, DrawableStyle start_icon, Alignment start_icon_alignment, DrawableStyle end_icon, Alignment end_icon_alignment, DrawableStyle background, DrawableStyle background_hover, DrawableStyle background_pressed, DrawableStyle background_disabled)
+ButtonStyle::ButtonStyle(TypedAssetRef<BitmapFont> font, Colour text_color, Alignment text_alignment, Padding padding, s32 content_padding, DrawableStyle start_icon, Alignment start_icon_alignment, DrawableStyle end_icon, Alignment end_icon_alignment, DrawableStyle background, DrawableStyle background_hover, DrawableStyle background_pressed, DrawableStyle background_disabled)
     : font(move(font))
     , textColor(move(text_color))
     , textAlignment(move(text_alignment))
@@ -123,11 +119,6 @@ ButtonStyle::ButtonStyle(AssetRef font, Colour text_color, Alignment text_alignm
 {
 }
 
-CheckboxStyle& CheckboxStyle::get(StringView name)
-{
-    return dynamic_cast<CheckboxStyle&>(*getAsset(AssetType::CheckboxStyle, name.deprecated_to_string()).loaded_asset);
-}
-
 CheckboxStyle::CheckboxStyle(Padding padding, DrawableStyle background, DrawableStyle background_hover, DrawableStyle background_pressed, DrawableStyle background_disabled, V2I check_size, DrawableStyle check, DrawableStyle check_hover, DrawableStyle check_pressed, DrawableStyle check_disabled)
     : padding(move(padding))
     , background(move(background))
@@ -142,12 +133,7 @@ CheckboxStyle::CheckboxStyle(Padding padding, DrawableStyle background, Drawable
 {
 }
 
-ConsoleStyle& ConsoleStyle::get(StringView name)
-{
-    return dynamic_cast<ConsoleStyle&>(*getAsset(AssetType::ConsoleStyle, name.deprecated_to_string()).loaded_asset);
-}
-
-ConsoleStyle::ConsoleStyle(AssetRef font, EnumMap<ConsoleLineStyle, Colour> output_text_colors, DrawableStyle background, Padding padding, s32 content_padding, AssetRef scrollbar_style, AssetRef text_input_style)
+ConsoleStyle::ConsoleStyle(TypedAssetRef<BitmapFont> font, EnumMap<ConsoleLineStyle, Colour> output_text_colors, DrawableStyle background, Padding padding, s32 content_padding, TypedAssetRef<ScrollbarStyle> scrollbar_style, TypedAssetRef<TextInputStyle> text_input_style)
     : font(move(font))
     , outputTextColors(move(output_text_colors))
     , background(move(background))
@@ -158,23 +144,13 @@ ConsoleStyle::ConsoleStyle(AssetRef font, EnumMap<ConsoleLineStyle, Colour> outp
 {
 }
 
-DropDownListStyle& DropDownListStyle::get(StringView name)
-{
-    return dynamic_cast<DropDownListStyle&>(*getAsset(AssetType::DropDownListStyle, name.deprecated_to_string()).loaded_asset);
-}
-
-DropDownListStyle::DropDownListStyle(AssetRef button_style, AssetRef panel_style)
+DropDownListStyle::DropDownListStyle(TypedAssetRef<ButtonStyle> button_style, TypedAssetRef<PanelStyle> panel_style)
     : buttonStyle(move(button_style))
     , panelStyle(move(panel_style))
 {
 }
 
-LabelStyle& LabelStyle::get(StringView name)
-{
-    return dynamic_cast<LabelStyle&>(*getAsset(AssetType::LabelStyle, name.deprecated_to_string()).loaded_asset);
-}
-
-LabelStyle::LabelStyle(Padding padding, DrawableStyle background, AssetRef font, Colour text_color, Alignment text_alignment)
+LabelStyle::LabelStyle(Padding padding, DrawableStyle background, TypedAssetRef<BitmapFont> font, Colour text_color, Alignment text_alignment)
     : padding(move(padding))
     , background(move(background))
     , font(move(font))
@@ -183,12 +159,14 @@ LabelStyle::LabelStyle(Padding padding, DrawableStyle background, AssetRef font,
 {
 }
 
-PanelStyle& PanelStyle::get(StringView name)
-{
-    return dynamic_cast<PanelStyle&>(*getAsset(AssetType::PanelStyle, name.deprecated_to_string()).loaded_asset);
-}
-
-PanelStyle::PanelStyle(Padding padding, s32 content_padding, Alignment widget_alignment, DrawableStyle background, AssetRef button_style, AssetRef checkbox_style, AssetRef drop_down_list_style, AssetRef label_style, AssetRef radio_button_style, AssetRef scrollbar_style, AssetRef slider_style, AssetRef text_input_style)
+PanelStyle::PanelStyle(Padding padding, s32 content_padding, Alignment widget_alignment, DrawableStyle background, TypedAssetRef<ButtonStyle> button_style,
+    TypedAssetRef<CheckboxStyle> checkbox_style,
+    TypedAssetRef<DropDownListStyle> drop_down_list_style,
+    TypedAssetRef<LabelStyle> label_style,
+    TypedAssetRef<RadioButtonStyle> radio_button_style,
+    TypedAssetRef<ScrollbarStyle> scrollbar_style,
+    TypedAssetRef<SliderStyle> slider_style,
+    TypedAssetRef<TextInputStyle> text_input_style)
     : padding(move(padding))
     , contentPadding(move(content_padding))
     , widgetAlignment(move(widget_alignment))
@@ -202,11 +180,6 @@ PanelStyle::PanelStyle(Padding padding, s32 content_padding, Alignment widget_al
     , sliderStyle(move(slider_style))
     , textInputStyle(move(text_input_style))
 {
-}
-
-RadioButtonStyle& RadioButtonStyle::get(StringView name)
-{
-    return dynamic_cast<RadioButtonStyle&>(*getAsset(AssetType::RadioButtonStyle, name.deprecated_to_string()).loaded_asset);
 }
 
 RadioButtonStyle::RadioButtonStyle(V2I size, DrawableStyle background, DrawableStyle background_hover, DrawableStyle background_pressed, DrawableStyle background_disabled, V2I dot_size, DrawableStyle dot, DrawableStyle dot_hover, DrawableStyle dot_pressed, DrawableStyle dot_disabled)
@@ -223,11 +196,6 @@ RadioButtonStyle::RadioButtonStyle(V2I size, DrawableStyle background, DrawableS
 {
 }
 
-ScrollbarStyle& ScrollbarStyle::get(StringView name)
-{
-    return dynamic_cast<ScrollbarStyle&>(*getAsset(AssetType::ScrollbarStyle, name.deprecated_to_string()).loaded_asset);
-}
-
 ScrollbarStyle::ScrollbarStyle(s32 width, DrawableStyle background, DrawableStyle thumb, DrawableStyle thumb_hover, DrawableStyle thumb_pressed, DrawableStyle thumb_disabled)
     : width(move(width))
     , background(move(background))
@@ -236,11 +204,6 @@ ScrollbarStyle::ScrollbarStyle(s32 width, DrawableStyle background, DrawableStyl
     , thumbPressed(move(thumb_pressed))
     , thumbDisabled(move(thumb_disabled))
 {
-}
-
-SliderStyle& SliderStyle::get(StringView name)
-{
-    return dynamic_cast<SliderStyle&>(*getAsset(AssetType::SliderStyle, name.deprecated_to_string()).loaded_asset);
 }
 
 SliderStyle::SliderStyle(DrawableStyle track, s32 track_thickness, DrawableStyle thumb, DrawableStyle thumb_hover, DrawableStyle thumb_pressed, DrawableStyle thumb_disabled, V2I thumb_size)
@@ -254,12 +217,7 @@ SliderStyle::SliderStyle(DrawableStyle track, s32 track_thickness, DrawableStyle
 {
 }
 
-TextInputStyle& TextInputStyle::get(StringView name)
-{
-    return dynamic_cast<TextInputStyle&>(*getAsset(AssetType::TextInputStyle, name.deprecated_to_string()).loaded_asset);
-}
-
-TextInputStyle::TextInputStyle(AssetRef font, Colour text_color, Alignment text_alignment, DrawableStyle background, Padding padding, bool show_caret, float caret_flash_cycle_duration)
+TextInputStyle::TextInputStyle(TypedAssetRef<BitmapFont> font, Colour text_color, Alignment text_alignment, DrawableStyle background, Padding padding, bool show_caret, float caret_flash_cycle_duration)
     : font(move(font))
     , textColor(move(text_color))
     , textAlignment(move(text_alignment))
@@ -270,12 +228,7 @@ TextInputStyle::TextInputStyle(AssetRef font, Colour text_color, Alignment text_
 {
 }
 
-WindowStyle& WindowStyle::get(StringView name)
-{
-    return dynamic_cast<WindowStyle&>(*getAsset(AssetType::WindowStyle, name.deprecated_to_string()).loaded_asset);
-}
-
-WindowStyle::WindowStyle(AssetRef title_label_style, s32 title_bar_height, Colour title_bar_color, Colour title_bar_color_inactive, Colour title_bar_button_hover_color, V2I offset_from_mouse, AssetRef panel_style)
+WindowStyle::WindowStyle(TypedAssetRef<LabelStyle> title_label_style, s32 title_bar_height, Colour title_bar_color, Colour title_bar_color_inactive, Colour title_bar_button_hover_color, V2I offset_from_mouse, TypedAssetRef<PanelStyle> panel_style)
     : titleLabelStyle(move(title_label_style))
     , titleBarHeight(move(title_bar_height))
     , titleBarColor(move(title_bar_color))
@@ -309,13 +262,6 @@ s32 Style::get_s32(StringView property, s32 default_value) const
 Alignment Style::get_alignment(StringView property, Alignment const& default_value) const
 {
     return get_property_value<Alignment>(property).value_or(default_value);
-}
-
-AssetRef Style::get_asset_ref(StringView property, AssetType asset_type, String const& default_name) const
-{
-    if (auto asset_name = get_property_value<String>(property); asset_name.has_value())
-        return AssetRef { asset_type, asset_name.release_value() };
-    return AssetRef { asset_type, default_name };
 }
 
 Colour Style::get_colour(StringView property, Colour const& default_value) const
@@ -739,8 +685,8 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
     for (auto style_type : enum_values<StyleType>()) {
         totalStyleCount += style_count[style_type];
     }
-    auto children_data = Assets::assets_allocate(totalStyleCount * sizeof(AssetRef));
-    auto children = makeArray(totalStyleCount, reinterpret_cast<AssetRef*>(children_data.writable_data()));
+    auto children_data = Assets::assets_allocate(totalStyleCount * sizeof(GenericAssetRef));
+    auto children = makeArray(totalStyleCount, reinterpret_cast<GenericAssetRef*>(children_data.writable_data()));
 
     // Some default values to use
     auto transparent = Colour::from_rgb_255(0, 0, 0, 0);
@@ -759,7 +705,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
             if (style->type == style_type) {
                 switch (style->type) {
                 case StyleType::Button: {
-                    auto font = style->get_asset_ref("font"_h, AssetType::BitmapFont, default_font_name);
+                    auto font = style->get_asset_ref<BitmapFont>("font"_h, default_font_name);
                     auto text_color = style->get_colour("textColor"_h, white);
                     auto text_alignment = style->get_alignment("textAlignment"_h, { HAlign::Left, VAlign::Top });
 
@@ -824,7 +770,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                 } break;
 
                 case StyleType::Console: {
-                    auto font = style->get_asset_ref("font"_h, AssetType::BitmapFont, default_font_name);
+                    auto font = style->get_asset_ref<BitmapFont>("font"_h, default_font_name);
 
                     auto default_color = style->get_colour("outputTextColor"_h, white);
                     EnumMap<ConsoleLineStyle, Colour> output_text_colors;
@@ -838,8 +784,8 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                     auto padding = style->get_padding("padding"_h, {});
                     auto content_padding = style->get_s32("contentPadding"_h, 0);
 
-                    auto scrollbar_style = style->get_asset_ref("scrollbarStyle"_h, AssetType::ScrollbarStyle);
-                    auto text_input_style = style->get_asset_ref("textInputStyle"_h, AssetType::TextInputStyle);
+                    auto scrollbar_style = style->get_asset_ref<ScrollbarStyle>("scrollbarStyle"_h);
+                    auto text_input_style = style->get_asset_ref<TextInputStyle>("textInputStyle"_h);
 
                     AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::ConsoleStyle, style->name, {});
                     child_metadata->loaded_asset = adopt_own(*new ConsoleStyle(
@@ -849,8 +795,8 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                 } break;
 
                 case StyleType::DropDownList: {
-                    auto button_style = style->get_asset_ref("buttonStyle"_h, AssetType::ButtonStyle);
-                    auto panel_style = style->get_asset_ref("panelStyle"_h, AssetType::PanelStyle);
+                    auto button_style = style->get_asset_ref<ButtonStyle>("buttonStyle"_h);
+                    auto panel_style = style->get_asset_ref<PanelStyle>("panelStyle"_h);
 
                     AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::DropDownListStyle, style->name, {});
                     child_metadata->loaded_asset = adopt_own(*new DropDownListStyle(move(button_style), move(panel_style)));
@@ -861,7 +807,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                 case StyleType::Label: {
                     auto padding = style->get_padding("padding"_h, {});
                     auto background = style->get_drawable_style("background"_h, {});
-                    auto font = style->get_asset_ref("font"_h, AssetType::BitmapFont, default_font_name);
+                    auto font = style->get_asset_ref<BitmapFont>("font"_h, default_font_name);
                     auto text_color = style->get_colour("textColor"_h, white);
                     auto text_alignment = style->get_alignment("textAlignment"_h, { HAlign::Left, VAlign::Top });
 
@@ -877,14 +823,14 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                     auto widget_alignment = style->get_alignment("widgetAlignment"_h, { HAlign::Fill, VAlign::Top });
                     auto background = style->get_drawable_style("background"_h, {});
 
-                    auto button_style = style->get_asset_ref("buttonStyle"_h, AssetType::ButtonStyle);
-                    auto checkbox_style = style->get_asset_ref("checkboxStyle"_h, AssetType::CheckboxStyle);
-                    auto drop_down_list_style = style->get_asset_ref("dropDownListStyle"_h, AssetType::DropDownListStyle);
-                    auto label_style = style->get_asset_ref("labelStyle"_h, AssetType::LabelStyle);
-                    auto radio_button_style = style->get_asset_ref("radioButtonStyle"_h, AssetType::RadioButtonStyle);
-                    auto scrollbar_style = style->get_asset_ref("scrollbarStyle"_h, AssetType::ScrollbarStyle);
-                    auto slider_style = style->get_asset_ref("sliderStyle"_h, AssetType::SliderStyle);
-                    auto text_input_style = style->get_asset_ref("textInputStyle"_h, AssetType::TextInputStyle);
+                    auto button_style = style->get_asset_ref<ButtonStyle>("buttonStyle"_h);
+                    auto checkbox_style = style->get_asset_ref<CheckboxStyle>("checkboxStyle"_h);
+                    auto drop_down_list_style = style->get_asset_ref<DropDownListStyle>("dropDownListStyle"_h);
+                    auto label_style = style->get_asset_ref<LabelStyle>("labelStyle"_h);
+                    auto radio_button_style = style->get_asset_ref<RadioButtonStyle>("radioButtonStyle"_h);
+                    auto scrollbar_style = style->get_asset_ref<ScrollbarStyle>("scrollbarStyle"_h);
+                    auto slider_style = style->get_asset_ref<SliderStyle>("sliderStyle"_h);
+                    auto text_input_style = style->get_asset_ref<TextInputStyle>("textInputStyle"_h);
 
                     AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::PanelStyle, style->name, {});
                     child_metadata->loaded_asset = adopt_own(*new PanelStyle(
@@ -949,7 +895,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                 } break;
 
                 case StyleType::TextInput: {
-                    auto font = style->get_asset_ref("font"_h, AssetType::BitmapFont, default_font_name);
+                    auto font = style->get_asset_ref<BitmapFont>("font"_h, default_font_name);
                     auto text_color = style->get_colour("textColor"_h, white);
                     auto text_alignment = style->get_alignment("textAlignment"_h, { HAlign::Left, VAlign::Top });
                     auto background = style->get_drawable_style("background"_h, {});
@@ -967,13 +913,13 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                 } break;
 
                 case StyleType::Window: {
-                    auto title_label_style = style->get_asset_ref("titleLabelStyle"_h, AssetType::LabelStyle);
+                    auto title_label_style = style->get_asset_ref<LabelStyle>("titleLabelStyle"_h);
                     auto title_bar_height = style->get_s32("titleBarHeight"_h, 16);
                     auto title_bar_color = style->get_colour("titleBarColor"_h, Colour::from_rgb_255(128, 128, 128, 255));
                     auto title_bar_color_inactive = style->get_colour("titleBarColorInactive"_h, title_bar_color);
                     auto title_bar_button_hover_color = style->get_colour("titleBarButtonHoverColor"_h, transparent);
                     auto offset_from_mouse = style->get_v2i("offsetFromMouse"_h, {});
-                    auto panel_style = style->get_asset_ref("panelStyle"_h, AssetType::PanelStyle);
+                    auto panel_style = style->get_asset_ref<PanelStyle>("panelStyle"_h);
 
                     AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::WindowStyle, style->name, {});
                     child_metadata->loaded_asset = adopt_own(*new WindowStyle(

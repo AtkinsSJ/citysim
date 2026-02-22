@@ -66,11 +66,6 @@ struct BMFont_Char {
 
 #pragma pack(pop)
 
-BitmapFont& BitmapFont::get(StringView name)
-{
-    return dynamic_cast<BitmapFont&>(*getAsset(AssetType::BitmapFont, name.deprecated_to_string()).loaded_asset);
-}
-
 ErrorOr<NonnullOwnPtr<BitmapFont>> BitmapFont::load_from_bmf_data(AssetMetadata& metadata, Blob data)
 {
     smm pos = 0;

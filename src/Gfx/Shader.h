@@ -11,9 +11,9 @@
 #include <Util/String.h>
 
 class Shader final : public Asset {
-public:
-    static Shader& get(StringView name);
+    ASSET_SUBCLASS_METHODS(Shader);
 
+public:
     static NonnullOwnPtr<Shader> make_placeholder();
     static ErrorOr<NonnullOwnPtr<Shader>> load(AssetMetadata&, Blob data);
     virtual ~Shader() override = default;

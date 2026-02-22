@@ -11,13 +11,13 @@
 #include <Util/Array.h>
 
 class Palette final : public Asset {
+    ASSET_SUBCLASS_METHODS(Palette);
+
 public:
     enum class Type : u8 {
         Fixed,
         Gradient,
     };
-
-    static Palette& get(StringView name);
 
     Palette() = default;
     Palette(Blob data, Type, Array<Colour>);

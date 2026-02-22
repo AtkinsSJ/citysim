@@ -7,7 +7,9 @@
 #pragma once
 
 #include <Assets/AssetRef.h>
+#include <Gfx/BitmapFont.h>
 #include <Gfx/Colour.h>
+#include <Gfx/Ninepatch.h>
 #include <Gfx/Sprite.h>
 #include <IO/Forward.h>
 #include <Util/HashTable.h>
@@ -36,7 +38,7 @@ struct DrawableStyle {
     };
 
     struct Ninepatch {
-        AssetRef ref;
+        TypedAssetRef<::Ninepatch> ref;
         Colour colour;
     };
 
@@ -71,11 +73,11 @@ enum class StyleType : u8 {
 };
 
 class ButtonStyle final : public Asset {
-public:
-    static ButtonStyle& get(StringView name);
+    ASSET_SUBCLASS_METHODS(ButtonStyle);
 
+public:
     ButtonStyle(
-        AssetRef font,
+        TypedAssetRef<BitmapFont> font,
         Colour text_color,
         Alignment text_alignment,
         Padding padding,
@@ -92,7 +94,7 @@ public:
     virtual ~ButtonStyle() override = default;
     virtual void unload(AssetMetadata&) override { }
 
-    AssetRef font;
+    TypedAssetRef<BitmapFont> font;
     Colour textColor;
     Alignment textAlignment;
 
@@ -112,9 +114,9 @@ public:
 };
 
 class CheckboxStyle final : public Asset {
-public:
-    static CheckboxStyle& get(StringView name);
+    ASSET_SUBCLASS_METHODS(CheckboxStyle);
 
+public:
     CheckboxStyle(
         Padding padding,
         DrawableStyle background,
@@ -144,52 +146,52 @@ public:
 };
 
 class ConsoleStyle final : public Asset {
-public:
-    static ConsoleStyle& get(StringView name);
+    ASSET_SUBCLASS_METHODS(ConsoleStyle);
 
+public:
     ConsoleStyle(
-        AssetRef font,
+        TypedAssetRef<BitmapFont> font,
         EnumMap<ConsoleLineStyle, Colour> output_text_colors,
         DrawableStyle background,
         Padding padding,
         s32 content_padding,
-        AssetRef scrollbar_style,
-        AssetRef text_input_style);
+        TypedAssetRef<ScrollbarStyle> scrollbar_style,
+        TypedAssetRef<TextInputStyle> text_input_style);
     virtual ~ConsoleStyle() override = default;
     virtual void unload(AssetMetadata&) override { }
 
-    AssetRef font;
+    TypedAssetRef<BitmapFont> font;
     EnumMap<ConsoleLineStyle, Colour> outputTextColors;
 
     DrawableStyle background;
     Padding padding;
     s32 contentPadding;
 
-    AssetRef scrollbarStyle;
-    AssetRef textInputStyle;
+    TypedAssetRef<ScrollbarStyle> scrollbarStyle;
+    TypedAssetRef<TextInputStyle> textInputStyle;
 };
 
 class DropDownListStyle final : public Asset {
-public:
-    static DropDownListStyle& get(StringView name);
+    ASSET_SUBCLASS_METHODS(DropDownListStyle);
 
-    DropDownListStyle(AssetRef button_style, AssetRef panel_style);
+public:
+    DropDownListStyle(TypedAssetRef<ButtonStyle> button_style, TypedAssetRef<PanelStyle> panel_style);
     virtual ~DropDownListStyle() override = default;
     virtual void unload(AssetMetadata&) override { }
 
     // For now, we'll just piggy-back off of other styles:
-    AssetRef buttonStyle; // For the normal state
-    AssetRef panelStyle;  // For the drop-down state
+    TypedAssetRef<ButtonStyle> buttonStyle; // For the normal state
+    TypedAssetRef<PanelStyle> panelStyle;   // For the drop-down state
 };
 
 class LabelStyle final : public Asset {
-public:
-    static LabelStyle& get(StringView name);
+    ASSET_SUBCLASS_METHODS(LabelStyle);
 
+public:
     LabelStyle(
         Padding padding,
         DrawableStyle background,
-        AssetRef font,
+        TypedAssetRef<BitmapFont> font,
         Colour text_color,
         Alignment text_alignment);
     virtual ~LabelStyle() override = default;
@@ -198,28 +200,28 @@ public:
     Padding padding;
     DrawableStyle background;
 
-    AssetRef font;
+    TypedAssetRef<BitmapFont> font;
     Colour textColor;
     Alignment textAlignment;
 };
 
 class PanelStyle final : public Asset {
-public:
-    static PanelStyle& get(StringView name);
+    ASSET_SUBCLASS_METHODS(PanelStyle);
 
+public:
     PanelStyle(
         Padding padding,
         s32 content_padding,
         Alignment widget_alignment,
         DrawableStyle background,
-        AssetRef button_style,
-        AssetRef checkbox_style,
-        AssetRef drop_down_list_style,
-        AssetRef label_style,
-        AssetRef radio_button_style,
-        AssetRef scrollbar_style,
-        AssetRef slider_style,
-        AssetRef text_input_style);
+        TypedAssetRef<ButtonStyle> button_style,
+        TypedAssetRef<CheckboxStyle> checkbox_style,
+        TypedAssetRef<DropDownListStyle> drop_down_list_style,
+        TypedAssetRef<LabelStyle> label_style,
+        TypedAssetRef<RadioButtonStyle> radio_button_style,
+        TypedAssetRef<ScrollbarStyle> scrollbar_style,
+        TypedAssetRef<SliderStyle> slider_style,
+        TypedAssetRef<TextInputStyle> text_input_style);
     virtual ~PanelStyle() override = default;
     virtual void unload(AssetMetadata&) override { }
 
@@ -229,20 +231,20 @@ public:
 
     DrawableStyle background;
 
-    AssetRef buttonStyle;
-    AssetRef checkboxStyle;
-    AssetRef dropDownListStyle;
-    AssetRef labelStyle;
-    AssetRef radioButtonStyle;
-    AssetRef scrollbarStyle;
-    AssetRef sliderStyle;
-    AssetRef textInputStyle;
+    TypedAssetRef<ButtonStyle> buttonStyle;
+    TypedAssetRef<CheckboxStyle> checkboxStyle;
+    TypedAssetRef<DropDownListStyle> dropDownListStyle;
+    TypedAssetRef<LabelStyle> labelStyle;
+    TypedAssetRef<RadioButtonStyle> radioButtonStyle;
+    TypedAssetRef<ScrollbarStyle> scrollbarStyle;
+    TypedAssetRef<SliderStyle> sliderStyle;
+    TypedAssetRef<TextInputStyle> textInputStyle;
 };
 
 class RadioButtonStyle final : public Asset {
-public:
-    static RadioButtonStyle& get(StringView name);
+    ASSET_SUBCLASS_METHODS(RadioButtonStyle);
 
+public:
     RadioButtonStyle(
         V2I size,
         DrawableStyle background,
@@ -271,9 +273,9 @@ public:
 };
 
 class ScrollbarStyle final : public Asset {
-public:
-    static ScrollbarStyle& get(StringView name);
+    ASSET_SUBCLASS_METHODS(ScrollbarStyle);
 
+public:
     ScrollbarStyle(
         s32 width,
         DrawableStyle background,
@@ -295,9 +297,9 @@ public:
 };
 
 class SliderStyle final : public Asset {
-public:
-    static SliderStyle& get(StringView name);
+    ASSET_SUBCLASS_METHODS(SliderStyle);
 
+public:
     SliderStyle(
         DrawableStyle track,
         s32 track_thickness,
@@ -320,11 +322,11 @@ public:
 };
 
 class TextInputStyle final : public Asset {
-public:
-    static TextInputStyle& get(StringView name);
+    ASSET_SUBCLASS_METHODS(TextInputStyle);
 
+public:
     TextInputStyle(
-        AssetRef font,
+        TypedAssetRef<BitmapFont> font,
         Colour text_color,
         Alignment text_alignment,
         DrawableStyle background,
@@ -334,7 +336,7 @@ public:
     virtual ~TextInputStyle() override = default;
     virtual void unload(AssetMetadata&) override { }
 
-    AssetRef font;
+    TypedAssetRef<BitmapFont> font;
     Colour textColor;
     Alignment textAlignment;
 
@@ -346,21 +348,21 @@ public:
 };
 
 class WindowStyle final : public Asset {
-public:
-    static WindowStyle& get(StringView name);
+    ASSET_SUBCLASS_METHODS(WindowStyle);
 
+public:
     WindowStyle(
-        AssetRef title_label_style,
+        TypedAssetRef<LabelStyle> title_label_style,
         s32 title_bar_height,
         Colour title_bar_color,
         Colour title_bar_color_inactive,
         Colour title_bar_button_hover_color,
         V2I offset_from_mouse,
-        AssetRef panel_style);
+        TypedAssetRef<PanelStyle> panel_style);
     virtual ~WindowStyle() override = default;
     virtual void unload(AssetMetadata&) override { }
 
-    AssetRef titleLabelStyle;
+    TypedAssetRef<LabelStyle> titleLabelStyle;
     s32 titleBarHeight;
     Colour titleBarColor;
     Colour titleBarColorInactive;
@@ -368,7 +370,7 @@ public:
 
     V2I offsetFromMouse;
 
-    AssetRef panelStyle;
+    TypedAssetRef<PanelStyle> panelStyle;
 };
 
 enum class PropType : u8 {
@@ -404,7 +406,15 @@ public:
     float get_float(StringView property, float default_value) const;
     s32 get_s32(StringView property, s32 default_value) const;
     Alignment get_alignment(StringView property, Alignment const& default_value) const;
-    AssetRef get_asset_ref(StringView property, AssetType, String const& default_name = "default"_h) const;
+
+    template<typename T>
+    TypedAssetRef<T> get_asset_ref(StringView property, String const& default_name = "default"_h) const
+    {
+        if (auto asset_name = get_property_value<String>(property); asset_name.has_value())
+            return TypedAssetRef<T> { asset_name.release_value() };
+        return TypedAssetRef<T> { default_name };
+    }
+
     Colour get_colour(StringView property, Colour const& default_value) const;
     DrawableStyle get_drawable_style(StringView property, DrawableStyle const& default_value) const;
     Padding get_padding(StringView property, Padding const& default_value) const;

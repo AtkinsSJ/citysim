@@ -33,9 +33,9 @@ struct BitmapFontGlyphEntry {
 };
 
 class BitmapFont final : public Asset {
-public:
-    static BitmapFont& get(StringView name);
+    ASSET_SUBCLASS_METHODS(BitmapFont);
 
+public:
     BitmapFont() = default;
     virtual ~BitmapFont() override = default;
 

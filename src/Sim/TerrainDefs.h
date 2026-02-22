@@ -12,6 +12,8 @@
 #include <Util/String.h>
 
 class TerrainDefs final : public Asset {
+    ASSET_SUBCLASS_METHODS(TerrainDefs);
+
 public:
     static ErrorOr<NonnullOwnPtr<TerrainDefs>> load(AssetMetadata&, Blob data);
     TerrainDefs() = default;

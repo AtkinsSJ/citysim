@@ -16,9 +16,11 @@ void AssetLoader::register_types(AssetManager& assets)
 {
     assets.fileExtensionToType.put(assets.assetStrings.intern("buildings"_s), AssetType::BuildingDefs);
     assets.asset_loaders_by_type[AssetType::BuildingDefs] = this;
+    BuildingDefs::set_asset_type(AssetType::BuildingDefs);
 
     assets.fileExtensionToType.put(assets.assetStrings.intern("terrain"_s), AssetType::TerrainDefs);
     assets.asset_loaders_by_type[AssetType::TerrainDefs] = this;
+    TerrainDefs::set_asset_type(AssetType::TerrainDefs);
 }
 
 void AssetLoader::create_placeholder_assets(AssetManager& assets)

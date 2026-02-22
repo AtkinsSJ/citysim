@@ -98,59 +98,29 @@ AssetManager& asset_manager();
 void loadAsset(AssetMetadata* metadata);
 void unloadAsset(AssetMetadata* asset);
 void removeAsset(AssetType type, String name);
-void removeAsset(AssetRef const&);
+
+inline void removeAsset(AssetRef const& ref)
+{
+    removeAsset(ref.type(), ref.name());
+}
 
 AssetMetadata& getAsset(AssetType type, String shortName);
 AssetMetadata* getAssetIfExists(AssetType type, String shortName);
-
-BitmapFont& getFont(AssetRef const& fontRef);
 
 String getText(String name);
 String getText(String name, std::initializer_list<StringView> args);
 
 template<typename T>
-bool checkStyleMatchesType(AssetRef const& reference)
+T* getStyle(TypedAssetRef<T> const& ref)
 {
-    switch (reference.type()) {
-    case AssetType::ButtonStyle:
-        return (typeid(T*) == typeid(UI::ButtonStyle*));
-    case AssetType::CheckboxStyle:
-        return (typeid(T*) == typeid(UI::CheckboxStyle*));
-    case AssetType::ConsoleStyle:
-        return (typeid(T*) == typeid(UI::ConsoleStyle*));
-    case AssetType::DropDownListStyle:
-        return (typeid(T*) == typeid(UI::DropDownListStyle*));
-    case AssetType::LabelStyle:
-        return (typeid(T*) == typeid(UI::LabelStyle*));
-    case AssetType::PanelStyle:
-        return (typeid(T*) == typeid(UI::PanelStyle*));
-    case AssetType::RadioButtonStyle:
-        return (typeid(T*) == typeid(UI::RadioButtonStyle*));
-    case AssetType::ScrollbarStyle:
-        return (typeid(T*) == typeid(UI::ScrollbarStyle*));
-    case AssetType::SliderStyle:
-        return (typeid(T*) == typeid(UI::SliderStyle*));
-    case AssetType::TextInputStyle:
-        return (typeid(T*) == typeid(UI::TextInputStyle*));
-    case AssetType::WindowStyle:
-        return (typeid(T*) == typeid(UI::WindowStyle*));
-        INVALID_DEFAULT_CASE;
-    }
-
-    return false;
-}
-
-template<typename T>
-T* getStyle(AssetRef const& ref)
-{
-    ASSERT(checkStyleMatchesType<T>(ref));
+    ASSERT(ref.type() == T::asset_type());
 
     auto& asset = ref.metadata();
     return dynamic_cast<T*>(asset.loaded_asset.ptr());
 }
 
 template<typename T>
-T* getStyle(String styleName, AssetRef const& defaultStyle)
+T* getStyle(String styleName, TypedAssetRef<T> const& defaultStyle)
 {
     if (styleName.is_empty())
         return getStyle<T>(defaultStyle);

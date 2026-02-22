@@ -200,27 +200,27 @@ void updateAndRenderConsole(Console* console)
         s32 actualConsoleHeight = floor_s32(console->currentHeight * (float)UI::windowSize.y);
         s32 screenWidth = renderer.window_width();
 
-        UI::ConsoleStyle* consoleStyle = getStyle<UI::ConsoleStyle>(console->style);
-        UI::ScrollbarStyle* scrollbarStyle = getStyle<UI::ScrollbarStyle>(consoleStyle->scrollbarStyle);
-        UI::TextInputStyle* textInputStyle = getStyle<UI::TextInputStyle>(consoleStyle->textInputStyle);
+        UI::ConsoleStyle& consoleStyle = console->style.get();
+        UI::ScrollbarStyle& scrollbarStyle = consoleStyle.scrollbarStyle.get();
+        UI::TextInputStyle& textInputStyle = consoleStyle.textInputStyle.get();
 
         // Text input
-        V2I textInputSize = UI::calculateTextInputSize(&console->input, textInputStyle, screenWidth);
+        V2I textInputSize = UI::calculateTextInputSize(&console->input, &textInputStyle, screenWidth);
         V2I textInputPos = v2i(0, actualConsoleHeight - textInputSize.y);
         Rect2I textInputBounds { textInputPos, textInputSize };
-        UI::drawTextInput(renderBuffer, &console->input, textInputStyle, textInputBounds);
+        UI::drawTextInput(renderBuffer, &console->input, &textInputStyle, textInputBounds);
 
         // Output area
-        V2I textPos = v2i(consoleStyle->padding.left, textInputBounds.y());
-        s32 textMaxWidth = screenWidth - (consoleStyle->padding.left + consoleStyle->padding.right);
+        V2I textPos = v2i(consoleStyle.padding.left, textInputBounds.y());
+        s32 textMaxWidth = screenWidth - (consoleStyle.padding.left + consoleStyle.padding.right);
         s32 heightOfOutputArea = textPos.y;
         Rect2I consoleBackRect { 0, 0, screenWidth, heightOfOutputArea };
-        UI::Drawable(&consoleStyle->background).draw(renderBuffer, consoleBackRect);
+        UI::Drawable(&consoleStyle.background).draw(renderBuffer, consoleBackRect);
 
         // Scrollbar
         Rect2I scrollbarBounds = getConsoleScrollbarBounds(console);
         if (scrollbarBounds.has_positive_area()) {
-            s32 fontLineHeight = getFont(consoleStyle->font).line_height();
+            s32 fontLineHeight = consoleStyle.font.get().line_height();
             s32 contentHeight = ((console->outputLines.count - 1) * fontLineHeight) + scrollbarBounds.height();
             if (scrollToBottom) {
                 console->scrollbar.scrollPercent = 1.0f;
@@ -228,25 +228,25 @@ void updateAndRenderConsole(Console* console)
 
             console->scrollbar.mouseWheelStepSize = 3 * fontLineHeight;
 
-            UI::putScrollbar(&console->scrollbar, contentHeight, scrollbarBounds, scrollbarStyle, false, renderBuffer);
+            UI::putScrollbar(&console->scrollbar, contentHeight, scrollbarBounds, &scrollbarStyle, false, renderBuffer);
         }
 
-        textPos.y -= consoleStyle->padding.bottom;
+        textPos.y -= consoleStyle.padding.bottom;
 
         // print output lines
-        auto& consoleFont = getFont(consoleStyle->font);
+        auto& consoleFont = consoleStyle.font.get();
         s32 scrollLinePos = clamp(floor_s32(console->scrollbar.scrollPercent * console->outputLines.count), 0, console->outputLines.count - 1);
         Alignment outputLinesAlign { HAlign::Left, VAlign::Bottom };
         for (auto it = console->outputLines.iterate(scrollLinePos, false, true);
             it.hasNext();
             it.next()) {
             auto& line = it.get();
-            auto outputTextColor = consoleStyle->outputTextColors[line.style];
+            auto outputTextColor = consoleStyle.outputTextColors[line.style];
 
             V2I textSize = consoleFont.calculate_text_size(line.text, textMaxWidth);
             Rect2I textBounds = Rect2I::create_aligned(textPos, textSize, outputLinesAlign);
             drawText(renderBuffer, &consoleFont, line.text, textBounds, outputLinesAlign, outputTextColor, renderer.shaderIds.text);
-            textPos.y -= (textSize.y + consoleStyle->contentPadding);
+            textPos.y -= (textSize.y + consoleStyle.contentPadding);
 
             // If we've gone off the screen, stop!
             if ((textPos.y < 0) || (textPos.y > UI::windowSize.y)) {
@@ -349,13 +349,13 @@ void consoleWriteLine(String text, ConsoleLineStyle style)
 Rect2I getConsoleScrollbarBounds(Console* console)
 {
     auto& renderer = the_renderer();
-    UI::ConsoleStyle* consoleStyle = getStyle<UI::ConsoleStyle>(console->style);
-    UI::ScrollbarStyle* scrollbarStyle = getStyle<UI::ScrollbarStyle>(consoleStyle->scrollbarStyle);
-    UI::TextInputStyle* textInputStyle = getStyle<UI::TextInputStyle>(consoleStyle->textInputStyle);
+    UI::ConsoleStyle& consoleStyle = console->style.get();
+    UI::ScrollbarStyle& scrollbarStyle = consoleStyle.scrollbarStyle.get();
+    UI::TextInputStyle& textInputStyle = consoleStyle.textInputStyle.get();
 
-    V2I textInputSize = UI::calculateTextInputSize(&console->input, textInputStyle, renderer.window_width());
+    V2I textInputSize = UI::calculateTextInputSize(&console->input, &textInputStyle, renderer.window_width());
 
-    Rect2I scrollbarBounds { static_cast<s32>(renderer.window_width() - scrollbarStyle->width), 0, scrollbarStyle->width, floor_s32(console->currentHeight * renderer.window_height()) - textInputSize.y };
+    Rect2I scrollbarBounds { static_cast<s32>(renderer.window_width() - scrollbarStyle.width), 0, scrollbarStyle.width, floor_s32(console->currentHeight * renderer.window_height()) - textInputSize.y };
 
     return scrollbarBounds;
 }

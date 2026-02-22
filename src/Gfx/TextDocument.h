@@ -13,9 +13,9 @@
 
 // TODO: This wants some kind of text formatting and fanciness, but for now it's just lines.
 class TextDocument final : public Asset {
-public:
-    static TextDocument& get(StringView name);
+    ASSET_SUBCLASS_METHODS(TextDocument);
 
+public:
     struct Line {
         StringView text;
     };

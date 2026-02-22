@@ -15,6 +15,8 @@
 namespace Assets {
 
 class Texts final : public Asset {
+    ASSET_SUBCLASS_METHODS(Texts);
+
 public:
     static ErrorOr<NonnullOwnPtr<Texts>> load(AssetMetadata&, Blob data, bool is_fallback_locale);
     Texts() = default;
