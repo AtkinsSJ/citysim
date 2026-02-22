@@ -14,84 +14,57 @@ namespace UI {
 void Drawable::preparePlaceholder(RenderBuffer* buffer)
 {
     auto& renderer = the_renderer();
-    switch (style->type) {
-    case DrawableType::None: {
-        return; // Nothing to do!
-    } break;
-
-    case DrawableType::Color: {
-        placeholder = appendDrawRectPlaceholder(buffer, renderer.shaderIds.untextured, false);
-    } break;
-
-    case DrawableType::Gradient: {
-        placeholder = appendDrawRectPlaceholder(buffer, renderer.shaderIds.untextured, false);
-    } break;
-
-    case DrawableType::Ninepatch: {
-        placeholder = appendDrawNinepatchPlaceholder(buffer, dynamic_cast<Ninepatch&>(*style->ninepatch.metadata().loaded_asset).texture, renderer.shaderIds.textured);
-    } break;
-
-    case DrawableType::Sprite: {
-        placeholder = appendDrawRectPlaceholder(buffer, renderer.shaderIds.pixelArt, true);
-    } break;
-
-        INVALID_DEFAULT_CASE;
-    }
+    style->value.visit(
+        [](Empty) {},
+        [&](Colour const&) {
+            placeholder = appendDrawRectPlaceholder(buffer, renderer.shaderIds.untextured, false);
+        },
+        [&](DrawableStyle::Gradient const&) {
+            placeholder = appendDrawRectPlaceholder(buffer, renderer.shaderIds.untextured, false);
+        },
+        [&](DrawableStyle::Ninepatch const& ninepatch) {
+            placeholder = appendDrawNinepatchPlaceholder(buffer, dynamic_cast<Ninepatch&>(*ninepatch.ref.metadata().loaded_asset).texture, renderer.shaderIds.textured);
+        },
+        [&](DrawableStyle::Sprite const&) {
+            placeholder = appendDrawRectPlaceholder(buffer, renderer.shaderIds.pixelArt, true);
+        });
 }
 
 void Drawable::fillPlaceholder(Rect2I bounds)
 {
-    switch (style->type) {
-    case DrawableType::None: {
-        return; // Nothing to do!
-    } break;
-
-    case DrawableType::Color: {
-        fillDrawRectPlaceholder(&placeholder.get<DrawRectPlaceholder>(), bounds, style->color);
-    } break;
-
-    case DrawableType::Gradient: {
-        fillDrawRectPlaceholder(&placeholder.get<DrawRectPlaceholder>(), bounds, style->gradient.color00, style->gradient.color01, style->gradient.color10, style->gradient.color11);
-    } break;
-
-    case DrawableType::Ninepatch: {
-        fillDrawNinepatchPlaceholder(&placeholder.get<DrawNinepatchPlaceholder>(), bounds, &dynamic_cast<Ninepatch&>(*style->ninepatch.metadata().loaded_asset), style->color);
-    } break;
-
-    case DrawableType::Sprite: {
-        fillDrawRectPlaceholder(&placeholder.get<DrawRectPlaceholder>(), bounds, &style->sprite.get(), style->color);
-    } break;
-
-        INVALID_DEFAULT_CASE;
-    }
+    style->value.visit(
+        [](Empty) {},
+        [&](Colour const& colour) {
+            fillDrawRectPlaceholder(&placeholder.get<DrawRectPlaceholder>(), bounds, colour);
+        },
+        [&](DrawableStyle::Gradient const& gradient) {
+            fillDrawRectPlaceholder(&placeholder.get<DrawRectPlaceholder>(), bounds, gradient.color00, gradient.color01, gradient.color10, gradient.color11);
+        },
+        [&](DrawableStyle::Ninepatch const& ninepatch) {
+            fillDrawNinepatchPlaceholder(&placeholder.get<DrawNinepatchPlaceholder>(), bounds, dynamic_cast<Ninepatch*>(ninepatch.ref.metadata().loaded_asset.ptr()), ninepatch.colour);
+        },
+        [&](DrawableStyle::Sprite const& sprite) {
+            fillDrawRectPlaceholder(&placeholder.get<DrawRectPlaceholder>(), bounds, &sprite.ref.get(), sprite.colour);
+        });
 }
 
 void Drawable::draw(RenderBuffer* buffer, Rect2I bounds)
 {
     auto& renderer = the_renderer();
-    switch (style->type) {
-    case DrawableType::None: {
-        return; // Nothing to do!
-    } break;
-
-    case DrawableType::Color: {
-        drawSingleRect(buffer, bounds, renderer.shaderIds.untextured, style->color);
-    } break;
-
-    case DrawableType::Gradient: {
-        drawSingleRect(buffer, bounds, renderer.shaderIds.untextured, style->gradient.color00, style->gradient.color01, style->gradient.color10, style->gradient.color11);
-    } break;
-
-    case DrawableType::Ninepatch: {
-        drawNinepatch(buffer, bounds, renderer.shaderIds.textured, &dynamic_cast<Ninepatch&>(*style->ninepatch.metadata().loaded_asset), style->color);
-    } break;
-
-    case DrawableType::Sprite: {
-        drawSingleSprite(buffer, &style->sprite.get(), bounds, renderer.shaderIds.textured, style->color);
-    } break;
-
-        INVALID_DEFAULT_CASE;
-    }
+    style->value.visit(
+        [](Empty) {},
+        [&](Colour const& colour) {
+            drawSingleRect(buffer, bounds, renderer.shaderIds.untextured, colour);
+        },
+        [&](DrawableStyle::Gradient const& gradient) {
+            drawSingleRect(buffer, bounds, renderer.shaderIds.untextured, gradient.color00, gradient.color01, gradient.color10, gradient.color11);
+        },
+        [&](DrawableStyle::Ninepatch const& ninepatch) {
+            drawNinepatch(buffer, bounds, renderer.shaderIds.textured, &dynamic_cast<Ninepatch&>(*ninepatch.ref.metadata().loaded_asset), ninepatch.colour);
+        },
+        [&](DrawableStyle::Sprite const& sprite) {
+            drawSingleSprite(buffer, &sprite.ref.get(), bounds, renderer.shaderIds.textured, sprite.colour);
+        });
 }
 
 }

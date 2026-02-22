@@ -25,19 +25,11 @@ Optional<DrawableStyle> readDrawableStyle(LineReader* reader)
     Optional<DrawableStyle> result;
 
     if (typeName == "none"_s) {
-        DrawableStyle drawable = {};
-        drawable.type = DrawableType::None;
-
-        result = move(drawable);
+        result = DrawableStyle {};
     } else if (typeName == "color"_s) {
         Optional color = Colour::read(*reader);
-        if (color.has_value()) {
-            DrawableStyle drawable = {};
-            drawable.type = DrawableType::Color;
-            drawable.color = color.release_value();
-
-            result = move(drawable);
-        }
+        if (color.has_value())
+            result = DrawableStyle { color.release_value() };
     } else if (typeName == "gradient"_s) {
         Optional color00 = Colour::read(*reader);
         Optional color01 = Colour::read(*reader);
@@ -45,14 +37,12 @@ Optional<DrawableStyle> readDrawableStyle(LineReader* reader)
         Optional color11 = Colour::read(*reader);
 
         if (color00.has_value() && color01.has_value() && color10.has_value() && color11.has_value()) {
-            DrawableStyle drawable = {};
-            drawable.type = DrawableType::Gradient;
-            drawable.gradient.color00 = color00.release_value();
-            drawable.gradient.color01 = color01.release_value();
-            drawable.gradient.color10 = color10.release_value();
-            drawable.gradient.color11 = color11.release_value();
-
-            result = move(drawable);
+            result = DrawableStyle { DrawableStyle::Gradient {
+                .color00 = color00.release_value(),
+                .color01 = color01.release_value(),
+                .color10 = color10.release_value(),
+                .color11 = color11.release_value(),
+            } };
         }
     } else if (typeName == "ninepatch"_s) {
         auto ninepatchName = reader->next_token();
@@ -63,12 +53,10 @@ Optional<DrawableStyle> readDrawableStyle(LineReader* reader)
 
         auto color = Colour::read(*reader, LineReader::IsRequired::No);
 
-        DrawableStyle drawable = {};
-        drawable.type = DrawableType::Ninepatch;
-        drawable.color = color.value_or(Colour::white());
-        drawable.ninepatch = AssetRef { AssetType::Ninepatch, asset_manager().assetStrings.intern(ninepatchName.value()) };
-
-        result = move(drawable);
+        result = DrawableStyle { DrawableStyle::Ninepatch {
+            .ref = AssetRef { AssetType::Ninepatch, asset_manager().assetStrings.intern(ninepatchName.value()) },
+            .colour = color.value_or(Colour::white()),
+        } };
     } else if (typeName == "sprite"_s) {
         auto spriteName = reader->next_token();
         if (!spriteName.has_value()) {
@@ -78,12 +66,10 @@ Optional<DrawableStyle> readDrawableStyle(LineReader* reader)
 
         auto color = Colour::read(*reader, LineReader::IsRequired::No);
 
-        DrawableStyle drawable = {};
-        drawable.type = DrawableType::Sprite;
-        drawable.color = color.value_or(Colour::white());
-        drawable.sprite = SpriteRef { asset_manager().assetStrings.intern(spriteName.value()), 0 };
-
-        result = move(drawable);
+        result = DrawableStyle { DrawableStyle::Sprite {
+            .ref = SpriteRef { asset_manager().assetStrings.intern(spriteName.value()), 0 },
+            .colour = color.value_or(Colour::white()),
+        } };
     } else {
         reader->error("Unrecognised drawable type '{0}'"_s, { typeName });
     }
@@ -91,27 +77,28 @@ Optional<DrawableStyle> readDrawableStyle(LineReader* reader)
     return result;
 }
 
-bool DrawableStyle::hasFixedSize()
+bool DrawableStyle::has_fixed_size() const
 {
-    return (type == DrawableType::None || type == DrawableType::Sprite);
+    return value.visit(
+        [](Empty) { return true; },
+        [&](DrawableStyle::Sprite const&) { return true; },
+        [&](auto const&) { return false; });
 }
 
-V2I DrawableStyle::getSize()
+V2I DrawableStyle::get_size() const
 {
-    V2I result = {};
+    return value.visit(
+        [&](DrawableStyle::Sprite const& sprite) {
+            auto& the_sprite = sprite.ref.get();
+            return v2i(the_sprite.pixelWidth, the_sprite.pixelHeight);
+        },
+        [&](auto const&) { return v2i(0, 0); });
+}
 
-    switch (type) {
-    case DrawableType::Sprite: {
-        auto& the_sprite = sprite.get();
-        result.x = the_sprite.pixelWidth;
-        result.y = the_sprite.pixelHeight;
-    } break;
-
-    default:
-        break;
-    }
-
-    return result;
+bool DrawableStyle::is_visible() const
+{
+    // TODO: Maybe return false if the opacity is 0 too?
+    return !value.has<Empty>();
 }
 
 ButtonStyle& ButtonStyle::get(StringView name)
@@ -789,10 +776,10 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                     auto background_pressed = style->get_drawable_style("backgroundPressed"_h, background);
                     auto background_disabled = style->get_drawable_style("backgroundDisabled"_h, background);
 
-                    if (!start_icon.hasFixedSize())
+                    if (!start_icon.has_fixed_size())
                         reader.error("Start icon for button '{0}' has no fixed size. Defaulting to 0 x 0"_s, { style->name });
 
-                    if (!end_icon.hasFixedSize())
+                    if (!end_icon.has_fixed_size())
                         reader.error("End icon for button '{0}' has no fixed size. Defaulting to 0 x 0"_s, { style->name });
 
                     AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::ButtonStyle, style->name, {});
@@ -821,8 +808,8 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                     V2I check_size {};
                     if (auto read_size = style->get_v2i("checkSize"_h); read_size.has_value()) {
                         check_size = read_size.release_value();
-                    } else if (check.hasFixedSize()) {
-                        check_size = check.getSize();
+                    } else if (check.has_fixed_size()) {
+                        check_size = check.get_size();
                     } else {
                         reader.error("Check for checkbox '{0}' has no fixed size, and no checkSize was provided. Defaulting to 0 x 0"_s, { style->name });
                     }
