@@ -194,11 +194,11 @@ bool mouseIsWithinUIRects()
 V2I calculateButtonSize(StringView text, ButtonStyle* style, s32 maxWidth, bool fillWidth)
 {
     // If we have icons, take them into account
-    V2I startIconSize = style->startIcon.getSize();
+    V2I startIconSize = style->startIcon.get_size();
     if (startIconSize.x > 0)
         startIconSize.x += style->contentPadding;
 
-    V2I endIconSize = style->endIcon.getSize();
+    V2I endIconSize = style->endIcon.get_size();
     if (endIconSize.x > 0)
         endIconSize.x += style->contentPadding;
 
@@ -237,11 +237,11 @@ V2I calculateButtonSize(StringView text, ButtonStyle* style, s32 maxWidth, bool 
 V2I calculateButtonSize(V2I contentSize, ButtonStyle* style, s32 maxWidth, bool fillWidth)
 {
     // If we have icons, take them into account
-    V2I startIconSize = style->startIcon.getSize();
+    V2I startIconSize = style->startIcon.get_size();
     if (startIconSize.x > 0)
         startIconSize.x += style->contentPadding;
 
-    V2I endIconSize = style->endIcon.getSize();
+    V2I endIconSize = style->endIcon.get_size();
     if (endIconSize.x > 0)
         endIconSize.x += style->contentPadding;
 
@@ -262,13 +262,13 @@ Rect2I calculateButtonContentBounds(Rect2I bounds, ButtonStyle* style)
 {
     Rect2I contentBounds = bounds.shrunk(style->padding);
 
-    V2I startIconSize = style->startIcon.getSize();
+    V2I startIconSize = style->startIcon.get_size();
     if (startIconSize.x > 0) {
         contentBounds.set_x(contentBounds.x() + startIconSize.x + style->contentPadding);
         contentBounds.set_width(contentBounds.width() - (startIconSize.x + style->contentPadding));
     }
 
-    V2I endIconSize = style->endIcon.getSize();
+    V2I endIconSize = style->endIcon.get_size();
     if (endIconSize.x > 0) {
         contentBounds.set_width(contentBounds.width() - (endIconSize.x + style->contentPadding));
     }
@@ -310,14 +310,14 @@ bool putButton(Rect2I bounds, ButtonStyle* style, ButtonState state, RenderBuffe
     buttonBackground.draw(renderBuffer, bounds);
 
     // Icons!
-    if (style->startIcon.type != DrawableType::None) {
-        V2I startIconSize = style->startIcon.getSize();
+    if (style->startIcon.is_visible()) {
+        V2I startIconSize = style->startIcon.get_size();
         Rect2I startIconBounds = bounds.create_aligned_within(startIconSize, style->startIconAlignment, style->padding);
 
         Drawable(&style->startIcon).draw(renderBuffer, startIconBounds);
     }
-    if (style->endIcon.type != DrawableType::None) {
-        V2I endIconSize = style->endIcon.getSize();
+    if (style->endIcon.is_visible()) {
+        V2I endIconSize = style->endIcon.get_size();
         Rect2I endIconBounds = bounds.create_aligned_within(endIconSize, style->endIconAlignment, style->padding);
 
         Drawable(&style->endIcon).draw(renderBuffer, endIconBounds);

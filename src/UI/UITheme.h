@@ -27,35 +27,30 @@ enum class ConsoleLineStyle : u8 {
 
 namespace UI {
 
-// FIXME: This should go somewhere else probably.
-enum class DrawableType : u8 {
-    None,
-    Color,
-    Gradient,
-    Ninepatch,
-    Sprite,
-};
-
 struct DrawableStyle {
-    DrawableType type;
-    Colour color;
-
-    union {
-        struct {
-            Colour color00;
-            Colour color01;
-            Colour color10;
-            Colour color11;
-        } gradient {};
-
-        AssetRef ninepatch;
-
-        SpriteRef sprite;
+    struct Gradient {
+        Colour color00;
+        Colour color01;
+        Colour color10;
+        Colour color11;
     };
 
+    struct Ninepatch {
+        AssetRef ref;
+        Colour colour;
+    };
+
+    struct Sprite {
+        SpriteRef ref;
+        Colour colour;
+    };
+
+    Variant<Empty, Colour, Gradient, Ninepatch, Sprite> value {};
+
     // METHODS
-    bool hasFixedSize();
-    V2I getSize(); // NB: Returns 0 for sizeless types
+    bool has_fixed_size() const;
+    V2I get_size() const; // NB: Returns 0 for sizeless types
+    bool is_visible() const;
 };
 Optional<DrawableStyle> readDrawableStyle(LineReader* reader);
 
