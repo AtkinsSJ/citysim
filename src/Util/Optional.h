@@ -24,6 +24,45 @@ public:
     {
     }
 
+    Optional(Optional&& other)
+        : m_has_value(other.has_value())
+    {
+        if (other.has_value())
+            m_value = other.release_value();
+    }
+
+    Optional(Optional const& other)
+        : m_has_value(other.has_value())
+    {
+        if (other.has_value())
+            m_value = other.value();
+    }
+
+    Optional& operator=(Optional&& other)
+    {
+        if (m_has_value)
+            release_value();
+        if (other.has_value()) {
+            m_has_value = true;
+            m_value = other.release_value();
+        }
+        return *this;
+    }
+
+    Optional& operator=(Optional const& other)
+    {
+        if (this == &other)
+            return *this;
+
+        if (m_has_value)
+            release_value();
+        if (other.has_value()) {
+            m_has_value = true;
+            m_value = other.value();
+        }
+        return *this;
+    }
+
     ~Optional()
     {
         if (m_has_value)
