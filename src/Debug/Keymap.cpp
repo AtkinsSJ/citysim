@@ -6,11 +6,6 @@
 
 #include "Keymap.h"
 
-Keymap& Keymap::get(StringView name)
-{
-    return dynamic_cast<Keymap&>(*getAsset(AssetType::Keymap, name.deprecated_to_string()).loaded_asset);
-}
-
 ErrorOr<NonnullOwnPtr<Keymap>> Keymap::load(AssetMetadata& metadata, Blob file_data)
 {
     // Separate reader just for the command count.

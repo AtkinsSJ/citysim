@@ -37,9 +37,9 @@ bool Toast::update_and_draw(float delta_time)
     V2I origin = v2i(windowSize.x / 2, windowSize.y - 8);
     auto text = m_buffer.view();
 
-    LabelStyle* labelStyle = getStyle<LabelStyle>(style.labelStyle);
+    auto& label_style = style.labelStyle.get();
     s32 maxWidth = min(floor_s32(windowSize.x * 0.8f), 500);
-    V2I textSize = getFont(labelStyle->font).calculate_text_size(text, maxWidth - (style.padding.left + style.padding.right));
+    V2I textSize = label_style.font.get().calculate_text_size(text, maxWidth - (style.padding.left + style.padding.right));
 
     V2I toastSize = v2i(
         textSize.x + (style.padding.left + style.padding.right),

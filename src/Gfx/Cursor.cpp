@@ -10,11 +10,6 @@
 #include <Assets/ContainerAsset.h>
 #include <SDL_image.h>
 
-Cursor& Cursor::get(StringView name)
-{
-    return dynamic_cast<Cursor&>(*getAsset(AssetType::Cursor, name.deprecated_to_string()).loaded_asset);
-}
-
 // FIXME: Put this somewhere proper eventually. It's currently duplicated with the Texture loading code.
 static SDL_Surface* createSurfaceFromFileData(Blob fileData, String name)
 {
@@ -69,15 +64,15 @@ ErrorOr<NonnullOwnPtr<Asset>> Cursor::load_defs(AssetMetadata& metadata, Blob da
         });
     }
 
-    auto children_data = Assets::assets_allocate(cursor_defs.count * sizeof(AssetRef));
-    auto children = makeArray(cursor_defs.count, reinterpret_cast<AssetRef*>(children_data.writable_data()));
+    auto children_data = Assets::assets_allocate(cursor_defs.count * sizeof(GenericAssetRef));
+    auto children = makeArray(cursor_defs.count, reinterpret_cast<GenericAssetRef*>(children_data.writable_data()));
 
     for (auto it = cursor_defs.iterate(); it.hasNext(); it.next()) {
         auto& cursor_def = it.get();
 
-        AssetMetadata* cursor_metadata = asset_manager().add_asset(AssetType::Cursor, cursor_def.name, {});
+        AssetMetadata* cursor_metadata = asset_manager().add_asset(asset_type(), cursor_def.name, {});
 
-        auto image_path = asset_manager().make_asset_path(AssetType::Cursor, cursor_def.filename);
+        auto image_path = asset_manager().make_asset_path(asset_type(), cursor_def.filename);
         auto image_data = readTempFile(image_path);
         auto* cursor_surface = createSurfaceFromFileData(image_data, metadata.shortName);
         auto* sdl_cursor = SDL_CreateColorCursor(cursor_surface, cursor_def.hotspot.x, cursor_def.hotspot.y);

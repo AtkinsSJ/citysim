@@ -12,6 +12,8 @@
 #include <Util/OwnPtr.h>
 
 class Texture final : public Asset {
+    ASSET_SUBCLASS_METHODS(Texture);
+
 public:
     static NonnullOwnPtr<Texture> make_placeholder();
     static ErrorOr<NonnullOwnPtr<Texture>> load(AssetMetadata&, Blob file_data);

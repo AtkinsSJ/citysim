@@ -11,6 +11,8 @@
 #include <Util/OwnPtr.h>
 
 class Ninepatch final : public Asset {
+    ASSET_SUBCLASS_METHODS(Ninepatch);
+
 public:
     static NonnullOwnPtr<Ninepatch> make_placeholder();
     Ninepatch(AssetMetadata& texture_metadata, s32 pu0, s32 pu1, s32 pu2, s32 pu3, s32 pv0, s32 pv1, s32 pv2, s32 pv3);

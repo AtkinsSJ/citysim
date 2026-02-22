@@ -16,11 +16,6 @@ Sprite& Sprite::get(StringView name)
     return SpriteGroup::get(name).sprites[0];
 }
 
-SpriteGroup& SpriteGroup::get(StringView name)
-{
-    return dynamic_cast<SpriteGroup&>(*getAsset(AssetType::Sprite, name.deprecated_to_string()).loaded_asset);
-}
-
 NonnullOwnPtr<SpriteGroup> SpriteGroup::make_placeholder()
 {
     auto sprite_group = adopt_own(*new SpriteGroup);
@@ -91,8 +86,8 @@ ErrorOr<NonnullOwnPtr<Asset>> load_sprite_defs(AssetMetadata& metadata, Blob dat
         if (auto command = reader.next_token(); command.has_value() && command.value().starts_with(':'))
             childAssetCount++;
     }
-    auto children_data = Assets::assets_allocate(childAssetCount * sizeof(AssetRef));
-    auto children = makeArray(childAssetCount, reinterpret_cast<AssetRef*>(children_data.writable_data()));
+    auto children_data = Assets::assets_allocate(childAssetCount * sizeof(GenericAssetRef));
+    auto children = makeArray(childAssetCount, reinterpret_cast<GenericAssetRef*>(children_data.writable_data()));
     reader.restart();
 
     // Now, actually read things

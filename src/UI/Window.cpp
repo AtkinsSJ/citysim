@@ -24,7 +24,7 @@ WindowContext::WindowContext(Window* window, WindowStyle* windowStyle, bool hide
               window->area.width(),
               (window->flags & WindowFlags::AutomaticHeight) ? 10000 : (window->area.height() - ((window->flags & WindowFlags::Headless) ? 0 : windowStyle->titleBarHeight)),
           },
-          getStyle<PanelStyle>(windowStyle->panelStyle),
+          &windowStyle->panelStyle.get(),
           ((window->flags & WindowFlags::Tooltip) ? PanelFlags::AllowClickThrough : 0)
               | (hideWidgets ? PanelFlags::HideWidgets : 0),
           renderBuffer)
@@ -297,20 +297,20 @@ void updateAndRenderWindows()
             drawSingleRect(window.renderBuffer, barArea, renderer.shaderIds.untextured, barColor);
             String titleString = window.title.getString();
 
-            LabelStyle* titleStyle = getStyle<LabelStyle>(window_style.titleLabelStyle);
+            auto& title_style = window_style.titleLabelStyle.get();
             // TODO: Take close-button size into account
-            V2I titleSize = calculateLabelSize(titleString, titleStyle, barArea.width(), false);
-            putLabel(titleString, barArea.create_aligned_within(titleSize, titleStyle->textAlignment), titleStyle, window.renderBuffer);
+            V2I titleSize = calculateLabelSize(titleString, &title_style, barArea.width(), false);
+            putLabel(titleString, barArea.create_aligned_within(titleSize, title_style.textAlignment), &title_style, window.renderBuffer);
 
             // TODO: Replace this with an actual Button?
-            auto& titleFont = getFont(titleStyle->font);
+            auto& titleFont = title_style.font.get();
             if (hoveringOverCloseButton
                 && (!isMouseInputHandled() || windowIndex == 0)) {
                 drawSingleRect(window.renderBuffer, closeButtonRect, renderer.shaderIds.untextured, closeButtonColorHover);
             }
             V2I closeTextSize = titleFont.calculate_text_size(closeButtonString);
             Rect2I closeTextBounds = Rect2I::create_aligned(v2i(closeButtonRect.centre()), closeTextSize, Alignment::centre());
-            drawText(window.renderBuffer, &titleFont, closeButtonString, closeTextBounds, Alignment::centre(), titleStyle->textColor, renderer.shaderIds.text);
+            drawText(window.renderBuffer, &titleFont, closeButtonString, closeTextBounds, Alignment::centre(), title_style.textColor, renderer.shaderIds.text);
 
             if ((!isMouseInputHandled() || windowIndex == 0)
                 && wholeWindowArea.contains(mousePos)

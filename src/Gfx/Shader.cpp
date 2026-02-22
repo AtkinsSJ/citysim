@@ -7,11 +7,6 @@
 #include "Shader.h"
 #include <Assets/AssetManager.h>
 
-Shader& Shader::get(StringView name)
-{
-    return dynamic_cast<Shader&>(*getAsset(AssetType::Shader, name.deprecated_to_string()).loaded_asset);
-}
-
 NonnullOwnPtr<Shader> Shader::make_placeholder()
 {
     return adopt_own(*new Shader({}, ""_s, ""_s));

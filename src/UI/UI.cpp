@@ -208,7 +208,7 @@ V2I calculateButtonSize(StringView text, ButtonStyle* style, s32 maxWidth, bool 
     }
 
     V2I result = {};
-    auto& font = getFont(style->font);
+    auto& font = style->font.get();
 
     if (textMaxWidth < 0) {
         // ERROR! Negative text width means we can't fit any so give up.
@@ -343,7 +343,7 @@ bool putTextButton(StringView text, Rect2I bounds, ButtonStyle* style, ButtonSta
 
     Rect2I contentBounds = calculateButtonContentBounds(bounds, style);
 
-    drawText(renderBuffer, &getFont(style->font), text, contentBounds, style->textAlignment, style->textColor, renderer.shaderIds.text);
+    drawText(renderBuffer, &style->font.get(), text, contentBounds, style->textAlignment, style->textColor, renderer.shaderIds.text);
 
     return result;
 }
@@ -442,7 +442,7 @@ V2I calculateLabelSize(StringView text, LabelStyle* style, s32 maxWidth, bool fi
 
     s32 maxTextWidth = maxWidth - (style->padding.left + style->padding.right);
 
-    V2I textSize = getFont(style->font).calculate_text_size(text, maxTextWidth);
+    V2I textSize = style->font.get().calculate_text_size(text, maxTextWidth);
 
     // Add padding
     V2I result = v2i(
@@ -470,7 +470,7 @@ void putLabel(StringView text, Rect2I bounds, LabelStyle* style, RenderBuffer* r
 
     Drawable(&style->background).draw(renderBuffer, bounds);
 
-    drawText(renderBuffer, &getFont(style->font), text, textBounds, style->textAlignment, style->textColor, renderer.shaderIds.text);
+    drawText(renderBuffer, &style->font.get(), text, textBounds, style->textAlignment, style->textColor, renderer.shaderIds.text);
 }
 
 void showMenu(s32 menuID)

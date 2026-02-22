@@ -12,6 +12,7 @@ void DebugAssetLoader::register_types(AssetManager& assets)
 {
     assets.fileExtensionToType.put(assets.assetStrings.intern("keymap"_s), AssetType::Keymap);
     assets.asset_loaders_by_type[AssetType::Keymap] = this;
+    Keymap::set_asset_type(AssetType::Keymap);
 }
 
 void DebugAssetLoader::create_placeholder_assets(AssetManager& assets)

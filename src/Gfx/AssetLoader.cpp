@@ -23,28 +23,36 @@ void AssetLoader::register_types(AssetManager& assets)
 {
     assets.directoryNameToType.put(assets.assetStrings.intern("fonts"_s), AssetType::BitmapFont);
     assets.asset_loaders_by_type[AssetType::BitmapFont] = this;
+    BitmapFont::set_asset_type(AssetType::BitmapFont);
 
     assets.fileExtensionToType.put(assets.assetStrings.intern("cursors"_s), AssetType::CursorDefs);
     assets.asset_loaders_by_type[AssetType::Cursor] = this;
     assets.asset_loaders_by_type[AssetType::CursorDefs] = this;
+    Cursor::set_asset_type(AssetType::Cursor);
 
     assets.fileExtensionToType.put(assets.assetStrings.intern("palettes"_s), AssetType::PaletteDefs);
     assets.asset_loaders_by_type[AssetType::PaletteDefs] = this;
     assets.asset_loaders_by_type[AssetType::Palette] = this;
+    Palette::set_asset_type(AssetType::Palette);
 
     assets.directoryNameToType.put(assets.assetStrings.intern("shaders"_s), AssetType::Shader);
     assets.asset_loaders_by_type[AssetType::Shader] = this;
+    Shader::set_asset_type(AssetType::Shader);
 
     assets.fileExtensionToType.put(assets.assetStrings.intern("sprites"_s), AssetType::SpriteDefs);
     assets.asset_loaders_by_type[AssetType::SpriteDefs] = this;
     assets.asset_loaders_by_type[AssetType::Sprite] = this;
     assets.asset_loaders_by_type[AssetType::Ninepatch] = this;
+    SpriteGroup::set_asset_type(AssetType::Sprite);
+    Ninepatch::set_asset_type(AssetType::Ninepatch);
 
     assets.fileExtensionToType.put(assets.assetStrings.intern("txt"_s), AssetType::TextDocument);
     assets.asset_loaders_by_type[AssetType::TextDocument] = this;
+    TextDocument::set_asset_type(AssetType::TextDocument);
 
     assets.directoryNameToType.put(assets.assetStrings.intern("textures"_s), AssetType::Texture);
     assets.asset_loaders_by_type[AssetType::Texture] = this;
+    Texture::set_asset_type(AssetType::Texture);
 }
 
 void AssetLoader::create_placeholder_assets(AssetManager& assets)

@@ -7,13 +7,14 @@
 #pragma once
 
 #include <Assets/Asset.h>
+#include <Assets/AssetManager.h>
 #include <SDL2/SDL_mouse.h>
 #include <Util/Forward.h>
 
 class Cursor final : public Asset {
-public:
-    static Cursor& get(StringView name);
+    ASSET_SUBCLASS_METHODS(Cursor);
 
+public:
     static ErrorOr<NonnullOwnPtr<Asset>> load_defs(AssetMetadata&, Blob);
     Cursor();
     virtual ~Cursor() override = default;

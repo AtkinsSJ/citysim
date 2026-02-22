@@ -46,7 +46,7 @@ struct Console : public AssetManagerListener {
     virtual void after_assets_loaded() override;
     virtual void before_assets_unloaded() override;
 
-    AssetRef style { AssetType::ConsoleStyle, "default"_s };
+    TypedAssetRef<UI::ConsoleStyle> style { "default"_s };
 
     float currentHeight;
     float targetHeight;

@@ -374,7 +374,7 @@ void updateAndRenderGameUI(GameState* gameState)
     auto& renderer = the_renderer();
     RenderBuffer* uiBuffer = &renderer.ui_buffer();
     auto& label_style = UI::LabelStyle::get("title"_s);
-    auto& font = getFont(label_style.font);
+    auto& font = label_style.font.get();
     City* city = &gameState->city;
 
     s32 const uiPadding = 4; // TODO: Move this somewhere sensible!
@@ -1100,7 +1100,7 @@ void drawDataViewUI(GameState* gameState)
     auto& renderer = the_renderer();
     RenderBuffer* uiBuffer = &renderer.ui_buffer();
     auto& label_style = UI::LabelStyle::get("title"_s);
-    auto& font = getFont(label_style.font);
+    auto& font = label_style.font.get();
 
     s32 const uiPadding = 4; // TODO: Move this somewhere sensible!
     auto& button_style = UI::ButtonStyle::get("default"_s);
@@ -1121,12 +1121,12 @@ void drawDataViewUI(GameState* gameState)
 
     if (UI::isMenuVisible(to_underlying(GameMenuID::DataViews))) {
         // Measure the menu contents
-        UI::ButtonStyle* popupButtonStyle = getStyle<UI::ButtonStyle>(popup_menu_panel_style.buttonStyle);
+        UI::ButtonStyle& popupButtonStyle = popup_menu_panel_style.buttonStyle.get();
         s32 buttonMaxWidth = 0;
         s32 buttonMaxHeight = 0;
         for (auto data_view : enum_values<DataView>()) {
             String buttonText = getText(gameState->dataViewUI[data_view].title);
-            V2I buttonSize = UI::calculateButtonSize(buttonText, popupButtonStyle);
+            V2I buttonSize = UI::calculateButtonSize(buttonText, &popupButtonStyle);
             buttonMaxWidth = max(buttonMaxWidth, buttonSize.x);
             buttonMaxHeight = max(buttonMaxHeight, buttonSize.y);
         }

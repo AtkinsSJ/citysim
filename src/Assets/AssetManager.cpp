@@ -178,11 +178,6 @@ void removeAsset(AssetType type, String name)
     }
 }
 
-void removeAsset(AssetRef const& ref)
-{
-    removeAsset(ref.type(), ref.name());
-}
-
 void AssetManager::load_assets()
 {
     DEBUG_FUNCTION();
@@ -319,12 +314,6 @@ AssetMetadata* getAssetIfExists(AssetType type, String shortName)
 {
     auto asset = s_assets->assetsByType[type].find_value(shortName);
     return asset.value_or(nullptr);
-}
-
-BitmapFont& getFont(AssetRef const& fontRef)
-{
-    ASSERT(fontRef.type() == AssetType::BitmapFont);
-    return dynamic_cast<BitmapFont&>(*fontRef.metadata().loaded_asset);
 }
 
 String getText(String name)

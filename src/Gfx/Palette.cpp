@@ -10,11 +10,6 @@
 #include <Assets/AssetType.h>
 #include <Assets/ContainerAsset.h>
 
-Palette& Palette::get(StringView name)
-{
-    return dynamic_cast<Palette&>(*getAsset(AssetType::Palette, name.deprecated_to_string()).loaded_asset);
-}
-
 Palette::Palette(Blob data, Type type, Array<Colour> colours)
     : m_data(data)
     , m_type(type)
@@ -117,8 +112,8 @@ ErrorOr<NonnullOwnPtr<Asset>> Palette::load_defs(AssetMetadata& metadata, Blob f
     }
 
     // Load all the palettes, now that we know their properties are all set.
-    auto children_data = Assets::assets_allocate(palettes.count * sizeof(AssetRef));
-    auto children = makeArray(palettes.count, reinterpret_cast<AssetRef*>(children_data.writable_data()));
+    auto children_data = Assets::assets_allocate(palettes.count * sizeof(GenericAssetRef));
+    auto children = makeArray(palettes.count, reinterpret_cast<GenericAssetRef*>(children_data.writable_data()));
 
     for (auto it = palettes.iterate(); it.hasNext(); it.next()) {
         auto& palette = it.get();

@@ -14,25 +14,57 @@ namespace Assets {
 
 class AssetRef {
 public:
-    explicit AssetRef(AssetType type, String short_name)
-        : m_type(type)
-        , m_name(short_name)
+    explicit AssetRef(String short_name)
+        : m_name(move(short_name))
     {
     }
+    virtual ~AssetRef() = default;
 
+    Asset& asset() const;
     AssetMetadata& metadata() const;
-
-    AssetType type() const { return m_type; }
     String const& name() const { return m_name; }
+    virtual AssetType type() const = 0;
+
+protected:
+    String m_name;
+    mutable AssetMetadata* m_pointer { nullptr };
+    mutable u32 m_asset_generation { 0 };
+};
+
+template<typename T>
+class TypedAssetRef : public AssetRef {
+public:
+    explicit TypedAssetRef(String short_name)
+        : AssetRef(move(short_name))
+    {
+    }
+    virtual ~TypedAssetRef() override = default;
+
+    virtual AssetType type() const override { return T::asset_type(); }
+
+    T& get()
+    {
+        return dynamic_cast<T&>(asset());
+    }
+};
+
+class GenericAssetRef final : public AssetRef {
+public:
+    GenericAssetRef(String short_name, AssetType type)
+        : AssetRef(move(short_name))
+        , m_type(type)
+    {
+    }
+    virtual ~GenericAssetRef() override = default;
+
+    virtual AssetType type() const override { return m_type; }
 
 private:
     AssetType m_type;
-    String m_name;
-
-    mutable AssetMetadata* m_pointer { nullptr };
-    mutable u32 m_asset_generation { 0 };
 };
 
 }
 
 using Assets::AssetRef;
+using Assets::GenericAssetRef;
+using Assets::TypedAssetRef;
