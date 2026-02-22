@@ -13,12 +13,12 @@ static void aboutWindowProc(UI::WindowContext* context, void* /*userData*/)
 {
     UI::Panel* ui = &context->windowPanel;
 
-    UI::Panel leftColumn = ui->column(64, HAlign::Left, "plain"_s);
+    UI::Panel leftColumn = ui->column(64, HAlign::Left, "plain"_sv);
     leftColumn.alignWidgets(HAlign::Centre);
     leftColumn.addSprite(&Sprite::get("b_hospital"_s));
     leftColumn.end();
 
-    ui->addLabel(getText("game_title"_s), "title"_s);
+    ui->addLabel(getText("game_title"_s), "title"_sv);
 
     ui->startNewLine(HAlign::Right);
     ui->addLabel(getText("game_copyright"_s));

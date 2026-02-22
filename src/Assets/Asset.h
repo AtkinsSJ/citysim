@@ -30,6 +30,12 @@ public:                                                                         
     {                                                                                                             \
         return dynamic_cast<T&>(*getAsset(asset_type(), asset_manager().assetStrings.intern(name)).loaded_asset); \
     }                                                                                                             \
+    static T& get_with_fallback(Optional<StringView> const& name, TypedAssetRef<T> const& fallback)               \
+    {                                                                                                             \
+        if (name.has_value())                                                                                     \
+            return get(name.value());                                                                             \
+        return fallback.get();                                                                                    \
+    }                                                                                                             \
     static AssetType asset_type() { return s_asset_type; }                                                        \
     static void set_asset_type(AssetType type) { s_asset_type = type; }                                           \
     static TypedAssetRef<T> get_ref(StringView name)                                                              \

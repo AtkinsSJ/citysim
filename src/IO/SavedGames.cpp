@@ -173,9 +173,9 @@ void savedGamesWindowProc(UI::WindowContext* context, void* userData)
     SavedGameInfo* selectedSavedGame = nullptr;
     bool justClickedSavedGame = false;
 
-    UI::Panel bottomBar = ui->row(26, VAlign::Bottom, "plain"_s);
+    UI::Panel bottomBar = ui->row(26, VAlign::Bottom, "plain"_sv);
 
-    UI::Panel savesList = ui->column(320, HAlign::Left, "inset"_s);
+    UI::Panel savesList = ui->column(320, HAlign::Left, "inset"_sv);
     {
         savesList.enableVerticalScrolling(&catalogue->savedGamesListScrollbar);
         savesList.alignWidgets(HAlign::Fill);
@@ -205,7 +205,7 @@ void savedGamesWindowProc(UI::WindowContext* context, void* userData)
     // Now we have the saved-game info
     if (selectedSavedGame) {
         ui->alignWidgets(HAlign::Right);
-        if (ui->addImageButton(&Sprite::get("icon_delete"_s), ButtonState::Normal, "delete"_s)) {
+        if (ui->addImageButton(&Sprite::get("icon_delete"_s), ButtonState::Normal, "delete"_sv)) {
             UI::showWindow(UI::WindowTitle::fromTextAsset("title_delete_save"_s), 300, 300, v2i(0, 0), "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Modal | WindowFlags::Unique, confirmDeleteSaveWindowProc);
         }
 
@@ -291,7 +291,7 @@ void confirmOverwriteSaveWindowProc(UI::WindowContext* context, void* /*userData
     ui->addLabel(getText("msg_save_overwrite_confirm"_s, { inputName }));
     ui->startNewLine(HAlign::Right);
 
-    if (ui->addTextButton(getText("button_overwrite"_s), ButtonState::Normal, "delete"_s)) {
+    if (ui->addTextButton(getText("button_overwrite"_s), ButtonState::Normal, "delete"_sv)) {
         saveGame(inputName);
         context->closeRequested = true;
     }
@@ -310,7 +310,7 @@ void confirmDeleteSaveWindowProc(UI::WindowContext* context, void* /*userData*/)
     ui->addLabel(getText("msg_delete_save_confirm"_s, { savedGame->shortName }));
     ui->startNewLine(HAlign::Right);
 
-    if (ui->addTextButton(getText("button_delete"_s), ButtonState::Normal, "delete"_s)) {
+    if (ui->addTextButton(getText("button_delete"_s), ButtonState::Normal, "delete"_sv)) {
         deleteSave(savedGame);
         context->closeRequested = true;
     }

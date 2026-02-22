@@ -57,22 +57,22 @@ void Panel::enableVerticalScrolling(ScrollbarState* scrollbarState, bool expandW
     }
 }
 
-bool Panel::addTextButton(StringView text, ButtonState state, String styleName)
+bool Panel::addTextButton(StringView text, ButtonState state, Optional<StringView> style_name)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     prepareForWidgets();
 
-    ButtonStyle* widgetStyle = getStyle<ButtonStyle>(styleName, style->buttonStyle);
+    auto& button_style = ButtonStyle::get_with_fallback(style_name, style->buttonStyle);
 
     Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
-        return calculateButtonSize(text, widgetStyle, space.width(), fillWidth);
+        return calculateButtonSize(text, &button_style, space.width(), fillWidth);
     });
 
     bool wasClicked = false;
 
     if (!hideWidgets) {
-        wasClicked = putTextButton(text, widgetBounds, widgetStyle, state, renderBuffer);
+        wasClicked = putTextButton(text, widgetBounds, &button_style, state, renderBuffer);
     }
 
     completeWidget(widgetBounds.size());
@@ -80,23 +80,23 @@ bool Panel::addTextButton(StringView text, ButtonState state, String styleName)
     return wasClicked;
 }
 
-bool Panel::addImageButton(Sprite* sprite, ButtonState state, String styleName)
+bool Panel::addImageButton(Sprite* sprite, ButtonState state, Optional<StringView> style_name)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     prepareForWidgets();
 
-    ButtonStyle* widgetStyle = getStyle<ButtonStyle>(styleName, style->buttonStyle);
+    auto& widgetStyle = ButtonStyle::get_with_fallback(style_name, style->buttonStyle);
     V2I spriteSize = v2i(sprite->pixelWidth, sprite->pixelHeight);
 
     Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
-        return calculateButtonSize(spriteSize, widgetStyle, space.width(), fillWidth);
+        return calculateButtonSize(spriteSize, &widgetStyle, space.width(), fillWidth);
     });
 
     bool wasClicked = false;
 
     if (!hideWidgets) {
-        wasClicked = putImageButton(sprite, widgetBounds, widgetStyle, state, renderBuffer);
+        wasClicked = putImageButton(sprite, widgetBounds, &widgetStyle, state, renderBuffer);
     }
 
     completeWidget(widgetBounds.size());
@@ -104,58 +104,58 @@ bool Panel::addImageButton(Sprite* sprite, ButtonState state, String styleName)
     return wasClicked;
 }
 
-void Panel::addCheckbox(bool* checked, String styleName)
+void Panel::addCheckbox(bool* checked, Optional<StringView> style_name)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     prepareForWidgets();
 
-    CheckboxStyle* widgetStyle = getStyle<CheckboxStyle>(styleName, style->checkboxStyle);
+    auto& widgetStyle = CheckboxStyle::get_with_fallback(style_name, style->checkboxStyle);
 
     Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I, bool) {
-        return calculateCheckboxSize(widgetStyle);
+        return calculateCheckboxSize(&widgetStyle);
     });
 
     if (!hideWidgets) {
-        putCheckbox(checked, widgetBounds, widgetStyle, false, renderBuffer);
+        putCheckbox(checked, widgetBounds, &widgetStyle, false, renderBuffer);
     }
 
     completeWidget(widgetBounds.size());
 }
 
-void Panel::addLabel(StringView text, String styleName)
+void Panel::addLabel(StringView text, Optional<StringView> style_name)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     prepareForWidgets();
 
-    LabelStyle* widgetStyle = getStyle<LabelStyle>(styleName, style->labelStyle);
+    auto& widgetStyle = LabelStyle::get_with_fallback(style_name, style->labelStyle);
 
     Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
-        return calculateLabelSize(text, widgetStyle, space.width(), fillWidth);
+        return calculateLabelSize(text, &widgetStyle, space.width(), fillWidth);
     });
 
     if (!hideWidgets) {
-        putLabel(text, widgetBounds, widgetStyle, renderBuffer);
+        putLabel(text, widgetBounds, &widgetStyle, renderBuffer);
     }
 
     completeWidget(widgetBounds.size());
 }
 
-void Panel::addRadioButton(s32* currentValue, s32 myValue, String styleName)
+void Panel::addRadioButton(s32* currentValue, s32 myValue, Optional<StringView> style_name)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     prepareForWidgets();
 
-    RadioButtonStyle* widgetStyle = getStyle<RadioButtonStyle>(styleName, style->radioButtonStyle);
+    auto& widgetStyle = RadioButtonStyle::get_with_fallback(style_name, style->radioButtonStyle);
 
     Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I, bool) {
-        return calculateRadioButtonSize(widgetStyle);
+        return calculateRadioButtonSize(&widgetStyle);
     });
 
     if (!hideWidgets) {
-        putRadioButton(currentValue, myValue, widgetBounds, widgetStyle, false, renderBuffer);
+        putRadioButton(currentValue, myValue, widgetBounds, &widgetStyle, false, renderBuffer);
     }
 
     completeWidget(widgetBounds.size());
@@ -186,22 +186,22 @@ void Panel::addSprite(Sprite* sprite, s32 width, s32 height)
     completeWidget(widgetBounds.size());
 }
 
-bool Panel::addTextInput(TextInput* textInput, String styleName)
+bool Panel::addTextInput(TextInput* textInput, Optional<StringView> style_name)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
     prepareForWidgets();
 
-    TextInputStyle* widgetStyle = getStyle<TextInputStyle>(styleName, style->textInputStyle);
+    auto& widgetStyle = TextInputStyle::get_with_fallback(style_name, style->textInputStyle);
 
     Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
-        return calculateTextInputSize(textInput, widgetStyle, space.width(), fillWidth);
+        return calculateTextInputSize(textInput, &widgetStyle, space.width(), fillWidth);
     });
 
     bool result = false;
 
     if (!hideWidgets) {
-        result = putTextInput(textInput, widgetBounds, widgetStyle, renderBuffer);
+        result = putTextInput(textInput, widgetBounds, &widgetStyle, renderBuffer);
     }
 
     completeWidget(widgetBounds.size());
@@ -252,7 +252,7 @@ void Panel::startNewLine(Optional<HAlign> h_align)
         widgetAlignment.horizontal = h_align.release_value();
 }
 
-Panel Panel::row(s32 height, VAlign vAlignment, String styleName)
+Panel Panel::row(s32 height, VAlign vAlignment, Optional<StringView> style_name)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
     ASSERT(vAlignment == VAlign::Top || vAlignment == VAlign::Bottom);
@@ -261,7 +261,7 @@ Panel Panel::row(s32 height, VAlign vAlignment, String styleName)
 
     startNewLine();
 
-    PanelStyle* rowStyle = getPanelStyle(styleName);
+    PanelStyle* rowStyle = getPanelStyle(style_name);
 
     if (vAlignment == VAlign::Top) {
         Rect2I rowBounds { contentArea.x(), contentArea.y() + currentTop, contentArea.width(), height };
@@ -291,7 +291,7 @@ Panel Panel::row(s32 height, VAlign vAlignment, String styleName)
     }
 }
 
-Panel Panel::column(s32 width, HAlign hAlignment, String styleName)
+Panel Panel::column(s32 width, HAlign hAlignment, Optional<StringView> style_name)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
     ASSERT(hAlignment == HAlign::Left || hAlignment == HAlign::Right);
@@ -300,7 +300,7 @@ Panel Panel::column(s32 width, HAlign hAlignment, String styleName)
 
     startNewLine();
 
-    PanelStyle* columnStyle = getPanelStyle(styleName);
+    PanelStyle* columnStyle = getPanelStyle(style_name);
 
     if (hAlignment == HAlign::Left) {
         Rect2I columnBounds { contentArea.x(), contentArea.y() + currentTop, width, contentArea.height() };
@@ -503,11 +503,11 @@ void Panel::completeWidget(V2I widgetSize)
     }
 }
 
-PanelStyle* Panel::getPanelStyle(String styleName)
+PanelStyle* Panel::getPanelStyle(Optional<StringView> style_name) const
 {
     PanelStyle* result = nullptr;
-    if (!styleName.is_empty())
-        result = &PanelStyle::get(styleName);
+    if (style_name.has_value())
+        result = &PanelStyle::get(style_name.value());
     if (result == nullptr)
         result = this->style;
 

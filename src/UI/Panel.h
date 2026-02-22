@@ -60,46 +60,46 @@ struct Panel {
     void enableVerticalScrolling(ScrollbarState* vScrollbar, bool expandWidth = false);
 
     // Add stuff to the panel
-    bool addTextButton(StringView text, ButtonState state = ButtonState::Normal, String styleName = {});
-    bool addImageButton(Sprite* sprite, ButtonState state = ButtonState::Normal, String styleName = {});
+    bool addTextButton(StringView text, ButtonState state = ButtonState::Normal, Optional<StringView> style_name = {});
+    bool addImageButton(Sprite* sprite, ButtonState state = ButtonState::Normal, Optional<StringView> style_name = {});
 
-    void addCheckbox(bool* checked, String styleName = {});
+    void addCheckbox(bool* checked, Optional<StringView> style_name = {});
 
     template<typename T>
-    void addDropDownList(Array<T>* listOptions, s32* currentSelection, String (*getDisplayName)(T* data), String styleName = {})
+    void addDropDownList(Array<T>* listOptions, s32* currentSelection, String (*getDisplayName)(T* data), Optional<StringView> style_name = {})
     {
         DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
         prepareForWidgets();
 
-        DropDownListStyle* widgetStyle = getStyle<DropDownListStyle>(styleName, style->dropDownListStyle);
+        auto& widget_style = DropDownListStyle::get_with_fallback(style_name, style->dropDownListStyle);
 
         Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
-            return calculateDropDownListSize(listOptions, getDisplayName, widgetStyle, space.width(), fillWidth);
+            return calculateDropDownListSize(listOptions, getDisplayName, &widget_style, space.width(), fillWidth);
         });
 
         if (!hideWidgets) {
-            putDropDownList(listOptions, currentSelection, getDisplayName, widgetBounds, widgetStyle, renderBuffer);
+            putDropDownList(listOptions, currentSelection, getDisplayName, widgetBounds, &widget_style, renderBuffer);
         }
 
         completeWidget(widgetBounds.size());
     }
 
-    void addLabel(StringView text, String styleName = {});
+    void addLabel(StringView text, Optional<StringView> style_name = {});
 
-    void addRadioButton(s32* currentValue, s32 myValue, String styleName = {});
+    void addRadioButton(s32* currentValue, s32 myValue, Optional<StringView> style_name = {});
 
     template<CountedEnum EnumT, typename U, typename GetDisplayName>
-    void addRadioButtonGroup(EnumMap<EnumT, U>& listOptions, u32* currentSelection, GetDisplayName get_display_name, String styleName = {}, String labelStyleName = {})
+    void addRadioButtonGroup(EnumMap<EnumT, U>& listOptions, u32* currentSelection, GetDisplayName get_display_name, Optional<StringView> style_name = {}, Optional<StringView> label_style_name = {})
     {
         DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
         prepareForWidgets();
 
-        RadioButtonStyle* radioButtonStyle = getStyle<RadioButtonStyle>(styleName, style->radioButtonStyle);
-        LabelStyle* labelStyle = getStyle<LabelStyle>(labelStyleName, style->labelStyle);
+        auto& radio_button_style = RadioButtonStyle::get_with_fallback(style_name, style->radioButtonStyle);
+        auto& label_style = LabelStyle::get_with_fallback(label_style_name, style->labelStyle);
 
-        V2I radioButtonSize = calculateRadioButtonSize(radioButtonStyle);
+        V2I radioButtonSize = calculateRadioButtonSize(&radio_button_style);
 
         Rect2I buttonGroupBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
             s32 textWidth = space.width() - (radioButtonSize.x + style->contentPadding);
@@ -109,7 +109,7 @@ struct Panel {
             V2I widgetSize = v2i(0, 0);
             for (auto entry : enum_values<EnumT>()) {
                 String optionText = get_display_name(listOptions[entry]);
-                V2I labelSize = calculateLabelSize(optionText, labelStyle, textWidth, fillWidth);
+                V2I labelSize = calculateLabelSize(optionText, &label_style, textWidth, fillWidth);
 
                 widgetSize.x = max(widgetSize.x, radioButtonSize.x + style->contentPadding + labelSize.x);
 
@@ -129,11 +129,11 @@ struct Panel {
         for (auto entry : enum_values<EnumT>()) {
             if (!hideWidgets) {
                 // FIXME: This s32* cast is bad!
-                putRadioButton((s32*)currentSelection, to_underlying(entry), radioButtonBounds, radioButtonStyle, false, renderBuffer);
+                putRadioButton((s32*)currentSelection, to_underlying(entry), radioButtonBounds, &radio_button_style, false, renderBuffer);
             }
 
             String optionText = get_display_name(listOptions[entry]);
-            V2I labelSize = calculateLabelSize(optionText, labelStyle, textWidth, fillWidth);
+            V2I labelSize = calculateLabelSize(optionText, &label_style, textWidth, fillWidth);
             Rect2I labelBounds {
                 radioButtonBounds.x() + radioButtonBounds.width() + style->contentPadding,
                 radioButtonBounds.y(),
@@ -142,7 +142,7 @@ struct Panel {
             };
 
             if (!hideWidgets) {
-                putLabel(optionText, labelBounds, labelStyle, renderBuffer);
+                putLabel(optionText, labelBounds, &label_style, renderBuffer);
             }
 
             radioButtonBounds.set_y(labelBounds.y() + labelBounds.height() + style->contentPadding);
@@ -152,20 +152,20 @@ struct Panel {
     }
 
     template<typename T>
-    void addSlider(T* currentValue, T minValue, T maxValue, String styleName = {})
+    void addSlider(T* currentValue, T minValue, T maxValue, Optional<StringView> style_name = {})
     {
         DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
         prepareForWidgets();
 
-        SliderStyle* widgetStyle = getStyle<SliderStyle>(styleName, style->sliderStyle);
+        auto& slider_style = SliderStyle::get_with_fallback(style_name, style->sliderStyle);
 
         Rect2I widgetBounds = calculateWidgetBounds([&](Rect2I space, bool fillWidth) {
-            return calculateSliderSize(Orientation::Horizontal, widgetStyle, space.size(), fillWidth);
+            return calculateSliderSize(Orientation::Horizontal, &slider_style, space.size(), fillWidth);
         });
 
         if (!hideWidgets) {
-            putSlider(currentValue, minValue, maxValue, Orientation::Horizontal, widgetBounds, widgetStyle, false, renderBuffer);
+            putSlider(currentValue, minValue, maxValue, Orientation::Horizontal, widgetBounds, &slider_style, false, renderBuffer);
         }
 
         completeWidget(widgetBounds.size());
@@ -173,7 +173,7 @@ struct Panel {
 
     void addSprite(Sprite* sprite, s32 width = -1, s32 height = -1);
 
-    bool addTextInput(TextInput* textInput, String styleName = {});
+    bool addTextInput(TextInput* textInput, Optional<StringView> style_name = {});
 
     // Add a blank rectangle as if it were a widget. (So, leaving padding between
     // it and other widgets.) The bounds are returned so you can draw your own
@@ -186,8 +186,8 @@ struct Panel {
 
     // Slice the remaining content area in two, with one part being the new Panel,
     // and the rest becoming the existing panel's content area.
-    Panel row(s32 height, VAlign vAlignment, String styleName = {});
-    Panel column(s32 width, HAlign hAlignment, String styleName = {});
+    Panel row(s32 height, VAlign vAlignment, Optional<StringView> style_name = {});
+    Panel column(s32 width, HAlign hAlignment, Optional<StringView> style_name = {});
 
     void end(bool shinkToContentHeight = false, bool shrinkToContentWidth = false);
 
@@ -235,7 +235,7 @@ struct Panel {
 
     Rect2I calculateWidgetBounds(V2I size);
     void completeWidget(V2I widgetSize);
-    PanelStyle* getPanelStyle(String styleName);
+    PanelStyle* getPanelStyle(Optional<StringView> style_name) const;
 
     // Call after modifying the contentArea. Updates the positions fields to match.
     void updateLayoutPosition();

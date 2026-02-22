@@ -561,9 +561,9 @@ void costTooltipWindowProc(UI::WindowContext* context, void* userData)
 
     UI::Panel* ui = &context->windowPanel;
 
-    String style = canAfford(city, buildCost)
-        ? "cost-affordable"_s
-        : "cost-unaffordable"_s;
+    auto style = canAfford(city, buildCost)
+        ? "cost-affordable"_sv
+        : "cost-unaffordable"_sv;
 
     String text = myprintf("£{0}"_s, { formatInt(buildCost) });
     ui->addLabel(text, style);
@@ -1188,9 +1188,9 @@ void drawDataViewUI(GameState* gameState)
             if (dataView->hasGradient) {
                 // Arbitrarily going to make the height 4x the width
                 s32 gradientHeight = paletteBlockSize * 4;
-                UI::Panel gradientPanel = ui.row(gradientHeight, VAlign::Bottom, "plain"_s);
+                UI::Panel gradientPanel = ui.row(gradientHeight, VAlign::Bottom, "plain"_sv);
 
-                UI::Panel gradientColumn = gradientPanel.column(paletteBlockSize, HAlign::Left, "plain"_s);
+                UI::Panel gradientColumn = gradientPanel.column(paletteBlockSize, HAlign::Left, "plain"_sv);
                 {
                     Rect2I gradientBounds = gradientColumn.addBlank(paletteBlockSize, gradientHeight);
 
@@ -1223,7 +1223,7 @@ void drawDataViewUI(GameState* gameState)
                 gameState->dataLayerToDraw = DataView::None;
             }
             ui.alignWidgets(HAlign::Left);
-            ui.addLabel(getText(dataView->title), "title"_s);
+            ui.addLabel(getText(dataView->title), "title"_sv);
         }
         ui.end(true);
     }

@@ -42,7 +42,7 @@ public:
 
     virtual AssetType type() const override { return T::asset_type(); }
 
-    T& get()
+    T& get() const
     {
         return dynamic_cast<T&>(asset());
     }
