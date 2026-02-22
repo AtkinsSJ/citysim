@@ -50,17 +50,19 @@ struct Array {
     T* append()
     {
         ASSERT(count < capacity);
-
-        T* result = items + count++;
-
-        return result;
+        return new (&items[count++]) T();
     }
 
-    T* append(T item)
+    T* append(T const& item)
     {
-        T* result = append();
-        *result = item;
-        return result;
+        ASSERT(count < capacity);
+        return new (&items[count++]) T(item);
+    }
+
+    T* append(T&& item)
+    {
+        ASSERT(count < capacity);
+        return new (&items[count++]) T(move(item));
     }
 
     bool isInitialised() { return items != nullptr; }
