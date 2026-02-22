@@ -110,23 +110,6 @@ AssetMetadata* getAssetIfExists(AssetType type, String shortName);
 String getText(String name);
 String getText(String name, std::initializer_list<StringView> args);
 
-template<typename T>
-T* getStyle(TypedAssetRef<T> const& ref)
-{
-    ASSERT(ref.type() == T::asset_type());
-
-    auto& asset = ref.metadata();
-    return dynamic_cast<T*>(asset.loaded_asset.ptr());
-}
-
-template<typename T>
-T* getStyle(String styleName, TypedAssetRef<T> const& defaultStyle)
-{
-    if (styleName.is_empty())
-        return getStyle<T>(defaultStyle);
-    return &T::get(styleName);
-}
-
 //
 // Internal
 //
@@ -141,5 +124,4 @@ using Assets::AssetManager;
 
 using Assets::asset_manager;
 using Assets::getAsset;
-using Assets::getStyle;
 using Assets::getText;
