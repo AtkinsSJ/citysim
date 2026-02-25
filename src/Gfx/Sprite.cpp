@@ -22,7 +22,7 @@ NonnullOwnPtr<SpriteGroup> SpriteGroup::make_placeholder()
     sprite_group->data = Assets::assets_allocate(1 * sizeof(Sprite));
     sprite_group->count = 1;
     sprite_group->sprites = (Sprite*)sprite_group->data.writable_data();
-    sprite_group->sprites[0].texture = &asset_manager().placeholderAssets[AssetType::Texture];
+    sprite_group->sprites[0].texture = &asset_manager().get_placeholder_asset(Texture::asset_type());
     sprite_group->sprites[0].uv = { 0.0f, 0.0f, 1.0f, 1.0f };
 
     return sprite_group;
@@ -48,7 +48,7 @@ static AssetMetadata* add_sprite_group(StringView name, s32 spriteCount)
 {
     ASSERT(spriteCount > 0); // Must have a positive number of sprites in a Sprite Group!
 
-    AssetMetadata* metadata = asset_manager().add_asset(AssetType::Sprite, name, {});
+    AssetMetadata* metadata = asset_manager().add_asset(SpriteGroup::asset_type(), name, {});
     auto asset = adopt_own(*new SpriteGroup);
     asset->data = Assets::assets_allocate(spriteCount * sizeof(Sprite));
     asset->count = spriteCount;
@@ -61,10 +61,10 @@ static AssetMetadata* add_sprite_group(StringView name, s32 spriteCount)
 
 static AssetMetadata* add_ninepatch(StringView name, StringView filename, s32 pu0, s32 pu1, s32 pu2, s32 pu3, s32 pv0, s32 pv1, s32 pv2, s32 pv3)
 {
-    AssetMetadata* texture_metadata = asset_manager().add_asset(AssetType::Texture, filename);
+    AssetMetadata* texture_metadata = asset_manager().add_asset(Texture::asset_type(), filename);
     texture_metadata->ensure_is_loaded();
 
-    AssetMetadata* metadata = asset_manager().add_asset(AssetType::Ninepatch, name, {});
+    AssetMetadata* metadata = asset_manager().add_asset(Ninepatch::asset_type(), name, {});
     metadata->loaded_asset = adopt_own(*new Ninepatch(*texture_metadata, pu0, pu1, pu2, pu3, pv0, pv1, pv2, pv3));
     metadata->state = AssetMetadata::State::Loaded;
     return metadata;
@@ -140,7 +140,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_sprite_defs(AssetMetadata& metadata, Blob dat
                 auto& group_asset = dynamic_cast<SpriteGroup&>(*group->loaded_asset);
 
                 Sprite* sprite = group_asset.sprites;
-                sprite->texture = asset_manager().add_asset(AssetType::Texture, filename.release_value());
+                sprite->texture = asset_manager().add_asset(Texture::asset_type(), filename.release_value());
                 sprite->uv = { 0, 0, spriteSize.x, spriteSize.y };
                 sprite->pixelWidth = spriteSize.x;
                 sprite->pixelHeight = spriteSize.y;
@@ -155,7 +155,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_sprite_defs(AssetMetadata& metadata, Blob dat
                     return reader.make_error_message("Couldn't parse SpriteGroup. Expected: ':SpriteGroup identifier filename.png SWxSH'"_s);
                 }
 
-                textureAsset = asset_manager().add_asset(AssetType::Texture, filename.release_value());
+                textureAsset = asset_manager().add_asset(Texture::asset_type(), filename.release_value());
                 spriteSize = spriteSizeIn.release_value();
 
                 s32 spriteCount = reader.count_occurrences_of_property_in_current_command("sprite"_s);
@@ -212,7 +212,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_sprite_defs(AssetMetadata& metadata, Blob dat
     // Load all the sprites, now that we know their properties are all set.
     for (auto& child : children) {
         auto& sprite_group_metadata = child.metadata();
-        if (sprite_group_metadata.type != AssetType::Sprite)
+        if (sprite_group_metadata.type != SpriteGroup::asset_type())
             continue;
 
         auto& sprite_group = dynamic_cast<SpriteGroup&>(*sprite_group_metadata.loaded_asset);

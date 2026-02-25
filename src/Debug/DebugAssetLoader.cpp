@@ -10,14 +10,12 @@
 
 void DebugAssetLoader::register_types(AssetManager& assets)
 {
-    assets.fileExtensionToType.put(assets.assetStrings.intern("keymap"_s), AssetType::Keymap);
-    assets.asset_loaders_by_type[AssetType::Keymap] = this;
-    Keymap::set_asset_type(AssetType::Keymap);
+    Keymap::set_asset_type(assets.register_asset_type("Keymap"_s, *this, { .file_extension = "keymap"_sv }));
 }
 
 void DebugAssetLoader::create_placeholder_assets(AssetManager& assets)
 {
-    assets.set_placeholder_asset(AssetType::Keymap, adopt_own(*new Keymap));
+    assets.set_placeholder_asset(Keymap::asset_type(), adopt_own(*new Keymap));
 }
 
 ErrorOr<NonnullOwnPtr<Asset>> DebugAssetLoader::load_asset(AssetMetadata& metadata, Blob file_data)
@@ -28,7 +26,7 @@ ErrorOr<NonnullOwnPtr<Asset>> DebugAssetLoader::load_asset(AssetMetadata& metada
         return { error_or_asset_subclass.release_value() };
     };
 
-    if (metadata.type == AssetType::Keymap)
+    if (metadata.type == Keymap::asset_type())
         return to_error_or_asset(Keymap::load(metadata, file_data));
 
     VERIFY_NOT_REACHED();

@@ -19,6 +19,11 @@ public:
     virtual Optional<String> make_asset_path(AssetManager const&, AssetType, StringView short_name) override;
 
     virtual ErrorOr<NonnullOwnPtr<Asset>> load_asset(AssetMetadata&, Blob file_data) override;
+
+private:
+    AssetType m_cursor_defs_type;
+    AssetType m_palette_defs_type;
+    AssetType m_sprite_defs_type;
 };
 
 }

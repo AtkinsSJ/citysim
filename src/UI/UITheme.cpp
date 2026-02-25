@@ -526,7 +526,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                 auto fontFilename = reader.remainder_of_current_line();
 
                 if (fontName.has_value() && !fontFilename.is_empty()) {
-                    AssetMetadata* fontAsset = asset_manager().add_asset(AssetType::BitmapFont, fontFilename);
+                    AssetMetadata* fontAsset = asset_manager().add_asset(BitmapFont::asset_type(), fontFilename);
                     fontNamesToAssetNames.put(fontName.value().deprecated_to_string(), fontAsset->shortName);
                 } else {
                     reader.error("Invalid font declaration: '{0}'"_s, { reader.current_line() });
@@ -728,7 +728,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                     if (!end_icon.has_fixed_size())
                         reader.error("End icon for button '{0}' has no fixed size. Defaulting to 0 x 0"_s, { style->name });
 
-                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::ButtonStyle, style->name, {});
+                    AssetMetadata* child_metadata = asset_manager().add_asset(ButtonStyle::asset_type(), style->name, {});
                     child_metadata->loaded_asset = adopt_own(*new ButtonStyle(
                         move(font), move(text_color), move(text_alignment), move(padding), move(content_padding),
                         move(start_icon), move(start_icon_alignment), move(end_icon), move(end_icon_alignment),
@@ -760,7 +760,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                         reader.error("Check for checkbox '{0}' has no fixed size, and no checkSize was provided. Defaulting to 0 x 0"_s, { style->name });
                     }
 
-                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::CheckboxStyle, style->name, {});
+                    AssetMetadata* child_metadata = asset_manager().add_asset(CheckboxStyle::asset_type(), style->name, {});
                     child_metadata->loaded_asset = adopt_own(*new CheckboxStyle(
                         move(padding),
                         move(background), move(background_hover), move(background_pressed), move(background_disabled),
@@ -787,7 +787,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                     auto scrollbar_style = style->get_asset_ref<ScrollbarStyle>("scrollbarStyle"_h);
                     auto text_input_style = style->get_asset_ref<TextInputStyle>("textInputStyle"_h);
 
-                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::ConsoleStyle, style->name, {});
+                    AssetMetadata* child_metadata = asset_manager().add_asset(ConsoleStyle::asset_type(), style->name, {});
                     child_metadata->loaded_asset = adopt_own(*new ConsoleStyle(
                         move(font), move(output_text_colors), move(background), move(padding), move(content_padding), move(scrollbar_style), move(text_input_style)));
                     child_metadata->state = AssetMetadata::State::Loaded;
@@ -798,7 +798,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                     auto button_style = style->get_asset_ref<ButtonStyle>("buttonStyle"_h);
                     auto panel_style = style->get_asset_ref<PanelStyle>("panelStyle"_h);
 
-                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::DropDownListStyle, style->name, {});
+                    AssetMetadata* child_metadata = asset_manager().add_asset(DropDownListStyle::asset_type(), style->name, {});
                     child_metadata->loaded_asset = adopt_own(*new DropDownListStyle(move(button_style), move(panel_style)));
                     child_metadata->state = AssetMetadata::State::Loaded;
                     children.append(child_metadata->get_ref());
@@ -811,7 +811,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                     auto text_color = style->get_colour("textColor"_h, white);
                     auto text_alignment = style->get_alignment("textAlignment"_h, { HAlign::Left, VAlign::Top });
 
-                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::LabelStyle, style->name, {});
+                    AssetMetadata* child_metadata = asset_manager().add_asset(LabelStyle::asset_type(), style->name, {});
                     child_metadata->loaded_asset = adopt_own(*new LabelStyle(move(padding), move(background), move(font), move(text_color), move(text_alignment)));
                     child_metadata->state = AssetMetadata::State::Loaded;
                     children.append(child_metadata->get_ref());
@@ -832,7 +832,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                     auto slider_style = style->get_asset_ref<SliderStyle>("sliderStyle"_h);
                     auto text_input_style = style->get_asset_ref<TextInputStyle>("textInputStyle"_h);
 
-                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::PanelStyle, style->name, {});
+                    AssetMetadata* child_metadata = asset_manager().add_asset(PanelStyle::asset_type(), style->name, {});
                     child_metadata->loaded_asset = adopt_own(*new PanelStyle(
                         move(padding), move(content_padding), move(widget_alignment), move(background),
                         move(button_style), move(checkbox_style), move(drop_down_list_style), move(label_style), move(radio_button_style), move(scrollbar_style), move(slider_style), move(text_input_style)));
@@ -852,7 +852,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                     auto dot_pressed = style->get_drawable_style("dotHover"_h, dot);
                     auto dot_disabled = style->get_drawable_style("dotPressed"_h, dot);
 
-                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::RadioButtonStyle, style->name, {});
+                    AssetMetadata* child_metadata = asset_manager().add_asset(RadioButtonStyle::asset_type(), style->name, {});
                     child_metadata->loaded_asset = adopt_own(*new RadioButtonStyle(
                         move(size),
                         move(background), move(background_hover), move(background_pressed), move(background_disabled),
@@ -869,7 +869,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                     auto thumb_pressed = style->get_drawable_style("thumbPressed"_h, thumb);
                     auto thumb_disabled = style->get_drawable_style("thumbDisabled"_h, thumb);
 
-                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::ScrollbarStyle, style->name, {});
+                    AssetMetadata* child_metadata = asset_manager().add_asset(ScrollbarStyle::asset_type(), style->name, {});
                     child_metadata->loaded_asset = adopt_own(*new ScrollbarStyle(
                         width, move(background),
                         move(thumb), move(thumb_hover), move(thumb_pressed), move(thumb_disabled)));
@@ -886,7 +886,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                     auto thumb_disabled = style->get_drawable_style("thumbDisabled"_h, thumb);
                     auto thumb_size = style->get_v2i("thumbSize"_h, v2i(8, 8));
 
-                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::SliderStyle, style->name, {});
+                    AssetMetadata* child_metadata = asset_manager().add_asset(SliderStyle::asset_type(), style->name, {});
                     child_metadata->loaded_asset = adopt_own(*new SliderStyle(
                         move(track), move(track_thickness),
                         move(thumb), move(thumb_hover), move(thumb_pressed), move(thumb_disabled), move(thumb_size)));
@@ -903,7 +903,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                     auto show_caret = style->get_bool("showCaret"_h, true);
                     auto caret_flash_cycle_duration = style->get_float("caretFlashCycleDuration"_h, 1.0f);
 
-                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::TextInputStyle, style->name, {});
+                    AssetMetadata* child_metadata = asset_manager().add_asset(TextInputStyle::asset_type(), style->name, {});
                     child_metadata->loaded_asset = adopt_own(*new TextInputStyle(
                         move(font), move(text_color), move(text_alignment),
                         move(background), move(padding),
@@ -921,7 +921,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                     auto offset_from_mouse = style->get_v2i("offsetFromMouse"_h, {});
                     auto panel_style = style->get_asset_ref<PanelStyle>("panelStyle"_h);
 
-                    AssetMetadata* child_metadata = asset_manager().add_asset(AssetType::WindowStyle, style->name, {});
+                    AssetMetadata* child_metadata = asset_manager().add_asset(WindowStyle::asset_type(), style->name, {});
                     child_metadata->loaded_asset = adopt_own(*new WindowStyle(
                         move(title_label_style), move(title_bar_height), move(title_bar_color), move(title_bar_color_inactive), move(title_bar_button_hover_color),
                         move(offset_from_mouse), move(panel_style)));

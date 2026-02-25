@@ -21,68 +21,50 @@ namespace Gfx {
 
 void AssetLoader::register_types(AssetManager& assets)
 {
-    assets.directoryNameToType.put(assets.assetStrings.intern("fonts"_s), AssetType::BitmapFont);
-    assets.asset_loaders_by_type[AssetType::BitmapFont] = this;
-    BitmapFont::set_asset_type(AssetType::BitmapFont);
+    BitmapFont::set_asset_type(assets.register_asset_type("BitmapFont"_s, *this, { .directory = "fonts"_sv }));
 
-    assets.fileExtensionToType.put(assets.assetStrings.intern("cursors"_s), AssetType::CursorDefs);
-    assets.asset_loaders_by_type[AssetType::Cursor] = this;
-    assets.asset_loaders_by_type[AssetType::CursorDefs] = this;
-    Cursor::set_asset_type(AssetType::Cursor);
+    m_cursor_defs_type = assets.register_asset_type("CursorDefs"_s, *this, { .file_extension = "cursors"_sv });
+    Cursor::set_asset_type(assets.register_asset_type("Cursor"_s, *this, {}));
 
-    assets.fileExtensionToType.put(assets.assetStrings.intern("palettes"_s), AssetType::PaletteDefs);
-    assets.asset_loaders_by_type[AssetType::PaletteDefs] = this;
-    assets.asset_loaders_by_type[AssetType::Palette] = this;
-    Palette::set_asset_type(AssetType::Palette);
+    m_palette_defs_type = assets.register_asset_type("PaletteDefs"_s, *this, { .file_extension = "palettes"_sv });
+    Palette::set_asset_type(assets.register_asset_type("Palette"_s, *this, {}));
 
-    assets.directoryNameToType.put(assets.assetStrings.intern("shaders"_s), AssetType::Shader);
-    assets.asset_loaders_by_type[AssetType::Shader] = this;
-    Shader::set_asset_type(AssetType::Shader);
+    Shader::set_asset_type(assets.register_asset_type("Shader"_s, *this, { .directory = "shaders"_sv }));
 
-    assets.fileExtensionToType.put(assets.assetStrings.intern("sprites"_s), AssetType::SpriteDefs);
-    assets.asset_loaders_by_type[AssetType::SpriteDefs] = this;
-    assets.asset_loaders_by_type[AssetType::Sprite] = this;
-    assets.asset_loaders_by_type[AssetType::Ninepatch] = this;
-    SpriteGroup::set_asset_type(AssetType::Sprite);
-    Ninepatch::set_asset_type(AssetType::Ninepatch);
+    m_sprite_defs_type = assets.register_asset_type("SpriteDefs"_s, *this, { .file_extension = "sprites"_sv });
+    SpriteGroup::set_asset_type(assets.register_asset_type("Sprite"_s, *this, {}));
+    Ninepatch::set_asset_type(assets.register_asset_type("Ninepatch"_s, *this, {}));
 
-    assets.fileExtensionToType.put(assets.assetStrings.intern("txt"_s), AssetType::TextDocument);
-    assets.asset_loaders_by_type[AssetType::TextDocument] = this;
-    TextDocument::set_asset_type(AssetType::TextDocument);
+    TextDocument::set_asset_type(assets.register_asset_type("TextDocument"_s, *this, { .file_extension = "txt"_sv }));
 
-    assets.directoryNameToType.put(assets.assetStrings.intern("textures"_s), AssetType::Texture);
-    assets.asset_loaders_by_type[AssetType::Texture] = this;
-    Texture::set_asset_type(AssetType::Texture);
+    Texture::set_asset_type(assets.register_asset_type("Texture"_s, *this, { .directory = "textures"_sv }));
 }
 
 void AssetLoader::create_placeholder_assets(AssetManager& assets)
 {
     // NB: Texture needs creating first, as other placeholder assets rely on it.
-    assets.set_placeholder_asset(AssetType::Texture, Texture::make_placeholder());
+    assets.set_placeholder_asset(Texture::asset_type(), Texture::make_placeholder());
 
-    assets.set_placeholder_asset(AssetType::BitmapFont, adopt_own(*new BitmapFont));
-    assets.set_placeholder_asset(AssetType::Cursor, adopt_own(*new Cursor));
-    assets.set_placeholder_asset(AssetType::Ninepatch, Ninepatch::make_placeholder());
-    assets.set_placeholder_asset(AssetType::Palette, adopt_own(*new Palette));
-    assets.set_placeholder_asset(AssetType::Shader, Shader::make_placeholder());
-    assets.set_placeholder_asset(AssetType::Sprite, SpriteGroup::make_placeholder());
-    assets.set_placeholder_asset(AssetType::TextDocument, adopt_own(*new TextDocument));
+    assets.set_placeholder_asset(BitmapFont::asset_type(), adopt_own(*new BitmapFont));
+    assets.set_placeholder_asset(Cursor::asset_type(), adopt_own(*new Cursor));
+    assets.set_placeholder_asset(Ninepatch::asset_type(), Ninepatch::make_placeholder());
+    assets.set_placeholder_asset(Palette::asset_type(), adopt_own(*new Palette));
+    assets.set_placeholder_asset(Shader::asset_type(), Shader::make_placeholder());
+    assets.set_placeholder_asset(SpriteGroup::asset_type(), SpriteGroup::make_placeholder());
+    assets.set_placeholder_asset(TextDocument::asset_type(), adopt_own(*new TextDocument));
 }
 
 Optional<String> AssetLoader::make_asset_path(AssetManager const& assets, AssetType type, StringView short_name)
 {
-    switch (type) {
-    case AssetType::Cursor:
+    if (type == Cursor::asset_type())
         return myprintf("{0}/cursors/{1}"_s, { assets.assetsPath, short_name }, true);
-    case AssetType::BitmapFont:
+    if (type == BitmapFont::asset_type())
         return myprintf("{0}/fonts/{1}"_s, { assets.assetsPath, short_name }, true);
-    case AssetType::Shader:
+    if (type == Shader::asset_type())
         return myprintf("{0}/shaders/{1}"_s, { assets.assetsPath, short_name }, true);
-    case AssetType::Texture:
+    if (type == Texture::asset_type())
         return myprintf("{0}/textures/{1}"_s, { assets.assetsPath, short_name }, true);
-    default:
-        return {};
-    }
+    return {};
 }
 
 ErrorOr<NonnullOwnPtr<Asset>> AssetLoader::load_asset(AssetMetadata& metadata, Blob file_data)
@@ -93,25 +75,25 @@ ErrorOr<NonnullOwnPtr<Asset>> AssetLoader::load_asset(AssetMetadata& metadata, B
         return { error_or_asset_subclass.release_value() };
     };
 
-    if (metadata.type == AssetType::BitmapFont)
+    if (metadata.type == BitmapFont::asset_type())
         return to_error_or_asset(BitmapFont::load_from_bmf_data(metadata, file_data));
 
-    if (metadata.type == AssetType::CursorDefs)
+    if (metadata.type == m_cursor_defs_type)
         return to_error_or_asset(Cursor::load_defs(metadata, file_data));
 
-    if (metadata.type == AssetType::PaletteDefs)
+    if (metadata.type == m_palette_defs_type)
         return to_error_or_asset(Palette::load_defs(metadata, file_data));
 
-    if (metadata.type == AssetType::Shader)
+    if (metadata.type == Shader::asset_type())
         return to_error_or_asset(Shader::load(metadata, file_data));
 
-    if (metadata.type == AssetType::SpriteDefs)
+    if (metadata.type == m_sprite_defs_type)
         return to_error_or_asset(load_sprite_defs(metadata, file_data));
 
-    if (metadata.type == AssetType::TextDocument)
+    if (metadata.type == TextDocument::asset_type())
         return to_error_or_asset(TextDocument::load(metadata, file_data));
 
-    if (metadata.type == AssetType::Texture)
+    if (metadata.type == Texture::asset_type())
         return to_error_or_asset(Texture::load(metadata, file_data));
 
     VERIFY_NOT_REACHED();

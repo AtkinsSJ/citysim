@@ -39,9 +39,9 @@ Ninepatch::Ninepatch(AssetMetadata& texture_metadata, s32 pu0, s32 pu1, s32 pu2,
 
 NonnullOwnPtr<Ninepatch> Ninepatch::make_placeholder()
 {
-    auto& texture_metadata = asset_manager().placeholderAssets[AssetType::Texture];
-    auto& surface = *dynamic_cast<Texture&>(*texture_metadata.loaded_asset).surface;
-    return adopt_own(*new Ninepatch(asset_manager().placeholderAssets[AssetType::Texture], 0, 0, surface.w, surface.w, 0, 0, surface.h, surface.h));
+    auto& placeholder_texture = asset_manager().get_placeholder_asset(Texture::asset_type());
+    auto& surface = *dynamic_cast<Texture&>(*placeholder_texture.loaded_asset).surface;
+    return adopt_own(*new Ninepatch(placeholder_texture, 0, 0, surface.w, surface.w, 0, 0, surface.h, surface.h));
 }
 
 void Ninepatch::unload(AssetMetadata&)

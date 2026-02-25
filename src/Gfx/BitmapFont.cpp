@@ -142,7 +142,7 @@ ErrorOr<NonnullOwnPtr<BitmapFont>> BitmapFont::load_from_bmf_data(AssetMetadata&
     font->m_glyph_entries = (BitmapFontGlyphEntry*)(font->m_data.data());
 
     String textureName = String::from_null_terminated((char*)pages);
-    font->m_texture = asset_manager().add_asset(AssetType::Texture, textureName);
+    font->m_texture = asset_manager().add_asset(Texture::asset_type(), textureName);
     font->m_texture->ensure_is_loaded();
 
     auto& texture = dynamic_cast<Texture&>(*font->m_texture->loaded_asset);

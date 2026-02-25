@@ -14,24 +14,19 @@ namespace Assets {
 
 void BuiltinAssetLoader::register_types(AssetManager& assets)
 {
-    assets.directoryNameToType.put(assets.assetStrings.intern("locale"_s), AssetType::Texts);
-    assets.asset_loaders_by_type[AssetType::Texts] = this;
-    Texts::set_asset_type(AssetType::Texts);
+    Texts::set_asset_type(assets.register_asset_type("Texts"_s, *this, { .directory = "locale"_sv }));
 }
 
 void BuiltinAssetLoader::create_placeholder_assets(AssetManager& assets)
 {
-    assets.set_placeholder_asset(AssetType::Texts, adopt_own(*new Texts));
+    assets.set_placeholder_asset(Texts::asset_type(), adopt_own(*new Texts));
 }
 
 Optional<String> BuiltinAssetLoader::make_asset_path(AssetManager const& assets, AssetType type, StringView short_name)
 {
-    switch (type) {
-    case AssetType::Texts:
+    if (type == Texts::asset_type())
         return myprintf("{0}/locale/{1}"_s, { assets.assetsPath, short_name }, true);
-    default:
-        return {};
-    }
+    return {};
 }
 
 ErrorOr<NonnullOwnPtr<Asset>> BuiltinAssetLoader::load_asset(AssetMetadata& metadata, Blob file_data)
@@ -42,7 +37,7 @@ ErrorOr<NonnullOwnPtr<Asset>> BuiltinAssetLoader::load_asset(AssetMetadata& meta
         return { error_or_asset_subclass.release_value() };
     };
 
-    if (metadata.type == AssetType::Texts) {
+    if (metadata.type == Texts::asset_type()) {
         // Only load assets that match our locale
         // FIXME: Move locale checks into AssetManager
         if (metadata.locale == get_locale()) {

@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include <Assets/AssetType.h>
 #include <Assets/Forward.h>
 #include <Util/String.h>
 

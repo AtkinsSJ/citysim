@@ -7,7 +7,6 @@
 #include "Palette.h"
 #include <Assets/AssetManager.h>
 #include <Assets/AssetRef.h>
-#include <Assets/AssetType.h>
 #include <Assets/ContainerAsset.h>
 
 Palette::Palette(Blob data, Type type, Array<Colour> colours)
@@ -128,7 +127,7 @@ ErrorOr<NonnullOwnPtr<Asset>> Palette::load_defs(AssetMetadata& metadata, Blob f
                 colours_array[i] = lerp(palette.from_color.value(), palette.to_color.value(), i * ratio);
             }
 
-            auto& palette_metadata = *asset_manager().add_asset(AssetType::Palette, palette.name, {});
+            auto& palette_metadata = *asset_manager().add_asset(asset_type(), palette.name, {});
             palette_metadata.loaded_asset = adopt_own(*new Palette(move(data), palette.type, move(colours_array)));
             palette_metadata.state = AssetMetadata::State::Loaded;
             children.append(palette_metadata.get_ref());
@@ -140,7 +139,7 @@ ErrorOr<NonnullOwnPtr<Asset>> Palette::load_defs(AssetMetadata& metadata, Blob f
             for (auto i = 0u; i < colours_array.count; i++)
                 colours_array[i] = palette.fixed_colors.get(i);
 
-            auto& palette_metadata = *asset_manager().add_asset(AssetType::Palette, palette.name, {});
+            auto& palette_metadata = *asset_manager().add_asset(asset_type(), palette.name, {});
             palette_metadata.loaded_asset = adopt_own(*new Palette(move(data), palette.type, move(colours_array)));
             palette_metadata.state = AssetMetadata::State::Loaded;
             children.append(palette_metadata.get_ref());

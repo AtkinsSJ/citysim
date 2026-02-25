@@ -7,7 +7,6 @@
 #pragma once
 
 #include <Assets/AssetManager.h>
-#include <Assets/AssetType.h>
 #include <Assets/Forward.h>
 
 namespace Assets {
