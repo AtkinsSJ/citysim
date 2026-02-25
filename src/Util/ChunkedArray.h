@@ -98,18 +98,22 @@ struct ChunkedArray {
         return (*this)[index];
     }
 
-    T* append(T item)
+    T* append(T&& item)
     {
         T* result = appendUninitialised();
-        *result = move(item);
-        return result;
+        return new (result) T(move(item));
+    }
+
+    T* append(T const& item)
+    {
+        T* result = appendUninitialised();
+        return new (result) T(item);
     }
 
     T* appendBlank()
     {
         T* result = appendUninitialised();
-        *result = {};
-        return result;
+        return new (result) T();
     }
 
     void reserve(s32 desiredSize)
