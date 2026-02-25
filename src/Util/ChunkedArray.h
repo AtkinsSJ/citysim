@@ -61,35 +61,41 @@ struct ChunkedArray {
     ArrayChunk<T>* firstChunk;
     ArrayChunk<T>* lastChunk;
 
-    // Methods
     bool is_empty() const { return count == 0; }
-    T* get(s32 index)
+
+    T& operator[](size_t index)
     {
-        ASSERT(index >= 0 && index < count); // Index out of array bounds!
+        ASSERT(index < count); // Index out of array bounds!
 
-        T* result = nullptr;
+        auto chunk_index = index / itemsPerChunk;
+        auto item_index = index % itemsPerChunk;
 
-        s32 chunkIndex = index / itemsPerChunk;
-        s32 itemIndex = index % itemsPerChunk;
+        // Access first chunk directly
+        if (chunk_index == 0)
+            return firstChunk->items[item_index];
 
-        if (chunkIndex == 0) {
-            // Early out!
-            result = firstChunk->items + itemIndex;
-        } else if (chunkIndex == (chunkCount - 1)) {
-            // Early out!
-            result = lastChunk->items + itemIndex;
-        } else {
-            // Walk the chunk chain
-            ArrayChunk<T>* chunk = firstChunk;
-            while (chunkIndex > 0) {
-                chunkIndex--;
-                chunk = chunk->nextChunk;
-            }
+        // Access last chunk directly
+        if (chunk_index == (chunkCount - 1))
+            return lastChunk->items[item_index];
 
-            result = chunk->items + itemIndex;
+        // Walk the chunk chain
+        ArrayChunk<T>* chunk = firstChunk;
+        while (chunk_index > 0) {
+            chunk_index--;
+            chunk = chunk->nextChunk;
         }
 
-        return result;
+        return chunk->items[item_index];
+    }
+    T const& operator[](size_t index) const { return const_cast<ChunkedArray&>(*this)[index]; }
+
+    T& get(size_t index)
+    {
+        return (*this)[index];
+    }
+    T const& get(size_t index) const
+    {
+        return (*this)[index];
     }
 
     T* append(T item)
@@ -447,28 +453,28 @@ struct ChunkedArray {
         if (lowIndex < highIndex) {
             s32 partitionIndex = 0;
             {
-                T* pivot = get(highIndex);
+                T& pivot = get(highIndex);
                 s32 i = (lowIndex - 1);
                 for (s32 j = lowIndex; j < highIndex; j++) {
-                    T* itemJ = get(j);
+                    T& itemJ = get(j);
                     if (compareElements(itemJ, pivot)) {
                         i++;
-                        T* itemI = get(i);
+                        T& itemI = get(i);
                         T temp = {};
 
-                        temp = *itemI;
-                        *itemI = *itemJ;
-                        *itemJ = temp;
+                        temp = itemI;
+                        itemI = itemJ;
+                        itemJ = temp;
                     }
                 }
 
-                T* itemIPlus1 = get(i + 1);
-                T* itemHighIndex = get(highIndex);
+                T& itemIPlus1 = get(i + 1);
+                T& itemHighIndex = get(highIndex);
                 T temp = {};
 
-                temp = *itemIPlus1;
-                *itemIPlus1 = *itemHighIndex;
-                *itemHighIndex = temp;
+                temp = itemIPlus1;
+                itemIPlus1 = itemHighIndex;
+                itemHighIndex = temp;
 
                 partitionIndex = i + 1;
             }

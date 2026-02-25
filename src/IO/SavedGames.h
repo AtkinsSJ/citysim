@@ -64,7 +64,7 @@ void readSavedGamesInfo(SavedGamesCatalogue* catalogue);
 
 bool saveGame(String saveName);
 void loadGame(SavedGameInfo* savedGame);
-bool deleteSave(SavedGameInfo* savedGame);
+bool deleteSave(SavedGameInfo& savedGame);
 
 void showSaveGameWindow();
 void showLoadGameWindow();

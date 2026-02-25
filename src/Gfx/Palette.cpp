@@ -56,7 +56,7 @@ ErrorOr<NonnullOwnPtr<Asset>> Palette::load_defs(AssetMetadata& metadata, Blob f
             if (palettes.is_empty())
                 return reader.make_error_message("Unexpected command '{0}' before the start of a :Palette"_s, { command });
 
-            auto& palette = *palettes.get(palettes.count - 1);
+            auto& palette = palettes.get(palettes.count - 1);
 
             if (command == "type"_s) {
                 auto type = reader.next_token();
@@ -138,7 +138,7 @@ ErrorOr<NonnullOwnPtr<Asset>> Palette::load_defs(AssetMetadata& metadata, Blob f
             auto data = Assets::assets_allocate(palette.fixed_colors.count * sizeof(Colour));
             auto colours_array = makeArray<Colour>(palette.fixed_colors.count, reinterpret_cast<Colour*>(data.writable_data()), palette.fixed_colors.count);
             for (auto i = 0u; i < colours_array.count; i++)
-                colours_array[i] = *palette.fixed_colors.get(i);
+                colours_array[i] = palette.fixed_colors.get(i);
 
             auto& palette_metadata = *asset_manager().add_asset(AssetType::Palette, palette.name, {});
             palette_metadata.loaded_asset = adopt_own(*new Palette(move(data), palette.type, move(colours_array)));

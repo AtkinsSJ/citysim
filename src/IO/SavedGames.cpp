@@ -121,8 +121,8 @@ void readSavedGamesInfo(SavedGamesCatalogue* catalogue)
     }
 
     // Sort the saved games by most-recent first
-    catalogue->savedGames.sort([](SavedGameInfo* a, SavedGameInfo* b) {
-        return a->saveTime.unixTimestamp > b->saveTime.unixTimestamp;
+    catalogue->savedGames.sort([](SavedGameInfo& a, SavedGameInfo& b) {
+        return a.saveTime.unixTimestamp > b.saveTime.unixTimestamp;
     });
 }
 
@@ -305,13 +305,13 @@ void confirmDeleteSaveWindowProc(UI::WindowContext* context, void* /*userData*/)
 {
     UI::Panel* ui = &context->windowPanel;
 
-    SavedGameInfo* savedGame = savedGamesCatalogue.savedGames.get(savedGamesCatalogue.selectedSavedGameIndex);
+    auto& saved_game = savedGamesCatalogue.savedGames.get(savedGamesCatalogue.selectedSavedGameIndex);
 
-    ui->addLabel(getText("msg_delete_save_confirm"_s, { savedGame->shortName }));
+    ui->addLabel(getText("msg_delete_save_confirm"_s, { saved_game.shortName }));
     ui->startNewLine(HAlign::Right);
 
     if (ui->addTextButton(getText("button_delete"_s), ButtonState::Normal, "delete"_sv)) {
-        deleteSave(savedGame);
+        deleteSave(saved_game);
         context->closeRequested = true;
     }
 
@@ -379,14 +379,14 @@ bool saveGame(String saveName)
     return saveSucceeded;
 }
 
-bool deleteSave(SavedGameInfo* savedGame)
+bool deleteSave(SavedGameInfo& saved_game)
 {
-    bool success = deleteFile(savedGame->fullPath);
+    bool success = deleteFile(saved_game.fullPath);
 
     if (success) {
-        UI::Toast::show(getText("msg_delete_save_success"_s, { savedGame->shortName }));
+        UI::Toast::show(getText("msg_delete_save_success"_s, { saved_game.shortName }));
     } else {
-        UI::Toast::show(getText("msg_delete_save_failure"_s, { savedGame->shortName }));
+        UI::Toast::show(getText("msg_delete_save_failure"_s, { saved_game.shortName }));
     }
 
     return success;
