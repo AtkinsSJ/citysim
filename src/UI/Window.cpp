@@ -421,7 +421,7 @@ void updateAndRenderWindows()
     if (tooltipIndex != -1) {
         // We moved the tooltip to index 0 when we did the activate-windows loop!
         tooltipIndex = 0;
-        ASSERT((uiState.openWindows.get(tooltipIndex)->flags & WindowFlags::Tooltip) != 0);
+        ASSERT((uiState.openWindows.get(tooltipIndex).flags & WindowFlags::Tooltip) != 0);
         closeWindow(tooltipIndex);
     }
 }
@@ -438,15 +438,15 @@ void closeWindow(s32 windowIndex)
 {
     uiState.windowsToMakeActive.remove(windowIndex);
 
-    Window* window = uiState.openWindows.get(windowIndex);
+    auto& window = uiState.openWindows.get(windowIndex);
 
-    if (window->onClose != nullptr) {
-        window->onClose(nullptr, window->userData);
+    if (window.onClose != nullptr) {
+        window.onClose(nullptr, window.userData);
     }
 
-    if (window->renderBuffer != nullptr) {
-        the_renderer().return_temporary_render_buffer(*window->renderBuffer);
-        window->renderBuffer = nullptr;
+    if (window.renderBuffer != nullptr) {
+        the_renderer().return_temporary_render_buffer(*window.renderBuffer);
+        window.renderBuffer = nullptr;
     }
 
     uiState.openWindows.removeIndex(windowIndex, true);

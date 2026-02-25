@@ -490,9 +490,10 @@ void Renderer::before_assets_unloaded()
     // Shaders
     m_current_shader = -1;
     for (s8 shaderID = 0; shaderID < m_shaders.count; shaderID++) {
-        ShaderProgram* shader = m_shaders.get(shaderID);
-        glDeleteProgram(shader->shaderProgramID);
-        *shader = {};
+        auto& shader = m_shaders.get(shaderID);
+        glDeleteProgram(shader.shaderProgramID);
+        // FIXME: Destructor
+        shader = {};
     }
     m_shaders.clear();
 }
@@ -680,38 +681,38 @@ ShaderProgram* Renderer::use_shader(s8 shaderID)
 
     // Early-out if nothing is changing!
     if (shaderID == m_current_shader) {
-        return m_shaders.get(m_current_shader);
+        return &m_shaders.get(m_current_shader);
     }
 
     if (m_current_shader >= 0 && m_current_shader < m_shaders.count) {
         // Clean up the old shader's stuff
-        ShaderProgram* oldShader = m_shaders.get(m_current_shader);
-        glDisableVertexAttribArray(oldShader->aPositionLoc);
-        glDisableVertexAttribArray(oldShader->aColorLoc);
-        if (oldShader->aUVLoc != -1) {
-            glDisableVertexAttribArray(oldShader->aUVLoc);
+        auto& old_shader = m_shaders.get(m_current_shader);
+        glDisableVertexAttribArray(old_shader.aPositionLoc);
+        glDisableVertexAttribArray(old_shader.aColorLoc);
+        if (old_shader.aUVLoc != -1) {
+            glDisableVertexAttribArray(old_shader.aUVLoc);
         }
     }
 
     m_current_shader = shaderID;
-    ShaderProgram* activeShader = m_shaders.get(m_current_shader);
+    auto& active_shadow = m_shaders.get(m_current_shader);
 
-    ASSERT(activeShader->isValid); // Attempting to use a shader that isn't loaded!
-    glUseProgram(activeShader->shaderProgramID);
+    ASSERT(active_shadow.isValid); // Attempting to use a shader that isn't loaded!
+    glUseProgram(active_shadow.shaderProgramID);
 
     // Initialise the new shader's stuff
-    glEnableVertexAttribArray(activeShader->aPositionLoc);
-    glVertexAttribPointer(activeShader->aPositionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, pos));
+    glEnableVertexAttribArray(active_shadow.aPositionLoc);
+    glVertexAttribPointer(active_shadow.aPositionLoc, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, pos));
 
-    glEnableVertexAttribArray(activeShader->aColorLoc);
-    glVertexAttribPointer(activeShader->aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, color));
+    glEnableVertexAttribArray(active_shadow.aColorLoc);
+    glVertexAttribPointer(active_shadow.aColorLoc, 4, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, color));
 
-    if (activeShader->aUVLoc != -1) {
-        glEnableVertexAttribArray(activeShader->aUVLoc);
-        glVertexAttribPointer(activeShader->aUVLoc, 2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, uv));
+    if (active_shadow.aUVLoc != -1) {
+        glEnableVertexAttribArray(active_shadow.aUVLoc);
+        glVertexAttribPointer(active_shadow.aUVLoc, 2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (GLvoid*)offsetof(VertexData, uv));
     }
 
-    return activeShader;
+    return &active_shadow;
 }
 
 void Renderer::upload_texture_2d(GLenum pixelFormat, s32 width, s32 height, void* pixelData)
@@ -891,7 +892,7 @@ void Renderer::flush_vertices()
         glDrawElements(GL_TRIANGLES, m_index_count, GL_UNSIGNED_INT, nullptr);
     }
 
-    DEBUG_DRAW_CALL(m_shaders.get(m_current_shader)->asset->shortName, (m_current_texture == nullptr) ? String {} : m_current_texture->shortName, (m_vertex_count >> 2));
+    DEBUG_DRAW_CALL(m_shaders.get(m_current_shader).asset->shortName, (m_current_texture == nullptr) ? String {} : m_current_texture->shortName, (m_vertex_count >> 2));
 
     m_vertex_count = 0;
     m_index_count = 0;

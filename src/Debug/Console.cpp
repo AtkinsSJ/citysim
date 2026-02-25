@@ -173,7 +173,7 @@ void updateAndRenderConsole(Console* console)
                     }
 
                     console->input.clear();
-                    String oldInput = *console->inputHistory.get(console->inputHistoryCursor);
+                    String const& oldInput = console->inputHistory.get(console->inputHistoryCursor);
                     console->input.append(oldInput);
                 }
             }
@@ -187,7 +187,7 @@ void updateAndRenderConsole(Console* console)
                     }
 
                     console->input.clear();
-                    String oldInput = *console->inputHistory.get(console->inputHistoryCursor);
+                    String const& oldInput = console->inputHistory.get(console->inputHistoryCursor);
                     console->input.append(oldInput);
                 }
             }

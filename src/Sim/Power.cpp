@@ -67,7 +67,7 @@ PowerGroup* getPowerGroupAt(PowerSector* sector, s32 relX, s32 relY)
     if (sector != nullptr) {
         s32 powerGroupID = getPowerGroupID(sector, relX, relY);
         if (powerGroupID != 0 && powerGroupID != POWER_GROUP_UNKNOWN) {
-            result = sector->powerGroups.get(powerGroupID - 1);
+            result = &sector->powerGroups.get(powerGroupID - 1);
         }
     }
 
@@ -125,11 +125,11 @@ void updateSectorPowerValues(City* city, PowerSector* sector)
 
         if (def->power != 0) {
             u8 powerGroupIndex = getPowerGroupID(sector, building->footprint.x() - sector->bounds.x(), building->footprint.y() - sector->bounds.y());
-            PowerGroup* powerGroup = sector->powerGroups.get(powerGroupIndex - 1);
+            auto& power_group = sector->powerGroups.get(powerGroupIndex - 1);
             if (def->power > 0) {
-                powerGroup->production += def->power;
+                power_group.production += def->power;
             } else {
-                powerGroup->consumption -= def->power;
+                power_group.consumption -= def->power;
             }
         }
     }
@@ -166,8 +166,8 @@ PowerNetwork* getPowerNetworkAt(City* city, s32 x, s32 y)
 
         u8 powerGroupIndex = getPowerGroupID(sector, relX, relY);
         if (powerGroupIndex != 0) {
-            PowerGroup* group = sector->powerGroups.get(powerGroupIndex - 1);
-            result = layer->networks.get(group->networkID - 1);
+            auto& group = sector->powerGroups.get(powerGroupIndex - 1);
+            result = &layer->networks.get(group.networkID - 1);
         }
     }
 
@@ -354,7 +354,7 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
                 currentPGId = tilePGId;
 
                 // Start a new boundary
-                currentBoundary = sector->powerGroups.get(currentPGId - 1)->sectorBoundaries.appendBlank();
+                currentBoundary = sector->powerGroups.get(currentPGId - 1).sectorBoundaries.appendBlank();
                 currentBoundary->set_x(sector->bounds.x() - 1);
                 currentBoundary->set_y(sector->bounds.y() + relY);
                 currentBoundary->set_width(1);
@@ -383,7 +383,7 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
                 currentPGId = tilePGId;
 
                 // Start a new boundary
-                currentBoundary = sector->powerGroups.get(currentPGId - 1)->sectorBoundaries.appendBlank();
+                currentBoundary = sector->powerGroups.get(currentPGId - 1).sectorBoundaries.appendBlank();
                 currentBoundary->set_x(sector->bounds.x() + sector->bounds.width());
                 currentBoundary->set_y(sector->bounds.y() + relY);
                 currentBoundary->set_width(1);
@@ -412,7 +412,7 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
                 currentPGId = tilePGId;
 
                 // Start a new boundary
-                currentBoundary = sector->powerGroups.get(currentPGId - 1)->sectorBoundaries.appendBlank();
+                currentBoundary = sector->powerGroups.get(currentPGId - 1).sectorBoundaries.appendBlank();
                 currentBoundary->set_x(sector->bounds.x() + relX);
                 currentBoundary->set_y(sector->bounds.y() - 1);
                 currentBoundary->set_width(1);
@@ -441,7 +441,7 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
                 currentPGId = tilePGId;
 
                 // Start a new boundary
-                currentBoundary = sector->powerGroups.get(currentPGId - 1)->sectorBoundaries.appendBlank();
+                currentBoundary = sector->powerGroups.get(currentPGId - 1).sectorBoundaries.appendBlank();
                 currentBoundary->set_x(sector->bounds.x() + relX);
                 currentBoundary->set_y(sector->bounds.y() + sector->bounds.height());
                 currentBoundary->set_width(1);
@@ -490,9 +490,9 @@ void floodFillCityPowerNetwork(PowerLayer* layer, PowerGroup* powerGroup, PowerN
                 s32 powerGroupIndex = getPowerGroupID(sector, relX, relY);
                 if (powerGroupIndex != 0 && powerGroupIndex != lastPowerGroupIndex) {
                     lastPowerGroupIndex = powerGroupIndex;
-                    PowerGroup* group = sector->powerGroups.get(powerGroupIndex - 1);
-                    if (group->networkID != network->id) {
-                        floodFillCityPowerNetwork(layer, group, network);
+                    auto& group = sector->powerGroups.get(powerGroupIndex - 1);
+                    if (group.networkID != network->id) {
+                        floodFillCityPowerNetwork(layer, &group, network);
                     }
                 }
             }

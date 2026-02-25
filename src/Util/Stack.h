@@ -49,7 +49,7 @@ T* peek(Stack<T>* stack)
     T* result = nullptr;
 
     if (!is_empty(stack)) {
-        result = stack->_array.get(stack->_array.count - 1);
+        result = &stack->_array.get(stack->_array.count - 1);
     }
 
     return result;
@@ -59,7 +59,7 @@ template<typename T>
 Optional<T> pop(Stack<T>* stack)
 {
     if (!is_empty(stack)) {
-        Optional<T> result { *stack->_array.get(stack->_array.count - 1) };
+        Optional<T> result { stack->_array.get(stack->_array.count - 1) };
         stack->_array.removeIndex(stack->_array.count - 1);
         return result;
     }

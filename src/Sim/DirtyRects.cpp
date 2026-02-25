@@ -76,7 +76,7 @@ Rect2I getOverallRect(DirtyRects* dirtyRects)
     Rect2I result { 0, 0, 0, 0 };
 
     if (dirtyRects->rects.count > 0) {
-        result = *dirtyRects->rects.get(0);
+        result = dirtyRects->rects.get(0);
 
         for (auto it = dirtyRects->rects.iterate(1, false);
             it.hasNext();
