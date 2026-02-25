@@ -10,7 +10,8 @@
 
 namespace Assets {
 
-enum class AssetType : u8;
+using AssetType = u32;
+
 class Asset;
 class AssetMetadata;
 struct AssetManager;

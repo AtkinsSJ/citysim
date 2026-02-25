@@ -14,29 +14,29 @@ namespace UI {
 
 void AssetLoader::register_types(AssetManager& assets)
 {
-    assets.fileExtensionToType.put(assets.assetStrings.intern("theme"_s), AssetType::UITheme);
-    assets.asset_loaders_by_type[AssetType::UITheme] = this;
-    ButtonStyle::set_asset_type(AssetType::ButtonStyle);
-    CheckboxStyle::set_asset_type(AssetType::CheckboxStyle);
-    ConsoleStyle::set_asset_type(AssetType::ConsoleStyle);
-    DropDownListStyle::set_asset_type(AssetType::DropDownListStyle);
-    LabelStyle::set_asset_type(AssetType::LabelStyle);
-    PanelStyle::set_asset_type(AssetType::PanelStyle);
-    RadioButtonStyle::set_asset_type(AssetType::RadioButtonStyle);
-    ScrollbarStyle::set_asset_type(AssetType::ScrollbarStyle);
-    SliderStyle::set_asset_type(AssetType::SliderStyle);
-    TextInputStyle::set_asset_type(AssetType::TextInputStyle);
-    WindowStyle::set_asset_type(AssetType::WindowStyle);
+    m_theme_asset_type = assets.register_asset_type("UITheme"_s, *this, { .file_extension = "theme"_sv });
+
+    ButtonStyle::set_asset_type(assets.register_asset_type("ButtonStyle"_s, *this));
+    CheckboxStyle::set_asset_type(assets.register_asset_type("CheckboxStyle"_s, *this));
+    ConsoleStyle::set_asset_type(assets.register_asset_type("ConsoleStyle"_s, *this));
+    DropDownListStyle::set_asset_type(assets.register_asset_type("DropDownListStyle"_s, *this));
+    LabelStyle::set_asset_type(assets.register_asset_type("LabelStyle"_s, *this));
+    PanelStyle::set_asset_type(assets.register_asset_type("PanelStyle"_s, *this));
+    RadioButtonStyle::set_asset_type(assets.register_asset_type("RadioButtonStyle"_s, *this));
+    ScrollbarStyle::set_asset_type(assets.register_asset_type("ScrollbarStyle"_s, *this));
+    SliderStyle::set_asset_type(assets.register_asset_type("SliderStyle"_s, *this));
+    TextInputStyle::set_asset_type(assets.register_asset_type("TextInputStyle"_s, *this));
+    WindowStyle::set_asset_type(assets.register_asset_type("WindowStyle"_s, *this));
 }
 
 void AssetLoader::create_placeholder_assets(AssetManager& assets)
 {
-    assets.set_placeholder_asset(AssetType::UITheme, adopt_own(*new ContainerAsset));
+    assets.set_placeholder_asset(m_theme_asset_type, adopt_own(*new ContainerAsset));
 }
 
 ErrorOr<NonnullOwnPtr<Asset>> AssetLoader::load_asset(AssetMetadata& metadata, Blob file_data)
 {
-    if (metadata.type == AssetType::UITheme)
+    if (metadata.type == m_theme_asset_type)
         return load_theme(metadata, file_data);
 
     VERIFY_NOT_REACHED();

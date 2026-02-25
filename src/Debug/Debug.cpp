@@ -437,9 +437,9 @@ void debugTrackAssets(DebugState* debugState)
     assetData->arenaTotalSize[frameIndex] = statistics.total_size;
     assetData->arenaUsedSize[frameIndex] = statistics.used_size;
 
-    // assetsByType HashTables
-    for (auto asset_type : enum_values<AssetType>()) {
-        auto const& assetsByNameForType = asset_manager().assetsByType[asset_type];
+    // FIXME: Figure out exactly what we should be measuring
+    for (auto it = asset_manager().asset_type_data.iterate(); it.hasNext(); it.next()) {
+        auto& assetsByNameForType = it.get().assets_with_this_type;
         assetData->assetsByNameSize[frameIndex] += assetsByNameForType.capacity * sizeof(assetsByNameForType.entries[0]);
     }
 

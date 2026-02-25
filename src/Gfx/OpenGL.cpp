@@ -432,33 +432,24 @@ void Renderer::after_assets_loaded()
     ::Renderer::after_assets_loaded();
 
     // Textures
-    for (auto it = asset_manager().assetsByType[AssetType::Texture].iterate();
-        it.hasNext();
-        it.next()) {
-        AssetMetadata* asset = *it.get();
-        auto& texture = dynamic_cast<Texture&>(*asset->loaded_asset);
+    asset_manager().for_each_asset_of_type<Texture>([](auto&, Texture& texture) {
         glGenTextures(1, &texture.gl.glTextureID);
         texture.gl.isLoaded = false;
-    }
+    });
 
     // Shaders
     m_shaders.clear(); // Just in case
-    ASSERT(asset_manager().assetsByType[AssetType::Shader].count <= s8Max);
-    for (auto it = asset_manager().assetsByType[AssetType::Shader].iterate();
-        it.hasNext();
-        it.next()) {
-        AssetMetadata* asset = *it.get();
-
+    asset_manager().for_each_asset_of_type<Shader>([this](auto& metadata, Shader& shader) {
         s8 shaderIndex = (s8)m_shaders.count;
-        ShaderProgram* shader = m_shaders.appendBlank();
-        shader->asset = asset;
-        dynamic_cast<Shader&>(*asset->loaded_asset).rendererShaderID = shaderIndex;
+        ShaderProgram* shader_program = m_shaders.appendBlank();
+        shader_program->asset = &metadata;
+        shader.rendererShaderID = shaderIndex;
 
-        loadShaderProgram(asset, shader);
-        if (!shader->isValid) {
-            logError("Failed to load shader '{0}' into OpenGL."_s, { asset->shortName });
+        loadShaderProgram(&metadata, shader_program);
+        if (!shader_program->isValid) {
+            logError("Failed to load shader '{0}' into OpenGL."_s, { metadata.shortName });
         }
-    }
+    });
 
     // Cache the shader IDs so we don't have to do so many hash lookups
     shaderIds.pixelArt = Shader::get("pixelart.glsl"_s).rendererShaderID;
@@ -474,18 +465,13 @@ void Renderer::before_assets_unloaded()
     ::Renderer::before_assets_unloaded();
 
     // Textures
-    for (auto it = asset_manager().assetsByType[AssetType::Texture].iterate();
-        it.hasNext();
-        it.next()) {
-        AssetMetadata* asset = *it.get();
-        Texture& texture = dynamic_cast<Texture&>(*asset->loaded_asset);
-
+    asset_manager().for_each_asset_of_type<Texture>([](auto&, Texture& texture) {
         if (texture.gl.isLoaded && texture.gl.glTextureID != 0) {
             glDeleteTextures(1, &texture.gl.glTextureID);
             texture.gl.glTextureID = 0;
             texture.gl.isLoaded = false;
         }
-    }
+    });
 
     // Shaders
     m_current_shader = -1;

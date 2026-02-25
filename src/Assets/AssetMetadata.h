@@ -7,7 +7,6 @@
 #pragma once
 
 #include <Assets/AssetRef.h>
-#include <Assets/AssetType.h>
 #include <Assets/Forward.h>
 #include <Util/Flags.h>
 #include <Util/Locale.h>

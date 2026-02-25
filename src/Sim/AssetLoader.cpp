@@ -14,19 +14,14 @@ namespace Sim {
 
 void AssetLoader::register_types(AssetManager& assets)
 {
-    assets.fileExtensionToType.put(assets.assetStrings.intern("buildings"_s), AssetType::BuildingDefs);
-    assets.asset_loaders_by_type[AssetType::BuildingDefs] = this;
-    BuildingDefs::set_asset_type(AssetType::BuildingDefs);
-
-    assets.fileExtensionToType.put(assets.assetStrings.intern("terrain"_s), AssetType::TerrainDefs);
-    assets.asset_loaders_by_type[AssetType::TerrainDefs] = this;
-    TerrainDefs::set_asset_type(AssetType::TerrainDefs);
+    BuildingDefs::set_asset_type(assets.register_asset_type("BuildingDefs"_s, *this, { .file_extension = "buildings"_sv }));
+    TerrainDefs::set_asset_type(assets.register_asset_type("TerrainDefs"_s, *this, { .file_extension = "terrain"_sv }));
 }
 
 void AssetLoader::create_placeholder_assets(AssetManager& assets)
 {
-    assets.set_placeholder_asset(AssetType::BuildingDefs, adopt_own(*new BuildingDefs));
-    assets.set_placeholder_asset(AssetType::TerrainDefs, adopt_own(*new TerrainDefs));
+    assets.set_placeholder_asset(BuildingDefs::asset_type(), adopt_own(*new BuildingDefs));
+    assets.set_placeholder_asset(TerrainDefs::asset_type(), adopt_own(*new TerrainDefs));
 }
 
 ErrorOr<NonnullOwnPtr<Asset>> AssetLoader::load_asset(AssetMetadata& metadata, Blob file_data)
@@ -37,10 +32,10 @@ ErrorOr<NonnullOwnPtr<Asset>> AssetLoader::load_asset(AssetMetadata& metadata, B
         return { error_or_asset_subclass.release_value() };
     };
 
-    if (metadata.type == AssetType::BuildingDefs)
+    if (metadata.type == BuildingDefs::asset_type())
         return to_error_or_asset(BuildingDefs::load(metadata, file_data));
 
-    if (metadata.type == AssetType::TerrainDefs)
+    if (metadata.type == TerrainDefs::asset_type())
         return to_error_or_asset(TerrainDefs::load(metadata, file_data));
 
     VERIFY_NOT_REACHED();

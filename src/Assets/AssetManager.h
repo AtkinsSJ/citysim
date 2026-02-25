@@ -10,13 +10,11 @@
 #include <Assets/AssetMetadata.h>
 #include <Assets/AssetRef.h>
 #include <Assets/BuiltinAssetLoader.h>
-#include <Gfx/Forward.h>
 #include <IO/DirectoryWatcher.h>
 #include <IO/File.h>
 #include <Settings/SettingsChangeListener.h>
-#include <UI/Forward.h>
 #include <Util/ChunkedArray.h>
-#include <Util/EnumMap.h>
+#include <Util/Function.h>
 #include <Util/Set.h>
 #include <Util/StringTable.h>
 
@@ -32,7 +30,6 @@ struct AssetManager final : public SettingsChangeListener {
     u32 asset_generation() const { return m_asset_generation; }
     bool have_asset_files_changed() const;
 
-    // TODO: Also include size of the UITheme, somehow.
     smm assetMemoryAllocated;
     smm maxAssetMemoryAllocated;
 
@@ -41,15 +38,24 @@ struct AssetManager final : public SettingsChangeListener {
     HashTable<AssetType> directoryNameToType;
 
     ChunkedArray<AssetMetadata> allAssets;
-    EnumMap<AssetType, HashTable<AssetMetadata*>> assetsByType;
 
-    // If a requested asset is not found, the one here is used instead.
-    // Probably most of these will be empty, but we do need a placeholder sprite at least,
-    // so I figure it's better to put this in place for all types while I'm at it.
-    // - Sam, 27/03/2020
-    EnumMap<AssetType, AssetMetadata> placeholderAssets;
-    // The missing assets are logged here!
-    EnumMap<AssetType, Set<String>> missingAssetNames;
+    struct AssetTypeData {
+        String name;
+
+        AssetLoader& loader;
+
+        HashTable<AssetMetadata*> assets_with_this_type;
+
+        // If a requested asset is not found, the one here is used instead.
+        // Probably most of these will be empty, but we do need a placeholder sprite at least,
+        // so I figure it's better to put this in place for all types while I'm at it.
+        // - Sam, 27/03/2020
+        Optional<AssetMetadata> placeholder_asset;
+
+        // The missing assets are logged here!
+        Set<String> missing_asset_names;
+    };
+    ChunkedArray<AssetTypeData> asset_type_data;
 
     // TODO: this probably belongs somewhere else? IDK.
     // It feels icky having parts of assets directly in this struct, but when there's only 1, and you
@@ -77,11 +83,26 @@ struct AssetManager final : public SettingsChangeListener {
     void reload();
 
     ChunkedArray<NonnullOwnPtr<AssetLoader>> asset_loaders;
-    EnumMap<AssetType, AssetLoader*> asset_loaders_by_type;
     void register_asset_loader(NonnullOwnPtr<AssetLoader>&&);
     AssetLoader& get_asset_loader_for_type(AssetType) const;
 
+    struct AssetConfig {
+        Optional<StringView> directory;
+        Optional<StringView> file_extension;
+    };
+    AssetType register_asset_type(String name, AssetLoader&, AssetConfig = {});
     void set_placeholder_asset(AssetType, NonnullOwnPtr<Asset>);
+    AssetMetadata& get_placeholder_asset(AssetType);
+
+    template<typename T>
+    void for_each_asset_of_type(Function<void(AssetMetadata&, T&)> callback)
+    {
+        auto& assets_of_type = asset_type_data[T::asset_type()].assets_with_this_type;
+        for (auto it = assets_of_type.iterate(); it.hasNext(); it.next()) {
+            AssetMetadata* asset = *it.get();
+            callback(*asset, dynamic_cast<T&>(*asset->loaded_asset));
+        }
+    }
 
 private:
     // ^SettingsChangeListener
@@ -90,6 +111,7 @@ private:
     void scan_assets_from_directory(String subdirectory, Optional<AssetType> manual_asset_type = {});
 
     u32 m_asset_generation { 0 };
+    AssetType m_next_asset_type { 0 };
 };
 
 void initAssets();

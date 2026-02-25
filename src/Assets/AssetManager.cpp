@@ -34,17 +34,13 @@ void initAssets()
     // NB: The arena block size is 1MB currently, so make sure that this number * sizeof(Asset) is less than that!
     // (Otherwise, we waste a LOT of memory with almost-empty memory blocks.)
     initChunkedArray(&s_assets->allAssets, &s_assets->arena, 1024);
+    initChunkedArray(&s_assets->asset_type_data, &s_assets->arena, 128);
     s_assets->assetMemoryAllocated = 0;
     s_assets->maxAssetMemoryAllocated = 0;
 
-    auto compareStrings = [](String* a, String* b) { return *a == *b; };
-
-    for (auto asset_type : enum_values<AssetType>()) {
-        initSet<String>(&s_assets->missingAssetNames[asset_type], &s_assets->arena, compareStrings);
-    }
-
     UI::initStyleConstants();
 
+    auto compareStrings = [](String* a, String* b) { return *a == *b; };
     initSet<String>(&s_assets->missingTextIDs, &s_assets->arena, compareStrings);
 
     initChunkedArray(&s_assets->listeners, &s_assets->arena, 32);
@@ -115,7 +111,7 @@ AssetMetadata* AssetManager::add_asset(AssetType type, StringView short_name, Fl
     asset->state = AssetMetadata::State::Unloaded;
     asset->flags = flags;
 
-    assetsByType[type].put(internedShortName, asset);
+    asset_type_data[type].assets_with_this_type.put(internedShortName, asset);
 
     return asset;
 }
@@ -174,7 +170,7 @@ void removeAsset(AssetType type, String name)
         logError("Attempted to remove an asset (name `{0}`, type {1}) which doesn't exist!"_s, { name, formatInt(type) });
     } else {
         unloadAsset(asset);
-        s_assets->assetsByType[type].removeKey(name);
+        s_assets->asset_type_data[type].assets_with_this_type.removeKey(name);
     }
 }
 
@@ -280,11 +276,10 @@ void AssetManager::reload()
     }
 
     // Clear the hash tables
-    for (auto asset_type : enum_values<AssetType>()) {
-        assetsByType[asset_type].clear();
-
-        // Reset missing text warnings
-        missingAssetNames[asset_type].clear();
+    for (auto it = asset_type_data.iterate(); it.hasNext(); it.next()) {
+        auto& type_data = it.get();
+        type_data.assets_with_this_type.clear();
+        type_data.missing_asset_names.clear();
     }
 
     missingTextIDs.clear();
@@ -303,16 +298,16 @@ AssetMetadata& getAsset(AssetType type, String shortName)
     if (asset && asset->state == AssetMetadata::State::Loaded)
         return *asset;
 
-    if (s_assets->missingAssetNames[type].add(shortName)) {
-        logWarn("Requested {0} asset '{1}' was missing or unusable! Using placeholder."_s, { asset_type_names[type], shortName });
+    if (s_assets->asset_type_data[type].missing_asset_names.add(shortName)) {
+        logWarn("Requested {0} asset '{1}' was missing or unusable! Using placeholder."_s, { s_assets->asset_type_data[type].name, shortName });
     }
 
-    return s_assets->placeholderAssets[type];
+    return s_assets->asset_type_data[type].placeholder_asset.value();
 }
 
 AssetMetadata* getAssetIfExists(AssetType type, String shortName)
 {
-    auto asset = s_assets->assetsByType[type].find_value(shortName);
+    auto asset = s_assets->asset_type_data[type].assets_with_this_type.find_value(shortName);
     return asset.value_or(nullptr);
 }
 
@@ -374,7 +369,7 @@ String getText(String name, std::initializer_list<StringView> args)
 
 String AssetManager::make_asset_path(AssetType type, StringView short_name) const
 {
-    auto& loader = *asset_loaders_by_type[type];
+    auto& loader = get_asset_loader_for_type(type);
     if (auto path = loader.make_asset_path(*this, type, short_name); path.has_value())
         return path.release_value();
     return myprintf("{0}/{1}"_s, { s_assets->assetsPath, short_name }, true);
@@ -391,21 +386,49 @@ void AssetManager::register_asset_loader(NonnullOwnPtr<AssetLoader>&& asset_load
 
 AssetLoader& AssetManager::get_asset_loader_for_type(AssetType type) const
 {
-    auto* result = asset_loaders_by_type[type];
-    ASSERT(result);
-    return *result;
+    return asset_type_data[type].loader;
+}
+
+AssetType AssetManager::register_asset_type(String name, AssetLoader& loader, AssetConfig config)
+{
+    AssetType type = m_next_asset_type++;
+
+    ASSERT(asset_type_data.count == type);
+    AssetTypeData data {
+        .name = name,
+        .loader = loader,
+        .assets_with_this_type = {},
+        .placeholder_asset = {},
+        .missing_asset_names = {},
+    };
+    auto compareStrings = [](String* a, String* b) { return *a == *b; };
+    initSet<String>(&data.missing_asset_names, &arena, compareStrings);
+    asset_type_data.append(move(data));
+
+    if (config.directory.has_value())
+        directoryNameToType.put(assetStrings.intern(config.directory.value()), type);
+
+    if (config.file_extension.has_value())
+        fileExtensionToType.put(assetStrings.intern(config.file_extension.value()), type);
+
+    return type;
 }
 
 void AssetManager::set_placeholder_asset(AssetType type, NonnullOwnPtr<Asset> asset)
 {
-    AssetMetadata& metadata = placeholderAssets[type];
-    metadata.type = type;
-    metadata.shortName = {};
-    metadata.fullName = {};
-    metadata.flags = {};
-    metadata.state = AssetMetadata::State::Loaded;
+    asset_type_data[type].placeholder_asset = AssetMetadata {
+        .type = type,
+        .shortName = {},
+        .fullName = {},
+        .flags = {},
+        .state = AssetMetadata::State::Loaded,
+        .loaded_asset = move(asset),
+    };
+}
 
-    metadata.loaded_asset = move(asset);
+AssetMetadata& AssetManager::get_placeholder_asset(AssetType type)
+{
+    return asset_type_data[type].placeholder_asset.value();
 }
 
 void AssetManager::on_settings_changed()
