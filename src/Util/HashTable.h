@@ -72,7 +72,7 @@ public:
     }
 
     HashTable(HashTable const& other)
-        : HashTable(other.m_capacity, other.m_max_load_factor)
+        : HashTable(other.capacity(), other.m_max_load_factor)
     {
         put_all(other);
     }
@@ -89,31 +89,27 @@ public:
     }
 
     HashTable(HashTable&& other)
-        : m_count(other.m_count)
-        , m_capacity(other.m_capacity)
+        : m_entries(move(other.m_entries))
+        , m_count(other.m_count)
         , m_max_load_factor(other.m_max_load_factor)
         , m_has_fixed_memory(other.m_has_fixed_memory)
-        , m_entries(move(other.m_entries))
         , m_key_data_arena(move(other.m_key_data_arena))
     {
+        other.m_entries = {};
         other.m_count = 0;
-        other.m_entries = nullptr;
         other.m_has_fixed_memory = false;
-        other.m_entries = nullptr;
     }
 
     HashTable& operator=(HashTable&& other)
     {
         m_count = other.m_count;
-        m_capacity = other.m_capacity;
         m_max_load_factor = other.m_max_load_factor;
         m_has_fixed_memory = other.m_has_fixed_memory;
         m_entries = move(other.m_entries);
         m_key_data_arena = move(other.m_key_data_arena);
 
         other.m_count = 0;
-        other.m_capacity = 0;
-        other.m_entries = nullptr;
+        other.m_entries = {};
         other.m_has_fixed_memory = false;
 
         return *this;
@@ -126,48 +122,52 @@ public:
 
         return HashTable {
             { "FixedSizeHashTable"_s, KB(4), KB(4) },
-            entries,
-            static_cast<size_t>(ceil(static_cast<float>(capacity) / max_load_factor)),
+            Span { slot_count, entries },
             max_load_factor
         };
     }
 
     ~HashTable()
     {
-        if (!m_has_fixed_memory && m_entries != nullptr) {
-            deallocateRaw(m_entries);
-        }
+        // FIXME: We *should* clear() here, but right now that fails if this HashTable was allocated from a MemoryArena,
+        //        because the arena may have already deallocated that memory.
+        if (!m_has_fixed_memory && !m_entries.is_empty())
+            deallocateRaw(m_entries.raw_data());
     }
 
     size_t count() const { return m_count; }
-    size_t capacity() const { return m_capacity; }
+    size_t capacity() const { return m_entries.size(); }
 
     bool contains(String key) const
     {
         if (m_entries == nullptr)
             return false;
 
-        HashTableEntry<T>* entry = find_entry(key);
-        return entry->isOccupied;
+        return find_entry(key)->isOccupied;
     }
 
-    Optional<T*> find(String key) const
+    Optional<T*> find(String key)
     {
-        if (!m_entries)
+        if (m_entries.is_empty())
             return {};
 
-        if (HashTableEntry<T>* entry = find_entry(key); entry->isOccupied)
+        if (auto* entry = find_entry(key); entry->isOccupied)
             return &entry->value;
 
         return {};
     }
 
+    Optional<T const*> find(String key) const
+    {
+        return const_cast<HashTable*>(this)->find(key);
+    }
+
     Optional<T> find_value(String key) const
     {
-        if (!m_entries)
+        if (m_entries.is_empty())
             return {};
 
-        if (HashTableEntry<T>* entry = find_entry(key); entry->isOccupied)
+        if (auto* entry = find_entry(key); entry->isOccupied)
             return entry->value;
 
         return {};
@@ -220,7 +220,7 @@ public:
 
     void remove(String key)
     {
-        if (m_entries == nullptr)
+        if (m_entries.is_empty())
             return;
 
         HashTableEntry<T>* entry = find_entry(key);
@@ -237,8 +237,8 @@ public:
 
         if (m_count > 0) {
             m_count = 0;
-            if (m_entries != nullptr) {
-                for (size_t i = 0; i < m_capacity; i++) {
+            if (!m_entries.is_empty()) {
+                for (size_t i = 0; i < capacity(); i++) {
                     m_entries[i].clear();
                 }
             }
@@ -264,11 +264,10 @@ public:
     }
 
 private:
-    HashTable(MemoryArena&& arena, HashTableEntry<T>* entries, size_t capacity, float max_load_factor)
-        : m_capacity(capacity)
+    HashTable(MemoryArena&& arena, Span<HashTableEntry<T>> entries, float max_load_factor)
+        : m_entries(entries)
         , m_max_load_factor(max_load_factor)
         , m_has_fixed_memory(true)
-        , m_entries(entries)
         // TODO: Eliminate the keyDataArena somehow
         , m_key_data_arena(move(arena))
     {
@@ -278,64 +277,64 @@ private:
     {
         ASSERT(!m_has_fixed_memory);
         ASSERT(newCapacity > 0);
-        ASSERT(newCapacity > m_capacity);
+        ASSERT(newCapacity > capacity());
 
         size_t old_count = m_count;
-        size_t old_capacity = m_capacity;
-        HashTableEntry<T>* old_entries = m_entries;
+        auto old_entries = m_entries;
 
-        m_capacity = newCapacity;
-        m_entries = (HashTableEntry<T>*)allocateRaw(newCapacity * sizeof(HashTableEntry<T>));
+        m_entries = { newCapacity, reinterpret_cast<HashTableEntry<T>*>(allocateRaw(newCapacity * sizeof(HashTableEntry<T>))) };
         m_count = 0;
 
-        if (old_entries != nullptr) {
+        if (!old_entries.is_empty()) {
             // Migrate old entries over
-            for (size_t i = 0; i < old_capacity; i++) {
-                HashTableEntry<T>* oldEntry = old_entries + i;
-
-                if (oldEntry->isOccupied) {
-                    put(oldEntry->key, oldEntry->value);
-                }
+            for (auto const& old_entry : old_entries) {
+                if (old_entry.isOccupied)
+                    put(old_entry.key, old_entry.value);
             }
 
-            deallocateRaw(old_entries);
+            deallocateRaw(old_entries.raw_data());
         }
 
         ASSERT(old_count == m_count);
     }
 
-    HashTableEntry<T>* find_entry(String key) const
+    HashTableEntry<T>* find_entry(String key)
     {
         u32 hash = key.hash();
-        u32 index = hash % m_capacity;
+        u32 index = hash % capacity();
         HashTableEntry<T>* result = nullptr;
 
         // "Linear probing" - on collision, just keep going until you find an empty slot
         size_t itemsChecked = 0;
         while (true) {
-            HashTableEntry<T>* entry = m_entries + index;
+            auto& entry = m_entries[index];
 
-            if (entry->isGravestone) {
+            if (entry.isGravestone) {
                 // Store the first gravestone we find, in case we fail to find the "real" option
                 if (result == nullptr)
-                    result = entry;
-            } else if ((entry->isOccupied == false) || (hash == entry->key.hash() && key == entry->key)) {
+                    result = &entry;
+            } else if (!entry.isOccupied || (hash == entry.key.hash() && key == entry.key)) {
                 // If the entry is unoccupied, we'd rather re-use the gravestone we found above
-                if (entry->isOccupied || result == nullptr) {
-                    result = entry;
+                if (entry.isOccupied || result == nullptr) {
+                    result = &entry;
                 }
                 break;
             }
 
-            index = (index + 1) % m_capacity;
+            index = (index + 1) % capacity();
 
             // Prevent the edge case infinite loop if all unoccupied spaces are gravestones
             itemsChecked++;
-            if (itemsChecked >= m_capacity)
+            if (itemsChecked >= capacity())
                 break;
         }
 
         return result;
+    }
+
+    HashTableEntry<T> const* find_entry(String key) const
+    {
+        return const_cast<HashTable*>(this)->find_entry(key);
     }
 
     HashTableEntry<T>* find_or_add_entry(String key)
@@ -343,14 +342,14 @@ private:
         auto expand_and_find_new_entry = [&] {
             ASSERT(!m_has_fixed_memory);
 
-            auto new_capacity = max(8, ceil_s32((m_count + 1) / m_max_load_factor), m_capacity * 2);
+            auto new_capacity = max(8, ceil_s32((m_count + 1) / m_max_load_factor), capacity() * 2);
             expand(new_capacity);
 
             // We now have to search again, because the result we got before is now invalid
             return find_entry(key);
         };
 
-        if (m_capacity == 0) {
+        if (capacity() == 0) {
             // We're at 0 capacity, so expand
             return expand_and_find_new_entry();
         }
@@ -358,18 +357,17 @@ private:
         auto result = find_entry(key);
         if (!result->isOccupied) {
             // Expand if needed!
-            if (m_count + 1 > (m_capacity * m_max_load_factor))
+            if (m_count + 1 > (capacity() * m_max_load_factor))
                 result = expand_and_find_new_entry();
         }
         return result;
     }
 
+    Span<HashTableEntry<T>> m_entries {};
     size_t m_count { 0 };
-    size_t m_capacity { 0 };
 
     float m_max_load_factor { 0 };
     bool m_has_fixed_memory { false }; // Fixed-memory HashTables don't expand in size
-    HashTableEntry<T>* m_entries {};
 
     // @Size: In a lot of cases, we already store the key in a separate StringTable, so having
     // it stored here too is redundant. But, keys are small so it's unlikely to cause any real
@@ -415,6 +413,6 @@ struct HashTableIterator {
 
     HashTableEntry<T>* getEntry()
     {
-        return hashTable->m_entries + currentIndex;
+        return &hashTable->m_entries[currentIndex];
     }
 };
