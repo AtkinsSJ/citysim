@@ -425,7 +425,7 @@ public:
 
 private:
     // FIXME: Remove `mutable` once HashTable is const-correct
-    mutable HashTable<PropertyValue> m_properties;
+    mutable HashTable<PropertyValue> m_properties { 128 };
 
     template<typename T>
     Optional<T> get_property_value(StringView property) const
