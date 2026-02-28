@@ -17,8 +17,12 @@ public:
     {
     }
 
+    Span() = default;
+
     size_t size() const { return m_size; }
     bool is_empty() const { return m_size == 0; }
+
+    T* raw_data() const { return m_items; }
 
     T& first()
     {
