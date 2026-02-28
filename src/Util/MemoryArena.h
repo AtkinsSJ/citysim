@@ -85,7 +85,17 @@ public:
         return new (memory) T(forward<Args>(args)...);
     }
 
-    // FIXME: Return something that bounds-checks access.
+    template<typename T>
+    Span<T> allocate_multiple(size_t count)
+    {
+        if (count == 0)
+            return {};
+
+        auto* memory = allocate_internal(sizeof(T) * count);
+        auto* items = new (memory) T[count];
+        return Span { count, items };
+    }
+
     template<typename T>
     T* allocate_multiple_deprecated(size_t count)
     {

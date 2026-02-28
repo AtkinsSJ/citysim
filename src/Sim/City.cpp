@@ -550,7 +550,7 @@ void saveBuildings(City* city, BinaryFileWriter* writer)
     //
     buildingSection.buildingCount = city->buildings.count - 1; // Not the null building!
 
-    SAVBuilding* tempBuildings = writer->arena->allocate_multiple_deprecated<SAVBuilding>(buildingSection.buildingCount);
+    auto tempBuildings = writer->arena->allocate_multiple<SAVBuilding>(buildingSection.buildingCount);
     s32 tempBuildingIndex = 0;
 
     for (auto it = city->buildings.iterate(); it.hasNext(); it.next()) {
@@ -558,23 +558,23 @@ void saveBuildings(City* city, BinaryFileWriter* writer)
         if (building->id == 0)
             continue; // Skip the null building!
 
-        SAVBuilding* sb = tempBuildings + tempBuildingIndex;
-        *sb = {};
-        sb->id = building->id;
-        sb->typeID = building->typeID;
-        sb->creationDate = building->creationDate;
-        sb->x = (u16)building->footprint.x();
-        sb->y = (u16)building->footprint.y();
-        sb->w = (u16)building->footprint.width();
-        sb->h = (u16)building->footprint.height();
-        sb->spriteOffset = building->spriteOffset;
-        sb->currentResidents = (u16)building->currentResidents;
-        sb->currentJobs = (u16)building->currentJobs;
-        sb->variantIndex = building->variantIndex.value_or(-1);
+        tempBuildings[tempBuildingIndex] = {
+            .id = building->id,
+            .typeID = building->typeID,
+            .creationDate = building->creationDate,
+            .x = (u16)building->footprint.x(),
+            .y = (u16)building->footprint.y(),
+            .w = (u16)building->footprint.width(),
+            .h = (u16)building->footprint.height(),
+            .spriteOffset = building->spriteOffset,
+            .currentResidents = (u16)building->currentResidents,
+            .currentJobs = (u16)building->currentJobs,
+            .variantIndex = building->variantIndex.value_or(-1),
+        };
 
         tempBuildingIndex++;
     }
-    buildingSection.buildings = writer->appendBlob(buildingSection.buildingCount * sizeof(SAVBuilding), (u8*)tempBuildings, FileBlobCompressionScheme::Uncompressed);
+    buildingSection.buildings = writer->appendBlob(buildingSection.buildingCount * sizeof(SAVBuilding), (u8*)tempBuildings.raw_data(), FileBlobCompressionScheme::Uncompressed);
 
     writer->endSection<SAVSection_Buildings>(&buildingSection);
 }
