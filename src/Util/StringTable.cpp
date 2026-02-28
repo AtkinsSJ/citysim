@@ -10,7 +10,7 @@ String StringTable::intern(StringView input)
 {
     String input_as_string = input.deprecated_to_string();
     // FIXME: We really shouldn't be doing this.
-    HashTableEntry<String>& entry = *m_table.findOrAddEntry(input_as_string);
+    HashTableEntry<String>& entry = *m_table.find_or_add_entry(input_as_string);
     if (!entry.isOccupied) {
         m_table.m_count++;
         entry.isOccupied = true;

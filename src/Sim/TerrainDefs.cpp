@@ -115,7 +115,7 @@ void TerrainDefs::unload(AssetMetadata& metadata)
         s32 terrainIndex = findTerrainTypeByName(terrainName);
         if (terrainIndex > 0) {
             terrain_catalogue.terrainDefs.removeIndex(terrainIndex);
-            terrain_catalogue.terrainNameToType.removeKey(terrainName);
+            terrain_catalogue.terrainNameToType.remove(terrainName);
         }
     }
 

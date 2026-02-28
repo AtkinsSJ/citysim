@@ -55,7 +55,7 @@ u8 findTerrainTypeByName(String name)
 
 void saveTerrainTypes()
 {
-    s_terrain_catalogue.terrainNameToOldType.putAll(&s_terrain_catalogue.terrainNameToType);
+    s_terrain_catalogue.terrainNameToOldType.put_all(s_terrain_catalogue.terrainNameToType);
 }
 
 void remapTerrainTypes()

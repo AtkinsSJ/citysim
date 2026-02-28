@@ -96,7 +96,7 @@ void Texts::unload(AssetMetadata&)
     // Remove all of our texts from the table
     HashTable<String>* textsTable = (m_is_fallback_locale ? &asset_manager().defaultTexts : &asset_manager().texts);
     for (auto const& key : m_keys)
-        textsTable->removeKey(key);
+        textsTable->remove(key);
     assets_deallocate(m_data);
     m_keys = makeEmptyArray<String>();
 }

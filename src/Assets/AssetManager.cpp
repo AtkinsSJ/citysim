@@ -170,7 +170,7 @@ void removeAsset(AssetType type, String name)
         logError("Attempted to remove an asset (name `{0}`, type {1}) which doesn't exist!"_s, { name, formatInt(type) });
     } else {
         unloadAsset(asset);
-        s_assets->asset_type_data[type].assets_with_this_type.removeKey(name);
+        s_assets->asset_type_data[type].assets_with_this_type.remove(name);
     }
 }
 

@@ -128,7 +128,7 @@ ErrorOr<NonnullOwnPtr<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata,
                 if (!name.has_value())
                     return reader.make_error_message("Couldn't parse Template. Expected: ':Template identifier'"_s);
 
-                def = templates.put(name.value().deprecated_to_string());
+                def = &templates.put(name.value().deprecated_to_string(), {});
             } else {
                 reader.warn("Only :Building, :Intersection or :Template definitions are supported right now."_s);
             }
@@ -439,11 +439,11 @@ void BuildingDefs::unload(AssetMetadata& metadata)
             building_catalogue.iGrowableBuildings.findAndRemove(def);
             building_catalogue.intersectionBuildings.findAndRemove(def);
 
-            building_catalogue.buildingsByName.removeKey(building_id);
+            building_catalogue.buildingsByName.remove(building_id);
 
             building_catalogue.allBuildings.removeIndex(def->typeID);
 
-            building_catalogue.buildingNameToTypeID.removeKey(building_id);
+            building_catalogue.buildingNameToTypeID.remove(building_id);
         }
     }
 

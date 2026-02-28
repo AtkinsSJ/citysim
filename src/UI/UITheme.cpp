@@ -296,12 +296,7 @@ Optional<V2I> Style::get_v2i(StringView property) const
 
 void initStyleConstants()
 {
-#define PROP(name, _type)                         \
-    {                                             \
-        Property property = {};                   \
-        property.type = PropType::_type;          \
-        styleProperties.put(#name##_s, property); \
-    }
+#define PROP(name, _type) styleProperties.put(#name##_s, Property { .type = PropType::_type });
 
     PROP(background, Drawable);
     PROP(backgroundDisabled, Drawable);

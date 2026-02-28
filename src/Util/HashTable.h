@@ -55,11 +55,6 @@ class HashTable {
     friend HashTableIterator<T>;
 
 public:
-    static smm calculate_desired_count(size_t capacity, float max_load_factor)
-    {
-        return ceil_s32(static_cast<float>(capacity) / max_load_factor);
-    }
-
     explicit HashTable(size_t initial_capacity, float max_load_factor = 0.75f)
         : m_max_load_factor(max_load_factor)
         , m_key_data_arena("HashTable"_s, KB(4), KB(4))
@@ -126,7 +121,7 @@ public:
 
     static HashTable allocate_fixed_size(MemoryArena& arena, size_t capacity, float max_load_factor = 0.75f)
     {
-        auto slot_count = calculate_desired_count(capacity, max_load_factor);
+        auto slot_count = static_cast<size_t>(ceil_s32(static_cast<float>(capacity) / max_load_factor));
         auto* entries = arena.allocate_multiple<HashTableEntry<T>>(slot_count);
 
         return HashTable {
@@ -147,120 +142,40 @@ public:
     size_t count() const { return m_count; }
     size_t capacity() const { return m_capacity; }
 
-    bool contains(String key)
+    bool contains(String key) const
     {
         if (m_entries == nullptr)
             return false;
 
-        HashTableEntry<T>* entry = findEntry(key);
-        if (!entry->isOccupied) {
-            return false;
-        } else {
-            return true;
-        }
+        HashTableEntry<T>* entry = find_entry(key);
+        return entry->isOccupied;
     }
 
-    HashTableEntry<T>* findEntry(String key)
-    {
-        u32 hash = key.hash();
-        u32 index = hash % m_capacity;
-        HashTableEntry<T>* result = nullptr;
-
-        // "Linear probing" - on collision, just keep going until you find an empty slot
-        size_t itemsChecked = 0;
-        while (true) {
-            HashTableEntry<T>* entry = m_entries + index;
-
-            if (entry->isGravestone) {
-                // Store the first gravestone we find, in case we fail to find the "real" option
-                if (result == nullptr)
-                    result = entry;
-            } else if ((entry->isOccupied == false) || (hash == entry->key.hash() && key == entry->key)) {
-                // If the entry is unoccupied, we'd rather re-use the gravestone we found above
-                if (entry->isOccupied || result == nullptr) {
-                    result = entry;
-                }
-                break;
-            }
-
-            index = (index + 1) % m_capacity;
-
-            // Prevent the edge case infinite loop if all unoccupied spaces are gravestones
-            itemsChecked++;
-            if (itemsChecked >= m_capacity)
-                break;
-        }
-
-        return result;
-    }
-
-    HashTableEntry<T>* findOrAddEntry(String key)
-    {
-        auto expand_and_find_new_entry = [&] {
-            ASSERT(!m_has_fixed_memory);
-
-            auto new_capacity = max(8, ceil_s32((m_count + 1) / m_max_load_factor), m_capacity * 2);
-            expand(new_capacity);
-
-            // We now have to search again, because the result we got before is now invalid
-            return findEntry(key);
-        };
-
-        if (m_capacity == 0) {
-            // We're at 0 capacity, so expand
-            return expand_and_find_new_entry();
-        }
-
-        auto result = findEntry(key);
-        if (!result->isOccupied) {
-            // Expand if needed!
-            if (m_count + 1 > (m_capacity * m_max_load_factor))
-                result = expand_and_find_new_entry();
-        }
-        return result;
-    }
-
-    Optional<T*> find(String key)
+    Optional<T*> find(String key) const
     {
         if (!m_entries)
             return {};
 
-        if (HashTableEntry<T>* entry = findEntry(key); entry->isOccupied)
+        if (HashTableEntry<T>* entry = find_entry(key); entry->isOccupied)
             return &entry->value;
 
         return {};
     }
 
-    Optional<T> find_value(String key)
+    Optional<T> find_value(String key) const
     {
         if (!m_entries)
             return {};
 
-        if (HashTableEntry<T>* entry = findEntry(key); entry->isOccupied)
+        if (HashTableEntry<T>* entry = find_entry(key); entry->isOccupied)
             return entry->value;
 
         return {};
     }
 
-    T* findOrAdd(String key)
-    {
-        HashTableEntry<T>* entry = findOrAddEntry(key);
-        if (!entry->isOccupied) {
-            m_count++;
-            entry->isOccupied = true;
-            entry->isGravestone = false;
-
-            String theKey = m_key_data_arena.allocate_string(key);
-            theKey.hash();
-            entry->key = theKey;
-        }
-
-        return &entry->value;
-    }
-
     T& ensure(String key, T value)
     {
-        HashTableEntry<T>* entry = findOrAddEntry(key);
+        HashTableEntry<T>* entry = find_or_add_entry(key);
         if (!entry->isOccupied) {
             m_count++;
             entry->isOccupied = true;
@@ -275,9 +190,9 @@ public:
         return entry->value;
     }
 
-    T* put(String key, T value = {})
+    T& put(String key, T value)
     {
-        HashTableEntry<T>* entry = findOrAddEntry(key);
+        HashTableEntry<T>* entry = find_or_add_entry(key);
 
         if (!entry->isOccupied) {
             m_count++;
@@ -289,17 +204,9 @@ public:
             entry->key = theKey;
         }
 
-        entry->value = value;
+        entry->value = move(value);
 
-        return &entry->value;
-    }
-
-    void putAll(HashTable<T>* source)
-    {
-        for (auto it = source->iterate(); it.hasNext(); it.next()) {
-            auto entry = it.getEntry();
-            put(entry->key, entry->value);
-        }
+        return entry->value;
     }
 
     void put_all(HashTable const& source)
@@ -311,12 +218,12 @@ public:
         }
     }
 
-    void removeKey(String key)
+    void remove(String key)
     {
         if (m_entries == nullptr)
             return;
 
-        HashTableEntry<T>* entry = findEntry(key);
+        HashTableEntry<T>* entry = find_entry(key);
         if (entry->isOccupied) {
             entry->isGravestone = true;
             entry->isOccupied = false;
@@ -395,6 +302,66 @@ private:
         }
 
         ASSERT(old_count == m_count);
+    }
+
+    HashTableEntry<T>* find_entry(String key) const
+    {
+        u32 hash = key.hash();
+        u32 index = hash % m_capacity;
+        HashTableEntry<T>* result = nullptr;
+
+        // "Linear probing" - on collision, just keep going until you find an empty slot
+        size_t itemsChecked = 0;
+        while (true) {
+            HashTableEntry<T>* entry = m_entries + index;
+
+            if (entry->isGravestone) {
+                // Store the first gravestone we find, in case we fail to find the "real" option
+                if (result == nullptr)
+                    result = entry;
+            } else if ((entry->isOccupied == false) || (hash == entry->key.hash() && key == entry->key)) {
+                // If the entry is unoccupied, we'd rather re-use the gravestone we found above
+                if (entry->isOccupied || result == nullptr) {
+                    result = entry;
+                }
+                break;
+            }
+
+            index = (index + 1) % m_capacity;
+
+            // Prevent the edge case infinite loop if all unoccupied spaces are gravestones
+            itemsChecked++;
+            if (itemsChecked >= m_capacity)
+                break;
+        }
+
+        return result;
+    }
+
+    HashTableEntry<T>* find_or_add_entry(String key)
+    {
+        auto expand_and_find_new_entry = [&] {
+            ASSERT(!m_has_fixed_memory);
+
+            auto new_capacity = max(8, ceil_s32((m_count + 1) / m_max_load_factor), m_capacity * 2);
+            expand(new_capacity);
+
+            // We now have to search again, because the result we got before is now invalid
+            return find_entry(key);
+        };
+
+        if (m_capacity == 0) {
+            // We're at 0 capacity, so expand
+            return expand_and_find_new_entry();
+        }
+
+        auto result = find_entry(key);
+        if (!result->isOccupied) {
+            // Expand if needed!
+            if (m_count + 1 > (m_capacity * m_max_load_factor))
+                result = expand_and_find_new_entry();
+        }
+        return result;
     }
 
     size_t m_count { 0 };

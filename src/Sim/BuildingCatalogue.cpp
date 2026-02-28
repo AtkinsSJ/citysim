@@ -189,7 +189,7 @@ void saveBuildingTypes()
     }
 
     // Actual saving
-    building_catalogue.buildingNameToOldTypeID.putAll(&building_catalogue.buildingNameToTypeID);
+    building_catalogue.buildingNameToOldTypeID.put_all(building_catalogue.buildingNameToTypeID);
 }
 
 void remapBuildingTypes()
