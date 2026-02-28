@@ -144,12 +144,6 @@ public:
         }
     }
 
-    // Methods
-    bool isInitialised()
-    {
-        return (m_entries != nullptr || m_max_load_factor > 0.0f);
-    }
-
     size_t count() const { return m_count; }
     size_t capacity() const { return m_capacity; }
 
@@ -168,8 +162,6 @@ public:
 
     HashTableEntry<T>* findEntry(String key)
     {
-        ASSERT(isInitialised());
-
         u32 hash = key.hash();
         u32 index = hash % m_capacity;
         HashTableEntry<T>* result = nullptr;
@@ -204,8 +196,6 @@ public:
 
     HashTableEntry<T>* findOrAddEntry(String key)
     {
-        ASSERT(isInitialised());
-
         auto expand_and_find_new_entry = [&] {
             ASSERT(!m_has_fixed_memory);
 
