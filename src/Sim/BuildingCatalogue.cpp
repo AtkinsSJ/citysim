@@ -9,7 +9,7 @@
 #include <Sim/Building.h>
 #include <Util/OwnPtr.h>
 
-static OwnPtr<BuildingCatalogue> s_building_catalogue;
+static BuildingCatalogue* s_building_catalogue;
 
 BuildingCatalogue& BuildingCatalogue::the()
 {
@@ -44,7 +44,7 @@ void initBuildingCatalogue()
     catalogue->overallMaxBuildingDim = 0;
 
     asset_manager().register_listener(catalogue);
-    s_building_catalogue = adopt_own(*catalogue);
+    s_building_catalogue = catalogue;
 }
 
 s32 BuildingCatalogue::get_max_building_size(ZoneType zone_type) const
