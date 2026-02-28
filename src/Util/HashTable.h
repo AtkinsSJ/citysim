@@ -118,7 +118,7 @@ public:
     static HashTable allocate_fixed_size(MemoryArena& arena, size_t capacity, float max_load_factor = 0.75f)
     {
         auto slot_count = static_cast<size_t>(ceil_s32(static_cast<float>(capacity) / max_load_factor));
-        auto* entries = arena.allocate_multiple<HashTableEntry<T>>(slot_count);
+        auto* entries = arena.allocate_multiple_deprecated<HashTableEntry<T>>(slot_count);
 
         return HashTable {
             { "FixedSizeHashTable"_s, KB(4), KB(4) },

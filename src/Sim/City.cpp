@@ -550,7 +550,7 @@ void saveBuildings(City* city, BinaryFileWriter* writer)
     //
     buildingSection.buildingCount = city->buildings.count - 1; // Not the null building!
 
-    SAVBuilding* tempBuildings = writer->arena->allocate_multiple<SAVBuilding>(buildingSection.buildingCount);
+    SAVBuilding* tempBuildings = writer->arena->allocate_multiple_deprecated<SAVBuilding>(buildingSection.buildingCount);
     s32 tempBuildingIndex = 0;
 
     for (auto it = city->buildings.iterate(); it.hasNext(); it.next()) {

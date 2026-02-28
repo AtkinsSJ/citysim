@@ -87,7 +87,7 @@ public:
 
     // FIXME: Return something that bounds-checks access.
     template<typename T>
-    T* allocate_multiple(size_t count)
+    T* allocate_multiple_deprecated(size_t count)
     {
         // Negative allocations are obviously incorrect, so we assert them.
         // However, count=0 sometimes is used, eg when interning an empty string that's used
@@ -113,7 +113,7 @@ public:
             result = makeEmptyArray<T>();
         } else {
             ASSERT(count > 0);
-            result = makeArray<T>(count, allocate_multiple<T>(count), markAsFull ? count : 0);
+            result = makeArray<T>(count, allocate_multiple_deprecated<T>(count), markAsFull ? count : 0);
         }
 
         return result;
@@ -129,7 +129,7 @@ public:
     Array2<T> allocate_array_2d(u32 w, u32 h)
     {
         ASSERT(w > 0 && h > 0);
-        return makeArray2<T>(w, h, allocate_multiple<T>(w * h));
+        return makeArray2<T>(w, h, allocate_multiple_deprecated<T>(w * h));
     }
 
     String allocate_string(StringView input);

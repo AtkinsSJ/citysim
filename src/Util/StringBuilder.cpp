@@ -10,7 +10,7 @@
 
 StringBuilder::StringBuilder(size_t initial_size)
     : m_capacity(max(initial_size, 256))
-    , m_buffer(temp_arena().allocate_multiple<char>(m_capacity))
+    , m_buffer(temp_arena().allocate_multiple_deprecated<char>(m_capacity))
 {
 }
 
@@ -54,7 +54,7 @@ void StringBuilder::ensure_capacity(size_t new_capacity)
 
     s32 target_capacity = max(new_capacity, m_capacity * 2);
 
-    char* newBuffer = temp_arena().allocate_multiple<char>(target_capacity);
+    char* newBuffer = temp_arena().allocate_multiple_deprecated<char>(target_capacity);
     copyMemory(m_buffer, newBuffer, m_length);
 
     m_buffer = newBuffer;

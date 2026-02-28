@@ -346,7 +346,7 @@ bool updateTextInput(TextInput* textInput)
 TextInput newTextInput(MemoryArena* arena, s32 length, String characterBlacklist)
 {
     TextInput b = {};
-    b.buffer = arena->allocate_multiple<char>(length + 1);
+    b.buffer = arena->allocate_multiple_deprecated<char>(length + 1);
     b.maxByteLength = length;
     b.characterBlacklist = characterBlacklist;
 

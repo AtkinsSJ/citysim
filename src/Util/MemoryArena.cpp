@@ -129,7 +129,7 @@ Blob MemoryArena::allocate_blob(size_t size)
 
 String MemoryArena::allocate_string(StringView input)
 {
-    auto character_data = allocate_multiple<char>(input.length());
+    auto character_data = allocate_multiple_deprecated<char>(input.length());
     copy_memory(input.raw_pointer_to_characters(), character_data, input.length());
     return String { character_data, input.length() };
 }
