@@ -211,36 +211,27 @@ struct HashTable {
     {
         ASSERT(isInitialised());
 
-        HashTableEntry<T>* result = nullptr;
+        auto expand_and_find_new_entry = [&] {
+            ASSERT(!hasFixedMemory);
 
-        if (capacity > 0) {
-            result = findEntry(key);
-
-            if (!result->isOccupied) {
-                // Expand if needed!
-                if (count + 1 > (capacity * maxLoadFactor)) {
-                    ASSERT(!hasFixedMemory);
-
-                    s32 newCapacity = max(
-                        ceil_s32((count + 1) / maxLoadFactor),
-                        (capacity < 8) ? 8 : capacity * 2);
-                    expand(newCapacity);
-
-                    // We now have to search again, because the result we got before is now invalid
-                    result = findEntry(key);
-                }
-            }
-        } else {
-            // We're at 0 capacity, so expand
-            s32 newCapacity = max(
-                ceil_s32((count + 1) / maxLoadFactor),
-                (capacity < 8) ? 8 : capacity * 2);
-            expand(newCapacity);
+            auto new_capacity = max(8, ceil_s32((count + 1) / maxLoadFactor), capacity * 2);
+            expand(new_capacity);
 
             // We now have to search again, because the result we got before is now invalid
-            result = findEntry(key);
+            return findEntry(key);
+        };
+
+        if (capacity == 0) {
+            // We're at 0 capacity, so expand
+            return expand_and_find_new_entry();
         }
 
+        auto result = findEntry(key);
+        if (!result->isOccupied) {
+            // Expand if needed!
+            if (count + 1 > (capacity * maxLoadFactor))
+                result = expand_and_find_new_entry();
+        }
         return result;
     }
 
