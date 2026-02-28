@@ -202,12 +202,12 @@ void remapBuildingTypes()
     for (auto it = building_catalogue.buildingNameToOldTypeID.iterate(); it.hasNext(); it.next()) {
         auto entry = it.getEntry();
         if (!building_catalogue.buildingNameToTypeID.contains(entry->key)) {
-            building_catalogue.buildingNameToTypeID.put(entry->key, building_catalogue.buildingNameToTypeID.count);
+            building_catalogue.buildingNameToTypeID.put(entry->key, building_catalogue.buildingNameToTypeID.count());
         }
     }
 
-    if (building_catalogue.buildingNameToOldTypeID.count > 0) {
-        Array<s32> oldTypeToNewType = temp_arena().allocate_array<s32>(building_catalogue.buildingNameToOldTypeID.count, true);
+    if (building_catalogue.buildingNameToOldTypeID.count() > 0) {
+        Array<s32> oldTypeToNewType = temp_arena().allocate_array<s32>(building_catalogue.buildingNameToOldTypeID.count(), true);
         for (auto it = building_catalogue.buildingNameToOldTypeID.iterate(); it.hasNext(); it.next()) {
             auto entry = it.getEntry();
             String buildingName = entry->key;

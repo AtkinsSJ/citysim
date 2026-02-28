@@ -72,7 +72,7 @@ void initConsole(MemoryArena* debugArena, float openHeight, float maximisedHeigh
 
     globalConsole = console;
     initCommands(console);
-    consoleWriteLine(myprintf("Loaded {} commands. Type 'help' to list them."_s, { formatInt(console->commands.count) }), ConsoleLineStyle::Default);
+    consoleWriteLine(myprintf("Loaded {} commands. Type 'help' to list them."_s, { formatInt(console->commands.count()) }), ConsoleLineStyle::Default);
 
     consoleWriteLine("GREETINGS PROFESSOR FALKEN.\nWOULD YOU LIKE TO PLAY A GAME?"_s);
 

@@ -67,12 +67,12 @@ void remapTerrainTypes()
     for (auto it = s_terrain_catalogue.terrainNameToOldType.iterate(); it.hasNext(); it.next()) {
         auto entry = it.getEntry();
         if (!s_terrain_catalogue.terrainNameToType.contains(entry->key)) {
-            s_terrain_catalogue.terrainNameToType.put(entry->key, (u8)s_terrain_catalogue.terrainNameToType.count);
+            s_terrain_catalogue.terrainNameToType.put(entry->key, (u8)s_terrain_catalogue.terrainNameToType.count());
         }
     }
 
-    if (s_terrain_catalogue.terrainNameToOldType.count > 0) {
-        Array<u8> oldTypeToNewType = temp_arena().allocate_array<u8>(s_terrain_catalogue.terrainNameToOldType.count, true);
+    if (s_terrain_catalogue.terrainNameToOldType.count() > 0) {
+        Array<u8> oldTypeToNewType = temp_arena().allocate_array<u8>(s_terrain_catalogue.terrainNameToOldType.count(), true);
         for (auto it = s_terrain_catalogue.terrainNameToOldType.iterate(); it.hasNext(); it.next()) {
             auto entry = it.getEntry();
             String terrainName = entry->key;

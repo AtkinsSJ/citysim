@@ -438,10 +438,10 @@ void debugTrackAssets(DebugState* debugState)
     assetData->arenaUsedSize[frameIndex] = statistics.used_size;
 
     // FIXME: Figure out exactly what we should be measuring
-    for (auto it = asset_manager().asset_type_data.iterate(); it.hasNext(); it.next()) {
-        auto& assetsByNameForType = it.get().assets_with_this_type;
-        assetData->assetsByNameSize[frameIndex] += assetsByNameForType.capacity * sizeof(assetsByNameForType.entries[0]);
-    }
+    // for (auto it = asset_manager().asset_type_data.iterate(); it.hasNext(); it.next()) {
+    //     auto& assetsByNameForType = it.get().assets_with_this_type;
+    //     assetData->assetsByNameSize[frameIndex] += assetsByNameForType.capacity() * sizeof(assetsByNameForType.m_entries[0]);
+    // }
 
     // The asset-memory stuff
     for (auto it = asset_manager().allAssets.iterate(); it.hasNext(); it.next()) {

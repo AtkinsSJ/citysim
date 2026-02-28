@@ -33,6 +33,9 @@ template<typename T>
 class ErrorOr;
 
 template<typename T>
+class HashTable;
+
+template<typename T>
 class Indexed;
 
 template<typename T>

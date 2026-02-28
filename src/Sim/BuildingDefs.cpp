@@ -50,7 +50,7 @@ static void assign_building_categories(BuildingCatalogue& catalogue, BuildingDef
         catalogue.intersectionBuildings.append(&def);
     }
 
-    ASSERT(catalogue.allBuildings.count == catalogue.buildingsByName.count + 1); // NB: +1 for the null building.
+    ASSERT(catalogue.allBuildings.count == catalogue.buildingsByName.count() + 1); // NB: +1 for the null building.
 }
 
 ErrorOr<NonnullOwnPtr<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata, Blob file_data)

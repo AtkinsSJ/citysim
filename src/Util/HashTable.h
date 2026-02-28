@@ -48,16 +48,21 @@ template<typename T>
 struct HashTableIterator;
 
 template<typename T>
-struct HashTable {
+class HashTable {
+    // FIXME: Hack so that StringTable::intern() can poke at things it shouldn't.
+    friend StringTable;
 
-    static smm calculate_desired_count(s32 capacity, float max_load_factor)
+    friend HashTableIterator<T>;
+
+public:
+    static smm calculate_desired_count(size_t capacity, float max_load_factor)
     {
         return ceil_s32(static_cast<float>(capacity) / max_load_factor);
     }
 
-    explicit HashTable(s32 initial_capacity, float max_load_factor = 0.75f)
-        : maxLoadFactor(max_load_factor)
-        , keyDataArena("HashTable"_s, KB(4), KB(4))
+    explicit HashTable(size_t initial_capacity, float max_load_factor = 0.75f)
+        : m_max_load_factor(max_load_factor)
+        , m_key_data_arena("HashTable"_s, KB(4), KB(4))
     {
         ASSERT(max_load_factor < 1.0f);
 
@@ -72,7 +77,7 @@ struct HashTable {
     }
 
     HashTable(HashTable const& other)
-        : HashTable(other.capacity, other.maxLoadFactor)
+        : HashTable(other.m_capacity, other.m_max_load_factor)
     {
         put_all(other);
     }
@@ -83,43 +88,43 @@ struct HashTable {
             return *this;
 
         clear();
-        maxLoadFactor = other.maxLoadFactor;
+        m_max_load_factor = other.m_max_load_factor;
         put_all(other);
         return *this;
     }
 
     HashTable(HashTable&& other)
-        : count(other.count)
-        , capacity(other.capacity)
-        , maxLoadFactor(other.maxLoadFactor)
-        , hasFixedMemory(other.hasFixedMemory)
-        , entries(move(other.entries))
-        , keyDataArena(move(other.keyDataArena))
+        : m_count(other.m_count)
+        , m_capacity(other.m_capacity)
+        , m_max_load_factor(other.m_max_load_factor)
+        , m_has_fixed_memory(other.m_has_fixed_memory)
+        , m_entries(move(other.m_entries))
+        , m_key_data_arena(move(other.m_key_data_arena))
     {
-        other.count = 0;
-        other.entries = nullptr;
-        other.hasFixedMemory = false;
-        other.entries = nullptr;
+        other.m_count = 0;
+        other.m_entries = nullptr;
+        other.m_has_fixed_memory = false;
+        other.m_entries = nullptr;
     }
 
     HashTable& operator=(HashTable&& other)
     {
-        count = other.count;
-        capacity = other.capacity;
-        maxLoadFactor = other.maxLoadFactor;
-        hasFixedMemory = other.hasFixedMemory;
-        entries = move(other.entries);
-        keyDataArena = move(other.keyDataArena);
+        m_count = other.m_count;
+        m_capacity = other.m_capacity;
+        m_max_load_factor = other.m_max_load_factor;
+        m_has_fixed_memory = other.m_has_fixed_memory;
+        m_entries = move(other.m_entries);
+        m_key_data_arena = move(other.m_key_data_arena);
 
-        other.count = 0;
-        other.entries = nullptr;
-        other.hasFixedMemory = false;
-        other.entries = nullptr;
+        other.m_count = 0;
+        other.m_capacity = 0;
+        other.m_entries = nullptr;
+        other.m_has_fixed_memory = false;
 
         return *this;
     }
 
-    static HashTable allocate_fixed_size(MemoryArena& arena, s32 capacity, float max_load_factor = 0.75f)
+    static HashTable allocate_fixed_size(MemoryArena& arena, size_t capacity, float max_load_factor = 0.75f)
     {
         auto slot_count = calculate_desired_count(capacity, max_load_factor);
         auto* entries = arena.allocate_multiple<HashTableEntry<T>>(slot_count);
@@ -127,40 +132,30 @@ struct HashTable {
         return HashTable {
             { "FixedSizeHashTable"_s, KB(4), KB(4) },
             entries,
-            ceil_s32(static_cast<float>(capacity) / max_load_factor),
+            static_cast<size_t>(ceil(static_cast<float>(capacity) / max_load_factor)),
             max_load_factor
         };
     }
 
     ~HashTable()
     {
-        if (!hasFixedMemory && entries != nullptr) {
-            deallocateRaw(entries);
+        if (!m_has_fixed_memory && m_entries != nullptr) {
+            deallocateRaw(m_entries);
         }
     }
-
-    s32 count { 0 };
-    s32 capacity { 0 };
-    float maxLoadFactor { 0 };
-    bool hasFixedMemory { false }; // Fixed-memory HashTables don't expand in size
-    HashTableEntry<T>* entries {};
-
-    // @Size: In a lot of cases, we already store the key in a separate StringTable, so having
-    // it stored here too is redundant. But, keys are small so it's unlikely to cause any real
-    // issues.
-    // - Sam, 08/01/2020
-    // FIXME: Make Strings own their memory!
-    MemoryArena keyDataArena;
 
     // Methods
     bool isInitialised()
     {
-        return (entries != nullptr || maxLoadFactor > 0.0f);
+        return (m_entries != nullptr || m_max_load_factor > 0.0f);
     }
+
+    size_t count() const { return m_count; }
+    size_t capacity() const { return m_capacity; }
 
     bool contains(String key)
     {
-        if (entries == nullptr)
+        if (m_entries == nullptr)
             return false;
 
         HashTableEntry<T>* entry = findEntry(key);
@@ -176,13 +171,13 @@ struct HashTable {
         ASSERT(isInitialised());
 
         u32 hash = key.hash();
-        u32 index = hash % capacity;
+        u32 index = hash % m_capacity;
         HashTableEntry<T>* result = nullptr;
 
         // "Linear probing" - on collision, just keep going until you find an empty slot
-        s32 itemsChecked = 0;
+        size_t itemsChecked = 0;
         while (true) {
-            HashTableEntry<T>* entry = entries + index;
+            HashTableEntry<T>* entry = m_entries + index;
 
             if (entry->isGravestone) {
                 // Store the first gravestone we find, in case we fail to find the "real" option
@@ -196,11 +191,11 @@ struct HashTable {
                 break;
             }
 
-            index = (index + 1) % capacity;
+            index = (index + 1) % m_capacity;
 
             // Prevent the edge case infinite loop if all unoccupied spaces are gravestones
             itemsChecked++;
-            if (itemsChecked >= capacity)
+            if (itemsChecked >= m_capacity)
                 break;
         }
 
@@ -212,16 +207,16 @@ struct HashTable {
         ASSERT(isInitialised());
 
         auto expand_and_find_new_entry = [&] {
-            ASSERT(!hasFixedMemory);
+            ASSERT(!m_has_fixed_memory);
 
-            auto new_capacity = max(8, ceil_s32((count + 1) / maxLoadFactor), capacity * 2);
+            auto new_capacity = max(8, ceil_s32((m_count + 1) / m_max_load_factor), m_capacity * 2);
             expand(new_capacity);
 
             // We now have to search again, because the result we got before is now invalid
             return findEntry(key);
         };
 
-        if (capacity == 0) {
+        if (m_capacity == 0) {
             // We're at 0 capacity, so expand
             return expand_and_find_new_entry();
         }
@@ -229,7 +224,7 @@ struct HashTable {
         auto result = findEntry(key);
         if (!result->isOccupied) {
             // Expand if needed!
-            if (count + 1 > (capacity * maxLoadFactor))
+            if (m_count + 1 > (m_capacity * m_max_load_factor))
                 result = expand_and_find_new_entry();
         }
         return result;
@@ -237,7 +232,7 @@ struct HashTable {
 
     Optional<T*> find(String key)
     {
-        if (!entries)
+        if (!m_entries)
             return {};
 
         if (HashTableEntry<T>* entry = findEntry(key); entry->isOccupied)
@@ -248,7 +243,7 @@ struct HashTable {
 
     Optional<T> find_value(String key)
     {
-        if (!entries)
+        if (!m_entries)
             return {};
 
         if (HashTableEntry<T>* entry = findEntry(key); entry->isOccupied)
@@ -261,11 +256,11 @@ struct HashTable {
     {
         HashTableEntry<T>* entry = findOrAddEntry(key);
         if (!entry->isOccupied) {
-            count++;
+            m_count++;
             entry->isOccupied = true;
             entry->isGravestone = false;
 
-            String theKey = keyDataArena.allocate_string(key);
+            String theKey = m_key_data_arena.allocate_string(key);
             theKey.hash();
             entry->key = theKey;
         }
@@ -278,11 +273,11 @@ struct HashTable {
         HashTableEntry<T>* entry = findOrAddEntry(key);
 
         if (!entry->isOccupied) {
-            count++;
+            m_count++;
             entry->isOccupied = true;
             entry->isGravestone = false;
 
-            String theKey = keyDataArena.allocate_string(key);
+            String theKey = m_key_data_arena.allocate_string(key);
             theKey.hash();
             entry->key = theKey;
         }
@@ -311,26 +306,26 @@ struct HashTable {
 
     void removeKey(String key)
     {
-        if (entries == nullptr)
+        if (m_entries == nullptr)
             return;
 
         HashTableEntry<T>* entry = findEntry(key);
         if (entry->isOccupied) {
             entry->isGravestone = true;
             entry->isOccupied = false;
-            count--;
+            m_count--;
         }
     }
 
     void clear()
     {
-        ASSERT(!hasFixedMemory);
+        ASSERT(!m_has_fixed_memory);
 
-        if (count > 0) {
-            count = 0;
-            if (entries != nullptr) {
-                for (s32 i = 0; i < capacity; i++) {
-                    entries[i].clear();
+        if (m_count > 0) {
+            m_count = 0;
+            if (m_entries != nullptr) {
+                for (size_t i = 0; i < m_capacity; i++) {
+                    m_entries[i].clear();
                 }
             }
         }
@@ -344,7 +339,7 @@ struct HashTable {
         iterator.currentIndex = 0;
 
         // If the table is empty, we can skip some work.
-        iterator.isDone = (count == 0);
+        iterator.isDone = m_count == 0;
 
         // If the first entry is unoccupied, we need to skip ahead
         if (!iterator.isDone && !iterator.getEntry()->isOccupied) {
@@ -355,45 +350,59 @@ struct HashTable {
     }
 
 private:
-    HashTable(MemoryArena&& arena, HashTableEntry<T>* entries, s32 capacity, float max_load_factor)
-        : capacity(capacity)
-        , maxLoadFactor(max_load_factor)
-        , hasFixedMemory(true)
-        , entries(entries)
+    HashTable(MemoryArena&& arena, HashTableEntry<T>* entries, size_t capacity, float max_load_factor)
+        : m_capacity(capacity)
+        , m_max_load_factor(max_load_factor)
+        , m_has_fixed_memory(true)
+        , m_entries(entries)
         // TODO: Eliminate the keyDataArena somehow
-        , keyDataArena(move(arena))
+        , m_key_data_arena(move(arena))
     {
     }
 
-    void expand(s32 newCapacity)
+    void expand(size_t newCapacity)
     {
-        ASSERT(!hasFixedMemory);
-        ASSERT(newCapacity > 0);        //, "Attempted to resize a hash table to {0}", {formatInt(newCapacity)});
-        ASSERT(newCapacity > capacity); //, "Attempted to shrink a hash table from {0} to {1}", {formatInt(capacity), formatInt(newCapacity)});
+        ASSERT(!m_has_fixed_memory);
+        ASSERT(newCapacity > 0);
+        ASSERT(newCapacity > m_capacity);
 
-        s32 oldCount = count;
-        s32 oldCapacity = capacity;
-        HashTableEntry<T>* oldItems = entries;
+        size_t old_count = m_count;
+        size_t old_capacity = m_capacity;
+        HashTableEntry<T>* old_entries = m_entries;
 
-        capacity = newCapacity;
-        entries = (HashTableEntry<T>*)allocateRaw(newCapacity * sizeof(HashTableEntry<T>));
-        count = 0;
+        m_capacity = newCapacity;
+        m_entries = (HashTableEntry<T>*)allocateRaw(newCapacity * sizeof(HashTableEntry<T>));
+        m_count = 0;
 
-        if (oldItems != nullptr) {
+        if (old_entries != nullptr) {
             // Migrate old entries over
-            for (s32 i = 0; i < oldCapacity; i++) {
-                HashTableEntry<T>* oldEntry = oldItems + i;
+            for (size_t i = 0; i < old_capacity; i++) {
+                HashTableEntry<T>* oldEntry = old_entries + i;
 
                 if (oldEntry->isOccupied) {
                     put(oldEntry->key, oldEntry->value);
                 }
             }
 
-            deallocateRaw(oldItems);
+            deallocateRaw(old_entries);
         }
 
-        ASSERT(oldCount == count); //, "Hash table item count changed while expanding it! Old: {0}, new: {1}", {formatInt(oldCount), formatInt(table->count)});
+        ASSERT(old_count == m_count);
     }
+
+    size_t m_count { 0 };
+    size_t m_capacity { 0 };
+
+    float m_max_load_factor { 0 };
+    bool m_has_fixed_memory { false }; // Fixed-memory HashTables don't expand in size
+    HashTableEntry<T>* m_entries {};
+
+    // @Size: In a lot of cases, we already store the key in a separate StringTable, so having
+    // it stored here too is redundant. But, keys are small so it's unlikely to cause any real
+    // issues.
+    // - Sam, 08/01/2020
+    // FIXME: Make Strings own their memory!
+    MemoryArena m_key_data_arena;
 };
 
 template<typename T>
@@ -414,7 +423,7 @@ struct HashTableIterator {
         while (!isDone) {
             currentIndex++;
 
-            if (currentIndex >= hashTable->capacity) {
+            if (currentIndex >= hashTable->capacity()) {
                 isDone = true;
             } else {
                 // Only stop iterating if we find an occupied entry
@@ -432,6 +441,6 @@ struct HashTableIterator {
 
     HashTableEntry<T>* getEntry()
     {
-        return hashTable->entries + currentIndex;
+        return hashTable->m_entries + currentIndex;
     }
 };
