@@ -224,11 +224,7 @@ void debugTrackProfile(String name, u64 cycleCount, DebugCodeDataTag tag = Debug
 
 inline DebugCodeData* debugFindOrAddCodeData(String name, DebugCodeDataTag tag)
 {
-    DebugCodeData* result = globalDebugState->codeData.findOrAdd(name);
-    result->name = name;
-    result->tag = tag;
-
-    return result;
+    return &globalDebugState->codeData.ensure(name, DebugCodeData { .name = name, .tag = tag });
 }
 
 struct DebugBlock {

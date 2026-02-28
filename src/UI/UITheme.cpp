@@ -544,7 +544,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
 
                     String name = asset_manager().assetStrings.intern(name_token.value());
 
-                    auto& pack = *styles.findOrAdd(name);
+                    auto& pack = styles.ensure(name, {});
                     target = &pack[styleType];
                     *target = {};
                     target->name = name;

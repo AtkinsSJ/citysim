@@ -201,9 +201,7 @@ void remapBuildingTypes()
     // merged accidentally.
     for (auto it = building_catalogue.buildingNameToOldTypeID.iterate(); it.hasNext(); it.next()) {
         auto entry = it.getEntry();
-        if (!building_catalogue.buildingNameToTypeID.contains(entry->key)) {
-            building_catalogue.buildingNameToTypeID.put(entry->key, building_catalogue.buildingNameToTypeID.count());
-        }
+        building_catalogue.buildingNameToTypeID.ensure(entry->key, building_catalogue.buildingNameToTypeID.count());
     }
 
     if (building_catalogue.buildingNameToOldTypeID.count() > 0) {

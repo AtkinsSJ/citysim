@@ -66,9 +66,7 @@ void remapTerrainTypes()
     // merged accidentally.
     for (auto it = s_terrain_catalogue.terrainNameToOldType.iterate(); it.hasNext(); it.next()) {
         auto entry = it.getEntry();
-        if (!s_terrain_catalogue.terrainNameToType.contains(entry->key)) {
-            s_terrain_catalogue.terrainNameToType.put(entry->key, (u8)s_terrain_catalogue.terrainNameToType.count());
-        }
+        s_terrain_catalogue.terrainNameToType.ensure(entry->key, (u8)s_terrain_catalogue.terrainNameToType.count());
     }
 
     if (s_terrain_catalogue.terrainNameToOldType.count() > 0) {

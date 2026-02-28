@@ -268,6 +268,23 @@ public:
         return &entry->value;
     }
 
+    T& ensure(String key, T value)
+    {
+        HashTableEntry<T>* entry = findOrAddEntry(key);
+        if (!entry->isOccupied) {
+            m_count++;
+            entry->isOccupied = true;
+            entry->isGravestone = false;
+
+            String theKey = m_key_data_arena.allocate_string(key);
+            theKey.hash();
+            entry->key = theKey;
+
+            entry->value = move(value);
+        }
+        return entry->value;
+    }
+
     T* put(String key, T value = {})
     {
         HashTableEntry<T>* entry = findOrAddEntry(key);
