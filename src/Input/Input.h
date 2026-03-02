@@ -100,6 +100,6 @@ bool isInputCaptured();
 // INTERNAL
 //
 
-u32 keycodeToIndex(u32 key);
+s32 keycodeToIndex(SDL_Keycode key);
 Flags<ModifierKey> getPressedModifierKeys();
 bool modifierKeysArePressed(Flags<ModifierKey> modifiers);

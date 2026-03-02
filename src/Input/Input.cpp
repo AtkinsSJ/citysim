@@ -6,15 +6,17 @@
 
 #include "Input.h"
 #include "AppState.h"
+#include <Debug/Debug.h>
 #include <Gfx/Renderer.h>
 #include <SDL2/SDL_clipboard.h>
-#include <Util/TokenReader.h>
 
 static InputState s_input_state {};
 
-u32 keycodeToIndex(u32 key)
+s32 keycodeToIndex(SDL_Keycode key)
 {
-    return key & ~SDLK_SCANCODE_MASK;
+    if (key & SDLK_SCANCODE_MASK)
+        return (key & ~SDLK_SCANCODE_MASK) | 128;
+    return key;
 }
 
 void init_input_state()
