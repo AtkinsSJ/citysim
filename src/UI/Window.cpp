@@ -96,6 +96,13 @@ void showWindow(WindowTitle title, s32 width, s32 height, V2I position, String s
         return;
     }
 
+    // TODO: Have a proper "automatic position" parameter instead.
+    if (position.x == 0 && position.y == 0) {
+        auto game_window_size = the_renderer().window_size();
+        position.x = (game_window_size.x - width) / 2;
+        position.y = (game_window_size.y - height) / 2;
+    }
+
     // If the window wants to be unique, then we search for an existing one with the same WindowProc
     if (uiState.openWindows.count > 0 && flags & WindowFlags::Unique) {
         Window* existing_window = nullptr;
