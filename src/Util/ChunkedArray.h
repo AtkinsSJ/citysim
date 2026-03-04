@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include "Deferred.h"
+
 #include <Util/Basic.h>
 #include <Util/DeprecatedPool.h>
 #include <Util/Indexed.h>
@@ -209,14 +211,23 @@ struct ChunkedArray {
         return removed > 0;
     }
 
-    void removeIndex(s32 indexToRemove, bool keepItemOrder = false)
+    T&& take_index(s32 indexToRemove, bool keepItemOrder = false)
     {
-        if (indexToRemove < 0 || indexToRemove >= count) {
-            logError("Attempted to remove non-existent index {0} from a ChunkedArray!"_s, { formatInt(indexToRemove) });
-            return;
-        }
+        ASSERT(indexToRemove >= 0 && indexToRemove < count);
 
         ArrayChunk<T>* lastNonEmptyChunk = getLastNonEmptyChunk();
+
+        // In order to return a T&& but also run code afterwards, we use a defer.
+        // It's a bit awkward but it works.
+        Deferred clean_up_afterwards = [&] {
+            lastNonEmptyChunk->count--;
+            count--;
+
+            // Return empty chunks to the chunkpool
+            if ((chunkPool != nullptr) && (lastChunk != nullptr) && (lastChunk->count == 0)) {
+                returnLastChunkToPool();
+            }
+        };
 
         if (keepItemOrder) {
             if (indexToRemove != (count - 1)) {
@@ -225,26 +236,21 @@ struct ChunkedArray {
                 // - Sam, 8/2/2019
                 moveItemKeepingOrder(indexToRemove, count - 1);
             }
-        } else {
-            s32 chunkIndex = indexToRemove / itemsPerChunk;
-            s32 itemIndex = indexToRemove % itemsPerChunk;
+            return move(lastNonEmptyChunk->items[lastNonEmptyChunk->count - 1]);
+        }
 
-            ArrayChunk<T>* chunk = getChunkByIndex(chunkIndex);
+        s32 chunkIndex = indexToRemove / itemsPerChunk;
+        s32 itemIndex = indexToRemove % itemsPerChunk;
 
-            // We don't need to rearrange things if we're removing the last item
+        ArrayChunk<T>* chunk = getChunkByIndex(chunkIndex);
+
+        // If we're removing from the middle, cover the gap my moving the last item over it.
+        Deferred overwrite_it = [&] {
             if (indexToRemove != count - 1) {
-                // Copy last item to overwrite this one
-                chunk->items[itemIndex] = lastNonEmptyChunk->items[lastNonEmptyChunk->count - 1];
+                chunk->items[itemIndex] = move(lastNonEmptyChunk->items[lastNonEmptyChunk->count - 1]);
             }
-        }
-
-        lastNonEmptyChunk->count--;
-        count--;
-
-        // Return empty chunks to the chunkpool
-        if ((chunkPool != nullptr) && (lastChunk != nullptr) && (lastChunk->count == 0)) {
-            returnLastChunkToPool();
-        }
+        };
+        return move(chunk->items[itemIndex]);
     }
 
     template<typename Filter>
@@ -259,7 +265,7 @@ struct ChunkedArray {
             for (s32 i = 0; i < chunk->count; i++) {
                 if (filter(chunk->items + i)) {
                     // FOUND ONE!
-                    removeIndex(i, keepItemOrder);
+                    take_index(i, keepItemOrder);
                     removedCount++;
 
                     if (limited && removedCount >= limit) {
@@ -300,7 +306,7 @@ struct ChunkedArray {
             s32 itemIndex = fromIndex % itemsPerChunk;
             ArrayChunk<T>* chunk = getChunkByIndex(chunkIndex);
 
-            T movingItem = chunk->items[itemIndex];
+            T movingItem = move(chunk->items[itemIndex]);
 
             for (s32 currentPosition = fromIndex; currentPosition < toIndex; currentPosition++) {
                 T* dest = &chunk->items[itemIndex];
@@ -311,19 +317,17 @@ struct ChunkedArray {
                     itemIndex = 0;
                 }
 
-                T* src = &chunk->items[itemIndex];
-
-                *dest = *src;
+                *dest = move(chunk->items[itemIndex]);
             }
 
-            chunk->items[itemIndex] = movingItem;
+            chunk->items[itemIndex] = move(movingItem);
         } else {
             // Moving <, so move each item in the range right 1
             s32 chunkIndex = fromIndex / itemsPerChunk;
             s32 itemIndex = fromIndex % itemsPerChunk;
             ArrayChunk<T>* chunk = getChunkByIndex(chunkIndex);
 
-            T movingItem = chunk->items[itemIndex];
+            T movingItem = move(chunk->items[itemIndex]);
 
             for (s32 currentPosition = fromIndex; currentPosition > toIndex; currentPosition--) {
                 T* dest = &chunk->items[itemIndex];
@@ -332,12 +336,11 @@ struct ChunkedArray {
                     chunk = chunk->prevChunk;
                     itemIndex = itemsPerChunk - 1;
                 }
-                T* src = &chunk->items[itemIndex];
 
-                *dest = *src;
+                *dest = move(chunk->items[itemIndex]);
             }
 
-            chunk->items[itemIndex] = movingItem;
+            chunk->items[itemIndex] = move(movingItem);
         }
     }
 

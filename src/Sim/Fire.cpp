@@ -232,7 +232,7 @@ void removeFireAt(City* city, s32 x, s32 y)
         // Remove it!
         auto& [index, fire] = existing_fire.value();
         removeEntity(city, fire.entity);
-        sectorAtPosition->activeFires.removeIndex(index);
+        sectorAtPosition->activeFires.take_index(index);
         layer->activeFireCount--;
 
         markRectAsDirty(&layer->dirtyRects, { x, y, 1, 1 });

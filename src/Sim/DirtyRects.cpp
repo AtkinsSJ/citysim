@@ -50,7 +50,7 @@ void markRectAsDirty(DirtyRects* dirtyRects, Rect2I rect)
                 it.next()) {
                 Rect2I existingRect = it.getValue();
                 if (rectToAdd.contains(existingRect)) {
-                    dirtyRects->rects.removeIndex(it.getIndex(), false);
+                    dirtyRects->rects.take_index(it.getIndex(), false);
                 }
             }
         }

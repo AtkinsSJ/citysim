@@ -464,7 +464,7 @@ void closeWindow(s32 windowIndex)
         window.renderBuffer = nullptr;
     }
 
-    uiState.openWindows.removeIndex(windowIndex, true);
+    uiState.openWindows.take_index(windowIndex, true);
 }
 
 }
