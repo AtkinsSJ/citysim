@@ -12,6 +12,14 @@
 
 namespace UI {
 
+static void* drag_object_pointer_for_window(Window& window)
+{
+    // This is hacky. We assume that the combination of a windowProc and its userData pointers should be unique,
+    // and also doesn't collide with some other object we want to drag. The collision chance is very slim though.
+    // FIXME: Actually allocate Windows somewhere so they have a unique address.
+    return (u8*)window.windowProc + (u64)window.userData;
+}
+
 WindowContext::WindowContext(Window* window, WindowStyle* windowStyle, bool hideWidgets, RenderBuffer* renderBuffer)
     : window(window)
     , windowStyle(windowStyle)
@@ -231,7 +239,7 @@ void updateAndRenderWindows()
         if (isModal) {
             // Modal windows can't be moved, they just auto-centre
             window.area = validWindowArea.create_centred_within(window.area.size());
-        } else if (isDragging((void*)window.id)) {
+        } else if (isDragging(drag_object_pointer_for_window(window))) {
             window.area.set_position(getDraggingObjectPos());
         } else if (isTooltip) {
             window.area.set_position(mousePos + window_style.offsetFromMouse);
@@ -328,7 +336,7 @@ void updateAndRenderWindows()
                         //
                         // The solution would be to either allocate windows individually, or store their order in
                         // an array that's separate abd just uses pointers.
-                        startDragging((void*)window.id, window.area.position());
+                        startDragging(drag_object_pointer_for_window(window), window.area.position());
                     }
 
                     // Make this the active window!
