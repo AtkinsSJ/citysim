@@ -108,6 +108,11 @@ public:
         return m_ptr == nullptr;
     }
 
+    bool operator==(std::nullptr_t const&) const
+    {
+        return m_ptr == nullptr;
+    }
+
     void clear()
     {
         if (m_ptr)
