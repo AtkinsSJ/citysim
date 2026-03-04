@@ -46,9 +46,8 @@ void startFrame()
     uiState.mouseInputHandled = false;
 
     // Clear the drag if the mouse button isn't pressed
-    if (!mouseButtonPressed(MouseButton::Left)) {
-        uiState.currentDragObject = nullptr;
-    }
+    if (!mouseButtonPressed(MouseButton::Left))
+        uiState.drag_state = {};
 
     windowSize = v2i(ui_camera.size());
     mousePos = v2i(ui_camera.mouse_position());
@@ -135,18 +134,17 @@ WidgetMouseState getWidgetMouseState(Rect2I widgetBounds)
 
 bool isDragging(void* object)
 {
-    return (object == uiState.currentDragObject);
+    return uiState.drag_state.has_value() && uiState.drag_state.value().drag_object == object;
 }
 
 void startDragging(void* object, V2I objectPos)
 {
-    uiState.currentDragObject = object;
-    uiState.dragObjectStartPos = objectPos;
+    uiState.drag_state = UIState::DragState { object, objectPos };
 }
 
 V2I getDraggingObjectPos()
 {
-    return uiState.dragObjectStartPos + (mousePos - mouseClickStartPos);
+    return uiState.drag_state.value().drag_object_start_pos + (mousePos - mouseClickStartPos);
 }
 
 void pushInputScissorRect(Rect2I bounds)

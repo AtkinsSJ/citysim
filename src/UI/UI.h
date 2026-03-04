@@ -52,8 +52,11 @@ struct UIState {
     Stack<Rect2I> inputScissorRects;
 
     // Dragging stuff
-    void* currentDragObject;
-    V2I dragObjectStartPos;
+    struct DragState {
+        void* drag_object;
+        V2I drag_object_start_pos;
+    };
+    Optional<DragState> drag_state;
 
     String tooltipText;
 
