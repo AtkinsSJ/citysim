@@ -6,8 +6,8 @@
 
 #pragma once
 
-struct BitArray;
-struct BitArrayIterator;
+class BitArray;
+class BitArrayIterator;
 class Blob;
 struct DateTime;
 struct Matrix4;

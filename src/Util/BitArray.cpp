@@ -12,7 +12,7 @@ void initBitArray(BitArray* array, MemoryArena* arena, s32 size)
 {
     array->size = size;
     array->setBitCount = 0;
-    array->u64s = arena->allocate_array<u64>(BitArray::calculateU64Count(size), true);
+    array->u64s = arena->allocate_array<u64>(BitArray::calculate_u64_count(size), true);
 }
 
 void initBitArray(BitArray* array, s32 size, Array<u64> u64s)
@@ -24,7 +24,7 @@ void initBitArray(BitArray* array, s32 size, Array<u64> u64s)
     array->u64s = u64s;
 }
 
-bool BitArray::operator[](u32 index)
+bool BitArray::operator[](u32 index) const
 {
     bool result = false;
 
@@ -42,7 +42,7 @@ bool BitArray::operator[](u32 index)
     return result;
 }
 
-void BitArray::setBit(s32 index)
+void BitArray::set_bit(s32 index)
 {
     // NB: Check and assert done this way so that in debug builds, we assert, but
     // in release builds without asserts, we just do nothing for non-existent bits.
@@ -62,7 +62,7 @@ void BitArray::setBit(s32 index)
     }
 }
 
-void BitArray::unsetBit(s32 index)
+void BitArray::unset_bit(s32 index)
 {
     // NB: Check and assert done this way so that in debug builds, we assert, but
     // in release builds without asserts, we just do nothing for non-existent bits.
@@ -82,7 +82,17 @@ void BitArray::unsetBit(s32 index)
     }
 }
 
-void BitArray::clearBits()
+void BitArray::set_all()
+{
+    setBitCount = size;
+
+    // FIXME: memset?
+    for (auto& it : u64s) {
+        it = ~0;
+    }
+}
+
+void BitArray::unset_all()
 {
     setBitCount = 0;
 
@@ -92,28 +102,28 @@ void BitArray::clearBits()
     }
 }
 
-Array<s32> BitArray::getSetBitIndices()
+Array<s32> BitArray::get_set_bit_indices() const
 {
     Array<s32> result = temp_arena().allocate_array<s32>(setBitCount, false);
 
-    for (auto it = iterateSetBits(); it.hasNext(); it.next()) {
-        result.append(it.getIndex());
+    for (auto it = iterate_set_bits(); it.has_next(); it.next()) {
+        result.append(it.get_index());
     }
 
     return result;
 }
 
-s32 BitArray::getFirstSetBitIndex()
+s32 BitArray::get_first_set_bit_index() const
 {
-    return getFirstMatchingBitIndex(true);
+    return get_first_matching_bit_index(true);
 }
 
-s32 BitArray::getFirstUnsetBitIndex()
+s32 BitArray::get_first_unset_bit_index() const
 {
-    return getFirstMatchingBitIndex(false);
+    return get_first_matching_bit_index(false);
 }
 
-s32 BitArray::getFirstMatchingBitIndex(bool set)
+s32 BitArray::get_first_matching_bit_index(bool set) const
 {
     s32 result = -1;
 
@@ -129,54 +139,51 @@ s32 BitArray::getFirstMatchingBitIndex(bool set)
     return result;
 }
 
+BitArrayIterator BitArray::iterate_set_bits() const
+{
+    return BitArrayIterator(*this);
+}
+
 //////////////////////////////////////////////////
 // ITERATOR STUFF                               //
 //////////////////////////////////////////////////
 
-BitArrayIterator BitArray::iterateSetBits()
+BitArrayIterator::BitArrayIterator(BitArray const& array)
+    : m_array(array)
+    , m_current_index(0)
+    , m_is_done(array.setBitCount == 0)
 {
-    BitArrayIterator iterator = {};
-
-    iterator.array = this;
-    iterator.currentIndex = 0;
-
-    // If bitfield is empty, we can skip some work
-    iterator.isDone = (setBitCount == 0);
-
     // If the first bit is unset, we need to skip ahead
-    if (!iterator.isDone && !iterator.getValue()) {
-        iterator.next();
-    }
-
-    return iterator;
+    if (has_next() && !get_value())
+        next();
 }
 
 void BitArrayIterator::next()
 {
-    while (!isDone) {
-        currentIndex++;
+    while (!m_is_done) {
+        m_current_index++;
 
-        if (currentIndex >= array->size) {
-            isDone = true;
+        if (m_current_index >= m_array.size) {
+            m_is_done = true;
         } else {
             // Only stop iterating if we find a set bit
-            if (getValue())
+            if (get_value())
                 break;
         }
     }
 }
 
-bool BitArrayIterator::hasNext()
+bool BitArrayIterator::has_next() const
 {
-    return !isDone;
+    return !m_is_done;
 }
 
-s32 BitArrayIterator::getIndex()
+s32 BitArrayIterator::get_index() const
 {
-    return currentIndex;
+    return m_current_index;
 }
 
-bool BitArrayIterator::getValue()
+bool BitArrayIterator::get_value() const
 {
-    return (*array)[currentIndex];
+    return m_array[m_current_index];
 }

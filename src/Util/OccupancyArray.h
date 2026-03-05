@@ -52,7 +52,7 @@ struct OccupancyArray {
             // - Sam, 21/08/2019
             smm structSize = sizeof(OccupancyArrayChunk<T>);
             smm arraySize = sizeof(T) * itemsPerChunk;
-            s32 occupancyArrayCount = BitArray::calculateU64Count(itemsPerChunk);
+            s32 occupancyArrayCount = BitArray::calculate_u64_count(itemsPerChunk);
             smm occupancyArraySize = occupancyArrayCount * sizeof(u64);
 
             Blob blob = memoryArena->allocate_blob(structSize + arraySize + occupancyArraySize);
@@ -79,12 +79,12 @@ struct OccupancyArray {
 
         OccupancyArrayChunk<T>* chunk = firstChunkWithSpace;
 
-        // getFirstUnsetBitIndex() to find the free slot
-        s32 indexInChunk = chunk->occupancy.getFirstUnsetBitIndex();
+        // get_first_unset_bit_index() to find the free slot
+        s32 indexInChunk = chunk->occupancy.get_first_unset_bit_index();
         ASSERT(indexInChunk >= 0 && indexInChunk < itemsPerChunk);
 
         // mark that slot as occupied
-        chunk->occupancy.setBit(indexInChunk);
+        chunk->occupancy.set_bit(indexInChunk);
         Indexed<T> result {
             indexInChunk + (firstChunkWithSpaceIndex * itemsPerChunk),
             chunk->items[indexInChunk]
@@ -156,7 +156,7 @@ struct OccupancyArray {
 
         // Mark it as unoccupied
         ASSERT(chunk->occupancy[itemIndex]);
-        chunk->occupancy.unsetBit(itemIndex);
+        chunk->occupancy.unset_bit(itemIndex);
 
         // Decrease counts
         count--;
