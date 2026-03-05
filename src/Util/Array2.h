@@ -23,8 +23,12 @@ struct Array2 {
 
         return this->items[(y * this->w) + x];
     }
+    T const& get(s32 x, s32 y) const
+    {
+        return const_cast<Array2*>(this)->get(x, y);
+    }
 
-    T getIfExists(s32 x, s32 y, T defaultValue)
+    T getIfExists(s32 x, s32 y, T defaultValue) const
     {
         T result = defaultValue;
 
