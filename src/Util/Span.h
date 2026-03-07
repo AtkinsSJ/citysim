@@ -45,6 +45,26 @@ public:
     }
     T const& operator[](size_t index) const { return const_cast<Span&>(*this)[index]; }
 
+    template<typename Filter>
+    bool all_are(Filter filter) const
+    {
+        for (int i = 0; i < m_size; ++i) {
+            if (!filter(m_items[i]))
+                return false;
+        }
+        return true;
+    }
+
+    template<typename Filter>
+    bool any_are(Filter filter) const
+    {
+        for (int i = 0; i < m_size; ++i) {
+            if (filter(m_items[i]))
+                return true;
+        }
+        return false;
+    }
+
     class Iterator {
     public:
         explicit Iterator(Badge<Span>, T* pointer)
