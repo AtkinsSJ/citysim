@@ -294,6 +294,7 @@ struct ChunkedArray {
     }
 
     // Inserts the item at fromIndex into toIndex, moving other items around as necessary
+    // FIXME: This should complain if we try to move an item that doesn't exist!
     void moveItemKeepingOrder(s32 fromIndex, s32 toIndex)
     {
         // Skip if there's nothing to do

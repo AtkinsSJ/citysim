@@ -393,6 +393,8 @@ void updateAndRenderWindows()
         uiState.windowsToMakeActive.add(tooltipIndex);
     }
 
+    Array<s32> windowsToMakeActive = uiState.windowsToMakeActive.asSortedArray();
+
     // Close any windows that were requested
     if (!uiState.windowsToClose.is_empty()) {
         Array<s32> windowsToClose = uiState.windowsToClose.asSortedArray();
@@ -400,6 +402,13 @@ void updateAndRenderWindows()
         for (s32 i = windowsToClose.count - 1; i >= 0; i--) {
             s32 windowIndex = windowsToClose[i];
             closeWindow(windowIndex);
+
+            // Any indices in windowsToMakeActive that are >windowIndex are now inaccurate.
+            // Subtract 1 from them to account for this one being removed from the list.
+            for (auto j = 0; j < windowsToMakeActive.count; ++j) {
+                if (windowsToMakeActive[j] > windowIndex)
+                    windowsToMakeActive[j]--;
+            }
         }
 
         uiState.windowsToClose.clear();
@@ -407,8 +416,6 @@ void updateAndRenderWindows()
 
     // Activate any windows
     if (!uiState.windowsToMakeActive.is_empty()) {
-        Array<s32> windowsToMakeActive = uiState.windowsToMakeActive.asSortedArray();
-
         // NB: Because the windowsToMakeActive are in ascending index order, and we always move them to a lower position,
         // we are guaranteed to not perturb the positions of any later window indices, so this operation is completely
         // safe, and we can do it really simply. Hooray!
@@ -429,7 +436,8 @@ void updateAndRenderWindows()
         it.hasNext();
         it.next()) {
         auto& window = it.get();
-        the_renderer().window_buffer().take_from(*window.renderBuffer);
+        if (window.renderBuffer)
+            the_renderer().window_buffer().take_from(*window.renderBuffer);
     }
 
     // Remove the tooltip now that it's been shown
