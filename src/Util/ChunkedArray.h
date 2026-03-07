@@ -204,6 +204,18 @@ struct ChunkedArray {
         return {};
     }
 
+    template<typename Filter>
+    Optional<Indexed<T>> find_last(Filter filter)
+    {
+        for (auto it = iterateBackwards(); it.hasNext(); it.next()) {
+            auto& entry = it.get();
+            if (filter(entry))
+                return Indexed { it.getIndex(), entry };
+        }
+
+        return {};
+    }
+
     bool findAndRemove(T toRemove, bool keepItemOrder = false)
     {
         s32 removed = removeAll([&](T* t) { return *t == toRemove; }, 1, keepItemOrder);
