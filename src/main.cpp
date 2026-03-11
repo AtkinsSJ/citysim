@@ -80,6 +80,15 @@ SDL_Window* initSDL(WindowSettings windowSettings, char const* windowTitle)
     return window;
 }
 
+static bool checkInGame()
+{
+    bool inGame = (AppState::the().gameState != nullptr);
+    if (!inGame) {
+        consoleWriteLine("You can only do that when a game is in progress!"_s, ConsoleLineStyle::Error);
+    }
+    return inGame;
+}
+
 int main(int argc, char* argv[])
 {
     // SDL requires these params, and the compiler keeps complaining they're unused, so a hack! Yay!
@@ -103,6 +112,126 @@ int main(int argc, char* argv[])
         debugInit();
         globalDebugState->showDebugData = false;
         initConsole(&globalDebugState->arena, 0.2f, 0.9f, 6.0f);
+
+        globalConsole->register_command(
+            { "debug_tools"_s, [](Console*, s32, StringView) {
+                 if (!checkInGame())
+                     return;
+
+                 GameState* gameState = AppState::the().gameState;
+
+                 // @Hack: This sets the position to outside the camera, and then relies on it automatically snapping back into bounds
+                 auto& renderer = the_renderer();
+                 V2I windowPos = v2i(renderer.ui_camera().position() + renderer.ui_camera().size());
+
+                 UI::showWindow(UI::WindowTitle::fromTextAsset("title_debug_tools"_s), 250, 200, windowPos, "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Unique | WindowFlags::UniqueKeepPosition, debugToolsWindowProc, gameState);
+             } });
+
+        globalConsole->register_command(
+            { "funds"_s, [](Console*, s32, StringView arguments) {
+                 if (!checkInGame())
+                     return;
+
+                 TokenReader tokens { arguments };
+                 if (auto sAmount = tokens.next_token(); sAmount.has_value()) {
+                     if (auto amount = sAmount.value().to_int(); amount.has_value()) {
+                         consoleWriteLine(myprintf("Set funds to {0}"_s, { sAmount.value() }), ConsoleLineStyle::Success);
+                         AppState::the().gameState->city.funds = truncate32(amount.value());
+                         return;
+                     }
+                 }
+                 consoleWriteLine("Usage: funds amount, where amount is an integer"_s, ConsoleLineStyle::Error);
+             },
+                1, 1 });
+
+        globalConsole->register_command(
+            { "generate"_s, [](Console*, s32, StringView) {
+                 if (!checkInGame())
+                     return;
+
+                 auto& app_state = AppState::the();
+
+                 City* city = &app_state.gameState->city;
+                 // TODO: Some kind of reset would be better than this, but this is temporary until we add
+                 //       proper terrain generation and UI, so meh.
+                 if (city->buildings.count > 0) {
+                     demolishRect(city, city->bounds);
+                     city->highestBuildingID = 0;
+                 }
+                 generateTerrain(city, app_state.gameState->gameRandom);
+
+                 consoleWriteLine("Generated new map"_s, ConsoleLineStyle::Success);
+             } });
+
+        globalConsole->register_command(
+            { "map_info"_s, [](Console*, s32, StringView) {
+                 if (!checkInGame())
+                     return;
+
+                 City* city = &AppState::the().gameState->city;
+
+                 consoleWriteLine(myprintf("Map: {0} x {1} tiles. Seed: {2}"_s, { formatInt(city->bounds.width()), formatInt(city->bounds.height()), formatInt(city->terrainLayer.terrainGenerationSeed) }), ConsoleLineStyle::Success);
+             } });
+
+        globalConsole->register_command(
+            { "mark_all_dirty"_s, [](Console*, s32, StringView) {
+                 if (!checkInGame())
+                     return;
+
+                 City* city = &AppState::the().gameState->city;
+                 markAreaDirty(city, city->bounds);
+             } });
+
+        globalConsole->register_command(
+            { "show_layer"_s, [](Console*, s32 argumentsCount, StringView arguments) {
+                 if (!checkInGame())
+                     return;
+
+                 auto& app_state = AppState::the();
+
+                 if (argumentsCount == 0) {
+                     // Hide layers
+                     app_state.gameState->dataLayerToDraw = DataView::None;
+                     consoleWriteLine("Hiding data layers"_s, ConsoleLineStyle::Success);
+                 } else if (argumentsCount == 1) {
+                     TokenReader tokens { arguments };
+                     auto layerName = tokens.next_token();
+                     if (layerName == "crime"_s) {
+                         app_state.gameState->dataLayerToDraw = DataView::Crime;
+                         consoleWriteLine("Showing crime layer"_s, ConsoleLineStyle::Success);
+                     } else if (layerName == "des_res"_s) {
+                         app_state.gameState->dataLayerToDraw = DataView::Desirability_Residential;
+                         consoleWriteLine("Showing residential desirability"_s, ConsoleLineStyle::Success);
+                     } else if (layerName == "des_com"_s) {
+                         app_state.gameState->dataLayerToDraw = DataView::Desirability_Commercial;
+                         consoleWriteLine("Showing commercial desirability"_s, ConsoleLineStyle::Success);
+                     } else if (layerName == "des_ind"_s) {
+                         app_state.gameState->dataLayerToDraw = DataView::Desirability_Industrial;
+                         consoleWriteLine("Showing industrial desirability"_s, ConsoleLineStyle::Success);
+                     } else if (layerName == "fire"_s) {
+                         app_state.gameState->dataLayerToDraw = DataView::Fire;
+                         consoleWriteLine("Showing fire layer"_s, ConsoleLineStyle::Success);
+                     } else if (layerName == "health"_s) {
+                         app_state.gameState->dataLayerToDraw = DataView::Health;
+                         consoleWriteLine("Showing health layer"_s, ConsoleLineStyle::Success);
+                     } else if (layerName == "land_value"_s) {
+                         app_state.gameState->dataLayerToDraw = DataView::LandValue;
+                         consoleWriteLine("Showing land value layer"_s, ConsoleLineStyle::Success);
+                     } else if (layerName == "pollution"_s) {
+                         app_state.gameState->dataLayerToDraw = DataView::Pollution;
+                         consoleWriteLine("Showing pollution layer"_s, ConsoleLineStyle::Success);
+                     } else if (layerName == "power"_s) {
+                         app_state.gameState->dataLayerToDraw = DataView::Power;
+                         consoleWriteLine("Showing power layer"_s, ConsoleLineStyle::Success);
+                     } else {
+                         consoleWriteLine("Usage: show_layer (layer_name), or with no argument to hide the data layer. Layer names are: crime, des_res, des_com, des_ind, fire, health, land_value, pollution, power"_s, ConsoleLineStyle::Error);
+                     }
+                 }
+             },
+                0, 1 });
+
+        consoleWriteLine(myprintf("Loaded {} commands. Type 'help' to list them."_s, { formatInt(globalConsole->commands.count()) }), ConsoleLineStyle::Default);
+        consoleWriteLine("GREETINGS PROFESSOR FALKEN.\nWOULD YOU LIKE TO PLAY A GAME?"_s);
     }
 
     app_state.cosmeticRandom = Random::create();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2017-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -46,6 +46,10 @@ struct Console : public AssetManagerListener {
     virtual void after_assets_loaded() override;
     virtual void before_assets_unloaded() override;
 
+    void register_command(Command&&);
+
+    void register_default_commands();
+
     TypedAssetRef<UI::ConsoleStyle> style { "default"_s };
 
     float currentHeight;
@@ -71,7 +75,6 @@ s32 const consoleLineLength = 255;
 void initConsole(MemoryArena* debugArena, float openHeight, float maximisedHeight, float openSpeed);
 void updateAndRenderConsole(Console* console);
 
-void initCommands(Console* console); // Implementation in commands.cpp
 void loadConsoleKeyboardShortcuts(Console* console, Blob data, String filename);
 void consoleHandleCommand(Console* console, StringView commandInput);
 
