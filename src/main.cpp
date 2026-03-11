@@ -33,10 +33,10 @@
 #include <Debug/DebugAssetLoader.h>
 #include <Gfx/AssetLoader.h>
 #include <Gfx/Renderer.h>
-#include <IO/SavedGames.h>
 #include <Input/Input.h>
 #include <Menus/Credits.h>
 #include <Menus/MainMenu.h>
+#include <Menus/SavedGames.h>
 #include <Settings/Settings.h>
 #include <Sim/AssetLoader.h>
 #include <Sim/BuildingCatalogue.h>

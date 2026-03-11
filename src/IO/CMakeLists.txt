@@ -7,7 +7,5 @@ target_sources(CitySim PRIVATE
     File.cpp
     LineReader.cpp
     Paths.cpp
-    SaveFile.cpp
-    SavedGames.cpp
     WriteBuffer.cpp
 )

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2019-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -9,8 +9,8 @@
 #include <IO/DirectoryIterator.h>
 #include <IO/DirectoryWatcher.h>
 #include <IO/Paths.h>
-#include <IO/SaveFile.h>
 #include <Input/Input.h>
+#include <Menus/SaveFile.h>
 #include <Settings/Settings.h>
 #include <UI/Toast.h>
 #include <UI/Window.h>
