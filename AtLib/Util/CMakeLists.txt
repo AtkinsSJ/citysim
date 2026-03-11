@@ -25,7 +25,8 @@ add_library(Util STATIC
     Unicode.cpp
     Vector.cpp
 )
-target_include_directories(Util PUBLIC ..)
+target_include_directories(Util PUBLIC "../")
+
 target_compile_definitions(Util PRIVATE
     $<$<CONFIG:Debug>:
         BUILD_DEBUG=1

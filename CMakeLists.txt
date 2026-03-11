@@ -17,16 +17,12 @@ else()
     )
 endif()
 
-find_package(OpenGL REQUIRED)
-find_package(GLEW REQUIRED)
-find_package(SDL2 REQUIRED)
-find_package(SDL2_image REQUIRED)
-
 add_executable(CitySim)
 add_subdirectory("src")
 add_subdirectory("tests")
 include_directories("src")
-target_include_directories(CitySim PRIVATE ${OPENGL_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
+add_subdirectory("AtLib")
+target_include_directories(CitySim PRIVATE "./AtLib")
 
 target_compile_definitions(CitySim PRIVATE
     $<$<CONFIG:Debug>:
@@ -37,6 +33,6 @@ target_compile_definitions(CitySim PRIVATE
     >
 )
 
-target_link_libraries(CitySim PRIVATE Util ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${SDL2_LIBRARIES} SDL2_image::SDL2_image)
+target_link_libraries(CitySim PRIVATE AtLib)
 
 file(CREATE_LINK ${CMAKE_SOURCE_DIR}/assets ${CMAKE_BINARY_DIR}/assets SYMBOLIC)
