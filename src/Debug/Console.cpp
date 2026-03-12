@@ -72,8 +72,8 @@ void initConsole(MemoryArena* debugArena, float openHeight, float maximisedHeigh
 
     // NB: Increase the count before we reach it - hash tables like lots of extra space!
     s32 commandCapacity = 128;
-    console->commands = HashTable<Command>::allocate_fixed_size(AppState::the().systemArena, commandCapacity);
-    initChunkedArray(&console->commandShortcuts, &AppState::the().systemArena, 64);
+    console->commands = HashTable<Command>::allocate_fixed_size(*debugArena, commandCapacity);
+    initChunkedArray(&console->commandShortcuts, debugArena, 64);
     console->register_default_commands();
 
     globalConsole = console;
