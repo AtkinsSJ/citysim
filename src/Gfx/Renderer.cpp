@@ -228,10 +228,9 @@ void Renderer::return_temporary_render_buffer(RenderBuffer& buffer)
     m_render_buffer_pool.discard(buffer);
 }
 
-void Renderer::on_settings_changed()
+void Renderer::on_settings_changed(SettingsState const& settings)
 {
-    auto& settings = Settings::the().settings;
-    resize_window(settings->resolution.value().x, settings->resolution.value().y, !settings->windowed.value());
+    resize_window(settings.resolution.value().x, settings.resolution.value().y, !settings.windowed.value());
 }
 
 void appendRenderItemType(RenderBuffer* buffer, RenderItemType type)

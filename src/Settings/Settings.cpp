@@ -52,7 +52,7 @@ void Settings::load()
 void Settings::apply()
 {
     for (auto it = m_listeners.iterate(); it.hasNext(); it.next()) {
-        it.getValue()->on_settings_changed();
+        it.getValue()->on_settings_changed(*settings);
     }
 }
 

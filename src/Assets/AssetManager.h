@@ -106,7 +106,7 @@ struct AssetManager final : public SettingsChangeListener {
 
 private:
     // ^SettingsChangeListener
-    virtual void on_settings_changed() override;
+    virtual void on_settings_changed(SettingsState const&) override;
 
     void scan_assets_from_directory(String subdirectory, Optional<AssetType> manual_asset_type = {});
 

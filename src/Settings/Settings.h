@@ -10,9 +10,8 @@
 #include <Settings/SettingsChangeListener.h>
 #include <Settings/SettingsState.h>
 #include <UI/Forward.h>
-#include <Util/String.h>
 
-struct Settings {
+class Settings {
 public:
     static Settings& the();
     static void initialize();

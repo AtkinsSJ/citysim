@@ -431,7 +431,7 @@ AssetMetadata& AssetManager::get_placeholder_asset(AssetType type)
     return asset_type_data[type].placeholder_asset.value();
 }
 
-void AssetManager::on_settings_changed()
+void AssetManager::on_settings_changed(SettingsState const&)
 {
     // Reload locale-specific assets
 

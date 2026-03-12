@@ -6,8 +6,10 @@
 
 #pragma once
 
+#include <Settings/Forward.h>
+
 class SettingsChangeListener {
 public:
     virtual ~SettingsChangeListener() = default;
-    virtual void on_settings_changed() = 0;
+    virtual void on_settings_changed(SettingsState const&) = 0;
 };
