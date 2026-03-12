@@ -34,14 +34,6 @@ private:
     ChunkedArray<Ref<SettingsChangeListener>> m_listeners {};
 };
 
-// Settings access
-struct WindowSettings {
-    s32 width;
-    s32 height;
-    bool isWindowed;
-};
-WindowSettings getWindowSettings();
-
 // Menu
 void showSettingsWindow();
 void settingsWindowProc(UI::WindowContext*, void*);

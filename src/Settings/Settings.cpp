@@ -71,16 +71,6 @@ void Settings::unregister_listener(SettingsChangeListener& listener)
     m_listeners.findAndRemove(Ref { listener });
 }
 
-WindowSettings getWindowSettings()
-{
-    WindowSettings result = {};
-    result.width = s_settings->settings->resolution.value().x;
-    result.height = s_settings->settings->resolution.value().y;
-    result.isWindowed = s_settings->settings->windowed.value();
-
-    return result;
-}
-
 void showSettingsWindow()
 {
     s_settings->workingState->copy_from(*s_settings->settings);

@@ -50,7 +50,7 @@
 #include <Util/Random.h>
 #include <Util/String.h>
 
-SDL_Window* initSDL(WindowSettings windowSettings, char const* windowTitle)
+SDL_Window* initSDL(V2I window_size, bool is_windowed, char const* windowTitle)
 {
     SDL_Window* window = nullptr;
 
@@ -64,10 +64,10 @@ SDL_Window* initSDL(WindowSettings windowSettings, char const* windowTitle)
         } else {
             // Window
             u32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE;
-            if (!windowSettings.isWindowed) {
+            if (!is_windowed) {
                 windowFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
             }
-            window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowSettings.width, windowSettings.height, windowFlags);
+            window = SDL_CreateWindow(windowTitle, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, window_size.x, window_size.y, windowFlags);
 
             if (!window) {
                 logCritical("Window could not be created! :(\n {0}"_s, { String::from_null_terminated(SDL_GetError()) });
@@ -238,7 +238,11 @@ int main(int argc, char* argv[])
 
     Settings::initialize();
 
-    SDL_Window* window = initSDL(getWindowSettings(), "Some kind of city builder");
+    // FIXME: Reaching inside like this is awkward.
+    auto& settings = *Settings::the().settings;
+    auto resolution = settings.get_typed_setting<V2I>("resolution"_s).value_or({ 1024, 600 });
+    auto windowed = settings.get_typed_setting<bool>("windowed"_s).value_or(true);
+    SDL_Window* window = initSDL(resolution, windowed, "Some kind of city builder");
 
     init_input_state();
     auto& input = input_state();
