@@ -77,6 +77,8 @@ struct AssetManager final : public SettingsChangeListener {
 
     String make_asset_path(AssetType, StringView short_name) const;
 
+    Locale locale() const { return m_locale; }
+
     void scan_assets();
     AssetMetadata* add_asset(AssetType type, StringView short_name, Flags<AssetFlags> flags = default_asset_flags);
     void load_assets();
@@ -112,6 +114,8 @@ private:
 
     u32 m_asset_generation { 0 };
     AssetType m_next_asset_type { 0 };
+
+    Locale m_locale { Locale::En };
 };
 
 void initAssets();

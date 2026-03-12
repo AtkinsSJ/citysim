@@ -81,11 +81,6 @@ WindowSettings getWindowSettings()
     return result;
 }
 
-Locale get_locale()
-{
-    return s_settings->settings->locale.enum_value();
-}
-
 void showSettingsWindow()
 {
     s_settings->workingState->copy_from(*s_settings->settings);

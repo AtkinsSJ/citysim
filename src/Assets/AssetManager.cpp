@@ -124,11 +124,11 @@ void loadAsset(AssetMetadata* metadata)
 
     if (metadata->locale.has_value()) {
         // Only load assets that match our locale
-        if (metadata->locale != get_locale()) {
+        if (metadata->locale != s_assets->locale()) {
             if (metadata->locale == Locale::En) {
-                logInfo("Loading asset {0} as a default-locale fallback. (Locale {1}, current is {2})"_s, { metadata->fullName, to_string(metadata->locale.value()), to_string(get_locale()) });
+                logInfo("Loading asset {0} as a default-locale fallback. (Locale {1}, current is {2})"_s, { metadata->fullName, to_string(metadata->locale.value()), to_string(s_assets->locale()) });
             } else {
-                logInfo("Skipping asset {0} because it's the wrong locale. ({1}, current is {2})"_s, { metadata->fullName, to_string(metadata->locale.value()), to_string(get_locale()) });
+                logInfo("Skipping asset {0} because it's the wrong locale. ({1}, current is {2})"_s, { metadata->fullName, to_string(metadata->locale.value()), to_string(s_assets->locale()) });
                 return;
             }
         }
@@ -350,9 +350,9 @@ String getText(String name)
 
         if (s_assets->missingTextIDs.add(name)) {
             if (default_text.has_value()) {
-                logWarn("Locale {0} is missing text for '{1}'. (Fell back to using the default locale.)"_s, { to_string(get_locale()), name });
+                logWarn("Locale {0} is missing text for '{1}'. (Fell back to using the default locale.)"_s, { to_string(s_assets->locale()), name });
             } else {
-                logWarn("Locale {0} is missing text for '{1}'. (No default found!)"_s, { to_string(get_locale()), name });
+                logWarn("Locale {0} is missing text for '{1}'. (No default found!)"_s, { to_string(s_assets->locale()), name });
             }
         }
     }
@@ -431,13 +431,12 @@ AssetMetadata& AssetManager::get_placeholder_asset(AssetType type)
     return asset_type_data[type].placeholder_asset.value();
 }
 
-void AssetManager::on_settings_changed(SettingsState const&)
+void AssetManager::on_settings_changed(SettingsState const& settings)
 {
-    // Reload locale-specific assets
-
     // Clear the list of missing texts because they might not be missing in the new locale!
     missingTextIDs.clear();
 
+    // Unload locale-dependent assets
     for (auto it = allAssets.iterate(); it.hasNext(); it.next()) {
         auto& asset = it.get();
         if (asset.locale.has_value()) {
@@ -445,6 +444,10 @@ void AssetManager::on_settings_changed(SettingsState const&)
         }
     }
 
+    // Update settings
+    m_locale = settings.get_typed_setting<Locale>("locale"_s).value_or(Locale::En);
+
+    // Load locale-dependent assets
     for (auto it = allAssets.iterate(); it.hasNext(); it.next()) {
         auto& asset = it.get();
         // FIXME: Only try to load if the locale matches.

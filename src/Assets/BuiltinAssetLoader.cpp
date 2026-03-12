@@ -40,12 +40,12 @@ ErrorOr<NonnullOwnPtr<Asset>> BuiltinAssetLoader::load_asset(AssetMetadata& meta
     if (metadata.type == Texts::asset_type()) {
         // Only load assets that match our locale
         // FIXME: Move locale checks into AssetManager
-        if (metadata.locale == get_locale()) {
+        if (metadata.locale == asset_manager().locale()) {
             return to_error_or_asset(Texts::load(metadata, file_data, false));
         }
 
         if (metadata.locale == Locale::En) {
-            logInfo("Loading asset {0} as a default-locale fallback. (Locale {1}, current is {2})"_s, { metadata.fullName, to_string(metadata.locale.value()), to_string(get_locale()) });
+            logInfo("Loading asset {0} as a default-locale fallback. (Locale {1}, current is {2})"_s, { metadata.fullName, to_string(metadata.locale.value()), to_string(asset_manager().locale()) });
             return to_error_or_asset(Texts::load(metadata, file_data, true));
         }
 
