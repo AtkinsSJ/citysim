@@ -21,7 +21,33 @@ public:
     void restore_default_values();
     void copy_from(BaseSettingsState& other);
 
-    Optional<Ref<Setting>> setting_by_name(String const& name);
+    Optional<Ref<Setting>> get_setting(String const& name);
+    Optional<Ref<Setting>> get_setting(String const& name) const
+    {
+        return const_cast<BaseSettingsState*>(this)->get_setting(name);
+    }
+
+    template<typename T>
+    Optional<T> get_typed_setting(String const& name) const
+    {
+        auto maybe_setting = get_setting(name);
+        if (!maybe_setting.has_value())
+            return {};
+        auto const& setting = *maybe_setting.value();
+        if (auto* typed_setting = dynamic_cast<BaseSetting<T> const*>(&setting))
+            return typed_setting->value();
+        logError("Wrong type of setting requested for '{}'"_s, { name });
+        return {};
+    }
+
+    template<Enum E>
+    Optional<E> get_typed_setting(String const& name) const
+    {
+        if (auto underlying_int = get_typed_setting<u32>(name); underlying_int.has_value())
+            return static_cast<E>(underlying_int.value());
+
+        return {};
+    }
 
     void load_from_file(String filename, Blob data);
     // FIXME: Should be const, but that's awkward right now.

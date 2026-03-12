@@ -439,7 +439,7 @@ ConsoleCommand(setting)
         return;
     }
     auto setting_name = maybe_setting_name.release_value();
-    auto maybe_setting = settings.setting_by_name(setting_name.deprecated_to_string());
+    auto maybe_setting = settings.get_setting(setting_name.deprecated_to_string());
     if (!maybe_setting.has_value()) {
         consoleWriteLine(myprintf("Unrecognized setting name '{}'."_s, { setting_name }), ConsoleLineStyle::Error);
         return;

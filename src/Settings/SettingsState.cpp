@@ -29,11 +29,11 @@ void BaseSettingsState::copy_from(BaseSettingsState& other)
         it.hasNext();
         it.next()) {
         auto entry = *it.get();
-        entry->set_value_from(other.setting_by_name(entry->name()).value());
+        entry->set_value_from(other.get_setting(entry->name()).value());
     }
 }
 
-Optional<Ref<Setting>> BaseSettingsState::setting_by_name(String const& name)
+Optional<Ref<Setting>> BaseSettingsState::get_setting(String const& name)
 {
     auto setting = m_settings_by_name.find(name);
     if (setting.has_value())
