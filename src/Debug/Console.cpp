@@ -511,7 +511,7 @@ void Console::register_default_commands()
     register_command(Command { "hello"_s, cmd_hello, 0, 0 });
     register_command(Command { "reload_assets"_s, cmd_reload_assets, 0, 0 });
     register_command(Command { "reload_settings"_s, cmd_reload_settings, 0, 0 });
-    register_command(Command { "setting"_s, cmd_setting, 0, 0 });
+    register_command(Command { "setting"_s, cmd_setting, 0, -1 });
     register_command(Command { "speed"_s, cmd_speed, 0, 1 });
     register_command(Command { "toast"_s, cmd_toast, 1, -1 });
     register_command(Command { "zoom"_s, cmd_zoom, 0, 1 });
