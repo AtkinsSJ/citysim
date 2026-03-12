@@ -11,5 +11,5 @@
 class SettingsChangeListener {
 public:
     virtual ~SettingsChangeListener() = default;
-    virtual void on_settings_changed(SettingsState const&) = 0;
+    virtual void on_settings_changed(Settings const&) = 0;
 };

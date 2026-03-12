@@ -105,7 +105,7 @@ protected:
     explicit Renderer(SDL_Window*);
 
     // ^SettingsChangeListener
-    virtual void on_settings_changed(SettingsState const&) override;
+    virtual void on_settings_changed(Settings const&) override;
 
     MemoryArena m_arena {};
 

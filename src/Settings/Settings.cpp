@@ -40,7 +40,7 @@ void Settings::load()
 void Settings::apply()
 {
     for (auto it = m_listeners.iterate(); it.hasNext(); it.next()) {
-        it.getValue()->on_settings_changed(*settings);
+        it.getValue()->on_settings_changed(*this);
     }
 }
 
@@ -52,7 +52,7 @@ bool Settings::save()
 void Settings::register_listener(SettingsChangeListener& listener)
 {
     m_listeners.append(listener);
-    listener.on_settings_changed(*settings);
+    listener.on_settings_changed(*this);
 }
 
 void Settings::unregister_listener(SettingsChangeListener& listener)

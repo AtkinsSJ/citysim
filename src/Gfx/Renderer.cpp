@@ -228,7 +228,7 @@ void Renderer::return_temporary_render_buffer(RenderBuffer& buffer)
     m_render_buffer_pool.discard(buffer);
 }
 
-void Renderer::on_settings_changed(SettingsState const& settings)
+void Renderer::on_settings_changed(Settings const& settings)
 {
     auto resolution = settings.get_typed_setting<V2I>("resolution"_s).value();
     auto windowed = settings.get_typed_setting<bool>("windowed"_s).value();

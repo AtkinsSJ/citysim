@@ -431,7 +431,7 @@ AssetMetadata& AssetManager::get_placeholder_asset(AssetType type)
     return asset_type_data[type].placeholder_asset.value();
 }
 
-void AssetManager::on_settings_changed(SettingsState const& settings)
+void AssetManager::on_settings_changed(Settings const& settings)
 {
     // Clear the list of missing texts because they might not be missing in the new locale!
     missingTextIDs.clear();
