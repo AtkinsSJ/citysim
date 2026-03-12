@@ -64,6 +64,7 @@ bool Settings::save()
 void Settings::register_listener(SettingsChangeListener& listener)
 {
     m_listeners.append(listener);
+    listener.on_settings_changed(*settings);
 }
 
 void Settings::unregister_listener(SettingsChangeListener& listener)
