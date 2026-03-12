@@ -194,9 +194,9 @@ void AssetManager::scan_assets_from_directory(String subdirectory, Optional<Asse
 {
     String pathToScan;
     if (subdirectory.is_empty()) {
-        pathToScan = constructPath({ s_assets->assetsPath });
+        pathToScan = constructPath({ assetsPath });
     } else {
-        pathToScan = constructPath({ s_assets->assetsPath, subdirectory });
+        pathToScan = constructPath({ assetsPath, subdirectory });
     }
 
     auto assetFlags = default_asset_flags;
@@ -241,7 +241,7 @@ void AssetManager::scan_assets()
 
     scan_assets_from_directory({});
 
-    for (auto it = s_assets->directoryNameToType.iterate();
+    for (auto it = directoryNameToType.iterate();
         it.hasNext();
         it.next()) {
         auto entry = it.getEntry();
@@ -269,7 +269,7 @@ void AssetManager::reload()
         it.getValue()->before_assets_unloaded();
     }
 
-    // Clear managed s_assets
+    // Clear managed assets
     for (auto it = allAssets.iterate(); it.hasNext(); it.next()) {
         auto& asset = it.get();
         unloadAsset(&asset);
@@ -372,7 +372,7 @@ String AssetManager::make_asset_path(AssetType type, StringView short_name) cons
     auto& loader = get_asset_loader_for_type(type);
     if (auto path = loader.make_asset_path(*this, type, short_name); path.has_value())
         return path.release_value();
-    return myprintf("{0}/{1}"_s, { s_assets->assetsPath, short_name }, true);
+    return myprintf("{0}/{1}"_s, { assetsPath, short_name }, true);
 }
 
 void AssetManager::register_asset_loader(NonnullOwnPtr<AssetLoader>&& asset_loader_ptr)
@@ -436,16 +436,16 @@ void AssetManager::on_settings_changed(SettingsState const&)
     // Reload locale-specific assets
 
     // Clear the list of missing texts because they might not be missing in the new locale!
-    s_assets->missingTextIDs.clear();
+    missingTextIDs.clear();
 
-    for (auto it = s_assets->allAssets.iterate(); it.hasNext(); it.next()) {
+    for (auto it = allAssets.iterate(); it.hasNext(); it.next()) {
         auto& asset = it.get();
         if (asset.locale.has_value()) {
             unloadAsset(&asset);
         }
     }
 
-    for (auto it = s_assets->allAssets.iterate(); it.hasNext(); it.next()) {
+    for (auto it = allAssets.iterate(); it.hasNext(); it.next()) {
         auto& asset = it.get();
         // FIXME: Only try to load if the locale matches.
         if (asset.locale.has_value()) {
