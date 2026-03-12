@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2025-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -8,12 +8,12 @@
 #include <Settings/Settings.h>
 #include <Util/StringBuilder.h>
 
-BaseSettingsState::BaseSettingsState(MemoryArena& arena)
+SettingsState::SettingsState(MemoryArena& arena)
 {
     initChunkedArray(&m_settings_order, &arena, 32);
 }
 
-void BaseSettingsState::restore_default_values()
+void SettingsState::restore_default_values()
 {
     for (auto it = m_settings_by_name.iterate();
         it.hasNext();
@@ -23,7 +23,7 @@ void BaseSettingsState::restore_default_values()
     }
 }
 
-void BaseSettingsState::copy_from(BaseSettingsState& other)
+void SettingsState::copy_from(SettingsState& other)
 {
     for (auto it = m_settings_by_name.iterate();
         it.hasNext();
@@ -33,7 +33,7 @@ void BaseSettingsState::copy_from(BaseSettingsState& other)
     }
 }
 
-Optional<Ref<Setting>> BaseSettingsState::get_setting(String const& name)
+Optional<Ref<Setting>> SettingsState::get_setting(String const& name)
 {
     auto setting = m_settings_by_name.find(name);
     if (setting.has_value())
@@ -41,7 +41,7 @@ Optional<Ref<Setting>> BaseSettingsState::get_setting(String const& name)
     return {};
 }
 
-void BaseSettingsState::load_from_file(String filename, Blob data)
+void SettingsState::load_from_file(String filename, Blob data)
 {
     LineReader reader { filename, data };
 
@@ -63,7 +63,7 @@ void BaseSettingsState::load_from_file(String filename, Blob data)
     }
 }
 
-bool BaseSettingsState::save_to_file(String filename)
+bool SettingsState::save_to_file(String filename)
 {
     StringBuilder stb { 2048 };
     stb.append("# User-specific settings file.\n#\n"_s);
@@ -94,19 +94,8 @@ bool BaseSettingsState::save_to_file(String filename)
     return false;
 }
 
-void BaseSettingsState::register_setting(Setting& setting)
+void SettingsState::register_setting(Setting& setting)
 {
     m_settings_by_name.put(setting.name(), setting);
     m_settings_order.append(setting.name());
-}
-
-SettingsState::SettingsState(MemoryArena& arena)
-    : BaseSettingsState(arena)
-{
-    register_setting(windowed);
-    register_setting(resolution);
-    register_setting(locale);
-    register_setting(music_volume);
-    register_setting(sound_volume);
-    register_setting(widget_count);
 }

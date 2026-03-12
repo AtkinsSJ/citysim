@@ -230,7 +230,9 @@ void Renderer::return_temporary_render_buffer(RenderBuffer& buffer)
 
 void Renderer::on_settings_changed(SettingsState const& settings)
 {
-    resize_window(settings.resolution.value().x, settings.resolution.value().y, !settings.windowed.value());
+    auto resolution = settings.get_typed_setting<V2I>("resolution"_s).value();
+    auto windowed = settings.get_typed_setting<bool>("windowed"_s).value();
+    resize_window(resolution.x, resolution.y, !windowed);
 }
 
 void appendRenderItemType(RenderBuffer* buffer, RenderItemType type)

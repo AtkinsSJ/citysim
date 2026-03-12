@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2019-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -14,11 +14,30 @@
 class Settings {
 public:
     static Settings& the();
-    static void initialize();
+
+    template<typename T>
+    static Settings& initialize()
+    {
+        auto& settings = initialize_internal();
+        settings.settings = settings.arena.allocate<T>(settings.arena);
+        settings.workingState = settings.arena.allocate<T>(settings.arena);
+        initChunkedArray(&settings.m_listeners, &settings.arena, 32);
+        settings.arena.mark_reset_position();
+
+        settings.load();
+
+        return settings;
+    }
 
     void load();
     bool save();
     void apply();
+
+    template<typename T>
+    Optional<T> get_typed_setting(String const& name) const
+    {
+        return settings->get_typed_setting<T>(name);
+    }
 
     MemoryArena arena;
 
@@ -31,6 +50,8 @@ public:
     void unregister_listener(SettingsChangeListener&);
 
 private:
+    static Settings& initialize_internal();
+
     ChunkedArray<Ref<SettingsChangeListener>> m_listeners {};
 };
 

@@ -89,6 +89,35 @@ static bool checkInGame()
     return inGame;
 }
 
+class GameSettings final : public SettingsState {
+public:
+    explicit GameSettings(MemoryArena& arena)
+        : SettingsState(arena)
+    {
+        register_setting(windowed);
+        register_setting(resolution);
+        register_setting(locale);
+        register_setting(music_volume);
+        register_setting(sound_volume);
+        register_setting(widget_count);
+    }
+    virtual ~GameSettings() override = default;
+
+private:
+    BoolSetting windowed { "windowed"_s, "setting_windowed"_s, true };
+    V2ISetting resolution { "resolution"_s, "setting_resolution"_s, v2i(1024, 600) };
+    EnumSetting<Locale> locale { "locale"_s, "setting_locale"_s,
+        EnumMap<Locale, EnumSettingData> {
+            { "en"_s, "locale_en"_s },
+            { "es"_s, "locale_es"_s },
+            { "pl"_s, "locale_pl"_s },
+        },
+        Locale::En };
+    PercentSetting music_volume { "music_volume"_s, "setting_music_volume"_s, 0.5f };
+    PercentSetting sound_volume { "sound_volume"_s, "setting_sound_volume"_s, 0.5f };
+    S32RangeSetting widget_count { "widget_count"_s, "setting_widget_count"_s, 5, 15, 10 };
+};
+
 int main(int argc, char* argv[])
 {
     // SDL requires these params, and the compiler keeps complaining they're unused, so a hack! Yay!
@@ -236,10 +265,8 @@ int main(int argc, char* argv[])
 
     app_state.cosmeticRandom = Random::create();
 
-    Settings::initialize();
+    auto& settings = Settings::initialize<GameSettings>();
 
-    // FIXME: Reaching inside like this is awkward.
-    auto& settings = *Settings::the().settings;
     auto resolution = settings.get_typed_setting<V2I>("resolution"_s).value_or({ 1024, 600 });
     auto windowed = settings.get_typed_setting<bool>("windowed"_s).value_or(true);
     SDL_Window* window = initSDL(resolution, windowed, "Some kind of city builder");
@@ -368,7 +395,7 @@ int main(int argc, char* argv[])
                 DEBUG_ARENA(&temp_arena(), "Global Temp Arena");
                 DEBUG_ARENA(&renderer.arena(), "Renderer");
                 DEBUG_ARENA(app_state.gameState ? &app_state.gameState->arena : nullptr, "GameState");
-                DEBUG_ARENA(&Settings::the().arena, "Settings");
+                DEBUG_ARENA(&settings.arena, "Settings");
                 DEBUG_ARENA(&globalDebugState->arena, "Debug");
 
                 updateAndRenderDebugData(globalDebugState);
