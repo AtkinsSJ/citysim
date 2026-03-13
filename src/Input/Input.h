@@ -71,7 +71,7 @@ struct InputState {
 //
 // PUBLIC
 //
-void init_input_state();
+void init_input_state(MemoryArena&);
 InputState& input_state();
 void updateInput();
 

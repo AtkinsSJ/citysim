@@ -271,7 +271,7 @@ int main(int argc, char* argv[])
     auto windowed = settings.get_typed_setting<bool>("windowed"_s).value_or(true);
     SDL_Window* window = initSDL(resolution, windowed, "Some kind of city builder");
 
-    init_input_state();
+    init_input_state(app_state.systemArena);
     auto& input = input_state();
 
     Assets::initAssets();
