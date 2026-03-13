@@ -6,20 +6,14 @@
 
 #pragma once
 
+#include <App/Forward.h>
 #include <Sim/Forward.h>
 #include <Util/OwnPtr.h>
-
-enum class AppStatus : u8 {
-    MainMenu,
-    Game,
-    Credits,
-    Quit,
-};
 
 class App {
 public:
     // FIXME: Move SDL and window initialization into here. Maybe other things too.
-    static NonnullOwnPtr<App> initialize(float seconds_per_frame, AppStatus initial_status);
+    static NonnullOwnPtr<App> initialize(float seconds_per_frame, NonnullOwnPtr<Scene>);
     static App& the();
     ~App();
 
@@ -32,18 +26,21 @@ public:
     Random& cosmetic_random() { return *m_cosmetic_random; }
 
     // FIXME: Replace these with a Scene class, which we hold a single one of.
-    AppStatus app_status() const { return m_app_status; }
-    void set_app_status(AppStatus status) { m_app_status = status; }
     GameState* game_state() const { return m_game_state; }
     void set_game_state(GameState* state) { m_game_state = state; }
 
+    void switch_to_scene(NonnullOwnPtr<Scene>);
+    void transition_to_next_scene_if_needed();
+    Scene& scene() const;
+
 private:
-    explicit App(float seconds_per_frame, AppStatus);
+    explicit App(float seconds_per_frame, NonnullOwnPtr<Scene>);
 
     float m_delta_time { 0 };
     float m_speed_multiplier { 1 };
 
     NonnullOwnPtr<Random> m_cosmetic_random;
-    AppStatus m_app_status;
-    GameState* m_game_state;
+    NonnullOwnPtr<Scene> m_scene;
+    OwnPtr<Scene> m_next_scene { nullptr };
+    GameState* m_game_state { nullptr };
 };

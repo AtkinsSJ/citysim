@@ -9,5 +9,6 @@
 #include <Util/Basic.h>
 
 class App;
+class Scene;
 
 enum class AppStatus : u8;

@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <App/App.h>
+#include <App/Scene.h>
 #include <Sim/BuildingRef.h>
 #include <Sim/City.h>
 #include <Sim/GameClock.h>
@@ -173,3 +173,9 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData);
 void pauseMenuWindowProc(UI::WindowContext* context, void* userData);
 void costTooltipWindowProc(UI::WindowContext* context, void* userData);
 void debugToolsWindowProc(UI::WindowContext* context, void* userData);
+
+class GameScene final : public Scene {
+public:
+    virtual ~GameScene() override;
+    virtual void update_and_render(float delta_time) override;
+};
