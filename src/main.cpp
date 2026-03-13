@@ -275,8 +275,9 @@ int main(int argc, char* argv[])
     auto& input = input_state();
 
     Assets::initAssets();
-    initBuildingCatalogue();
-    initTerrainCatalogue();
+    auto& assets = asset_manager();
+    initBuildingCatalogue(assets.arena);
+    initTerrainCatalogue(assets.arena);
 
     if (!Renderer::initialize(window)) {
         logError("Failed to initialize renderer!"_s);
@@ -284,7 +285,6 @@ int main(int argc, char* argv[])
     }
 
     auto& renderer = the_renderer();
-    auto& assets = asset_manager();
     assets.register_listener(&renderer);
     if (globalConsole) {
         assets.register_listener(globalConsole);

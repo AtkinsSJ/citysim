@@ -16,20 +16,19 @@ BuildingCatalogue& BuildingCatalogue::the()
     return *s_building_catalogue;
 }
 
-void initBuildingCatalogue()
+void initBuildingCatalogue(MemoryArena& arena)
 {
     ASSERT(!s_building_catalogue);
-    auto& app_state = AppState::the();
 
-    BuildingCatalogue* catalogue = app_state.systemArena.allocate<BuildingCatalogue>();
+    BuildingCatalogue* catalogue = arena.allocate<BuildingCatalogue>();
 
-    initChunkedArray(&catalogue->constructibleBuildings, &app_state.systemArena, 64);
-    initChunkedArray(&catalogue->rGrowableBuildings, &app_state.systemArena, 64);
-    initChunkedArray(&catalogue->cGrowableBuildings, &app_state.systemArena, 64);
-    initChunkedArray(&catalogue->iGrowableBuildings, &app_state.systemArena, 64);
-    initChunkedArray(&catalogue->intersectionBuildings, &app_state.systemArena, 64);
+    initChunkedArray(&catalogue->constructibleBuildings, &arena, 64);
+    initChunkedArray(&catalogue->rGrowableBuildings, &arena, 64);
+    initChunkedArray(&catalogue->cGrowableBuildings, &arena, 64);
+    initChunkedArray(&catalogue->iGrowableBuildings, &arena, 64);
+    initChunkedArray(&catalogue->intersectionBuildings, &arena, 64);
 
-    initOccupancyArray(&catalogue->allBuildings, &app_state.systemArena, 64);
+    initOccupancyArray(&catalogue->allBuildings, &arena, 64);
     // NB: BuildingDef ids are 1-indexed. At least one place (BuildingDef.canBeBuiltOnID) uses 0 as a "none" value.
     // So, we have to append a blank for a "null" def. Could probably get rid of it, but initialise-to-zero is convenient
     // and I'm likely to accidentally leave other things set to 0, so it's safer to just keep the null def.

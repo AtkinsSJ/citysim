@@ -48,7 +48,7 @@ struct BuildingCatalogue final : public AssetManagerListener {
     virtual void after_assets_loaded() override;
 };
 
-void initBuildingCatalogue();
+void initBuildingCatalogue(MemoryArena&);
 
 BuildingDef* appendNewBuildingDef(StringView name);
 BuildingDef* getBuildingDef(s32 buildingTypeID);
