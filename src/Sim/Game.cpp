@@ -902,19 +902,19 @@ void initDataViewUI(GameState* gameState)
 
     dataViewUI[DataView::Crime].title = "data_view_crime"_s;
     setGradient(&dataViewUI[DataView::Crime], "service_coverage"_s);
-    setFixedColors(&dataViewUI[DataView::Crime], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s });
+    setFixedColors(&dataViewUI[DataView::Crime], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, gameState->arena);
     setHighlightedBuildings(&dataViewUI[DataView::Crime], &city->crimeLayer.policeBuildings, &BuildingDef::policeEffect);
     setTileOverlay(&dataViewUI[DataView::Crime], &city->crimeLayer.tilePoliceCoverage.items, "service_coverage"_s);
 
     dataViewUI[DataView::Fire].title = "data_view_fire"_s;
     setGradient(&dataViewUI[DataView::Fire], "risk"_s);
-    setFixedColors(&dataViewUI[DataView::Fire], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s });
+    setFixedColors(&dataViewUI[DataView::Fire], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, gameState->arena);
     setHighlightedBuildings(&dataViewUI[DataView::Fire], &city->fireLayer.fireProtectionBuildings, &BuildingDef::fireProtection);
     setTileOverlay(&dataViewUI[DataView::Fire], &city->fireLayer.tileOverallFireRisk.items, "risk"_s);
 
     dataViewUI[DataView::Health].title = "data_view_health"_s;
     setGradient(&dataViewUI[DataView::Health], "service_coverage"_s);
-    setFixedColors(&dataViewUI[DataView::Health], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s });
+    setFixedColors(&dataViewUI[DataView::Health], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, gameState->arena);
     setHighlightedBuildings(&dataViewUI[DataView::Health], &city->healthLayer.healthBuildings, &BuildingDef::healthEffect);
     setTileOverlay(&dataViewUI[DataView::Health], &city->healthLayer.tileHealthCoverage.items, "service_coverage"_s);
 
@@ -927,7 +927,7 @@ void initDataViewUI(GameState* gameState)
     setTileOverlay(&dataViewUI[DataView::Pollution], &city->pollutionLayer.tilePollution.items, "pollution"_s);
 
     dataViewUI[DataView::Power].title = "data_view_power"_s;
-    setFixedColors(&dataViewUI[DataView::Power], "power"_s, { "data_view_power_powered"_s, "data_view_power_brownout"_s, "data_view_power_blackout"_s });
+    setFixedColors(&dataViewUI[DataView::Power], "power"_s, { "data_view_power_powered"_s, "data_view_power_brownout"_s, "data_view_power_blackout"_s }, gameState->arena);
     setHighlightedBuildings(&dataViewUI[DataView::Power], &city->powerLayer.powerBuildings);
     setTileOverlayCallback(&dataViewUI[DataView::Power], calculatePowerOverlayForTile, "power"_s);
 }
@@ -938,14 +938,13 @@ void setGradient(DataViewUI* dataView, String paletteName)
     dataView->gradientPaletteName = paletteName;
 }
 
-void setFixedColors(DataViewUI* dataView, String paletteName, std::initializer_list<String> names)
+void setFixedColors(DataViewUI* dataView, String paletteName, std::initializer_list<String> names, MemoryArena& arena)
 {
-    auto& app_state = AppState::the();
     dataView->hasFixedColors = true;
     dataView->fixedPaletteName = paletteName;
-    dataView->fixedColorNames = app_state.systemArena.allocate_array<String>(truncate32(names.size()), false);
+    dataView->fixedColorNames = arena.allocate_array<String>(truncate32(names.size()), false);
     for (auto it = names.begin(); it != names.end(); it++) {
-        dataView->fixedColorNames.append(app_state.systemArena.allocate_string(*it));
+        dataView->fixedColorNames.append(arena.allocate_string(*it));
     }
 }
 
