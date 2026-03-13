@@ -56,7 +56,7 @@ void freeGameState(GameState* gameState)
     gameState->arena.~MemoryArena();
 }
 
-void inputMoveCamera(Camera* camera, V2 windowSize, V2 windowMousePos, s32 cityWidth, s32 cityHeight)
+void inputMoveCamera(Camera* camera, V2 windowSize, V2 windowMousePos, s32 cityWidth, s32 cityHeight, float delta_time)
 {
     DEBUG_FUNCTION();
 
@@ -80,7 +80,7 @@ void inputMoveCamera(Camera* camera, V2 windowSize, V2 windowMousePos, s32 cityW
     }
 
     // Panning
-    float scrollSpeed = (CAMERA_PAN_SPEED * sqrt(camera->zoom())) * AppState::the().deltaTime;
+    float scrollSpeed = (CAMERA_PAN_SPEED * sqrt(camera->zoom())) * delta_time;
     float cameraEdgeScrollPixelMargin = 8.0f;
 
     if (mouseButtonPressed(MouseButton::Middle)) {
@@ -644,7 +644,7 @@ AppStatus updateAndRenderGame(GameState* gameState, float deltaTime)
     Camera& world_camera = renderer.world_camera();
     Camera& ui_camera = renderer.ui_camera();
     if (gameState->status == GameStatus::Playing) {
-        inputMoveCamera(&world_camera, ui_camera.size(), ui_camera.mouse_position(), gameState->city.bounds.width(), gameState->city.bounds.height());
+        inputMoveCamera(&world_camera, ui_camera.size(), ui_camera.mouse_position(), gameState->city.bounds.width(), gameState->city.bounds.height(), deltaTime);
     }
 
     V2I mouseTilePos = v2i(world_camera.mouse_position());

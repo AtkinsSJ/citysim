@@ -149,7 +149,7 @@ void beginNewGame();       // A game state for a new map
 AppStatus updateAndRenderGame(GameState* gameState, float deltaTime);
 void freeGameState(GameState* gameState);
 
-void inputMoveCamera(Camera* camera, V2 windowSize, V2 windowMousePos, s32 cityWidth, s32 cityHeight);
+void inputMoveCamera(Camera* camera, V2 windowSize, V2 windowMousePos, s32 cityWidth, s32 cityHeight, float delta_time);
 void updateAndRenderGameUI(GameState* gameState);
 void showCostTooltip(s32 buildCost);
 
