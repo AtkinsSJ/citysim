@@ -5,14 +5,16 @@
  */
 
 #include "Zone.h"
-#include "../AppState.h"
+#include <App.h>
 #include <Gfx/Renderer.h>
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
 #include <Menus/SaveFile.h>
 #include <Sim/BuildingCatalogue.h>
 #include <Sim/City.h>
+#include <Sim/Game.h>
 #include <Sim/TerrainCatalogue.h>
+#include <Util/Random.h>
 
 void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena)
 {
@@ -415,7 +417,7 @@ void growSomeZoneBuildings(City* city)
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
     ZoneLayer* layer = &city->zoneLayer;
-    Random* random = AppState::the().gameState->gameRandom;
+    Random* random = App::the().game_state()->gameRandom;
     auto& building_catalogue = BuildingCatalogue::the();
 
     for (auto zone_type : enum_values<ZoneType>()) {

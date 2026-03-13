@@ -5,7 +5,6 @@
  */
 
 #include "Building.h"
-#include "../AppState.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/Colour.h>
 #include <Sim/BuildingCatalogue.h>

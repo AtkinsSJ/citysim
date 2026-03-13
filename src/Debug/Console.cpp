@@ -5,7 +5,7 @@
  */
 
 #include "Console.h"
-#include "AppState.h"
+#include <App.h>
 #include <Assets/AssetManager.h>
 #include <Debug/Keymap.h>
 #include <Gfx/BitmapFont.h>
@@ -122,7 +122,7 @@ void updateAndRenderConsole(Console* console)
     }
 
     if (console->currentHeight != console->targetHeight) {
-        console->currentHeight = approach(console->currentHeight, console->targetHeight, console->openSpeed * AppState::the().deltaTime);
+        console->currentHeight = approach(console->currentHeight, console->targetHeight, console->openSpeed * App::the().delta_time());
     }
 
     // This is a little hacky... I think we want the console to ALWAYS consume input if it is open.
@@ -385,7 +385,7 @@ void Console::before_assets_unloaded()
 ConsoleCommand(exit)
 {
     consoleWriteLine("Quitting game..."_s, ConsoleLineStyle::Success);
-    AppState::the().appStatus = AppStatus::Quit;
+    App::the().set_app_status(AppStatus::Quit);
 }
 
 ConsoleCommand(hello)
@@ -461,15 +461,15 @@ ConsoleCommand(setting)
 
 ConsoleCommand(speed)
 {
-    auto& app_state = AppState::the();
+    auto& app = App::the();
 
     if (argumentsCount == 0) {
-        consoleWriteLine(myprintf("Current game speed: {0}"_s, { formatFloat(app_state.speedMultiplier, 3) }), ConsoleLineStyle::Success);
+        consoleWriteLine(myprintf("Current game speed: {0}"_s, { formatFloat(app.speed_multiplier(), 3) }), ConsoleLineStyle::Success);
     } else {
         TokenReader tokens { arguments };
         if (auto speed_multiplier = tokens.next_token().value().to_float(); speed_multiplier.has_value()) {
             float multiplier = speed_multiplier.value();
-            app_state.setSpeedMultiplier(multiplier);
+            app.set_speed_multiplier(multiplier);
             consoleWriteLine(myprintf("Set speed to {0}"_s, { formatFloat(multiplier, 3) }), ConsoleLineStyle::Success);
             return;
         }

@@ -1,11 +1,12 @@
 /*
- * Copyright (c) 2020-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2020-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "GameClock.h"
-#include "../AppState.h"
+#include <App.h>
+#include <Sim/Game.h>
 #include <Util/Maths.h>
 
 // We don't bother with leap years, so the month lengths are hard-coded
@@ -121,5 +122,5 @@ Flags<ClockEvents> incrementClock(GameClock* clock, float deltaTime)
 
 GameTimestamp getCurrentTimestamp()
 {
-    return AppState::the().gameState->gameClock.currentDay;
+    return App::the().game_state()->gameClock.currentDay;
 }

@@ -5,9 +5,10 @@
  */
 
 #include "TerrainCatalogue.h"
-#include "AppState.h"
+#include <App.h>
 #include <Debug/Debug.h>
 #include <Sim/City.h>
+#include <Sim/Game.h>
 
 static TerrainCatalogue s_terrain_catalogue = {};
 
@@ -79,7 +80,7 @@ void remapTerrainTypes()
             oldTypeToNewType[oldType] = s_terrain_catalogue.terrainNameToType.find_value(terrainName).value_or(0);
         }
 
-        TerrainLayer& layer = AppState::the().gameState->city.terrainLayer;
+        TerrainLayer& layer = App::the().game_state()->city.terrainLayer;
 
         for (s32 y = 0; y < layer.tileTerrainType.h; y++) {
             for (s32 x = 0; x < layer.tileTerrainType.w; x++) {
@@ -97,6 +98,6 @@ void remapTerrainTypes()
 
 void TerrainCatalogue::after_assets_loaded()
 {
-    if (AppState::the().gameState)
+    if (App::the().game_state())
         remapTerrainTypes();
 }

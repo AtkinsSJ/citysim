@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "AppState.h"
+#include <App.h>
 #include <Assets/AssetManager.h>
 #include <Gfx/BitmapFont.h>
 #include <Gfx/Renderer.h>
@@ -61,7 +61,7 @@ void endFrame()
     auto current_toast = uiState.toasts.peek();
     if (current_toast.has_value()) {
         Toast* toast = current_toast.value();
-        if (toast->update_and_draw(AppState::the().deltaTime))
+        if (toast->update_and_draw(App::the().delta_time()))
             (void)uiState.toasts.pop();
     }
 

@@ -27,7 +27,7 @@
 #    include <SDL_image.h>
 #endif
 
-#include "AppState.h"
+#include <App.h>
 #include <Assets/AssetManager.h>
 #include <Debug/Console.h>
 #include <Debug/DebugAssetLoader.h>
@@ -40,6 +40,7 @@
 #include <Settings/Settings.h>
 #include <Sim/AssetLoader.h>
 #include <Sim/BuildingCatalogue.h>
+#include <Sim/Game.h>
 #include <Sim/TerrainCatalogue.h>
 #include <UI/AssetLoader.h>
 #include <UI/UI.h>
@@ -82,7 +83,7 @@ SDL_Window* initSDL(V2I window_size, bool is_windowed, char const* windowTitle)
 
 static bool checkInGame()
 {
-    bool inGame = (AppState::the().gameState != nullptr);
+    bool inGame = (App::the().game_state() != nullptr);
     if (!inGame) {
         consoleWriteLine("You can only do that when a game is in progress!"_s, ConsoleLineStyle::Error);
     }
@@ -129,11 +130,7 @@ int main(int argc, char* argv[])
         SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
     }
 
-    auto& app_state = AppState::the();
-    app_state = {};
-    app_state.rawDeltaTime = SECONDS_PER_FRAME;
-    app_state.speedMultiplier = 1.0f;
-    app_state.deltaTime = app_state.rawDeltaTime * app_state.speedMultiplier;
+    auto app = App::initialize(SECONDS_PER_FRAME, AppStatus::MainMenu);
 
     MemoryArena system_arena { "System"_s };
 
@@ -147,13 +144,13 @@ int main(int argc, char* argv[])
                  if (!checkInGame())
                      return;
 
-                 GameState* gameState = AppState::the().gameState;
+                 auto& game_state = *App::the().game_state();
 
                  // @Hack: This sets the position to outside the camera, and then relies on it automatically snapping back into bounds
                  auto& renderer = the_renderer();
                  V2I windowPos = v2i(renderer.ui_camera().position() + renderer.ui_camera().size());
 
-                 UI::showWindow(UI::WindowTitle::fromTextAsset("title_debug_tools"_s), 250, 200, windowPos, "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Unique | WindowFlags::UniqueKeepPosition, debugToolsWindowProc, gameState);
+                 UI::showWindow(UI::WindowTitle::fromTextAsset("title_debug_tools"_s), 250, 200, windowPos, "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Unique | WindowFlags::UniqueKeepPosition, debugToolsWindowProc, &game_state);
              } });
 
         globalConsole->register_command(
@@ -165,7 +162,7 @@ int main(int argc, char* argv[])
                  if (auto sAmount = tokens.next_token(); sAmount.has_value()) {
                      if (auto amount = sAmount.value().to_int(); amount.has_value()) {
                          consoleWriteLine(myprintf("Set funds to {0}"_s, { sAmount.value() }), ConsoleLineStyle::Success);
-                         AppState::the().gameState->city.funds = truncate32(amount.value());
+                         App::the().game_state()->city.funds = truncate32(amount.value());
                          return;
                      }
                  }
@@ -178,16 +175,16 @@ int main(int argc, char* argv[])
                  if (!checkInGame())
                      return;
 
-                 auto& app_state = AppState::the();
+                 auto& game_state = *App::the().game_state();
 
-                 City* city = &app_state.gameState->city;
+                 City* city = &game_state.city;
                  // TODO: Some kind of reset would be better than this, but this is temporary until we add
                  //       proper terrain generation and UI, so meh.
                  if (city->buildings.count > 0) {
                      demolishRect(city, city->bounds);
                      city->highestBuildingID = 0;
                  }
-                 generateTerrain(city, app_state.gameState->gameRandom);
+                 generateTerrain(city, game_state.gameRandom);
 
                  consoleWriteLine("Generated new map"_s, ConsoleLineStyle::Success);
              } });
@@ -197,7 +194,7 @@ int main(int argc, char* argv[])
                  if (!checkInGame())
                      return;
 
-                 City* city = &AppState::the().gameState->city;
+                 City* city = &App::the().game_state()->city;
 
                  consoleWriteLine(myprintf("Map: {0} x {1} tiles. Seed: {2}"_s, { formatInt(city->bounds.width()), formatInt(city->bounds.height()), formatInt(city->terrainLayer.terrainGenerationSeed) }), ConsoleLineStyle::Success);
              } });
@@ -207,7 +204,7 @@ int main(int argc, char* argv[])
                  if (!checkInGame())
                      return;
 
-                 City* city = &AppState::the().gameState->city;
+                 City* city = &App::the().game_state()->city;
                  markAreaDirty(city, city->bounds);
              } });
 
@@ -216,41 +213,41 @@ int main(int argc, char* argv[])
                  if (!checkInGame())
                      return;
 
-                 auto& app_state = AppState::the();
+                 auto& game_state = *App::the().game_state();
 
                  if (argumentsCount == 0) {
                      // Hide layers
-                     app_state.gameState->dataLayerToDraw = DataView::None;
+                     game_state.dataLayerToDraw = DataView::None;
                      consoleWriteLine("Hiding data layers"_s, ConsoleLineStyle::Success);
                  } else if (argumentsCount == 1) {
                      TokenReader tokens { arguments };
                      auto layerName = tokens.next_token();
                      if (layerName == "crime"_s) {
-                         app_state.gameState->dataLayerToDraw = DataView::Crime;
+                         game_state.dataLayerToDraw = DataView::Crime;
                          consoleWriteLine("Showing crime layer"_s, ConsoleLineStyle::Success);
                      } else if (layerName == "des_res"_s) {
-                         app_state.gameState->dataLayerToDraw = DataView::Desirability_Residential;
+                         game_state.dataLayerToDraw = DataView::Desirability_Residential;
                          consoleWriteLine("Showing residential desirability"_s, ConsoleLineStyle::Success);
                      } else if (layerName == "des_com"_s) {
-                         app_state.gameState->dataLayerToDraw = DataView::Desirability_Commercial;
+                         game_state.dataLayerToDraw = DataView::Desirability_Commercial;
                          consoleWriteLine("Showing commercial desirability"_s, ConsoleLineStyle::Success);
                      } else if (layerName == "des_ind"_s) {
-                         app_state.gameState->dataLayerToDraw = DataView::Desirability_Industrial;
+                         game_state.dataLayerToDraw = DataView::Desirability_Industrial;
                          consoleWriteLine("Showing industrial desirability"_s, ConsoleLineStyle::Success);
                      } else if (layerName == "fire"_s) {
-                         app_state.gameState->dataLayerToDraw = DataView::Fire;
+                         game_state.dataLayerToDraw = DataView::Fire;
                          consoleWriteLine("Showing fire layer"_s, ConsoleLineStyle::Success);
                      } else if (layerName == "health"_s) {
-                         app_state.gameState->dataLayerToDraw = DataView::Health;
+                         game_state.dataLayerToDraw = DataView::Health;
                          consoleWriteLine("Showing health layer"_s, ConsoleLineStyle::Success);
                      } else if (layerName == "land_value"_s) {
-                         app_state.gameState->dataLayerToDraw = DataView::LandValue;
+                         game_state.dataLayerToDraw = DataView::LandValue;
                          consoleWriteLine("Showing land value layer"_s, ConsoleLineStyle::Success);
                      } else if (layerName == "pollution"_s) {
-                         app_state.gameState->dataLayerToDraw = DataView::Pollution;
+                         game_state.dataLayerToDraw = DataView::Pollution;
                          consoleWriteLine("Showing pollution layer"_s, ConsoleLineStyle::Success);
                      } else if (layerName == "power"_s) {
-                         app_state.gameState->dataLayerToDraw = DataView::Power;
+                         game_state.dataLayerToDraw = DataView::Power;
                          consoleWriteLine("Showing power layer"_s, ConsoleLineStyle::Success);
                      } else {
                          consoleWriteLine("Usage: show_layer (layer_name), or with no argument to hide the data layer. Layer names are: crime, des_res, des_com, des_ind, fire, health, land_value, pollution, power"_s, ConsoleLineStyle::Error);
@@ -262,8 +259,6 @@ int main(int argc, char* argv[])
         consoleWriteLine(myprintf("Loaded {} commands. Type 'help' to list them."_s, { formatInt(globalConsole->commands.count()) }), ConsoleLineStyle::Default);
         consoleWriteLine("GREETINGS PROFESSOR FALKEN.\nWOULD YOU LIKE TO PLAY A GAME?"_s);
     }
-
-    app_state.cosmeticRandom = Random::create();
 
     auto& settings = Settings::initialize<GameSettings>();
 
@@ -313,7 +308,7 @@ int main(int argc, char* argv[])
 
     // GAME LOOP
     u64 frameStartTime = SDL_GetPerformanceCounter();
-    while (app_state.appStatus != AppStatus::Quit) {
+    while (app->app_status() != AppStatus::Quit) {
         {
             DEBUG_BLOCK("Game loop");
 
@@ -330,7 +325,7 @@ int main(int argc, char* argv[])
             updateSavedGamesCatalogue();
 
             if (input.receivedQuitSignal) {
-                app_state.appStatus = AppStatus::Quit;
+                app->set_app_status(AppStatus::Quit);
                 break;
             }
 
@@ -346,19 +341,19 @@ int main(int argc, char* argv[])
 
                 UI::updateAndRenderWindows();
 
-                AppStatus newAppStatus = app_state.appStatus;
+                AppStatus new_app_status = app->app_status();
 
-                switch (app_state.appStatus) {
+                switch (app->app_status()) {
                 case AppStatus::MainMenu: {
-                    newAppStatus = updateAndRenderMainMenu(app_state.deltaTime);
+                    new_app_status = updateAndRenderMainMenu(app->delta_time());
                 } break;
 
                 case AppStatus::Credits: {
-                    newAppStatus = updateAndRenderCredits(app_state.deltaTime);
+                    new_app_status = updateAndRenderCredits(app->delta_time());
                 } break;
 
                 case AppStatus::Game: {
-                    newAppStatus = updateAndRenderGame(app_state.gameState, app_state.deltaTime);
+                    new_app_status = updateAndRenderGame(app->game_state(), app->delta_time());
                 } break;
 
                 case AppStatus::Quit:
@@ -367,14 +362,14 @@ int main(int argc, char* argv[])
                     INVALID_DEFAULT_CASE;
                 }
 
-                if (newAppStatus != app_state.appStatus) {
+                if (new_app_status != app->app_status()) {
                     // Clean-up for previous state
-                    if (app_state.appStatus == AppStatus::Game) {
-                        freeGameState(app_state.gameState);
-                        app_state.gameState = nullptr;
+                    if (app->app_status() == AppStatus::Game) {
+                        freeGameState(app->game_state());
+                        app->set_game_state(nullptr);
                     }
 
-                    app_state.appStatus = newAppStatus;
+                    app->set_app_status(new_app_status);
                     UI::closeAllWindows();
                 }
 
@@ -394,7 +389,7 @@ int main(int argc, char* argv[])
                 DEBUG_ARENA(&system_arena, "System");
                 DEBUG_ARENA(&temp_arena(), "Global Temp Arena");
                 DEBUG_ARENA(&renderer.arena(), "Renderer");
-                DEBUG_ARENA(app_state.gameState ? &app_state.gameState->arena : nullptr, "GameState");
+                DEBUG_ARENA(app->game_state() ? &app->game_state()->arena : nullptr, "GameState");
                 DEBUG_ARENA(&settings.arena, "Settings");
                 DEBUG_ARENA(&globalDebugState->arena, "Debug");
 
@@ -414,7 +409,7 @@ int main(int argc, char* argv[])
 
             u64 now = SDL_GetPerformanceCounter();
             float deltaTime = (float)(((double)(now - frameStartTime)) / ((double)(SDL_GetPerformanceFrequency())));
-            app_state.setDeltaTimeFromLastFrame(deltaTime);
+            app->set_delta_time(deltaTime);
             frameStartTime = now;
         }
     }

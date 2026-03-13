@@ -5,13 +5,14 @@
  */
 
 #include "SavedGames.h"
-#include "AppState.h"
+#include <App.h>
 #include <IO/DirectoryIterator.h>
 #include <IO/DirectoryWatcher.h>
 #include <IO/Paths.h>
 #include <Input/Input.h>
 #include <Menus/SaveFile.h>
 #include <Settings/Settings.h>
+#include <Sim/Game.h>
 #include <UI/Toast.h>
 #include <UI/Window.h>
 #include <Util/Orientation.h>
@@ -322,13 +323,12 @@ void confirmDeleteSaveWindowProc(UI::WindowContext* context, void* /*userData*/)
 
 void loadGame(SavedGameInfo* savedGame)
 {
-    auto& app_state = AppState::the();
-    if (app_state.gameState != nullptr) {
-        freeGameState(app_state.gameState);
-    }
+    auto& app_state = App::the();
+    if (app_state.game_state())
+        freeGameState(app_state.game_state());
 
-    app_state.gameState = newGameState();
-    GameState* gameState = app_state.gameState;
+    app_state.set_game_state(newGameState());
+    GameState* gameState = app_state.game_state();
 
     u32 startTicks = SDL_GetTicks();
 
@@ -342,7 +342,7 @@ void loadGame(SavedGameInfo* savedGame)
 
         UI::Toast::show(getText("msg_load_success"_s, { savedGame->shortName }));
 
-        app_state.appStatus = AppStatus::Game;
+        App::the().set_app_status(AppStatus::Game);
 
         UI::closeAllWindows();
 
@@ -364,7 +364,7 @@ bool saveGame(String saveName)
 
     String savePath = constructPath({ catalogue->savedGamesPath, saveFilename });
     FileHandle saveFile = openFile(savePath, FileAccessMode::Write);
-    bool saveSucceeded = writeSaveFile(&saveFile, AppState::the().gameState);
+    bool saveSucceeded = writeSaveFile(&saveFile, App::the().game_state());
     closeFile(&saveFile);
 
     if (saveSucceeded) {

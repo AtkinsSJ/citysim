@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "AppState.h"
+#include <App.h>
 #include <Assets/AssetManager.h>
 #include <Gfx/BitmapFont.h>
 #include <Gfx/Renderer.h>
@@ -390,7 +390,7 @@ Rect2I drawTextInput(RenderBuffer* renderBuffer, TextInput* textInput, TextInput
     DrawTextResult drawTextResult = {};
     drawText(renderBuffer, &font, textInput->text(), textBounds, style->textAlignment, style->textColor, renderer.shaderIds.text, textInput->caret.glyphPos, &drawTextResult);
 
-    textInput->caretFlashCounter = fmod(textInput->caretFlashCounter + AppState::the().deltaTime, style->caretFlashCycleDuration);
+    textInput->caretFlashCounter = fmod(textInput->caretFlashCounter + App::the().delta_time(), style->caretFlashCycleDuration);
 
     if (showCaret) {
         Rect2 caretRect { textBounds.x(), textBounds.y(), 2, font.line_height() };

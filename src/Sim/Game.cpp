@@ -5,7 +5,7 @@
  */
 
 #include "Game.h"
-#include "AppState.h"
+#include <App.h>
 #include <Assets/AssetManager.h>
 #include <Gfx/BitmapFont.h>
 #include <Gfx/Palette.h>
@@ -36,13 +36,12 @@ GameState* newGameState()
 
 void beginNewGame()
 {
-    auto& app_state = AppState::the();
-    if (app_state.gameState != nullptr) {
-        freeGameState(app_state.gameState);
-    }
+    auto& app_state = App::the();
+    if (app_state.game_state())
+        freeGameState(app_state.game_state());
 
-    app_state.gameState = newGameState();
-    GameState* gameState = app_state.gameState;
+    app_state.set_game_state(newGameState());
+    GameState* gameState = app_state.game_state();
 
     s32 gameStartFunds = 1000000;
     initCity(&gameState->arena, &gameState->city, 128, 128, getText("city_default_name"_s), getText("player_default_name"_s), gameStartFunds);
@@ -358,7 +357,7 @@ void pauseMenuWindowProc(UI::WindowContext* context, void* /*userData*/)
     }
 
     if (ui->addTextButton(getText("button_exit"_s))) {
-        AppState::the().gameState->status = GameStatus::Quit;
+        App::the().game_state()->status = GameStatus::Quit;
         // NB: We don't close the window here, because doing so makes the window disappear one frame
         // before the main menu appears, so we get a flash of the game world.
         // All windows are closed when switching GameStatus so it's fine.
@@ -557,7 +556,7 @@ void updateAndRenderGameUI(GameState* gameState)
 void costTooltipWindowProc(UI::WindowContext* context, void* userData)
 {
     s32 buildCost = truncate32((smm)userData);
-    City* city = &AppState::the().gameState->city;
+    City* city = &App::the().game_state()->city;
 
     UI::Panel* ui = &context->windowPanel;
 
@@ -835,7 +834,7 @@ AppStatus updateAndRenderGame(GameState* gameState, float deltaTime)
                     gameState->inspectedTilePosition = mouseTilePos;
                     V2I windowPos = v2i(ui_camera.mouse_position()) + v2i(16, 16);
                     UI::showWindow(UI::WindowTitle::fromLambda([]() {
-                        V2I tilePos = AppState::the().gameState->inspectedTilePosition;
+                        V2I tilePos = App::the().game_state()->inspectedTilePosition;
                         return getText("title_inspect"_s, { formatInt(tilePos.x), formatInt(tilePos.y) });
                     }),
                         250, 200, windowPos, "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Unique | WindowFlags::UniqueKeepPosition, inspectTileWindowProc, gameState);

@@ -5,13 +5,14 @@
  */
 
 #include "Terrain.h"
-#include "../AppState.h"
+#include <App.h>
 #include <Gfx/Renderer.h>
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
 #include <Menus/SaveFile.h>
 #include <Sim/BuildingCatalogue.h>
 #include <Sim/City.h>
+#include <Sim/Game.h>
 #include <Sim/TerrainCatalogue.h>
 #include <UI/Window.h>
 #include <Util/Splat.h>
@@ -122,7 +123,7 @@ void generateTerrain(City* city, Random* gameRandom)
     DEBUG_FUNCTION();
 
     TerrainLayer* layer = &city->terrainLayer;
-    auto& app_state = AppState::the();
+    auto& cosmetic_random = App::the().cosmetic_random();
 
     u8 tGround = truncate<u8>(findTerrainTypeByName("ground"_s));
     u8 tWater = truncate<u8>(findTerrainTypeByName("water"_s));
@@ -135,7 +136,7 @@ void generateTerrain(City* city, Random* gameRandom)
 
     for (s32 y = 0; y < city->bounds.height(); y++) {
         for (s32 x = 0; x < city->bounds.width(); x++) {
-            layer->tileSpriteOffset.set(x, y, app_state.cosmeticRandom->random_integer<u8>());
+            layer->tileSpriteOffset.set(x, y, cosmetic_random.random_integer<u8>());
         }
     }
 
@@ -291,7 +292,7 @@ void showTerrainWindow()
 void modifyTerrainWindowProc(UI::WindowContext* context, void*)
 {
     UI::Panel* ui = &context->windowPanel;
-    GameState* gameState = AppState::the().gameState;
+    GameState* gameState = App::the().game_state();
     bool terrainToolIsActive = (gameState->actionMode == ActionMode::SetTerrain);
 
     for (auto it = TerrainCatalogue::the().terrainDefs.iterate(); it.hasNext(); it.next()) {

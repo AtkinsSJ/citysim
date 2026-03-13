@@ -5,7 +5,7 @@
  */
 
 #include "Fire.h"
-#include "../AppState.h"
+#include <App.h>
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
 #include <Menus/SaveFile.h>
@@ -208,7 +208,7 @@ void addFireRaw(City* city, s32 x, s32 y, GameTimestamp startDate)
     fire->entity = addEntity(city, Entity::Type::Fire, fire);
     // TODO: Probably most of this wants to be moved into addEntity()
     fire->entity->bounds = { x, y, 1, 1 };
-    fire->entity->sprite = SpriteRef { "e_fire_1x1"_s, AppState::the().cosmeticRandom->next() };
+    fire->entity->sprite = SpriteRef { "e_fire_1x1"_s, App::the().cosmetic_random().next() };
 
     layer->activeFireCount++;
 

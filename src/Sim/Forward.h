@@ -20,6 +20,7 @@ struct Entity;
 struct Fire;
 struct FireLayer;
 struct GameClock;
+struct GameState;
 struct HealthLayer;
 struct LandValueLayer;
 struct PollutionLayer;

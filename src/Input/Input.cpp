@@ -5,7 +5,7 @@
  */
 
 #include "Input.h"
-#include "AppState.h"
+#include <App.h>
 #include <Debug/Debug.h>
 #include <Gfx/Renderer.h>
 #include <SDL2/SDL_clipboard.h>

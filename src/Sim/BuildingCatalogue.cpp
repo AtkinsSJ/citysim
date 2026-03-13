@@ -5,9 +5,10 @@
  */
 
 #include "BuildingCatalogue.h"
-#include "AppState.h"
+#include <App.h>
 #include <Sim/Building.h>
-#include <Util/OwnPtr.h>
+#include <Sim/Game.h>
+#include <Util/Random.h>
 
 static BuildingCatalogue* s_building_catalogue;
 
@@ -121,7 +122,7 @@ Optional<BuildingDef const&> BuildingCatalogue::find_random_zone_building(ZoneTy
 
 void BuildingCatalogue::after_assets_loaded()
 {
-    if (AppState::the().gameState)
+    if (App::the().game_state())
         remapBuildingTypes();
 }
 
@@ -213,7 +214,7 @@ void remapBuildingTypes()
             oldTypeToNewType[oldType] = building_catalogue.buildingNameToTypeID.find_value(buildingName).value_or(0);
         }
 
-        auto& city = AppState::the().gameState->city;
+        auto& city = App::the().game_state()->city;
         for (auto it = city.buildings.iterate(); it.hasNext(); it.next()) {
             Building* building = it.get();
             s32 oldType = building->typeID;
