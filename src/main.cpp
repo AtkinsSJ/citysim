@@ -5,11 +5,6 @@
  */
 
 #include <Util/Platform.h>
-#include <initializer_list>
-#include <inttypes.h>
-#include <math.h>
-#include <stdlib.h> // For qsort()
-#include <time.h>   // For seeding RNGs
 
 #if BUILD_DEBUG
 // 3 is the max level.
@@ -43,13 +38,7 @@
 #include <Sim/Game.h>
 #include <Sim/TerrainCatalogue.h>
 #include <UI/AssetLoader.h>
-#include <UI/UI.h>
 #include <UI/Window.h>
-#include <Util/Log.h>
-#include <Util/Memory.h>
-#include <Util/MemoryArena.h>
-#include <Util/Random.h>
-#include <Util/String.h>
 
 SDL_Window* initSDL(V2I window_size, bool is_windowed, char const* windowTitle)
 {
