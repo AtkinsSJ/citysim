@@ -135,7 +135,7 @@ int main(int argc, char* argv[])
     app_state.speedMultiplier = 1.0f;
     app_state.deltaTime = app_state.rawDeltaTime * app_state.speedMultiplier;
 
-    app_state.systemArena = { "System"_s };
+    MemoryArena system_arena { "System"_s };
 
     if constexpr (BUILD_DEBUG) {
         debugInit();
@@ -271,7 +271,7 @@ int main(int argc, char* argv[])
     auto windowed = settings.get_typed_setting<bool>("windowed"_s).value_or(true);
     SDL_Window* window = initSDL(resolution, windowed, "Some kind of city builder");
 
-    init_input_state(app_state.systemArena);
+    init_input_state(system_arena);
     auto& input = input_state();
 
     Assets::initAssets();
@@ -301,7 +301,7 @@ int main(int argc, char* argv[])
     renderer.set_cursor("default"_s);
     renderer.set_cursor_visible(true);
 
-    UI::init(&app_state.systemArena);
+    UI::init(&system_arena);
 
     initSavedGamesCatalogue();
 
@@ -391,7 +391,7 @@ int main(int argc, char* argv[])
 
                 // TODO: Maybe automatically register arenas with the debug system?
                 // Though, the debug system uses an arena itself, so that could be a bit infinitely-recursive.
-                DEBUG_ARENA(&app_state.systemArena, "System");
+                DEBUG_ARENA(&system_arena, "System");
                 DEBUG_ARENA(&temp_arena(), "Global Temp Arena");
                 DEBUG_ARENA(&renderer.arena(), "Renderer");
                 DEBUG_ARENA(app_state.gameState ? &app_state.gameState->arena : nullptr, "GameState");
