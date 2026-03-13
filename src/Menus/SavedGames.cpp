@@ -5,7 +5,7 @@
  */
 
 #include "SavedGames.h"
-#include <App.h>
+#include <App/App.h>
 #include <IO/DirectoryIterator.h>
 #include <IO/DirectoryWatcher.h>
 #include <IO/Paths.h>

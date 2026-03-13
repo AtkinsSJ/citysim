@@ -5,7 +5,7 @@
  */
 
 #include "Game.h"
-#include <App.h>
+#include <App/App.h>
 #include <Assets/AssetManager.h>
 #include <Gfx/BitmapFont.h>
 #include <Gfx/Palette.h>

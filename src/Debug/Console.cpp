@@ -5,7 +5,7 @@
  */
 
 #include "Console.h"
-#include <App.h>
+#include <App/App.h>
 #include <Assets/AssetManager.h>
 #include <Debug/Keymap.h>
 #include <Gfx/BitmapFont.h>

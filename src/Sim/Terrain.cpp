@@ -5,7 +5,7 @@
  */
 
 #include "Terrain.h"
-#include <App.h>
+#include <App/App.h>
 #include <Gfx/Renderer.h>
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>

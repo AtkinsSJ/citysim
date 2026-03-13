@@ -22,7 +22,7 @@
 #    include <SDL_image.h>
 #endif
 
-#include <App.h>
+#include <App/App.h>
 #include <Assets/AssetManager.h>
 #include <Debug/Console.h>
 #include <Debug/DebugAssetLoader.h>

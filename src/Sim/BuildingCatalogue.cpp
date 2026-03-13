@@ -5,7 +5,7 @@
  */
 
 #include "BuildingCatalogue.h"
-#include <App.h>
+#include <App/App.h>
 #include <Sim/Building.h>
 #include <Sim/Game.h>
 #include <Util/Random.h>

@@ -1,8 +1,8 @@
 target_sources(CitySim PRIVATE
-    App.cpp
     main.cpp
 )
 
+add_subdirectory("App")
 add_subdirectory("Assets")
 add_subdirectory("Debug")
 add_subdirectory("Gfx")
