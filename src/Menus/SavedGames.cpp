@@ -342,7 +342,7 @@ void loadGame(SavedGameInfo* savedGame)
 
         UI::Toast::show(getText("msg_load_success"_s, { savedGame->shortName }));
 
-        App::the().set_app_status(AppStatus::Game);
+        App::the().switch_to_scene(adopt_own(*new GameScene));
 
         UI::closeAllWindows();
 

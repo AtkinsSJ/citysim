@@ -1,11 +1,17 @@
 /*
- * Copyright (c) 2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2025-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #pragma once
 
-#include <App/App.h>
+#include <App/Scene.h>
 
-AppStatus updateAndRenderCredits(float deltaTime);
+class CreditsScene final : public Scene {
+public:
+    static NonnullOwnPtr<CreditsScene> create();
+
+    virtual ~CreditsScene() override = default;
+    virtual void update_and_render(float delta_time) override;
+};

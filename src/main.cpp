@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
         SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
     }
 
-    auto app = App::initialize(SECONDS_PER_FRAME, AppStatus::MainMenu);
+    auto app = App::initialize(SECONDS_PER_FRAME, MainMenuScene::create());
 
     MemoryArena system_arena { "System"_s };
 
@@ -297,7 +297,7 @@ int main(int argc, char* argv[])
 
     // GAME LOOP
     u64 frameStartTime = SDL_GetPerformanceCounter();
-    while (app->app_status() != AppStatus::Quit) {
+    while (!input.receivedQuitSignal) {
         {
             DEBUG_BLOCK("Game loop");
 
@@ -313,11 +313,6 @@ int main(int argc, char* argv[])
 
             updateSavedGamesCatalogue();
 
-            if (input.receivedQuitSignal) {
-                app->set_app_status(AppStatus::Quit);
-                break;
-            }
-
             world_camera.update_mouse_position(input.mousePosNormalised);
             ui_camera.update_mouse_position(input.mousePosNormalised);
 
@@ -327,41 +322,8 @@ int main(int argc, char* argv[])
 
             {
                 UI::startFrame();
-
                 UI::updateAndRenderWindows();
-
-                AppStatus new_app_status = app->app_status();
-
-                switch (app->app_status()) {
-                case AppStatus::MainMenu: {
-                    new_app_status = updateAndRenderMainMenu(app->delta_time());
-                } break;
-
-                case AppStatus::Credits: {
-                    new_app_status = updateAndRenderCredits(app->delta_time());
-                } break;
-
-                case AppStatus::Game: {
-                    new_app_status = updateAndRenderGame(app->game_state(), app->delta_time());
-                } break;
-
-                case AppStatus::Quit:
-                    break;
-
-                    INVALID_DEFAULT_CASE;
-                }
-
-                if (new_app_status != app->app_status()) {
-                    // Clean-up for previous state
-                    if (app->app_status() == AppStatus::Game) {
-                        freeGameState(app->game_state());
-                        app->set_game_state(nullptr);
-                    }
-
-                    app->set_app_status(new_app_status);
-                    UI::closeAllWindows();
-                }
-
+                app->scene().update_and_render(app->delta_time());
                 UI::endFrame();
             }
 
@@ -387,6 +349,8 @@ int main(int argc, char* argv[])
 
             // Actually draw things!
             the_renderer().render();
+
+            app->transition_to_next_scene_if_needed();
 
             temp_arena().reset();
         }

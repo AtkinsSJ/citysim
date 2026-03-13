@@ -7,14 +7,18 @@
 #include "Credits.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/TextDocument.h>
+#include <Menus/MainMenu.h>
 #include <UI/UI.h>
 #include <UI/UITheme.h>
 #include <Util/Vector.h>
 
-AppStatus updateAndRenderCredits(float /*deltaTime*/)
+NonnullOwnPtr<CreditsScene> CreditsScene::create()
 {
-    AppStatus result = AppStatus::Credits;
+    return adopt_own(*new CreditsScene);
+}
 
+void CreditsScene::update_and_render(float)
+{
     V2I position = v2i(UI::windowSize.x / 2, 157);
     s32 maxLabelWidth = UI::windowSize.x - 256;
 
@@ -34,8 +38,6 @@ AppStatus updateAndRenderCredits(float /*deltaTime*/)
     V2I backSize = UI::calculateButtonSize(backText, &button_style);
     Rect2I buttonRect { uiBorderPadding, UI::windowSize.y - uiBorderPadding - backSize.y, backSize.x, backSize.y };
     if (UI::putTextButton(getText("button_back"_s), buttonRect, &button_style, ButtonState::Normal)) {
-        result = AppStatus::MainMenu;
+        App::the().switch_to_scene(MainMenuScene::create());
     }
-
-    return result;
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2016-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -8,17 +8,23 @@
 #include <Debug/Debug.h>
 #include <Gfx/Renderer.h>
 #include <Menus/About.h>
+#include <Menus/Credits.h>
 #include <Menus/SavedGames.h>
 #include <Settings/Settings.h>
 #include <Sim/Game.h>
 #include <UI/Panel.h>
 
-AppStatus updateAndRenderMainMenu(float /*deltaTime*/)
+NonnullOwnPtr<MainMenuScene> MainMenuScene::create()
+{
+    return adopt_own(*new MainMenuScene);
+}
+
+void MainMenuScene::update_and_render(float delta_time)
 {
     DEBUG_FUNCTION();
 
-    AppStatus result = AppStatus::MainMenu;
     auto& renderer = the_renderer();
+    auto& app = App::the();
 
     auto window_size = renderer.window_size();
     UI::Panel panel = UI::Panel({ 0, window_size.y / 4, window_size.x, window_size.y }, "mainMenu"_s);
@@ -64,14 +70,13 @@ AppStatus updateAndRenderMainMenu(float /*deltaTime*/)
     */
     if (panel.addTextButton(newGameText)) {
         beginNewGame();
-
-        result = AppStatus::Game;
+        app.switch_to_scene(adopt_own(*new GameScene));
     }
     if (panel.addTextButton(loadText)) {
         showLoadGameWindow();
     }
     if (panel.addTextButton(creditsText)) {
-        result = AppStatus::Credits;
+        app.switch_to_scene(CreditsScene::create());
     }
     if (panel.addTextButton(settingsText)) {
         showSettingsWindow();
@@ -80,10 +85,8 @@ AppStatus updateAndRenderMainMenu(float /*deltaTime*/)
         showAboutWindow();
     }
     if (panel.addTextButton(exitText)) {
-        result = AppStatus::Quit;
+        input_state().receivedQuitSignal = true;
     }
 
     panel.end(true);
-
-    return result;
 }

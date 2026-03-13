@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <App/App.h>
+#include <App/Scene.h>
 #include <Sim/BuildingRef.h>
 #include <Sim/City.h>
 #include <Sim/GameClock.h>
@@ -146,7 +146,6 @@ struct GameState {
 GameState* newGameState(); // A blank game state with no city
 void beginNewGame();       // A game state for a new map
 
-AppStatus updateAndRenderGame(GameState* gameState, float deltaTime);
 void freeGameState(GameState* gameState);
 
 void inputMoveCamera(Camera* camera, V2 windowSize, V2 windowMousePos, s32 cityWidth, s32 cityHeight, float delta_time);
@@ -173,3 +172,9 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData);
 void pauseMenuWindowProc(UI::WindowContext* context, void* userData);
 void costTooltipWindowProc(UI::WindowContext* context, void* userData);
 void debugToolsWindowProc(UI::WindowContext* context, void* userData);
+
+class GameScene final : public Scene {
+public:
+    virtual ~GameScene() override;
+    virtual void update_and_render(float delta_time) override;
+};

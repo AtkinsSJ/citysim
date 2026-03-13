@@ -12,6 +12,7 @@
 #include <Gfx/Renderer.h>
 #include <Input/Input.h>
 #include <Menus/About.h>
+#include <Menus/MainMenu.h>
 #include <Menus/SavedGames.h>
 #include <Settings/Settings.h>
 #include <Sim/BuildingCatalogue.h>
@@ -598,19 +599,26 @@ void debugToolsWindowProc(UI::WindowContext* context, void* userData)
     }
 }
 
-AppStatus updateAndRenderGame(GameState* gameState, float deltaTime)
+GameScene::~GameScene()
+{
+    // FIXME: This is very temporary, until we remove game_state() in favour of storing that data in GameScene.
+    freeGameState(App::the().game_state());
+    App::the().set_game_state(nullptr);
+}
+
+void GameScene::update_and_render(float delta_time)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
 
     auto& renderer = the_renderer();
-    AppStatus result = AppStatus::Game;
+    auto* gameState = App::the().game_state();
     City* city = &gameState->city;
 
     // Update the simulation... need a smarter way of doing this!
     if (!UI::hasPauseWindowOpen()) {
         DEBUG_BLOCK_T("Update simulation", DebugCodeDataTag::Simulation);
 
-        auto clockEvents = incrementClock(&gameState->gameClock, deltaTime);
+        auto clockEvents = incrementClock(&gameState->gameClock, delta_time);
         if (clockEvents.has(ClockEvents::NewWeek)) {
             logInfo("New week!"_s);
         }
@@ -643,7 +651,7 @@ AppStatus updateAndRenderGame(GameState* gameState, float deltaTime)
     Camera& world_camera = renderer.world_camera();
     Camera& ui_camera = renderer.ui_camera();
     if (gameState->status == GameStatus::Playing) {
-        inputMoveCamera(&world_camera, ui_camera.size(), ui_camera.mouse_position(), gameState->city.bounds.width(), gameState->city.bounds.height(), deltaTime);
+        inputMoveCamera(&world_camera, ui_camera.size(), ui_camera.mouse_position(), gameState->city.bounds.width(), gameState->city.bounds.height(), delta_time);
     }
 
     V2I mouseTilePos = v2i(world_camera.mouse_position());
@@ -873,11 +881,8 @@ AppStatus updateAndRenderGame(GameState* gameState, float deltaTime)
         drawDataViewOverlay(gameState, visibleTileBounds);
     }
 
-    if (gameState->status == GameStatus::Quit) {
-        result = AppStatus::MainMenu;
-    }
-
-    return result;
+    if (gameState->status == GameStatus::Quit)
+        App::the().switch_to_scene(MainMenuScene::create());
 }
 
 void initDataViewUI(GameState* gameState)
