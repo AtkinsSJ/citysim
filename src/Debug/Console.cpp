@@ -385,7 +385,7 @@ void Console::before_assets_unloaded()
 ConsoleCommand(exit)
 {
     consoleWriteLine("Quitting game..."_s, ConsoleLineStyle::Success);
-    App::the().set_app_status(AppStatus::Quit);
+    input_state().receivedQuitSignal = true;
 }
 
 ConsoleCommand(hello)
