@@ -28,7 +28,6 @@ GameState* newGameState()
     // FIXME: Replace this fixed seed once we're not in dev mode.
     gameState->gameRandom = Random::create(12345);
 
-    gameState->status = GameStatus::Playing;
     gameState->actionMode = ActionMode::None;
     initDataViewUI(gameState);
 
@@ -358,12 +357,7 @@ void pauseMenuWindowProc(UI::WindowContext* context, void* /*userData*/)
     }
 
     if (ui->addTextButton(getText("button_exit"_s))) {
-        App::the().game_state()->status = GameStatus::Quit;
-        // NB: We don't close the window here, because doing so makes the window disappear one frame
-        // before the main menu appears, so we get a flash of the game world.
-        // All windows are closed when switching GameStatus so it's fine.
-        // - Sam, 07/08/2019
-        // context->closeRequested = true;
+        App::the().switch_to_scene(MainMenuScene::create());
     }
 }
 
@@ -650,9 +644,7 @@ void GameScene::update_and_render(float delta_time)
     // CAMERA!
     Camera& world_camera = renderer.world_camera();
     Camera& ui_camera = renderer.ui_camera();
-    if (gameState->status == GameStatus::Playing) {
-        inputMoveCamera(&world_camera, ui_camera.size(), ui_camera.mouse_position(), gameState->city.bounds.width(), gameState->city.bounds.height(), delta_time);
-    }
+    inputMoveCamera(&world_camera, ui_camera.size(), ui_camera.mouse_position(), gameState->city.bounds.width(), gameState->city.bounds.height(), delta_time);
 
     V2I mouseTilePos = v2i(world_camera.mouse_position());
     bool mouseIsOverUI = UI::isMouseInputHandled() || UI::mouseIsWithinUIRects();
@@ -880,9 +872,6 @@ void GameScene::update_and_render(float delta_time)
     if (gameState->dataLayerToDraw != DataView::None) {
         drawDataViewOverlay(gameState, visibleTileBounds);
     }
-
-    if (gameState->status == GameStatus::Quit)
-        App::the().switch_to_scene(MainMenuScene::create());
 }
 
 void initDataViewUI(GameState* gameState)

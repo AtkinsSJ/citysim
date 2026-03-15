@@ -20,11 +20,6 @@
 #include <Util/String.h>
 #include <Util/Vector.h>
 
-enum class GameStatus : u8 {
-    Playing,
-    Quit,
-};
-
 enum class GameMenuID : u8 {
     None,
     Build,
@@ -119,7 +114,6 @@ enum class InspectTileDebugFlags : u8 {
 
 struct GameState {
     MemoryArena arena;
-    GameStatus status;
     Random* gameRandom;
     GameClock gameClock;
     City city;
