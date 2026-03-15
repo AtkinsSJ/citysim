@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2016-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -11,13 +11,13 @@
 #include <Sim/BuildingRef.h>
 #include <Sim/City.h>
 #include <Sim/GameClock.h>
-#include <Sim/TileUtils.h>
 #include <Sim/Zone.h>
 #include <Util/Basic.h>
 #include <Util/ChunkedArray.h>
 #include <Util/EnumMap.h>
 #include <Util/Flags.h>
 #include <Util/Random.h>
+#include <Util/Ref.h>
 #include <Util/String.h>
 #include <Util/Vector.h>
 
@@ -114,16 +114,15 @@ enum class InspectTileDebugFlags : u8 {
 };
 
 struct GameState {
-    MemoryArena arena;
-    Random* gameRandom;
+    OwnPtr<Random> gameRandom;
     GameClock gameClock;
     City city;
 
-    DataView dataLayerToDraw;
+    DataView dataLayerToDraw { DataView::None };
     EnumMap<DataView, DataViewUI> dataViewUI;
 
     DragState worldDragState;
-    ActionMode actionMode;
+    ActionMode actionMode { ActionMode::None };
     union {
         s32 selectedBuildingTypeID;
         ZoneType selectedZoneID;
@@ -153,7 +152,6 @@ void drawDataViewUI(GameState* gameState);
 //
 // Internal
 //
-void initDataViewUI(GameState* gameState);
 void setGradient(DataViewUI* dataViewUI, String paletteName);
 void setFixedColors(DataViewUI* dataView, String paletteName, std::initializer_list<String> names, MemoryArena&);
 void setHighlightedBuildings(DataViewUI* dataViewUI, ChunkedArray<BuildingRef>* highlightedBuildings, EffectRadius BuildingDef::* effectRadiusMember = nullptr);
@@ -172,4 +170,14 @@ public:
 
     virtual ~GameScene() override;
     virtual void update_and_render(float delta_time) override;
+
+    MemoryArena& arena() { return m_arena; }
+
+private:
+    GameScene();
+
+    void init_data_view_ui();
+
+    MemoryArena m_arena { "Game"_s };
+    Ref<GameState> m_state;
 };

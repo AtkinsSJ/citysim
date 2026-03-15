@@ -417,7 +417,7 @@ void growSomeZoneBuildings(City* city)
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
     ZoneLayer* layer = &city->zoneLayer;
-    Random* random = App::the().game_state()->gameRandom;
+    auto& random = App::the().game_state()->gameRandom;
     auto& building_catalogue = BuildingCatalogue::the();
 
     for (auto zone_type : enum_values<ZoneType>()) {

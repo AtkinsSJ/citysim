@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2016-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -22,11 +22,6 @@
 #include <UI/Toast.h>
 #include <UI/Window.h>
 #include <Util/Random.h>
-
-void freeGameState(GameState* gameState)
-{
-    gameState->arena.~MemoryArena();
-}
 
 void inputMoveCamera(Camera* camera, V2 windowSize, V2 windowMousePos, s32 cityWidth, s32 cityHeight, float delta_time)
 {
@@ -570,32 +565,29 @@ NonnullOwnPtr<GameScene> GameScene::create_new(u32 seed)
 {
     auto& app_state = App::the();
 
-    GameState* inlined_gameState = MemoryArena::bootstrap<GameState>("Game"_s);
-    inlined_gameState->gameRandom = Random::create(seed).leak_ptr();
-    inlined_gameState->actionMode = ActionMode::None;
-    initDataViewUI(inlined_gameState);
-    app_state.set_game_state(inlined_gameState);
-    GameState* gameState = app_state.game_state();
+    auto game_scene = adopt_own(*new GameScene);
+
+    game_scene->m_state->gameRandom = Random::create(seed);
+    app_state.set_game_state(&*game_scene->m_state);
 
     s32 gameStartFunds = 1000000;
-    initCity(&gameState->arena, &gameState->city, 128, 128, getText("city_default_name"_s), getText("player_default_name"_s), gameStartFunds);
-    generateTerrain(&gameState->city, *gameState->gameRandom);
+    initCity(&game_scene->m_arena, &game_scene->m_state->city, 128, 128, getText("city_default_name"_s), getText("player_default_name"_s), gameStartFunds);
+    generateTerrain(&game_scene->m_state->city, *game_scene->m_state->gameRandom);
 
-    initGameClock(&gameState->gameClock);
+    initGameClock(&game_scene->m_state->gameClock);
 
-    return adopt_own(*new GameScene);
+    return game_scene;
 }
 
 ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const& saved_game_info)
 {
     auto& app_state = App::the();
 
-    GameState* inlined_gameState = MemoryArena::bootstrap<GameState>("Game"_s);
+    auto game_scene = adopt_own(*new GameScene);
+
+    auto& game_state = *game_scene->m_state;
     // FIXME: Replace this fixed seed once we're not in dev mode.
-    inlined_gameState->gameRandom = Random::create(12345).leak_ptr();
-    inlined_gameState->actionMode = ActionMode::None;
-    initDataViewUI(inlined_gameState);
-    GameState* gameState = inlined_gameState;
+    game_state.gameRandom = Random::create(12345);
 
     FileHandle saveFile = openFile(saved_game_info.fullPath, FileAccessMode::Read);
     bool loadSucceeded = [&] {
@@ -617,7 +609,7 @@ ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const
 
         bool succeeded = false;
 
-        City* city = &gameState->city;
+        City* city = &game_state.city;
 
         BinaryFileReader reader = readBinaryFile(&saveFile, SAV_FILE_ID, &temp_arena());
         // This doesn't actually loop, we're just using a `while` so we can break out of it
@@ -629,10 +621,10 @@ ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const
 
                 String cityName = reader.readString(meta->cityName);
                 String playerName = reader.readString(meta->playerName);
-                initCity(&gameState->arena, city, meta->cityWidth, meta->cityHeight, cityName, playerName, meta->funds);
+                initCity(&game_scene->m_arena, city, meta->cityWidth, meta->cityHeight, cityName, playerName, meta->funds);
 
                 // Clock
-                initGameClock(&gameState->gameClock, meta->currentDate, meta->timeWithinDay);
+                initGameClock(&game_state.gameClock, meta->currentDate, meta->timeWithinDay);
 
                 // Camera
                 auto& world_camera = the_renderer().world_camera();
@@ -675,16 +667,17 @@ ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const
 
     if (!loadSucceeded)
         return getText("msg_load_failure"_s, { saved_game_info.shortName });
-    app_state.set_game_state(gameState);
-    return adopt_own(*new GameScene);
+    app_state.set_game_state(&game_state);
+    return game_scene;
 }
 
-GameScene::~GameScene()
+GameScene::GameScene()
+    : m_state(*m_arena.allocate<GameState>())
 {
-    // FIXME: This is very temporary, until we remove game_state() in favour of storing that data in GameScene.
-    freeGameState(App::the().game_state());
-    App::the().set_game_state(nullptr);
+    init_data_view_ui();
 }
+
+GameScene::~GameScene() = default;
 
 void GameScene::update_and_render(float delta_time)
 {
@@ -692,13 +685,13 @@ void GameScene::update_and_render(float delta_time)
 
     auto& renderer = the_renderer();
     auto* gameState = App::the().game_state();
-    City* city = &gameState->city;
+    City* city = &m_state->city;
 
     // Update the simulation... need a smarter way of doing this!
     if (!UI::hasPauseWindowOpen()) {
         DEBUG_BLOCK_T("Update simulation", DebugCodeDataTag::Simulation);
 
-        auto clockEvents = incrementClock(&gameState->gameClock, delta_time);
+        auto clockEvents = incrementClock(&m_state->gameClock, delta_time);
         if (clockEvents.has(ClockEvents::NewWeek)) {
             logInfo("New week!"_s);
         }
@@ -960,10 +953,10 @@ void GameScene::update_and_render(float delta_time)
     }
 }
 
-void initDataViewUI(GameState* gameState)
+void GameScene::init_data_view_ui()
 {
-    auto& dataViewUI = gameState->dataViewUI;
-    City* city = &gameState->city;
+    auto& dataViewUI = m_state->dataViewUI;
+    City* city = &m_state->city;
 
     dataViewUI[DataView::None].title = "data_view_none"_s;
 
@@ -981,19 +974,19 @@ void initDataViewUI(GameState* gameState)
 
     dataViewUI[DataView::Crime].title = "data_view_crime"_s;
     setGradient(&dataViewUI[DataView::Crime], "service_coverage"_s);
-    setFixedColors(&dataViewUI[DataView::Crime], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, gameState->arena);
+    setFixedColors(&dataViewUI[DataView::Crime], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, m_arena);
     setHighlightedBuildings(&dataViewUI[DataView::Crime], &city->crimeLayer.policeBuildings, &BuildingDef::policeEffect);
     setTileOverlay(&dataViewUI[DataView::Crime], &city->crimeLayer.tilePoliceCoverage.items, "service_coverage"_s);
 
     dataViewUI[DataView::Fire].title = "data_view_fire"_s;
     setGradient(&dataViewUI[DataView::Fire], "risk"_s);
-    setFixedColors(&dataViewUI[DataView::Fire], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, gameState->arena);
+    setFixedColors(&dataViewUI[DataView::Fire], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, m_arena);
     setHighlightedBuildings(&dataViewUI[DataView::Fire], &city->fireLayer.fireProtectionBuildings, &BuildingDef::fireProtection);
     setTileOverlay(&dataViewUI[DataView::Fire], &city->fireLayer.tileOverallFireRisk.items, "risk"_s);
 
     dataViewUI[DataView::Health].title = "data_view_health"_s;
     setGradient(&dataViewUI[DataView::Health], "service_coverage"_s);
-    setFixedColors(&dataViewUI[DataView::Health], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, gameState->arena);
+    setFixedColors(&dataViewUI[DataView::Health], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, m_arena);
     setHighlightedBuildings(&dataViewUI[DataView::Health], &city->healthLayer.healthBuildings, &BuildingDef::healthEffect);
     setTileOverlay(&dataViewUI[DataView::Health], &city->healthLayer.tileHealthCoverage.items, "service_coverage"_s);
 
@@ -1006,7 +999,7 @@ void initDataViewUI(GameState* gameState)
     setTileOverlay(&dataViewUI[DataView::Pollution], &city->pollutionLayer.tilePollution.items, "pollution"_s);
 
     dataViewUI[DataView::Power].title = "data_view_power"_s;
-    setFixedColors(&dataViewUI[DataView::Power], "power"_s, { "data_view_power_powered"_s, "data_view_power_brownout"_s, "data_view_power_blackout"_s }, gameState->arena);
+    setFixedColors(&dataViewUI[DataView::Power], "power"_s, { "data_view_power_powered"_s, "data_view_power_brownout"_s, "data_view_power_blackout"_s }, m_arena);
     setHighlightedBuildings(&dataViewUI[DataView::Power], &city->powerLayer.powerBuildings);
     setTileOverlayCallback(&dataViewUI[DataView::Power], calculatePowerOverlayForTile, "power"_s);
 }

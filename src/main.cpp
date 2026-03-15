@@ -340,7 +340,11 @@ int main(int argc, char* argv[])
                 DEBUG_ARENA(&system_arena, "System");
                 DEBUG_ARENA(&temp_arena(), "Global Temp Arena");
                 DEBUG_ARENA(&renderer.arena(), "Renderer");
-                DEBUG_ARENA(app->game_state() ? &app->game_state()->arena : nullptr, "GameState");
+                if (auto* game_scene = dynamic_cast<GameScene*>(&app->scene())) {
+                    DEBUG_ARENA(&game_scene->arena(), "GameState");
+                } else {
+                    DEBUG_ARENA(nullptr, "GameState");
+                }
                 DEBUG_ARENA(&settings.arena, "Settings");
                 DEBUG_ARENA(&globalDebugState->arena, "Debug");
 
