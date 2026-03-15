@@ -275,8 +275,7 @@ void savedGamesWindowProc(UI::WindowContext* context, void* userData)
 
             bottomBar.alignWidgets(HAlign::Right);
             if (bottomBar.addTextButton(getText("button_load"_s), selectedSavedGame ? ButtonState::Normal : ButtonState::Disabled)) {
-                loadGame(selectedSavedGame);
-                context->closeRequested = true;
+                loadGame(*selectedSavedGame);
             }
         }
     }
@@ -321,36 +320,25 @@ void confirmDeleteSaveWindowProc(UI::WindowContext* context, void* /*userData*/)
     }
 }
 
-void loadGame(SavedGameInfo* savedGame)
+void loadGame(SavedGameInfo const& saved_game)
 {
-    auto& app_state = App::the();
-    if (app_state.game_state())
-        freeGameState(app_state.game_state());
-
-    app_state.set_game_state(newGameState());
-    GameState* gameState = app_state.game_state();
-
     u32 startTicks = SDL_GetTicks();
 
-    FileHandle saveFile = openFile(savedGame->fullPath, FileAccessMode::Read);
-    bool loadSucceeded = loadSaveFile(&saveFile, gameState);
-    closeFile(&saveFile);
-
-    if (loadSucceeded) {
-        u32 endTicks = SDL_GetTicks();
-        logInfo("Loaded save '{0}' in {1} milliseconds."_s, { savedGame->shortName, formatInt(endTicks - startTicks) });
-
-        UI::Toast::show(getText("msg_load_success"_s, { savedGame->shortName }));
-
-        App::the().switch_to_scene(adopt_own(*new GameScene));
-
-        UI::closeAllWindows();
-
-        // Filename is interned so it's safe to copy it
-        savedGamesCatalogue.activeSavedGameName = savedGame->shortName;
-    } else {
-        UI::Toast::show(getText("msg_load_failure"_s, { savedGame->shortName }));
+    auto loaded_game = GameScene::from_saved_game(saved_game);
+    if (loaded_game.is_error()) {
+        UI::Toast::show(loaded_game.error());
+        return;
     }
+
+    u32 endTicks = SDL_GetTicks();
+    logInfo("Loaded save '{0}' in {1} milliseconds."_s, { saved_game.shortName, formatInt(endTicks - startTicks) });
+
+    UI::Toast::show(getText("msg_load_success"_s, { saved_game.shortName }));
+
+    App::the().switch_to_scene(loaded_game.release_value());
+
+    // Filename is interned so it's safe to copy it
+    savedGamesCatalogue.activeSavedGameName = saved_game.shortName;
 }
 
 bool saveGame(String saveName)

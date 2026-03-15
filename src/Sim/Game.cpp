@@ -13,6 +13,7 @@
 #include <Input/Input.h>
 #include <Menus/About.h>
 #include <Menus/MainMenu.h>
+#include <Menus/SaveFile.h>
 #include <Menus/SavedGames.h>
 #include <Settings/Settings.h>
 #include <Sim/BuildingCatalogue.h>
@@ -21,18 +22,6 @@
 #include <UI/Toast.h>
 #include <UI/Window.h>
 #include <Util/Random.h>
-
-GameState* newGameState()
-{
-    GameState* gameState = MemoryArena::bootstrap<GameState>("Game"_s);
-    // FIXME: Replace this fixed seed once we're not in dev mode.
-    gameState->gameRandom = Random::create(12345);
-
-    gameState->actionMode = ActionMode::None;
-    initDataViewUI(gameState);
-
-    return gameState;
-}
 
 void freeGameState(GameState* gameState)
 {
@@ -594,6 +583,99 @@ NonnullOwnPtr<GameScene> GameScene::create_new(u32 seed)
 
     initGameClock(&gameState->gameClock);
 
+    return adopt_own(*new GameScene);
+}
+
+ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const& saved_game_info)
+{
+    auto& app_state = App::the();
+
+    GameState* inlined_gameState = MemoryArena::bootstrap<GameState>("Game"_s);
+    // FIXME: Replace this fixed seed once we're not in dev mode.
+    inlined_gameState->gameRandom = Random::create(12345);
+    inlined_gameState->actionMode = ActionMode::None;
+    initDataViewUI(inlined_gameState);
+    GameState* gameState = inlined_gameState;
+
+    FileHandle saveFile = openFile(saved_game_info.fullPath, FileAccessMode::Read);
+    bool loadSucceeded = [&] {
+        // So... I'm not really sure how to signal success, honestly.
+        // I suppose the process ouytside of this function is:
+        // - User confirms to load a city.
+        // - Existing city, if any, is discarded.
+        // - This function is called.
+        // - If it fails, discard the city, else it's in memory.
+        // So, if loading fails, then no city will be in memory, regardless of whether one was
+        // before the loading was attempted! I think that makes the most sense.
+        // Another option would be to load into a second City struct, and then swap it if it
+        // successfully loads... but that makes a bunch of memory-management more complicated.
+        // This way, we only ever have one City in memory so we can clean up easily.
+
+        // For now, reading the whole thing into memory and then processing it is simpler.
+        // However, it's wasteful memory-wise, so if save files get big we might want to
+        // read the file a bit at a time. @Size
+
+        bool succeeded = false;
+
+        City* city = &gameState->city;
+
+        BinaryFileReader reader = readBinaryFile(&saveFile, SAV_FILE_ID, &temp_arena());
+        // This doesn't actually loop, we're just using a `while` so we can break out of it
+        while (reader.isValidFile) {
+            // META
+            bool readMeta = reader.startSection(SAV_META_ID, SAV_META_VERSION);
+            if (readMeta) {
+                SAVSection_Meta* meta = reader.readStruct<SAVSection_Meta>(0);
+
+                String cityName = reader.readString(meta->cityName);
+                String playerName = reader.readString(meta->playerName);
+                initCity(&gameState->arena, city, meta->cityWidth, meta->cityHeight, cityName, playerName, meta->funds);
+
+                // Clock
+                initGameClock(&gameState->gameClock, meta->currentDate, meta->timeWithinDay);
+
+                // Camera
+                auto& world_camera = the_renderer().world_camera();
+                world_camera.set_position(v2(meta->cameraX, meta->cameraY));
+                world_camera.set_zoom(meta->cameraZoom);
+            } else
+                break;
+
+            if (!loadTerrainLayer(&city->terrainLayer, city, &reader))
+                break;
+            if (!loadBuildings(city, &reader))
+                break;
+            if (!loadZoneLayer(&city->zoneLayer, city, &reader))
+                break;
+            if (!loadCrimeLayer(&city->crimeLayer, city, &reader))
+                break;
+            if (!loadEducationLayer(&city->educationLayer, city, &reader))
+                break;
+            if (!loadFireLayer(&city->fireLayer, city, &reader))
+                break;
+            if (!loadHealthLayer(&city->healthLayer, city, &reader))
+                break;
+            if (!loadLandValueLayer(&city->landValueLayer, city, &reader))
+                break;
+            if (!loadPollutionLayer(&city->pollutionLayer, city, &reader))
+                break;
+            if (!loadTransportLayer(&city->transportLayer, city, &reader))
+                break;
+            if (!loadBudgetLayer(&city->budgetLayer, city, &reader))
+                break;
+
+            // And we're done!
+            succeeded = true;
+            break;
+        }
+
+        return succeeded;
+    }();
+    closeFile(&saveFile);
+
+    if (!loadSucceeded)
+        return getText("msg_load_failure"_s, { saved_game_info.shortName });
+    app_state.set_game_state(gameState);
     return adopt_own(*new GameScene);
 }
 

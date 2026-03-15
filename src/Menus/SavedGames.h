@@ -63,7 +63,7 @@ void updateSavedGamesCatalogue();
 void readSavedGamesInfo(SavedGamesCatalogue* catalogue);
 
 bool saveGame(String saveName);
-void loadGame(SavedGameInfo* savedGame);
+void loadGame(SavedGameInfo const&);
 bool deleteSave(SavedGameInfo& savedGame);
 
 void showSaveGameWindow();

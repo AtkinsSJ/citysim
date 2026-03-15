@@ -189,4 +189,3 @@ struct SAVSection_Zone {
 
 struct GameState;
 bool writeSaveFile(FileHandle* file, GameState* gameState);
-bool loadSaveFile(FileHandle* file, GameState* gameState);

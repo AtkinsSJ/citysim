@@ -138,8 +138,6 @@ struct GameState {
     Flags<InspectTileDebugFlags> inspectTileDebugFlags;
 };
 
-GameState* newGameState(); // A blank game state with no city
-
 void freeGameState(GameState* gameState);
 
 void inputMoveCamera(Camera* camera, V2 windowSize, V2 windowMousePos, s32 cityWidth, s32 cityHeight, float delta_time);
@@ -170,6 +168,7 @@ void debugToolsWindowProc(UI::WindowContext* context, void* userData);
 class GameScene final : public Scene {
 public:
     static NonnullOwnPtr<GameScene> create_new(u32 seed);
+    static ErrorOr<NonnullOwnPtr<GameScene>> from_saved_game(SavedGameInfo const&);
 
     virtual ~GameScene() override;
     virtual void update_and_render(float delta_time) override;
