@@ -70,13 +70,12 @@ SDL_Window* initSDL(V2I window_size, bool is_windowed, char const* windowTitle)
     return window;
 }
 
-static bool checkInGame()
+static Optional<GameScene&> try_get_game()
 {
-    bool inGame = (App::the().game_state() != nullptr);
-    if (!inGame) {
-        consoleWriteLine("You can only do that when a game is in progress!"_s, ConsoleLineStyle::Error);
-    }
-    return inGame;
+    if (auto* game = dynamic_cast<GameScene*>(&App::the().scene()))
+        return *game;
+    consoleWriteLine("You can only do that when a game is in progress!"_s, ConsoleLineStyle::Error);
+    return {};
 }
 
 class GameSettings final : public SettingsState {
@@ -130,10 +129,10 @@ int main(int argc, char* argv[])
 
         globalConsole->register_command(
             { "debug_tools"_s, [](Console*, s32, StringView) {
-                 if (!checkInGame())
+                 auto game = try_get_game();
+                 if (!game.has_value())
                      return;
-
-                 auto& game_state = *App::the().game_state();
+                 auto& game_state = game->state();
 
                  // @Hack: This sets the position to outside the camera, and then relies on it automatically snapping back into bounds
                  auto& renderer = the_renderer();
@@ -144,14 +143,16 @@ int main(int argc, char* argv[])
 
         globalConsole->register_command(
             { "funds"_s, [](Console*, s32, StringView arguments) {
-                 if (!checkInGame())
+                 auto game = try_get_game();
+                 if (!game.has_value())
                      return;
+                 auto& game_state = game->state();
 
                  TokenReader tokens { arguments };
                  if (auto sAmount = tokens.next_token(); sAmount.has_value()) {
                      if (auto amount = sAmount.value().to_int(); amount.has_value()) {
                          consoleWriteLine(myprintf("Set funds to {0}"_s, { sAmount.value() }), ConsoleLineStyle::Success);
-                         App::the().game_state()->city.funds = truncate32(amount.value());
+                         game_state.city.funds = truncate32(amount.value());
                          return;
                      }
                  }
@@ -161,10 +162,10 @@ int main(int argc, char* argv[])
 
         globalConsole->register_command(
             { "generate"_s, [](Console*, s32, StringView) {
-                 if (!checkInGame())
+                 auto game = try_get_game();
+                 if (!game.has_value())
                      return;
-
-                 auto& game_state = *App::the().game_state();
+                 auto& game_state = game->state();
 
                  City* city = &game_state.city;
                  // TODO: Some kind of reset would be better than this, but this is temporary until we add
@@ -180,29 +181,33 @@ int main(int argc, char* argv[])
 
         globalConsole->register_command(
             { "map_info"_s, [](Console*, s32, StringView) {
-                 if (!checkInGame())
+                 auto game = try_get_game();
+                 if (!game.has_value())
                      return;
+                 auto& game_state = game->state();
 
-                 City* city = &App::the().game_state()->city;
+                 City* city = &game_state.city;
 
                  consoleWriteLine(myprintf("Map: {0} x {1} tiles. Seed: {2}"_s, { formatInt(city->bounds.width()), formatInt(city->bounds.height()), formatInt(city->terrainLayer.terrainGenerationSeed) }), ConsoleLineStyle::Success);
              } });
 
         globalConsole->register_command(
             { "mark_all_dirty"_s, [](Console*, s32, StringView) {
-                 if (!checkInGame())
+                 auto game = try_get_game();
+                 if (!game.has_value())
                      return;
+                 auto& game_state = game->state();
 
-                 City* city = &App::the().game_state()->city;
+                 City* city = &game_state.city;
                  markAreaDirty(city, city->bounds);
              } });
 
         globalConsole->register_command(
             { "show_layer"_s, [](Console*, s32 argumentsCount, StringView arguments) {
-                 if (!checkInGame())
+                 auto game = try_get_game();
+                 if (!game.has_value())
                      return;
-
-                 auto& game_state = *App::the().game_state();
+                 auto& game_state = game->state();
 
                  if (argumentsCount == 0) {
                      // Hide layers

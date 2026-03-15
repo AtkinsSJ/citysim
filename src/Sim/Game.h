@@ -172,6 +172,7 @@ public:
     virtual void update_and_render(float delta_time) override;
 
     MemoryArena& arena() { return m_arena; }
+    GameState& state() { return m_state; }
 
 private:
     GameScene();
