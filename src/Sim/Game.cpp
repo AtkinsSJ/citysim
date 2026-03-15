@@ -34,22 +34,6 @@ GameState* newGameState()
     return gameState;
 }
 
-void beginNewGame()
-{
-    auto& app_state = App::the();
-    if (app_state.game_state())
-        freeGameState(app_state.game_state());
-
-    app_state.set_game_state(newGameState());
-    GameState* gameState = app_state.game_state();
-
-    s32 gameStartFunds = 1000000;
-    initCity(&gameState->arena, &gameState->city, 128, 128, getText("city_default_name"_s), getText("player_default_name"_s), gameStartFunds);
-    generateTerrain(&gameState->city, gameState->gameRandom);
-
-    initGameClock(&gameState->gameClock);
-}
-
 void freeGameState(GameState* gameState)
 {
     gameState->arena.~MemoryArena();
@@ -591,6 +575,26 @@ void debugToolsWindowProc(UI::WindowContext* context, void* userData)
     if (ui->addTextButton("Inspect transport info"_s, buttonIsActive(gameState->inspectTileDebugFlags.has(InspectTileDebugFlags::Transport)))) {
         gameState->inspectTileDebugFlags.toggle(InspectTileDebugFlags::Transport);
     }
+}
+
+NonnullOwnPtr<GameScene> GameScene::create_new(u32 seed)
+{
+    auto& app_state = App::the();
+
+    GameState* inlined_gameState = MemoryArena::bootstrap<GameState>("Game"_s);
+    inlined_gameState->gameRandom = Random::create(seed);
+    inlined_gameState->actionMode = ActionMode::None;
+    initDataViewUI(inlined_gameState);
+    app_state.set_game_state(inlined_gameState);
+    GameState* gameState = app_state.game_state();
+
+    s32 gameStartFunds = 1000000;
+    initCity(&gameState->arena, &gameState->city, 128, 128, getText("city_default_name"_s), getText("player_default_name"_s), gameStartFunds);
+    generateTerrain(&gameState->city, gameState->gameRandom);
+
+    initGameClock(&gameState->gameClock);
+
+    return adopt_own(*new GameScene);
 }
 
 GameScene::~GameScene()

@@ -69,8 +69,8 @@ void MainMenuScene::update_and_render(float delta_time)
     );
     */
     if (panel.addTextButton(newGameText)) {
-        beginNewGame();
-        app.switch_to_scene(adopt_own(*new GameScene));
+        // FIXME: Make seed configurable, or at least not fixed!
+        app.switch_to_scene(GameScene::create_new(12345));
     }
     if (panel.addTextButton(loadText)) {
         showLoadGameWindow();

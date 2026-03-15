@@ -7,6 +7,7 @@
 #pragma once
 
 #include <App/Scene.h>
+#include <Menus/SavedGames.h>
 #include <Sim/BuildingRef.h>
 #include <Sim/City.h>
 #include <Sim/GameClock.h>
@@ -138,7 +139,6 @@ struct GameState {
 };
 
 GameState* newGameState(); // A blank game state with no city
-void beginNewGame();       // A game state for a new map
 
 void freeGameState(GameState* gameState);
 
@@ -169,6 +169,8 @@ void debugToolsWindowProc(UI::WindowContext* context, void* userData);
 
 class GameScene final : public Scene {
 public:
+    static NonnullOwnPtr<GameScene> create_new(u32 seed);
+
     virtual ~GameScene() override;
     virtual void update_and_render(float delta_time) override;
 };
