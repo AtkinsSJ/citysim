@@ -492,12 +492,12 @@ void updateAndRenderGameUI(GameState* gameState)
         // The Terrain button
         String terrainButtonText = getText("button_terrain"_s);
         buttonRect.set_size(UI::calculateButtonSize(terrainButtonText, &button_style));
-        bool isTerrainWindowOpen = UI::isWindowOpen(modifyTerrainWindowProc);
+        bool isTerrainWindowOpen = UI::isWindowOpen(modify_terrain_window_proc);
         if (UI::putTextButton(terrainButtonText, buttonRect, &button_style, buttonIsActive(isTerrainWindowOpen))) {
             if (isTerrainWindowOpen) {
-                UI::closeWindow(modifyTerrainWindowProc);
+                UI::closeWindow(modify_terrain_window_proc);
             } else {
-                showTerrainWindow();
+                show_terrain_window();
             }
         }
         buttonRect.set_x(buttonRect.x() + buttonRect.width() + uiPadding);

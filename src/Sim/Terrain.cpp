@@ -284,25 +284,26 @@ void assignTerrainSprites(City* city, Rect2I bounds)
     }
 }
 
-void showTerrainWindow()
+void show_terrain_window()
 {
-    UI::showWindow(UI::WindowTitle::fromTextAsset("title_terrain"_s), 300, 200, v2i(0, 0), "default"_s, WindowFlags::Unique | WindowFlags::UniqueKeepPosition | WindowFlags::AutomaticHeight, modifyTerrainWindowProc);
+    UI::showWindow(UI::WindowTitle::fromTextAsset("title_terrain"_s), 300, 200, v2i(0, 0), "default"_s, WindowFlags::Unique | WindowFlags::UniqueKeepPosition | WindowFlags::AutomaticHeight, modify_terrain_window_proc);
 }
 
-void modifyTerrainWindowProc(UI::WindowContext* context, void*)
+void modify_terrain_window_proc(UI::WindowContext* context, void*)
 {
     UI::Panel* ui = &context->windowPanel;
-    GameState* gameState = App::the().game_state();
-    bool terrainToolIsActive = (gameState->actionMode == ActionMode::SetTerrain);
+    auto* game_scene = dynamic_cast<GameScene*>(&App::the().scene());
+    auto& game_state = game_scene->state();
+    bool terrainToolIsActive = game_state.actionMode == ActionMode::SetTerrain;
 
     for (auto it = TerrainCatalogue::the().terrainDefs.iterate(); it.hasNext(); it.next()) {
         TerrainDef* terrain = it.get();
         if (terrain->typeID == 0)
             continue; // Skip the null terrain
 
-        if (ui->addImageButton(&Sprite::get(terrain->spriteName), buttonIsActive(terrainToolIsActive && gameState->selectedTerrainID == terrain->typeID))) {
-            gameState->actionMode = ActionMode::SetTerrain;
-            gameState->selectedTerrainID = terrain->typeID;
+        if (ui->addImageButton(&Sprite::get(terrain->spriteName), buttonIsActive(terrainToolIsActive && game_state.selectedTerrainID == terrain->typeID))) {
+            game_state.actionMode = ActionMode::SetTerrain;
+            game_state.selectedTerrainID = terrain->typeID;
         }
     }
 }

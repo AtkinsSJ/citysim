@@ -37,8 +37,8 @@ void updateDistanceToWater(City* city, Rect2I bounds);
 
 void assignTerrainSprites(City* city, Rect2I bounds);
 
-void showTerrainWindow();
-void modifyTerrainWindowProc(UI::WindowContext*, void*);
+void show_terrain_window();
+void modify_terrain_window_proc(UI::WindowContext* context, void*);
 
 void saveTerrainLayer(TerrainLayer* layer, BinaryFileWriter* writer);
 bool loadTerrainLayer(TerrainLayer* layer, City* city, BinaryFileReader* reader);
