@@ -37,7 +37,8 @@ App::App(float seconds_per_frame, NonnullOwnPtr<Scene> scene)
 App::~App()
 {
     logInfo("Destructing app"_s);
-    s_app = nullptr;
+    // FIXME: Clear s_app? Currently we can't because this code runs before the members are destructed, and they might rely on App::the().
+    //        (eg, GameScene's destructor does.)
 }
 
 void App::switch_to_scene(NonnullOwnPtr<Scene> scene)
