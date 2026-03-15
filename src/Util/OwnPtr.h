@@ -202,6 +202,11 @@ public:
         return *m_ptr;
     }
 
+    operator T&() const
+    {
+        return this->operator*();
+    }
+
     T* operator->() const
     {
         return m_ptr;
