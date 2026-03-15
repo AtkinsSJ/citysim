@@ -41,6 +41,8 @@ struct TerrainCatalogue final : public AssetManagerListener {
 
     // ^AssetManagerListener
     virtual void after_assets_loaded() override;
+
+    void remap_terrain_types(City&);
 };
 
 void initTerrainCatalogue(MemoryArena&);
@@ -52,4 +54,3 @@ TerrainDef* getTerrainDef(u8 terrainType);
 u8 findTerrainTypeByName(String name);
 
 void saveTerrainTypes();
-void remapTerrainTypes();

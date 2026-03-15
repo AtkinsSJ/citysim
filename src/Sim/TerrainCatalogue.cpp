@@ -59,28 +59,28 @@ void saveTerrainTypes()
     s_terrain_catalogue.terrainNameToOldType.put_all(s_terrain_catalogue.terrainNameToType);
 }
 
-void remapTerrainTypes()
+void TerrainCatalogue::remap_terrain_types(City& city)
 {
     // FIXME: This doesn't seem to work any more. Terrain doesn't update. Investigate!
 
     // First, remap any Names that are not present in the current data, so they won't get
     // merged accidentally.
-    for (auto it = s_terrain_catalogue.terrainNameToOldType.iterate(); it.hasNext(); it.next()) {
+    for (auto it = terrainNameToOldType.iterate(); it.hasNext(); it.next()) {
         auto entry = it.getEntry();
-        s_terrain_catalogue.terrainNameToType.ensure(entry->key, (u8)s_terrain_catalogue.terrainNameToType.count());
+        terrainNameToType.ensure(entry->key, (u8)terrainNameToType.count());
     }
 
-    if (s_terrain_catalogue.terrainNameToOldType.count() > 0) {
-        Array<u8> oldTypeToNewType = temp_arena().allocate_array<u8>(s_terrain_catalogue.terrainNameToOldType.count(), true);
-        for (auto it = s_terrain_catalogue.terrainNameToOldType.iterate(); it.hasNext(); it.next()) {
+    if (terrainNameToOldType.count() > 0) {
+        Array<u8> oldTypeToNewType = temp_arena().allocate_array<u8>(terrainNameToOldType.count(), true);
+        for (auto it = terrainNameToOldType.iterate(); it.hasNext(); it.next()) {
             auto entry = it.getEntry();
             String terrainName = entry->key;
             u8 oldType = entry->value;
 
-            oldTypeToNewType[oldType] = s_terrain_catalogue.terrainNameToType.find_value(terrainName).value_or(0);
+            oldTypeToNewType[oldType] = terrainNameToType.find_value(terrainName).value_or(0);
         }
 
-        TerrainLayer& layer = App::the().game_state()->city.terrainLayer;
+        TerrainLayer& layer = city.terrainLayer;
 
         for (s32 y = 0; y < layer.tileTerrainType.h; y++) {
             for (s32 x = 0; x < layer.tileTerrainType.w; x++) {
@@ -98,6 +98,6 @@ void remapTerrainTypes()
 
 void TerrainCatalogue::after_assets_loaded()
 {
-    if (App::the().game_state())
-        remapTerrainTypes();
+    if (auto* game_scene = dynamic_cast<GameScene*>(&App::the().scene()))
+        remap_terrain_types(game_scene->state().city);
 }
