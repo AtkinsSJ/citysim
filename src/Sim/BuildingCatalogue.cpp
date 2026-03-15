@@ -122,8 +122,8 @@ Optional<BuildingDef const&> BuildingCatalogue::find_random_zone_building(ZoneTy
 
 void BuildingCatalogue::after_assets_loaded()
 {
-    if (App::the().game_state())
-        remapBuildingTypes();
+    if (auto* game_scene = dynamic_cast<GameScene*>(&App::the().scene()))
+        remap_building_types(game_scene->state().city);
 }
 
 BuildingDef* appendNewBuildingDef(StringView name)
@@ -192,29 +192,27 @@ void saveBuildingTypes()
     building_catalogue.buildingNameToOldTypeID.put_all(building_catalogue.buildingNameToTypeID);
 }
 
-void remapBuildingTypes()
+void BuildingCatalogue::remap_building_types(City& city)
 {
-    auto& building_catalogue = BuildingCatalogue::the();
     // FIXME: This doesn't seem to work any more. Investigate!
 
     // First, remap any IDs that are not present in the current data, so they won't get
     // merged accidentally.
-    for (auto it = building_catalogue.buildingNameToOldTypeID.iterate(); it.hasNext(); it.next()) {
+    for (auto it = buildingNameToOldTypeID.iterate(); it.hasNext(); it.next()) {
         auto entry = it.getEntry();
-        building_catalogue.buildingNameToTypeID.ensure(entry->key, building_catalogue.buildingNameToTypeID.count());
+        buildingNameToTypeID.ensure(entry->key, buildingNameToTypeID.count());
     }
 
-    if (building_catalogue.buildingNameToOldTypeID.count() > 0) {
-        Array<s32> oldTypeToNewType = temp_arena().allocate_array<s32>(building_catalogue.buildingNameToOldTypeID.count(), true);
-        for (auto it = building_catalogue.buildingNameToOldTypeID.iterate(); it.hasNext(); it.next()) {
+    if (buildingNameToOldTypeID.count() > 0) {
+        Array<s32> oldTypeToNewType = temp_arena().allocate_array<s32>(buildingNameToOldTypeID.count(), true);
+        for (auto it = buildingNameToOldTypeID.iterate(); it.hasNext(); it.next()) {
             auto entry = it.getEntry();
             String buildingName = entry->key;
             s32 oldType = entry->value;
 
-            oldTypeToNewType[oldType] = building_catalogue.buildingNameToTypeID.find_value(buildingName).value_or(0);
+            oldTypeToNewType[oldType] = buildingNameToTypeID.find_value(buildingName).value_or(0);
         }
 
-        auto& city = App::the().game_state()->city;
         for (auto it = city.buildings.iterate(); it.hasNext(); it.next()) {
             Building* building = it.get();
             s32 oldType = building->typeID;

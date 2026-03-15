@@ -46,6 +46,8 @@ struct BuildingCatalogue final : public AssetManagerListener {
 
     // ^AssetManagerListener
     virtual void after_assets_loaded() override;
+
+    void remap_building_types(City& city);
 };
 
 void initBuildingCatalogue(MemoryArena&);
@@ -55,4 +57,3 @@ BuildingDef* getBuildingDef(s32 buildingTypeID);
 BuildingDef* findBuildingDef(String name);
 
 void saveBuildingTypes();
-void remapBuildingTypes();
