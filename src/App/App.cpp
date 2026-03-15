@@ -29,7 +29,7 @@ App& App::the()
 
 App::App(float seconds_per_frame, NonnullOwnPtr<Scene> scene)
     : m_delta_time(seconds_per_frame)
-    , m_cosmetic_random(adopt_own(*Random::create()))
+    , m_cosmetic_random(Random::create())
     , m_scene(move(scene))
 {
 }

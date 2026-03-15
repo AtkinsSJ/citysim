@@ -36,7 +36,7 @@
 //
 struct Splat {
     // `resolution` is how many radius values are generated. eg, if it's 36, we get 1 value for every 10 degrees.
-    static Splat create_random(s32 centre_x, s32 centre_y, float min_radius, float max_radius, s32 resolution, Random*, s32 smoothness = 4, MemoryArena* = &temp_arena());
+    static Splat create_random(s32 centre_x, s32 centre_y, float min_radius, float max_radius, s32 resolution, Random&, s32 smoothness = 4, MemoryArena* = &temp_arena());
 
     float radius_at_angle(float degrees) const;
     Rect2I bounding_box() const;

@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2015-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "Random.h"
-
 #include <Util/Maths.h>
+#include <Util/OwnPtr.h>
 #include <Util/Rectangle.h>
 #include <ctime>
 
@@ -64,7 +64,7 @@ private:
     u32 m_index;
 };
 
-Random* Random::create(Optional<u32> seed, Optional<Type> type)
+NonnullOwnPtr<Random> Random::create(Optional<u32> seed, Optional<Type> type)
 {
     auto actual_seed = [&seed] -> u32 {
         if (seed.has_value())
@@ -73,7 +73,7 @@ Random* Random::create(Optional<u32> seed, Optional<Type> type)
     }();
     switch (type.value_or(Type::MT)) {
     case Type::MT:
-        return new MersenneTwister(actual_seed);
+        return adopt_own(*new MersenneTwister(actual_seed));
     }
     VERIFY_NOT_REACHED();
 }

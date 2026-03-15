@@ -27,7 +27,7 @@ struct TerrainLayer {
 
 void initTerrainLayer(TerrainLayer* layer, City* city, MemoryArena* gameArena);
 
-void generateTerrain(City* city, Random* gameRandom);
+void generateTerrain(City* city, Random& gameRandom);
 void drawTerrain(City* city, Rect2I visibleArea, s8 shaderID);
 TerrainDef* getTerrainAt(City* city, s32 x, s32 y);
 void setTerrainAt(City* city, s32 x, s32 y, u8 terrainType);

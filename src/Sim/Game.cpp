@@ -571,7 +571,7 @@ NonnullOwnPtr<GameScene> GameScene::create_new(u32 seed)
     auto& app_state = App::the();
 
     GameState* inlined_gameState = MemoryArena::bootstrap<GameState>("Game"_s);
-    inlined_gameState->gameRandom = Random::create(seed);
+    inlined_gameState->gameRandom = Random::create(seed).leak_ptr();
     inlined_gameState->actionMode = ActionMode::None;
     initDataViewUI(inlined_gameState);
     app_state.set_game_state(inlined_gameState);
@@ -579,7 +579,7 @@ NonnullOwnPtr<GameScene> GameScene::create_new(u32 seed)
 
     s32 gameStartFunds = 1000000;
     initCity(&gameState->arena, &gameState->city, 128, 128, getText("city_default_name"_s), getText("player_default_name"_s), gameStartFunds);
-    generateTerrain(&gameState->city, gameState->gameRandom);
+    generateTerrain(&gameState->city, *gameState->gameRandom);
 
     initGameClock(&gameState->gameClock);
 
@@ -592,7 +592,7 @@ ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const
 
     GameState* inlined_gameState = MemoryArena::bootstrap<GameState>("Game"_s);
     // FIXME: Replace this fixed seed once we're not in dev mode.
-    inlined_gameState->gameRandom = Random::create(12345);
+    inlined_gameState->gameRandom = Random::create(12345).leak_ptr();
     inlined_gameState->actionMode = ActionMode::None;
     initDataViewUI(inlined_gameState);
     GameState* gameState = inlined_gameState;

@@ -118,7 +118,7 @@ void drawTerrain(City* city, Rect2I visibleArea, s8 shaderID)
     }
 }
 
-void generateTerrain(City* city, Random* gameRandom)
+void generateTerrain(City* city, Random& gameRandom)
 {
     DEBUG_FUNCTION();
 
@@ -129,8 +129,8 @@ void generateTerrain(City* city, Random* gameRandom)
     u8 tWater = truncate<u8>(findTerrainTypeByName("water"_s));
     BuildingDef* treeDef = findBuildingDef("tree"_s);
 
-    s32 seed = gameRandom->next();
-    auto* terrainRandom = Random::create(seed);
+    s32 seed = gameRandom.next();
+    auto terrainRandom = Random::create(seed);
     layer->terrainGenerationSeed = seed;
     fill<u8>(&layer->tileTerrainType, tGround);
 

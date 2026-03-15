@@ -173,7 +173,7 @@ int main(int argc, char* argv[])
                      demolishRect(city, city->bounds);
                      city->highestBuildingID = 0;
                  }
-                 generateTerrain(city, game_state.gameRandom);
+                 generateTerrain(city, *game_state.gameRandom);
 
                  consoleWriteLine("Generated new map"_s, ConsoleLineStyle::Success);
              } });
