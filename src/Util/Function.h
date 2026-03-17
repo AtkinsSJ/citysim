@@ -25,14 +25,16 @@ public:
     requires(IsCallableWithArguments<Callable, Out, In...>)
     Function(Callable&& callable)
     {
-        m_callable = adopt_own_if_nonnull(new Wrapper<Callable> { move(callable) });
+        using C = RemoveConstReference<Callable>;
+        m_callable = adopt_own_if_nonnull(new Wrapper<C> { move(callable) });
     }
 
     template<typename Callable>
     requires(IsCallableWithArguments<Callable, Out, In...>)
     Function& operator=(Callable&& callable)
     {
-        m_callable = adopt_own_if_nonnull(new Wrapper<Callable> { move(callable) });
+        using C = RemoveConstReference<Callable>;
+        m_callable = adopt_own_if_nonnull(new Wrapper<C> { move(callable) });
         return *this;
     }
 
