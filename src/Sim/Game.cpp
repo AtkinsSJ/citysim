@@ -424,7 +424,7 @@ void updateAndRenderGameUI(GameState* gameState)
         V2I buttonSize = UI::calculateButtonSize(menuButtonText, &button_style);
         Rect2I buttonRect { uiPadding, toolbarHeight - (buttonSize.y + uiPadding), buttonSize.x, buttonSize.y };
         if (UI::putTextButton(menuButtonText, buttonRect, &button_style)) {
-            UI::showWindow(UI::WindowTitle::fromTextAsset("title_menu"_s), 200, 200, v2i(0, 0), "default"_s,
+            UI::showWindow(UI::WindowTitle::from_text_asset("title_menu"_s), 200, 200, v2i(0, 0), "default"_s,
                 WindowFlags::Unique | WindowFlags::Modal | WindowFlags::AutomaticHeight | WindowFlags::Pause,
                 pauseMenuWindowProc);
         }
@@ -912,7 +912,7 @@ void GameScene::update_and_render(float delta_time)
                 if (tileExists(city, mouseTilePos.x, mouseTilePos.y)) {
                     gameState->inspectedTilePosition = mouseTilePos;
                     V2I windowPos = v2i(ui_camera.mouse_position()) + v2i(16, 16);
-                    UI::showWindow(UI::WindowTitle::fromLambda([]() {
+                    UI::showWindow(UI::WindowTitle::from_lambda([] {
                         V2I tilePos = App::the().game_state()->inspectedTilePosition;
                         return getText("title_inspect"_s, { formatInt(tilePos.x), formatInt(tilePos.y) });
                     }),

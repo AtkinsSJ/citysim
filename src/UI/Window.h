@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2019-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -10,6 +10,8 @@
 #include <UI/Panel.h>
 #include <UI/UI.h>
 #include <Util/Forward.h>
+#include <Util/Function.h>
+#include <Util/Variant.h>
 
 namespace WindowFlags {
 
@@ -47,23 +49,23 @@ struct WindowContext {
     bool closeRequested = false;
 };
 
-struct WindowTitle {
+class WindowTitle {
+public:
     static WindowTitle none();
-    static WindowTitle fromTextAsset(String assetID);
-    static WindowTitle fromLambda(String (*lambda)());
+    static WindowTitle from_text_asset(String asset_id);
+    static WindowTitle from_lambda(Function<String()>);
 
-    enum class Type {
-        None,
-        TextAsset,
-        Calculated,
-    };
-    Type type;
-    union {
-        String assetID;
-        String (*calculateTitle)();
-    };
+    String get_string();
 
-    String getString();
+private:
+    // FIXME: Introduce an AssetRef type for texts.
+    struct TextAsset {
+        String asset_id;
+    };
+    using Value = Variant<Empty, TextAsset, Function<String()>>;
+
+    explicit WindowTitle(Value&&);
+    Value m_value;
 };
 
 struct Window {

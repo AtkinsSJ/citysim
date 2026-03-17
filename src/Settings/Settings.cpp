@@ -64,7 +64,7 @@ void showSettingsWindow()
 {
     s_settings->workingState->copy_from(*s_settings->settings);
 
-    UI::showWindow(UI::WindowTitle::fromTextAsset("title_settings"_s), 480, 200, v2i(0, 0), "default"_s, WindowFlags::Unique | WindowFlags::AutomaticHeight | WindowFlags::Modal, settingsWindowProc);
+    UI::showWindow(UI::WindowTitle::from_text_asset("title_settings"_s), 480, 200, v2i(0, 0), "default"_s, WindowFlags::Unique | WindowFlags::AutomaticHeight | WindowFlags::Modal, settingsWindowProc);
 }
 
 void settingsWindowProc(UI::WindowContext* context, void*)

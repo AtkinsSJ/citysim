@@ -133,7 +133,7 @@ void showLoadGameWindow()
     catalogue->selectedSavedGameName = {};
     catalogue->selectedSavedGameIndex = -1;
 
-    UI::showWindow(UI::WindowTitle::fromTextAsset("title_load_game"_s), 780, 580, {}, "default"_s, WindowFlags::Unique | WindowFlags::Modal, savedGamesWindowProc);
+    UI::showWindow(UI::WindowTitle::from_text_asset("title_load_game"_s), 780, 580, {}, "default"_s, WindowFlags::Unique | WindowFlags::Modal, savedGamesWindowProc);
 }
 
 void showSaveGameWindow()
@@ -156,7 +156,7 @@ void showSaveGameWindow()
         catalogue->selectedSavedGameIndex = -1;
     }
 
-    UI::showWindow(UI::WindowTitle::fromTextAsset("title_save_game"_s), 780, 580, {}, "default"_s, WindowFlags::Unique | WindowFlags::Modal, savedGamesWindowProc, (void*)true, saveGameWindowOnClose);
+    UI::showWindow(UI::WindowTitle::from_text_asset("title_save_game"_s), 780, 580, {}, "default"_s, WindowFlags::Unique | WindowFlags::Modal, savedGamesWindowProc, (void*)true, saveGameWindowOnClose);
 }
 
 void saveGameWindowOnClose(UI::WindowContext* /*context*/, void* /*userData*/)
@@ -207,7 +207,7 @@ void savedGamesWindowProc(UI::WindowContext* context, void* userData)
     if (selectedSavedGame) {
         ui->alignWidgets(HAlign::Right);
         if (ui->addImageButton(&Sprite::get("icon_delete"_s), ButtonState::Normal, "delete"_sv)) {
-            UI::showWindow(UI::WindowTitle::fromTextAsset("title_delete_save"_s), 300, 300, v2i(0, 0), "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Modal | WindowFlags::Unique, confirmDeleteSaveWindowProc);
+            UI::showWindow(UI::WindowTitle::from_text_asset("title_delete_save"_s), 300, 300, v2i(0, 0), "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Modal | WindowFlags::Unique, confirmDeleteSaveWindowProc);
         }
 
         ui->alignWidgets(HAlign::Fill);
@@ -261,7 +261,7 @@ void savedGamesWindowProc(UI::WindowContext* context, void* userData)
             if (pressedSave || pressedEnterInTextInput) {
                 if (!inputName.is_empty()) {
                     if (showOverwriteWarning) {
-                        UI::showWindow(UI::WindowTitle::fromTextAsset("title_overwrite_save"_s), 300, 300, v2i(0, 0), "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Modal | WindowFlags::Unique, confirmOverwriteSaveWindowProc);
+                        UI::showWindow(UI::WindowTitle::from_text_asset("title_overwrite_save"_s), 300, 300, v2i(0, 0), "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Modal | WindowFlags::Unique, confirmOverwriteSaveWindowProc);
                     } else if (saveGame(inputName)) {
                         context->closeRequested = true;
                     }

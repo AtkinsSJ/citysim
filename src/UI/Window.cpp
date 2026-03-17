@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2019-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -41,49 +41,30 @@ WindowContext::WindowContext(Window* window, WindowStyle* windowStyle, bool hide
 
 WindowTitle WindowTitle::none()
 {
-    WindowTitle result = {
-        .type = Type::None,
-    };
-    return result;
+    return WindowTitle { Empty {} };
 }
 
-WindowTitle WindowTitle::fromTextAsset(String assetID)
+WindowTitle WindowTitle::from_text_asset(String asset_id)
 {
-    WindowTitle result = {
-        .type = Type::TextAsset,
-        .assetID = assetID,
-    };
-    return result;
+    return WindowTitle { TextAsset { .asset_id = move(asset_id) } };
 }
 
-WindowTitle WindowTitle::fromLambda(String (*lambda)())
+WindowTitle WindowTitle::from_lambda(Function<String()> lambda)
 {
-    WindowTitle result = {
-        .type = Type::Calculated,
-        .calculateTitle = lambda,
-    };
-    return result;
+    return WindowTitle { move(lambda) };
 }
 
-String WindowTitle::getString()
+WindowTitle::WindowTitle(Value&& value)
+    : m_value(move(value))
 {
-    String result = {};
+}
 
-    switch (type) {
-    case Type::None:
-        result = {};
-        break;
-        ;
-    case Type::TextAsset:
-        result = getText(assetID);
-        break;
-    case Type::Calculated:
-        result = calculateTitle();
-        break;
-        INVALID_DEFAULT_CASE;
-    }
-
-    return result;
+String WindowTitle::get_string()
+{
+    return m_value.visit(
+        [](Empty const&) { return ""_s; },
+        [](TextAsset const& asset) { return getText(asset.asset_id); },
+        [](Function<String()>& lambda) { return lambda(); });
 }
 
 /**
@@ -92,7 +73,7 @@ String WindowTitle::getString()
 void showWindow(WindowTitle title, s32 width, s32 height, V2I position, String style_name, u32 flags, WindowProc window_proc, void* user_data, WindowProc on_close)
 {
     if (window_proc == nullptr) {
-        logError("showWindow() called with a null WindowProc. That doesn't make sense? Title: {0}"_s, { title.getString() });
+        logError("showWindow() called with a null WindowProc. That doesn't make sense? Title: {0}"_s, { title.get_string() });
         return;
     }
 
@@ -135,6 +116,8 @@ void showWindow(WindowTitle title, s32 width, s32 height, V2I position, String s
         }
     }
 
+    auto title_string = title.get_string();
+
     Window new_window = {
         .id = uiState.nextWindowID++,
         .title = title,
@@ -144,7 +127,7 @@ void showWindow(WindowTitle title, s32 width, s32 height, V2I position, String s
         .windowProc = window_proc,
         .userData = user_data,
         .onClose = on_close,
-        .renderBuffer = the_renderer().get_temporary_render_buffer(title.getString()),
+        .renderBuffer = the_renderer().get_temporary_render_buffer(title_string),
     };
     uiState.openWindows.append(new_window);
     uiState.windowsToMakeActive.add(truncate32(uiState.openWindows.count - 1));
@@ -310,7 +293,7 @@ void updateAndRenderWindows()
             auto closeButtonColorHover = window_style.titleBarButtonHoverColor;
 
             drawSingleRect(window.renderBuffer, barArea, renderer.shaderIds.untextured, barColor);
-            String titleString = window.title.getString();
+            String titleString = window.title.get_string();
 
             auto& title_style = window_style.titleLabelStyle.get();
             // TODO: Take close-button size into account

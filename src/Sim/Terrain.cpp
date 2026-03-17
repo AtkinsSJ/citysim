@@ -286,7 +286,7 @@ void assignTerrainSprites(City* city, Rect2I bounds)
 
 void show_terrain_window()
 {
-    UI::showWindow(UI::WindowTitle::fromTextAsset("title_terrain"_s), 300, 200, v2i(0, 0), "default"_s, WindowFlags::Unique | WindowFlags::UniqueKeepPosition | WindowFlags::AutomaticHeight, modify_terrain_window_proc);
+    UI::showWindow(UI::WindowTitle::from_text_asset("title_terrain"_s), 300, 200, v2i(0, 0), "default"_s, WindowFlags::Unique | WindowFlags::UniqueKeepPosition | WindowFlags::AutomaticHeight, modify_terrain_window_proc);
 }
 
 void modify_terrain_window_proc(UI::WindowContext* context, void*)

@@ -28,6 +28,6 @@ struct WidgetMouseState;
 struct Window;
 struct WindowContext;
 class WindowStyle;
-struct WindowTitle;
+class WindowTitle;
 
 };

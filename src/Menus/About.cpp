@@ -32,5 +32,5 @@ static void aboutWindowProc(UI::WindowContext* context, void* /*userData*/)
 
 void showAboutWindow()
 {
-    UI::showWindow(UI::WindowTitle::fromTextAsset("title_about"_s), 300, 200, v2i(0, 0), "default"_s, WindowFlags::Unique | WindowFlags::Modal | WindowFlags::AutomaticHeight, aboutWindowProc);
+    UI::showWindow(UI::WindowTitle::from_text_asset("title_about"_s), 300, 200, v2i(0, 0), "default"_s, WindowFlags::Unique | WindowFlags::Modal | WindowFlags::AutomaticHeight, aboutWindowProc);
 }
