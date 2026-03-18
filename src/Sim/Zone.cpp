@@ -202,17 +202,15 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
     for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++) {
-        Indexed<ZoneSector> sectorWithIndex = layer->sectors.get_next_sector_with_index();
-        ZoneSector& sector = sectorWithIndex.value();
-        s32 sectorIndex = sectorWithIndex.index();
+        auto [sector_index, sector] = layer->sectors.get_next_sector();
 
         // What zones does it contain?
         {
             DEBUG_BLOCK_T("updateZoneLayer: zone contents", DebugCodeDataTag::Simulation);
 
             for (auto zone_type : enum_values<ZoneType>()) {
-                layer->sectorsWithZones[zone_type].unset_bit(sectorIndex);
-                layer->sectorsWithEmptyZones[zone_type].unset_bit(sectorIndex);
+                layer->sectorsWithZones[zone_type].unset_bit(sector_index);
+                layer->sectorsWithEmptyZones[zone_type].unset_bit(sector_index);
             }
 
             sector.zoneSectorFlags = {};
@@ -249,22 +247,22 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
             }
 
             if (sector.zoneSectorFlags.has(ZoneSectorFlags::HasResZones)) {
-                layer->sectorsWithZones[ZoneType::Residential].set_bit(sectorIndex);
+                layer->sectorsWithZones[ZoneType::Residential].set_bit(sector_index);
             }
             if (sector.zoneSectorFlags.has(ZoneSectorFlags::HasEmptyResZones)) {
-                layer->sectorsWithEmptyZones[ZoneType::Residential].set_bit(sectorIndex);
+                layer->sectorsWithEmptyZones[ZoneType::Residential].set_bit(sector_index);
             }
             if (sector.zoneSectorFlags.has(ZoneSectorFlags::HasComZones)) {
-                layer->sectorsWithZones[ZoneType::Commercial].set_bit(sectorIndex);
+                layer->sectorsWithZones[ZoneType::Commercial].set_bit(sector_index);
             }
             if (sector.zoneSectorFlags.has(ZoneSectorFlags::HasEmptyComZones)) {
-                layer->sectorsWithEmptyZones[ZoneType::Commercial].set_bit(sectorIndex);
+                layer->sectorsWithEmptyZones[ZoneType::Commercial].set_bit(sector_index);
             }
             if (sector.zoneSectorFlags.has(ZoneSectorFlags::HasIndZones)) {
-                layer->sectorsWithZones[ZoneType::Industrial].set_bit(sectorIndex);
+                layer->sectorsWithZones[ZoneType::Industrial].set_bit(sector_index);
             }
             if (sector.zoneSectorFlags.has(ZoneSectorFlags::HasEmptyIndZones)) {
-                layer->sectorsWithEmptyZones[ZoneType::Industrial].set_bit(sectorIndex);
+                layer->sectorsWithEmptyZones[ZoneType::Industrial].set_bit(sector_index);
             }
         }
 

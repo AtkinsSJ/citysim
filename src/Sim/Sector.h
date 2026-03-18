@@ -96,16 +96,7 @@ struct SectorGrid {
             (intersected_area.y() + intersected_area.height() - 1) / sectorSize);
     }
 
-    Sector* get_next_sector()
-    {
-        Sector* result = &sectors[nextSectorUpdateIndex];
-
-        nextSectorUpdateIndex = (nextSectorUpdateIndex + 1) % count();
-
-        return result;
-    }
-
-    Indexed<Sector> get_next_sector_with_index()
+    Indexed<Sector> get_next_sector()
     {
         Indexed<Sector> result { nextSectorUpdateIndex, sectors[nextSectorUpdateIndex] };
 

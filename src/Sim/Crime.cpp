@@ -56,28 +56,26 @@ void updateCrimeLayer(City* city, CrimeLayer* layer)
         DEBUG_BLOCK_T("updateCrimeLayer: sector updates", DebugCodeDataTag::Simulation);
 
         for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++) {
-            BasicSector* sector = layer->sectors.get_next_sector();
+            auto [_, sector] = layer->sectors.get_next_sector();
 
-            {
-                DEBUG_BLOCK_T("updateCrimeLayer: building police coverage", DebugCodeDataTag::Simulation);
-                fillRegion<u8>(&layer->tilePoliceCoverage, sector->bounds, 0);
-                for (auto it = layer->policeBuildings.iterate(); it.hasNext(); it.next()) {
-                    Building* building = city->get_building(it.getValue());
-                    if (building != nullptr) {
-                        BuildingDef* def = getBuildingDef(building);
+            DEBUG_BLOCK_T("updateCrimeLayer: building police coverage", DebugCodeDataTag::Simulation);
+            fillRegion<u8>(&layer->tilePoliceCoverage, sector.bounds, 0);
+            for (auto it = layer->policeBuildings.iterate(); it.hasNext(); it.next()) {
+                Building* building = city->get_building(it.getValue());
+                if (building != nullptr) {
+                    BuildingDef* def = getBuildingDef(building);
 
-                        if (def->policeEffect.has_effect()) {
-                            // Budget
-                            float effectiveness = layer->fundingLevel;
+                    if (def->policeEffect.has_effect()) {
+                        // Budget
+                        float effectiveness = layer->fundingLevel;
 
-                            if (!buildingHasPower(building)) {
-                                effectiveness *= 0.4f; // @Balance
+                        if (!buildingHasPower(building)) {
+                            effectiveness *= 0.4f; // @Balance
 
-                                // TODO: Consider water access too
-                            }
-
-                            def->policeEffect.apply(layer->tilePoliceCoverage, sector->bounds, building->footprint.centre(), EffectType::Add, effectiveness);
+                            // TODO: Consider water access too
                         }
+
+                        def->policeEffect.apply(layer->tilePoliceCoverage, sector.bounds, building->footprint.centre(), EffectType::Add, effectiveness);
                     }
                 }
             }

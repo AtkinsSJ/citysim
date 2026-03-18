@@ -499,9 +499,9 @@ Building* getBuildingAt(City* city, s32 x, s32 y)
 void updateSomeBuildings(City* city)
 {
     for (s32 i = 0; i < city->sectors.sectorsToUpdatePerTick; i++) {
-        CitySector* sector = city->sectors.get_next_sector();
+        auto [_, sector] = city->sectors.get_next_sector();
 
-        for (auto it = sector->ownedBuildings.iterate(); it.hasNext(); it.next()) {
+        for (auto it = sector.ownedBuildings.iterate(); it.hasNext(); it.next()) {
             Building* building = it.getValue();
             updateBuilding(city, building);
         }

@@ -88,12 +88,12 @@ void updateFireLayer(City* city, FireLayer* layer)
         DEBUG_BLOCK_T("updateFireLayer: overall calculation", DebugCodeDataTag::Simulation);
 
         for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++) {
-            FireSector* sector = layer->sectors.get_next_sector();
+            auto [_, sector] = layer->sectors.get_next_sector();
 
             {
                 DEBUG_BLOCK_T("updateFireLayer: building fire protection", DebugCodeDataTag::Simulation);
                 // Building fire protection
-                fillRegion<u8>(&layer->tileFireProtection, sector->bounds, 0);
+                fillRegion<u8>(&layer->tileFireProtection, sector.bounds, 0);
                 for (auto it = layer->fireProtectionBuildings.iterate(); it.hasNext(); it.next()) {
                     Building* building = city->get_building(it.getValue());
                     if (building != nullptr) {
@@ -105,13 +105,13 @@ void updateFireLayer(City* city, FireLayer* layer)
                             effectiveness *= 0.4f; // @Balance
                         }
 
-                        def->fireProtection.apply(layer->tileFireProtection, sector->bounds, building->footprint.centre(), EffectType::Max, effectiveness);
+                        def->fireProtection.apply(layer->tileFireProtection, sector.bounds, building->footprint.centre(), EffectType::Max, effectiveness);
                     }
                 }
             }
 
-            for (s32 y = sector->bounds.y(); y < sector->bounds.y() + sector->bounds.height(); y++) {
-                for (s32 x = sector->bounds.x(); x < sector->bounds.x() + sector->bounds.width(); x++) {
+            for (s32 y = sector.bounds.y(); y < sector.bounds.y() + sector.bounds.height(); y++) {
+                for (s32 x = sector.bounds.x(); x < sector.bounds.x() + sector.bounds.width(); x++) {
                     float tileFireRisk = 0.0f;
 
                     Building* building = getBuildingAt(city, x, y);

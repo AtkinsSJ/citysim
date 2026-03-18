@@ -86,10 +86,10 @@ void updateLandValueLayer(City* city, LandValueLayer* layer)
         DEBUG_BLOCK_T("updateLandValueLayer: overall calculation", DebugCodeDataTag::Simulation);
 
         for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++) {
-            BasicSector* sector = layer->sectors.get_next_sector();
+            auto [_, sector] = layer->sectors.get_next_sector();
 
-            for (s32 y = sector->bounds.y(); y < sector->bounds.y() + sector->bounds.height(); y++) {
-                for (s32 x = sector->bounds.x(); x < sector->bounds.x() + sector->bounds.width(); x++) {
+            for (s32 y = sector.bounds.y(); y < sector.bounds.y() + sector.bounds.height(); y++) {
+                for (s32 x = sector.bounds.x(); x < sector.bounds.x() + sector.bounds.width(); x++) {
                     // Right now, we have very little to base this on!
                     // This explains how SC3K does it: http://www.sc3000.com/knowledge/showarticle.cfm?id=1132
                     // (However, apparently SC3K has an overflow bug with land value, so ehhhhhh...)

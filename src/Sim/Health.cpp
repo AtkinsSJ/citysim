@@ -46,30 +46,28 @@ void updateHealthLayer(City* city, HealthLayer* layer)
         DEBUG_BLOCK_T("updateHealthLayer: sector updates", DebugCodeDataTag::Simulation);
 
         for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++) {
-            BasicSector* sector = layer->sectors.get_next_sector();
+            auto [_, sector] = layer->sectors.get_next_sector();
 
-            {
-                DEBUG_BLOCK_T("updateHealthLayer: building health coverage", DebugCodeDataTag::Simulation);
-                fillRegion<u8>(&layer->tileHealthCoverage, sector->bounds, 0);
-                for (auto it = layer->healthBuildings.iterate(); it.hasNext(); it.next()) {
-                    Building* building = city->get_building(it.getValue());
-                    if (building != nullptr) {
-                        BuildingDef* def = getBuildingDef(building);
+            DEBUG_BLOCK_T("updateHealthLayer: building health coverage", DebugCodeDataTag::Simulation);
+            fillRegion<u8>(&layer->tileHealthCoverage, sector.bounds, 0);
+            for (auto it = layer->healthBuildings.iterate(); it.hasNext(); it.next()) {
+                Building* building = city->get_building(it.getValue());
+                if (building != nullptr) {
+                    BuildingDef* def = getBuildingDef(building);
 
-                        // Budget
-                        float effectiveness = layer->fundingLevel;
+                    // Budget
+                    float effectiveness = layer->fundingLevel;
 
-                        // Power
-                        if (!buildingHasPower(building)) {
-                            effectiveness *= 0.4f; // @Balance
-                        }
-
-                        // TODO: Water
-
-                        // TODO: Overcrowding
-
-                        def->healthEffect.apply(layer->tileHealthCoverage, sector->bounds, building->footprint.centre(), EffectType::Max, effectiveness);
+                    // Power
+                    if (!buildingHasPower(building)) {
+                        effectiveness *= 0.4f; // @Balance
                     }
+
+                    // TODO: Water
+
+                    // TODO: Overcrowding
+
+                    def->healthEffect.apply(layer->tileHealthCoverage, sector.bounds, building->footprint.centre(), EffectType::Max, effectiveness);
                 }
             }
         }
