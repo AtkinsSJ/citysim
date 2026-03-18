@@ -46,7 +46,7 @@ void updateHealthLayer(City* city, HealthLayer* layer)
         DEBUG_BLOCK_T("updateHealthLayer: sector updates", DebugCodeDataTag::Simulation);
 
         for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++) {
-            BasicSector* sector = getNextSector(&layer->sectors);
+            BasicSector* sector = layer->sectors.get_next_sector();
 
             {
                 DEBUG_BLOCK_T("updateHealthLayer: building health coverage", DebugCodeDataTag::Simulation);

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2019-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -86,7 +86,7 @@ void updateLandValueLayer(City* city, LandValueLayer* layer)
         DEBUG_BLOCK_T("updateLandValueLayer: overall calculation", DebugCodeDataTag::Simulation);
 
         for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++) {
-            BasicSector* sector = getNextSector(&layer->sectors);
+            BasicSector* sector = layer->sectors.get_next_sector();
 
             for (s32 y = sector->bounds.y(); y < sector->bounds.y() + sector->bounds.height(); y++) {
                 for (s32 x = sector->bounds.x(); x < sector->bounds.x() + sector->bounds.width(); x++) {

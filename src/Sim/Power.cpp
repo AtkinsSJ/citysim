@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2019-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -24,7 +24,7 @@ void initPowerLayer(PowerLayer* layer, City* city, MemoryArena* gameArena)
     initDirtyRects(&layer->dirtyRects, gameArena, layer->powerMaxDistance, city->bounds);
 
     initSectorGrid(&layer->sectors, gameArena, city->bounds.size(), 16);
-    for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&layer->sectors); sectorIndex++) {
+    for (s32 sectorIndex = 0; sectorIndex < layer->sectors.sector_count(); sectorIndex++) {
         PowerSector* sector = &layer->sectors.sectors[sectorIndex];
 
         sector->tilePowerGroup = gameArena->allocate_array_2d<u8>(sector->bounds.size());
@@ -141,7 +141,7 @@ bool doesTileHavePowerNetwork(City* city, s32 x, s32 y)
 
     if (tileExists(city, x, y)) {
         PowerLayer* layer = &city->powerLayer;
-        PowerSector* sector = getSectorAtTilePos(&layer->sectors, x, y);
+        PowerSector* sector = layer->sectors.get_sector_at_tile_pos(x, y);
 
         s32 relX = x - sector->bounds.x();
         s32 relY = y - sector->bounds.y();
@@ -159,7 +159,7 @@ PowerNetwork* getPowerNetworkAt(City* city, s32 x, s32 y)
 
     if (tileExists(city, x, y)) {
         PowerLayer* layer = &city->powerLayer;
-        PowerSector* sector = getSectorAtTilePos(&layer->sectors, x, y);
+        PowerSector* sector = layer->sectors.get_sector_at_tile_pos(x, y);
 
         s32 relX = x - sector->bounds.x();
         s32 relY = y - sector->bounds.y();
@@ -241,7 +241,7 @@ void markPowerLayerDirty(PowerLayer* layer, Rect2I bounds)
 
 void addBuildingToPowerLayer(PowerLayer* layer, Building* building)
 {
-    PowerSector* sector = getSectorAtTilePos(&layer->sectors, building->footprint.x(), building->footprint.y());
+    PowerSector* sector = layer->sectors.get_sector_at_tile_pos(building->footprint.x(), building->footprint.y());
     PowerGroup* group = getPowerGroupAt(sector, building->footprint.x() - sector->bounds.x(), building->footprint.y() - sector->bounds.y());
     if (group != nullptr) {
         group->buildings.append(building->get_reference());
@@ -479,7 +479,7 @@ void floodFillCityPowerNetwork(PowerLayer* layer, PowerGroup* powerGroup, PowerN
         it.hasNext();
         it.next()) {
         Rect2I bounds = it.getValue();
-        PowerSector* sector = getSectorAtTilePos(&layer->sectors, bounds.x(), bounds.y());
+        PowerSector* sector = layer->sectors.get_sector_at_tile_pos(bounds.x(), bounds.y());
         bounds = sector->bounds.intersected_relative(bounds);
 
         s32 lastPowerGroupIndex = -1;
@@ -527,7 +527,7 @@ void recalculatePowerConnectivity(PowerLayer* layer)
 
     // Flood-fill networks of PowerGroups by walking the boundaries
     for (s32 sectorIndex = 0;
-        sectorIndex < getSectorCount(&layer->sectors);
+        sectorIndex < layer->sectors.sector_count();
         sectorIndex++) {
         PowerSector* sector = &layer->sectors.sectors[sectorIndex];
 
@@ -576,10 +576,10 @@ void updatePowerLayer(City* city, PowerLayer* layer)
             }
 
             // Add the sectors to the list of touched sectors
-            Rect2I sectorsRect = getSectorsCovered(&layer->sectors, dirtyRect);
+            Rect2I sectorsRect = layer->sectors.get_sectors_covered(dirtyRect);
             for (s32 sY = sectorsRect.y(); sY < sectorsRect.y() + sectorsRect.height(); sY++) {
                 for (s32 sX = sectorsRect.x(); sX < sectorsRect.x() + sectorsRect.width(); sX++) {
-                    touchedSectors.add(getSector(&layer->sectors, sX, sY));
+                    touchedSectors.add(layer->sectors.get(sX, sY));
                 }
             }
         }
@@ -603,7 +603,7 @@ void updatePowerLayer(City* city, PowerLayer* layer)
 
     // Update each PowerGroup's power
     for (s32 sectorIndex = 0;
-        sectorIndex < getSectorCount(&layer->sectors);
+        sectorIndex < layer->sectors.sector_count();
         sectorIndex++) {
         PowerSector* sector = &layer->sectors.sectors[sectorIndex];
         updateSectorPowerValues(city, sector);

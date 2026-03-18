@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2015-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -32,7 +32,7 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
     initChunkPool(&city->buildingRefsChunkPool, gameArena, 128);
 
     initSectorGrid(&city->sectors, gameArena, city->bounds.size(), 16, 8);
-    for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&city->sectors); sectorIndex++) {
+    for (s32 sectorIndex = 0; sectorIndex < city->sectors.sector_count(); sectorIndex++) {
         CitySector* sector = &city->sectors.sectors[sectorIndex];
         initChunkedArray(&sector->ownedBuildings, &city->sectorBuildingsChunkPool);
     }
@@ -123,7 +123,7 @@ Building* addBuildingDirect(City* city, s32 id, BuildingDef* def, Rect2I footpri
     loadBuildingSprite(&building);
     building.entity->canBeDemolished = true;
 
-    CitySector* ownerSector = getSectorAtTilePos(&city->sectors, footprint.x(), footprint.y());
+    CitySector* ownerSector = city->sectors.get_sector_at_tile_pos(footprint.x(), footprint.y());
     ownerSector->ownedBuildings.append(&building);
 
     for (s32 y = footprint.y();
@@ -370,7 +370,7 @@ void demolishRect(City* city, Rect2I area)
     // Expand the area to account for buildings to the left or up from it
     auto& building_catalogue = BuildingCatalogue::the();
     Rect2I expandedArea = area.expanded(building_catalogue.overallMaxBuildingDim, 0, 0, building_catalogue.overallMaxBuildingDim);
-    Rect2I sectorsArea = getSectorsCovered(&city->sectors, expandedArea);
+    Rect2I sectorsArea = city->sectors.get_sectors_covered(expandedArea);
 
     for (s32 sY = sectorsArea.y();
         sY < sectorsArea.y() + sectorsArea.height();
@@ -378,7 +378,7 @@ void demolishRect(City* city, Rect2I area)
         for (s32 sX = sectorsArea.x();
             sX < sectorsArea.x() + sectorsArea.width();
             sX++) {
-            CitySector* sector = getSector(&city->sectors, sX, sY);
+            CitySector* sector = city->sectors.get(sX, sY);
 
             // Rebuild the ownedBuildings array
             sector->ownedBuildings.clear();
@@ -419,7 +419,7 @@ ChunkedArray<Building*> findBuildingsOverlappingArea(City* city, Rect2I area, Fl
     // (but don't do that if we only care about origins)
     s32 expansion = flags.has(BuildingQueryFlag::RequireOriginInArea) ? 0 : BuildingCatalogue::the().overallMaxBuildingDim;
     Rect2I expandedArea = area.expanded(expansion, 0, 0, expansion);
-    Rect2I sectorsArea = getSectorsCovered(&city->sectors, expandedArea);
+    Rect2I sectorsArea = city->sectors.get_sectors_covered(expandedArea);
 
     for (s32 sY = sectorsArea.y();
         sY < sectorsArea.y() + sectorsArea.height();
@@ -427,7 +427,7 @@ ChunkedArray<Building*> findBuildingsOverlappingArea(City* city, Rect2I area, Fl
         for (s32 sX = sectorsArea.x();
             sX < sectorsArea.x() + sectorsArea.width();
             sX++) {
-            CitySector* sector = getSector(&city->sectors, sX, sY);
+            CitySector* sector = city->sectors.get(sX, sY);
 
             for (auto it = sector->ownedBuildings.iterate(); it.hasNext(); it.next()) {
                 Building* building = it.getValue();
@@ -455,7 +455,7 @@ void drawCity(City* city, Rect2I visibleTileBounds)
     // Draw sectors
     // NB: this is really hacky debug code
     if (false) {
-        Rect2I visibleSectors = getSectorsCovered(&city->sectors, visibleTileBounds);
+        Rect2I visibleSectors = city->sectors.get_sectors_covered(visibleTileBounds);
         DrawRectsGroup* group = beginRectsGroupUntextured(&renderer.world_overlay_buffer(), renderer.shaderIds.untextured, visibleSectors.area());
         auto sectorColor = Colour::from_rgb_255(255, 255, 255, 40);
         for (s32 sy = visibleSectors.y();
@@ -465,7 +465,7 @@ void drawCity(City* city, Rect2I visibleTileBounds)
                 sx < visibleSectors.x() + visibleSectors.width();
                 sx++) {
                 if ((sx + sy) % 2) {
-                    CitySector* sector = getSector(&city->sectors, sx, sy);
+                    CitySector* sector = city->sectors.get(sx, sy);
                     addUntexturedRect(group, sector->bounds, sectorColor);
                 }
             }
@@ -499,7 +499,7 @@ Building* getBuildingAt(City* city, s32 x, s32 y)
 void updateSomeBuildings(City* city)
 {
     for (s32 i = 0; i < city->sectors.sectorsToUpdatePerTick; i++) {
-        CitySector* sector = getNextSector(&city->sectors);
+        CitySector* sector = city->sectors.get_next_sector();
 
         for (auto it = sector->ownedBuildings.iterate(); it.hasNext(); it.next()) {
             Building* building = it.getValue();

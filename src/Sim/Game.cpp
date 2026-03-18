@@ -236,7 +236,7 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
     V2I tilePos = gameState->inspectedTilePosition;
 
     // CitySector
-    CitySector* sector = getSectorAtTilePos(&city->sectors, tilePos.x, tilePos.y);
+    CitySector* sector = city->sectors.get_sector_at_tile_pos(tilePos.x, tilePos.y);
     ui->addLabel(myprintf("CitySector: x={0} y={1} w={2} h={3}"_s, { formatInt(sector->bounds.x()), formatInt(sector->bounds.y()), formatInt(sector->bounds.width()), formatInt(sector->bounds.height()) }));
 
     // Terrain

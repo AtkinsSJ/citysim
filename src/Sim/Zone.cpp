@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2018-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -21,7 +21,7 @@ void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena)
     zoneLayer->tileZone = gameArena->allocate_array_2d<ZoneType>(city->bounds.size());
 
     initSectorGrid(&zoneLayer->sectors, gameArena, city->bounds.size(), 16, 8);
-    s32 sectorCount = getSectorCount(&zoneLayer->sectors);
+    s32 sectorCount = zoneLayer->sectors.sector_count();
 
     // NB: Element 0 is empty because tracking spots with no zone is not useful
     for (auto zone_type : enum_values<ZoneType>()) {
@@ -202,7 +202,7 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
     for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++) {
-        Indexed<ZoneSector> sectorWithIndex = getNextSectorWithIndex(&layer->sectors);
+        Indexed<ZoneSector> sectorWithIndex = layer->sectors.get_next_sector_with_index();
         ZoneSector& sector = sectorWithIndex.value();
         s32 sectorIndex = sectorWithIndex.index();
 
@@ -357,7 +357,7 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
 // TEST
 #if 0
 		logInfo("Most desirable sectors ({0})", {zoneDefs[zoneType].name});
-		for (s32 position = 0; position < getSectorCount(&layer->sectors); position++)
+		for (s32 position = 0; position < layer->sectors.sector_count(); position++)
 		{
 			s32 sectorIndex = layer->mostDesirableSectors[zoneType][position];
 			float averageDesirability = layer->sectors[sectorIndex].averageDesirability[zoneType];
@@ -441,7 +441,7 @@ void growSomeZoneBuildings(City* city)
                     DEBUG_BLOCK_T("growSomeZoneBuildings - find a valid zone", DebugCodeDataTag::Simulation);
 
                     // Go through sectors from most desirable to least
-                    for (s32 position = savedPositionInMostDesirableSectorsTable; position < getSectorCount(&layer->sectors); position++) {
+                    for (s32 position = savedPositionInMostDesirableSectorsTable; position < layer->sectors.sector_count(); position++) {
                         s32 sectorIndex = layer->mostDesirableSectors[zone_type][position];
 
                         // Skip if it doesn't have any available zones

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2019-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -36,7 +36,7 @@ void initFireLayer(FireLayer* layer, City* city, MemoryArena* gameArena)
     layer->activeFireCount = 0;
     initChunkPool(&layer->firePool, gameArena, 64);
     initSectorGrid(&layer->sectors, gameArena, city->bounds.size(), 16, 8);
-    for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&layer->sectors); sectorIndex++) {
+    for (s32 sectorIndex = 0; sectorIndex < layer->sectors.sector_count(); sectorIndex++) {
         FireSector* sector = &layer->sectors.sectors[sectorIndex];
 
         initChunkedArray(&sector->activeFires, &layer->firePool);
@@ -63,11 +63,11 @@ void updateFireLayer(City* city, FireLayer* layer)
             fillRegion<u16>(&layer->tileFireProximityEffect, dirtyRect, 0);
 
             Rect2I expandedRect = dirtyRect.expanded(layer->maxFireRadius);
-            Rect2I affectedSectors = getSectorsCovered(&layer->sectors, expandedRect);
+            Rect2I affectedSectors = layer->sectors.get_sectors_covered(expandedRect);
 
             for (s32 sy = affectedSectors.y(); sy < affectedSectors.y() + affectedSectors.height(); sy++) {
                 for (s32 sx = affectedSectors.x(); sx < affectedSectors.x() + affectedSectors.width(); sx++) {
-                    FireSector* sector = getSector(&layer->sectors, sx, sy);
+                    FireSector* sector = layer->sectors.get(sx, sy);
 
                     for (auto it = sector->activeFires.iterate(); it.hasNext(); it.next()) {
                         auto& fire = it.get();
@@ -88,7 +88,7 @@ void updateFireLayer(City* city, FireLayer* layer)
         DEBUG_BLOCK_T("updateFireLayer: overall calculation", DebugCodeDataTag::Simulation);
 
         for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++) {
-            FireSector* sector = getNextSector(&layer->sectors);
+            FireSector* sector = layer->sectors.get_next_sector();
 
             {
                 DEBUG_BLOCK_T("updateFireLayer: building fire protection", DebugCodeDataTag::Simulation);
@@ -151,7 +151,7 @@ Optional<Indexed<Fire>> find_fire_at(City* city, s32 x, s32 y)
     if (layer.activeFireCount == 0)
         return {};
 
-    FireSector* sector = getSectorAtTilePos(&layer.sectors, x, y);
+    FireSector* sector = layer.sectors.get_sector_at_tile_pos(x, y);
     return sector->activeFires.find_first([=](Fire& fire) { return fire.pos.x == x && fire.pos.y == y; });
 }
 
@@ -160,14 +160,14 @@ bool doesAreaContainFire(City* city, Rect2I bounds)
     FireLayer* layer = &city->fireLayer;
     bool foundFire = false;
 
-    Rect2I footprintSectors = getSectorsCovered(&layer->sectors, bounds);
+    Rect2I footprintSectors = layer->sectors.get_sectors_covered(bounds);
     for (s32 sy = footprintSectors.y();
         sy < footprintSectors.y() + footprintSectors.height() && !foundFire;
         sy++) {
         for (s32 sx = footprintSectors.x();
             sx < footprintSectors.x() + footprintSectors.width() && !foundFire;
             sx++) {
-            FireSector* sector = getSector(&layer->sectors, sx, sy);
+            FireSector* sector = layer->sectors.get(sx, sy);
             for (auto it = sector->activeFires.iterate(); it.hasNext(); it.next()) {
                 auto& fire = it.get();
 
@@ -199,7 +199,7 @@ void addFireRaw(City* city, s32 x, s32 y, GameTimestamp startDate)
 
     FireLayer* layer = &city->fireLayer;
 
-    FireSector* sector = getSectorAtTilePos(&layer->sectors, x, y);
+    FireSector* sector = layer->sectors.get_sector_at_tile_pos(x, y);
 
     Fire* fire = sector->activeFires.appendBlank();
 
@@ -225,7 +225,7 @@ void removeFireAt(City* city, s32 x, s32 y)
 {
     FireLayer* layer = &city->fireLayer;
 
-    FireSector* sectorAtPosition = getSectorAtTilePos(&layer->sectors, x, y);
+    FireSector* sectorAtPosition = layer->sectors.get_sector_at_tile_pos(x, y);
     auto existing_fire = sectorAtPosition->activeFires.find_first([=](Fire& fire) { return fire.pos.x == x && fire.pos.y == y; });
 
     if (existing_fire.has_value()) {
@@ -295,8 +295,8 @@ void saveFireLayer(FireLayer* layer, BinaryFileWriter* writer)
     fireSection.activeFireCount = layer->activeFireCount;
     Array<SAVFire> tempFires = writer->arena->allocate_array<SAVFire>(fireSection.activeFireCount);
     // ughhhh I have to iterate the sectors to get this information!
-    for (s32 sectorIndex = 0; sectorIndex < getSectorCount(&layer->sectors); sectorIndex++) {
-        FireSector* sector = getSectorByIndex(&layer->sectors, sectorIndex);
+    for (s32 sectorIndex = 0; sectorIndex < layer->sectors.sector_count(); sectorIndex++) {
+        FireSector* sector = layer->sectors.get_by_index(sectorIndex);
 
         for (auto it = sector->activeFires.iterate(); it.hasNext(); it.next()) {
             auto& fire = it.get();

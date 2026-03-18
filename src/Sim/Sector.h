@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2019-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -24,9 +24,94 @@ struct SectorGrid {
     s32 nextSectorUpdateIndex;
     s32 sectorsToUpdatePerTick;
 
+    s32 sector_count() const
+    {
+        return sectors.count;
+    }
+
     Sector& operator[](s32 index)
     {
         return this->sectors[index];
+    }
+
+    Sector* get(s32 sector_x, s32 sector_y)
+    {
+        Sector* result = nullptr;
+
+        if (sector_x >= 0 && sector_x < sectorsX && sector_y >= 0 && sector_y < sectorsY) {
+            result = &sectors[(sector_y * sectorsX) + sector_x];
+        }
+
+        return result;
+    }
+
+    Sector const* get(s32 sector_x, s32 sector_y) const
+    {
+        return const_cast<SectorGrid*>(this)->get(sector_x, sector_y);
+    }
+
+    Sector* get_sector_at_tile_pos(s32 x, s32 y)
+    {
+        Sector* result = nullptr;
+
+        if (x >= 0 && x < width && y >= 0 && y < height) {
+            result = get(x / sectorSize, y / sectorSize);
+        }
+
+        return result;
+    }
+
+    Sector const* get_sector_at_tile_pos(s32 x, s32 y) const
+    {
+        return const_cast<SectorGrid*>(this)->get_sector_at_tile_pos(x, y);
+    }
+
+    Sector* get_by_index(s32 index)
+    {
+        Sector* result = nullptr;
+
+        if (index >= 0 && index < sectors.count) {
+            result = &sectors[index];
+        }
+
+        return result;
+    }
+
+    Sector const* get_by_index(s32 index) const
+    {
+        return const_cast<SectorGrid*>(this)->get_by_index(index);
+    }
+
+    Rect2I get_sectors_covered(Rect2I area) const
+    {
+        auto intersected_area = area.intersected({ 0, 0, width, height });
+        if (!intersected_area.has_positive_area())
+            return {};
+
+        return Rect2I::create_min_max(
+            intersected_area.x() / sectorSize,
+            intersected_area.y() / sectorSize,
+
+            (intersected_area.x() + intersected_area.width() - 1) / sectorSize,
+            (intersected_area.y() + intersected_area.height() - 1) / sectorSize);
+    }
+
+    Sector* get_next_sector()
+    {
+        Sector* result = &sectors[nextSectorUpdateIndex];
+
+        nextSectorUpdateIndex = (nextSectorUpdateIndex + 1) % count();
+
+        return result;
+    }
+
+    Indexed<Sector> get_next_sector_with_index()
+    {
+        Indexed<Sector> result { nextSectorUpdateIndex, sectors[nextSectorUpdateIndex] };
+
+        nextSectorUpdateIndex = (nextSectorUpdateIndex + 1) % sector_count();
+
+        return result;
     }
 };
 
@@ -67,81 +152,4 @@ void initSectorGrid(SectorGrid<Sector>* grid, MemoryArena* arena, V2I city_size,
             }
         }
     }
-}
-
-template<typename Sector>
-Sector* getSector(SectorGrid<Sector>* grid, s32 sectorX, s32 sectorY)
-{
-    Sector* result = nullptr;
-
-    if (sectorX >= 0 && sectorX < grid->sectorsX && sectorY >= 0 && sectorY < grid->sectorsY) {
-        result = &grid->sectors[(sectorY * grid->sectorsX) + sectorX];
-    }
-
-    return result;
-}
-
-template<typename Sector>
-Sector* getSectorByIndex(SectorGrid<Sector>* grid, s32 index)
-{
-    Sector* result = nullptr;
-
-    if (index >= 0 && index < grid->sectors.count) {
-        result = &grid->sectors[index];
-    }
-
-    return result;
-}
-
-template<typename Sector>
-s32 getSectorCount(SectorGrid<Sector>* grid)
-{
-    return grid->sectors.count;
-}
-
-template<typename Sector>
-Sector* getSectorAtTilePos(SectorGrid<Sector>* grid, s32 x, s32 y)
-{
-    Sector* result = nullptr;
-
-    if (x >= 0 && x < grid->width && y >= 0 && y < grid->height) {
-        result = getSector(grid, x / grid->sectorSize, y / grid->sectorSize);
-    }
-
-    return result;
-}
-
-template<typename Sector>
-Rect2I getSectorsCovered(SectorGrid<Sector>* grid, Rect2I area)
-{
-    auto intersected_area = area.intersected({ 0, 0, grid->width, grid->height });
-    if (!intersected_area.has_positive_area())
-        return {};
-
-    return Rect2I::create_min_max(
-        intersected_area.x() / grid->sectorSize,
-        intersected_area.y() / grid->sectorSize,
-
-        (intersected_area.x() + intersected_area.width() - 1) / grid->sectorSize,
-        (intersected_area.y() + intersected_area.height() - 1) / grid->sectorSize);
-}
-
-template<typename Sector>
-Sector* getNextSector(SectorGrid<Sector>* grid)
-{
-    Sector* result = &grid->sectors[grid->nextSectorUpdateIndex];
-
-    grid->nextSectorUpdateIndex = (grid->nextSectorUpdateIndex + 1) % getSectorCount(grid);
-
-    return result;
-}
-
-template<typename Sector>
-Indexed<Sector> getNextSectorWithIndex(SectorGrid<Sector>* grid)
-{
-    Indexed<Sector> result { grid->nextSectorUpdateIndex, grid->sectors[grid->nextSectorUpdateIndex] };
-
-    grid->nextSectorUpdateIndex = (grid->nextSectorUpdateIndex + 1) % getSectorCount(grid);
-
-    return result;
 }
