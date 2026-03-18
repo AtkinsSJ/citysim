@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2015-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -7,7 +7,6 @@
 #pragma once
 
 #include <Util/Basic.h>
-#include <Util/Forward.h>
 #include <Util/Memory.h>
 #include <Util/Rectangle.h>
 
@@ -17,15 +16,26 @@ struct Array2 {
     s32 h;
     T* items;
 
+    size_t count() const { return w * h; }
+
     T& get(s32 x, s32 y)
     {
         ASSERT(x >= 0 && x < this->w && y >= 0 && y < this->h);
-
-        return this->items[(y * this->w) + x];
+        return get_flat((y * this->w) + x);
     }
     T const& get(s32 x, s32 y) const
     {
         return const_cast<Array2*>(this)->get(x, y);
+    }
+
+    T& get_flat(size_t index)
+    {
+        ASSERT(index < count());
+        return items[index];
+    }
+    T const& get_flat(size_t index) const
+    {
+        return const_cast<Array2*>(this)->get_flat(index);
     }
 
     T getIfExists(s32 x, s32 y, T defaultValue) const
