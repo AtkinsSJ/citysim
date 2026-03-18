@@ -55,6 +55,11 @@ struct Array2 {
     {
         get(x, y) = value;
     }
+
+    void fill(T const& value)
+    {
+        fillMemory<T>(items, value, w * h);
+    }
 };
 
 template<typename T>
@@ -67,12 +72,6 @@ Array2<T> makeArray2(s32 w, s32 h, T* items)
     result.items = items;
 
     return result;
-}
-
-template<typename T>
-void fill(Array2<T>* array, T value)
-{
-    fillMemory<T>(array->items, value, array->w * array->h);
 }
 
 template<typename T>

@@ -20,14 +20,14 @@ void initFireLayer(FireLayer* layer, City* city, MemoryArena* gameArena)
 
     layer->maxFireRadius = 4;
     layer->tileFireProximityEffect = gameArena->allocate_array_2d<u16>(city->bounds.size());
-    fill<u16>(&layer->tileFireProximityEffect, 0);
+    layer->tileFireProximityEffect.fill(0);
 
     layer->tileTotalFireRisk = gameArena->allocate_array_2d<u8>(city->bounds.size());
-    fill<u8>(&layer->tileTotalFireRisk, 0);
+    layer->tileTotalFireRisk.fill(0);
     layer->tileFireProtection = gameArena->allocate_array_2d<u8>(city->bounds.size());
-    fill<u8>(&layer->tileFireProtection, 0);
+    layer->tileFireProtection.fill(0);
     layer->tileOverallFireRisk = gameArena->allocate_array_2d<u8>(city->bounds.size());
-    fill<u8>(&layer->tileOverallFireRisk, 0);
+    layer->tileOverallFireRisk.fill(0);
 
     initChunkedArray(&layer->fireProtectionBuildings, &city->buildingRefsChunkPool);
 

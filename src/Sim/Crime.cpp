@@ -19,7 +19,7 @@ void initCrimeLayer(CrimeLayer* layer, City* city, MemoryArena* gameArena)
     initDirtyRects(&layer->dirtyRects, gameArena, maxLandValueEffectDistance, city->bounds);
 
     layer->tilePoliceCoverage = gameArena->allocate_array_2d<u8>(city->bounds.size());
-    fill<u8>(&layer->tilePoliceCoverage, 0);
+    layer->tilePoliceCoverage.fill(0);
 
     layer->totalJailCapacity = 0;
     layer->occupiedJailCapacity = 0;

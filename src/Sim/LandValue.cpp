@@ -16,10 +16,10 @@ void initLandValueLayer(LandValueLayer* layer, City* city, MemoryArena* gameAren
     layer->sectors = SectorGrid<BasicSector> { gameArena, city->bounds.size(), 16, 8 };
 
     layer->tileLandValue = gameArena->allocate_array_2d<u8>(city->bounds.size());
-    fill<u8>(&layer->tileLandValue, 0);
+    layer->tileLandValue.fill(0);
 
     layer->tileBuildingContributions = gameArena->allocate_array_2d<s16>(city->bounds.size());
-    fill<s16>(&layer->tileBuildingContributions, 0);
+    layer->tileBuildingContributions.fill(0);
 
     initDirtyRects(&layer->dirtyRects, gameArena, maxLandValueEffectDistance, city->bounds);
 }

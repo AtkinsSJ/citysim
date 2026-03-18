@@ -132,7 +132,7 @@ void generateTerrain(City* city, Random& gameRandom)
     s32 seed = gameRandom.next();
     auto terrainRandom = Random::create(seed);
     layer->terrainGenerationSeed = seed;
-    fill<u8>(&layer->tileTerrainType, tGround);
+    layer->tileTerrainType.fill(tGround);
 
     for (s32 y = 0; y < city->bounds.height(); y++) {
         for (s32 x = 0; x < city->bounds.width(); x++) {

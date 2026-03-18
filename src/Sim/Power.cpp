@@ -19,7 +19,7 @@ void initPowerLayer(PowerLayer* layer, City* city, MemoryArena* gameArena)
     initChunkPool(&layer->powerGroupPointersChunkPool, gameArena, 32);
 
     layer->tilePowerDistance = gameArena->allocate_array_2d<u8>(city->bounds.size());
-    fill<u8>(&layer->tilePowerDistance, 255);
+    layer->tilePowerDistance.fill(255);
     layer->powerMaxDistance = 2;
     initDirtyRects(&layer->dirtyRects, gameArena, layer->powerMaxDistance, city->bounds);
 
@@ -265,7 +265,7 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
         powerGroup.sectorBoundaries.clear();
     }
     sector->powerGroups.clear();
-    fill<u8>(&sector->tilePowerGroup, 0);
+    sector->tilePowerGroup.fill(0);
 
     // Step 1: Set all power-carrying tiles to POWER_GROUP_UNKNOWN (everything was set to 0 in the above memset())
     for (s32 relY = 0;

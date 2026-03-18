@@ -20,7 +20,7 @@ void initTransportLayer(TransportLayer* layer, City* city, MemoryArena* gameAren
 
     for (auto type : enum_values<TransportType>()) {
         layer->tileTransportDistance[type] = gameArena->allocate_array_2d<u8>(city->bounds.size());
-        fill<u8>(&layer->tileTransportDistance[type], 255);
+        layer->tileTransportDistance[type].fill(255);
     }
 }
 
