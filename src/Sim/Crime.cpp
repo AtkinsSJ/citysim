@@ -59,7 +59,7 @@ void updateCrimeLayer(City* city, CrimeLayer* layer)
             auto [_, sector] = layer->sectors.get_next_sector();
 
             DEBUG_BLOCK_T("updateCrimeLayer: building police coverage", DebugCodeDataTag::Simulation);
-            fillRegion<u8>(&layer->tilePoliceCoverage, sector.bounds, 0);
+            layer->tilePoliceCoverage.fill_region(sector.bounds, 0);
             for (auto it = layer->policeBuildings.iterate(); it.hasNext(); it.next()) {
                 Building* building = city->get_building(it.getValue());
                 if (building != nullptr) {

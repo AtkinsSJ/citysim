@@ -60,7 +60,7 @@ void updateFireLayer(City* city, FireLayer* layer)
             rectIt.hasNext();
             rectIt.next()) {
             Rect2I dirtyRect = rectIt.getValue();
-            fillRegion<u16>(&layer->tileFireProximityEffect, dirtyRect, 0);
+            layer->tileFireProximityEffect.fill_region(dirtyRect, 0);
 
             Rect2I expandedRect = dirtyRect.expanded(layer->maxFireRadius);
             Rect2I affectedSectors = layer->sectors.get_sectors_covered(expandedRect);
@@ -93,7 +93,7 @@ void updateFireLayer(City* city, FireLayer* layer)
             {
                 DEBUG_BLOCK_T("updateFireLayer: building fire protection", DebugCodeDataTag::Simulation);
                 // Building fire protection
-                fillRegion<u8>(&layer->tileFireProtection, sector.bounds, 0);
+                layer->tileFireProtection.fill_region(sector.bounds, 0);
                 for (auto it = layer->fireProtectionBuildings.iterate(); it.hasNext(); it.next()) {
                     Building* building = city->get_building(it.getValue());
                     if (building != nullptr) {

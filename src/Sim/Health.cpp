@@ -49,7 +49,7 @@ void updateHealthLayer(City* city, HealthLayer* layer)
             auto [_, sector] = layer->sectors.get_next_sector();
 
             DEBUG_BLOCK_T("updateHealthLayer: building health coverage", DebugCodeDataTag::Simulation);
-            fillRegion<u8>(&layer->tileHealthCoverage, sector.bounds, 0);
+            layer->tileHealthCoverage.fill_region( sector.bounds, 0);
             for (auto it = layer->healthBuildings.iterate(); it.hasNext(); it.next()) {
                 Building* building = city->get_building(it.getValue());
                 if (building != nullptr) {

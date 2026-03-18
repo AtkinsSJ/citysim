@@ -43,7 +43,7 @@ void updateLandValueLayer(City* city, LandValueLayer* layer)
                 rectIt.next()) {
                 Rect2I dirtyRect = rectIt.getValue();
 
-                fillRegion<s16>(&layer->tileBuildingContributions, dirtyRect, 0);
+                layer->tileBuildingContributions.fill_region(dirtyRect, 0);
 
                 ChunkedArray<Building*> contributingBuildings = findBuildingsOverlappingArea(city, dirtyRect.expanded(maxLandValueEffectDistance));
                 for (auto buildingIt = contributingBuildings.iterate();

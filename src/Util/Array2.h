@@ -60,6 +60,16 @@ struct Array2 {
     {
         fillMemory<T>(items, value, w * h);
     }
+
+    void fill_region(Rect2I const& region, T const& value)
+    {
+        ASSERT(Rect2I(0, 0, w, h).contains(region));
+
+        for (s32 y = region.y(); y < region.y() + region.height(); y++) {
+            // Set whole rows at a time
+            fillMemory<T>(items + (y * w) + region.x(), value, region.width());
+        }
+    }
 };
 
 template<typename T>
@@ -72,15 +82,4 @@ Array2<T> makeArray2(s32 w, s32 h, T* items)
     result.items = items;
 
     return result;
-}
-
-template<typename T>
-void fillRegion(Array2<T>* array, Rect2I region, T value)
-{
-    ASSERT(Rect2I(0, 0, array->w, array->h).contains(region));
-
-    for (s32 y = region.y(); y < region.y() + region.height(); y++) {
-        // Set whole rows at a time
-        fillMemory<T>(array->items + (y * array->w) + region.x(), value, region.width());
-    }
 }
