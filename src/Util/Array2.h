@@ -12,6 +12,15 @@
 
 template<typename T>
 struct Array2 {
+    Array2() = default;
+    Array2(u32 width, u32 height, Span<T> items)
+        : w(width)
+        , h(height)
+        , items(items.raw_data())
+    {
+        ASSERT(items.size() == width * height);
+    }
+
     s32 w;
     s32 h;
     T* items;
@@ -71,15 +80,3 @@ struct Array2 {
         }
     }
 };
-
-template<typename T>
-Array2<T> makeArray2(s32 w, s32 h, T* items)
-{
-    Array2<T> result = {};
-
-    result.w = w;
-    result.h = h;
-    result.items = items;
-
-    return result;
-}

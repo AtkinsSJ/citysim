@@ -139,7 +139,7 @@ public:
     Array2<T> allocate_array_2d(u32 w, u32 h)
     {
         ASSERT(w > 0 && h > 0);
-        return makeArray2<T>(w, h, allocate_multiple_deprecated<T>(w * h));
+        return Array2<T> { w, h, allocate_multiple<T>(w * h) };
     }
 
     String allocate_string(StringView input);
