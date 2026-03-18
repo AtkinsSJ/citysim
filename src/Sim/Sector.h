@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <Util/Array.h>
+#include <Util/Array2.h>
 #include <Util/Basic.h>
 #include <Util/Indexed.h>
 #include <Util/Maths.h>
@@ -19,26 +19,24 @@ struct SectorGrid {
     SectorGrid(MemoryArena* arena, V2I world_size, s32 sector_size, s32 sectors_to_update_per_tick)
         : m_world_size(world_size)
         , m_sector_size(sector_size)
-        , m_sectors_x(divideCeil(world_size.x, sector_size))
-        , m_sectors_y(divideCeil(world_size.y, sector_size))
-        , m_sectors(arena->allocate_array<Sector>(m_sectors_x * m_sectors_y, true))
+        , m_sectors(arena->allocate_array_2d<Sector>(divideCeil(world_size.x, sector_size), divideCeil(world_size.y, sector_size)))
         , m_sectors_to_update_per_tick(sectors_to_update_per_tick)
     {
 
         s32 remainder_width = world_size.x % sector_size;
         s32 remainder_height = world_size.y % sector_size;
-        for (s32 y = 0; y < m_sectors_y; y++) {
-            for (s32 x = 0; x < m_sectors_x; x++) {
-                auto& sector = m_sectors[(m_sectors_x * y) + x];
+        for (s32 y = 0; y < m_sectors.h; y++) {
+            for (s32 x = 0; x < m_sectors.w; x++) {
+                auto& sector = m_sectors.get(x, y);
 
                 // FIXME: Do this properly.
                 sector = {};
                 sector.bounds = { x * sector_size, y * sector_size, sector_size, sector_size };
 
-                if ((x == m_sectors_x - 1) && remainder_width > 0) {
+                if ((x == m_sectors.w - 1) && remainder_width > 0) {
                     sector.bounds.set_width(remainder_width);
                 }
-                if ((y == m_sectors_y - 1) && remainder_height > 0) {
+                if ((y == m_sectors.h - 1) && remainder_height > 0) {
                     sector.bounds.set_height(remainder_height);
                 }
             }
@@ -47,20 +45,20 @@ struct SectorGrid {
 
     s32 sector_count() const
     {
-        return m_sectors.count;
+        return m_sectors.count();
     }
 
     Sector& operator[](s32 index)
     {
-        return m_sectors[index];
+        return m_sectors.get_flat(index);
     }
 
     Sector* get(s32 sector_x, s32 sector_y)
     {
         Sector* result = nullptr;
 
-        if (sector_x >= 0 && sector_x < m_sectors_x && sector_y >= 0 && sector_y < m_sectors_y) {
-            result = &m_sectors[(sector_y * m_sectors_x) + sector_x];
+        if (sector_x >= 0 && sector_x < m_sectors.w && sector_y >= 0 && sector_y < m_sectors.h) {
+            result = &m_sectors.get(sector_x, sector_y);
         }
 
         return result;
@@ -91,8 +89,8 @@ struct SectorGrid {
     {
         Sector* result = nullptr;
 
-        if (index >= 0 && index < m_sectors.count) {
-            result = &m_sectors[index];
+        if (index >= 0 && index < m_sectors.count()) {
+            result = &m_sectors.get_flat(index);
         }
 
         return result;
@@ -119,7 +117,7 @@ struct SectorGrid {
 
     Indexed<Sector> get_next_sector()
     {
-        Indexed<Sector> result { m_next_sector_update_index, m_sectors[m_next_sector_update_index] };
+        Indexed<Sector> result { m_next_sector_update_index, m_sectors.get_flat(m_next_sector_update_index) };
 
         m_next_sector_update_index = (m_next_sector_update_index + 1) % sector_count();
 
@@ -132,10 +130,7 @@ private:
     V2I m_world_size;
     s32 m_sector_size;
 
-    // FIXME: Array2D?
-    s32 m_sectors_x;
-    s32 m_sectors_y;
-    Array<Sector> m_sectors;
+    Array2<Sector> m_sectors;
 
     s32 m_next_sector_update_index { 0 };
     // FIXME: This is awkward being here. SectorGrid itself doesn't use it.
