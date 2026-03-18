@@ -15,31 +15,52 @@
 
 template<typename Sector>
 struct SectorGrid {
-    s32 width, height; // world size
-    s32 sectorSize;
-    s32 sectorsX, sectorsY;
+    SectorGrid() = default;
+    SectorGrid(MemoryArena* arena, V2I world_size, s32 sector_size, s32 sectors_to_update_per_tick)
+        : m_world_size(world_size)
+        , m_sector_size(sector_size)
+        , m_sectors_x(divideCeil(world_size.x, sector_size))
+        , m_sectors_y(divideCeil(world_size.y, sector_size))
+        , m_sectors(arena->allocate_array<Sector>(m_sectors_x * m_sectors_y, true))
+        , m_sectors_to_update_per_tick(sectors_to_update_per_tick)
+    {
 
-    Array<Sector> sectors;
+        s32 remainder_width = world_size.x % sector_size;
+        s32 remainder_height = world_size.y % sector_size;
+        for (s32 y = 0; y < m_sectors_y; y++) {
+            for (s32 x = 0; x < m_sectors_x; x++) {
+                auto& sector = m_sectors[(m_sectors_x * y) + x];
 
-    s32 nextSectorUpdateIndex;
-    s32 sectorsToUpdatePerTick;
+                // FIXME: Do this properly.
+                sector = {};
+                sector.bounds = { x * sector_size, y * sector_size, sector_size, sector_size };
+
+                if ((x == m_sectors_x - 1) && remainder_width > 0) {
+                    sector.bounds.set_width(remainder_width);
+                }
+                if ((y == m_sectors_y - 1) && remainder_height > 0) {
+                    sector.bounds.set_height(remainder_height);
+                }
+            }
+        }
+    }
 
     s32 sector_count() const
     {
-        return sectors.count;
+        return m_sectors.count;
     }
 
     Sector& operator[](s32 index)
     {
-        return this->sectors[index];
+        return m_sectors[index];
     }
 
     Sector* get(s32 sector_x, s32 sector_y)
     {
         Sector* result = nullptr;
 
-        if (sector_x >= 0 && sector_x < sectorsX && sector_y >= 0 && sector_y < sectorsY) {
-            result = &sectors[(sector_y * sectorsX) + sector_x];
+        if (sector_x >= 0 && sector_x < m_sectors_x && sector_y >= 0 && sector_y < m_sectors_y) {
+            result = &m_sectors[(sector_y * m_sectors_x) + sector_x];
         }
 
         return result;
@@ -54,8 +75,8 @@ struct SectorGrid {
     {
         Sector* result = nullptr;
 
-        if (x >= 0 && x < width && y >= 0 && y < height) {
-            result = get(x / sectorSize, y / sectorSize);
+        if (x >= 0 && x < m_world_size.x && y >= 0 && y < m_world_size.y) {
+            result = get(x / m_sector_size, y / m_sector_size);
         }
 
         return result;
@@ -70,8 +91,8 @@ struct SectorGrid {
     {
         Sector* result = nullptr;
 
-        if (index >= 0 && index < sectors.count) {
-            result = &sectors[index];
+        if (index >= 0 && index < m_sectors.count) {
+            result = &m_sectors[index];
         }
 
         return result;
@@ -84,26 +105,41 @@ struct SectorGrid {
 
     Rect2I get_sectors_covered(Rect2I area) const
     {
-        auto intersected_area = area.intersected({ 0, 0, width, height });
+        auto intersected_area = area.intersected({ 0, 0, m_world_size.x, m_world_size.y });
         if (!intersected_area.has_positive_area())
             return {};
 
         return Rect2I::create_min_max(
-            intersected_area.x() / sectorSize,
-            intersected_area.y() / sectorSize,
+            intersected_area.x() / m_sector_size,
+            intersected_area.y() / m_sector_size,
 
-            (intersected_area.x() + intersected_area.width() - 1) / sectorSize,
-            (intersected_area.y() + intersected_area.height() - 1) / sectorSize);
+            (intersected_area.x() + intersected_area.width() - 1) / m_sector_size,
+            (intersected_area.y() + intersected_area.height() - 1) / m_sector_size);
     }
 
     Indexed<Sector> get_next_sector()
     {
-        Indexed<Sector> result { nextSectorUpdateIndex, sectors[nextSectorUpdateIndex] };
+        Indexed<Sector> result { m_next_sector_update_index, m_sectors[m_next_sector_update_index] };
 
-        nextSectorUpdateIndex = (nextSectorUpdateIndex + 1) % sector_count();
+        m_next_sector_update_index = (m_next_sector_update_index + 1) % sector_count();
 
         return result;
     }
+
+    s32 sectors_to_update_per_tick() const { return m_sectors_to_update_per_tick; }
+
+private:
+    V2I m_world_size;
+    s32 m_sector_size;
+
+    // FIXME: Array2D?
+    s32 m_sectors_x;
+    s32 m_sectors_y;
+    Array<Sector> m_sectors;
+
+    s32 m_next_sector_update_index { 0 };
+    // FIXME: This is awkward being here. SectorGrid itself doesn't use it.
+    s32 m_sectors_to_update_per_tick;
 };
 
 struct BasicSector {
@@ -111,36 +147,3 @@ struct BasicSector {
 };
 
 // NB: The Sector struct needs to contain a "Rect2I bounds;" member. This is filled-in inside initSectorGrid().
-
-template<typename Sector>
-void initSectorGrid(SectorGrid<Sector>* grid, MemoryArena* arena, V2I city_size, s32 sectorSize, s32 sectorsToUpdatePerTick = 0)
-{
-    grid->width = city_size.x;
-    grid->height = city_size.y;
-    grid->sectorSize = sectorSize;
-    grid->sectorsX = divideCeil(city_size.x, sectorSize);
-    grid->sectorsY = divideCeil(city_size.y, sectorSize);
-
-    grid->nextSectorUpdateIndex = 0;
-    grid->sectorsToUpdatePerTick = sectorsToUpdatePerTick;
-
-    grid->sectors = arena->allocate_array<Sector>(grid->sectorsX * grid->sectorsY, true);
-
-    s32 remainderWidth = city_size.x % sectorSize;
-    s32 remainderHeight = city_size.y % sectorSize;
-    for (s32 y = 0; y < grid->sectorsY; y++) {
-        for (s32 x = 0; x < grid->sectorsX; x++) {
-            Sector* sector = &grid->sectors[(grid->sectorsX * y) + x];
-
-            *sector = {};
-            sector->bounds = { x * sectorSize, y * sectorSize, sectorSize, sectorSize };
-
-            if ((x == grid->sectorsX - 1) && remainderWidth > 0) {
-                sector->bounds.set_width(remainderWidth);
-            }
-            if ((y == grid->sectorsY - 1) && remainderHeight > 0) {
-                sector->bounds.set_height(remainderHeight);
-            }
-        }
-    }
-}

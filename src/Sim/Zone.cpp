@@ -20,7 +20,7 @@ void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena)
 {
     zoneLayer->tileZone = gameArena->allocate_array_2d<ZoneType>(city->bounds.size());
 
-    initSectorGrid(&zoneLayer->sectors, gameArena, city->bounds.size(), 16, 8);
+    zoneLayer->sectors = SectorGrid<ZoneSector> { gameArena, city->bounds.size(), 16, 8 };
     s32 sectorCount = zoneLayer->sectors.sector_count();
 
     // NB: Element 0 is empty because tracking spots with no zone is not useful
@@ -38,7 +38,7 @@ void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena)
     }
 
     for (s32 sectorIndex = 0; sectorIndex < sectorCount; sectorIndex++) {
-        ZoneSector* sector = &zoneLayer->sectors.sectors[sectorIndex];
+        ZoneSector* sector = zoneLayer->sectors.get_by_index(sectorIndex);
 
         sector->zoneSectorFlags = {};
     }
@@ -201,7 +201,7 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
-    for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++) {
+    for (s32 i = 0; i < layer->sectors.sectors_to_update_per_tick(); i++) {
         auto [sector_index, sector] = layer->sectors.get_next_sector();
 
         // What zones does it contain?
@@ -447,7 +447,7 @@ void growSomeZoneBuildings(City* city)
                         if (!layer->sectorsWithEmptyZones[zone_type][sectorIndex])
                             continue;
 
-                        ZoneSector* sector = &layer->sectors.sectors[sectorIndex];
+                        ZoneSector* sector = layer->sectors.get_by_index(sectorIndex);
 
                         for (s32 relY = 0;
                             !foundAZone && relY < sector->bounds.height();

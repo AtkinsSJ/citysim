@@ -14,7 +14,7 @@
 
 void initCrimeLayer(CrimeLayer* layer, City* city, MemoryArena* gameArena)
 {
-    initSectorGrid(&layer->sectors, gameArena, city->bounds.size(), 16, 8);
+    layer->sectors = SectorGrid<BasicSector> { gameArena, city->bounds.size(), 16, 8 };
 
     initDirtyRects(&layer->dirtyRects, gameArena, maxLandValueEffectDistance, city->bounds);
 
@@ -55,7 +55,7 @@ void updateCrimeLayer(City* city, CrimeLayer* layer)
     {
         DEBUG_BLOCK_T("updateCrimeLayer: sector updates", DebugCodeDataTag::Simulation);
 
-        for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++) {
+        for (s32 i = 0; i < layer->sectors.sectors_to_update_per_tick(); i++) {
             auto [_, sector] = layer->sectors.get_next_sector();
 
             DEBUG_BLOCK_T("updateCrimeLayer: building police coverage", DebugCodeDataTag::Simulation);

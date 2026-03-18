@@ -23,9 +23,9 @@ void initPowerLayer(PowerLayer* layer, City* city, MemoryArena* gameArena)
     layer->powerMaxDistance = 2;
     initDirtyRects(&layer->dirtyRects, gameArena, layer->powerMaxDistance, city->bounds);
 
-    initSectorGrid(&layer->sectors, gameArena, city->bounds.size(), 16);
+    layer->sectors = SectorGrid<PowerSector> { gameArena, city->bounds.size(), 16, 0 };
     for (s32 sectorIndex = 0; sectorIndex < layer->sectors.sector_count(); sectorIndex++) {
-        PowerSector* sector = &layer->sectors.sectors[sectorIndex];
+        PowerSector* sector = layer->sectors.get_by_index(sectorIndex);
 
         sector->tilePowerGroup = gameArena->allocate_array_2d<u8>(sector->bounds.size());
 
@@ -529,7 +529,7 @@ void recalculatePowerConnectivity(PowerLayer* layer)
     for (s32 sectorIndex = 0;
         sectorIndex < layer->sectors.sector_count();
         sectorIndex++) {
-        PowerSector* sector = &layer->sectors.sectors[sectorIndex];
+        PowerSector* sector = layer->sectors.get_by_index(sectorIndex);
 
         for (auto it = sector->powerGroups.iterate();
             it.hasNext();
@@ -605,7 +605,7 @@ void updatePowerLayer(City* city, PowerLayer* layer)
     for (s32 sectorIndex = 0;
         sectorIndex < layer->sectors.sector_count();
         sectorIndex++) {
-        PowerSector* sector = &layer->sectors.sectors[sectorIndex];
+        PowerSector* sector = layer->sectors.get_by_index(sectorIndex);
         updateSectorPowerValues(city, sector);
     }
 

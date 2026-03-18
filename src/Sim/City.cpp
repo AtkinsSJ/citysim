@@ -31,9 +31,9 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
     initChunkPool(&city->sectorBoundariesChunkPool, gameArena, 8);
     initChunkPool(&city->buildingRefsChunkPool, gameArena, 128);
 
-    initSectorGrid(&city->sectors, gameArena, city->bounds.size(), 16, 8);
+    city->sectors = SectorGrid<CitySector> { gameArena, city->bounds.size(), 16, 8 };
     for (s32 sectorIndex = 0; sectorIndex < city->sectors.sector_count(); sectorIndex++) {
-        CitySector* sector = &city->sectors.sectors[sectorIndex];
+        CitySector* sector = city->sectors.get_by_index(sectorIndex);
         initChunkedArray(&sector->ownedBuildings, &city->sectorBuildingsChunkPool);
     }
 
@@ -498,7 +498,7 @@ Building* getBuildingAt(City* city, s32 x, s32 y)
 // Runs an update on X sectors' buildings, gradually covering the whole city with subsequent calls.
 void updateSomeBuildings(City* city)
 {
-    for (s32 i = 0; i < city->sectors.sectorsToUpdatePerTick; i++) {
+    for (s32 i = 0; i < city->sectors.sectors_to_update_per_tick(); i++) {
         auto [_, sector] = city->sectors.get_next_sector();
 
         for (auto it = sector.ownedBuildings.iterate(); it.hasNext(); it.next()) {

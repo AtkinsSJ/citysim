@@ -13,7 +13,7 @@
 
 void initLandValueLayer(LandValueLayer* layer, City* city, MemoryArena* gameArena)
 {
-    initSectorGrid(&layer->sectors, gameArena, city->bounds.size(), 16, 8);
+    layer->sectors = SectorGrid<BasicSector> { gameArena, city->bounds.size(), 16, 8 };
 
     layer->tileLandValue = gameArena->allocate_array_2d<u8>(city->bounds.size());
     fill<u8>(&layer->tileLandValue, 0);
@@ -85,7 +85,7 @@ void updateLandValueLayer(City* city, LandValueLayer* layer)
     {
         DEBUG_BLOCK_T("updateLandValueLayer: overall calculation", DebugCodeDataTag::Simulation);
 
-        for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++) {
+        for (s32 i = 0; i < layer->sectors.sectors_to_update_per_tick(); i++) {
             auto [_, sector] = layer->sectors.get_next_sector();
 
             for (s32 y = sector.bounds.y(); y < sector.bounds.y() + sector.bounds.height(); y++) {

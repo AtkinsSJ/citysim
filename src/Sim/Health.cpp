@@ -18,7 +18,7 @@ float getHealthCoveragePercentAt(City* city, s32 x, s32 y)
 
 void initHealthLayer(HealthLayer* layer, City* city, MemoryArena* gameArena)
 {
-    initSectorGrid(&layer->sectors, gameArena, city->bounds.size(), 16, 8);
+    layer->sectors = SectorGrid<BasicSector> { gameArena, city->bounds.size(), 16, 8 };
 
     initDirtyRects(&layer->dirtyRects, gameArena, maxLandValueEffectDistance, city->bounds);
 
@@ -45,7 +45,7 @@ void updateHealthLayer(City* city, HealthLayer* layer)
     {
         DEBUG_BLOCK_T("updateHealthLayer: sector updates", DebugCodeDataTag::Simulation);
 
-        for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++) {
+        for (s32 i = 0; i < layer->sectors.sectors_to_update_per_tick(); i++) {
             auto [_, sector] = layer->sectors.get_next_sector();
 
             DEBUG_BLOCK_T("updateHealthLayer: building health coverage", DebugCodeDataTag::Simulation);

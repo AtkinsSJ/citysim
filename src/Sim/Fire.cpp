@@ -35,9 +35,9 @@ void initFireLayer(FireLayer* layer, City* city, MemoryArena* gameArena)
 
     layer->activeFireCount = 0;
     initChunkPool(&layer->firePool, gameArena, 64);
-    initSectorGrid(&layer->sectors, gameArena, city->bounds.size(), 16, 8);
+    layer->sectors = SectorGrid<FireSector> { gameArena, city->bounds.size(), 16, 8 };
     for (s32 sectorIndex = 0; sectorIndex < layer->sectors.sector_count(); sectorIndex++) {
-        FireSector* sector = &layer->sectors.sectors[sectorIndex];
+        FireSector* sector = layer->sectors.get_by_index(sectorIndex);
 
         initChunkedArray(&sector->activeFires, &layer->firePool);
     }
@@ -87,7 +87,7 @@ void updateFireLayer(City* city, FireLayer* layer)
     {
         DEBUG_BLOCK_T("updateFireLayer: overall calculation", DebugCodeDataTag::Simulation);
 
-        for (s32 i = 0; i < layer->sectors.sectorsToUpdatePerTick; i++) {
+        for (s32 i = 0; i < layer->sectors.sectors_to_update_per_tick(); i++) {
             auto [_, sector] = layer->sectors.get_next_sector();
 
             {
