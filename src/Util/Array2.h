@@ -38,20 +38,22 @@ struct Array2 {
         return const_cast<Array2*>(this)->get_flat(index);
     }
 
+    bool contains_coordinate(s32 x, s32 y) const
+    {
+        return x >= 0 && x < w && y >= 0 && y < h;
+    }
+
     T get_if_exists(s32 x, s32 y, T default_value) const
     {
-        T result = default_value;
+        if (contains_coordinate(x, y))
+            return items[(y * w) + x];
 
-        if (x >= 0 && x < this->w && y >= 0 && y < this->h) {
-            result = this->items[(y * this->w) + x];
-        }
-
-        return result;
+        return default_value;
     }
 
     void set(s32 x, s32 y, T value)
     {
-        this->get(x, y) = value;
+        get(x, y) = value;
     }
 };
 

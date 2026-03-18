@@ -55,13 +55,10 @@ struct SectorGrid {
 
     Sector* get(s32 sector_x, s32 sector_y)
     {
-        Sector* result = nullptr;
+        if (m_sectors.contains_coordinate(sector_x, sector_y))
+            return &m_sectors.get(sector_x, sector_y);
 
-        if (sector_x >= 0 && sector_x < m_sectors.w && sector_y >= 0 && sector_y < m_sectors.h) {
-            result = &m_sectors.get(sector_x, sector_y);
-        }
-
-        return result;
+        return nullptr;
     }
 
     Sector const* get(s32 sector_x, s32 sector_y) const
