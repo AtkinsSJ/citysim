@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2015-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -8,7 +8,6 @@
 
 #include <Util/Basic.h>
 #include <Util/BitArray.h>
-#include <Util/Forward.h>
 #include <Util/Indexed.h>
 #include <Util/MemoryArena.h>
 
@@ -186,6 +185,11 @@ struct OccupancyArray {
         }
 
         return iterator;
+    }
+
+    OccupancyArrayIterator<T> iterate() const
+    {
+        return const_cast<OccupancyArray*>(this)->iterate();
     }
 
     OccupancyArrayChunk<T>* getChunkByIndex(s32 chunkIndex)
