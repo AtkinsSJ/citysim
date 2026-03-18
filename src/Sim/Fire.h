@@ -17,8 +17,6 @@
 #include <Util/Rectangle.h>
 #include <Util/Vector.h>
 
-struct Entity;
-
 struct Fire {
     Entity* entity;
 

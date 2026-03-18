@@ -12,8 +12,6 @@
 
 namespace UI {
 
-struct DrawableStyle;
-
 struct Drawable {
     Drawable() { }
     Drawable(DrawableStyle* style)

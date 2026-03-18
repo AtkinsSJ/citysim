@@ -11,6 +11,7 @@
 #include <Sim/Education.h>
 #include <Sim/Entity.h>
 #include <Sim/Fire.h>
+#include <Sim/Forward.h>
 #include <Sim/Health.h>
 #include <Sim/LandValue.h>
 #include <Sim/Pollution.h>
@@ -21,8 +22,6 @@
 #include <Util/ChunkedArray.h>
 #include <Util/OccupancyArray.h>
 #include <Util/Rectangle.h>
-
-struct Building;
 
 struct CitySector {
     Rect2I bounds;

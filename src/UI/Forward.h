@@ -12,6 +12,7 @@ class ButtonStyle;
 class CheckboxStyle;
 class ConsoleStyle;
 struct Drawable;
+struct DrawableStyle;
 class DropDownListStyle;
 class LabelStyle;
 struct Panel;
