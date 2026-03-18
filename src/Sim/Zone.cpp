@@ -46,7 +46,7 @@ void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena)
 
 ZoneType getZoneAt(City* city, s32 x, s32 y)
 {
-    return (ZoneType)city->zoneLayer.tileZone.getIfExists(x, y, ZoneType::None);
+    return (ZoneType)city->zoneLayer.tileZone.get_if_exists(x, y, ZoneType::None);
 }
 
 s32 calculateZoneCost(CanZoneQuery* query)

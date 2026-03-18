@@ -38,9 +38,9 @@ struct Array2 {
         return const_cast<Array2*>(this)->get_flat(index);
     }
 
-    T getIfExists(s32 x, s32 y, T defaultValue) const
+    T get_if_exists(s32 x, s32 y, T default_value) const
     {
-        T result = defaultValue;
+        T result = default_value;
 
         if (x >= 0 && x < this->w && y >= 0 && y < this->h) {
             result = this->items[(y * this->w) + x];

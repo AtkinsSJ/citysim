@@ -30,7 +30,7 @@ void initTerrainLayer(TerrainLayer* layer, City* city, MemoryArena* gameArena)
 
 TerrainDef* getTerrainAt(City* city, s32 x, s32 y)
 {
-    u8 terrainType = city->terrainLayer.tileTerrainType.getIfExists(x, y, 0);
+    u8 terrainType = city->terrainLayer.tileTerrainType.get_if_exists(x, y, 0);
 
     return getTerrainDef(terrainType);
 }
@@ -42,7 +42,7 @@ u8 getTerrainHeightAt(City* city, s32 x, s32 y)
 
 void setTerrainAt(City* city, s32 x, s32 y, u8 terrainType)
 {
-    u8 existingTerrain = city->terrainLayer.tileTerrainType.getIfExists(x, y, 0);
+    u8 existingTerrain = city->terrainLayer.tileTerrainType.get_if_exists(x, y, 0);
     // Ignore for tiles that don't exist, or are already the desired type
     if (existingTerrain == 0 || existingTerrain == terrainType) {
         return;
@@ -76,7 +76,7 @@ void updateDistanceToWater(City* city, Rect2I dirtyBounds)
         for (s32 x = bounds.x();
             x < bounds.x() + bounds.width();
             x++) {
-            u8 tileType = layer->tileTerrainType.getIfExists(x, y, 0);
+            u8 tileType = layer->tileTerrainType.get_if_exists(x, y, 0);
             if (tileType == tWater) {
                 layer->tileDistanceToWater.set(x, y, 0);
             } else {

@@ -21,15 +21,15 @@ void updateDistances(Array2<u8>* tileDistance, Rect2I dirtyRect, u8 maxDistance)
             for (s32 x = dirtyRect.x(); x < dirtyRect.x() + dirtyRect.width(); x++) {
                 if (tileDistance->get(x, y) != 0) {
                     u8 minDistance = min(
-                        tileDistance->getIfExists(x - 1, y - 1, 255),
-                        tileDistance->getIfExists(x, y - 1, 255),
-                        tileDistance->getIfExists(x + 1, y - 1, 255),
-                        tileDistance->getIfExists(x - 1, y, 255),
+                        tileDistance->get_if_exists(x - 1, y - 1, 255),
+                        tileDistance->get_if_exists(x, y - 1, 255),
+                        tileDistance->get_if_exists(x + 1, y - 1, 255),
+                        tileDistance->get_if_exists(x - 1, y, 255),
                         //	tileDistance->getIfExists(x  , y  , 255),
-                        tileDistance->getIfExists(x + 1, y, 255),
-                        tileDistance->getIfExists(x - 1, y + 1, 255),
-                        tileDistance->getIfExists(x, y + 1, 255),
-                        tileDistance->getIfExists(x + 1, y + 1, 255));
+                        tileDistance->get_if_exists(x + 1, y, 255),
+                        tileDistance->get_if_exists(x - 1, y + 1, 255),
+                        tileDistance->get_if_exists(x, y + 1, 255),
+                        tileDistance->get_if_exists(x + 1, y + 1, 255));
 
                     if (minDistance != 255)
                         minDistance++;
@@ -58,15 +58,15 @@ void updateDistances(Array2<u8>* tileDistance, DirtyRects* dirtyRects, u8 maxDis
                 for (s32 x = dirtyRect.x(); x < dirtyRect.x() + dirtyRect.width(); x++) {
                     if (tileDistance->get(x, y) != 0) {
                         u8 minDistance = min(
-                            tileDistance->getIfExists(x - 1, y - 1, 255),
-                            tileDistance->getIfExists(x, y - 1, 255),
-                            tileDistance->getIfExists(x + 1, y - 1, 255),
-                            tileDistance->getIfExists(x - 1, y, 255),
+                            tileDistance->get_if_exists(x - 1, y - 1, 255),
+                            tileDistance->get_if_exists(x, y - 1, 255),
+                            tileDistance->get_if_exists(x + 1, y - 1, 255),
+                            tileDistance->get_if_exists(x - 1, y, 255),
                             //	tileDistance->getIfExists(x  , y  , 255),
-                            tileDistance->getIfExists(x + 1, y, 255),
-                            tileDistance->getIfExists(x - 1, y + 1, 255),
-                            tileDistance->getIfExists(x, y + 1, 255),
-                            tileDistance->getIfExists(x + 1, y + 1, 255));
+                            tileDistance->get_if_exists(x + 1, y, 255),
+                            tileDistance->get_if_exists(x - 1, y + 1, 255),
+                            tileDistance->get_if_exists(x, y + 1, 255),
+                            tileDistance->get_if_exists(x + 1, y + 1, 255));
 
                         if (minDistance != 255)
                             minDistance++;
