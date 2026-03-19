@@ -81,16 +81,16 @@ struct CanZoneQuery {
     ZoneDef const* zoneDef;
 
     s32 zoneableTilesCount;
-    u8* tileCanBeZoned; // NB: is either 0 or 1
+    Array2<u8> tileCanBeZoned; // NB: is either 0 or 1
+
+    bool can_zone_tile(s32 x, s32 y) const;
+    s32 calculate_zone_cost() const;
 };
+CanZoneQuery queryCanZoneTiles(City* city, ZoneType zoneType, Rect2I bounds);
 
 void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena);
 void updateZoneLayer(City* city, ZoneLayer* layer);
 void calculateDemand(City* city, ZoneLayer* layer);
-
-CanZoneQuery* queryCanZoneTiles(City* city, ZoneType zoneType, Rect2I bounds);
-bool canZoneTile(CanZoneQuery* query, s32 x, s32 y);
-s32 calculateZoneCost(CanZoneQuery* query);
 
 void placeZone(City* city, ZoneType zoneType, Rect2I area);
 void markZonesAsEmpty(City* city, Rect2I footprint);

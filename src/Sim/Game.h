@@ -100,7 +100,7 @@ struct DataViewUI {
     // NB: This is a pointer to the variable, not pointer to the array itself!
     // The DataViewUI data gets initialised before a City exists, so the per-tile arrays
     // have not been allocated yet.
-    u8** overlayTileData;
+    Array2<u8>* overlayTileData;
 
     u8 (*calculateTileValue)(City* city, s32 x, s32 y);
 };
@@ -155,7 +155,7 @@ void drawDataViewUI(GameState* gameState);
 void setGradient(DataViewUI* dataViewUI, String paletteName);
 void setFixedColors(DataViewUI* dataView, String paletteName, std::initializer_list<String> names, MemoryArena&);
 void setHighlightedBuildings(DataViewUI* dataViewUI, ChunkedArray<BuildingRef>* highlightedBuildings, EffectRadius BuildingDef::* effectRadiusMember = nullptr);
-void setTileOverlay(DataViewUI* dataViewUI, u8** tileData, String paletteName);
+void setTileOverlay(DataViewUI* dataViewUI, Array2<u8>* tileData, String paletteName);
 void setTileOverlayCallback(DataViewUI* dataViewUI, u8 (*calculateTileValue)(City* city, s32 x, s32 y), String paletteName);
 
 void inspectTileWindowProc(UI::WindowContext* context, void* userData);

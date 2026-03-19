@@ -753,13 +753,13 @@ void endRectsGroup(DrawRectsGroup* group)
     endCurrentSubGroup(group);
 }
 
-void drawGrid(RenderBuffer* buffer, Rect2 bounds, s32 gridW, s32 gridH, u8* grid, u16 paletteSize, Colour* palette)
+void drawGrid(RenderBuffer* buffer, Rect2 bounds, Array2<u8> const& grid, u16 paletteSize, Colour* palette)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Renderer);
 
     addSetShader(buffer, s_renderer->shaderIds.paletted);
 
-    addSetTextureRaw(buffer, gridW, gridH, 1, grid);
+    addSetTextureRaw(buffer, grid.width(), grid.height(), 1, grid.items);
     addSetPalette(buffer, paletteSize, palette);
 
     RenderItem_DrawSingleRect* rect = appendRenderItem<RenderItem_DrawSingleRect>(buffer, RenderItemType::DrawSingleRect);

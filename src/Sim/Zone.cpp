@@ -49,25 +49,18 @@ ZoneType getZoneAt(City* city, s32 x, s32 y)
     return (ZoneType)city->zoneLayer.tileZone.get_if_exists(x, y, ZoneType::None);
 }
 
-s32 calculateZoneCost(CanZoneQuery* query)
-{
-    return query->zoneableTilesCount * query->zoneDef->costPerTile;
-}
-
-CanZoneQuery* queryCanZoneTiles(City* city, ZoneType zoneType, Rect2I bounds)
+CanZoneQuery queryCanZoneTiles(City* city, ZoneType zoneType, Rect2I input_bounds)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Highlight);
-    // Assumption made: `bounds` is a valid rectangle within the city's bounds
+    auto bounds = city->bounds.intersected(input_bounds);
 
-    // Allocate the Query struct
-    CanZoneQuery* query = nullptr;
-    s32 tileCount = bounds.area();
-    smm structSize = sizeof(CanZoneQuery) + (tileCount * sizeof(query->tileCanBeZoned[0]));
-    u8* memory = static_cast<u8*>(temp_arena().allocate_deprecated(structSize));
-    query = (CanZoneQuery*)memory;
-    query->tileCanBeZoned = memory + sizeof(CanZoneQuery);
-    query->bounds = bounds;
-    query->zoneDef = &ZONE_DEFS[zoneType];
+    CanZoneQuery query {
+        .bounds = bounds,
+        .zoneDef = &ZONE_DEFS[zoneType],
+        .zoneableTilesCount = 0,
+        .tileCanBeZoned = temp_arena().allocate_array_2d<u8>(bounds.width(), bounds.height()),
+    };
+    query.tileCanBeZoned.fill(0);
 
     // Actually do the calculation
 
@@ -79,47 +72,44 @@ CanZoneQuery* queryCanZoneTiles(City* city, ZoneType zoneType, Rect2I bounds)
     // switching to the de-zone tool before something else pops up in the free space!
     // - Sam, 13/12/2018
 
-    for (s32 y = bounds.y();
-        y < bounds.y() + bounds.height();
-        y++) {
-        for (s32 x = bounds.x();
-            x < bounds.x() + bounds.width();
-            x++) {
-            bool canZone = true;
+    for (s32 y = bounds.y(); y < bounds.y() + bounds.height(); y++) {
+        for (s32 x = bounds.x(); x < bounds.x() + bounds.width(); x++) {
 
             // Ignore tiles that are already this zone!
-            if (getZoneAt(city, x, y) == zoneType) {
-                canZone = false;
-            }
+            if (getZoneAt(city, x, y) == zoneType)
+                continue;
+
             // Terrain must be buildable
             // @Speed: URGH this terrain lookup for every tile is nasty!
-            else if (!getTerrainAt(city, x, y)->canBuildOn) {
-                canZone = false;
-            }
-            // Tile must be empty
-            else if (buildingExistsAt(city, x, y)) {
-                canZone = false;
-            }
+            if (!getTerrainAt(city, x, y)->canBuildOn)
+                continue;
 
-            // Pos relative to our query
-            s32 qX = x - bounds.x();
-            s32 qY = y - bounds.y();
-            query->tileCanBeZoned[(qY * bounds.width()) + qX] = canZone ? 1 : 0;
-            if (canZone)
-                query->zoneableTilesCount++;
+            // Tile must be empty
+            if (buildingExistsAt(city, x, y))
+                continue;
+
+            s32 relative_x = x - bounds.x();
+            s32 relative_y = y - bounds.y();
+            query.tileCanBeZoned.set(relative_x, relative_y, 1);
+            query.zoneableTilesCount++;
         }
     }
 
     return query;
 }
 
-bool canZoneTile(CanZoneQuery* query, s32 x, s32 y)
+bool CanZoneQuery::can_zone_tile(s32 x, s32 y) const
 {
-    ASSERT(query->bounds.contains(x, y));
-    s32 qX = x - query->bounds.x();
-    s32 qY = y - query->bounds.y();
+    ASSERT(bounds.contains(x, y));
+    s32 relative_x = x - bounds.x();
+    s32 relative_y = y - bounds.y();
 
-    return query->tileCanBeZoned[(qY * query->bounds.width()) + qX] != 0;
+    return tileCanBeZoned.get(relative_x, relative_y) != 0;
+}
+
+s32 CanZoneQuery::calculate_zone_cost() const
+{
+    return zoneableTilesCount * zoneDef->costPerTile;
 }
 
 void drawZones(City* city, Rect2I visibleTileBounds, s8 shaderID)
