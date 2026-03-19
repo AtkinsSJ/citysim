@@ -99,7 +99,7 @@ struct BinaryFileReader {
     template<typename T>
     bool readBlob(FileBlob source, Array2<T>* dest)
     {
-        smm destSize = dest->w * dest->h * sizeof(T);
+        smm destSize = dest->count() * sizeof(T);
 
         return readBlob(source, (u8*)dest->items, destSize);
     }

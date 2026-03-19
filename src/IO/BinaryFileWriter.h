@@ -98,7 +98,7 @@ struct BinaryFileWriter {
         // FIXME: Allow non-u8. Theoretically it'll work right now, but our compression scheme goes by individual bytes
         //        so we should do something smarter for larger types.
         static_assert(sizeof(EnumT) == 1);
-        return appendBlob(data.w * data.h, reinterpret_cast<EnumUnderlyingType<EnumT>*>(data.items), scheme);
+        return appendBlob(data.count(), reinterpret_cast<EnumUnderlyingType<EnumT>*>(data.items), scheme);
     }
 
     FileString append_string(StringView);

@@ -11,26 +11,27 @@
 #include <Util/Rectangle.h>
 
 template<typename T>
-struct Array2 {
+class Array2 {
+public:
     Array2() = default;
     Array2(u32 width, u32 height, Span<T> items)
-        : w(width)
-        , h(height)
-        , items(items.raw_data())
+        : items(items.raw_data())
+        , m_width(width)
+        , m_height(height)
     {
         ASSERT(items.size() == width * height);
     }
 
-    s32 w;
-    s32 h;
     T* items;
 
-    size_t count() const { return w * h; }
+    u32 width() const { return m_width; }
+    u32 height() const { return m_height; }
+    u32 count() const { return m_width * m_height; }
 
     T& get(s32 x, s32 y)
     {
-        ASSERT(x >= 0 && x < this->w && y >= 0 && y < this->h);
-        return get_flat((y * this->w) + x);
+        ASSERT(x >= 0 && x < m_width && y >= 0 && y < m_height);
+        return get_flat((y * m_width) + x);
     }
     T const& get(s32 x, s32 y) const
     {
@@ -49,13 +50,13 @@ struct Array2 {
 
     bool contains_coordinate(s32 x, s32 y) const
     {
-        return x >= 0 && x < w && y >= 0 && y < h;
+        return x >= 0 && x < m_width && y >= 0 && y < m_height;
     }
 
     T get_if_exists(s32 x, s32 y, T default_value) const
     {
         if (contains_coordinate(x, y))
-            return items[(y * w) + x];
+            return items[(y * m_width) + x];
 
         return default_value;
     }
@@ -67,16 +68,20 @@ struct Array2 {
 
     void fill(T const& value)
     {
-        fillMemory<T>(items, value, w * h);
+        fillMemory<T>(items, value, m_width * m_height);
     }
 
     void fill_region(Rect2I const& region, T const& value)
     {
-        ASSERT(Rect2I(0, 0, w, h).contains(region));
+        ASSERT(Rect2I(0, 0, m_width, m_height).contains(region));
 
         for (s32 y = region.y(); y < region.y() + region.height(); y++) {
             // Set whole rows at a time
-            fillMemory<T>(items + (y * w) + region.x(), value, region.width());
+            fillMemory<T>(items + (y * m_width) + region.x(), value, region.width());
         }
     }
+
+private:
+    u32 m_width { 0 };
+    u32 m_height { 0 };
 };

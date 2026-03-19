@@ -30,6 +30,12 @@ struct V4;
 using Error = String;
 
 template<typename T>
+struct Array;
+
+template<typename T>
+class Array2;
+
+template<typename T>
 class ErrorOr;
 
 template<typename T>

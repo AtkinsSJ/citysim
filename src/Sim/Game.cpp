@@ -1152,7 +1152,7 @@ void drawDataViewOverlay(GameState* gameState, Rect2I visibleTileBounds)
         }
 
         auto& overlayPalette = Palette::get(dataView->overlayPaletteName);
-        drawGrid(&renderer.world_overlay_buffer(), visibleTileBounds, overlayTileData.w, overlayTileData.h, overlayTileData.items, (u16)overlayPalette.size(), overlayPalette.raw_colour_data());
+        drawGrid(&renderer.world_overlay_buffer(), visibleTileBounds, overlayTileData.width(), overlayTileData.height(), overlayTileData.items, (u16)overlayPalette.size(), overlayPalette.raw_colour_data());
     }
 
     if (dataView->highlightedBuildings) {

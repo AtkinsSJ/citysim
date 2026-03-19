@@ -134,7 +134,7 @@ FileBlob BinaryFileWriter::appendBlob(s32 length, u8* data, FileBlobCompressionS
 
 FileBlob BinaryFileWriter::appendBlob(Array2<u8>* data, FileBlobCompressionScheme scheme)
 {
-    return appendBlob(data->w * data->h, data->items, scheme);
+    return appendBlob(data->count(), data->items, scheme);
 }
 
 FileString BinaryFileWriter::append_string(StringView source)

@@ -82,8 +82,8 @@ void TerrainCatalogue::remap_terrain_types(City& city)
 
         TerrainLayer& layer = city.terrainLayer;
 
-        for (s32 y = 0; y < layer.tileTerrainType.h; y++) {
-            for (s32 x = 0; x < layer.tileTerrainType.w; x++) {
+        for (s32 y = 0; y < layer.tileTerrainType.height(); y++) {
+            for (s32 x = 0; x < layer.tileTerrainType.width(); x++) {
                 u8 oldType = layer.tileTerrainType.get(x, y);
 
                 if (oldType < oldTypeToNewType.count && (oldTypeToNewType[oldType] != 0)) {

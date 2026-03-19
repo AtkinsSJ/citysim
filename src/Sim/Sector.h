@@ -25,18 +25,18 @@ struct SectorGrid {
 
         s32 remainder_width = world_size.x % sector_size;
         s32 remainder_height = world_size.y % sector_size;
-        for (s32 y = 0; y < m_sectors.h; y++) {
-            for (s32 x = 0; x < m_sectors.w; x++) {
+        for (s32 y = 0; y < m_sectors.height(); y++) {
+            for (s32 x = 0; x < m_sectors.width(); x++) {
                 auto& sector = m_sectors.get(x, y);
 
                 // FIXME: Do this properly.
                 sector = {};
                 sector.bounds = { x * sector_size, y * sector_size, sector_size, sector_size };
 
-                if ((x == m_sectors.w - 1) && remainder_width > 0) {
+                if ((x == m_sectors.width() - 1) && remainder_width > 0) {
                     sector.bounds.set_width(remainder_width);
                 }
-                if ((y == m_sectors.h - 1) && remainder_height > 0) {
+                if ((y == m_sectors.height() - 1) && remainder_height > 0) {
                     sector.bounds.set_height(remainder_height);
                 }
             }
