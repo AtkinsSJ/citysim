@@ -262,7 +262,7 @@ void ZoneLayer::update(City& city)
                     // Residential
                     {
                         // Land value = good
-                        float desirability = getLandValuePercentAt(&city, x, y);
+                        float desirability = city.landValueLayer.get_land_value_percent_at(x, y);
 
                         // Health coverage = good
                         desirability += city.healthLayer.get_health_coverage_percent_at(x, y) * 0.3f;
@@ -284,7 +284,7 @@ void ZoneLayer::update(City& city)
                     // Commercial
                     {
                         // Land value = very good
-                        float desirability = getLandValuePercentAt(&city, x, y) * 2.0f;
+                        float desirability = city.landValueLayer.get_land_value_percent_at(x, y) * 2.0f;
 
                         // Fire protection = good
                         desirability += city.fireLayer.get_fire_protection_percent_at(x, y) * 0.2f;
@@ -303,7 +303,7 @@ void ZoneLayer::update(City& city)
                     // Industrial
                     {
                         // Lower land value is better
-                        float desirability = 1.0f - getLandValuePercentAt(&city, x, y);
+                        float desirability = 1.0f - city.landValueLayer.get_land_value_percent_at(x, y);
 
                         // Fire protection = good
                         desirability += city.fireLayer.get_fire_protection_percent_at(x, y) * 0.2f;

@@ -270,7 +270,7 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
     }
 
     // Land value
-    ui->addLabel(myprintf("Land value: {0}%"_s, { formatFloat(getLandValuePercentAt(city, tilePos.x, tilePos.y) * 100.0f, 0) }));
+    ui->addLabel(myprintf("Land value: {0}%"_s, { formatFloat(city->landValueLayer.get_land_value_percent_at(tilePos.x, tilePos.y) * 100.0f, 0) }));
 
     // Debug info
     if (!gameState->inspectTileDebugFlags.is_empty()) {
@@ -647,7 +647,7 @@ ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const
                 break;
             if (!city->healthLayer.load(reader))
                 break;
-            if (!loadLandValueLayer(&city->landValueLayer, city, &reader))
+            if (!city->landValueLayer.load(reader))
                 break;
             if (!loadPollutionLayer(&city->pollutionLayer, city, &reader))
                 break;
@@ -705,7 +705,7 @@ void GameScene::update_and_render(float delta_time)
         city.crimeLayer.update(city);
         city.fireLayer.update(city);
         city.healthLayer.update(city);
-        updateLandValueLayer(&city, &city.landValueLayer);
+        city.landValueLayer.update(city);
         updatePollutionLayer(&city, &city.pollutionLayer);
         updatePowerLayer(&city, &city.powerLayer);
         city.transportLayer.update(city);
@@ -992,7 +992,7 @@ void GameScene::init_data_view_ui()
 
     dataViewUI[DataView::LandValue].title = "data_view_landvalue"_s;
     setGradient(&dataViewUI[DataView::LandValue], "land_value"_s);
-    setTileOverlay(&dataViewUI[DataView::LandValue], &city->landValueLayer.tileLandValue, "land_value"_s);
+    setTileOverlay(&dataViewUI[DataView::LandValue], city->landValueLayer.tile_land_value(), "land_value"_s);
 
     dataViewUI[DataView::Pollution].title = "data_view_pollution"_s;
     setGradient(&dataViewUI[DataView::Pollution], "pollution"_s);

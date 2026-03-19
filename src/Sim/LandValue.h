@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2019-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -11,23 +11,27 @@
 #include <Sim/Forward.h>
 #include <Sim/Sector.h>
 
-struct LandValueLayer {
-    DirtyRects dirtyRects;
+class LandValueLayer {
+public:
+    LandValueLayer() = default;
+    LandValueLayer(City&, MemoryArena&);
 
-    SectorGrid<BasicSector> sectors;
+    void update(City&);
+    void mark_dirty(Rect2I bounds);
 
-    Array2<s16> tileBuildingContributions;
+    float get_land_value_percent_at(s32 x, s32 y) const;
 
-    Array2<u8> tileLandValue; // Cached total
+    // FIXME: Temporary
+    Array2<u8>* tile_land_value() { return &m_tile_land_value; }
+
+    void save(BinaryFileWriter&) const;
+    bool load(BinaryFileReader&);
+
+private:
+    DirtyRects m_dirty_rects;
+    SectorGrid<BasicSector> m_sectors;
+    Array2<s16> m_tile_building_contributions;
+    Array2<u8> m_tile_land_value; // Cached total
 };
 
 s32 const maxLandValueEffectDistance = 16; // TODO: Better value for this!
-
-void initLandValueLayer(LandValueLayer* layer, City* city, MemoryArena* gameArena);
-void updateLandValueLayer(City* city, LandValueLayer* layer);
-void markLandValueLayerDirty(LandValueLayer* layer, Rect2I bounds);
-
-float getLandValuePercentAt(City* city, s32 x, s32 y);
-
-void saveLandValueLayer(LandValueLayer* layer, BinaryFileWriter* writer);
-bool loadLandValueLayer(LandValueLayer* layer, City* city, BinaryFileReader* reader);

@@ -47,7 +47,7 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
     new (&city->educationLayer) EducationLayer { *city, *gameArena };
     new (&city->fireLayer) FireLayer { *city, *gameArena };
     new (&city->healthLayer) HealthLayer { *city, *gameArena };
-    initLandValueLayer(&city->landValueLayer, city, gameArena);
+    new (&city->landValueLayer) LandValueLayer { *city, *gameArena };
     initPollutionLayer(&city->pollutionLayer, city, gameArena);
     initPowerLayer(&city->powerLayer, city, gameArena);
     new (&city->terrainLayer) TerrainLayer { *city, *gameArena };
@@ -161,7 +161,7 @@ void City::mark_area_dirty(Rect2I dirty_area)
 {
     fireLayer.mark_dirty(dirty_area);
     healthLayer.mark_dirty(dirty_area);
-    markLandValueLayerDirty(&landValueLayer, dirty_area);
+    landValueLayer.mark_dirty(dirty_area);
     markPollutionLayerDirty(&pollutionLayer, dirty_area);
     markPowerLayerDirty(&powerLayer, dirty_area);
     transportLayer.mark_dirty(dirty_area);

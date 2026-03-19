@@ -11,48 +11,48 @@
 #include <Sim/City.h>
 #include <Sim/Effect.h>
 
-void initLandValueLayer(LandValueLayer* layer, City* city, MemoryArena* gameArena)
+LandValueLayer::LandValueLayer(City& city, MemoryArena& arena)
 {
-    layer->sectors = SectorGrid<BasicSector> { gameArena, city->bounds.size(), 16, 8 };
+    m_sectors = SectorGrid<BasicSector> { &arena, city.bounds.size(), 16, 8 };
 
-    layer->tileLandValue = gameArena->allocate_array_2d<u8>(city->bounds.size());
-    layer->tileLandValue.fill(0);
+    m_tile_land_value = arena.allocate_array_2d<u8>(city.bounds.size());
+    m_tile_land_value.fill(0);
 
-    layer->tileBuildingContributions = gameArena->allocate_array_2d<s16>(city->bounds.size());
-    layer->tileBuildingContributions.fill(0);
+    m_tile_building_contributions = arena.allocate_array_2d<s16>(city.bounds.size());
+    m_tile_building_contributions.fill(0);
 
-    initDirtyRects(&layer->dirtyRects, gameArena, maxLandValueEffectDistance, city->bounds);
+    initDirtyRects(&m_dirty_rects, &arena, maxLandValueEffectDistance, city.bounds);
 }
 
-void markLandValueLayerDirty(LandValueLayer* layer, Rect2I bounds)
+void LandValueLayer::mark_dirty(Rect2I bounds)
 {
-    markRectAsDirty(&layer->dirtyRects, bounds);
+    markRectAsDirty(&m_dirty_rects, bounds);
 }
 
-void updateLandValueLayer(City* city, LandValueLayer* layer)
+void LandValueLayer::update(City& city)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
-    if (isDirty(&layer->dirtyRects)) {
+    if (isDirty(&m_dirty_rects)) {
         {
             DEBUG_BLOCK_T("updateLandValueLayer: building effects", DebugCodeDataTag::Simulation);
 
             // Recalculate the building contributions
-            for (auto rectIt = layer->dirtyRects.rects.iterate();
+            for (auto rectIt = m_dirty_rects.rects.iterate();
                 rectIt.hasNext();
                 rectIt.next()) {
                 Rect2I dirtyRect = rectIt.getValue();
 
-                layer->tileBuildingContributions.fill_region(dirtyRect, 0);
+                m_tile_building_contributions.fill_region(dirtyRect, 0);
 
-                ChunkedArray<Building*> contributingBuildings = city->find_buildings_overlapping_area(dirtyRect.expanded(maxLandValueEffectDistance));
+                ChunkedArray<Building*> contributingBuildings = city.find_buildings_overlapping_area(dirtyRect.expanded(maxLandValueEffectDistance));
                 for (auto buildingIt = contributingBuildings.iterate();
                     buildingIt.hasNext();
                     buildingIt.next()) {
                     Building* building = buildingIt.getValue();
                     BuildingDef* def = getBuildingDef(building);
                     if (def->landValueEffect.has_effect()) {
-                        def->landValueEffect.apply(layer->tileBuildingContributions, dirtyRect, building->footprint.centre(), EffectType::Add);
+                        def->landValueEffect.apply(m_tile_building_contributions, dirtyRect, building->footprint.centre(), EffectType::Add);
                     }
                 }
 
@@ -70,23 +70,23 @@ void updateLandValueLayer(City* city, LandValueLayer* layer)
                 //
                 for (s32 y = dirtyRect.y(); y < dirtyRect.y() + dirtyRect.height(); y++) {
                     for (s32 x = dirtyRect.x(); x < dirtyRect.x() + dirtyRect.width(); x++) {
-                        s16 originalValue = layer->tileBuildingContributions.get(x, y);
+                        s16 originalValue = m_tile_building_contributions.get(x, y);
                         s16 newValue = clamp<s16>(originalValue, -255, 255);
-                        layer->tileBuildingContributions.set(x, y, newValue);
+                        m_tile_building_contributions.set(x, y, newValue);
                     }
                 }
             }
         }
 
-        clearDirtyRects(&layer->dirtyRects);
+        clearDirtyRects(&m_dirty_rects);
     }
 
     // Recalculate overall value
     {
         DEBUG_BLOCK_T("updateLandValueLayer: overall calculation", DebugCodeDataTag::Simulation);
 
-        for (s32 i = 0; i < layer->sectors.sectors_to_update_per_tick(); i++) {
-            auto [_, sector] = layer->sectors.get_next_sector();
+        for (s32 i = 0; i < m_sectors.sectors_to_update_per_tick(); i++) {
+            auto [_, sector] = m_sectors.get_next_sector();
 
             for (s32 y = sector.bounds.y(); y < sector.bounds.y() + sector.bounds.height(); y++) {
                 for (s32 x = sector.bounds.x(); x < sector.bounds.x() + sector.bounds.width(); x++) {
@@ -107,59 +107,59 @@ void updateLandValueLayer(City* city, LandValueLayer* layer)
                     float landValue = 0.1f;
 
                     // Waterfront = valuable
-                    s32 distanceToWater = city->terrainLayer.distance_to_water_at(x, y);
+                    s32 distanceToWater = city.terrainLayer.distance_to_water_at(x, y);
                     if (distanceToWater < 10) {
                         landValue += (10 - distanceToWater) * 0.1f * 0.25f;
                     }
 
                     // Building effects
-                    float buildingEffect = layer->tileBuildingContributions.get(x, y) / 255.0f;
+                    float buildingEffect = m_tile_building_contributions.get(x, y) / 255.0f;
                     landValue += buildingEffect;
 
                     // Fire protection = good
-                    float fireProtection = city->fireLayer.get_fire_protection_percent_at(x, y);
+                    float fireProtection = city.fireLayer.get_fire_protection_percent_at(x, y);
                     landValue += fireProtection * 0.2f;
 
                     // Police protection = good
-                    float policeCoverage = city->crimeLayer.get_police_coverage_percent_at(x, y);
+                    float policeCoverage = city.crimeLayer.get_police_coverage_percent_at(x, y);
                     landValue += policeCoverage * 0.2f;
 
                     // Pollution = bad
-                    float pollutionEffect = getPollutionPercentAt(city, x, y) * 0.1f;
+                    float pollutionEffect = getPollutionPercentAt(&city, x, y) * 0.1f;
                     landValue -= pollutionEffect;
 
-                    layer->tileLandValue.set(x, y, clamp01AndMap_u8(landValue));
+                    m_tile_land_value.set(x, y, clamp01AndMap_u8(landValue));
                 }
             }
         }
     }
 }
 
-float getLandValuePercentAt(City* city, s32 x, s32 y)
+float LandValueLayer::get_land_value_percent_at(s32 x, s32 y) const
 {
-    return city->landValueLayer.tileLandValue.get(x, y) / 255.0f;
+    return m_tile_land_value.get(x, y) / 255.0f;
 }
 
-void saveLandValueLayer(LandValueLayer* layer, BinaryFileWriter* writer)
+void LandValueLayer::save(BinaryFileWriter& writer) const
 {
-    writer->startSection<SAVSection_LandValue>(SAV_LANDVALUE_ID, SAV_LANDVALUE_VERSION);
+    writer.startSection<SAVSection_LandValue>(SAV_LANDVALUE_ID, SAV_LANDVALUE_VERSION);
     SAVSection_LandValue landValueSection = {};
 
     // Tile land value
-    landValueSection.tileLandValue = writer->appendBlob(&layer->tileLandValue, FileBlobCompressionScheme::RLE_S8);
+    landValueSection.tileLandValue = writer.appendBlob(&m_tile_land_value, FileBlobCompressionScheme::RLE_S8);
 
-    writer->endSection<SAVSection_LandValue>(&landValueSection);
+    writer.endSection<SAVSection_LandValue>(&landValueSection);
 }
 
-bool loadLandValueLayer(LandValueLayer* layer, City*, BinaryFileReader* reader)
+bool LandValueLayer::load(BinaryFileReader& reader)
 {
     bool succeeded = false;
-    while (reader->startSection(SAV_LANDVALUE_ID, SAV_LANDVALUE_VERSION)) {
-        SAVSection_LandValue* section = reader->readStruct<SAVSection_LandValue>(0);
+    while (reader.startSection(SAV_LANDVALUE_ID, SAV_LANDVALUE_VERSION)) {
+        SAVSection_LandValue* section = reader.readStruct<SAVSection_LandValue>(0);
         if (!section)
             break;
 
-        if (!reader->readBlob(section->tileLandValue, &layer->tileLandValue))
+        if (!reader.readBlob(section->tileLandValue, &m_tile_land_value))
             break;
 
         succeeded = true;
