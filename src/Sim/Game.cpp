@@ -278,7 +278,7 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
             city->fireLayer.debug_inspect(*ui, tilePos, building);
         }
         if (gameState->inspectTileDebugFlags.has(InspectTileDebugFlags::Power)) {
-            debugInspectPower(ui, city, tilePos.x, tilePos.y);
+            city->powerLayer.debug_inspect(*ui, tilePos);
         }
         if (gameState->inspectTileDebugFlags.has(InspectTileDebugFlags::Transport)) {
             city->transportLayer.debug_inspect(*ui, tilePos);
@@ -707,7 +707,7 @@ void GameScene::update_and_render(float delta_time)
         city.healthLayer.update(city);
         city.landValueLayer.update(city);
         city.pollutionLayer.update(city);
-        updatePowerLayer(&city, &city.powerLayer);
+        city.powerLayer.update(city);
         city.transportLayer.update(city);
         city.zoneLayer.update(city);
 
@@ -1000,8 +1000,9 @@ void GameScene::init_data_view_ui()
 
     dataViewUI[DataView::Power].title = "data_view_power"_s;
     setFixedColors(&dataViewUI[DataView::Power], "power"_s, { "data_view_power_powered"_s, "data_view_power_brownout"_s, "data_view_power_blackout"_s }, m_arena);
-    setHighlightedBuildings(&dataViewUI[DataView::Power], &city->powerLayer.powerBuildings);
-    setTileOverlayCallback(&dataViewUI[DataView::Power], [](City* city, s32 x, s32 y) { return calculatePowerOverlayForTile(city, x, y); }, "power"_s);
+
+    setHighlightedBuildings(&dataViewUI[DataView::Power], city->powerLayer.power_buildings());
+    setTileOverlayCallback(&dataViewUI[DataView::Power], [](City* city, s32 x, s32 y) { return city->powerLayer.calculate_power_overlay_for_tile(x, y); }, "power"_s);
 }
 
 void setGradient(DataViewUI* dataView, String paletteName)

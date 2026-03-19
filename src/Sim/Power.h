@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2019-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -22,6 +22,15 @@ struct PowerGroup {
 };
 
 struct PowerSector {
+    u8 get_power_group_id(s32 relX, s32 relY) const;
+    void set_power_group_id(s32 relX, s32 relY, u8 value);
+    PowerGroup* get_power_group_at(s32 relX, s32 relY);
+
+    void update_power_values(City&);
+
+    void flood_fill_power_group(s32 x, s32 y, u8 fillValue);
+    void set_rect_power_group_unknown(Rect2I area);
+
     Rect2I bounds;
 
     // 0 = none, >0 = any tile with the same value is connected
@@ -41,54 +50,58 @@ struct PowerNetwork {
     s32 cachedConsumption;
 };
 
-struct PowerLayer {
-    DirtyRects dirtyRects;
+class PowerLayer {
+public:
+    PowerLayer() = default;
+    PowerLayer(City&, MemoryArena&);
 
-    SectorGrid<PowerSector> sectors;
+    void update(City&);
+    void mark_dirty(Rect2I bounds);
 
-    u8 powerMaxDistance;
-    Array2<u8> tilePowerDistance;
+    void notify_new_building(BuildingDef const&, Building&);
+    void notify_building_demolished(BuildingDef const&, Building&);
 
-    ChunkedArray<PowerNetwork> networks;
+    bool does_tile_have_power_network(s32 x, s32 y) const;
+    u8 get_distance_to_power(s32 x, s32 y) const;
 
-    ArrayChunkPool<PowerGroup> powerGroupsChunkPool;
-    ArrayChunkPool<PowerGroup*> powerGroupPointersChunkPool;
+    u8 calculate_power_overlay_for_tile(s32 x, s32 y) const;
 
-    ChunkedArray<BuildingRef> powerBuildings;
+    void debug_inspect(UI::Panel& panel, V2I tile_position);
 
-    s32 cachedCombinedProduction;
-    s32 cachedCombinedConsumption;
+    // FIXME: Temporary
+    ChunkedArray<BuildingRef>* power_buildings() { return &m_power_buildings; }
+
+    // FIXME: We should probably save and load this?
+    // void save(BinaryFileWriter&) const;
+    // bool load(BinaryFileReader&);
+
+private:
+    PowerNetwork& new_power_network();
+    void free_power_network(PowerNetwork&);
+    PowerNetwork const* get_power_network_at(s32 x, s32 y) const;
+
+    void recalculate_sector_power_groups(City&, PowerSector&);
+    void flood_fill_city_power_network(PowerGroup&, PowerNetwork&);
+    void recalculate_power_connectivity();
+
+    Rect2I m_bounds;
+
+    DirtyRects m_dirty_rects;
+
+    SectorGrid<PowerSector> m_sectors;
+
+    u8 m_power_max_distance;
+    Array2<u8> m_tile_power_distance;
+
+    ChunkedArray<PowerNetwork> m_networks;
+
+    ArrayChunkPool<PowerGroup> m_power_groups_chunk_pool;
+    ArrayChunkPool<PowerGroup*> m_power_group_pointers_chunk_pool;
+
+    ChunkedArray<BuildingRef> m_power_buildings;
+
+    s32 m_cached_combined_production;
+    s32 m_cached_combined_consumption;
 };
 
 u8 const POWER_GROUP_UNKNOWN = 255;
-
-// Public API
-void initPowerLayer(PowerLayer* layer, City* city, MemoryArena* gameArena);
-void updatePowerLayer(City* city, PowerLayer* layer);
-void markPowerLayerDirty(PowerLayer* layer, Rect2I area);
-bool doesTileHavePowerNetwork(City* city, s32 x, s32 y);
-PowerNetwork* getPowerNetworkAt(City* city, s32 x, s32 y);
-u8 getDistanceToPower(City* city, s32 x, s32 y);
-
-u8 calculatePowerOverlayForTile(City* city, s32 x, s32 y);
-
-void notifyNewBuilding(PowerLayer* layer, BuildingDef* def, Building* building);
-void notifyBuildingDemolished(PowerLayer* layer, BuildingDef* def, Building* building);
-
-void debugInspectPower(UI::Panel* panel, City* city, s32 x, s32 y);
-
-// Private-but-actually-still-accessible API
-PowerNetwork* newPowerNetwork(PowerLayer* layer);
-void freePowerNetwork(PowerNetwork* network);
-
-u8 getPowerGroupID(PowerSector* sector, s32 relX, s32 relY);
-void setPowerGroupID(PowerSector* sector, s32 relX, s32 relY, u8 value);
-PowerGroup* getPowerGroupAt(PowerSector* sector, s32 relX, s32 relY);
-
-void updateSectorPowerValues(City* city, PowerSector* sector);
-
-void floodFillSectorPowerGroup(PowerSector* sector, s32 x, s32 y, u8 fillValue);
-void setRectPowerGroupUnknown(PowerSector* sector, Rect2I area);
-void recalculateSectorPowerGroups(City* city, PowerSector* sector);
-void floodFillCityPowerNetwork(PowerLayer* powerLayer, PowerGroup* powerGroup, PowerNetwork* network);
-void recalculatePowerConnectivity(PowerLayer* powerLayer);

@@ -24,7 +24,7 @@ struct GameState;
 class HealthLayer;
 class LandValueLayer;
 class PollutionLayer;
-struct PowerLayer;
+class PowerLayer;
 struct TerrainCatalogue;
 struct TerrainDef;
 class TerrainLayer;

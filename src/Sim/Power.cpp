@@ -12,74 +12,73 @@
 #include <UI/Panel.h>
 #include <Util/Set.h>
 
-void initPowerLayer(PowerLayer* layer, City* city, MemoryArena* gameArena)
+PowerLayer::PowerLayer(City& city, MemoryArena& arena)
 {
-    initChunkedArray(&layer->networks, gameArena, 64);
-    initChunkPool(&layer->powerGroupsChunkPool, gameArena, 4);
-    initChunkPool(&layer->powerGroupPointersChunkPool, gameArena, 32);
+    m_bounds = city.bounds;
+    initChunkedArray(&m_networks, &arena, 64);
+    initChunkPool(&m_power_groups_chunk_pool, &arena, 4);
+    initChunkPool(&m_power_group_pointers_chunk_pool, &arena, 32);
 
-    layer->tilePowerDistance = gameArena->allocate_array_2d<u8>(city->bounds.size());
-    layer->tilePowerDistance.fill(255);
-    layer->powerMaxDistance = 2;
-    initDirtyRects(&layer->dirtyRects, gameArena, layer->powerMaxDistance, city->bounds);
+    m_tile_power_distance = arena.allocate_array_2d<u8>(m_bounds.size());
+    m_tile_power_distance.fill(255);
+    m_power_max_distance = 2;
+    initDirtyRects(&m_dirty_rects, &arena, m_power_max_distance, m_bounds);
 
-    layer->sectors = SectorGrid<PowerSector> { gameArena, city->bounds.size(), 16, 0 };
-    for (s32 sectorIndex = 0; sectorIndex < layer->sectors.sector_count(); sectorIndex++) {
-        PowerSector* sector = layer->sectors.get_by_index(sectorIndex);
+    m_sectors = SectorGrid<PowerSector> { &arena, m_bounds.size(), 16, 0 };
+    for (s32 sectorIndex = 0; sectorIndex < m_sectors.sector_count(); sectorIndex++) {
+        PowerSector* sector = m_sectors.get_by_index(sectorIndex);
 
-        sector->tilePowerGroup = gameArena->allocate_array_2d<u8>(sector->bounds.size());
+        sector->tilePowerGroup = arena.allocate_array_2d<u8>(sector->bounds.size());
 
-        initChunkedArray(&sector->powerGroups, &layer->powerGroupsChunkPool);
+        initChunkedArray(&sector->powerGroups, &m_power_groups_chunk_pool);
     }
 
-    initChunkedArray(&layer->powerBuildings, &city->buildingRefsChunkPool);
+    initChunkedArray(&m_power_buildings, &city.buildingRefsChunkPool);
 }
 
-PowerNetwork* newPowerNetwork(PowerLayer* layer)
+PowerNetwork& PowerLayer::new_power_network()
 {
-    PowerNetwork* network = layer->networks.appendBlank();
-    network->id = (s32)layer->networks.count;
-    initChunkedArray(&network->groups, &layer->powerGroupPointersChunkPool);
+    PowerNetwork* network = m_networks.appendBlank();
+    network->id = m_networks.count;
+    initChunkedArray(&network->groups, &m_power_group_pointers_chunk_pool);
 
-    return network;
+    return *network;
 }
 
-void freePowerNetwork(PowerNetwork* network)
+void PowerLayer::free_power_network(PowerNetwork& network)
 {
-    network->id = 0;
-    network->groups.clear();
+    network.id = 0;
+    network.groups.clear();
 }
 
-u8 getPowerGroupID(PowerSector* sector, s32 relX, s32 relY)
+u8 PowerSector::get_power_group_id(s32 relX, s32 relY) const
 {
-    return sector->tilePowerGroup.get(relX, relY);
+    return tilePowerGroup.get(relX, relY);
 }
 
-void setPowerGroupID(PowerSector* sector, s32 relX, s32 relY, u8 value)
+void PowerSector::set_power_group_id(s32 relX, s32 relY, u8 value)
 {
-    sector->tilePowerGroup.set(relX, relY, value);
+    tilePowerGroup.set(relX, relY, value);
 }
 
-PowerGroup* getPowerGroupAt(PowerSector* sector, s32 relX, s32 relY)
+PowerGroup* PowerSector::get_power_group_at(s32 relX, s32 relY)
 {
     PowerGroup* result = nullptr;
 
-    if (sector != nullptr) {
-        s32 powerGroupID = getPowerGroupID(sector, relX, relY);
-        if (powerGroupID != 0 && powerGroupID != POWER_GROUP_UNKNOWN) {
-            result = &sector->powerGroups.get(powerGroupID - 1);
-        }
+    s32 powerGroupID = get_power_group_id(relX, relY);
+    if (powerGroupID != 0 && powerGroupID != POWER_GROUP_UNKNOWN) {
+        result = &powerGroups.get(powerGroupID - 1);
     }
 
     return result;
 }
 
-u8 getDistanceToPower(City* city, s32 x, s32 y)
+u8 PowerLayer::get_distance_to_power(s32 x, s32 y) const
 {
-    return city->powerLayer.tilePowerDistance.get(x, y);
+    return m_tile_power_distance.get(x, y);
 }
 
-u8 calculatePowerOverlayForTile(City* city, s32 x, s32 y)
+u8 PowerLayer::calculate_power_overlay_for_tile(s32 x, s32 y) const
 {
     u8 paletteIndexPowered = 0;
     u8 paletteIndexBrownout = 1;
@@ -88,7 +87,7 @@ u8 calculatePowerOverlayForTile(City* city, s32 x, s32 y)
 
     u8 result = paletteIndexNone;
 
-    PowerNetwork* network = getPowerNetworkAt(city, x, y);
+    auto* network = get_power_network_at(x, y);
     if (network == nullptr) {
         result = paletteIndexNone;
     } else if (network->cachedProduction == 0) {
@@ -102,12 +101,12 @@ u8 calculatePowerOverlayForTile(City* city, s32 x, s32 y)
     return result;
 }
 
-void updateSectorPowerValues(City* city, PowerSector* sector)
+void PowerSector::update_power_values(City& city)
 {
     DEBUG_FUNCTION();
 
     // Reset each to 0
-    for (auto it = sector->powerGroups.iterate();
+    for (auto it = powerGroups.iterate();
         it.hasNext();
         it.next()) {
         auto& powerGroup = it.get();
@@ -116,7 +115,7 @@ void updateSectorPowerValues(City* city, PowerSector* sector)
     }
 
     // Count power from buildings
-    ChunkedArray<Building*> sectorBuildings = city->find_buildings_overlapping_area(sector->bounds, BuildingQueryFlag::RequireOriginInArea);
+    ChunkedArray<Building*> sectorBuildings = city.find_buildings_overlapping_area(bounds, BuildingQueryFlag::RequireOriginInArea);
     for (auto it = sectorBuildings.iterate();
         it.hasNext();
         it.next()) {
@@ -124,8 +123,8 @@ void updateSectorPowerValues(City* city, PowerSector* sector)
         BuildingDef* def = getBuildingDef(building);
 
         if (def->power != 0) {
-            u8 powerGroupIndex = getPowerGroupID(sector, building->footprint.x() - sector->bounds.x(), building->footprint.y() - sector->bounds.y());
-            auto& power_group = sector->powerGroups.get(powerGroupIndex - 1);
+            u8 powerGroupIndex = get_power_group_id(building->footprint.x() - bounds.x(), building->footprint.y() - bounds.y());
+            auto& power_group = powerGroups.get(powerGroupIndex - 1);
             if (def->power > 0) {
                 power_group.production += def->power;
             } else {
@@ -135,50 +134,48 @@ void updateSectorPowerValues(City* city, PowerSector* sector)
     }
 }
 
-bool doesTileHavePowerNetwork(City* city, s32 x, s32 y)
+bool PowerLayer::does_tile_have_power_network(s32 x, s32 y) const
 {
     bool result = false;
 
-    if (city->tile_exists(x, y)) {
-        PowerLayer* layer = &city->powerLayer;
-        PowerSector* sector = layer->sectors.get_sector_at_tile_pos(x, y);
+    if (m_bounds.contains(x, y)) {
+        auto* sector = m_sectors.get_sector_at_tile_pos(x, y);
 
         s32 relX = x - sector->bounds.x();
         s32 relY = y - sector->bounds.y();
 
-        u8 powerGroupIndex = getPowerGroupID(sector, relX, relY);
+        u8 powerGroupIndex = sector->get_power_group_id(relX, relY);
         result = (powerGroupIndex != 0);
     }
 
     return result;
 }
 
-PowerNetwork* getPowerNetworkAt(City* city, s32 x, s32 y)
+PowerNetwork const* PowerLayer::get_power_network_at(s32 x, s32 y) const
 {
-    PowerNetwork* result = nullptr;
+    PowerNetwork const* result = nullptr;
 
-    if (city->tile_exists(x, y)) {
-        PowerLayer* layer = &city->powerLayer;
-        PowerSector* sector = layer->sectors.get_sector_at_tile_pos(x, y);
+    if (m_bounds.contains(x, y)) {
+        auto* sector = m_sectors.get_sector_at_tile_pos(x, y);
 
         s32 relX = x - sector->bounds.x();
         s32 relY = y - sector->bounds.y();
 
-        u8 powerGroupIndex = getPowerGroupID(sector, relX, relY);
+        u8 powerGroupIndex = sector->get_power_group_id(relX, relY);
         if (powerGroupIndex != 0) {
             auto& group = sector->powerGroups.get(powerGroupIndex - 1);
-            result = &layer->networks.get(group.networkID - 1);
+            result = &m_networks.get(group.networkID - 1);
         }
     }
 
     return result;
 }
 
-void floodFillSectorPowerGroup(PowerSector* sector, s32 x, s32 y, u8 fillValue)
+void PowerSector::flood_fill_power_group(s32 x, s32 y, u8 fillValue)
 {
     DEBUG_FUNCTION();
 
-    // Theoretically, the only place we non-recursively call this is in recalculateSectorPowerGroups(),
+    // Theoretically, the only place we non-recursively call this is in recalculate_sector_power_groups(),
     // where we go top-left to bottom-right, so we only need to flood fill right and down from the
     // initial point!
     // However, I'm not sure right now if we might want to flood fill starting from some other point,
@@ -198,30 +195,30 @@ void floodFillSectorPowerGroup(PowerSector* sector, s32 x, s32 y, u8 fillValue)
     // - Sam, 10/06/2019
     //
 
-    setPowerGroupID(sector, x, y, fillValue);
+    set_power_group_id(x, y, fillValue);
 
-    if ((x > 0) && (getPowerGroupID(sector, x - 1, y) == POWER_GROUP_UNKNOWN)) {
-        floodFillSectorPowerGroup(sector, x - 1, y, fillValue);
+    if ((x > 0) && (get_power_group_id(x - 1, y) == POWER_GROUP_UNKNOWN)) {
+        flood_fill_power_group(x - 1, y, fillValue);
     }
 
-    if ((x < sector->bounds.width() - 1) && (getPowerGroupID(sector, x + 1, y) == POWER_GROUP_UNKNOWN)) {
-        floodFillSectorPowerGroup(sector, x + 1, y, fillValue);
+    if ((x < bounds.width() - 1) && (get_power_group_id(x + 1, y) == POWER_GROUP_UNKNOWN)) {
+        flood_fill_power_group(x + 1, y, fillValue);
     }
 
-    if ((y > 0) && (getPowerGroupID(sector, x, y - 1) == POWER_GROUP_UNKNOWN)) {
-        floodFillSectorPowerGroup(sector, x, y - 1, fillValue);
+    if ((y > 0) && (get_power_group_id(x, y - 1) == POWER_GROUP_UNKNOWN)) {
+        flood_fill_power_group(x, y - 1, fillValue);
     }
 
-    if ((y < sector->bounds.height() - 1) && (getPowerGroupID(sector, x, y + 1) == POWER_GROUP_UNKNOWN)) {
-        floodFillSectorPowerGroup(sector, x, y + 1, fillValue);
+    if ((y < bounds.height() - 1) && (get_power_group_id(x, y + 1) == POWER_GROUP_UNKNOWN)) {
+        flood_fill_power_group(x, y + 1, fillValue);
     }
 }
 
-void setRectPowerGroupUnknown(PowerSector* sector, Rect2I area)
+void PowerSector::set_rect_power_group_unknown(Rect2I area)
 {
     DEBUG_FUNCTION();
 
-    Rect2I relArea = sector->bounds.intersected_relative(area);
+    Rect2I relArea = bounds.intersected_relative(area);
 
     for (s32 relY = relArea.y();
         relY < relArea.y() + relArea.height();
@@ -229,30 +226,19 @@ void setRectPowerGroupUnknown(PowerSector* sector, Rect2I area)
         for (s32 relX = relArea.x();
             relX < relArea.x() + relArea.width();
             relX++) {
-            setPowerGroupID(sector, relX, relY, POWER_GROUP_UNKNOWN);
+            set_power_group_id(relX, relY, POWER_GROUP_UNKNOWN);
         }
     }
 }
 
-void markPowerLayerDirty(PowerLayer* layer, Rect2I bounds)
+void PowerLayer::mark_dirty(Rect2I bounds)
 {
-    markRectAsDirty(&layer->dirtyRects, bounds);
+    markRectAsDirty(&m_dirty_rects, bounds);
 }
 
-void addBuildingToPowerLayer(PowerLayer* layer, Building* building)
-{
-    PowerSector* sector = layer->sectors.get_sector_at_tile_pos(building->footprint.x(), building->footprint.y());
-    PowerGroup* group = getPowerGroupAt(sector, building->footprint.x() - sector->bounds.x(), building->footprint.y() - sector->bounds.y());
-    if (group != nullptr) {
-        group->buildings.append(building->get_reference());
-    }
-}
-
-void recalculateSectorPowerGroups(City* city, PowerSector* sector)
+void PowerLayer::recalculate_sector_power_groups(City& city, PowerSector& sector)
 {
     DEBUG_FUNCTION();
-
-    PowerLayer* layer = &city->powerLayer;
 
     // TODO: Clear any references to the PowerGroups that the City itself might have!
     // (I don't know how that's going to be structured yet.)
@@ -260,59 +246,59 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
     // we need to tell it that PowerGroup 3 is being destroyed!
 
     // Step 0: Remove the old PowerGroups.
-    for (auto it = sector->powerGroups.iterate(); it.hasNext(); it.next()) {
+    for (auto it = sector.powerGroups.iterate(); it.hasNext(); it.next()) {
         auto& powerGroup = it.get();
         powerGroup.sectorBoundaries.clear();
     }
-    sector->powerGroups.clear();
-    sector->tilePowerGroup.fill(0);
+    sector.powerGroups.clear();
+    sector.tilePowerGroup.fill(0);
 
     // Step 1: Set all power-carrying tiles to POWER_GROUP_UNKNOWN (everything was set to 0 in the above memset())
     for (s32 relY = 0;
-        relY < sector->bounds.height();
+        relY < sector.bounds.height();
         relY++) {
         for (s32 relX = 0;
-            relX < sector->bounds.width();
+            relX < sector.bounds.width();
             relX++) {
-            u8 distanceToPower = layer->tilePowerDistance.get(relX + sector->bounds.x(), relY + sector->bounds.y());
+            u8 distanceToPower = m_tile_power_distance.get(relX + sector.bounds.x(), relY + sector.bounds.y());
 
             if (distanceToPower <= 1) {
-                setPowerGroupID(sector, relX, relY, POWER_GROUP_UNKNOWN);
+                sector.set_power_group_id(relX, relY, POWER_GROUP_UNKNOWN);
             } else {
-                setPowerGroupID(sector, relX, relY, 0);
+                sector.set_power_group_id(relX, relY, 0);
             }
         }
     }
 
     // Step 2: Flood fill each -1 tile as a local PowerGroup
     for (s32 relY = 0;
-        relY < sector->bounds.height();
+        relY < sector.bounds.height();
         relY++) {
         for (s32 relX = 0;
-            relX < sector->bounds.width();
+            relX < sector.bounds.width();
             relX++) {
             // Skip tiles that have already been added to a PowerGroup
-            if (getPowerGroupID(sector, relX, relY) != POWER_GROUP_UNKNOWN)
+            if (sector.get_power_group_id(relX, relY) != POWER_GROUP_UNKNOWN)
                 continue;
 
-            PowerGroup* newGroup = sector->powerGroups.appendBlank();
+            PowerGroup* newGroup = sector.powerGroups.appendBlank();
 
-            initChunkedArray(&newGroup->sectorBoundaries, &city->sectorBoundariesChunkPool);
-            initChunkedArray(&newGroup->buildings, &city->buildingRefsChunkPool);
+            initChunkedArray(&newGroup->sectorBoundaries, &city.sectorBoundariesChunkPool);
+            initChunkedArray(&newGroup->buildings, &city.buildingRefsChunkPool);
 
-            u8 powerGroupID = (u8)sector->powerGroups.count;
+            u8 powerGroupID = (u8)sector.powerGroups.count;
             newGroup->production = 0;
             newGroup->consumption = 0;
-            floodFillSectorPowerGroup(sector, relX, relY, powerGroupID);
+            sector.flood_fill_power_group(relX, relY, powerGroupID);
         }
     }
 
     // At this point, if there are no power groups we can just stop.
-    if (sector->powerGroups.is_empty())
+    if (sector.powerGroups.is_empty())
         return;
 
     // Store references to the buildings in each group, for faster updating later
-    ChunkedArray<Building*> sectorBuildings = city->find_buildings_overlapping_area(sector->bounds);
+    ChunkedArray<Building*> sectorBuildings = city.find_buildings_overlapping_area(sector.bounds);
     for (auto it = sectorBuildings.iterate();
         it.hasNext();
         it.next()) {
@@ -320,8 +306,8 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
         if (getBuildingDef(building)->power == 0)
             continue; // We only care about powered buildings!
 
-        if (sector->bounds.contains(building->footprint.position())) {
-            PowerGroup* group = getPowerGroupAt(sector, building->footprint.x() - sector->bounds.x(), building->footprint.y() - sector->bounds.y());
+        if (sector.bounds.contains(building->footprint.position())) {
+            PowerGroup* group = sector.get_power_group_at(building->footprint.x() - sector.bounds.x(), building->footprint.y() - sector.bounds.y());
 
             ASSERT(group != nullptr);
             group->buildings.append(building->get_reference());
@@ -329,21 +315,21 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
     }
 
     // Step 3: Calculate power production/consumption for OWNED buildings, and add to their PowerGroups
-    updateSectorPowerValues(city, sector);
+    sector.update_power_values(city);
 
     // Step 4: Find and store the PowerGroup boundaries along the sector's edges, on the OUTSIDE
     // @Copypasta The code for all this is really repetitive, but I'm not sure how to factor it together nicely.
 
     // - Step 4.1: Left edge
-    if (sector->bounds.x() > 0) {
+    if (sector.bounds.x() > 0) {
         u8 currentPGId = 0;
         Rect2I* currentBoundary = nullptr;
 
         s32 relX = 0;
         for (s32 relY = 0;
-            relY < sector->bounds.height();
+            relY < sector.bounds.height();
             relY++) {
-            u8 tilePGId = getPowerGroupID(sector, relX, relY);
+            u8 tilePGId = sector.get_power_group_id(relX, relY);
 
             if (tilePGId == 0) {
                 currentPGId = 0;
@@ -354,9 +340,9 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
                 currentPGId = tilePGId;
 
                 // Start a new boundary
-                currentBoundary = sector->powerGroups.get(currentPGId - 1).sectorBoundaries.appendBlank();
-                currentBoundary->set_x(sector->bounds.x() - 1);
-                currentBoundary->set_y(sector->bounds.y() + relY);
+                currentBoundary = sector.powerGroups.get(currentPGId - 1).sectorBoundaries.appendBlank();
+                currentBoundary->set_x(sector.bounds.x() - 1);
+                currentBoundary->set_y(sector.bounds.y() + relY);
                 currentBoundary->set_width(1);
                 currentBoundary->set_height(1);
             }
@@ -364,15 +350,15 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
     }
 
     // - Step 4.2: Right edge
-    if (sector->bounds.x() + sector->bounds.width() < city->bounds.width()) {
+    if (sector.bounds.x() + sector.bounds.width() < m_bounds.width()) {
         u8 currentPGId = 0;
         Rect2I* currentBoundary = nullptr;
 
-        s32 relX = sector->bounds.width() - 1;
+        s32 relX = sector.bounds.width() - 1;
         for (s32 relY = 0;
-            relY < sector->bounds.height();
+            relY < sector.bounds.height();
             relY++) {
-            u8 tilePGId = getPowerGroupID(sector, relX, relY);
+            u8 tilePGId = sector.get_power_group_id(relX, relY);
 
             if (tilePGId == 0) {
                 currentPGId = 0;
@@ -383,9 +369,9 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
                 currentPGId = tilePGId;
 
                 // Start a new boundary
-                currentBoundary = sector->powerGroups.get(currentPGId - 1).sectorBoundaries.appendBlank();
-                currentBoundary->set_x(sector->bounds.x() + sector->bounds.width());
-                currentBoundary->set_y(sector->bounds.y() + relY);
+                currentBoundary = sector.powerGroups.get(currentPGId - 1).sectorBoundaries.appendBlank();
+                currentBoundary->set_x(sector.bounds.x() + sector.bounds.width());
+                currentBoundary->set_y(sector.bounds.y() + relY);
                 currentBoundary->set_width(1);
                 currentBoundary->set_height(1);
             }
@@ -393,15 +379,15 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
     }
 
     // - Step 4.3: Top edge
-    if (sector->bounds.y() > 0) {
+    if (sector.bounds.y() > 0) {
         u8 currentPGId = 0;
         Rect2I* currentBoundary = nullptr;
 
         s32 relY = 0;
         for (s32 relX = 0;
-            relX < sector->bounds.width();
+            relX < sector.bounds.width();
             relX++) {
-            u8 tilePGId = getPowerGroupID(sector, relX, relY);
+            u8 tilePGId = sector.get_power_group_id(relX, relY);
 
             if (tilePGId == 0) {
                 currentPGId = 0;
@@ -412,9 +398,9 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
                 currentPGId = tilePGId;
 
                 // Start a new boundary
-                currentBoundary = sector->powerGroups.get(currentPGId - 1).sectorBoundaries.appendBlank();
-                currentBoundary->set_x(sector->bounds.x() + relX);
-                currentBoundary->set_y(sector->bounds.y() - 1);
+                currentBoundary = sector.powerGroups.get(currentPGId - 1).sectorBoundaries.appendBlank();
+                currentBoundary->set_x(sector.bounds.x() + relX);
+                currentBoundary->set_y(sector.bounds.y() - 1);
                 currentBoundary->set_width(1);
                 currentBoundary->set_height(1);
             }
@@ -422,15 +408,15 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
     }
 
     // - Step 4.4: Bottom edge
-    if (sector->bounds.y() + sector->bounds.height() < city->bounds.height()) {
+    if (sector.bounds.y() + sector.bounds.height() < m_bounds.height()) {
         u8 currentPGId = 0;
         Rect2I* currentBoundary = nullptr;
 
-        s32 relY = sector->bounds.height() - 1;
+        s32 relY = sector.bounds.height() - 1;
         for (s32 relX = 0;
-            relX < sector->bounds.width();
+            relX < sector.bounds.width();
             relX++) {
-            u8 tilePGId = getPowerGroupID(sector, relX, relY);
+            u8 tilePGId = sector.get_power_group_id(relX, relY);
 
             if (tilePGId == 0) {
                 currentPGId = 0;
@@ -441,9 +427,9 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
                 currentPGId = tilePGId;
 
                 // Start a new boundary
-                currentBoundary = sector->powerGroups.get(currentPGId - 1).sectorBoundaries.appendBlank();
-                currentBoundary->set_x(sector->bounds.x() + relX);
-                currentBoundary->set_y(sector->bounds.y() + sector->bounds.height());
+                currentBoundary = sector.powerGroups.get(currentPGId - 1).sectorBoundaries.appendBlank();
+                currentBoundary->set_x(sector.bounds.x() + relX);
+                currentBoundary->set_y(sector.bounds.y() + sector.bounds.height());
                 currentBoundary->set_width(1);
                 currentBoundary->set_height(1);
             }
@@ -468,18 +454,18 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
     //
 }
 
-void floodFillCityPowerNetwork(PowerLayer* layer, PowerGroup* powerGroup, PowerNetwork* network)
+void PowerLayer::flood_fill_city_power_network(PowerGroup& powerGroup, PowerNetwork& network)
 {
     DEBUG_FUNCTION();
 
-    powerGroup->networkID = network->id;
-    network->groups.append(powerGroup);
+    powerGroup.networkID = network.id;
+    network.groups.append(&powerGroup);
 
-    for (auto it = powerGroup->sectorBoundaries.iterate();
+    for (auto it = powerGroup.sectorBoundaries.iterate();
         it.hasNext();
         it.next()) {
         Rect2I bounds = it.getValue();
-        PowerSector* sector = layer->sectors.get_sector_at_tile_pos(bounds.x(), bounds.y());
+        PowerSector* sector = m_sectors.get_sector_at_tile_pos(bounds.x(), bounds.y());
         bounds = sector->bounds.intersected_relative(bounds);
 
         s32 lastPowerGroupIndex = -1;
@@ -487,12 +473,12 @@ void floodFillCityPowerNetwork(PowerLayer* layer, PowerGroup* powerGroup, PowerN
         // TODO: @Speed We could probably just do 1 loop because the bounds rect is only 1-wide in one dimension!
         for (s32 relY = bounds.y(); relY < bounds.y() + bounds.height(); relY++) {
             for (s32 relX = bounds.x(); relX < bounds.x() + bounds.width(); relX++) {
-                s32 powerGroupIndex = getPowerGroupID(sector, relX, relY);
+                s32 powerGroupIndex = sector->get_power_group_id(relX, relY);
                 if (powerGroupIndex != 0 && powerGroupIndex != lastPowerGroupIndex) {
                     lastPowerGroupIndex = powerGroupIndex;
                     auto& group = sector->powerGroups.get(powerGroupIndex - 1);
-                    if (group.networkID != network->id) {
-                        floodFillCityPowerNetwork(layer, &group, network);
+                    if (group.networkID != network.id) {
+                        flood_fill_city_power_network(group, network);
                     }
                 }
             }
@@ -500,12 +486,12 @@ void floodFillCityPowerNetwork(PowerLayer* layer, PowerGroup* powerGroup, PowerN
     }
 }
 
-void recalculatePowerConnectivity(PowerLayer* layer)
+void PowerLayer::recalculate_power_connectivity()
 {
     DEBUG_FUNCTION();
 
     // Clean up networks
-    for (auto networkIt = layer->networks.iterate();
+    for (auto networkIt = m_networks.iterate();
         networkIt.hasNext();
         networkIt.next()) {
         auto& powerNetwork = networkIt.get();
@@ -517,9 +503,9 @@ void recalculatePowerConnectivity(PowerLayer* layer)
             group->networkID = 0;
         }
 
-        freePowerNetwork(&powerNetwork);
+        free_power_network(powerNetwork);
     }
-    layer->networks.clear();
+    m_networks.clear();
 
     // NB: All power groups are on networkID=0 right now, because they all got reconstructed in the above loop.
     // At some point we'll have to manually set that to 0, if we want to recalculate the global networks without
@@ -527,31 +513,31 @@ void recalculatePowerConnectivity(PowerLayer* layer)
 
     // Flood-fill networks of PowerGroups by walking the boundaries
     for (s32 sectorIndex = 0;
-        sectorIndex < layer->sectors.sector_count();
+        sectorIndex < m_sectors.sector_count();
         sectorIndex++) {
-        PowerSector* sector = layer->sectors.get_by_index(sectorIndex);
+        PowerSector* sector = m_sectors.get_by_index(sectorIndex);
 
         for (auto it = sector->powerGroups.iterate();
             it.hasNext();
             it.next()) {
             auto& powerGroup = it.get();
             if (powerGroup.networkID == 0) {
-                PowerNetwork* network = newPowerNetwork(layer);
-                floodFillCityPowerNetwork(layer, &powerGroup, network);
+                auto& network = new_power_network();
+                flood_fill_city_power_network(powerGroup, network);
             }
         }
     }
 }
 
-void updatePowerLayer(City* city, PowerLayer* layer)
+void PowerLayer::update(City& city)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
-    if (isDirty(&layer->dirtyRects)) {
+    if (isDirty(&m_dirty_rects)) {
         Set<PowerSector*> touchedSectors;
         initSet<PowerSector*>(&touchedSectors, &temp_arena(), [](PowerSector** a, PowerSector** b) { return *a == *b; });
 
-        for (auto it = layer->dirtyRects.rects.iterate();
+        for (auto it = m_dirty_rects.rects.iterate();
             it.hasNext();
             it.next()) {
             Rect2I dirtyRect = it.getValue();
@@ -559,58 +545,58 @@ void updatePowerLayer(City* city, PowerLayer* layer)
             // Clear the "distance to power" for the surrounding area to 0 or 255
             for (s32 y = dirtyRect.y(); y < dirtyRect.y() + dirtyRect.height(); y++) {
                 for (s32 x = dirtyRect.x(); x < dirtyRect.x() + dirtyRect.width(); x++) {
-                    Building* building = city->get_building_at(x, y);
+                    Building* building = city.get_building_at(x, y);
                     BuildingDef* def = nullptr;
                     if (building != nullptr) {
                         def = getBuildingDef(building);
                     }
 
                     if (def != nullptr && def->flags.has(BuildingFlags::CarriesPower)) {
-                        layer->tilePowerDistance.set(x, y, 0);
-                    } else if (ZONE_DEFS[city->zoneLayer.get_zone_at(x, y)].carriesPower) {
-                        layer->tilePowerDistance.set(x, y, 0);
+                        m_tile_power_distance.set(x, y, 0);
+                    } else if (ZONE_DEFS[city.zoneLayer.get_zone_at(x, y)].carriesPower) {
+                        m_tile_power_distance.set(x, y, 0);
                     } else {
-                        layer->tilePowerDistance.set(x, y, 255);
+                        m_tile_power_distance.set(x, y, 255);
                     }
                 }
             }
 
             // Add the sectors to the list of touched sectors
-            Rect2I sectorsRect = layer->sectors.get_sectors_covered(dirtyRect);
+            Rect2I sectorsRect = m_sectors.get_sectors_covered(dirtyRect);
             for (s32 sY = sectorsRect.y(); sY < sectorsRect.y() + sectorsRect.height(); sY++) {
                 for (s32 sX = sectorsRect.x(); sX < sectorsRect.x() + sectorsRect.width(); sX++) {
-                    touchedSectors.add(layer->sectors.get(sX, sY));
+                    touchedSectors.add(m_sectors.get(sX, sY));
                 }
             }
         }
 
         // Recalculate distance
-        updateDistances(&layer->tilePowerDistance, &layer->dirtyRects, layer->powerMaxDistance);
+        updateDistances(&m_tile_power_distance, &m_dirty_rects, m_power_max_distance);
 
         // Rebuild the sectors that were modified
         for (auto it = touchedSectors.iterate(); it.hasNext(); it.next()) {
             PowerSector* sector = it.getValue();
 
-            recalculateSectorPowerGroups(city, sector);
+            recalculate_sector_power_groups(city, *sector);
         }
 
-        recalculatePowerConnectivity(layer);
-        clearDirtyRects(&layer->dirtyRects);
+        recalculate_power_connectivity();
+        clearDirtyRects(&m_dirty_rects);
     }
 
-    layer->cachedCombinedProduction = 0;
-    layer->cachedCombinedConsumption = 0;
+    m_cached_combined_production = 0;
+    m_cached_combined_consumption = 0;
 
     // Update each PowerGroup's power
     for (s32 sectorIndex = 0;
-        sectorIndex < layer->sectors.sector_count();
+        sectorIndex < m_sectors.sector_count();
         sectorIndex++) {
-        PowerSector* sector = layer->sectors.get_by_index(sectorIndex);
-        updateSectorPowerValues(city, sector);
+        PowerSector* sector = m_sectors.get_by_index(sectorIndex);
+        sector->update_power_values(city);
     }
 
     // Sum each PowerGroup's power into its Network
-    for (auto networkIt = layer->networks.iterate();
+    for (auto networkIt = m_networks.iterate();
         networkIt.hasNext();
         networkIt.next()) {
         auto& network = networkIt.get();
@@ -626,12 +612,12 @@ void updatePowerLayer(City* city, PowerLayer* layer)
         }
 
         // City-wide power totals
-        layer->cachedCombinedProduction += network.cachedProduction;
-        layer->cachedCombinedConsumption += network.cachedConsumption;
+        m_cached_combined_production += network.cachedProduction;
+        m_cached_combined_consumption += network.cachedConsumption;
     }
 
     // Supply power to buildings
-    for (auto networkIt = layer->networks.iterate();
+    for (auto networkIt = m_networks.iterate();
         networkIt.hasNext();
         networkIt.next()) {
         auto& network = networkIt.get();
@@ -665,7 +651,7 @@ void updatePowerLayer(City* city, PowerLayer* layer)
                 buildingRefIt.hasNext();
                 buildingRefIt.next()) {
                 BuildingRef buildingRef = buildingRefIt.getValue();
-                Building* building = city->get_building(buildingRef);
+                Building* building = city.get_building(buildingRef);
 
                 if (building != nullptr) {
                     switch (networkMode) {
@@ -696,30 +682,30 @@ void updatePowerLayer(City* city, PowerLayer* layer)
     }
 }
 
-void notifyNewBuilding(PowerLayer* layer, BuildingDef* def, Building* building)
+void PowerLayer::notify_new_building(BuildingDef const& def, Building& building)
 {
-    if (def->power > 0) {
-        layer->powerBuildings.append(building->get_reference());
+    if (def.power > 0) {
+        m_power_buildings.append(building.get_reference());
     }
 }
 
-void notifyBuildingDemolished(PowerLayer* layer, BuildingDef* def, Building* building)
+void PowerLayer::notify_building_demolished(BuildingDef const& def, Building& building)
 {
-    if (def->power > 0) {
-        bool success = layer->powerBuildings.findAndRemove(building->get_reference());
+    if (def.power > 0) {
+        bool success = m_power_buildings.findAndRemove(building.get_reference());
         ASSERT(success);
     }
 }
 
-void debugInspectPower(UI::Panel* panel, City* city, s32 x, s32 y)
+void PowerLayer::debug_inspect(UI::Panel& panel, V2I tile_position)
 {
-    panel->addLabel("*** POWER INFO ***"_s);
+    panel.addLabel("*** POWER INFO ***"_s);
 
     // Power group
-    PowerNetwork* powerNetwork = getPowerNetworkAt(city, x, y);
+    auto* powerNetwork = get_power_network_at(tile_position.x, tile_position.y);
     if (powerNetwork != nullptr) {
-        panel->addLabel(myprintf("Power Network {0}:\n- Production: {1}\n- Consumption: {2}\n- Contained groups: {3}"_s, { formatInt(powerNetwork->id), formatInt(powerNetwork->cachedProduction), formatInt(powerNetwork->cachedConsumption), formatInt(powerNetwork->groups.count) }));
+        panel.addLabel(myprintf("Power Network {0}:\n- Production: {1}\n- Consumption: {2}\n- Contained groups: {3}"_s, { formatInt(powerNetwork->id), formatInt(powerNetwork->cachedProduction), formatInt(powerNetwork->cachedConsumption), formatInt(powerNetwork->groups.count) }));
     }
 
-    panel->addLabel(myprintf("Distance to power: {0}"_s, { formatInt(getDistanceToPower(city, x, y)) }));
+    panel.addLabel(myprintf("Distance to power: {0}"_s, { formatInt(get_distance_to_power(tile_position.x, tile_position.y)) }));
 }
