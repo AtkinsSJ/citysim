@@ -76,7 +76,7 @@ bool writeSaveFile(FileHandle* file, GameState* gameState)
         city->crimeLayer.save(writer);
         city->educationLayer.save(writer);
         city->fireLayer.save(writer);
-        saveHealthLayer(&city->healthLayer, &writer);
+        city->healthLayer.save(writer);
         saveLandValueLayer(&city->landValueLayer, &writer);
         savePollutionLayer(&city->pollutionLayer, &writer);
         city->transportLayer.save(writer);

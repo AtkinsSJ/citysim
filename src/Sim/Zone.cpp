@@ -265,7 +265,7 @@ void ZoneLayer::update(City& city)
                         float desirability = getLandValuePercentAt(&city, x, y);
 
                         // Health coverage = good
-                        desirability += getHealthCoveragePercentAt(&city, x, y) * 0.3f;
+                        desirability += city.healthLayer.get_health_coverage_percent_at(x, y) * 0.3f;
 
                         // Fire protection = good
                         desirability += city.fireLayer.get_fire_protection_percent_at(x, y) * 0.2f;

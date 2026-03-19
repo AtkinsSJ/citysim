@@ -21,7 +21,7 @@ struct Fire;
 class FireLayer;
 struct GameClock;
 struct GameState;
-struct HealthLayer;
+class HealthLayer;
 struct LandValueLayer;
 struct PollutionLayer;
 struct PowerLayer;

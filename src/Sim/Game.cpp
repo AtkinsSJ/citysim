@@ -645,7 +645,7 @@ ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const
                 break;
             if (!city->fireLayer.load(reader, *city))
                 break;
-            if (!loadHealthLayer(&city->healthLayer, city, &reader))
+            if (!city->healthLayer.load(reader))
                 break;
             if (!loadLandValueLayer(&city->landValueLayer, city, &reader))
                 break;
@@ -704,7 +704,7 @@ void GameScene::update_and_render(float delta_time)
 
         city.crimeLayer.update(city);
         city.fireLayer.update(city);
-        updateHealthLayer(&city, &city.healthLayer);
+        city.healthLayer.update(city);
         updateLandValueLayer(&city, &city.landValueLayer);
         updatePollutionLayer(&city, &city.pollutionLayer);
         updatePowerLayer(&city, &city.powerLayer);
@@ -987,8 +987,8 @@ void GameScene::init_data_view_ui()
     dataViewUI[DataView::Health].title = "data_view_health"_s;
     setGradient(&dataViewUI[DataView::Health], "service_coverage"_s);
     setFixedColors(&dataViewUI[DataView::Health], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, m_arena);
-    setHighlightedBuildings(&dataViewUI[DataView::Health], &city->healthLayer.healthBuildings, &BuildingDef::healthEffect);
-    setTileOverlay(&dataViewUI[DataView::Health], &city->healthLayer.tileHealthCoverage, "service_coverage"_s);
+    setHighlightedBuildings(&dataViewUI[DataView::Health], city->healthLayer.health_buildings(), &BuildingDef::healthEffect);
+    setTileOverlay(&dataViewUI[DataView::Health], city->healthLayer.tile_health_coverage(), "service_coverage"_s);
 
     dataViewUI[DataView::LandValue].title = "data_view_landvalue"_s;
     setGradient(&dataViewUI[DataView::LandValue], "land_value"_s);

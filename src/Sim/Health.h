@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2019-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -12,26 +12,34 @@
 #include <Sim/Forward.h>
 #include <Sim/Sector.h>
 
-struct HealthLayer {
-    DirtyRects dirtyRects;
+class HealthLayer {
+public:
+    HealthLayer() = default;
+    HealthLayer(City&, MemoryArena&);
 
-    SectorGrid<BasicSector> sectors;
+    void update(City&);
+    void mark_dirty(Rect2I bounds);
 
-    Array2<u8> tileHealthCoverage;
+    void notify_new_building(BuildingDef const&, Building&);
+    void notify_building_demolished(BuildingDef const&, Building&);
 
-    ChunkedArray<BuildingRef> healthBuildings;
+    float get_health_coverage_percent_at(s32 x, s32 y) const;
 
-    float fundingLevel; // @Budget
+    // FIXME: Temporary
+    ChunkedArray<BuildingRef>* health_buildings() { return &m_health_buildings; }
+    Array2<u8>* tile_health_coverage() { return &m_tile_health_coverage; }
+
+    void save(BinaryFileWriter&) const;
+    bool load(BinaryFileReader&);
+
+private:
+    DirtyRects m_dirty_rects;
+
+    SectorGrid<BasicSector> m_sectors;
+
+    Array2<u8> m_tile_health_coverage;
+
+    ChunkedArray<BuildingRef> m_health_buildings;
+
+    float m_funding_level; // @Budget
 };
-
-void initHealthLayer(HealthLayer* layer, City* city, MemoryArena* gameArena);
-void updateHealthLayer(City* city, HealthLayer* layer);
-void markHealthLayerDirty(HealthLayer* layer, Rect2I bounds);
-
-void notifyNewBuilding(HealthLayer* layer, BuildingDef* def, Building* building);
-void notifyBuildingDemolished(HealthLayer* layer, BuildingDef* def, Building* building);
-
-float getHealthCoveragePercentAt(City* city, s32 x, s32 y);
-
-void saveHealthLayer(HealthLayer* layer, BinaryFileWriter* writer);
-bool loadHealthLayer(HealthLayer* layer, City* city, BinaryFileReader* reader);

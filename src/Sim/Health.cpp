@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2019-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -11,52 +11,47 @@
 #include <Sim/City.h>
 #include <Sim/Effect.h>
 
-float getHealthCoveragePercentAt(City* city, s32 x, s32 y)
+HealthLayer::HealthLayer(City& city, MemoryArena& arena)
 {
-    return city->healthLayer.tileHealthCoverage.get(x, y) * 0.01f;
+    m_sectors = SectorGrid<BasicSector> { &arena, city.bounds.size(), 16, 8 };
+
+    initDirtyRects(&m_dirty_rects, &arena, maxLandValueEffectDistance, city.bounds);
+
+    m_tile_health_coverage = arena.allocate_array_2d<u8>(city.bounds.size());
+    m_tile_health_coverage.fill(0);
+
+    initChunkedArray(&m_health_buildings, &city.buildingRefsChunkPool);
+
+    m_funding_level = 1.0f;
 }
 
-void initHealthLayer(HealthLayer* layer, City* city, MemoryArena* gameArena)
-{
-    layer->sectors = SectorGrid<BasicSector> { gameArena, city->bounds.size(), 16, 8 };
-
-    initDirtyRects(&layer->dirtyRects, gameArena, maxLandValueEffectDistance, city->bounds);
-
-    layer->tileHealthCoverage = gameArena->allocate_array_2d<u8>(city->bounds.size());
-    layer->tileHealthCoverage.fill(0);
-
-    initChunkedArray(&layer->healthBuildings, &city->buildingRefsChunkPool);
-
-    layer->fundingLevel = 1.0f;
-}
-
-void updateHealthLayer(City* city, HealthLayer* layer)
+void HealthLayer::update(City& city)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
-    if (isDirty(&layer->dirtyRects)) {
+    if (isDirty(&m_dirty_rects)) {
         DEBUG_BLOCK_T("updateHealthLayer: dirty rects", DebugCodeDataTag::Simulation);
 
         // TODO: do we actually need dirty rects? I can't think of anything, unless we move the "register building" stuff to that.
 
-        clearDirtyRects(&layer->dirtyRects);
+        clearDirtyRects(&m_dirty_rects);
     }
 
     {
         DEBUG_BLOCK_T("updateHealthLayer: sector updates", DebugCodeDataTag::Simulation);
 
-        for (s32 i = 0; i < layer->sectors.sectors_to_update_per_tick(); i++) {
-            auto [_, sector] = layer->sectors.get_next_sector();
+        for (s32 i = 0; i < m_sectors.sectors_to_update_per_tick(); i++) {
+            auto [_, sector] = m_sectors.get_next_sector();
 
             DEBUG_BLOCK_T("updateHealthLayer: building health coverage", DebugCodeDataTag::Simulation);
-            layer->tileHealthCoverage.fill_region( sector.bounds, 0);
-            for (auto it = layer->healthBuildings.iterate(); it.hasNext(); it.next()) {
-                Building* building = city->get_building(it.getValue());
+            m_tile_health_coverage.fill_region(sector.bounds, 0);
+            for (auto it = m_health_buildings.iterate(); it.hasNext(); it.next()) {
+                Building* building = city.get_building(it.getValue());
                 if (building != nullptr) {
                     BuildingDef* def = getBuildingDef(building);
 
                     // Budget
-                    float effectiveness = layer->fundingLevel;
+                    float effectiveness = m_funding_level;
 
                     // Power
                     if (!buildingHasPower(building)) {
@@ -67,46 +62,51 @@ void updateHealthLayer(City* city, HealthLayer* layer)
 
                     // TODO: Overcrowding
 
-                    def->healthEffect.apply(layer->tileHealthCoverage, sector.bounds, building->footprint.centre(), EffectType::Max, effectiveness);
+                    def->healthEffect.apply(m_tile_health_coverage, sector.bounds, building->footprint.centre(), EffectType::Max, effectiveness);
                 }
             }
         }
     }
 }
 
-void markHealthLayerDirty(HealthLayer* layer, Rect2I bounds)
+void HealthLayer::mark_dirty(Rect2I bounds)
 {
-    markRectAsDirty(&layer->dirtyRects, bounds);
+    markRectAsDirty(&m_dirty_rects, bounds);
 }
 
-void notifyNewBuilding(HealthLayer* layer, BuildingDef* def, Building* building)
+void HealthLayer::notify_new_building(BuildingDef const& def, Building& building)
 {
-    if (def->healthEffect.has_effect()) {
-        layer->healthBuildings.append(building->get_reference());
+    if (def.healthEffect.has_effect()) {
+        m_health_buildings.append(building.get_reference());
     }
 }
 
-void notifyBuildingDemolished(HealthLayer* layer, BuildingDef* def, Building* building)
+void HealthLayer::notify_building_demolished(BuildingDef const& def, Building& building)
 {
-    if (def->healthEffect.has_effect()) {
-        bool success = layer->healthBuildings.findAndRemove(building->get_reference());
+    if (def.healthEffect.has_effect()) {
+        bool success = m_health_buildings.findAndRemove(building.get_reference());
         ASSERT(success);
     }
 }
 
-void saveHealthLayer(HealthLayer*, BinaryFileWriter* writer)
+float HealthLayer::get_health_coverage_percent_at(s32 x, s32 y) const
 {
-    writer->startSection<SAVSection_Health>(SAV_HEALTH_ID, SAV_HEALTH_VERSION);
-    SAVSection_Health healthSection = {};
-
-    writer->endSection<SAVSection_Health>(&healthSection);
+    return m_tile_health_coverage.get(x, y) * 0.01f;
 }
 
-bool loadHealthLayer(HealthLayer*, City*, BinaryFileReader* reader)
+void HealthLayer::save(BinaryFileWriter& writer) const
+{
+    writer.startSection<SAVSection_Health>(SAV_HEALTH_ID, SAV_HEALTH_VERSION);
+    SAVSection_Health healthSection = {};
+
+    writer.endSection<SAVSection_Health>(&healthSection);
+}
+
+bool HealthLayer::load(BinaryFileReader& reader)
 {
     bool succeeded = false;
-    while (reader->startSection(SAV_HEALTH_ID, SAV_HEALTH_VERSION)) {
-        SAVSection_Health* section = reader->readStruct<SAVSection_Health>(0);
+    while (reader.startSection(SAV_HEALTH_ID, SAV_HEALTH_VERSION)) {
+        SAVSection_Health* section = reader.readStruct<SAVSection_Health>(0);
         if (!section)
             break;
 
