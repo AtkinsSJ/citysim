@@ -52,7 +52,7 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
     initPowerLayer(&city->powerLayer, city, gameArena);
     initTerrainLayer(&city->terrainLayer, city, gameArena);
     initTransportLayer(&city->transportLayer, city, gameArena);
-    initZoneLayer(&city->zoneLayer, city, gameArena);
+    city->zoneLayer = ZoneLayer { *city, *gameArena };
 
     city->highestBuildingID = 0;
 
@@ -361,7 +361,6 @@ void City::demolish_rect(Rect2I area)
 
         // Only need to add the footprint as a separate rect if it's not inside the area!
         if (!area.contains(buildingFootprint)) {
-            markZonesAsEmpty(this, buildingFootprint);
             mark_area_dirty(buildingFootprint);
         }
     }
@@ -400,7 +399,6 @@ void City::demolish_rect(Rect2I area)
     }
 
     // Mark area as changed
-    markZonesAsEmpty(this, area);
     mark_area_dirty(area);
 
     // Any buildings that would have connected with something that just got demolished need to refresh!
@@ -445,7 +443,7 @@ void City::draw(Rect2I visible_tile_bounds) const
     auto& renderer = the_renderer();
     drawTerrain(this, visible_tile_bounds, renderer.shaderIds.pixelArt);
 
-    drawZones(this, visible_tile_bounds, renderer.shaderIds.untextured);
+    zoneLayer.draw_zones(visible_tile_bounds, renderer.shaderIds.untextured);
 
     draw_entities(visible_tile_bounds);
 

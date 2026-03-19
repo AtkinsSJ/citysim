@@ -30,4 +30,4 @@ struct TerrainDef;
 struct TerrainLayer;
 struct TransportLayer;
 struct ZoneDef;
-struct ZoneLayer;
+class ZoneLayer;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2018-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -59,7 +59,22 @@ struct ZoneSector {
     EnumMap<ZoneType, float> averageDesirability;
 };
 
-struct ZoneLayer {
+class ZoneLayer {
+public:
+    ZoneLayer() = default; // FIXME: Temporary, required by initCity()
+    ZoneLayer(City&, MemoryArena&);
+
+    ZoneType get_zone_at(s32 x, s32 y) const;
+
+    void update(City&);
+    void draw_zones(Rect2I visible_area, s8 shader_id) const;
+
+    u32 total_residents() const;
+    u32 total_jobs() const;
+
+    void save(BinaryFileWriter&) const;
+    bool load(BinaryFileReader&);
+
     Array2<ZoneType> tileZone;
     EnumMap<ZoneType, Array2<u8>> tileDesirability;
 
@@ -74,6 +89,9 @@ struct ZoneLayer {
 
     // Calculated every so often
     EnumMap<ZoneType, s32> demand;
+
+private:
+    void calculate_demand();
 };
 
 struct CanZoneQuery {
@@ -88,21 +106,7 @@ struct CanZoneQuery {
 };
 CanZoneQuery queryCanZoneTiles(City* city, ZoneType zoneType, Rect2I bounds);
 
-void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena);
-void updateZoneLayer(City* city, ZoneLayer* layer);
-void calculateDemand(City* city, ZoneLayer* layer);
-
 void placeZone(City* city, ZoneType zoneType, Rect2I area);
-void markZonesAsEmpty(City* city, Rect2I footprint);
-ZoneType getZoneAt(City const* city, s32 x, s32 y);
-
-void drawZones(City const* city, Rect2I visibleArea, s8 shaderID);
 
 void growSomeZoneBuildings(City* city);
 bool isZoneAcceptable(City* city, ZoneType zoneType, s32 x, s32 y);
-
-s32 getTotalResidents(City* city);
-s32 getTotalJobs(City* city);
-
-void saveZoneLayer(ZoneLayer* layer, BinaryFileWriter* writer);
-bool loadZoneLayer(ZoneLayer* layer, City* city, BinaryFileReader* reader);

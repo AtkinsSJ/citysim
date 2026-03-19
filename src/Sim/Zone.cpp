@@ -16,37 +16,37 @@
 #include <Sim/TerrainCatalogue.h>
 #include <Util/Random.h>
 
-void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena)
+ZoneLayer::ZoneLayer(City& city, MemoryArena& arena)
 {
-    zoneLayer->tileZone = gameArena->allocate_array_2d<ZoneType>(city->bounds.size());
+    tileZone = arena.allocate_array_2d<ZoneType>(city.bounds.size());
 
-    zoneLayer->sectors = SectorGrid<ZoneSector> { gameArena, city->bounds.size(), 16, 8 };
-    s32 sectorCount = zoneLayer->sectors.sector_count();
+    sectors = SectorGrid<ZoneSector> { &arena, city.bounds.size(), 16, 8 };
+    s32 sectorCount = sectors.sector_count();
 
     // NB: Element 0 is empty because tracking spots with no zone is not useful
     for (auto zone_type : enum_values<ZoneType>()) {
-        initBitArray(&zoneLayer->sectorsWithZones[zone_type], gameArena, sectorCount);
-        initBitArray(&zoneLayer->sectorsWithEmptyZones[zone_type], gameArena, sectorCount);
+        initBitArray(&sectorsWithZones[zone_type], &arena, sectorCount);
+        initBitArray(&sectorsWithEmptyZones[zone_type], &arena, sectorCount);
 
-        zoneLayer->tileDesirability[zone_type] = gameArena->allocate_array_2d<u8>(city->bounds.size());
+        tileDesirability[zone_type] = arena.allocate_array_2d<u8>(city.bounds.size());
 
-        zoneLayer->mostDesirableSectors[zone_type] = gameArena->allocate_array<s32>(sectorCount, true);
+        mostDesirableSectors[zone_type] = arena.allocate_array<s32>(sectorCount, true);
         for (s32 sectorIndex = 0; sectorIndex < sectorCount; sectorIndex++) {
             // To start with, we just fill the array 0-to-N because we don't know what's the most desirable.
-            zoneLayer->mostDesirableSectors[zone_type][sectorIndex] = sectorIndex;
+            mostDesirableSectors[zone_type][sectorIndex] = sectorIndex;
         }
     }
 
     for (s32 sectorIndex = 0; sectorIndex < sectorCount; sectorIndex++) {
-        ZoneSector* sector = zoneLayer->sectors.get_by_index(sectorIndex);
+        ZoneSector* sector = sectors.get_by_index(sectorIndex);
 
         sector->zoneSectorFlags = {};
     }
 }
 
-ZoneType getZoneAt(City const* city, s32 x, s32 y)
+ZoneType ZoneLayer::get_zone_at(s32 x, s32 y) const
 {
-    return (ZoneType)city->zoneLayer.tileZone.get_if_exists(x, y, ZoneType::None);
+    return tileZone.get_if_exists(x, y, ZoneType::None);
 }
 
 CanZoneQuery queryCanZoneTiles(City* city, ZoneType zoneType, Rect2I input_bounds)
@@ -76,7 +76,7 @@ CanZoneQuery queryCanZoneTiles(City* city, ZoneType zoneType, Rect2I input_bound
         for (s32 x = bounds.x(); x < bounds.x() + bounds.width(); x++) {
 
             // Ignore tiles that are already this zone!
-            if (getZoneAt(city, x, y) == zoneType)
+            if (city->zoneLayer.get_zone_at(x, y) == zoneType)
                 continue;
 
             // Terrain must be buildable
@@ -112,7 +112,7 @@ s32 CanZoneQuery::calculate_zone_cost() const
     return zoneableTilesCount * zoneDef->costPerTile;
 }
 
-void drawZones(City const* city, Rect2I visibleTileBounds, s8 shaderID)
+void ZoneLayer::draw_zones(Rect2I visible_area, s8 shader_id) const
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
 
@@ -125,16 +125,16 @@ void drawZones(City const* city, Rect2I visibleTileBounds, s8 shaderID)
 
     // TODO: @Speed: areaOf() is a poor heuristic! It's safely >= the actual value, but it would be better to
     // actually see how many there are. Though that'd be a double-iteration, unless we keep a cached count.
-    DrawRectsGroup* group = beginRectsGroupUntextured(&renderer.world_buffer(), shaderID, visibleTileBounds.area());
+    DrawRectsGroup* group = beginRectsGroupUntextured(&renderer.world_buffer(), shader_id, visible_area.area());
 
-    for (s32 y = visibleTileBounds.y();
-        y < visibleTileBounds.y() + visibleTileBounds.height();
+    for (s32 y = visible_area.y();
+        y < visible_area.y() + visible_area.height();
         y++) {
         spriteBounds.set_y(y);
-        for (s32 x = visibleTileBounds.x();
-            x < visibleTileBounds.x() + visibleTileBounds.width();
+        for (s32 x = visible_area.x();
+            x < visible_area.x() + visible_area.width();
             x++) {
-            ZoneType tile_zone = getZoneAt(city, x, y);
+            ZoneType tile_zone = get_zone_at(x, y);
             if (tile_zone != ZoneType::None) {
                 if (tile_zone != current_zone_type) {
                     current_zone_type = tile_zone;
@@ -180,38 +180,31 @@ void placeZone(City* city, ZoneType zoneType, Rect2I area)
     city->mark_area_dirty(area);
 }
 
-void markZonesAsEmpty(City* /*city*/, Rect2I /*footprint*/)
-{
-    DEBUG_FUNCTION();
-
-    // This now doesn't do anything but I'm keeping it because we probably want dirty rects/local updates later.
-}
-
-void updateZoneLayer(City* city, ZoneLayer* layer)
+void ZoneLayer::update(City& city)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
-    for (s32 i = 0; i < layer->sectors.sectors_to_update_per_tick(); i++) {
-        auto [sector_index, sector] = layer->sectors.get_next_sector();
+    for (s32 i = 0; i < sectors.sectors_to_update_per_tick(); i++) {
+        auto [sector_index, sector] = sectors.get_next_sector();
 
         // What zones does it contain?
         {
             DEBUG_BLOCK_T("updateZoneLayer: zone contents", DebugCodeDataTag::Simulation);
 
             for (auto zone_type : enum_values<ZoneType>()) {
-                layer->sectorsWithZones[zone_type].unset_bit(sector_index);
-                layer->sectorsWithEmptyZones[zone_type].unset_bit(sector_index);
+                sectorsWithZones[zone_type].unset_bit(sector_index);
+                sectorsWithEmptyZones[zone_type].unset_bit(sector_index);
             }
 
             sector.zoneSectorFlags = {};
 
             for (s32 y = sector.bounds.y(); y < sector.bounds.y() + sector.bounds.height(); y++) {
                 for (s32 x = sector.bounds.x(); x < sector.bounds.x() + sector.bounds.width(); x++) {
-                    ZoneType zone = getZoneAt(city, x, y);
+                    ZoneType zone = get_zone_at(x, y);
                     if (zone == ZoneType::None)
                         continue;
 
-                    bool isFilled = city->building_exists_at(x, y);
+                    bool isFilled = city.building_exists_at(x, y);
                     switch (zone) {
                     case ZoneType::Residential: {
                         sector.zoneSectorFlags.add(ZoneSectorFlags::HasResZones);
@@ -237,22 +230,22 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
             }
 
             if (sector.zoneSectorFlags.has(ZoneSectorFlags::HasResZones)) {
-                layer->sectorsWithZones[ZoneType::Residential].set_bit(sector_index);
+                sectorsWithZones[ZoneType::Residential].set_bit(sector_index);
             }
             if (sector.zoneSectorFlags.has(ZoneSectorFlags::HasEmptyResZones)) {
-                layer->sectorsWithEmptyZones[ZoneType::Residential].set_bit(sector_index);
+                sectorsWithEmptyZones[ZoneType::Residential].set_bit(sector_index);
             }
             if (sector.zoneSectorFlags.has(ZoneSectorFlags::HasComZones)) {
-                layer->sectorsWithZones[ZoneType::Commercial].set_bit(sector_index);
+                sectorsWithZones[ZoneType::Commercial].set_bit(sector_index);
             }
             if (sector.zoneSectorFlags.has(ZoneSectorFlags::HasEmptyComZones)) {
-                layer->sectorsWithEmptyZones[ZoneType::Commercial].set_bit(sector_index);
+                sectorsWithEmptyZones[ZoneType::Commercial].set_bit(sector_index);
             }
             if (sector.zoneSectorFlags.has(ZoneSectorFlags::HasIndZones)) {
-                layer->sectorsWithZones[ZoneType::Industrial].set_bit(sector_index);
+                sectorsWithZones[ZoneType::Industrial].set_bit(sector_index);
             }
             if (sector.zoneSectorFlags.has(ZoneSectorFlags::HasEmptyIndZones)) {
-                layer->sectorsWithEmptyZones[ZoneType::Industrial].set_bit(sector_index);
+                sectorsWithEmptyZones[ZoneType::Industrial].set_bit(sector_index);
             }
         }
 
@@ -269,21 +262,21 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
                     // Residential
                     {
                         // Land value = good
-                        float desirability = getLandValuePercentAt(city, x, y);
+                        float desirability = getLandValuePercentAt(&city, x, y);
 
                         // Health coverage = good
-                        desirability += getHealthCoveragePercentAt(city, x, y) * 0.3f;
+                        desirability += getHealthCoveragePercentAt(&city, x, y) * 0.3f;
 
                         // Fire protection = good
-                        desirability += getFireProtectionPercentAt(city, x, y) * 0.2f;
+                        desirability += getFireProtectionPercentAt(&city, x, y) * 0.2f;
 
                         // Police coverage = good
-                        desirability += getPoliceCoveragePercentAt(city, x, y) * 0.3f;
+                        desirability += getPoliceCoveragePercentAt(&city, x, y) * 0.3f;
 
                         // pollution = bad
-                        desirability -= getPollutionPercentAt(city, x, y) * 0.4f;
+                        desirability -= getPollutionPercentAt(&city, x, y) * 0.4f;
 
-                        layer->tileDesirability[ZoneType::Residential].set(x, y, clamp01AndMap_u8(desirability));
+                        tileDesirability[ZoneType::Residential].set(x, y, clamp01AndMap_u8(desirability));
 
                         totalResDesirability += desirability;
                     }
@@ -291,18 +284,18 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
                     // Commercial
                     {
                         // Land value = very good
-                        float desirability = getLandValuePercentAt(city, x, y) * 2.0f;
+                        float desirability = getLandValuePercentAt(&city, x, y) * 2.0f;
 
                         // Fire protection = good
-                        desirability += getFireProtectionPercentAt(city, x, y) * 0.2f;
+                        desirability += getFireProtectionPercentAt(&city, x, y) * 0.2f;
 
                         // Police coverage = good
-                        desirability += getPoliceCoveragePercentAt(city, x, y) * 0.3f;
+                        desirability += getPoliceCoveragePercentAt(&city, x, y) * 0.3f;
 
                         // pollution = bad
-                        desirability -= getPollutionPercentAt(city, x, y) * 0.2f;
+                        desirability -= getPollutionPercentAt(&city, x, y) * 0.2f;
 
-                        layer->tileDesirability[ZoneType::Commercial].set(x, y, clamp01AndMap_u8(desirability));
+                        tileDesirability[ZoneType::Commercial].set(x, y, clamp01AndMap_u8(desirability));
 
                         totalComDesirability += desirability;
                     }
@@ -310,18 +303,18 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
                     // Industrial
                     {
                         // Lower land value is better
-                        float desirability = 1.0f - getLandValuePercentAt(city, x, y);
+                        float desirability = 1.0f - getLandValuePercentAt(&city, x, y);
 
                         // Fire protection = good
-                        desirability += getFireProtectionPercentAt(city, x, y) * 0.2f;
+                        desirability += getFireProtectionPercentAt(&city, x, y) * 0.2f;
 
                         // Police coverage = good
-                        desirability += getPoliceCoveragePercentAt(city, x, y) * 0.2f;
+                        desirability += getPoliceCoveragePercentAt(&city, x, y) * 0.2f;
 
                         // pollution = slightly bad
-                        desirability -= getPollutionPercentAt(city, x, y) * 0.15f;
+                        desirability -= getPollutionPercentAt(&city, x, y) * 0.15f;
 
-                        layer->tileDesirability[ZoneType::Industrial].set(x, y, clamp01AndMap_u8(desirability));
+                        tileDesirability[ZoneType::Industrial].set(x, y, clamp01AndMap_u8(desirability));
 
                         totalIndDesirability += desirability;
                     }
@@ -338,27 +331,16 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
 
     // Sort the mostDesirableSectors array
     for (auto zone_type : enum_values<ZoneType>()) {
-        layer->mostDesirableSectors[zone_type].sort([&](s32 sectorIndexA, s32 sectorIndexB) {
-            return layer->sectors[sectorIndexA].averageDesirability[zone_type] > layer->sectors[sectorIndexB].averageDesirability[zone_type];
+        mostDesirableSectors[zone_type].sort([&](s32 sectorIndexA, s32 sectorIndexB) {
+            return sectors[sectorIndexA].averageDesirability[zone_type] > sectors[sectorIndexB].averageDesirability[zone_type];
         });
-
-// TEST
-#if 0
-		logInfo("Most desirable sectors ({0})", {zoneDefs[zoneType].name});
-		for (s32 position = 0; position < layer->sectors.sector_count(); position++)
-		{
-			s32 sectorIndex = layer->mostDesirableSectors[zoneType][position];
-			float averageDesirability = layer->sectors[sectorIndex].averageDesirability[zoneType];
-			logInfo("#{0}: sector {1}, desirability {2}", {formatInt(position), formatInt(sectorIndex), formatFloat(averageDesirability, 3)});
-		}
-#endif
     }
 
-    calculateDemand(city, layer);
-    growSomeZoneBuildings(city);
+    calculate_demand();
+    growSomeZoneBuildings(&city);
 }
 
-void calculateDemand(City* city, ZoneLayer* layer)
+void ZoneLayer::calculate_demand()
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
@@ -367,19 +349,19 @@ void calculateDemand(City* city, ZoneLayer* layer)
     // TODO: We want to consider AVAILABLE jobs/residents, not TOTAL ones.
     // TODO: This is a generally terrible calculation!
 
-    s32 totalResidents = getTotalResidents(city);
-    s32 totalJobs = getTotalJobs(city);
+    s32 total_residents = this->total_residents();
+    s32 total_jobs = this->total_jobs();
 
     // Residential
-    layer->demand[ZoneType::Residential] = (totalJobs * 3) - totalResidents + 100;
+    demand[ZoneType::Residential] = (total_jobs * 3) - total_residents + 100;
 
-    s32 totalJobsNeeded = (totalResidents / 3);
+    s32 total_jobs_needed = (total_residents / 3);
 
     // Commercial
-    layer->demand[ZoneType::Commercial] = floor_s32(totalJobsNeeded * 0.2f) - layer->population[ZoneType::Commercial] + 20;
+    demand[ZoneType::Commercial] = floor_s32(total_jobs_needed * 0.2f) - population[ZoneType::Commercial] + 20;
 
     // Industrial
-    layer->demand[ZoneType::Industrial] = floor_s32(totalJobsNeeded * 0.8f) - layer->population[ZoneType::Industrial] + 50;
+    demand[ZoneType::Industrial] = floor_s32(total_jobs_needed * 0.8f) - population[ZoneType::Industrial] + 50;
 }
 
 bool isZoneAcceptable(City* city, ZoneType zoneType, s32 x, s32 y)
@@ -388,7 +370,7 @@ bool isZoneAcceptable(City* city, ZoneType zoneType, s32 x, s32 y)
 
     ZoneDef const& def = ZONE_DEFS[zoneType];
 
-    if (getZoneAt(city, x, y) != zoneType)
+    if (city->zoneLayer.get_zone_at(x, y) != zoneType)
         return false;
     if (city->building_exists_at(x, y))
         return false;
@@ -608,36 +590,36 @@ void growSomeZoneBuildings(City* city)
     }
 }
 
-s32 getTotalResidents(City* city)
+u32 ZoneLayer::total_residents() const
 {
-    return city->zoneLayer.population[ZoneType::Residential];
+    return population[ZoneType::Residential];
 }
 
-s32 getTotalJobs(City* city)
+u32 ZoneLayer::total_jobs() const
 {
-    return city->zoneLayer.population[ZoneType::Commercial] + city->zoneLayer.population[ZoneType::Industrial] + city->zoneLayer.population[ZoneType::None];
+    return population[ZoneType::Commercial] + population[ZoneType::Industrial] + population[ZoneType::None];
 }
 
-void saveZoneLayer(ZoneLayer* layer, BinaryFileWriter* writer)
+void ZoneLayer::save(BinaryFileWriter& writer) const
 {
-    writer->startSection<SAVSection_Zone>(SAV_ZONE_ID, SAV_ZONE_VERSION);
+    writer.startSection<SAVSection_Zone>(SAV_ZONE_ID, SAV_ZONE_VERSION);
     SAVSection_Zone zoneSection = {};
 
     // Tile zones
-    zoneSection.tileZone = writer->appendBlob(layer->tileZone, FileBlobCompressionScheme::RLE_S8);
+    zoneSection.tileZone = writer.appendBlob(tileZone, FileBlobCompressionScheme::RLE_S8);
 
-    writer->endSection<SAVSection_Zone>(&zoneSection);
+    writer.endSection<SAVSection_Zone>(&zoneSection);
 }
 
-bool loadZoneLayer(ZoneLayer* layer, City* /*city*/, BinaryFileReader* reader)
+bool ZoneLayer::load(BinaryFileReader& reader)
 {
     bool succeeded = false;
-    while (reader->startSection(SAV_ZONE_ID, SAV_ZONE_VERSION)) {
-        SAVSection_Zone* section = reader->readStruct<SAVSection_Zone>(0);
+    while (reader.startSection(SAV_ZONE_ID, SAV_ZONE_VERSION)) {
+        SAVSection_Zone* section = reader.readStruct<SAVSection_Zone>(0);
         if (!section)
             break;
 
-        if (!reader->readBlob(section->tileZone, &layer->tileZone))
+        if (!reader.readBlob(section->tileZone, &tileZone))
             break;
 
         succeeded = true;

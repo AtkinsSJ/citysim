@@ -45,8 +45,8 @@ bool writeSaveFile(FileHandle* file, GameState* gameState)
             metaSection.cityWidth = (u16)city->bounds.width();
             metaSection.cityHeight = (u16)city->bounds.height();
             metaSection.funds = city->funds;
-            metaSection.population = getTotalResidents(city);
-            metaSection.jobs = getTotalJobs(city);
+            metaSection.population = city->zoneLayer.total_residents();
+            metaSection.jobs = city->zoneLayer.total_jobs();
 
             metaSection.cityName = writer.append_string(city->name);
             metaSection.playerName = writer.append_string(city->playerName);
@@ -80,7 +80,7 @@ bool writeSaveFile(FileHandle* file, GameState* gameState)
         saveLandValueLayer(&city->landValueLayer, &writer);
         savePollutionLayer(&city->pollutionLayer, &writer);
         saveTransportLayer(&city->transportLayer, &writer);
-        saveZoneLayer(&city->zoneLayer, &writer);
+        city->zoneLayer.save(writer);
 
         succeeded = writer.outputToFile(file);
     }

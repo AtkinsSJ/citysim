@@ -567,7 +567,7 @@ void updatePowerLayer(City* city, PowerLayer* layer)
 
                     if (def != nullptr && def->flags.has(BuildingFlags::CarriesPower)) {
                         layer->tilePowerDistance.set(x, y, 0);
-                    } else if (ZONE_DEFS[getZoneAt(city, x, y)].carriesPower) {
+                    } else if (ZONE_DEFS[city->zoneLayer.get_zone_at(x, y)].carriesPower) {
                         layer->tilePowerDistance.set(x, y, 0);
                     } else {
                         layer->tilePowerDistance.set(x, y, 255);
