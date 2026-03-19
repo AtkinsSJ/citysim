@@ -641,7 +641,7 @@ ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const
                 break;
             if (!city->crimeLayer.load(reader))
                 break;
-            if (!loadEducationLayer(&city->educationLayer, city, &reader))
+            if (!city->educationLayer.load(reader))
                 break;
             if (!loadFireLayer(&city->fireLayer, city, &reader))
                 break;

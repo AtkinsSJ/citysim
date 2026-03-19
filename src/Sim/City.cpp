@@ -44,7 +44,7 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
 
     city->budgetLayer = BudgetLayer { *city, *gameArena };
     city->crimeLayer = CrimeLayer { *city, *gameArena };
-    initEducationLayer(&city->educationLayer, city, gameArena);
+    city->educationLayer = EducationLayer { *city, *gameArena };
     initFireLayer(&city->fireLayer, city, gameArena);
     initHealthLayer(&city->healthLayer, city, gameArena);
     initLandValueLayer(&city->landValueLayer, city, gameArena);
