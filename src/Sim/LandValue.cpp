@@ -125,7 +125,7 @@ void LandValueLayer::update(City& city)
                     landValue += policeCoverage * 0.2f;
 
                     // Pollution = bad
-                    float pollutionEffect = getPollutionPercentAt(&city, x, y) * 0.1f;
+                    float pollutionEffect = city.pollutionLayer.get_pollution_percent_at(x, y) * 0.1f;
                     landValue -= pollutionEffect;
 
                     m_tile_land_value.set(x, y, clamp01AndMap_u8(landValue));

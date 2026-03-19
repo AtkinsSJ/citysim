@@ -23,7 +23,7 @@ struct GameClock;
 struct GameState;
 class HealthLayer;
 class LandValueLayer;
-struct PollutionLayer;
+class PollutionLayer;
 struct PowerLayer;
 struct TerrainCatalogue;
 struct TerrainDef;

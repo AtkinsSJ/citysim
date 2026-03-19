@@ -649,7 +649,7 @@ ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const
                 break;
             if (!city->landValueLayer.load(reader))
                 break;
-            if (!loadPollutionLayer(&city->pollutionLayer, city, &reader))
+            if (!city->pollutionLayer.load(reader))
                 break;
             if (!city->transportLayer.load(reader))
                 break;
@@ -706,7 +706,7 @@ void GameScene::update_and_render(float delta_time)
         city.fireLayer.update(city);
         city.healthLayer.update(city);
         city.landValueLayer.update(city);
-        updatePollutionLayer(&city, &city.pollutionLayer);
+        city.pollutionLayer.update(city);
         updatePowerLayer(&city, &city.powerLayer);
         city.transportLayer.update(city);
         city.zoneLayer.update(city);
@@ -996,7 +996,7 @@ void GameScene::init_data_view_ui()
 
     dataViewUI[DataView::Pollution].title = "data_view_pollution"_s;
     setGradient(&dataViewUI[DataView::Pollution], "pollution"_s);
-    setTileOverlay(&dataViewUI[DataView::Pollution], &city->pollutionLayer.tilePollution, "pollution"_s);
+    setTileOverlay(&dataViewUI[DataView::Pollution], city->pollutionLayer.tile_pollution(), "pollution"_s);
 
     dataViewUI[DataView::Power].title = "data_view_power"_s;
     setFixedColors(&dataViewUI[DataView::Power], "power"_s, { "data_view_power_powered"_s, "data_view_power_brownout"_s, "data_view_power_blackout"_s }, m_arena);

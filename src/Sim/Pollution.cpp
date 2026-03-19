@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2019-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -14,42 +14,42 @@
 #include <Sim/Effect.h>
 #include <Sim/LandValue.h>
 
-void initPollutionLayer(PollutionLayer* layer, City* city, MemoryArena* gameArena)
+PollutionLayer::PollutionLayer(City& city, MemoryArena& arena)
 {
-    layer->tilePollution = gameArena->allocate_array_2d<u8>(city->bounds.size());
-    layer->tilePollution.fill(0);
+    m_tile_pollution = arena.allocate_array_2d<u8>(city.bounds.size());
+    m_tile_pollution.fill(0);
 
-    layer->tileBuildingContributions = gameArena->allocate_array_2d<s16>(city->bounds.size());
-    layer->tileBuildingContributions.fill(0);
+    m_tile_building_contributions = arena.allocate_array_2d<s16>(city.bounds.size());
+    m_tile_building_contributions.fill(0);
 
-    initDirtyRects(&layer->dirtyRects, gameArena, maxPollutionEffectDistance, city->bounds);
+    initDirtyRects(&m_dirty_rects, &arena, maxPollutionEffectDistance, city.bounds);
 }
 
-void updatePollutionLayer(City* city, PollutionLayer* layer)
+void PollutionLayer::update(City& city)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
-    if (isDirty(&layer->dirtyRects)) {
+    if (isDirty(&m_dirty_rects)) {
         // @Copypasta from updateLandValueLayer()
         {
             DEBUG_BLOCK_T("updatePollutionLayer: building effects", DebugCodeDataTag::Simulation);
 
             // Recalculate the building contributions
-            for (auto rectIt = layer->dirtyRects.rects.iterate();
+            for (auto rectIt = m_dirty_rects.rects.iterate();
                 rectIt.hasNext();
                 rectIt.next()) {
                 Rect2I dirtyRect = rectIt.getValue();
 
-                layer->tileBuildingContributions.fill_region( dirtyRect, 0);
+                m_tile_building_contributions.fill_region(dirtyRect, 0);
 
-                ChunkedArray<Building*> contributingBuildings = city->find_buildings_overlapping_area(dirtyRect.expanded(maxLandValueEffectDistance));
+                ChunkedArray<Building*> contributingBuildings = city.find_buildings_overlapping_area(dirtyRect.expanded(maxLandValueEffectDistance));
                 for (auto buildingIt = contributingBuildings.iterate();
                     buildingIt.hasNext();
                     buildingIt.next()) {
                     Building* building = buildingIt.getValue();
                     BuildingDef* def = getBuildingDef(building);
                     if (def->pollutionEffect.has_effect()) {
-                        def->pollutionEffect.apply(layer->tileBuildingContributions, dirtyRect, building->footprint.centre(), EffectType::Add);
+                        def->pollutionEffect.apply(m_tile_building_contributions, dirtyRect, building->footprint.centre(), EffectType::Add);
                     }
                 }
 
@@ -66,9 +66,9 @@ void updatePollutionLayer(City* city, PollutionLayer* layer)
                 //
                 for (s32 y = dirtyRect.y(); y < dirtyRect.y() + dirtyRect.height(); y++) {
                     for (s32 x = dirtyRect.x(); x < dirtyRect.x() + dirtyRect.width(); x++) {
-                        s16 originalValue = layer->tileBuildingContributions.get(x, y);
+                        s16 originalValue = m_tile_building_contributions.get(x, y);
                         s16 newValue = clamp<s16>(originalValue, -255, 255);
-                        layer->tileBuildingContributions.set(x, y, newValue);
+                        m_tile_building_contributions.set(x, y, newValue);
                     }
                 }
             }
@@ -78,7 +78,7 @@ void updatePollutionLayer(City* city, PollutionLayer* layer)
         {
             DEBUG_BLOCK_T("updatePollutionLayer: combine", DebugCodeDataTag::Simulation);
 
-            for (auto rectIt = layer->dirtyRects.rects.iterate();
+            for (auto rectIt = m_dirty_rects.rects.iterate();
                 rectIt.hasNext();
                 rectIt.next()) {
                 Rect2I dirtyRect = rectIt.getValue();
@@ -89,55 +89,50 @@ void updatePollutionLayer(City* city, PollutionLayer* layer)
                         // In future we might want to update things over time, but right now it's just
                         // a glorified copy from the tileBuildingContributions array.
 
-                        s16 buildingContributions = layer->tileBuildingContributions.get(x, y);
+                        s16 buildingContributions = m_tile_building_contributions.get(x, y);
 
                         u8 newValue = (u8)clamp<s16>(buildingContributions, 0, 255);
 
-                        layer->tilePollution.set(x, y, newValue);
+                        m_tile_pollution.set(x, y, newValue);
                     }
                 }
             }
         }
 
-        clearDirtyRects(&layer->dirtyRects);
+        clearDirtyRects(&m_dirty_rects);
     }
 }
 
-void markPollutionLayerDirty(PollutionLayer* layer, Rect2I bounds)
+void PollutionLayer::mark_dirty(Rect2I bounds)
 {
-    markRectAsDirty(&layer->dirtyRects, bounds);
+    markRectAsDirty(&m_dirty_rects, bounds);
 }
 
-u8 getPollutionAt(City* city, s32 x, s32 y)
+float PollutionLayer::get_pollution_percent_at(s32 x, s32 y) const
 {
-    return city->pollutionLayer.tilePollution.get(x, y);
+    return m_tile_pollution.get(x, y) / 255.0f;
 }
 
-float getPollutionPercentAt(City* city, s32 x, s32 y)
+void PollutionLayer::save(BinaryFileWriter& writer) const
 {
-    return city->pollutionLayer.tilePollution.get(x, y) / 255.0f;
-}
-
-void savePollutionLayer(PollutionLayer* layer, BinaryFileWriter* writer)
-{
-    writer->startSection<SAVSection_Pollution>(SAV_POLLUTION_ID, SAV_POLLUTION_VERSION);
+    writer.startSection<SAVSection_Pollution>(SAV_POLLUTION_ID, SAV_POLLUTION_VERSION);
     SAVSection_Pollution pollutionSection = {};
 
     // Tile pollution
-    pollutionSection.tilePollution = writer->appendBlob(&layer->tilePollution, FileBlobCompressionScheme::RLE_S8);
+    pollutionSection.tilePollution = writer.appendBlob(&m_tile_pollution, FileBlobCompressionScheme::RLE_S8);
 
-    writer->endSection<SAVSection_Pollution>(&pollutionSection);
+    writer.endSection<SAVSection_Pollution>(&pollutionSection);
 }
 
-bool loadPollutionLayer(PollutionLayer* layer, City*, BinaryFileReader* reader)
+bool PollutionLayer::load(BinaryFileReader& reader)
 {
     bool succeeded = false;
-    while (reader->startSection(SAV_POLLUTION_ID, SAV_POLLUTION_VERSION)) {
-        SAVSection_Pollution* section = reader->readStruct<SAVSection_Pollution>(0);
+    while (reader.startSection(SAV_POLLUTION_ID, SAV_POLLUTION_VERSION)) {
+        SAVSection_Pollution* section = reader.readStruct<SAVSection_Pollution>(0);
         if (!section)
             break;
 
-        if (!reader->readBlob(section->tilePollution, &layer->tilePollution))
+        if (!reader.readBlob(section->tilePollution, &m_tile_pollution))
             break;
 
         succeeded = true;

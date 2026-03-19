@@ -274,7 +274,7 @@ void ZoneLayer::update(City& city)
                         desirability += city.crimeLayer.get_police_coverage_percent_at(x, y) * 0.3f;
 
                         // pollution = bad
-                        desirability -= getPollutionPercentAt(&city, x, y) * 0.4f;
+                        desirability -= city.pollutionLayer.get_pollution_percent_at(x, y) * 0.4f;
 
                         tileDesirability[ZoneType::Residential].set(x, y, clamp01AndMap_u8(desirability));
 
@@ -293,7 +293,7 @@ void ZoneLayer::update(City& city)
                         desirability += city.crimeLayer.get_police_coverage_percent_at(x, y) * 0.3f;
 
                         // pollution = bad
-                        desirability -= getPollutionPercentAt(&city, x, y) * 0.2f;
+                        desirability -= city.pollutionLayer.get_pollution_percent_at(x, y) * 0.2f;
 
                         tileDesirability[ZoneType::Commercial].set(x, y, clamp01AndMap_u8(desirability));
 
@@ -312,7 +312,7 @@ void ZoneLayer::update(City& city)
                         desirability += city.crimeLayer.get_police_coverage_percent_at(x, y) * 0.2f;
 
                         // pollution = slightly bad
-                        desirability -= getPollutionPercentAt(&city, x, y) * 0.15f;
+                        desirability -= city.pollutionLayer.get_pollution_percent_at(x, y) * 0.15f;
 
                         tileDesirability[ZoneType::Industrial].set(x, y, clamp01AndMap_u8(desirability));
 
