@@ -248,7 +248,7 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
     ui->addLabel(myprintf("Zone: {0}"_s, { zone == ZoneType::None ? "None"_s : getText(ZONE_DEFS[zone].textAssetName) }));
 
     // Building
-    Building* building = getBuildingAt(city, tilePos.x, tilePos.y);
+    Building* building = city->get_building_at(tilePos.x, tilePos.y);
     if (building != nullptr) {
         s32 buildingIndex = city->tileBuildingIndex.get(tilePos.x, tilePos.y);
         BuildingDef* def = getBuildingDef(building);
@@ -523,7 +523,7 @@ void costTooltipWindowProc(UI::WindowContext* context, void* userData)
 
     UI::Panel* ui = &context->windowPanel;
 
-    auto style = canAfford(city, buildCost)
+    auto style = city->can_afford(buildCost)
         ? "cost-affordable"_sv
         : "cost-unaffordable"_sv;
 
@@ -635,7 +635,7 @@ ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const
 
             if (!loadTerrainLayer(&city->terrainLayer, city, &reader))
                 break;
-            if (!loadBuildings(city, &reader))
+            if (!city->load_buildings(&reader))
                 break;
             if (!loadZoneLayer(&city->zoneLayer, city, &reader))
                 break;
@@ -711,7 +711,7 @@ void GameScene::update_and_render(float delta_time)
         updateTransportLayer(city, &city->transportLayer);
         updateZoneLayer(city, &city->zoneLayer);
 
-        updateSomeBuildings(city);
+        city->update_some_buildings();
     }
 
     // UI!
@@ -723,7 +723,7 @@ void GameScene::update_and_render(float delta_time)
     // CAMERA!
     Camera& world_camera = renderer.world_camera();
     Camera& ui_camera = renderer.ui_camera();
-    inputMoveCamera(&world_camera, ui_camera.size(), ui_camera.mouse_position(), gameState->city.bounds.width(), gameState->city.bounds.height(), delta_time);
+    inputMoveCamera(&world_camera, ui_camera.size(), ui_camera.mouse_position(), city->bounds.width(), city->bounds.height(), delta_time);
 
     V2I mouseTilePos = v2i(world_camera.mouse_position());
     bool mouseIsOverUI = UI::isMouseInputHandled() || UI::mouseIsWithinUIRects();
@@ -744,13 +744,13 @@ void GameScene::update_and_render(float delta_time)
                     Rect2I footprint = Rect2I::create_centre_size(mouseTilePos, buildingDef->size);
                     s32 buildCost = buildingDef->buildCost;
 
-                    bool canPlace = canPlaceBuilding(&gameState->city, buildingDef, footprint.x(), footprint.y());
+                    bool canPlace = city->can_place_building(buildingDef, footprint.x(), footprint.y());
 
                     if ((buildingDef->buildMethod == BuildMethod::Plop && mouseButtonJustReleased(MouseButton::Left))
                         || (buildingDef->buildMethod == BuildMethod::Paint && mouseButtonPressed(MouseButton::Left))) {
-                        if (canPlace && canAfford(city, buildCost)) {
-                            placeBuilding(city, buildingDef, footprint.x(), footprint.y());
-                            spend(city, buildCost);
+                        if (canPlace && city->can_afford(buildCost)) {
+                            city->place_building(buildingDef, footprint.x(), footprint.y());
+                            city->spend(buildCost);
                         }
                     }
 
@@ -768,13 +768,13 @@ void GameScene::update_and_render(float delta_time)
                 DragType dragType = (buildingDef->buildMethod == BuildMethod::DragLine) ? DragType::Line : DragType::Rect;
 
                 DragResult dragResult = updateDragState(&gameState->worldDragState, city->bounds, mouseTilePos, mouseIsOverUI, dragType, buildingDef->size);
-                s32 buildCost = calculateBuildCost(city, buildingDef, dragResult.dragRect);
+                s32 buildCost = city->calculate_build_cost(buildingDef, dragResult.dragRect);
 
                 switch (dragResult.operation) {
                 case DragResultOperation::DoAction: {
-                    if (canAfford(city, buildCost)) {
-                        placeBuildingRect(city, buildingDef, dragResult.dragRect);
-                        spend(city, buildCost);
+                    if (city->can_afford(buildCost)) {
+                        city->place_building_rect(buildingDef, dragResult.dragRect);
+                        city->spend(buildCost);
                     } else {
                         UI::Toast::show(getText("msg_cannot_afford_construction"_s));
                     }
@@ -784,14 +784,14 @@ void GameScene::update_and_render(float delta_time)
                     if (!mouseIsOverUI)
                         showCostTooltip(buildCost);
 
-                    if (canAfford(city, buildCost)) {
+                    if (city->can_afford(buildCost)) {
                         auto& sprite = Sprite::get(buildingDef->spriteName);
                         s32 maxGhosts = (dragResult.dragRect.width() / buildingDef->size.x) * (dragResult.dragRect.height() / buildingDef->size.y);
                         // TODO: If maxGhosts is 1, just draw 1!
                         DrawRectsGroup* rectsGroup = beginRectsGroupTextured(&renderer.world_overlay_buffer(), sprite.texture, renderer.shaderIds.pixelArt, maxGhosts);
                         for (s32 y = 0; y + buildingDef->size.y <= dragResult.dragRect.height(); y += buildingDef->size.y) {
                             for (s32 x = 0; x + buildingDef->size.x <= dragResult.dragRect.width(); x += buildingDef->size.x) {
-                                bool canPlace = canPlaceBuilding(city, buildingDef, dragResult.dragRect.x() + x, dragResult.dragRect.y() + y);
+                                bool canPlace = city->can_place_building(buildingDef, dragResult.dragRect.x() + x, dragResult.dragRect.y() + y);
 
                                 Rect2 rect { dragResult.dragRect.x() + x, dragResult.dragRect.y() + y, buildingDef->size.x, buildingDef->size.y };
 
@@ -824,16 +824,16 @@ void GameScene::update_and_render(float delta_time)
 
             switch (dragResult.operation) {
             case DragResultOperation::DoAction: {
-                if (canAfford(city, zoneCost)) {
+                if (city->can_afford(zoneCost)) {
                     placeZone(city, gameState->selectedZoneID, dragResult.dragRect);
-                    spend(city, zoneCost);
+                    city->spend(zoneCost);
                 }
             } break;
 
             case DragResultOperation::ShowPreview: {
                 if (!mouseIsOverUI)
                     showCostTooltip(zoneCost);
-                if (canAfford(city, zoneCost)) {
+                if (city->can_afford(zoneCost)) {
                     Colour palette[] = {
                         Colour::from_rgb_255(255, 0, 0, 16),
                         ZONE_DEFS[gameState->selectedZoneID].color
@@ -851,14 +851,14 @@ void GameScene::update_and_render(float delta_time)
 
         case ActionMode::Demolish: {
             DragResult dragResult = updateDragState(&gameState->worldDragState, city->bounds, mouseTilePos, mouseIsOverUI, DragType::Rect);
-            s32 demolishCost = calculateDemolitionCost(city, dragResult.dragRect);
+            s32 demolishCost = city->calculate_demolition_cost(dragResult.dragRect);
             city->demolitionRect = dragResult.dragRect;
 
             switch (dragResult.operation) {
             case DragResultOperation::DoAction: {
-                if (canAfford(city, demolishCost)) {
-                    demolishRect(city, dragResult.dragRect);
-                    spend(city, demolishCost);
+                if (city->can_afford(demolishCost)) {
+                    city->demolish_rect(dragResult.dragRect);
+                    city->spend(demolishCost);
                 } else {
                     UI::Toast::show(getText("msg_cannot_afford_demolition"_s));
                 }
@@ -868,7 +868,7 @@ void GameScene::update_and_render(float delta_time)
                 if (!mouseIsOverUI)
                     showCostTooltip(demolishCost);
 
-                if (canAfford(city, demolishCost)) {
+                if (city->can_afford(demolishCost)) {
                     // Demolition outline
                     drawSingleRect(&renderer.world_overlay_buffer(), dragResult.dragRect, renderer.shaderIds.untextured, Colour::from_rgb_255(128, 0, 0, 128));
                 } else {
@@ -886,7 +886,7 @@ void GameScene::update_and_render(float delta_time)
             // We probably want to make this better in several ways, and add a cost to it, and such
             if (!mouseIsOverUI
                 && mouseButtonPressed(MouseButton::Left)
-                && tileExists(city, mouseTilePos.x, mouseTilePos.y)) {
+                && city->tile_exists(mouseTilePos.x, mouseTilePos.y)) {
                 setTerrainAt(city, mouseTilePos.x, mouseTilePos.y, gameState->selectedTerrainID);
             }
         } break;
@@ -894,7 +894,7 @@ void GameScene::update_and_render(float delta_time)
         case ActionMode::Debug_AddFire: {
             if (!mouseIsOverUI
                 && mouseButtonJustPressed(MouseButton::Left)
-                && tileExists(city, mouseTilePos.x, mouseTilePos.y)) {
+                && city->tile_exists(mouseTilePos.x, mouseTilePos.y)) {
                 startFireAt(city, mouseTilePos.x, mouseTilePos.y);
             }
         } break;
@@ -902,14 +902,14 @@ void GameScene::update_and_render(float delta_time)
         case ActionMode::Debug_RemoveFire: {
             if (!mouseIsOverUI
                 && mouseButtonJustPressed(MouseButton::Left)
-                && tileExists(city, mouseTilePos.x, mouseTilePos.y)) {
+                && city->tile_exists(mouseTilePos.x, mouseTilePos.y)) {
                 removeFireAt(city, mouseTilePos.x, mouseTilePos.y);
             }
         } break;
 
         case ActionMode::None: {
             if (!mouseIsOverUI && mouseButtonJustPressed(MouseButton::Left)) {
-                if (tileExists(city, mouseTilePos.x, mouseTilePos.y)) {
+                if (city->tile_exists(mouseTilePos.x, mouseTilePos.y)) {
                     gameState->inspectedTilePosition = mouseTilePos;
                     V2I windowPos = v2i(ui_camera.mouse_position()) + v2i(16, 16);
                     UI::showWindow(UI::WindowTitle::from_lambda([] {
@@ -945,7 +945,7 @@ void GameScene::update_and_render(float delta_time)
 
     // logInfo("visibleTileBounds = {0} {1} {2} {3}"_s, {formatInt(visibleTileBounds.x),formatInt(visibleTileBounds.y),formatInt(visibleTileBounds.w),formatInt(visibleTileBounds.h)});
 
-    drawCity(city, visibleTileBounds);
+    city->draw(visibleTileBounds);
 
     // Data layer rendering
     if (gameState->dataLayerToDraw != DataView::None) {

@@ -60,7 +60,7 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
     // It belongs in a "we've just started/loaded a game, so initialise things" place.
 
     // TODO: Are we sure we want to do this?
-    markAreaDirty(city, city->bounds);
+    city->mark_area_dirty(city->bounds);
 
     the_renderer().world_camera().set_position(v2(city->bounds.size()) / 2);
 
@@ -68,13 +68,13 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
     saveTerrainTypes();
 }
 
-void removeEntity(City* city, Entity* entity)
+void City::remove_entity(Entity* entity)
 {
     // logInfo("Removing entity #{0}"_s, {formatInt(entity->index)});
-    city->entities.removeIndex(entity->index);
+    entities.removeIndex(entity->index);
 }
 
-void drawEntities(City* city, Rect2I visibleTileBounds)
+void City::draw_entities(Rect2I visibleTileBounds) const
 {
     // TODO: Depth sorting
     // TODO: Sectors maybe? Though collecting all the visible entities into a data structure might be slower than just
@@ -82,11 +82,10 @@ void drawEntities(City* city, Rect2I visibleTileBounds)
     Rect2 cropArea = visibleTileBounds;
     auto shaderID = the_renderer().shaderIds.pixelArt;
 
-    bool isDemolitionHappening = city->demolitionRect.has_positive_area();
+    bool isDemolitionHappening = demolitionRect.has_positive_area();
     auto drawColorDemolish = Colour::from_rgb_255(255, 128, 128, 255);
-    Rect2 demolitionRect = city->demolitionRect;
 
-    for (auto it = city->entities.iterate(); it.hasNext(); it.next()) {
+    for (auto it = entities.iterate(); it.hasNext(); it.next()) {
         auto entity = it.get();
         if (cropArea.overlaps(entity->bounds)) {
             // TODO: Batch these together somehow? Our batching is a bit complicated.
@@ -106,11 +105,11 @@ void drawEntities(City* city, Rect2I visibleTileBounds)
     }
 }
 
-Building* addBuildingDirect(City* city, s32 id, BuildingDef* def, Rect2I footprint, GameTimestamp creationDate)
+Building* City::add_building_direct(s32 id, BuildingDef* def, Rect2I footprint, GameTimestamp creationDate)
 {
     DEBUG_FUNCTION();
 
-    Indexed<Building> buildingSlot = city->buildings.append();
+    Indexed<Building> buildingSlot = buildings.append();
     s32 buildingIndex = buildingSlot.index();
     Building& building = buildingSlot.value();
     initBuilding(&building, id, def, footprint, creationDate);
@@ -118,12 +117,13 @@ Building* addBuildingDirect(City* city, s32 id, BuildingDef* def, Rect2I footpri
     // Random sprite!
     building.spriteOffset = App::the().cosmetic_random().random_integer<u16>();
 
-    building.entity = addEntity(city, Entity::Type::Building, &building);
+    building.entity = add_entity(Entity::Type::Building, &building);
     building.entity->bounds = footprint;
     loadBuildingSprite(&building);
     building.entity->canBeDemolished = true;
 
-    CitySector* ownerSector = city->sectors.get_sector_at_tile_pos(footprint.x(), footprint.y());
+    CitySector* ownerSector = sectors.get_sector_at_tile_pos(footprint.x(), footprint.y());
+
     ownerSector->ownedBuildings.append(&building);
 
     for (s32 y = footprint.y();
@@ -132,23 +132,23 @@ Building* addBuildingDirect(City* city, s32 id, BuildingDef* def, Rect2I footpri
         for (s32 x = footprint.x();
             x < footprint.x() + footprint.width();
             x++) {
-            city->tileBuildingIndex.set(x, y, buildingIndex);
+            tileBuildingIndex.set(x, y, buildingIndex);
         }
     }
 
-    notifyNewBuilding(&city->crimeLayer, def, &building);
-    notifyNewBuilding(&city->fireLayer, def, &building);
-    notifyNewBuilding(&city->healthLayer, def, &building);
-    notifyNewBuilding(&city->powerLayer, def, &building);
+    notifyNewBuilding(&crimeLayer, def, &building);
+    notifyNewBuilding(&fireLayer, def, &building);
+    notifyNewBuilding(&healthLayer, def, &building);
+    notifyNewBuilding(&powerLayer, def, &building);
 
     return &building;
 }
 
-Building* addBuilding(City* city, BuildingDef* def, Rect2I footprint, GameTimestamp creationDate)
+Building* City::add_building(BuildingDef* def, Rect2I footprint, GameTimestamp creationDate)
 {
     DEBUG_FUNCTION();
 
-    Building* building = addBuildingDirect(city, ++city->highestBuildingID, def, footprint, creationDate);
+    Building* building = add_building_direct(++highestBuildingID, def, footprint, creationDate);
 
     // TODO: Properly calculate occupancy!
     building->currentResidents = def->residents;
@@ -157,42 +157,41 @@ Building* addBuilding(City* city, BuildingDef* def, Rect2I footprint, GameTimest
     return building;
 }
 
-void markAreaDirty(City* city, Rect2I bounds)
+void City::mark_area_dirty(Rect2I dirty_area)
 {
-    markHealthLayerDirty(&city->healthLayer, bounds);
-    markLandValueLayerDirty(&city->landValueLayer, bounds);
-    markPollutionLayerDirty(&city->pollutionLayer, bounds);
-    markPowerLayerDirty(&city->powerLayer, bounds);
-    markTransportLayerDirty(&city->transportLayer, bounds);
+    markHealthLayerDirty(&healthLayer, dirty_area);
+    markLandValueLayerDirty(&landValueLayer, dirty_area);
+    markPollutionLayerDirty(&pollutionLayer, dirty_area);
+    markPowerLayerDirty(&powerLayer, dirty_area);
+    markTransportLayerDirty(&transportLayer, dirty_area);
 }
 
-bool tileExists(City* city, s32 x, s32 y)
+bool City::tile_exists(s32 x, s32 y) const
 {
-    return (x >= 0) && (x < city->bounds.width())
-        && (y >= 0) && (y < city->bounds.height());
+    return (x >= 0) && (x < bounds.width())
+        && (y >= 0) && (y < bounds.height());
 }
 
-bool canAfford(City* city, s32 cost)
+bool City::can_afford(s32 cost) const
 {
-    return city->funds >= cost;
+    return funds >= cost;
 }
 
-void spend(City* city, s32 cost)
+void City::spend(s32 cost)
 {
-    city->funds -= cost;
+    funds -= cost;
 }
 
-bool canPlaceBuilding(City* city, BuildingDef* def, s32 left, s32 top)
+bool City::can_place_building(BuildingDef* def, s32 left, s32 top) const
 {
     DEBUG_FUNCTION();
 
     // Can we afford to build this?
-    if (!canAfford(city, def->buildCost)) {
+    if (!can_afford(def->buildCost)) {
         return false;
     }
 
     Rect2I footprint { { left, top }, def->size };
-    Rect2I bounds = city->bounds;
 
     // Are we in bounds?
     if (!bounds.contains(footprint)) {
@@ -205,13 +204,13 @@ bool canPlaceBuilding(City* city, BuildingDef* def, s32 left, s32 top)
     // TODO: Optimise this per-sector!
     for (s32 y = footprint.y(); y < footprint.y() + footprint.height(); y++) {
         for (s32 x = footprint.x(); x < footprint.x() + footprint.width(); x++) {
-            TerrainDef* terrainDef = getTerrainAt(city, x, y);
+            TerrainDef* terrainDef = getTerrainAt(this, x, y);
 
             if (!terrainDef->canBuildOn) {
                 return false;
             }
 
-            Building* buildingAtPos = getBuildingAt(city, x, y);
+            auto* buildingAtPos = get_building_at(x, y);
             if (buildingAtPos != nullptr) {
                 // Check if we can combine this with the building that's already there
                 if (catalogue.find_building_intersection(*getBuildingDef(buildingAtPos), *def).has_value()) {
@@ -230,13 +229,13 @@ bool canPlaceBuilding(City* city, BuildingDef* def, s32 left, s32 top)
     return true;
 }
 
-void placeBuilding(City* city, BuildingDef* def, s32 left, s32 top, bool markAreasDirty)
+void City::place_building(BuildingDef* def, s32 left, s32 top, bool markAreasDirty)
 {
     DEBUG_FUNCTION();
 
     Rect2I footprint { { left, top }, def->size };
 
-    Building* building = getBuildingAt(city, left, top);
+    Building* building = get_building_at(left, top);
     if (building != nullptr) {
         // Do a quick replace! We already established in canPlaceBuilding() that we match.
         // NB: We're keeping the old building's id. I think that's preferable, but might want to change that later.
@@ -247,29 +246,29 @@ void placeBuilding(City* city, BuildingDef* def, s32 left, s32 top, bool markAre
         building->typeID = intersection_def.typeID;
         def = const_cast<BuildingDef*>(&intersection_def); // I really don't like this but I don't want to rewrite this entire function right now!
 
-        city->zoneLayer.population[oldDef->growsInZone] -= building->currentResidents + building->currentJobs;
+        zoneLayer.population[oldDef->growsInZone] -= building->currentResidents + building->currentJobs;
     } else {
         // Remove zones
-        placeZone(city, ZoneType::None, footprint);
+        placeZone(this, ZoneType::None, footprint);
 
-        building = addBuilding(city, def, footprint);
+        building = add_building(def, footprint);
     }
 
     // TODO: Calculate residents/jobs properly!
     building->currentResidents = def->residents;
     building->currentJobs = def->jobs;
 
-    city->zoneLayer.population[def->growsInZone] += building->currentResidents + building->currentJobs;
+    zoneLayer.population[def->growsInZone] += building->currentResidents + building->currentJobs;
 
-    updateBuildingVariant(city, building, def);
-    updateAdjacentBuildingVariants(city, footprint);
+    updateBuildingVariant(this, building, def);
+    updateAdjacentBuildingVariants(this, footprint);
 
     if (markAreasDirty) {
-        markAreaDirty(city, footprint);
+        mark_area_dirty(footprint);
     }
 }
 
-s32 calculateBuildCost(City* city, BuildingDef* def, Rect2I area)
+s32 City::calculate_build_cost(BuildingDef* def, Rect2I area) const
 {
     DEBUG_FUNCTION();
 
@@ -277,7 +276,7 @@ s32 calculateBuildCost(City* city, BuildingDef* def, Rect2I area)
 
     for (s32 y = 0; y + def->size.y <= area.height(); y += def->size.y) {
         for (s32 x = 0; x + def->size.x <= area.width(); x += def->size.x) {
-            if (canPlaceBuilding(city, def, area.x() + x, area.y() + y)) {
+            if (can_place_building(def, area.x() + x, area.y() + y)) {
                 totalCost += def->buildCost;
             }
         }
@@ -286,29 +285,29 @@ s32 calculateBuildCost(City* city, BuildingDef* def, Rect2I area)
     return totalCost;
 }
 
-void placeBuildingRect(City* city, BuildingDef* def, Rect2I area)
+void City::place_building_rect(BuildingDef* def, Rect2I area)
 {
     DEBUG_FUNCTION();
 
     for (s32 y = 0; y + def->size.y <= area.height(); y += def->size.y) {
         for (s32 x = 0; x + def->size.x <= area.width(); x += def->size.x) {
-            if (canPlaceBuilding(city, def, area.x() + x, area.y() + y)) {
-                placeBuilding(city, def, area.x() + x, area.y() + y, false);
+            if (can_place_building(def, area.x() + x, area.y() + y)) {
+                place_building(def, area.x() + x, area.y() + y, false);
             }
         }
     }
 
-    markAreaDirty(city, area);
+    mark_area_dirty(area);
 }
 
-s32 calculateDemolitionCost(City* city, Rect2I area)
+s32 City::calculate_demolition_cost(Rect2I area) const
 {
     DEBUG_FUNCTION();
 
     s32 total = 0;
 
     // Building demolition cost
-    ChunkedArray<Building*> buildingsToDemolish = findBuildingsOverlappingArea(city, area);
+    ChunkedArray<Building*> buildingsToDemolish = find_buildings_overlapping_area(area);
     for (auto it = buildingsToDemolish.iterate(); it.hasNext(); it.next()) {
         Building* building = it.getValue();
         total += getBuildingDef(building)->demolishCost;
@@ -317,36 +316,36 @@ s32 calculateDemolitionCost(City* city, Rect2I area)
     return total;
 }
 
-void demolishRect(City* city, Rect2I area)
+void City::demolish_rect(Rect2I area)
 {
     DEBUG_FUNCTION();
 
     // NB: We assume that we've already checked we can afford this!
 
     // Building demolition
-    ChunkedArray<Building*> buildingsToDemolish = findBuildingsOverlappingArea(city, area);
+    ChunkedArray<Building*> buildingsToDemolish = find_buildings_overlapping_area(area);
     for (auto it = buildingsToDemolish.iterate(buildingsToDemolish.count - 1, false, true);
         it.hasNext();
         it.next()) {
         Building* building = it.getValue();
         BuildingDef* def = getBuildingDef(building);
 
-        city->zoneLayer.population[def->growsInZone] -= building->currentResidents + building->currentJobs;
+        zoneLayer.population[def->growsInZone] -= building->currentResidents + building->currentJobs;
 
         Rect2I buildingFootprint = building->footprint;
 
         // Clean up other references
-        notifyBuildingDemolished(&city->crimeLayer, def, building);
-        notifyBuildingDemolished(&city->fireLayer, def, building);
-        notifyBuildingDemolished(&city->healthLayer, def, building);
-        notifyBuildingDemolished(&city->powerLayer, def, building);
+        notifyBuildingDemolished(&crimeLayer, def, building);
+        notifyBuildingDemolished(&fireLayer, def, building);
+        notifyBuildingDemolished(&healthLayer, def, building);
+        notifyBuildingDemolished(&powerLayer, def, building);
 
         building->id = 0;
         building->typeID = -1;
 
-        s32 buildingIndex = city->tileBuildingIndex.get(buildingFootprint.x(), buildingFootprint.y());
-        city->buildings.removeIndex(buildingIndex);
-        removeEntity(city, building->entity);
+        s32 buildingIndex = tileBuildingIndex.get(buildingFootprint.x(), buildingFootprint.y());
+        buildings.removeIndex(buildingIndex);
+        remove_entity(building->entity);
 
         building = nullptr; // For safety, because we just deleted the Building!
 
@@ -356,21 +355,21 @@ void demolishRect(City* city, Rect2I area)
             for (s32 x = buildingFootprint.x();
                 x < buildingFootprint.x() + buildingFootprint.width();
                 x++) {
-                city->tileBuildingIndex.set(x, y, 0);
+                tileBuildingIndex.set(x, y, 0);
             }
         }
 
         // Only need to add the footprint as a separate rect if it's not inside the area!
         if (!area.contains(buildingFootprint)) {
-            markZonesAsEmpty(city, buildingFootprint);
-            markAreaDirty(city, buildingFootprint);
+            markZonesAsEmpty(this, buildingFootprint);
+            mark_area_dirty(buildingFootprint);
         }
     }
 
     // Expand the area to account for buildings to the left or up from it
     auto& building_catalogue = BuildingCatalogue::the();
     Rect2I expandedArea = area.expanded(building_catalogue.overallMaxBuildingDim, 0, 0, building_catalogue.overallMaxBuildingDim);
-    Rect2I sectorsArea = city->sectors.get_sectors_covered(expandedArea);
+    Rect2I sectorsArea = sectors.get_sectors_covered(expandedArea);
 
     for (s32 sY = sectorsArea.y();
         sY < sectorsArea.y() + sectorsArea.height();
@@ -378,7 +377,7 @@ void demolishRect(City* city, Rect2I area)
         for (s32 sX = sectorsArea.x();
             sX < sectorsArea.x() + sectorsArea.width();
             sX++) {
-            CitySector* sector = city->sectors.get(sX, sY);
+            CitySector* sector = sectors.get(sX, sY);
 
             // Rebuild the ownedBuildings array
             sector->ownedBuildings.clear();
@@ -389,7 +388,7 @@ void demolishRect(City* city, Rect2I area)
                 for (s32 x = sector->bounds.x();
                     x < sector->bounds.x() + sector->bounds.width();
                     x++) {
-                    Building* b = getBuildingAt(city, x, y);
+                    Building* b = get_building_at(x, y);
                     if (b != nullptr) {
                         if (b->footprint.x() == x && b->footprint.y() == y) {
                             sector->ownedBuildings.append(b);
@@ -401,14 +400,14 @@ void demolishRect(City* city, Rect2I area)
     }
 
     // Mark area as changed
-    markZonesAsEmpty(city, area);
-    markAreaDirty(city, area);
+    markZonesAsEmpty(this, area);
+    mark_area_dirty(area);
 
     // Any buildings that would have connected with something that just got demolished need to refresh!
-    updateAdjacentBuildingVariants(city, area);
+    updateAdjacentBuildingVariants(this, area);
 }
 
-ChunkedArray<Building*> findBuildingsOverlappingArea(City* city, Rect2I area, Flags<BuildingQueryFlag> flags)
+ChunkedArray<Building*> City::find_buildings_overlapping_area(Rect2I area, Flags<BuildingQueryFlag> flags) const
 {
     DEBUG_FUNCTION();
 
@@ -419,7 +418,7 @@ ChunkedArray<Building*> findBuildingsOverlappingArea(City* city, Rect2I area, Fl
     // (but don't do that if we only care about origins)
     s32 expansion = flags.has(BuildingQueryFlag::RequireOriginInArea) ? 0 : BuildingCatalogue::the().overallMaxBuildingDim;
     Rect2I expandedArea = area.expanded(expansion, 0, 0, expansion);
-    Rect2I sectorsArea = city->sectors.get_sectors_covered(expandedArea);
+    Rect2I sectorsArea = sectors.get_sectors_covered(expandedArea);
 
     for (s32 sY = sectorsArea.y();
         sY < sectorsArea.y() + sectorsArea.height();
@@ -427,7 +426,7 @@ ChunkedArray<Building*> findBuildingsOverlappingArea(City* city, Rect2I area, Fl
         for (s32 sX = sectorsArea.x();
             sX < sectorsArea.x() + sectorsArea.width();
             sX++) {
-            CitySector* sector = city->sectors.get(sX, sY);
+            auto* sector = sectors.get(sX, sY);
 
             for (auto it = sector->ownedBuildings.iterate(); it.hasNext(); it.next()) {
                 Building* building = it.getValue();
@@ -441,21 +440,19 @@ ChunkedArray<Building*> findBuildingsOverlappingArea(City* city, Rect2I area, Fl
     return result;
 }
 
-void drawCity(City* city, Rect2I visibleTileBounds)
+void City::draw(Rect2I visible_tile_bounds) const
 {
     auto& renderer = the_renderer();
-    drawTerrain(city, visibleTileBounds, renderer.shaderIds.pixelArt);
+    drawTerrain(this, visible_tile_bounds, renderer.shaderIds.pixelArt);
 
-    drawZones(city, visibleTileBounds, renderer.shaderIds.untextured);
+    drawZones(this, visible_tile_bounds, renderer.shaderIds.untextured);
 
-    // drawBuildings(city, visibleTileBounds, renderer.shaderIds.pixelArt, demolitionRect);
-
-    drawEntities(city, visibleTileBounds);
+    draw_entities(visible_tile_bounds);
 
     // Draw sectors
     // NB: this is really hacky debug code
     if (false) {
-        Rect2I visibleSectors = city->sectors.get_sectors_covered(visibleTileBounds);
+        Rect2I visibleSectors = sectors.get_sectors_covered(visible_tile_bounds);
         DrawRectsGroup* group = beginRectsGroupUntextured(&renderer.world_overlay_buffer(), renderer.shaderIds.untextured, visibleSectors.area());
         auto sectorColor = Colour::from_rgb_255(255, 255, 255, 40);
         for (s32 sy = visibleSectors.y();
@@ -465,7 +462,7 @@ void drawCity(City* city, Rect2I visibleTileBounds)
                 sx < visibleSectors.x() + visibleSectors.width();
                 sx++) {
                 if ((sx + sy) % 2) {
-                    CitySector* sector = city->sectors.get(sx, sy);
+                    auto* sector = sectors.get(sx, sy);
                     addUntexturedRect(group, sector->bounds, sectorColor);
                 }
             }
@@ -474,21 +471,19 @@ void drawCity(City* city, Rect2I visibleTileBounds)
     }
 }
 
-bool buildingExistsAt(City* city, s32 x, s32 y)
+bool City::building_exists_at(s32 x, s32 y) const
 {
-    bool result = city->tileBuildingIndex.get(x, y) > 0;
-
-    return result;
+    return tileBuildingIndex.get(x, y) > 0;
 }
 
-Building* getBuildingAt(City* city, s32 x, s32 y)
+Building* City::get_building_at(s32 x, s32 y)
 {
     Building* result = nullptr;
 
-    if (tileExists(city, x, y)) {
-        u32 buildingID = city->tileBuildingIndex.get(x, y);
+    if (tile_exists(x, y)) {
+        u32 buildingID = tileBuildingIndex.get(x, y);
         if (buildingID > 0) {
-            result = city->buildings.get(buildingID);
+            result = buildings.get(buildingID);
         }
     }
 
@@ -496,19 +491,19 @@ Building* getBuildingAt(City* city, s32 x, s32 y)
 }
 
 // Runs an update on X sectors' buildings, gradually covering the whole city with subsequent calls.
-void updateSomeBuildings(City* city)
+void City::update_some_buildings()
 {
-    for (s32 i = 0; i < city->sectors.sectors_to_update_per_tick(); i++) {
-        auto [_, sector] = city->sectors.get_next_sector();
+    for (s32 i = 0; i < sectors.sectors_to_update_per_tick(); i++) {
+        auto [_, sector] = sectors.get_next_sector();
 
         for (auto it = sector.ownedBuildings.iterate(); it.hasNext(); it.next()) {
             Building* building = it.getValue();
-            updateBuilding(city, building);
+            updateBuilding(this, building);
         }
     }
 }
 
-void saveBuildings(City* city, BinaryFileWriter* writer)
+void City::save_buildings(BinaryFileWriter* writer) const
 {
     writer->startSection<SAVSection_Buildings>(SAV_BUILDING_ID, SAV_BUILDING_VERSION);
     SAVSection_Buildings buildingSection = {};
@@ -530,7 +525,7 @@ void saveBuildings(City* city, BinaryFileWriter* writer)
     buildingSection.buildingTypeTable = writer->writeArray<SAVBuildingTypeEntry>(buildingTypeTable, buildingTypeTableLoc);
 
     // Highest ID
-    buildingSection.highestBuildingID = city->highestBuildingID;
+    buildingSection.highestBuildingID = highestBuildingID;
 
     //
     // The buildings themselves!
@@ -547,12 +542,12 @@ void saveBuildings(City* city, BinaryFileWriter* writer)
     //
     // - Sam, 11/10/2019
     //
-    buildingSection.buildingCount = city->buildings.count - 1; // Not the null building!
+    buildingSection.buildingCount = buildings.count - 1; // Not the null building!
 
     auto tempBuildings = writer->arena->allocate_multiple<SAVBuilding>(buildingSection.buildingCount);
     s32 tempBuildingIndex = 0;
 
-    for (auto it = city->buildings.iterate(); it.hasNext(); it.next()) {
+    for (auto it = buildings.iterate(); it.hasNext(); it.next()) {
         Building* building = it.get();
         if (building->id == 0)
             continue; // Skip the null building!
@@ -578,7 +573,7 @@ void saveBuildings(City* city, BinaryFileWriter* writer)
     writer->endSection<SAVSection_Buildings>(&buildingSection);
 }
 
-bool loadBuildings(City* city, BinaryFileReader* reader)
+bool City::load_buildings(BinaryFileReader* reader)
 {
     bool succeeded = reader->startSection(SAV_BUILDING_ID, SAV_BUILDING_VERSION);
     while (succeeded) {
@@ -586,7 +581,7 @@ bool loadBuildings(City* city, BinaryFileReader* reader)
         if (!section)
             break;
 
-        city->highestBuildingID = section->highestBuildingID;
+        highestBuildingID = section->highestBuildingID;
 
         // Map the file's building type IDs to the game's ones
         // NB: count+1 because the file won't save the null building, so we need to compensate
@@ -636,7 +631,7 @@ bool loadBuildings(City* city, BinaryFileReader* reader)
 
             Rect2I footprint { savBuilding->x, savBuilding->y, savBuilding->w, savBuilding->h };
             BuildingDef* def = getBuildingDef(oldTypeToNewType[savBuilding->typeID]);
-            Building* building = addBuildingDirect(city, savBuilding->id, def, footprint, savBuilding->creationDate);
+            Building* building = add_building_direct(savBuilding->id, def, footprint, savBuilding->creationDate);
             building->variantIndex = savBuilding->variantIndex == -1 ? Optional<s16> {} : Optional<s16> { savBuilding->variantIndex.value() };
             building->spriteOffset = savBuilding->spriteOffset;
             building->currentResidents = savBuilding->currentResidents;
@@ -648,7 +643,7 @@ bool loadBuildings(City* city, BinaryFileReader* reader)
             loadBuildingSprite(building);
 
             // This is a bit hacky but it's how we calculate it elsewhere
-            city->zoneLayer.population[def->growsInZone] += building->currentResidents + building->currentJobs;
+            zoneLayer.population[def->growsInZone] += building->currentResidents + building->currentJobs;
         }
 
         break;
@@ -659,7 +654,7 @@ bool loadBuildings(City* city, BinaryFileReader* reader)
 
 Building* City::get_building(BuildingRef const& ref)
 {
-    Building* building = getBuildingAt(this, ref.position().x, ref.position().y);
+    Building* building = get_building_at(ref.position().x, ref.position().y);
     if ((building != nullptr) && (building->id == ref.id())) {
         return building;
     }

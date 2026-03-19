@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2018-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -10,7 +10,7 @@
 #include <Sim/BuildingCatalogue.h>
 #include <Sim/City.h>
 
-BuildingDef* getBuildingDef(Building* building)
+BuildingDef* getBuildingDef(Building const* building)
 {
     BuildingDef* result = nullptr;
 
@@ -115,7 +115,7 @@ void updateBuildingVariant(City* city, Building* building, BuildingDef* passedDe
         static_assert(to_underlying(ConnectionDirection::COUNT) == 8, "updateBuildingVariant() assumes ConnectionDirectionCount == 8");
         EnumMap<ConnectionDirection, BuildingDef*> neighbourDefs;
         for (auto direction : enum_values<ConnectionDirection>()) {
-            neighbourDefs[direction] = getBuildingDef(getBuildingAt(city, x + connection_offsets[direction].x, y + connection_offsets[direction].y));
+            neighbourDefs[direction] = getBuildingDef(city->get_building_at(x + connection_offsets[direction].x, y + connection_offsets[direction].y));
         }
 
         // Search for a matching variant
@@ -155,14 +155,14 @@ void updateAdjacentBuildingVariants(City* city, Rect2I footprint)
     for (s32 y = footprint.y();
         y < footprint.y() + footprint.height();
         y++) {
-        Building* buildingL = getBuildingAt(city, footprint.x() - 1, y);
+        Building* buildingL = city->get_building_at(footprint.x() - 1, y);
         if (buildingL) {
             BuildingDef* defL = getBuildingDef(buildingL);
             if (defL->variants.count > 0)
                 updateBuildingVariant(city, buildingL, defL);
         }
 
-        Building* buildingR = getBuildingAt(city, footprint.x() + footprint.width(), y);
+        Building* buildingR = city->get_building_at(footprint.x() + footprint.width(), y);
         if (buildingR) {
             BuildingDef* defD = getBuildingDef(buildingR);
             if (defD->variants.count > 0)
@@ -173,8 +173,8 @@ void updateAdjacentBuildingVariants(City* city, Rect2I footprint)
     for (s32 x = footprint.x();
         x < footprint.x() + footprint.width();
         x++) {
-        Building* buildingU = getBuildingAt(city, x, footprint.y() - 1);
-        Building* buildingD = getBuildingAt(city, x, footprint.y() + footprint.height());
+        Building* buildingU = city->get_building_at(x, footprint.y() - 1);
+        Building* buildingD = city->get_building_at(x, footprint.y() + footprint.height());
         if (buildingU) {
             BuildingDef* defU = getBuildingDef(buildingU);
             if (defU->variants.count > 0)

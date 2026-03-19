@@ -30,12 +30,76 @@ struct CitySector {
     ChunkedArray<Building*> ownedBuildings;
 };
 
+enum class BuildingQueryFlag : u8 {
+    RequireOriginInArea, // Only return buildings whose origin (top-left corner) is within the given area.
+    COUNT,
+};
+
 struct City {
     Building* get_building(BuildingRef const&);
     Building const* get_building(BuildingRef const& ref) const
     {
         return const_cast<City*>(this)->get_building(ref);
     }
+
+    void draw(Rect2I visible_tile_bounds) const;
+
+    void mark_area_dirty(Rect2I);
+
+    bool tile_exists(s32 x, s32 y) const;
+
+    bool building_exists_at(s32 x, s32 y) const;
+    Building* get_building_at(s32 x, s32 y);
+    Building const* get_building_at(s32 x, s32 y) const
+    {
+        return const_cast<City*>(this)->get_building_at(x, y);
+    }
+
+    // Returns a TEMPORARY-allocated list of buildings that are overlapping `area`, guaranteeing that
+    // each building is only listed once. No guarantees are made about the order.
+    ChunkedArray<Building*> find_buildings_overlapping_area(Rect2I area, Flags<BuildingQueryFlag> flags = {}) const;
+
+    void update_some_buildings();
+
+    Building* add_building(BuildingDef* def, Rect2I footprint, GameTimestamp creationDate = getCurrentTimestamp());
+    bool can_place_building(BuildingDef* def, s32 left, s32 top) const;
+    s32 calculate_build_cost(BuildingDef* def, Rect2I area) const;
+    void place_building(BuildingDef* def, s32 left, s32 top, bool markAreasDirty = true);
+    void place_building_rect(BuildingDef* def, Rect2I area);
+
+    void save_buildings(BinaryFileWriter* writer) const;
+    bool load_buildings(BinaryFileReader* reader);
+
+    s32 calculate_demolition_cost(Rect2I area) const;
+    void demolish_rect(Rect2I area);
+
+    template<typename T>
+    Entity* add_entity(Entity::Type type, T* entityData)
+    {
+        Indexed<Entity> entityRecord = entities.append();
+        // logInfo("Adding entity #{0}"_s, {formatInt(entityRecord.index)});
+        entityRecord.value().index = entityRecord.index();
+
+        Entity& entity = entityRecord.value();
+        entity.type = type;
+        // Make sure we're supplying entity data that matched the entity type!
+        ASSERT(checkEntityMatchesType<T>(&entity));
+        entity.dataPointer = entityData;
+
+        entity.color = Colour::white();
+        entity.depth = 0;
+
+        entity.canBeDemolished = false;
+
+        return &entity;
+    }
+
+    void remove_entity(Entity* entity);
+    void draw_entities(Rect2I visibleTileBounds) const;
+
+    // TODO: These are budget related. Separate that out?
+    bool can_afford(s32 cost) const;
+    void spend(s32 cost);
 
     String name;
     String playerName;
@@ -71,6 +135,9 @@ struct City {
     ArrayChunkPool<Building*> sectorBuildingsChunkPool;
     ArrayChunkPool<Rect2I> sectorBoundariesChunkPool;
     ArrayChunkPool<BuildingRef> buildingRefsChunkPool;
+
+private:
+    Building* add_building_direct(s32 id, BuildingDef* def, Rect2I footprint, GameTimestamp creationDate);
 };
 
 u8 const maxDistanceToWater = 10;
@@ -79,62 +146,3 @@ u8 const maxDistanceToWater = 10;
 // Public API
 //
 void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String name, String playerName, s32 funds);
-void drawCity(City* city, Rect2I visibleTileBounds);
-
-void markAreaDirty(City* city, Rect2I bounds);
-
-bool tileExists(City* city, s32 x, s32 y);
-
-bool canAfford(City* city, s32 cost);
-void spend(City* city, s32 cost);
-
-bool buildingExistsAt(City* city, s32 x, s32 y);
-Building* getBuildingAt(City* city, s32 x, s32 y);
-// Returns a TEMPORARY-allocated list of buildings that are overlapping `area`, guaranteeing that
-// each building is only listed once. No guarantees are made about the order.
-enum class BuildingQueryFlag : u8 {
-    RequireOriginInArea, // Only return buildings whose origin (top-left corner) is within the given area.
-    COUNT,
-};
-ChunkedArray<Building*> findBuildingsOverlappingArea(City* city, Rect2I area, Flags<BuildingQueryFlag> flags = {});
-bool canPlaceBuilding(City* city, BuildingDef* def, s32 left, s32 top);
-s32 calculateBuildCost(City* city, BuildingDef* def, Rect2I area);
-void placeBuilding(City* city, BuildingDef* def, s32 left, s32 top, bool markAreasDirty = true);
-void placeBuildingRect(City* city, BuildingDef* def, Rect2I area);
-void updateSomeBuildings(City* city);
-
-s32 calculateDemolitionCost(City* city, Rect2I area);
-void demolishRect(City* city, Rect2I area);
-
-template<typename T>
-Entity* addEntity(City* city, Entity::Type type, T* entityData)
-{
-    Indexed<Entity> entityRecord = city->entities.append();
-    // logInfo("Adding entity #{0}"_s, {formatInt(entityRecord.index)});
-    entityRecord.value().index = entityRecord.index();
-
-    Entity& entity = entityRecord.value();
-    entity.type = type;
-    // Make sure we're supplying entity data that matched the entity type!
-    ASSERT(checkEntityMatchesType<T>(&entity));
-    entity.dataPointer = entityData;
-
-    entity.color = Colour::white();
-    entity.depth = 0;
-
-    entity.canBeDemolished = false;
-
-    return &entity;
-}
-
-void removeEntity(City* city, Entity* entity);
-void drawEntities(City* city, Rect2I visibleTileBounds);
-
-void saveBuildings(City* city, BinaryFileWriter* writer);
-bool loadBuildings(City* city, BinaryFileReader* reader);
-
-//
-// Private API
-//
-Building* addBuildingDirect(City* city, s32 id, BuildingDef* def, Rect2I footprint, GameTimestamp creationDate);
-Building* addBuilding(City* city, BuildingDef* def, Rect2I footprint, GameTimestamp creationDate = getCurrentTimestamp());

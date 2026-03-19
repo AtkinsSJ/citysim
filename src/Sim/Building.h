@@ -156,7 +156,7 @@ struct Building {
     BuildingRef get_reference() const;
 };
 
-BuildingDef* getBuildingDef(Building* building);
+BuildingDef* getBuildingDef(Building const* building);
 
 bool buildingDefHasType(BuildingDef* def, s32 typeID);
 

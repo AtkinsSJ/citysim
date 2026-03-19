@@ -47,7 +47,7 @@ void updateTransportLayer(City* city, TransportLayer* layer)
             // Transport types on tile, based on what buildings are present
             for (s32 y = dirtyRect.y(); y < dirtyRect.y() + dirtyRect.height(); y++) {
                 for (s32 x = dirtyRect.x(); x < dirtyRect.x() + dirtyRect.width(); x++) {
-                    Building* building = getBuildingAt(city, x, y);
+                    Building* building = city->get_building_at(x, y);
                     if (building != nullptr) {
                         BuildingDef* def = getBuildingDef(building);
                         layer->tileTransportTypes.set(x, y, def->transportTypes);
@@ -84,7 +84,7 @@ void markTransportLayerDirty(TransportLayer* layer, Rect2I bounds)
 
 bool doesTileHaveTransport(City* city, s32 x, s32 y, TransportType type)
 {
-    if (!tileExists(city, x, y))
+    if (!city->tile_exists(x, y))
         return false;
 
     return city->transportLayer.tileTransportTypes.get(x, y).has(type);
@@ -92,7 +92,7 @@ bool doesTileHaveTransport(City* city, s32 x, s32 y, TransportType type)
 
 bool doesTileHaveTransport(City* city, s32 x, s32 y, Flags<TransportType> types)
 {
-    if (!tileExists(city, x, y))
+    if (!city->tile_exists(x, y))
         return false;
 
     return city->transportLayer.tileTransportTypes.get(x, y).has_any(types);

@@ -116,7 +116,7 @@ void updateSectorPowerValues(City* city, PowerSector* sector)
     }
 
     // Count power from buildings
-    ChunkedArray<Building*> sectorBuildings = findBuildingsOverlappingArea(city, sector->bounds, BuildingQueryFlag::RequireOriginInArea);
+    ChunkedArray<Building*> sectorBuildings = city->find_buildings_overlapping_area(sector->bounds, BuildingQueryFlag::RequireOriginInArea);
     for (auto it = sectorBuildings.iterate();
         it.hasNext();
         it.next()) {
@@ -139,7 +139,7 @@ bool doesTileHavePowerNetwork(City* city, s32 x, s32 y)
 {
     bool result = false;
 
-    if (tileExists(city, x, y)) {
+    if (city->tile_exists(x, y)) {
         PowerLayer* layer = &city->powerLayer;
         PowerSector* sector = layer->sectors.get_sector_at_tile_pos(x, y);
 
@@ -157,7 +157,7 @@ PowerNetwork* getPowerNetworkAt(City* city, s32 x, s32 y)
 {
     PowerNetwork* result = nullptr;
 
-    if (tileExists(city, x, y)) {
+    if (city->tile_exists(x, y)) {
         PowerLayer* layer = &city->powerLayer;
         PowerSector* sector = layer->sectors.get_sector_at_tile_pos(x, y);
 
@@ -312,7 +312,7 @@ void recalculateSectorPowerGroups(City* city, PowerSector* sector)
         return;
 
     // Store references to the buildings in each group, for faster updating later
-    ChunkedArray<Building*> sectorBuildings = findBuildingsOverlappingArea(city, sector->bounds);
+    ChunkedArray<Building*> sectorBuildings = city->find_buildings_overlapping_area(sector->bounds);
     for (auto it = sectorBuildings.iterate();
         it.hasNext();
         it.next()) {
@@ -559,7 +559,7 @@ void updatePowerLayer(City* city, PowerLayer* layer)
             // Clear the "distance to power" for the surrounding area to 0 or 255
             for (s32 y = dirtyRect.y(); y < dirtyRect.y() + dirtyRect.height(); y++) {
                 for (s32 x = dirtyRect.x(); x < dirtyRect.x() + dirtyRect.width(); x++) {
-                    Building* building = getBuildingAt(city, x, y);
+                    Building* building = city->get_building_at(x, y);
                     BuildingDef* def = nullptr;
                     if (building != nullptr) {
                         def = getBuildingDef(building);

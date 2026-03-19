@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2018-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -28,7 +28,7 @@ void initTerrainLayer(TerrainLayer* layer, City* city, MemoryArena* gameArena)
     layer->tileBorderSprite = gameArena->allocate_array_2d<Optional<SpriteRef>>(city->bounds.size());
 }
 
-TerrainDef* getTerrainAt(City* city, s32 x, s32 y)
+TerrainDef* getTerrainAt(City const* city, s32 x, s32 y)
 {
     u8 terrainType = city->terrainLayer.tileTerrainType.get_if_exists(x, y, 0);
 
@@ -59,7 +59,7 @@ void setTerrainAt(City* city, s32 x, s32 y, u8 terrainType)
     updateDistanceToWater(city, { x, y, 1, 1 });
 }
 
-u8 getDistanceToWaterAt(City* city, s32 x, s32 y)
+u8 getDistanceToWaterAt(City const* city, s32 x, s32 y)
 {
     return city->terrainLayer.tileDistanceToWater.get(x, y);
 }
@@ -88,11 +88,11 @@ void updateDistanceToWater(City* city, Rect2I dirtyBounds)
     updateDistances(&layer->tileDistanceToWater, bounds, maxDistanceToWater);
 }
 
-void drawTerrain(City* city, Rect2I visibleArea, s8 shaderID)
+void drawTerrain(City const* city, Rect2I visibleArea, s8 shaderID)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
 
-    TerrainLayer* layer = &city->terrainLayer;
+    auto* layer = &city->terrainLayer;
     auto& renderer = the_renderer();
 
     Rect2 spriteBounds { 0.0f, 0.0f, 1.0f, 1.0f };
@@ -209,9 +209,9 @@ void generateTerrain(City* city, Random& gameRandom)
             for (s32 y = boundingBox.y(); y < boundingBox.y() + boundingBox.height(); y++) {
                 for (s32 x = boundingBox.x(); x < boundingBox.x() + boundingBox.width(); x++) {
                     if (getTerrainAt(city, x, y)->canBuildOn
-                        && (getBuildingAt(city, x, y) == nullptr)
+                        && (city->get_building_at(x, y) == nullptr)
                         && forestSplat.contains(x, y)) {
-                        addBuilding(city, treeDef, { x, y, treeDef->size.x, treeDef->size.y });
+                        city->add_building(treeDef, { x, y, treeDef->size.x, treeDef->size.y });
                     }
                 }
             }

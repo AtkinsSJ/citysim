@@ -114,7 +114,7 @@ void updateFireLayer(City* city, FireLayer* layer)
                 for (s32 x = sector.bounds.x(); x < sector.bounds.x() + sector.bounds.width(); x++) {
                     float tileFireRisk = 0.0f;
 
-                    Building* building = getBuildingAt(city, x, y);
+                    Building* building = city->get_building_at(x, y);
                     if (building) {
                         BuildingDef* def = getBuildingDef(building);
                         tileFireRisk += def->fireRisk;
@@ -205,7 +205,7 @@ void addFireRaw(City* city, s32 x, s32 y, GameTimestamp startDate)
 
     fire->pos = v2i(x, y);
     fire->startDate = startDate;
-    fire->entity = addEntity(city, Entity::Type::Fire, fire);
+    fire->entity = city->add_entity(Entity::Type::Fire, fire);
     // TODO: Probably most of this wants to be moved into addEntity()
     fire->entity->bounds = { x, y, 1, 1 };
     fire->entity->sprite = SpriteRef { "e_fire_1x1"_s, App::the().cosmetic_random().next() };
@@ -231,7 +231,7 @@ void removeFireAt(City* city, s32 x, s32 y)
     if (existing_fire.has_value()) {
         // Remove it!
         auto& [index, fire] = existing_fire.value();
-        removeEntity(city, fire.entity);
+        city->remove_entity(fire.entity);
         sectorAtPosition->activeFires.take_index(index);
         layer->activeFireCount--;
 
@@ -272,7 +272,7 @@ void debugInspectFire(UI::Panel* panel, City* city, s32 x, s32 y)
 
     panel->addLabel(myprintf("There are {0} fire protection buildings and {1} active fires in the city."_s, { formatInt(layer->fireProtectionBuildings.count), formatInt(layer->activeFireCount) }));
 
-    Building* buildingAtPos = getBuildingAt(city, x, y);
+    Building* buildingAtPos = city->get_building_at(x, y);
     float buildingFireRisk = 100.0f * ((buildingAtPos == nullptr) ? 0.0f : getBuildingDef(buildingAtPos)->fireRisk);
 
     panel->addLabel(myprintf("Fire risk: {0}, from:\n- Building: {1}%\n- Nearby fires: {2}"_s, {

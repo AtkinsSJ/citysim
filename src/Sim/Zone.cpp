@@ -44,7 +44,7 @@ void initZoneLayer(ZoneLayer* zoneLayer, City* city, MemoryArena* gameArena)
     }
 }
 
-ZoneType getZoneAt(City* city, s32 x, s32 y)
+ZoneType getZoneAt(City const* city, s32 x, s32 y)
 {
     return (ZoneType)city->zoneLayer.tileZone.get_if_exists(x, y, ZoneType::None);
 }
@@ -85,7 +85,7 @@ CanZoneQuery queryCanZoneTiles(City* city, ZoneType zoneType, Rect2I input_bound
                 continue;
 
             // Tile must be empty
-            if (buildingExistsAt(city, x, y))
+            if (city->building_exists_at(x, y))
                 continue;
 
             s32 relative_x = x - bounds.x();
@@ -112,7 +112,7 @@ s32 CanZoneQuery::calculate_zone_cost() const
     return zoneableTilesCount * zoneDef->costPerTile;
 }
 
-void drawZones(City* city, Rect2I visibleTileBounds, s8 shaderID)
+void drawZones(City const* city, Rect2I visibleTileBounds, s8 shaderID)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
 
@@ -168,7 +168,7 @@ void placeZone(City* city, ZoneType zoneType, Rect2I area)
                 // Terrain must be buildable
                 // @Speed: URGH this terrain lookup for every tile is nasty!
                 && (getTerrainAt(city, x, y)->canBuildOn)
-                && (!buildingExistsAt(city, x, y))) {
+                && (!city->building_exists_at(x, y))) {
                 zoneLayer->tileZone.set(x, y, zoneType);
             }
         }
@@ -177,7 +177,7 @@ void placeZone(City* city, ZoneType zoneType, Rect2I area)
     // TODO: mark the affected zone sectors as dirty
 
     // Zones carry power!
-    markAreaDirty(city, area);
+    city->mark_area_dirty(area);
 }
 
 void markZonesAsEmpty(City* /*city*/, Rect2I /*footprint*/)
@@ -211,7 +211,7 @@ void updateZoneLayer(City* city, ZoneLayer* layer)
                     if (zone == ZoneType::None)
                         continue;
 
-                    bool isFilled = buildingExistsAt(city, x, y);
+                    bool isFilled = city->building_exists_at(x, y);
                     switch (zone) {
                     case ZoneType::Residential: {
                         sector.zoneSectorFlags.add(ZoneSectorFlags::HasResZones);
@@ -390,7 +390,7 @@ bool isZoneAcceptable(City* city, ZoneType zoneType, s32 x, s32 y)
 
     if (getZoneAt(city, x, y) != zoneType)
         return false;
-    if (buildingExistsAt(city, x, y))
+    if (city->building_exists_at(x, y))
         return false;
     if (getDistanceToTransport(city, x, y, TransportType::Road) > def.maximumDistanceToRoad)
         return false;
@@ -588,11 +588,11 @@ void growSomeZoneBuildings(City* city)
                     // FIXME: Oh boy do we need to do some const-correctness.
                     auto* building_def_ptr = const_cast<BuildingDef*>(&buildingDef.value());
 
-                    Building* building = addBuilding(city, building_def_ptr, footprint);
+                    Building* building = city->add_building(building_def_ptr, footprint);
                     layer->population[zone_type] += building->currentResidents + building->currentJobs;
                     updateBuildingVariant(city, building, building_def_ptr);
 
-                    markAreaDirty(city, footprint);
+                    city->mark_area_dirty(footprint);
 
                     remainingDemand -= (building->currentResidents + building->currentJobs);
                     remainingBuildingCount--;

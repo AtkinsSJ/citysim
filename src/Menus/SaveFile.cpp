@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2019-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -69,7 +69,7 @@ bool writeSaveFile(FileHandle* file, GameState* gameState)
         saveTerrainLayer(&city->terrainLayer, &writer);
 
         // Buildings
-        saveBuildings(city, &writer);
+        city->save_buildings(&writer);
 
         // Layers
         saveBudgetLayer(&city->budgetLayer, &writer);

@@ -171,7 +171,7 @@ int main(int argc, char* argv[])
                  // TODO: Some kind of reset would be better than this, but this is temporary until we add
                  //       proper terrain generation and UI, so meh.
                  if (city->buildings.count > 0) {
-                     demolishRect(city, city->bounds);
+                     city->demolish_rect(city->bounds);
                      city->highestBuildingID = 0;
                  }
                  generateTerrain(city, *game_state.gameRandom);
@@ -199,7 +199,7 @@ int main(int argc, char* argv[])
                  auto& game_state = game->state();
 
                  City* city = &game_state.city;
-                 markAreaDirty(city, city->bounds);
+                 city->mark_area_dirty(city->bounds);
              } });
 
         globalConsole->register_command(
