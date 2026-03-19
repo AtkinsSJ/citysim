@@ -81,7 +81,7 @@ CanZoneQuery queryCanZoneTiles(City* city, ZoneType zoneType, Rect2I input_bound
 
             // Terrain must be buildable
             // @Speed: URGH this terrain lookup for every tile is nasty!
-            if (!getTerrainAt(city, x, y)->canBuildOn)
+            if (!city->terrainLayer.terrain_at(x, y).canBuildOn)
                 continue;
 
             // Tile must be empty
@@ -167,7 +167,7 @@ void placeZone(City* city, ZoneType zoneType, Rect2I area)
             if ((zoneLayer->tileZone.get(x, y) != zoneType)
                 // Terrain must be buildable
                 // @Speed: URGH this terrain lookup for every tile is nasty!
-                && (getTerrainAt(city, x, y)->canBuildOn)
+                && (city->terrainLayer.terrain_at(x, y).canBuildOn)
                 && (!city->building_exists_at(x, y))) {
                 zoneLayer->tileZone.set(x, y, zoneType);
             }

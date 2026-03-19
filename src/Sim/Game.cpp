@@ -240,8 +240,8 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
     ui->addLabel(myprintf("CitySector: x={0} y={1} w={2} h={3}"_s, { formatInt(sector->bounds.x()), formatInt(sector->bounds.y()), formatInt(sector->bounds.width()), formatInt(sector->bounds.height()) }));
 
     // Terrain
-    TerrainDef* terrain = getTerrainAt(city, tilePos.x, tilePos.y);
-    ui->addLabel(myprintf("Terrain: {0}, {1} tiles from water"_s, { getText(terrain->textAssetName), formatInt(getDistanceToWaterAt(city, tilePos.x, tilePos.y)) }));
+    auto& terrain = city->terrainLayer.terrain_at(tilePos.x, tilePos.y);
+    ui->addLabel(myprintf("Terrain: {0}, {1} tiles from water"_s, { getText(terrain.textAssetName), formatInt(city->terrainLayer.distance_to_water_at(tilePos.x, tilePos.y)) }));
 
     // Zone
     ZoneType zone = city->zoneLayer.get_zone_at(tilePos.x, tilePos.y);
@@ -572,7 +572,7 @@ NonnullOwnPtr<GameScene> GameScene::create_new(u32 seed)
 
     s32 gameStartFunds = 1000000;
     initCity(&game_scene->m_arena, &game_scene->m_state->city, 128, 128, getText("city_default_name"_s), getText("player_default_name"_s), gameStartFunds);
-    generateTerrain(&game_scene->m_state->city, *game_scene->m_state->gameRandom);
+    game_scene->m_state->city.terrainLayer.generate(game_scene->m_state->city, seed);
 
     initGameClock(&game_scene->m_state->gameClock);
 
@@ -633,7 +633,7 @@ ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const
             } else
                 break;
 
-            if (!loadTerrainLayer(&city->terrainLayer, city, &reader))
+            if (!city->terrainLayer.load(reader))
                 break;
             if (!city->load_buildings(&reader))
                 break;
@@ -887,7 +887,7 @@ void GameScene::update_and_render(float delta_time)
             if (!mouseIsOverUI
                 && mouseButtonPressed(MouseButton::Left)
                 && city.tile_exists(mouseTilePos.x, mouseTilePos.y)) {
-                setTerrainAt(&city, mouseTilePos.x, mouseTilePos.y, gameState->selectedTerrainID);
+                city.terrainLayer.set_terrain_at(mouseTilePos.x, mouseTilePos.y, gameState->selectedTerrainID);
             }
         } break;
 

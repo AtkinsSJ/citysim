@@ -174,7 +174,8 @@ int main(int argc, char* argv[])
                      city->demolish_rect(city->bounds);
                      city->highestBuildingID = 0;
                  }
-                 generateTerrain(city, *game_state.gameRandom);
+                 // FIXME: Make command take a seed parameter
+                 city->terrainLayer.generate(*city, game_state.gameRandom->next());
 
                  consoleWriteLine("Generated new map"_s, ConsoleLineStyle::Success);
              } });
@@ -188,7 +189,7 @@ int main(int argc, char* argv[])
 
                  City* city = &game_state.city;
 
-                 consoleWriteLine(myprintf("Map: {0} x {1} tiles. Seed: {2}"_s, { formatInt(city->bounds.width()), formatInt(city->bounds.height()), formatInt(city->terrainLayer.terrainGenerationSeed) }), ConsoleLineStyle::Success);
+                 consoleWriteLine(myprintf("Map: {0} x {1} tiles. Seed: {2}"_s, { formatInt(city->bounds.width()), formatInt(city->bounds.height()), formatInt(city->terrainLayer.generation_seed()) }), ConsoleLineStyle::Success);
              } });
 
         globalConsole->register_command(

@@ -70,10 +70,6 @@ struct Array {
         return new (&items[count++]) T(move(item));
     }
 
-    bool isInitialised() { return items != nullptr; }
-    bool isEmpty() { return count == 0; }
-    bool hasRoom() { return count < capacity; }
-
     void swap(s32 indexA, s32 indexB)
     {
         T temp = items[indexA];

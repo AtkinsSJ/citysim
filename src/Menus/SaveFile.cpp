@@ -66,7 +66,7 @@ bool writeSaveFile(FileHandle* file, GameState* gameState)
         }
 
         // Terrain
-        saveTerrainLayer(&city->terrainLayer, &writer);
+        city->terrainLayer.save(writer);
 
         // Buildings
         city->save_buildings(&writer);

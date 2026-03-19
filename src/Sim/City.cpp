@@ -50,7 +50,7 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
     initLandValueLayer(&city->landValueLayer, city, gameArena);
     initPollutionLayer(&city->pollutionLayer, city, gameArena);
     initPowerLayer(&city->powerLayer, city, gameArena);
-    initTerrainLayer(&city->terrainLayer, city, gameArena);
+    city->terrainLayer = TerrainLayer { *city, *gameArena };
     city->transportLayer = TransportLayer { *city, *gameArena };
     city->zoneLayer = ZoneLayer { *city, *gameArena };
 
@@ -204,11 +204,10 @@ bool City::can_place_building(BuildingDef* def, s32 left, s32 top) const
     // TODO: Optimise this per-sector!
     for (s32 y = footprint.y(); y < footprint.y() + footprint.height(); y++) {
         for (s32 x = footprint.x(); x < footprint.x() + footprint.width(); x++) {
-            TerrainDef* terrainDef = getTerrainAt(this, x, y);
+            auto& terrain_def = terrainLayer.terrain_at(x, y);
 
-            if (!terrainDef->canBuildOn) {
+            if (!terrain_def.canBuildOn)
                 return false;
-            }
 
             auto* buildingAtPos = get_building_at(x, y);
             if (buildingAtPos != nullptr) {
@@ -441,7 +440,7 @@ ChunkedArray<Building*> City::find_buildings_overlapping_area(Rect2I area, Flags
 void City::draw(Rect2I visible_tile_bounds) const
 {
     auto& renderer = the_renderer();
-    drawTerrain(this, visible_tile_bounds, renderer.shaderIds.pixelArt);
+    terrainLayer.draw_terrain(visible_tile_bounds, renderer.shaderIds.pixelArt);
 
     zoneLayer.draw_zones(visible_tile_bounds, renderer.shaderIds.untextured);
 

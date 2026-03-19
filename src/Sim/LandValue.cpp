@@ -107,7 +107,7 @@ void updateLandValueLayer(City* city, LandValueLayer* layer)
                     float landValue = 0.1f;
 
                     // Waterfront = valuable
-                    s32 distanceToWater = getDistanceToWaterAt(city, x, y);
+                    s32 distanceToWater = city->terrainLayer.distance_to_water_at(x, y);
                     if (distanceToWater < 10) {
                         landValue += (10 - distanceToWater) * 0.1f * 0.25f;
                     }

@@ -17,57 +17,59 @@
 #include <UI/Window.h>
 #include <Util/Splat.h>
 
-void initTerrainLayer(TerrainLayer* layer, City* city, MemoryArena* gameArena)
+TerrainLayer::TerrainLayer(City& city, MemoryArena& arena)
+    : m_bounds(city.bounds)
+    , m_tile_terrain_type(arena.allocate_array_2d<u8>(m_bounds.size()))
+    , m_tile_height(arena.allocate_array_2d<u8>(m_bounds.size()))
+    , m_tile_distance_to_water(arena.allocate_array_2d<u8>(m_bounds.size()))
+    , m_tile_sprite_offset(arena.allocate_array_2d<u8>(m_bounds.size()))
+    , m_tile_sprite(arena.allocate_array_2d<SpriteRef>(m_bounds.size()))
+    , m_tile_border_sprite(arena.allocate_array_2d<Optional<SpriteRef>>(m_bounds.size()))
 {
-    layer->tileTerrainType = gameArena->allocate_array_2d<u8>(city->bounds.size());
-    layer->tileHeight = gameArena->allocate_array_2d<u8>(city->bounds.size());
-    layer->tileDistanceToWater = gameArena->allocate_array_2d<u8>(city->bounds.size());
-
-    layer->tileSpriteOffset = gameArena->allocate_array_2d<u8>(city->bounds.size());
-    layer->tileSprite = gameArena->allocate_array_2d<SpriteRef>(city->bounds.size());
-    layer->tileBorderSprite = gameArena->allocate_array_2d<Optional<SpriteRef>>(city->bounds.size());
 }
 
-TerrainDef* getTerrainAt(City const* city, s32 x, s32 y)
+TerrainDef const& TerrainLayer::terrain_at(s32 x, s32 y) const
 {
-    u8 terrainType = city->terrainLayer.tileTerrainType.get_if_exists(x, y, 0);
-
-    return getTerrainDef(terrainType);
+    return TerrainCatalogue::the().get_def(terrain_type_at(x, y));
 }
 
-u8 getTerrainHeightAt(City* city, s32 x, s32 y)
+u8 TerrainLayer::terrain_type_at(s32 x, s32 y) const
 {
-    return city->terrainLayer.tileHeight.get(x, y);
+    return m_tile_terrain_type.get_if_exists(x, y, 0);
 }
 
-void setTerrainAt(City* city, s32 x, s32 y, u8 terrainType)
+u8 TerrainLayer::height_at(s32 x, s32 y) const
 {
-    u8 existingTerrain = city->terrainLayer.tileTerrainType.get_if_exists(x, y, 0);
+    return m_tile_height.get(x, y);
+}
+
+void TerrainLayer::set_terrain_at(s32 x, s32 y, TerrainType type)
+{
+    u8 existingTerrain = m_tile_terrain_type.get_if_exists(x, y, 0);
     // Ignore for tiles that don't exist, or are already the desired type
-    if (existingTerrain == 0 || existingTerrain == terrainType) {
+    if (existingTerrain == 0 || existingTerrain == type) {
         return;
     }
 
     // Set the terrain
-    city->terrainLayer.tileTerrainType.set(x, y, terrainType);
+    m_tile_terrain_type.set(x, y, type);
 
     // Update sprites on this and neighbouring tiles
-    Rect2I spriteUpdateBounds = city->bounds.intersected({ x - 1, y - 1, 3, 3 });
-    assignTerrainSprites(city, spriteUpdateBounds);
+    Rect2I sprite_update_bounds = m_bounds.intersected({ x - 1, y - 1, 3, 3 });
+    assign_terrain_sprites(sprite_update_bounds);
 
     // Update distance to water
-    updateDistanceToWater(city, { x, y, 1, 1 });
+    update_distance_to_water({ x, y, 1, 1 });
 }
 
-u8 getDistanceToWaterAt(City const* city, s32 x, s32 y)
+u8 TerrainLayer::distance_to_water_at(s32 x, s32 y) const
 {
-    return city->terrainLayer.tileDistanceToWater.get(x, y);
+    return m_tile_distance_to_water.get(x, y);
 }
 
-void updateDistanceToWater(City* city, Rect2I dirtyBounds)
+void TerrainLayer::update_distance_to_water(Rect2I bounds)
 {
-    TerrainLayer* layer = &city->terrainLayer;
-    Rect2I bounds = city->bounds.intersected(dirtyBounds.expanded(maxDistanceToWater));
+    bounds = m_bounds.intersected(bounds.expanded(maxDistanceToWater));
     u8 tWater = truncate<u8>(findTerrainTypeByName("water"_s));
 
     for (s32 y = bounds.y();
@@ -76,116 +78,113 @@ void updateDistanceToWater(City* city, Rect2I dirtyBounds)
         for (s32 x = bounds.x();
             x < bounds.x() + bounds.width();
             x++) {
-            u8 tileType = layer->tileTerrainType.get_if_exists(x, y, 0);
+            u8 tileType = m_tile_terrain_type.get_if_exists(x, y, 0);
             if (tileType == tWater) {
-                layer->tileDistanceToWater.set(x, y, 0);
+                m_tile_distance_to_water.set(x, y, 0);
             } else {
-                layer->tileDistanceToWater.set(x, y, 255);
+                m_tile_distance_to_water.set(x, y, 255);
             }
         }
     }
 
-    updateDistances(&layer->tileDistanceToWater, bounds, maxDistanceToWater);
+    updateDistances(&m_tile_distance_to_water, bounds, maxDistanceToWater);
 }
 
-void drawTerrain(City const* city, Rect2I visibleArea, s8 shaderID)
+void TerrainLayer::draw_terrain(Rect2I visible_area, s8 shader_id) const
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
 
-    auto* layer = &city->terrainLayer;
     auto& renderer = the_renderer();
 
     Rect2 spriteBounds { 0.0f, 0.0f, 1.0f, 1.0f };
     auto white = Colour::white();
 
-    for (s32 y = visibleArea.y();
-        y < visibleArea.y() + visibleArea.height();
+    for (s32 y = visible_area.y();
+        y < visible_area.y() + visible_area.height();
         y++) {
         spriteBounds.set_y(y);
 
-        for (s32 x = visibleArea.x();
-            x < visibleArea.x() + visibleArea.width();
+        for (s32 x = visible_area.x();
+            x < visible_area.x() + visible_area.width();
             x++) {
-            Sprite* sprite = &layer->tileSprite.get(x, y).get();
+            Sprite* sprite = &m_tile_sprite.get(x, y).get();
             spriteBounds.set_x(x);
-            drawSingleSprite(&renderer.world_buffer(), sprite, spriteBounds, shaderID, white);
+            drawSingleSprite(&renderer.world_buffer(), sprite, spriteBounds, shader_id, white);
 
-            if (auto& border_sprite_ref = layer->tileBorderSprite.get(x, y); border_sprite_ref.has_value()) {
+            if (auto& border_sprite_ref = m_tile_border_sprite.get(x, y); border_sprite_ref.has_value()) {
                 auto& border_sprite = border_sprite_ref.value().get();
-                drawSingleSprite(&renderer.world_buffer(), &border_sprite, spriteBounds, shaderID, white);
+                drawSingleSprite(&renderer.world_buffer(), &border_sprite, spriteBounds, shader_id, white);
             }
         }
     }
 }
 
-void generateTerrain(City* city, Random& gameRandom)
+void TerrainLayer::generate(City& city, u32 seed)
 {
     DEBUG_FUNCTION();
 
-    TerrainLayer* layer = &city->terrainLayer;
     auto& cosmetic_random = App::the().cosmetic_random();
 
     u8 tGround = truncate<u8>(findTerrainTypeByName("ground"_s));
     u8 tWater = truncate<u8>(findTerrainTypeByName("water"_s));
     BuildingDef* treeDef = findBuildingDef("tree"_s);
 
-    s32 seed = gameRandom.next();
     auto terrainRandom = Random::create(seed);
-    layer->terrainGenerationSeed = seed;
-    layer->tileTerrainType.fill(tGround);
+    m_terrain_generation_seed = seed;
+    m_tile_terrain_type.fill(tGround);
 
-    for (s32 y = 0; y < city->bounds.height(); y++) {
-        for (s32 x = 0; x < city->bounds.width(); x++) {
-            layer->tileSpriteOffset.set(x, y, cosmetic_random.random_integer<u8>());
+    for (s32 y = 0; y < m_bounds.height(); y++) {
+        for (s32 x = 0; x < m_bounds.width(); x++) {
+            m_tile_sprite_offset.set(x, y, cosmetic_random.random_integer<u8>());
         }
     }
 
     // Generate a river
-    Array<float> riverOffset = temp_arena().allocate_array<float>(city->bounds.height(), true);
+    Array<float> riverOffset = temp_arena().allocate_array<float>(m_bounds.height(), true);
     terrainRandom->fill_with_noise(riverOffset, 10);
     float riverMaxWidth = terrainRandom->random_float_between(12, 16);
     float riverMinWidth = terrainRandom->random_float_between(6, riverMaxWidth);
     float riverWaviness = 16.0f;
-    s32 riverCentreBase = terrainRandom->random_between(ceil_s32(city->bounds.width() * 0.4f), floor_s32(city->bounds.width() * 0.6f));
-    for (s32 y = 0; y < city->bounds.height(); y++) {
-        s32 riverWidth = ceil_s32(lerp(riverMinWidth, riverMaxWidth, ((float)y / (float)city->bounds.height())));
+    s32 riverCentreBase = terrainRandom->random_between(ceil_s32(m_bounds.width() * 0.4f), floor_s32(m_bounds.width() * 0.6f));
+    for (s32 y = 0; y < m_bounds.height(); y++) {
+        s32 riverWidth = ceil_s32(lerp(riverMinWidth, riverMaxWidth, ((float)y / (float)m_bounds.height())));
         s32 riverCentre = riverCentreBase - round_s32((riverWaviness * 0.5f) + (riverWaviness * riverOffset[y]));
         s32 riverLeft = riverCentre - (riverWidth / 2);
 
         for (s32 x = riverLeft; x < riverLeft + riverWidth; x++) {
-            layer->tileTerrainType.set(x, y, tWater);
+            m_tile_terrain_type.set(x, y, tWater);
         }
     }
 
     // Coastline
-    Array<float> coastlineOffset = temp_arena().allocate_array<float>(city->bounds.width(), true);
+    Array<float> coastlineOffset = temp_arena().allocate_array<float>(m_bounds.width(), true);
     terrainRandom->fill_with_noise(coastlineOffset, 10);
-    for (s32 x = 0; x < city->bounds.width(); x++) {
+    for (s32 x = 0; x < m_bounds.width(); x++) {
         s32 coastDepth = 8 + round_s32(coastlineOffset[x] * 16.0f);
 
         for (s32 i = 0; i < coastDepth; i++) {
-            s32 y = city->bounds.height() - 1 - i;
+            s32 y = m_bounds.height() - 1 - i;
 
-            layer->tileTerrainType.set(x, y, tWater);
+            m_tile_terrain_type.set(x, y, tWater);
         }
     }
 
     // Lakes/ponds
     s32 pondCount = terrainRandom->random_between(1, 4);
     for (s32 pondIndex = 0; pondIndex < pondCount; pondIndex++) {
-        s32 pondCentreX = terrainRandom->random_between(0, city->bounds.width());
-        s32 pondCentreY = terrainRandom->random_between(0, city->bounds.height());
+        s32 pondCentreX = terrainRandom->random_between(0, m_bounds.width());
+        s32 pondCentreY = terrainRandom->random_between(0, m_bounds.height());
 
         float pondMinRadius = terrainRandom->random_float_between(3.0f, 5.0f);
         float pondMaxRadius = terrainRandom->random_float_between(pondMinRadius + 3.0f, 20.0f);
 
         Splat pondSplat = Splat::create_random(pondCentreX, pondCentreY, pondMinRadius, pondMaxRadius, 36, terrainRandom);
 
-        Rect2I boundingBox = pondSplat.bounding_box().intersected(city->bounds);
+        Rect2I boundingBox = pondSplat.bounding_box().intersected(m_bounds);
         for (s32 y = boundingBox.y(); y < boundingBox.y() + boundingBox.height(); y++) {
             for (s32 x = boundingBox.x(); x < boundingBox.x() + boundingBox.width(); x++) {
                 if (pondSplat.contains(x, y)) {
-                    layer->tileTerrainType.set(x, y, tWater);
+                    m_tile_terrain_type.set(x, y, tWater);
                 }
             }
         }
@@ -197,36 +196,33 @@ void generateTerrain(City* city, Random& gameRandom)
     } else {
         s32 forestCount = terrainRandom->random_between(10, 20);
         for (s32 forestIndex = 0; forestIndex < forestCount; forestIndex++) {
-            s32 centreX = terrainRandom->random_between(0, city->bounds.width());
-            s32 centreY = terrainRandom->random_between(0, city->bounds.height());
+            s32 centreX = terrainRandom->random_between(0, m_bounds.width());
+            s32 centreY = terrainRandom->random_between(0, m_bounds.height());
 
             float minRadius = terrainRandom->random_float_between(2.0f, 8.0f);
             float maxRadius = terrainRandom->random_float_between(minRadius + 1.0f, 30.0f);
 
             Splat forestSplat = Splat::create_random(centreX, centreY, minRadius, maxRadius, 36, terrainRandom);
 
-            Rect2I boundingBox = forestSplat.bounding_box().intersected(city->bounds);
+            Rect2I boundingBox = forestSplat.bounding_box().intersected(m_bounds);
             for (s32 y = boundingBox.y(); y < boundingBox.y() + boundingBox.height(); y++) {
                 for (s32 x = boundingBox.x(); x < boundingBox.x() + boundingBox.width(); x++) {
-                    if (getTerrainAt(city, x, y)->canBuildOn
-                        && (city->get_building_at(x, y) == nullptr)
+                    if (terrain_at(x, y).canBuildOn
+                        && (city.get_building_at(x, y) == nullptr)
                         && forestSplat.contains(x, y)) {
-                        city->add_building(treeDef, { x, y, treeDef->size.x, treeDef->size.y });
+                        city.add_building(treeDef, { x, y, treeDef->size.x, treeDef->size.y });
                     }
                 }
             }
         }
     }
 
-    assignTerrainSprites(city, city->bounds);
-
-    updateDistanceToWater(city, city->bounds);
+    assign_terrain_sprites(m_bounds);
+    update_distance_to_water(m_bounds);
 }
 
-void assignTerrainSprites(City* city, Rect2I bounds)
+void TerrainLayer::assign_terrain_sprites(Rect2I bounds)
 {
-    TerrainLayer* layer = &city->terrainLayer;
-
     // Assign a terrain tile variant for each tile, depending on its neighbours
     for (s32 y = bounds.y();
         y < bounds.y() + bounds.height();
@@ -234,27 +230,28 @@ void assignTerrainSprites(City* city, Rect2I bounds)
         for (s32 x = bounds.x();
             x < bounds.x() + bounds.width();
             x++) {
-            TerrainDef* def = getTerrainAt(city, x, y);
+            auto& def = terrain_at(x, y);
 
-            layer->tileSprite.set(x, y, SpriteRef { def->spriteName, layer->tileSpriteOffset.get(x, y) });
+            m_tile_sprite.set(x, y, SpriteRef { def.spriteName, m_tile_sprite_offset.get(x, y) });
 
-            if (def->drawBordersOver) {
+            if (def.drawBordersOver) {
                 // First, determine if we have a bordering type
-                TerrainDef* borders[8] = {}; // Starting NW, going clockwise
-                borders[0] = getTerrainAt(city, x - 1, y - 1);
-                borders[1] = getTerrainAt(city, x, y - 1);
-                borders[2] = getTerrainAt(city, x + 1, y - 1);
-                borders[3] = getTerrainAt(city, x + 1, y);
-                borders[4] = getTerrainAt(city, x + 1, y + 1);
-                borders[5] = getTerrainAt(city, x, y + 1);
-                borders[6] = getTerrainAt(city, x - 1, y + 1);
-                borders[7] = getTerrainAt(city, x - 1, y);
-
+                TerrainDef const* borders[8] {
+                    // Starting NW, going clockwise
+                    &terrain_at(x - 1, y - 1),
+                    &terrain_at(x, y - 1),
+                    &terrain_at(x + 1, y - 1),
+                    &terrain_at(x + 1, y),
+                    &terrain_at(x + 1, y + 1),
+                    &terrain_at(x, y + 1),
+                    &terrain_at(x - 1, y + 1),
+                    &terrain_at(x - 1, y),
+                };
                 // Find the first match, if any
                 // Eventually we probably want to use whichever border terrain is most common instead
-                TerrainDef* borderTerrain = nullptr;
+                TerrainDef const* borderTerrain = nullptr;
                 for (s32 i = 0; i < 8; i++) {
-                    if ((borders[i] != def) && (!borders[i]->borderSpriteNames.isEmpty())) {
+                    if ((borders[i] != &def) && (!borders[i]->borderSpriteNames.is_empty())) {
                         borderTerrain = borders[i];
                         break;
                     }
@@ -273,12 +270,12 @@ void assignTerrainSprites(City* city, Rect2I bounds)
 
                     u8 borderSpriteIndex = w + (s * 3) + (e * 9) + (n * 27) - 1;
                     ASSERT(borderSpriteIndex >= 0 && borderSpriteIndex <= 80);
-                    layer->tileBorderSprite.set(x, y, SpriteRef { borderTerrain->borderSpriteNames[borderSpriteIndex], layer->tileSpriteOffset.get(x, y) });
+                    m_tile_border_sprite.set(x, y, SpriteRef { borderTerrain->borderSpriteNames[borderSpriteIndex], m_tile_sprite_offset.get(x, y) });
                 } else {
-                    layer->tileBorderSprite.set(x, y, {});
+                    m_tile_border_sprite.set(x, y, {});
                 }
             } else {
-                layer->tileBorderSprite.set(x, y, {});
+                m_tile_border_sprite.set(x, y, {});
             }
         }
     }
@@ -308,19 +305,19 @@ void modify_terrain_window_proc(UI::WindowContext* context, void*)
     }
 }
 
-void saveTerrainLayer(TerrainLayer* layer, BinaryFileWriter* writer)
+void TerrainLayer::save(BinaryFileWriter& writer) const
 {
-    writer->startSection<SAVSection_Terrain>(SAV_TERRAIN_ID, SAV_TERRAIN_VERSION);
+    writer.startSection<SAVSection_Terrain>(SAV_TERRAIN_ID, SAV_TERRAIN_VERSION);
     SAVSection_Terrain terrainSection = {};
 
     // Terrain generation parameters
-    terrainSection.terrainGenerationSeed = layer->terrainGenerationSeed;
+    terrainSection.terrainGenerationSeed = m_terrain_generation_seed;
 
     // Terrain types table
     auto& terrain_catalogue = TerrainCatalogue::the();
     s32 terrainDefCount = terrain_catalogue.terrainDefs.count - 1; // Skip the null def
-    WriteBufferRange terrainTypeTableLoc = writer->reserveArray<SAVTerrainTypeEntry>(terrainDefCount);
-    Array<SAVTerrainTypeEntry> terrainTypeTable = writer->arena->allocate_array<SAVTerrainTypeEntry>(terrainDefCount);
+    WriteBufferRange terrainTypeTableLoc = writer.reserveArray<SAVTerrainTypeEntry>(terrainDefCount);
+    Array<SAVTerrainTypeEntry> terrainTypeTable = writer.arena->allocate_array<SAVTerrainTypeEntry>(terrainDefCount);
     for (auto it = terrain_catalogue.terrainDefs.iterate(); it.hasNext(); it.next()) {
         TerrainDef* def = it.get();
         if (def->typeID == 0)
@@ -328,64 +325,64 @@ void saveTerrainLayer(TerrainLayer* layer, BinaryFileWriter* writer)
 
         SAVTerrainTypeEntry* entry = terrainTypeTable.append();
         entry->typeID = def->typeID;
-        entry->name = writer->append_string(def->name);
+        entry->name = writer.append_string(def->name);
     }
-    terrainSection.terrainTypeTable = writer->writeArray<SAVTerrainTypeEntry>(terrainTypeTable, terrainTypeTableLoc);
+    terrainSection.terrainTypeTable = writer.writeArray<SAVTerrainTypeEntry>(terrainTypeTable, terrainTypeTableLoc);
 
     // Tile terrain type (u8)
-    terrainSection.tileTerrainType = writer->appendBlob(&layer->tileTerrainType, FileBlobCompressionScheme::RLE_S8);
+    terrainSection.tileTerrainType = writer.appendBlob(&m_tile_terrain_type, FileBlobCompressionScheme::RLE_S8);
 
     // Tile height (u8)
-    terrainSection.tileHeight = writer->appendBlob(&layer->tileHeight, FileBlobCompressionScheme::RLE_S8);
+    terrainSection.tileHeight = writer.appendBlob(&m_tile_height, FileBlobCompressionScheme::RLE_S8);
 
     // Tile sprite offset (u8)
-    terrainSection.tileSpriteOffset = writer->appendBlob(&layer->tileSpriteOffset, FileBlobCompressionScheme::Uncompressed);
+    terrainSection.tileSpriteOffset = writer.appendBlob(&m_tile_sprite_offset, FileBlobCompressionScheme::Uncompressed);
 
-    writer->endSection<SAVSection_Terrain>(&terrainSection);
+    writer.endSection<SAVSection_Terrain>(&terrainSection);
 }
 
-bool loadTerrainLayer(TerrainLayer* layer, City* city, BinaryFileReader* reader)
+bool TerrainLayer::load(BinaryFileReader& reader)
 {
     bool succeeded = false;
 
-    while (reader->startSection(SAV_TERRAIN_ID, SAV_TERRAIN_VERSION)) // So we can break out of it
+    while (reader.startSection(SAV_TERRAIN_ID, SAV_TERRAIN_VERSION)) // So we can break out of it
     {
-        SAVSection_Terrain* section = reader->readStruct<SAVSection_Terrain>(0);
+        SAVSection_Terrain* section = reader.readStruct<SAVSection_Terrain>(0);
         if (!section)
             break;
 
-        layer->terrainGenerationSeed = section->terrainGenerationSeed;
+        m_terrain_generation_seed = section->terrainGenerationSeed;
 
         // Map the file's terrain type IDs to the game's ones
         // NB: count+1 because the file won't save the null terrain, so we need to compensate
-        Array<u8> oldTypeToNewType = reader->arena->allocate_array<u8>(section->terrainTypeTable.count + 1, true);
-        Array<SAVTerrainTypeEntry> terrainTypeTable = reader->arena->allocate_array<SAVTerrainTypeEntry>(section->terrainTypeTable.count);
-        if (!reader->readArray(section->terrainTypeTable, &terrainTypeTable))
+        Array<u8> oldTypeToNewType = reader.arena->allocate_array<u8>(section->terrainTypeTable.count + 1, true);
+        Array<SAVTerrainTypeEntry> terrainTypeTable = reader.arena->allocate_array<SAVTerrainTypeEntry>(section->terrainTypeTable.count);
+        if (!reader.readArray(section->terrainTypeTable, &terrainTypeTable))
             break;
         for (auto const& entry : terrainTypeTable) {
-            String terrainName = reader->readString(entry.name);
+            String terrainName = reader.readString(entry.name);
             oldTypeToNewType[entry.typeID] = findTerrainTypeByName(terrainName);
         }
 
         // Terrain type
-        if (!reader->readBlob(section->tileTerrainType, &layer->tileTerrainType))
+        if (!reader.readBlob(section->tileTerrainType, &m_tile_terrain_type))
             break;
-        for (s32 y = 0; y < city->bounds.y(); y++) {
-            for (s32 x = 0; x < city->bounds.x(); x++) {
-                layer->tileTerrainType.set(x, y, oldTypeToNewType[layer->tileTerrainType.get(x, y)]);
+        for (s32 y = 0; y < m_bounds.y(); y++) {
+            for (s32 x = 0; x < m_bounds.x(); x++) {
+                m_tile_terrain_type.set(x, y, oldTypeToNewType[m_tile_terrain_type.get(x, y)]);
             }
         }
 
         // Terrain height
-        if (!reader->readBlob(section->tileHeight, &layer->tileHeight))
+        if (!reader.readBlob(section->tileHeight, &m_tile_height))
             break;
 
         // Sprite offset
-        if (!reader->readBlob(section->tileSpriteOffset, &layer->tileSpriteOffset))
+        if (!reader.readBlob(section->tileSpriteOffset, &m_tile_sprite_offset))
             break;
 
-        assignTerrainSprites(city, city->bounds);
-        updateDistanceToWater(city, city->bounds);
+        assign_terrain_sprites(m_bounds);
+        update_distance_to_water(m_bounds);
 
         succeeded = true;
         break;

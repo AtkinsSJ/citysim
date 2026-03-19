@@ -27,7 +27,7 @@ struct PollutionLayer;
 struct PowerLayer;
 struct TerrainCatalogue;
 struct TerrainDef;
-struct TerrainLayer;
+class TerrainLayer;
 class TransportLayer;
 struct ZoneDef;
 class ZoneLayer;

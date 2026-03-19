@@ -31,6 +31,8 @@ struct TerrainDef {
 struct TerrainCatalogue final : public AssetManagerListener {
     static TerrainCatalogue& the();
 
+    TerrainDef const& get_def(u8 terrain_type) const;
+
     OccupancyArray<TerrainDef> terrainDefs;
 
     HashTable<TerrainDef*> terrainDefsByName { 128 };
@@ -48,7 +50,6 @@ struct TerrainCatalogue final : public AssetManagerListener {
 void initTerrainCatalogue(MemoryArena&);
 void loadTerrainDefs(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset);
 void removeTerrainDefs(Array<String> namesToRemove);
-TerrainDef* getTerrainDef(u8 terrainType);
 
 // Returns 0 if not found
 u8 findTerrainTypeByName(String name);

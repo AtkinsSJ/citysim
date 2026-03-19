@@ -27,17 +27,15 @@ void initTerrainCatalogue(MemoryArena& arena)
     asset_manager().register_listener(&s_terrain_catalogue);
 }
 
-TerrainDef* getTerrainDef(u8 terrainType)
+TerrainDef const& TerrainCatalogue::get_def(u8 terrain_type) const
 {
-    TerrainDef* result = s_terrain_catalogue.terrainDefs.get(0);
-
-    if (terrainType > 0 && terrainType < s_terrain_catalogue.terrainDefs.count) {
-        TerrainDef* found = s_terrain_catalogue.terrainDefs.get(terrainType);
+    if (terrain_type > 0 && terrain_type < s_terrain_catalogue.terrainDefs.count) {
+        TerrainDef* found = s_terrain_catalogue.terrainDefs.get(terrain_type);
         if (found != nullptr)
-            result = found;
+            return *found;
     }
 
-    return result;
+    return *s_terrain_catalogue.terrainDefs.get(0);
 }
 
 u8 findTerrainTypeByName(String name)
@@ -82,12 +80,12 @@ void TerrainCatalogue::remap_terrain_types(City& city)
 
         TerrainLayer& layer = city.terrainLayer;
 
-        for (s32 y = 0; y < layer.tileTerrainType.height(); y++) {
-            for (s32 x = 0; x < layer.tileTerrainType.width(); x++) {
-                u8 oldType = layer.tileTerrainType.get(x, y);
+        for (s32 y = 0; y < layer.m_tile_terrain_type.height(); y++) {
+            for (s32 x = 0; x < layer.m_tile_terrain_type.width(); x++) {
+                u8 oldType = layer.m_tile_terrain_type.get(x, y);
 
                 if (oldType < oldTypeToNewType.count && (oldTypeToNewType[oldType] != 0)) {
-                    layer.tileTerrainType.set(x, y, oldTypeToNewType[oldType]);
+                    layer.m_tile_terrain_type.set(x, y, oldTypeToNewType[oldType]);
                 }
             }
         }
