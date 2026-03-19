@@ -28,6 +28,6 @@ struct PowerLayer;
 struct TerrainCatalogue;
 struct TerrainDef;
 struct TerrainLayer;
-struct TransportLayer;
+class TransportLayer;
 struct ZoneDef;
 class ZoneLayer;

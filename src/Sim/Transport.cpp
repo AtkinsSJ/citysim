@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2019-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -11,24 +11,24 @@
 #include <Sim/City.h>
 #include <UI/Panel.h>
 
-void initTransportLayer(TransportLayer* layer, City* city, MemoryArena* gameArena)
+TransportLayer::TransportLayer(City& city, MemoryArena& arena)
 {
-    layer->tileTransportTypes = gameArena->allocate_array_2d<Flags<TransportType>>(city->bounds.size());
+    m_tile_transport_types = arena.allocate_array_2d<Flags<TransportType>>(city.bounds.size());
 
-    layer->transportMaxDistance = 8;
-    initDirtyRects(&layer->dirtyRects, gameArena, layer->transportMaxDistance, city->bounds);
+    m_transport_max_distance = 8;
+    initDirtyRects(&m_dirty_rects, &arena, m_transport_max_distance, city.bounds);
 
     for (auto type : enum_values<TransportType>()) {
-        layer->tileTransportDistance[type] = gameArena->allocate_array_2d<u8>(city->bounds.size());
-        layer->tileTransportDistance[type].fill(255);
+        m_tile_transport_distance[type] = arena.allocate_array_2d<u8>(city.bounds.size());
+        m_tile_transport_distance[type].fill(255);
     }
 }
 
-void updateTransportLayer(City* city, TransportLayer* layer)
+void TransportLayer::update(City& city)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
-    if (isDirty(&layer->dirtyRects)) {
+    if (isDirty(&m_dirty_rects)) {
         // Calculate transport types on each tile
         // So, I have two ideas about this:
         // 1: memset the area to 0 and then iterate through all the buildings in that area, applying their transport types
@@ -39,7 +39,7 @@ void updateTransportLayer(City* city, TransportLayer* layer)
         // So, I think #2 is the better option, but I should test that later if it becomes expensive performance-wise.
         // - Sam, 28/08/2019
 
-        for (auto it = layer->dirtyRects.rects.iterate();
+        for (auto it = m_dirty_rects.rects.iterate();
             it.hasNext();
             it.next()) {
             Rect2I dirtyRect = it.getValue();
@@ -47,12 +47,12 @@ void updateTransportLayer(City* city, TransportLayer* layer)
             // Transport types on tile, based on what buildings are present
             for (s32 y = dirtyRect.y(); y < dirtyRect.y() + dirtyRect.height(); y++) {
                 for (s32 x = dirtyRect.x(); x < dirtyRect.x() + dirtyRect.width(); x++) {
-                    Building* building = city->get_building_at(x, y);
+                    Building* building = city.get_building_at(x, y);
                     if (building != nullptr) {
                         BuildingDef* def = getBuildingDef(building);
-                        layer->tileTransportTypes.set(x, y, def->transportTypes);
+                        m_tile_transport_types.set(x, y, def->transportTypes);
                     } else {
-                        layer->tileTransportTypes.set(x, y, {});
+                        m_tile_transport_types.set(x, y, {});
                     }
                 }
             }
@@ -61,8 +61,8 @@ void updateTransportLayer(City* city, TransportLayer* layer)
             for (s32 y = dirtyRect.y(); y < dirtyRect.y() + dirtyRect.height(); y++) {
                 for (s32 x = dirtyRect.x(); x < dirtyRect.x() + dirtyRect.width(); x++) {
                     for (auto type : enum_values<TransportType>()) {
-                        u8 distance = doesTileHaveTransport(city, x, y, type) ? 0 : 255;
-                        layer->tileTransportDistance[type].set(x, y, distance);
+                        u8 distance = tile_has_transport(x, y, type) ? 0 : 255;
+                        m_tile_transport_distance[type].set(x, y, distance);
                     }
                 }
             }
@@ -70,72 +70,66 @@ void updateTransportLayer(City* city, TransportLayer* layer)
 
         // Transport distance recalculation
         for (auto type : enum_values<TransportType>()) {
-            updateDistances(&layer->tileTransportDistance[type], &layer->dirtyRects, layer->transportMaxDistance);
+            updateDistances(&m_tile_transport_distance[type], &m_dirty_rects, m_transport_max_distance);
         }
 
-        clearDirtyRects(&layer->dirtyRects);
+        clearDirtyRects(&m_dirty_rects);
     }
 }
 
-void markTransportLayerDirty(TransportLayer* layer, Rect2I bounds)
+void TransportLayer::mark_dirty(Rect2I bounds)
 {
-    markRectAsDirty(&layer->dirtyRects, bounds);
+    markRectAsDirty(&m_dirty_rects, bounds);
 }
 
-bool doesTileHaveTransport(City* city, s32 x, s32 y, TransportType type)
+bool TransportLayer::tile_has_transport(s32 x, s32 y, TransportType type) const
 {
-    if (!city->tile_exists(x, y))
-        return false;
-
-    return city->transportLayer.tileTransportTypes.get(x, y).has(type);
+    return m_tile_transport_types.get(x, y).has(type);
 }
 
-bool doesTileHaveTransport(City* city, s32 x, s32 y, Flags<TransportType> types)
+bool TransportLayer::tile_has_transport(s32 x, s32 y, Flags<TransportType> types) const
 {
-    if (!city->tile_exists(x, y))
-        return false;
-
-    return city->transportLayer.tileTransportTypes.get(x, y).has_any(types);
+    return m_tile_transport_types.get(x, y).has_any(types);
 }
 
-void addTransportToTile(City* city, s32 x, s32 y, TransportType type)
+void TransportLayer::add_transport_to_tile(s32 x, s32 y, TransportType type)
 {
-    city->transportLayer.tileTransportTypes.get(x, y).add(type);
+    m_tile_transport_types.get(x, y).add(type);
 }
 
-void addTransportToTile(City* city, s32 x, s32 y, Flags<TransportType> types)
+void TransportLayer::add_transport_to_tile(s32 x, s32 y, Flags<TransportType> types)
 {
-    city->transportLayer.tileTransportTypes.get(x, y).add_all(types);
+    m_tile_transport_types.get(x, y).add_all(types);
 }
 
-s32 getDistanceToTransport(City* city, s32 x, s32 y, TransportType type)
+s32 TransportLayer::distance_to_transport(s32 x, s32 y, TransportType type) const
 {
-    return city->transportLayer.tileTransportDistance[type].get(x, y);
+    return m_tile_transport_distance[type].get(x, y);
 }
 
-void debugInspectTransport(UI::Panel* panel, City* city, s32 x, s32 y)
+void TransportLayer::debug_inspect(UI::Panel& panel, V2I tile_position)
 {
-    panel->addLabel("*** TRANSPORT INFO ***"_s);
+    panel.addLabel("*** TRANSPORT INFO ***"_s);
 
     // Transport
     for (auto type : enum_values<TransportType>()) {
-        panel->addLabel(myprintf("Distance to transport #{0}: {1}"_s, { formatInt(type), formatInt(getDistanceToTransport(city, x, y, type)) }));
+        panel.addLabel(myprintf("Distance to transport #{0}: {1}"_s, { formatInt(type), formatInt(distance_to_transport(tile_position.x, tile_position.y, type)) }));
     }
 }
 
-void saveTransportLayer(TransportLayer*, BinaryFileWriter* writer)
+void TransportLayer::save(BinaryFileWriter& writer) const
 {
-    writer->startSection<SAVSection_Transport>(SAV_TRANSPORT_ID, SAV_TRANSPORT_VERSION);
+    writer.startSection<SAVSection_Transport>(SAV_TRANSPORT_ID, SAV_TRANSPORT_VERSION);
     SAVSection_Transport transportSection = {};
 
-    writer->endSection<SAVSection_Transport>(&transportSection);
+    writer.endSection<SAVSection_Transport>(&transportSection);
 }
 
-bool loadTransportLayer(TransportLayer*, City*, BinaryFileReader* reader)
+bool TransportLayer::load(BinaryFileReader& reader)
 {
     bool succeeded = false;
-    while (reader->startSection(SAV_TRANSPORT_ID, SAV_TRANSPORT_VERSION)) {
-        SAVSection_Transport* section = reader->readStruct<SAVSection_Transport>(0);
+    while (reader.startSection(SAV_TRANSPORT_ID, SAV_TRANSPORT_VERSION)) {
+        SAVSection_Transport* section = reader.readStruct<SAVSection_Transport>(0);
         if (!section)
             break;
 

@@ -281,7 +281,7 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
             debugInspectPower(ui, city, tilePos.x, tilePos.y);
         }
         if (gameState->inspectTileDebugFlags.has(InspectTileDebugFlags::Transport)) {
-            debugInspectTransport(ui, city, tilePos.x, tilePos.y);
+            city->transportLayer.debug_inspect(*ui, tilePos);
         }
     }
 
@@ -651,7 +651,7 @@ ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const
                 break;
             if (!loadPollutionLayer(&city->pollutionLayer, city, &reader))
                 break;
-            if (!loadTransportLayer(&city->transportLayer, city, &reader))
+            if (!city->transportLayer.load(reader))
                 break;
             if (!loadBudgetLayer(&city->budgetLayer, city, &reader))
                 break;
@@ -708,7 +708,7 @@ void GameScene::update_and_render(float delta_time)
         updateLandValueLayer(&city, &city.landValueLayer);
         updatePollutionLayer(&city, &city.pollutionLayer);
         updatePowerLayer(&city, &city.powerLayer);
-        updateTransportLayer(&city, &city.transportLayer);
+        city.transportLayer.update(city);
         city.zoneLayer.update(city);
 
         city.update_some_buildings();

@@ -216,7 +216,7 @@ void updateBuilding(City* city, Building* building)
         // - Sam, 30/08/2019
         for (s32 y = building->footprint.y(); y < building->footprint.y() + building->footprint.height(); y++) {
             for (s32 x = building->footprint.x(); x < building->footprint.x() + building->footprint.width(); x++) {
-                distanceToRoad = min(distanceToRoad, getDistanceToTransport(city, x, y, TransportType::Road));
+                distanceToRoad = min(distanceToRoad, city->transportLayer.distance_to_transport(x, y, TransportType::Road));
             }
         }
 

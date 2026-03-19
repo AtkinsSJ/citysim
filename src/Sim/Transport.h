@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2019-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -20,26 +20,32 @@ enum class TransportType : u8 {
     COUNT
 };
 
-struct TransportLayer {
-    DirtyRects dirtyRects;
+class TransportLayer {
+public:
+    TransportLayer() = default;
+    TransportLayer(City&, MemoryArena&);
 
-    Array2<Flags<TransportType>> tileTransportTypes;
+    void update(City&);
+    void mark_dirty(Rect2I bounds);
 
-    u8 transportMaxDistance;
-    EnumMap<TransportType, Array2<u8>> tileTransportDistance;
+    void add_transport_to_tile(s32 x, s32 y, TransportType);
+    void add_transport_to_tile(s32 x, s32 y, Flags<TransportType>);
+
+    bool tile_has_transport(s32 x, s32 y, TransportType) const;
+    bool tile_has_transport(s32 x, s32 y, Flags<TransportType>) const;
+
+    s32 distance_to_transport(s32 x, s32 y, TransportType) const;
+
+    void debug_inspect(UI::Panel& panel, V2I tile_position);
+
+    void save(BinaryFileWriter&) const;
+    bool load(BinaryFileReader&);
+
+private:
+    DirtyRects m_dirty_rects;
+
+    Array2<Flags<TransportType>> m_tile_transport_types;
+
+    EnumMap<TransportType, Array2<u8>> m_tile_transport_distance;
+    u8 m_transport_max_distance;
 };
-
-void initTransportLayer(TransportLayer* layer, City* city, MemoryArena* gameArena);
-void updateTransportLayer(City* city, TransportLayer* layer);
-void markTransportLayerDirty(TransportLayer* layer, Rect2I bounds);
-
-void addTransportToTile(City* city, s32 x, s32 y, TransportType type);
-void addTransportToTile(City* city, s32 x, s32 y, Flags<TransportType> types);
-bool doesTileHaveTransport(City* city, s32 x, s32 y, TransportType type);
-bool doesTileHaveTransport(City* city, s32 x, s32 y, Flags<TransportType> types);
-s32 getDistanceToTransport(City* city, s32 x, s32 y, TransportType type);
-
-void debugInspectTransport(UI::Panel* panel, City* city, s32 x, s32 y);
-
-void saveTransportLayer(TransportLayer* layer, BinaryFileWriter* writer);
-bool loadTransportLayer(TransportLayer* layer, City* city, BinaryFileReader* reader);

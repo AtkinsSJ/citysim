@@ -51,7 +51,7 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
     initPollutionLayer(&city->pollutionLayer, city, gameArena);
     initPowerLayer(&city->powerLayer, city, gameArena);
     initTerrainLayer(&city->terrainLayer, city, gameArena);
-    initTransportLayer(&city->transportLayer, city, gameArena);
+    city->transportLayer = TransportLayer { *city, *gameArena };
     city->zoneLayer = ZoneLayer { *city, *gameArena };
 
     city->highestBuildingID = 0;
@@ -163,7 +163,7 @@ void City::mark_area_dirty(Rect2I dirty_area)
     markLandValueLayerDirty(&landValueLayer, dirty_area);
     markPollutionLayerDirty(&pollutionLayer, dirty_area);
     markPowerLayerDirty(&powerLayer, dirty_area);
-    markTransportLayerDirty(&transportLayer, dirty_area);
+    transportLayer.mark_dirty(dirty_area);
 }
 
 bool City::tile_exists(s32 x, s32 y) const
