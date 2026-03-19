@@ -1001,7 +1001,7 @@ void GameScene::init_data_view_ui()
     dataViewUI[DataView::Power].title = "data_view_power"_s;
     setFixedColors(&dataViewUI[DataView::Power], "power"_s, { "data_view_power_powered"_s, "data_view_power_brownout"_s, "data_view_power_blackout"_s }, m_arena);
     setHighlightedBuildings(&dataViewUI[DataView::Power], &city->powerLayer.powerBuildings);
-    setTileOverlayCallback(&dataViewUI[DataView::Power], calculatePowerOverlayForTile, "power"_s);
+    setTileOverlayCallback(&dataViewUI[DataView::Power], [](City* city, s32 x, s32 y) { return calculatePowerOverlayForTile(city, x, y); }, "power"_s);
 }
 
 void setGradient(DataViewUI* dataView, String paletteName)
@@ -1032,9 +1032,9 @@ void setTileOverlay(DataViewUI* dataView, Array2<u8>* tileData, String paletteNa
     dataView->overlayPaletteName = paletteName;
 }
 
-void setTileOverlayCallback(DataViewUI* dataView, u8 (*calculateTileValue)(City* city, s32 x, s32 y), String paletteName)
+void setTileOverlayCallback(DataViewUI* dataView, DataViewUI::CalculateTileValue calculate_tile_value, String paletteName)
 {
-    dataView->calculateTileValue = calculateTileValue;
+    dataView->calculate_tile_value = calculate_tile_value;
     dataView->overlayPaletteName = paletteName;
 }
 
@@ -1140,13 +1140,13 @@ void drawDataViewOverlay(GameState* gameState, Rect2I visibleTileBounds)
 
         auto& overlayPalette = Palette::get(dataView->overlayPaletteName);
         drawGrid(&renderer.world_overlay_buffer(), bounds, *dataView->overlayTileData, (u16)overlayPalette.size(), overlayPalette.raw_colour_data());
-    } else if (dataView->calculateTileValue) {
+    } else if (dataView->calculate_tile_value) {
         // The per-tile overlay data is generated
         Array2<u8> overlayTileData = temp_arena().allocate_array_2d<u8>(visibleTileBounds.size());
 
         for (s32 gridY = 0; gridY < visibleTileBounds.height(); gridY++) {
             for (s32 gridX = 0; gridX < visibleTileBounds.width(); gridX++) {
-                u8 tileValue = dataView->calculateTileValue(city, visibleTileBounds.x() + gridX, visibleTileBounds.y() + gridY);
+                u8 tileValue = dataView->calculate_tile_value(city, visibleTileBounds.x() + gridX, visibleTileBounds.y() + gridY);
                 overlayTileData.set(gridX, gridY, tileValue);
             }
         }
