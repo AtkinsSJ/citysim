@@ -42,7 +42,7 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
 
     initOccupancyArray(&city->entities, gameArena, 1024);
 
-    initBudgetLayer(&city->budgetLayer, city, gameArena);
+    city->budgetLayer = BudgetLayer { *city, *gameArena };
     initCrimeLayer(&city->crimeLayer, city, gameArena);
     initEducationLayer(&city->educationLayer, city, gameArena);
     initFireLayer(&city->fireLayer, city, gameArena);

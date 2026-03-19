@@ -653,7 +653,7 @@ ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const
                 break;
             if (!city->transportLayer.load(reader))
                 break;
-            if (!loadBudgetLayer(&city->budgetLayer, city, &reader))
+            if (!city->budgetLayer.load(reader))
                 break;
 
             // And we're done!

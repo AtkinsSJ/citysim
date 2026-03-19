@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2021-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -10,9 +10,11 @@
 #include <Sim/Forward.h>
 #include <Util/Forward.h>
 
-struct BudgetLayer {
-};
+class BudgetLayer {
+public:
+    BudgetLayer() = default;
+    BudgetLayer(City&, MemoryArena&);
 
-void initBudgetLayer(BudgetLayer* layer, City* city, MemoryArena* gameArena);
-void saveBudgetLayer(BudgetLayer* layer, BinaryFileWriter* writer);
-bool loadBudgetLayer(BudgetLayer* layer, City* city, BinaryFileReader* reader);
+    void save(BinaryFileWriter&) const;
+    bool load(BinaryFileReader&);
+};

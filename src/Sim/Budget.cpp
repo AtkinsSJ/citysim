@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2021-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -10,24 +10,23 @@
 #include <Menus/SaveFile.h>
 #include <Sim/City.h>
 
-void initBudgetLayer(BudgetLayer* layer, City*, MemoryArena*)
+BudgetLayer::BudgetLayer(City&, MemoryArena&)
 {
-    *layer = {};
 }
 
-void saveBudgetLayer(BudgetLayer*, BinaryFileWriter* writer)
+void BudgetLayer::save(BinaryFileWriter& writer) const
 {
-    writer->startSection<SAVSection_Budget>(SAV_BUDGET_ID, SAV_BUDGET_VERSION);
+    writer.startSection<SAVSection_Budget>(SAV_BUDGET_ID, SAV_BUDGET_VERSION);
     SAVSection_Budget budgetSection = {};
 
-    writer->endSection<SAVSection_Budget>(&budgetSection);
+    writer.endSection<SAVSection_Budget>(&budgetSection);
 }
 
-bool loadBudgetLayer(BudgetLayer*, City*, BinaryFileReader* reader)
+bool BudgetLayer::load(BinaryFileReader& reader)
 {
     bool succeeded = false;
-    while (reader->startSection(SAV_BUDGET_ID, SAV_BUDGET_VERSION)) {
-        SAVSection_Budget* section = reader->readStruct<SAVSection_Budget>(0);
+    while (reader.startSection(SAV_BUDGET_ID, SAV_BUDGET_VERSION)) {
+        SAVSection_Budget* section = reader.readStruct<SAVSection_Budget>(0);
         if (!section)
             break;
 
