@@ -12,62 +12,62 @@
 #include <Sim/Effect.h>
 #include <Sim/LandValue.h>
 
-void initCrimeLayer(CrimeLayer* layer, City* city, MemoryArena* gameArena)
+CrimeLayer::CrimeLayer(City& city, MemoryArena& arena)
 {
-    layer->sectors = SectorGrid<BasicSector> { gameArena, city->bounds.size(), 16, 8 };
+    m_sectors = SectorGrid<BasicSector> { &arena, city.bounds.size(), 16, 8 };
 
-    initDirtyRects(&layer->dirtyRects, gameArena, maxLandValueEffectDistance, city->bounds);
+    initDirtyRects(&m_dirty_rects, &arena, maxLandValueEffectDistance, city.bounds);
 
-    layer->tilePoliceCoverage = gameArena->allocate_array_2d<u8>(city->bounds.size());
-    layer->tilePoliceCoverage.fill(0);
+    m_tile_police_coverage = arena.allocate_array_2d<u8>(city.bounds.size());
+    m_tile_police_coverage.fill(0);
 
-    layer->totalJailCapacity = 0;
-    layer->occupiedJailCapacity = 0;
+    m_total_jail_capacity = 0;
+    m_occupied_jail_capacity = 0;
 
-    layer->fundingLevel = 1.0f;
+    m_funding_level = 1.0f;
 
-    initChunkedArray(&layer->policeBuildings, &city->buildingRefsChunkPool);
+    initChunkedArray(&m_police_buildings, &city.buildingRefsChunkPool);
 }
 
-void updateCrimeLayer(City* city, CrimeLayer* layer)
+void CrimeLayer::update(City& city)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
-    if (isDirty(&layer->dirtyRects)) {
+    if (isDirty(&m_dirty_rects)) {
         DEBUG_BLOCK_T("updateCrimeLayer: dirty rects", DebugCodeDataTag::Simulation);
-        clearDirtyRects(&layer->dirtyRects);
+        clearDirtyRects(&m_dirty_rects);
     }
 
     // Recalculate jail capacity
     // NB: This only makes sense if we assume that building jail capacities can change while
     // the game is running. It'll only happen incredibly rarely during normal play, but during
     // development we have this whole hot-loaded building defs system, so it's better to be safe.
-    layer->totalJailCapacity = 0;
-    for (auto it = layer->policeBuildings.iterate(); it.hasNext(); it.next()) {
-        Building* building = city->get_building(it.getValue());
+    m_total_jail_capacity = 0;
+    for (auto it = m_police_buildings.iterate(); it.hasNext(); it.next()) {
+        Building* building = city.get_building(it.getValue());
         if (building != nullptr) {
             BuildingDef* def = getBuildingDef(building);
             if (def->jailCapacity > 0)
-                layer->totalJailCapacity += def->jailCapacity;
+                m_total_jail_capacity += def->jailCapacity;
         }
     }
 
     {
         DEBUG_BLOCK_T("updateCrimeLayer: sector updates", DebugCodeDataTag::Simulation);
 
-        for (s32 i = 0; i < layer->sectors.sectors_to_update_per_tick(); i++) {
-            auto [_, sector] = layer->sectors.get_next_sector();
+        for (s32 i = 0; i < m_sectors.sectors_to_update_per_tick(); i++) {
+            auto [_, sector] = m_sectors.get_next_sector();
 
             DEBUG_BLOCK_T("updateCrimeLayer: building police coverage", DebugCodeDataTag::Simulation);
-            layer->tilePoliceCoverage.fill_region(sector.bounds, 0);
-            for (auto it = layer->policeBuildings.iterate(); it.hasNext(); it.next()) {
-                Building* building = city->get_building(it.getValue());
+            m_tile_police_coverage.fill_region(sector.bounds, 0);
+            for (auto it = m_police_buildings.iterate(); it.hasNext(); it.next()) {
+                Building* building = city.get_building(it.getValue());
                 if (building != nullptr) {
                     BuildingDef* def = getBuildingDef(building);
 
                     if (def->policeEffect.has_effect()) {
                         // Budget
-                        float effectiveness = layer->fundingLevel;
+                        float effectiveness = m_funding_level;
 
                         if (!buildingHasPower(building)) {
                             effectiveness *= 0.4f; // @Balance
@@ -75,7 +75,7 @@ void updateCrimeLayer(City* city, CrimeLayer* layer)
                             // TODO: Consider water access too
                         }
 
-                        def->policeEffect.apply(layer->tilePoliceCoverage, sector.bounds, building->footprint.centre(), EffectType::Add, effectiveness);
+                        def->policeEffect.apply(m_tile_police_coverage, sector.bounds, building->footprint.centre(), EffectType::Add, effectiveness);
                     }
                 }
             }
@@ -83,48 +83,48 @@ void updateCrimeLayer(City* city, CrimeLayer* layer)
     }
 }
 
-void notifyNewBuilding(CrimeLayer* layer, BuildingDef* def, Building* building)
+void CrimeLayer::notify_new_building(BuildingDef const& def, Building& building)
 {
-    if (def->policeEffect.has_effect() || (def->jailCapacity > 0)) {
-        layer->policeBuildings.append(building->get_reference());
+    if (def.policeEffect.has_effect() || (def.jailCapacity > 0)) {
+        m_police_buildings.append(building.get_reference());
     }
 }
 
-void notifyBuildingDemolished(CrimeLayer* layer, BuildingDef* def, Building* building)
+void CrimeLayer::notify_building_demolished(BuildingDef const& def, Building& building)
 {
-    if (def->policeEffect.has_effect() || (def->jailCapacity > 0)) {
-        bool success = layer->policeBuildings.findAndRemove(building->get_reference());
+    if (def.policeEffect.has_effect() || (def.jailCapacity > 0)) {
+        bool success = m_police_buildings.findAndRemove(building.get_reference());
         ASSERT(success);
     }
 }
 
-float getPoliceCoveragePercentAt(City* city, s32 x, s32 y)
+float CrimeLayer::get_police_coverage_percent_at(s32 x, s32 y) const
 {
-    return city->crimeLayer.tilePoliceCoverage.get(x, y) / 255.0f;
+    return m_tile_police_coverage.get(x, y) / 255.0f;
 }
 
-void saveCrimeLayer(CrimeLayer* layer, BinaryFileWriter* writer)
+void CrimeLayer::save(BinaryFileWriter& writer) const
 {
-    writer->startSection<SAVSection_Crime>(SAV_CRIME_ID, SAV_CRIME_VERSION);
+    writer.startSection<SAVSection_Crime>(SAV_CRIME_ID, SAV_CRIME_VERSION);
     SAVSection_Crime crimeSection = {};
 
-    crimeSection.totalJailCapacity = layer->totalJailCapacity;
-    crimeSection.occupiedJailCapacity = layer->occupiedJailCapacity;
+    crimeSection.totalJailCapacity = m_total_jail_capacity;
+    crimeSection.occupiedJailCapacity = m_occupied_jail_capacity;
 
-    writer->endSection<SAVSection_Crime>(&crimeSection);
+    writer.endSection<SAVSection_Crime>(&crimeSection);
 }
 
-bool loadCrimeLayer(CrimeLayer* layer, City*, BinaryFileReader* reader)
+bool CrimeLayer::load(BinaryFileReader& reader)
 {
     bool succeeded = false;
-    while (reader->startSection(SAV_CRIME_ID, SAV_CRIME_VERSION)) {
+    while (reader.startSection(SAV_CRIME_ID, SAV_CRIME_VERSION)) {
         // Load Crime
-        SAVSection_Crime* section = reader->readStruct<SAVSection_Crime>(0);
+        SAVSection_Crime* section = reader.readStruct<SAVSection_Crime>(0);
         if (!section)
             break;
 
-        layer->totalJailCapacity = section->totalJailCapacity;
-        layer->occupiedJailCapacity = section->occupiedJailCapacity;
+        m_total_jail_capacity = section->totalJailCapacity;
+        m_occupied_jail_capacity = section->occupiedJailCapacity;
 
         succeeded = true;
         break;

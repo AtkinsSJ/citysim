@@ -639,7 +639,7 @@ ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const
                 break;
             if (!city->zoneLayer.load(reader))
                 break;
-            if (!loadCrimeLayer(&city->crimeLayer, city, &reader))
+            if (!city->crimeLayer.load(reader))
                 break;
             if (!loadEducationLayer(&city->educationLayer, city, &reader))
                 break;
@@ -702,7 +702,7 @@ void GameScene::update_and_render(float delta_time)
             logInfo("New year!"_s);
         }
 
-        updateCrimeLayer(&city, &city.crimeLayer);
+        city.crimeLayer.update(city);
         updateFireLayer(&city, &city.fireLayer);
         updateHealthLayer(&city, &city.healthLayer);
         updateLandValueLayer(&city, &city.landValueLayer);
@@ -975,8 +975,8 @@ void GameScene::init_data_view_ui()
     dataViewUI[DataView::Crime].title = "data_view_crime"_s;
     setGradient(&dataViewUI[DataView::Crime], "service_coverage"_s);
     setFixedColors(&dataViewUI[DataView::Crime], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, m_arena);
-    setHighlightedBuildings(&dataViewUI[DataView::Crime], &city->crimeLayer.policeBuildings, &BuildingDef::policeEffect);
-    setTileOverlay(&dataViewUI[DataView::Crime], &city->crimeLayer.tilePoliceCoverage, "service_coverage"_s);
+    setHighlightedBuildings(&dataViewUI[DataView::Crime], city->crimeLayer.police_buildings(), &BuildingDef::policeEffect);
+    setTileOverlay(&dataViewUI[DataView::Crime], city->crimeLayer.tile_police_coverage(), "service_coverage"_s);
 
     dataViewUI[DataView::Fire].title = "data_view_fire"_s;
     setGradient(&dataViewUI[DataView::Fire], "risk"_s);

@@ -43,7 +43,7 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
     initOccupancyArray(&city->entities, gameArena, 1024);
 
     city->budgetLayer = BudgetLayer { *city, *gameArena };
-    initCrimeLayer(&city->crimeLayer, city, gameArena);
+    city->crimeLayer = CrimeLayer { *city, *gameArena };
     initEducationLayer(&city->educationLayer, city, gameArena);
     initFireLayer(&city->fireLayer, city, gameArena);
     initHealthLayer(&city->healthLayer, city, gameArena);
@@ -136,7 +136,7 @@ Building* City::add_building_direct(s32 id, BuildingDef* def, Rect2I footprint, 
         }
     }
 
-    notifyNewBuilding(&crimeLayer, def, &building);
+    crimeLayer.notify_new_building(*def, building);
     notifyNewBuilding(&fireLayer, def, &building);
     notifyNewBuilding(&healthLayer, def, &building);
     notifyNewBuilding(&powerLayer, def, &building);
@@ -334,7 +334,7 @@ void City::demolish_rect(Rect2I area)
         Rect2I buildingFootprint = building->footprint;
 
         // Clean up other references
-        notifyBuildingDemolished(&crimeLayer, def, building);
+        crimeLayer.notify_building_demolished(*def, *building);
         notifyBuildingDemolished(&fireLayer, def, building);
         notifyBuildingDemolished(&healthLayer, def, building);
         notifyBuildingDemolished(&powerLayer, def, building);

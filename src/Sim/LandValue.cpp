@@ -121,7 +121,7 @@ void updateLandValueLayer(City* city, LandValueLayer* layer)
                     landValue += fireProtection * 0.2f;
 
                     // Police protection = good
-                    float policeCoverage = getPoliceCoveragePercentAt(city, x, y);
+                    float policeCoverage = city->crimeLayer.get_police_coverage_percent_at(x, y);
                     landValue += policeCoverage * 0.2f;
 
                     // Pollution = bad

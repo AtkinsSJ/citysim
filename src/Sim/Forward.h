@@ -12,7 +12,7 @@ struct BuildingCatalogue;
 struct BuildingDef;
 class BuildingRef;
 struct City;
-struct CrimeLayer;
+class CrimeLayer;
 struct DirtyRects;
 struct EducationLayer;
 class EffectRadius;
