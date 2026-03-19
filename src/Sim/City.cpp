@@ -42,17 +42,17 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
 
     initOccupancyArray(&city->entities, gameArena, 1024);
 
-    city->budgetLayer = BudgetLayer { *city, *gameArena };
-    city->crimeLayer = CrimeLayer { *city, *gameArena };
-    city->educationLayer = EducationLayer { *city, *gameArena };
+    new (&city->budgetLayer) BudgetLayer { *city, *gameArena };
+    new (&city->crimeLayer) CrimeLayer { *city, *gameArena };
+    new (&city->educationLayer) EducationLayer { *city, *gameArena };
     initFireLayer(&city->fireLayer, city, gameArena);
     initHealthLayer(&city->healthLayer, city, gameArena);
     initLandValueLayer(&city->landValueLayer, city, gameArena);
     initPollutionLayer(&city->pollutionLayer, city, gameArena);
     initPowerLayer(&city->powerLayer, city, gameArena);
-    city->terrainLayer = TerrainLayer { *city, *gameArena };
-    city->transportLayer = TransportLayer { *city, *gameArena };
-    city->zoneLayer = ZoneLayer { *city, *gameArena };
+    new (&city->terrainLayer) TerrainLayer { *city, *gameArena };
+    new (&city->transportLayer) TransportLayer { *city, *gameArena };
+    new (&city->zoneLayer) ZoneLayer { *city, *gameArena };
 
     city->highestBuildingID = 0;
 
