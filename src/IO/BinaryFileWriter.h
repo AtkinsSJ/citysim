@@ -57,7 +57,7 @@ struct BinaryFileWriter {
     s32 getSectionRelativeOffset();
 
     template<typename T>
-    FileArray appendArray(Array<T> data)
+    FileArray appendArray(Array<T> const& data)
     {
         FileArray result = {};
         result.count = data.count;
@@ -77,7 +77,7 @@ struct BinaryFileWriter {
     }
 
     template<typename T>
-    FileArray writeArray(Array<T> data, WriteBufferRange location)
+    FileArray writeArray(Array<T> const& data, WriteBufferRange location)
     {
         s32 dataLength = data.count * sizeof(T);
         ASSERT(dataLength <= location.length);
@@ -90,8 +90,8 @@ struct BinaryFileWriter {
         return result;
     }
 
-    FileBlob appendBlob(s32 length, u8* data, FileBlobCompressionScheme scheme);
-    FileBlob appendBlob(Array2<u8>* data, FileBlobCompressionScheme scheme);
+    FileBlob appendBlob(s32 length, u8 const* data, FileBlobCompressionScheme scheme);
+    FileBlob appendBlob(Array2<u8> const* data, FileBlobCompressionScheme scheme);
     template<Enum EnumT>
     FileBlob appendBlob(Array2<EnumT> const& data, FileBlobCompressionScheme scheme)
     {
@@ -124,7 +124,7 @@ struct BinaryFileWriter {
 
     // Internal
     Optional<WriteBufferRange> find_toc_entry(FileIdentifier sectionID);
-    s8 countRunLength(s32 dataLength, u8* data);
+    s8 countRunLength(s32 dataLength, u8 const* data);
 };
 
 BinaryFileWriter startWritingFile(FileIdentifier identifier, u8 version, MemoryArena* arena);

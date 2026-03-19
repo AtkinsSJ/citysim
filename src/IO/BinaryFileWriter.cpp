@@ -55,7 +55,7 @@ s32 BinaryFileWriter::getSectionRelativeOffset()
     return buffer.getCurrentPosition() - startOfSectionData;
 }
 
-FileBlob BinaryFileWriter::appendBlob(s32 length, u8* data, FileBlobCompressionScheme scheme)
+FileBlob BinaryFileWriter::appendBlob(s32 length, u8 const* data, FileBlobCompressionScheme scheme)
 {
     FileBlob result = {};
     result.compressionScheme = to_underlying(scheme);
@@ -76,8 +76,8 @@ FileBlob BinaryFileWriter::appendBlob(s32 length, u8* data, FileBlobCompressionS
 
         s32 const minRunLength = 4; // This is a fairly arbitrary number! Maybe it should be bigger, idk.
 
-        u8* end = data + length;
-        u8* pos = data;
+        u8 const* end = data + length;
+        u8 const* pos = data;
         s32 remainingLength = length;
 
         while (pos < end) {
@@ -132,7 +132,7 @@ FileBlob BinaryFileWriter::appendBlob(s32 length, u8* data, FileBlobCompressionS
     return result;
 }
 
-FileBlob BinaryFileWriter::appendBlob(Array2<u8>* data, FileBlobCompressionScheme scheme)
+FileBlob BinaryFileWriter::appendBlob(Array2<u8> const* data, FileBlobCompressionScheme scheme)
 {
     return appendBlob(data->count(), data->items, scheme);
 }
@@ -191,7 +191,7 @@ Optional<WriteBufferRange> BinaryFileWriter::find_toc_entry(FileIdentifier secti
     return {};
 }
 
-s8 BinaryFileWriter::countRunLength(s32 dataLength, u8* data)
+s8 BinaryFileWriter::countRunLength(s32 dataLength, u8 const* data)
 {
     s8 runLength = 1;
 
