@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2019-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -32,50 +32,53 @@ struct FireSector {
     ChunkedArray<Fire> activeFires;
 };
 
-struct FireLayer {
-    DirtyRects dirtyRects;
+class FireLayer {
+public:
+    FireLayer() = default;
+    FireLayer(City&, MemoryArena&);
 
-    SectorGrid<FireSector> sectors;
+    void update(City&);
+    void mark_dirty(Rect2I bounds);
 
-    u8 maxFireRadius;
-    Array2<u16> tileFireProximityEffect;
+    Optional<Indexed<Fire>> find_fire_at(s32 x, s32 y);
+    bool does_area_contain_fire(Rect2I bounds) const;
+    void start_fire_at(City&, s32 x, s32 y);
+    void add_fire_raw(City&, s32 x, s32 y, GameTimestamp start_date);
+    void remove_fire_at(City&, s32 x, s32 y);
 
-    Array2<u8> tileTotalFireRisk; // Risks combined
+    u8 get_fire_risk_at(s32 x, s32 y) const;
+    float get_fire_protection_percent_at(s32 x, s32 y) const;
 
-    Array2<u8> tileFireProtection;
+    void notify_new_building(BuildingDef const&, Building&);
+    void notify_building_demolished(BuildingDef const&, Building&);
 
-    Array2<u8> tileOverallFireRisk; // Risks after we've taken protection into account
+    void debug_inspect(UI::Panel& panel, V2I tile_position, Building*);
 
-    ChunkedArray<BuildingRef> fireProtectionBuildings;
+    // FIXME: Temporary
+    ChunkedArray<BuildingRef>* fire_protection_buildings() { return &m_fire_protection_buildings; }
+    Array2<u8>* tile_overall_fire_risk() { return &m_tile_overall_fire_risk; }
 
-    ArrayChunkPool<Fire> firePool;
-    s32 activeFireCount;
+    void save(BinaryFileWriter&) const;
+    bool load(BinaryFileReader&, City&);
 
-    float fundingLevel; // @Budget
+private:
+    DirtyRects m_dirty_rects;
 
-    // Debug stuff
-    V2I debugTileInspectionPos;
+    SectorGrid<FireSector> m_sectors;
+
+    u8 m_max_fire_radius;
+    Array2<u16> m_tile_fire_proximity_effect;
+
+    Array2<u8> m_tile_total_fire_risk; // Risks combined
+
+    Array2<u8> m_tile_fire_protection;
+
+    Array2<u8> m_tile_overall_fire_risk; // Risks after we've taken protection into account
+
+    ChunkedArray<BuildingRef> m_fire_protection_buildings;
+
+    ArrayChunkPool<Fire> m_fire_pool;
+    s32 m_active_fire_count;
+
+    float m_funding_level; // @Budget
 };
-
-void initFireLayer(FireLayer* layer, City* city, MemoryArena* gameArena);
-void updateFireLayer(City* city, FireLayer* layer);
-void markFireLayerDirty(FireLayer* layer, Rect2I bounds);
-
-void notifyNewBuilding(FireLayer* layer, BuildingDef* def, Building* building);
-void notifyBuildingDemolished(FireLayer* layer, BuildingDef* def, Building* building);
-
-Optional<Indexed<Fire>> find_fire_at(City* city, s32 x, s32 y);
-bool doesAreaContainFire(City* city, Rect2I bounds);
-void startFireAt(City* city, s32 x, s32 y);
-void addFireRaw(City* city, s32 x, s32 y, GameTimestamp startDate);
-void updateFire(City* city, Fire* fire);
-void removeFireAt(City* city, s32 x, s32 y);
-
-u8 getFireRiskAt(City* city, s32 x, s32 y);
-u8 getFireProtectionAt(City* city, s32 x, s32 y);
-float getFireProtectionPercentAt(City* city, s32 x, s32 y);
-
-void debugInspectFire(UI::Panel* panel, City* city, s32 x, s32 y);
-
-void saveFireLayer(FireLayer* layer, BinaryFileWriter* writer);
-bool loadFireLayer(FireLayer* layer, City* city, BinaryFileReader* reader);

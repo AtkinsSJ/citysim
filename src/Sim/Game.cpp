@@ -275,7 +275,7 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
     // Debug info
     if (!gameState->inspectTileDebugFlags.is_empty()) {
         if (gameState->inspectTileDebugFlags.has(InspectTileDebugFlags::Fire)) {
-            debugInspectFire(ui, city, tilePos.x, tilePos.y);
+            city->fireLayer.debug_inspect(*ui, tilePos, building);
         }
         if (gameState->inspectTileDebugFlags.has(InspectTileDebugFlags::Power)) {
             debugInspectPower(ui, city, tilePos.x, tilePos.y);
@@ -643,7 +643,7 @@ ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const
                 break;
             if (!city->educationLayer.load(reader))
                 break;
-            if (!loadFireLayer(&city->fireLayer, city, &reader))
+            if (!city->fireLayer.load(reader, *city))
                 break;
             if (!loadHealthLayer(&city->healthLayer, city, &reader))
                 break;
@@ -703,7 +703,7 @@ void GameScene::update_and_render(float delta_time)
         }
 
         city.crimeLayer.update(city);
-        updateFireLayer(&city, &city.fireLayer);
+        city.fireLayer.update(city);
         updateHealthLayer(&city, &city.healthLayer);
         updateLandValueLayer(&city, &city.landValueLayer);
         updatePollutionLayer(&city, &city.pollutionLayer);
@@ -895,7 +895,7 @@ void GameScene::update_and_render(float delta_time)
             if (!mouseIsOverUI
                 && mouseButtonJustPressed(MouseButton::Left)
                 && city.tile_exists(mouseTilePos.x, mouseTilePos.y)) {
-                startFireAt(&city, mouseTilePos.x, mouseTilePos.y);
+                city.fireLayer.start_fire_at(city, mouseTilePos.x, mouseTilePos.y);
             }
         } break;
 
@@ -903,7 +903,7 @@ void GameScene::update_and_render(float delta_time)
             if (!mouseIsOverUI
                 && mouseButtonJustPressed(MouseButton::Left)
                 && city.tile_exists(mouseTilePos.x, mouseTilePos.y)) {
-                removeFireAt(&city, mouseTilePos.x, mouseTilePos.y);
+                city.fireLayer.remove_fire_at(city, mouseTilePos.x, mouseTilePos.y);
             }
         } break;
 
@@ -981,8 +981,8 @@ void GameScene::init_data_view_ui()
     dataViewUI[DataView::Fire].title = "data_view_fire"_s;
     setGradient(&dataViewUI[DataView::Fire], "risk"_s);
     setFixedColors(&dataViewUI[DataView::Fire], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, m_arena);
-    setHighlightedBuildings(&dataViewUI[DataView::Fire], &city->fireLayer.fireProtectionBuildings, &BuildingDef::fireProtection);
-    setTileOverlay(&dataViewUI[DataView::Fire], &city->fireLayer.tileOverallFireRisk, "risk"_s);
+    setHighlightedBuildings(&dataViewUI[DataView::Fire], city->fireLayer.fire_protection_buildings(), &BuildingDef::fireProtection);
+    setTileOverlay(&dataViewUI[DataView::Fire], city->fireLayer.tile_overall_fire_risk(), "risk"_s);
 
     dataViewUI[DataView::Health].title = "data_view_health"_s;
     setGradient(&dataViewUI[DataView::Health], "service_coverage"_s);

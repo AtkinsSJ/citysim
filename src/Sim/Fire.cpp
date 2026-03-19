@@ -14,98 +14,98 @@
 #include <UI/Panel.h>
 #include <Util/Random.h>
 
-void initFireLayer(FireLayer* layer, City* city, MemoryArena* gameArena)
+FireLayer::FireLayer(City& city, MemoryArena& arena)
 {
-    layer->fundingLevel = 1.0f;
+    m_funding_level = 1.0f;
 
-    layer->maxFireRadius = 4;
-    layer->tileFireProximityEffect = gameArena->allocate_array_2d<u16>(city->bounds.size());
-    layer->tileFireProximityEffect.fill(0);
+    m_max_fire_radius = 4;
+    m_tile_fire_proximity_effect = arena.allocate_array_2d<u16>(city.bounds.size());
+    m_tile_fire_proximity_effect.fill(0);
 
-    layer->tileTotalFireRisk = gameArena->allocate_array_2d<u8>(city->bounds.size());
-    layer->tileTotalFireRisk.fill(0);
-    layer->tileFireProtection = gameArena->allocate_array_2d<u8>(city->bounds.size());
-    layer->tileFireProtection.fill(0);
-    layer->tileOverallFireRisk = gameArena->allocate_array_2d<u8>(city->bounds.size());
-    layer->tileOverallFireRisk.fill(0);
+    m_tile_total_fire_risk = arena.allocate_array_2d<u8>(city.bounds.size());
+    m_tile_total_fire_risk.fill(0);
+    m_tile_fire_protection = arena.allocate_array_2d<u8>(city.bounds.size());
+    m_tile_fire_protection.fill(0);
+    m_tile_overall_fire_risk = arena.allocate_array_2d<u8>(city.bounds.size());
+    m_tile_overall_fire_risk.fill(0);
 
-    initChunkedArray(&layer->fireProtectionBuildings, &city->buildingRefsChunkPool);
+    initChunkedArray(&m_fire_protection_buildings, &city.buildingRefsChunkPool);
 
-    initDirtyRects(&layer->dirtyRects, gameArena, layer->maxFireRadius, city->bounds);
+    initDirtyRects(&m_dirty_rects, &arena, m_max_fire_radius, city.bounds);
 
-    layer->activeFireCount = 0;
-    initChunkPool(&layer->firePool, gameArena, 64);
-    layer->sectors = SectorGrid<FireSector> { gameArena, city->bounds.size(), 16, 8 };
-    for (s32 sectorIndex = 0; sectorIndex < layer->sectors.sector_count(); sectorIndex++) {
-        FireSector* sector = layer->sectors.get_by_index(sectorIndex);
+    m_active_fire_count = 0;
+    initChunkPool(&m_fire_pool, &arena, 64);
+    m_sectors = SectorGrid<FireSector> { &arena, city.bounds.size(), 16, 8 };
+    for (s32 sectorIndex = 0; sectorIndex < m_sectors.sector_count(); sectorIndex++) {
+        FireSector* sector = m_sectors.get_by_index(sectorIndex);
 
-        initChunkedArray(&sector->activeFires, &layer->firePool);
+        initChunkedArray(&sector->activeFires, &m_fire_pool);
     }
 }
 
-void markFireLayerDirty(FireLayer* layer, Rect2I bounds)
+void FireLayer::mark_dirty(Rect2I bounds)
 {
-    markRectAsDirty(&layer->dirtyRects, bounds);
+    markRectAsDirty(&m_dirty_rects, bounds);
 }
 
-void updateFireLayer(City* city, FireLayer* layer)
+void FireLayer::update(City& city)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
-    if (isDirty(&layer->dirtyRects)) {
+    if (isDirty(&m_dirty_rects)) {
         DEBUG_BLOCK_T("updateFireLayer: building effects", DebugCodeDataTag::Simulation);
 
         // Recalculate fire distances
-        for (auto rectIt = layer->dirtyRects.rects.iterate();
+        for (auto rectIt = m_dirty_rects.rects.iterate();
             rectIt.hasNext();
             rectIt.next()) {
             Rect2I dirtyRect = rectIt.getValue();
-            layer->tileFireProximityEffect.fill_region(dirtyRect, 0);
+            m_tile_fire_proximity_effect.fill_region(dirtyRect, 0);
 
-            Rect2I expandedRect = dirtyRect.expanded(layer->maxFireRadius);
-            Rect2I affectedSectors = layer->sectors.get_sectors_covered(expandedRect);
+            Rect2I expandedRect = dirtyRect.expanded(m_max_fire_radius);
+            Rect2I affectedSectors = m_sectors.get_sectors_covered(expandedRect);
 
             for (s32 sy = affectedSectors.y(); sy < affectedSectors.y() + affectedSectors.height(); sy++) {
                 for (s32 sx = affectedSectors.x(); sx < affectedSectors.x() + affectedSectors.width(); sx++) {
-                    FireSector* sector = layer->sectors.get(sx, sy);
+                    FireSector* sector = m_sectors.get(sx, sy);
 
                     for (auto it = sector->activeFires.iterate(); it.hasNext(); it.next()) {
                         auto& fire = it.get();
                         if (expandedRect.contains(fire.pos)) {
                             // TODO: Different "strengths" of fire should have different effects
-                            EffectRadius fireEffect { layer->maxFireRadius, 255, 20 };
-                            fireEffect.apply(layer->tileFireProximityEffect, dirtyRect, v2(fire.pos), EffectType::Add);
+                            EffectRadius fireEffect { m_max_fire_radius, 255, 20 };
+                            fireEffect.apply(m_tile_fire_proximity_effect, dirtyRect, v2(fire.pos), EffectType::Add);
                         }
                     }
                 }
             }
         }
 
-        clearDirtyRects(&layer->dirtyRects);
+        clearDirtyRects(&m_dirty_rects);
     }
 
     {
         DEBUG_BLOCK_T("updateFireLayer: overall calculation", DebugCodeDataTag::Simulation);
 
-        for (s32 i = 0; i < layer->sectors.sectors_to_update_per_tick(); i++) {
-            auto [_, sector] = layer->sectors.get_next_sector();
+        for (s32 i = 0; i < m_sectors.sectors_to_update_per_tick(); i++) {
+            auto [_, sector] = m_sectors.get_next_sector();
 
             {
                 DEBUG_BLOCK_T("updateFireLayer: building fire protection", DebugCodeDataTag::Simulation);
                 // Building fire protection
-                layer->tileFireProtection.fill_region(sector.bounds, 0);
-                for (auto it = layer->fireProtectionBuildings.iterate(); it.hasNext(); it.next()) {
-                    Building* building = city->get_building(it.getValue());
+                m_tile_fire_protection.fill_region(sector.bounds, 0);
+                for (auto it = m_fire_protection_buildings.iterate(); it.hasNext(); it.next()) {
+                    Building* building = city.get_building(it.getValue());
                     if (building != nullptr) {
                         BuildingDef* def = getBuildingDef(building);
 
-                        float effectiveness = layer->fundingLevel;
+                        float effectiveness = m_funding_level;
 
                         if (!buildingHasPower(building)) {
                             effectiveness *= 0.4f; // @Balance
                         }
 
-                        def->fireProtection.apply(layer->tileFireProtection, sector.bounds, building->footprint.centre(), EffectType::Max, effectiveness);
+                        def->fireProtection.apply(m_tile_fire_protection, sector.bounds, building->footprint.centre(), EffectType::Max, effectiveness);
                     }
                 }
             }
@@ -114,7 +114,7 @@ void updateFireLayer(City* city, FireLayer* layer)
                 for (s32 x = sector.bounds.x(); x < sector.bounds.x() + sector.bounds.width(); x++) {
                     float tileFireRisk = 0.0f;
 
-                    Building* building = city->get_building_at(x, y);
+                    Building* building = city.get_building_at(x, y);
                     if (building) {
                         BuildingDef* def = getBuildingDef(building);
                         tileFireRisk += def->fireRisk;
@@ -124,50 +124,47 @@ void updateFireLayer(City* city, FireLayer* layer)
                     // TODO: Balance this! Currently it's a multiplier on the base building risk,
                     // because if we just ADD a value, then we get fire risk on empty tiles.
                     // But, the balance is definitely off.
-                    u16 fireProximityEffect = layer->tileFireProximityEffect.get(x, y);
+                    u16 fireProximityEffect = m_tile_fire_proximity_effect.get(x, y);
                     if (fireProximityEffect > 0) {
                         tileFireRisk += (tileFireRisk * 4.0f * clamp01(fireProximityEffect / 255.0f));
                     }
 
                     u8 totalRisk = clamp01AndMap_u8(tileFireRisk);
-                    layer->tileTotalFireRisk.set(x, y, totalRisk);
+                    m_tile_total_fire_risk.set(x, y, totalRisk);
 
                     // TODO: Balance this! It feels over-powered, even at 50%.
                     // Possibly fire stations shouldn't affect risk from active fires?
-                    float protectionPercent = layer->tileFireProtection.get(x, y) * 0.01f;
+                    float protectionPercent = m_tile_fire_protection.get(x, y) * 0.01f;
                     u8 result = lerp<u8>(totalRisk, 0, protectionPercent * 0.5f);
-                    layer->tileOverallFireRisk.set(x, y, result);
+                    m_tile_overall_fire_risk.set(x, y, result);
                 }
             }
         }
     }
 }
 
-Optional<Indexed<Fire>> find_fire_at(City* city, s32 x, s32 y)
+Optional<Indexed<Fire>> FireLayer::find_fire_at(s32 x, s32 y)
 {
-    FireLayer& layer = city->fireLayer;
-
     // Optimization: Skip looking for fires if we know there are none.
-    if (layer.activeFireCount == 0)
+    if (m_active_fire_count == 0)
         return {};
 
-    FireSector* sector = layer.sectors.get_sector_at_tile_pos(x, y);
+    auto* sector = m_sectors.get_sector_at_tile_pos(x, y);
     return sector->activeFires.find_first([=](Fire& fire) { return fire.pos.x == x && fire.pos.y == y; });
 }
 
-bool doesAreaContainFire(City* city, Rect2I bounds)
+bool FireLayer::does_area_contain_fire(Rect2I bounds) const
 {
-    FireLayer* layer = &city->fireLayer;
     bool foundFire = false;
 
-    Rect2I footprintSectors = layer->sectors.get_sectors_covered(bounds);
+    Rect2I footprintSectors = m_sectors.get_sectors_covered(bounds);
     for (s32 sy = footprintSectors.y();
         sy < footprintSectors.y() + footprintSectors.height() && !foundFire;
         sy++) {
         for (s32 sx = footprintSectors.x();
             sx < footprintSectors.x() + footprintSectors.width() && !foundFire;
             sx++) {
-            FireSector* sector = layer->sectors.get(sx, sy);
+            auto* sector = m_sectors.get(sx, sy);
             for (auto it = sector->activeFires.iterate(); it.hasNext(); it.next()) {
                 auto& fire = it.get();
 
@@ -182,121 +179,109 @@ bool doesAreaContainFire(City* city, Rect2I bounds)
     return foundFire;
 }
 
-void startFireAt(City* city, s32 x, s32 y)
+void FireLayer::start_fire_at(City& city, s32 x, s32 y)
 {
-    if (auto existing_fire = find_fire_at(city, x, y); existing_fire.has_value()) {
+    if (auto existing_fire = find_fire_at(x, y); existing_fire.has_value()) {
         // Fire already exists!
         // TODO: make the fire stronger?
         logWarn("Fire at {0},{1} already exists!"_s, { formatInt(x), formatInt(y) });
     } else {
-        addFireRaw(city, x, y, getCurrentTimestamp());
+        add_fire_raw(city, x, y, getCurrentTimestamp());
     }
 }
 
-void addFireRaw(City* city, s32 x, s32 y, GameTimestamp startDate)
+void FireLayer::add_fire_raw(City& city, s32 x, s32 y, GameTimestamp start_date)
 {
     // NB: We don't care if the fire already exists. startFireAt() already checks for this case.
 
-    FireLayer* layer = &city->fireLayer;
-
-    FireSector* sector = layer->sectors.get_sector_at_tile_pos(x, y);
+    FireSector* sector = m_sectors.get_sector_at_tile_pos(x, y);
 
     Fire* fire = sector->activeFires.appendBlank();
 
     fire->pos = v2i(x, y);
-    fire->startDate = startDate;
-    fire->entity = city->add_entity(Entity::Type::Fire, fire);
+    fire->startDate = start_date;
+    fire->entity = city.add_entity(Entity::Type::Fire, fire);
     // TODO: Probably most of this wants to be moved into addEntity()
     fire->entity->bounds = { x, y, 1, 1 };
     fire->entity->sprite = SpriteRef { "e_fire_1x1"_s, App::the().cosmetic_random().next() };
 
-    layer->activeFireCount++;
+    m_active_fire_count++;
 
-    markRectAsDirty(&layer->dirtyRects, { x, y, 1, 1 });
+    markRectAsDirty(&m_dirty_rects, { x, y, 1, 1 });
 }
 
-void updateFire(City* /*city*/, Fire* /*fire*/)
+void FireLayer::remove_fire_at(City& city, s32 x, s32 y)
 {
-    // TODO: Burn baby burn, disco inferno
-    // NB: This isn't actually called from anywhere right now.
-}
-
-void removeFireAt(City* city, s32 x, s32 y)
-{
-    FireLayer* layer = &city->fireLayer;
-
-    FireSector* sectorAtPosition = layer->sectors.get_sector_at_tile_pos(x, y);
+    FireSector* sectorAtPosition = m_sectors.get_sector_at_tile_pos(x, y);
     auto existing_fire = sectorAtPosition->activeFires.find_first([=](Fire& fire) { return fire.pos.x == x && fire.pos.y == y; });
 
     if (existing_fire.has_value()) {
         // Remove it!
         auto& [index, fire] = existing_fire.value();
-        city->remove_entity(fire.entity);
+        city.remove_entity(fire.entity);
         sectorAtPosition->activeFires.take_index(index);
-        layer->activeFireCount--;
+        m_active_fire_count--;
 
-        markRectAsDirty(&layer->dirtyRects, { x, y, 1, 1 });
+        markRectAsDirty(&m_dirty_rects, { x, y, 1, 1 });
     }
 }
 
-void notifyNewBuilding(FireLayer* layer, BuildingDef* def, Building* building)
+void FireLayer::notify_new_building(BuildingDef const& def, Building& building)
 {
-    if (def->fireProtection.has_effect()) {
-        layer->fireProtectionBuildings.append(building->get_reference());
+    if (def.fireProtection.has_effect()) {
+        m_fire_protection_buildings.append(building.get_reference());
     }
 }
 
-void notifyBuildingDemolished(FireLayer* layer, BuildingDef* def, Building* building)
+void FireLayer::notify_building_demolished(BuildingDef const& def, Building& building)
 {
-    if (def->fireProtection.has_effect()) {
-        bool success = layer->fireProtectionBuildings.findAndRemove(building->get_reference());
+    if (def.fireProtection.has_effect()) {
+        bool success = m_fire_protection_buildings.findAndRemove(building.get_reference());
         ASSERT(success);
     }
 }
 
-u8 getFireRiskAt(City* city, s32 x, s32 y)
+u8 FireLayer::get_fire_risk_at(s32 x, s32 y) const
 {
-    return city->fireLayer.tileTotalFireRisk.get(x, y);
+    return m_tile_total_fire_risk.get(x, y);
 }
 
-float getFireProtectionPercentAt(City* city, s32 x, s32 y)
+float FireLayer::get_fire_protection_percent_at(s32 x, s32 y) const
 {
-    return city->fireLayer.tileFireProtection.get(x, y) * 0.01f;
+    return m_tile_fire_protection.get(x, y) * 0.01f;
 }
 
-void debugInspectFire(UI::Panel* panel, City* city, s32 x, s32 y)
+void FireLayer::debug_inspect(UI::Panel& panel, V2I tile_position, Building* building)
 {
-    FireLayer* layer = &city->fireLayer;
+    panel.addLabel("*** FIRE INFO ***"_s);
 
-    panel->addLabel("*** FIRE INFO ***"_s);
+    panel.addLabel(myprintf("There are {0} fire protection buildings and {1} active fires in the city."_s, { formatInt(m_fire_protection_buildings.count), formatInt(m_active_fire_count) }));
 
-    panel->addLabel(myprintf("There are {0} fire protection buildings and {1} active fires in the city."_s, { formatInt(layer->fireProtectionBuildings.count), formatInt(layer->activeFireCount) }));
+    float buildingFireRisk = 100.0f * ((building == nullptr) ? 0.0f : getBuildingDef(building)->fireRisk);
 
-    Building* buildingAtPos = city->get_building_at(x, y);
-    float buildingFireRisk = 100.0f * ((buildingAtPos == nullptr) ? 0.0f : getBuildingDef(buildingAtPos)->fireRisk);
+    panel.addLabel(myprintf("Fire risk: {0}, from:\n- Building: {1}%\n- Nearby fires: {2}"_s,
+        {
+            formatInt(get_fire_risk_at(tile_position.x, tile_position.y)),
+            formatFloat(buildingFireRisk, 1),
+            formatInt(m_tile_fire_proximity_effect.get(tile_position.x, tile_position.y)),
+        }));
 
-    panel->addLabel(myprintf("Fire risk: {0}, from:\n- Building: {1}%\n- Nearby fires: {2}"_s, {
-                                                                                                   formatInt(getFireRiskAt(city, x, y)),
-                                                                                                   formatFloat(buildingFireRisk, 1),
-                                                                                                   formatInt(layer->tileFireProximityEffect.get(x, y)),
-                                                                                               }));
+    panel.addLabel(myprintf("Fire protection: {0}%"_s, { formatFloat(get_fire_protection_percent_at(tile_position.x, tile_position.y) * 100.0f, 0) }));
 
-    panel->addLabel(myprintf("Fire protection: {0}%"_s, { formatFloat(getFireProtectionPercentAt(city, x, y) * 100.0f, 0) }));
-
-    panel->addLabel(myprintf("Resulting chance of fire: {0}%"_s, { formatFloat(layer->tileOverallFireRisk.get(x, y) / 2.55f, 1) }));
+    panel.addLabel(myprintf("Resulting chance of fire: {0}%"_s, { formatFloat(m_tile_overall_fire_risk.get(tile_position.x, tile_position.y) / 2.55f, 1) }));
 }
 
-void saveFireLayer(FireLayer* layer, BinaryFileWriter* writer)
+void FireLayer::save(BinaryFileWriter& writer) const
 {
-    writer->startSection<SAVSection_Fire>(SAV_FIRE_ID, SAV_FIRE_VERSION);
+    writer.startSection<SAVSection_Fire>(SAV_FIRE_ID, SAV_FIRE_VERSION);
     SAVSection_Fire fireSection = {};
 
     // Active fires
-    fireSection.activeFireCount = layer->activeFireCount;
-    Array<SAVFire> tempFires = writer->arena->allocate_array<SAVFire>(fireSection.activeFireCount);
+    fireSection.activeFireCount = m_active_fire_count;
+    Array<SAVFire> tempFires = writer.arena->allocate_array<SAVFire>(fireSection.activeFireCount);
     // ughhhh I have to iterate the sectors to get this information!
-    for (s32 sectorIndex = 0; sectorIndex < layer->sectors.sector_count(); sectorIndex++) {
-        FireSector* sector = layer->sectors.get_by_index(sectorIndex);
+    for (s32 sectorIndex = 0; sectorIndex < m_sectors.sector_count(); sectorIndex++) {
+        auto* sector = m_sectors.get_by_index(sectorIndex);
 
         for (auto it = sector->activeFires.iterate(); it.hasNext(); it.next()) {
             auto& fire = it.get();
@@ -307,31 +292,31 @@ void saveFireLayer(FireLayer* layer, BinaryFileWriter* writer)
             savFire->startDate = fire.startDate;
         }
     }
-    fireSection.activeFires = writer->appendArray<SAVFire>(tempFires);
+    fireSection.activeFires = writer.appendArray<SAVFire>(tempFires);
 
-    writer->endSection<SAVSection_Fire>(&fireSection);
+    writer.endSection<SAVSection_Fire>(&fireSection);
 }
 
-bool loadFireLayer(FireLayer* layer, City* city, BinaryFileReader* reader)
+bool FireLayer::load(BinaryFileReader& reader, City& city)
 {
     bool succeeded = false;
-    while (reader->startSection(SAV_FIRE_ID, SAV_FIRE_VERSION)) {
-        SAVSection_Fire* section = reader->readStruct<SAVSection_Fire>(0);
+    while (reader.startSection(SAV_FIRE_ID, SAV_FIRE_VERSION)) {
+        SAVSection_Fire* section = reader.readStruct<SAVSection_Fire>(0);
         if (!section)
             break;
 
         // Active fires
-        Array<SAVFire> tempFires = reader->arena->allocate_array<SAVFire>(section->activeFireCount);
-        if (!reader->readArray(section->activeFires, &tempFires))
+        Array<SAVFire> tempFires = reader.arena->allocate_array<SAVFire>(section->activeFireCount);
+        if (!reader.readArray(section->activeFires, &tempFires))
             break;
         for (u32 activeFireIndex = 0;
             activeFireIndex < section->activeFireCount;
             activeFireIndex++) {
             SAVFire* savFire = &tempFires[activeFireIndex];
 
-            addFireRaw(city, savFire->x, savFire->y, savFire->startDate);
+            add_fire_raw(city, savFire->x, savFire->y, savFire->startDate);
         }
-        ASSERT((u32)layer->activeFireCount == section->activeFireCount);
+        ASSERT((u32)m_active_fire_count == section->activeFireCount);
 
         succeeded = true;
         break;

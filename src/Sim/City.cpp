@@ -45,7 +45,7 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
     new (&city->budgetLayer) BudgetLayer { *city, *gameArena };
     new (&city->crimeLayer) CrimeLayer { *city, *gameArena };
     new (&city->educationLayer) EducationLayer { *city, *gameArena };
-    initFireLayer(&city->fireLayer, city, gameArena);
+    new (&city->fireLayer) FireLayer { *city, *gameArena };
     initHealthLayer(&city->healthLayer, city, gameArena);
     initLandValueLayer(&city->landValueLayer, city, gameArena);
     initPollutionLayer(&city->pollutionLayer, city, gameArena);
@@ -137,7 +137,7 @@ Building* City::add_building_direct(s32 id, BuildingDef* def, Rect2I footprint, 
     }
 
     crimeLayer.notify_new_building(*def, building);
-    notifyNewBuilding(&fireLayer, def, &building);
+    fireLayer.notify_new_building(*def, building);
     notifyNewBuilding(&healthLayer, def, &building);
     notifyNewBuilding(&powerLayer, def, &building);
 
@@ -159,6 +159,7 @@ Building* City::add_building(BuildingDef* def, Rect2I footprint, GameTimestamp c
 
 void City::mark_area_dirty(Rect2I dirty_area)
 {
+    fireLayer.mark_dirty(dirty_area);
     markHealthLayerDirty(&healthLayer, dirty_area);
     markLandValueLayerDirty(&landValueLayer, dirty_area);
     markPollutionLayerDirty(&pollutionLayer, dirty_area);
@@ -335,7 +336,7 @@ void City::demolish_rect(Rect2I area)
 
         // Clean up other references
         crimeLayer.notify_building_demolished(*def, *building);
-        notifyBuildingDemolished(&fireLayer, def, building);
+        fireLayer.notify_building_demolished(*def, *building);
         notifyBuildingDemolished(&healthLayer, def, building);
         notifyBuildingDemolished(&powerLayer, def, building);
 

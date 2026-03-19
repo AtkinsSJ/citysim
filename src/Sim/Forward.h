@@ -18,7 +18,7 @@ class EducationLayer;
 class EffectRadius;
 struct Entity;
 struct Fire;
-struct FireLayer;
+class FireLayer;
 struct GameClock;
 struct GameState;
 struct HealthLayer;

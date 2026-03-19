@@ -268,7 +268,7 @@ void ZoneLayer::update(City& city)
                         desirability += getHealthCoveragePercentAt(&city, x, y) * 0.3f;
 
                         // Fire protection = good
-                        desirability += getFireProtectionPercentAt(&city, x, y) * 0.2f;
+                        desirability += city.fireLayer.get_fire_protection_percent_at(x, y) * 0.2f;
 
                         // Police coverage = good
                         desirability += city.crimeLayer.get_police_coverage_percent_at(x, y) * 0.3f;
@@ -287,7 +287,7 @@ void ZoneLayer::update(City& city)
                         float desirability = getLandValuePercentAt(&city, x, y) * 2.0f;
 
                         // Fire protection = good
-                        desirability += getFireProtectionPercentAt(&city, x, y) * 0.2f;
+                        desirability += city.fireLayer.get_fire_protection_percent_at(x, y) * 0.2f;
 
                         // Police coverage = good
                         desirability += city.crimeLayer.get_police_coverage_percent_at(x, y) * 0.3f;
@@ -306,7 +306,7 @@ void ZoneLayer::update(City& city)
                         float desirability = 1.0f - getLandValuePercentAt(&city, x, y);
 
                         // Fire protection = good
-                        desirability += getFireProtectionPercentAt(&city, x, y) * 0.2f;
+                        desirability += city.fireLayer.get_fire_protection_percent_at(x, y) * 0.2f;
 
                         // Police coverage = good
                         desirability += city.crimeLayer.get_police_coverage_percent_at(x, y) * 0.2f;

@@ -117,7 +117,7 @@ void updateLandValueLayer(City* city, LandValueLayer* layer)
                     landValue += buildingEffect;
 
                     // Fire protection = good
-                    float fireProtection = getFireProtectionPercentAt(city, x, y);
+                    float fireProtection = city->fireLayer.get_fire_protection_percent_at(x, y);
                     landValue += fireProtection * 0.2f;
 
                     // Police protection = good

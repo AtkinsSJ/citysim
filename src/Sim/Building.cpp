@@ -238,7 +238,7 @@ void updateBuilding(City* city, Building* building)
     }
 
     // Fire!
-    if (doesAreaContainFire(city, building->footprint)) {
+    if (city->fireLayer.does_area_contain_fire(building->footprint)) {
         addProblem(building, BuildingProblem::Type::Fire);
     } else {
         removeProblem(building, BuildingProblem::Type::Fire);
