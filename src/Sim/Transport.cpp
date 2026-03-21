@@ -12,11 +12,9 @@
 #include <UI/Panel.h>
 
 TransportLayer::TransportLayer(City& city, MemoryArena& arena)
+    : m_dirty_rects(arena, m_transport_max_distance, city.bounds)
 {
     m_tile_transport_types = arena.allocate_array_2d<Flags<TransportType>>(city.bounds.size());
-
-    m_transport_max_distance = 8;
-    initDirtyRects(&m_dirty_rects, &arena, m_transport_max_distance, city.bounds);
 
     for (auto type : enum_values<TransportType>()) {
         m_tile_transport_distance[type] = arena.allocate_array_2d<u8>(city.bounds.size());
@@ -28,7 +26,7 @@ void TransportLayer::update(City& city)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
-    if (isDirty(&m_dirty_rects)) {
+    if (m_dirty_rects.is_dirty()) {
         // Calculate transport types on each tile
         // So, I have two ideas about this:
         // 1: memset the area to 0 and then iterate through all the buildings in that area, applying their transport types
@@ -39,7 +37,7 @@ void TransportLayer::update(City& city)
         // So, I think #2 is the better option, but I should test that later if it becomes expensive performance-wise.
         // - Sam, 28/08/2019
 
-        for (auto it = m_dirty_rects.rects.iterate();
+        for (auto it = m_dirty_rects.rects().iterate();
             it.hasNext();
             it.next()) {
             Rect2I dirtyRect = it.getValue();
@@ -73,13 +71,13 @@ void TransportLayer::update(City& city)
             updateDistances(&m_tile_transport_distance[type], &m_dirty_rects, m_transport_max_distance);
         }
 
-        clearDirtyRects(&m_dirty_rects);
+        m_dirty_rects.clear();
     }
 }
 
 void TransportLayer::mark_dirty(Rect2I bounds)
 {
-    markRectAsDirty(&m_dirty_rects, bounds);
+    m_dirty_rects.mark_dirty(bounds);
 }
 
 bool TransportLayer::tile_has_transport(s32 x, s32 y, TransportType type) const

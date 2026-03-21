@@ -86,11 +86,11 @@ private:
 
     Rect2I m_bounds;
 
+    u8 m_power_max_distance { 2 };
     DirtyRects m_dirty_rects;
 
     SectorGrid<PowerSector> m_sectors;
 
-    u8 m_power_max_distance;
     Array2<u8> m_tile_power_distance;
 
     ChunkedArray<PowerNetwork> m_networks;

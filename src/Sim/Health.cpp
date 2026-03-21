@@ -12,10 +12,9 @@
 #include <Sim/Effect.h>
 
 HealthLayer::HealthLayer(City& city, MemoryArena& arena)
+    : m_dirty_rects(arena, maxLandValueEffectDistance, city.bounds)
 {
     m_sectors = SectorGrid<BasicSector> { &arena, city.bounds.size(), 16, 8 };
-
-    initDirtyRects(&m_dirty_rects, &arena, maxLandValueEffectDistance, city.bounds);
 
     m_tile_health_coverage = arena.allocate_array_2d<u8>(city.bounds.size());
     m_tile_health_coverage.fill(0);
@@ -29,12 +28,12 @@ void HealthLayer::update(City& city)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
-    if (isDirty(&m_dirty_rects)) {
+    if (m_dirty_rects.is_dirty()) {
         DEBUG_BLOCK_T("updateHealthLayer: dirty rects", DebugCodeDataTag::Simulation);
 
         // TODO: do we actually need dirty rects? I can't think of anything, unless we move the "register building" stuff to that.
 
-        clearDirtyRects(&m_dirty_rects);
+        m_dirty_rects.clear();
     }
 
     {
@@ -71,7 +70,7 @@ void HealthLayer::update(City& city)
 
 void HealthLayer::mark_dirty(Rect2I bounds)
 {
-    markRectAsDirty(&m_dirty_rects, bounds);
+    m_dirty_rects.mark_dirty(bounds);
 }
 
 void HealthLayer::notify_new_building(BuildingDef const& def, Building& building)

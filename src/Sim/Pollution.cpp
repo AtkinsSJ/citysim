@@ -15,27 +15,26 @@
 #include <Sim/LandValue.h>
 
 PollutionLayer::PollutionLayer(City& city, MemoryArena& arena)
+    : m_dirty_rects(arena, maxPollutionEffectDistance, city.bounds)
 {
     m_tile_pollution = arena.allocate_array_2d<u8>(city.bounds.size());
     m_tile_pollution.fill(0);
 
     m_tile_building_contributions = arena.allocate_array_2d<s16>(city.bounds.size());
     m_tile_building_contributions.fill(0);
-
-    initDirtyRects(&m_dirty_rects, &arena, maxPollutionEffectDistance, city.bounds);
 }
 
 void PollutionLayer::update(City& city)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
-    if (isDirty(&m_dirty_rects)) {
+    if (m_dirty_rects.is_dirty()) {
         // @Copypasta from updateLandValueLayer()
         {
             DEBUG_BLOCK_T("updatePollutionLayer: building effects", DebugCodeDataTag::Simulation);
 
             // Recalculate the building contributions
-            for (auto rectIt = m_dirty_rects.rects.iterate();
+            for (auto rectIt = m_dirty_rects.rects().iterate();
                 rectIt.hasNext();
                 rectIt.next()) {
                 Rect2I dirtyRect = rectIt.getValue();
@@ -78,7 +77,7 @@ void PollutionLayer::update(City& city)
         {
             DEBUG_BLOCK_T("updatePollutionLayer: combine", DebugCodeDataTag::Simulation);
 
-            for (auto rectIt = m_dirty_rects.rects.iterate();
+            for (auto rectIt = m_dirty_rects.rects().iterate();
                 rectIt.hasNext();
                 rectIt.next()) {
                 Rect2I dirtyRect = rectIt.getValue();
@@ -99,13 +98,13 @@ void PollutionLayer::update(City& city)
             }
         }
 
-        clearDirtyRects(&m_dirty_rects);
+        m_dirty_rects.clear();
     }
 }
 
 void PollutionLayer::mark_dirty(Rect2I bounds)
 {
-    markRectAsDirty(&m_dirty_rects, bounds);
+    m_dirty_rects.mark_dirty(bounds);
 }
 
 float PollutionLayer::get_pollution_percent_at(s32 x, s32 y) const

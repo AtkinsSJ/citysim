@@ -13,10 +13,9 @@
 #include <Sim/LandValue.h>
 
 CrimeLayer::CrimeLayer(City& city, MemoryArena& arena)
+    : m_dirty_rects(arena, maxLandValueEffectDistance, city.bounds)
 {
     m_sectors = SectorGrid<BasicSector> { &arena, city.bounds.size(), 16, 8 };
-
-    initDirtyRects(&m_dirty_rects, &arena, maxLandValueEffectDistance, city.bounds);
 
     m_tile_police_coverage = arena.allocate_array_2d<u8>(city.bounds.size());
     m_tile_police_coverage.fill(0);
@@ -33,9 +32,9 @@ void CrimeLayer::update(City& city)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
-    if (isDirty(&m_dirty_rects)) {
+    if (m_dirty_rects.is_dirty()) {
         DEBUG_BLOCK_T("updateCrimeLayer: dirty rects", DebugCodeDataTag::Simulation);
-        clearDirtyRects(&m_dirty_rects);
+        m_dirty_rects.clear();
     }
 
     // Recalculate jail capacity

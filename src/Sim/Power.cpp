@@ -13,16 +13,15 @@
 #include <Util/Set.h>
 
 PowerLayer::PowerLayer(City& city, MemoryArena& arena)
+    : m_bounds(city.bounds)
+    , m_dirty_rects(arena, m_power_max_distance, m_bounds)
 {
-    m_bounds = city.bounds;
     initChunkedArray(&m_networks, &arena, 64);
     initChunkPool(&m_power_groups_chunk_pool, &arena, 4);
     initChunkPool(&m_power_group_pointers_chunk_pool, &arena, 32);
 
     m_tile_power_distance = arena.allocate_array_2d<u8>(m_bounds.size());
     m_tile_power_distance.fill(255);
-    m_power_max_distance = 2;
-    initDirtyRects(&m_dirty_rects, &arena, m_power_max_distance, m_bounds);
 
     m_sectors = SectorGrid<PowerSector> { &arena, m_bounds.size(), 16, 0 };
     for (s32 sectorIndex = 0; sectorIndex < m_sectors.sector_count(); sectorIndex++) {
@@ -233,7 +232,7 @@ void PowerSector::set_rect_power_group_unknown(Rect2I area)
 
 void PowerLayer::mark_dirty(Rect2I bounds)
 {
-    markRectAsDirty(&m_dirty_rects, bounds);
+    m_dirty_rects.mark_dirty(bounds);
 }
 
 void PowerLayer::recalculate_sector_power_groups(City& city, PowerSector& sector)
@@ -533,11 +532,11 @@ void PowerLayer::update(City& city)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
-    if (isDirty(&m_dirty_rects)) {
+    if (m_dirty_rects.is_dirty()) {
         Set<PowerSector*> touchedSectors;
         initSet<PowerSector*>(&touchedSectors, &temp_arena(), [](PowerSector** a, PowerSector** b) { return *a == *b; });
 
-        for (auto it = m_dirty_rects.rects.iterate();
+        for (auto it = m_dirty_rects.rects().iterate();
             it.hasNext();
             it.next()) {
             Rect2I dirtyRect = it.getValue();
@@ -581,7 +580,7 @@ void PowerLayer::update(City& city)
         }
 
         recalculate_power_connectivity();
-        clearDirtyRects(&m_dirty_rects);
+        m_dirty_rects.clear();
     }
 
     m_cached_combined_production = 0;

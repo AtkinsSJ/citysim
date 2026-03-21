@@ -15,10 +15,10 @@
 #include <Util/Random.h>
 
 FireLayer::FireLayer(City& city, MemoryArena& arena)
+    : m_dirty_rects(arena, m_max_fire_radius, city.bounds)
 {
     m_funding_level = 1.0f;
 
-    m_max_fire_radius = 4;
     m_tile_fire_proximity_effect = arena.allocate_array_2d<u16>(city.bounds.size());
     m_tile_fire_proximity_effect.fill(0);
 
@@ -30,8 +30,6 @@ FireLayer::FireLayer(City& city, MemoryArena& arena)
     m_tile_overall_fire_risk.fill(0);
 
     initChunkedArray(&m_fire_protection_buildings, &city.buildingRefsChunkPool);
-
-    initDirtyRects(&m_dirty_rects, &arena, m_max_fire_radius, city.bounds);
 
     m_active_fire_count = 0;
     initChunkPool(&m_fire_pool, &arena, 64);
@@ -45,18 +43,18 @@ FireLayer::FireLayer(City& city, MemoryArena& arena)
 
 void FireLayer::mark_dirty(Rect2I bounds)
 {
-    markRectAsDirty(&m_dirty_rects, bounds);
+    m_dirty_rects.mark_dirty(bounds);
 }
 
 void FireLayer::update(City& city)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
-    if (isDirty(&m_dirty_rects)) {
+    if (m_dirty_rects.is_dirty()) {
         DEBUG_BLOCK_T("updateFireLayer: building effects", DebugCodeDataTag::Simulation);
 
         // Recalculate fire distances
-        for (auto rectIt = m_dirty_rects.rects.iterate();
+        for (auto rectIt = m_dirty_rects.rects().iterate();
             rectIt.hasNext();
             rectIt.next()) {
             Rect2I dirtyRect = rectIt.getValue();
@@ -81,7 +79,7 @@ void FireLayer::update(City& city)
             }
         }
 
-        clearDirtyRects(&m_dirty_rects);
+        m_dirty_rects.clear();
     }
 
     {
@@ -207,7 +205,7 @@ void FireLayer::add_fire_raw(City& city, s32 x, s32 y, GameTimestamp start_date)
 
     m_active_fire_count++;
 
-    markRectAsDirty(&m_dirty_rects, { x, y, 1, 1 });
+    m_dirty_rects.mark_dirty({ x, y, 1, 1 });
 }
 
 void FireLayer::remove_fire_at(City& city, s32 x, s32 y)
@@ -222,7 +220,7 @@ void FireLayer::remove_fire_at(City& city, s32 x, s32 y)
         sectorAtPosition->activeFires.take_index(index);
         m_active_fire_count--;
 
-        markRectAsDirty(&m_dirty_rects, { x, y, 1, 1 });
+        m_dirty_rects.mark_dirty({ x, y, 1, 1 });
     }
 }
 

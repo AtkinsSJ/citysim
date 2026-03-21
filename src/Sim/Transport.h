@@ -42,10 +42,10 @@ public:
     bool load(BinaryFileReader&);
 
 private:
+    u8 m_transport_max_distance { 8 };
     DirtyRects m_dirty_rects;
 
     Array2<Flags<TransportType>> m_tile_transport_types;
 
     EnumMap<TransportType, Array2<u8>> m_tile_transport_distance;
-    u8 m_transport_max_distance;
 };

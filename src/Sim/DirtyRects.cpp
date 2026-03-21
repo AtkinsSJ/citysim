@@ -1,38 +1,37 @@
 /*
- * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2019-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "DirtyRects.h"
 
-void initDirtyRects(DirtyRects* dirtyRects, MemoryArena* arena, s32 expansionRadius, Rect2I bounds)
+DirtyRects::DirtyRects(MemoryArena& arena, s32 expansion_radius, Rect2I bounds)
+    : m_bounds(bounds)
+    , m_expansion_radius(expansion_radius)
 {
-    *dirtyRects = {};
-    initChunkedArray(&dirtyRects->rects, arena, 32);
-    dirtyRects->expansionRadius = expansionRadius;
-    dirtyRects->bounds = bounds;
+    initChunkedArray(&m_rects, &arena, 32);
 }
 
-void markRectAsDirty(DirtyRects* dirtyRects, Rect2I rect)
+void DirtyRects::mark_dirty(Rect2I rect)
 {
     bool added = false;
 
-    Rect2I rectToAdd = rect.expanded(dirtyRects->expansionRadius);
+    Rect2I rectToAdd = rect.expanded(m_expansion_radius);
 
-    if (dirtyRects->bounds.has_positive_area())
-        rectToAdd = rectToAdd.intersected(dirtyRects->bounds);
+    if (m_bounds.has_positive_area())
+        rectToAdd = rectToAdd.intersected(m_bounds);
 
     // Skip empty rects
     if (!rectToAdd.has_positive_area())
         return;
 
-    if (dirtyRects->rects.count > 128) {
-        logWarn("Over 128 dirty rects, which is probably a bug? (Count: {0}) Skipping duplicate checks."_s, { formatInt(dirtyRects->rects.count) });
+    if (m_rects.count > 128) {
+        logWarn("Over 128 dirty rects, which is probably a bug? (Count: {0}) Skipping duplicate checks."_s, { formatInt(m_rects.count) });
         DEBUG_BREAK();
     } else {
         // Check to see if this rectangle is contained by an existing dirty rect
-        for (auto it = dirtyRects->rects.iterate();
+        for (auto it = m_rects.iterate();
             it.hasNext();
             it.next()) {
             auto& existingRect = it.get();
@@ -45,40 +44,40 @@ void markRectAsDirty(DirtyRects* dirtyRects, Rect2I rect)
 
         // Remove any existing rects that are inside our new one
         if (!added) {
-            for (auto it = dirtyRects->rects.iterateBackwards();
+            for (auto it = m_rects.iterateBackwards();
                 it.hasNext();
                 it.next()) {
                 Rect2I existingRect = it.getValue();
                 if (rectToAdd.contains(existingRect)) {
-                    dirtyRects->rects.take_index(it.getIndex(), false);
+                    m_rects.take_index(it.getIndex(), false);
                 }
             }
         }
     }
 
     if (!added) {
-        dirtyRects->rects.append(rectToAdd);
+        m_rects.append(rectToAdd);
     }
 }
 
-void clearDirtyRects(DirtyRects* dirtyRects)
+void DirtyRects::clear()
 {
-    dirtyRects->rects.clear();
+    m_rects.clear();
 }
 
-bool isDirty(DirtyRects* dirtyRects)
+bool DirtyRects::is_dirty() const
 {
-    return dirtyRects->rects.count > 0;
+    return m_rects.count > 0;
 }
 
-Rect2I getOverallRect(DirtyRects* dirtyRects)
+Rect2I DirtyRects::combined_dirty_rect() const
 {
     Rect2I result { 0, 0, 0, 0 };
 
-    if (dirtyRects->rects.count > 0) {
-        result = dirtyRects->rects.get(0);
+    if (m_rects.count > 0) {
+        result = m_rects.get(0);
 
-        for (auto it = dirtyRects->rects.iterate(1, false);
+        for (auto it = m_rects.iterate(1, false);
             it.hasNext();
             it.next()) {
             result = result.union_with(it.getValue());

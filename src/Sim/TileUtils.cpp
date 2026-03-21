@@ -49,7 +49,7 @@ void updateDistances(Array2<u8>* tileDistance, DirtyRects* dirtyRects, u8 maxDis
     DEBUG_FUNCTION();
 
     for (s32 iteration = 0; iteration < maxDistance; iteration++) {
-        for (auto it = dirtyRects->rects.iterate();
+        for (auto it = dirtyRects->rects().iterate();
             it.hasNext();
             it.next()) {
             Rect2I dirtyRect = it.getValue();

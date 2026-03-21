@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2019-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -10,16 +10,20 @@
 #include <Util/ChunkedArray.h>
 #include <Util/Rectangle.h>
 
-struct DirtyRects {
-    ChunkedArray<Rect2I> rects;
-    s32 expansionRadius;
-    Rect2I bounds;
+class DirtyRects {
+public:
+    DirtyRects() = default; // FIXME: Temporary until users are initialized properly.
+    DirtyRects(MemoryArena&, s32 expansion_radius, Rect2I bounds);
+
+    void mark_dirty(Rect2I);
+    void clear();
+    bool is_dirty() const;
+
+    ChunkedArray<Rect2I> const& rects() const { return m_rects; }
+    Rect2I combined_dirty_rect() const;
+
+private:
+    Rect2I m_bounds;
+    s32 m_expansion_radius;
+    ChunkedArray<Rect2I> m_rects;
 };
-
-// NB: rects added with markRectAsDirty() are expanded by `expansionRadius` automatically
-void initDirtyRects(DirtyRects* dirtyRects, MemoryArena* arena, s32 expansionRadius = 0, Rect2I bounds = {});
-void markRectAsDirty(DirtyRects* dirtyRects, Rect2I bounds);
-void clearDirtyRects(DirtyRects* dirtyRects);
-bool isDirty(DirtyRects* dirtyRects);
-
-Rect2I getOverallRect(DirtyRects* dirtyRects);

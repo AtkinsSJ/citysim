@@ -62,11 +62,11 @@ public:
     bool load(BinaryFileReader&, City&);
 
 private:
+    u8 m_max_fire_radius { 4 };
     DirtyRects m_dirty_rects;
 
     SectorGrid<FireSector> m_sectors;
 
-    u8 m_max_fire_radius;
     Array2<u16> m_tile_fire_proximity_effect;
 
     Array2<u8> m_tile_total_fire_risk; // Risks combined

@@ -12,6 +12,7 @@
 #include <Sim/Effect.h>
 
 LandValueLayer::LandValueLayer(City& city, MemoryArena& arena)
+    : m_dirty_rects(arena, maxLandValueEffectDistance, city.bounds)
 {
     m_sectors = SectorGrid<BasicSector> { &arena, city.bounds.size(), 16, 8 };
 
@@ -20,25 +21,23 @@ LandValueLayer::LandValueLayer(City& city, MemoryArena& arena)
 
     m_tile_building_contributions = arena.allocate_array_2d<s16>(city.bounds.size());
     m_tile_building_contributions.fill(0);
-
-    initDirtyRects(&m_dirty_rects, &arena, maxLandValueEffectDistance, city.bounds);
 }
 
 void LandValueLayer::mark_dirty(Rect2I bounds)
 {
-    markRectAsDirty(&m_dirty_rects, bounds);
+    m_dirty_rects.mark_dirty(bounds);
 }
 
 void LandValueLayer::update(City& city)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
-    if (isDirty(&m_dirty_rects)) {
+    if (m_dirty_rects.is_dirty()) {
         {
             DEBUG_BLOCK_T("updateLandValueLayer: building effects", DebugCodeDataTag::Simulation);
 
             // Recalculate the building contributions
-            for (auto rectIt = m_dirty_rects.rects.iterate();
+            for (auto rectIt = m_dirty_rects.rects().iterate();
                 rectIt.hasNext();
                 rectIt.next()) {
                 Rect2I dirtyRect = rectIt.getValue();
@@ -78,7 +77,7 @@ void LandValueLayer::update(City& city)
             }
         }
 
-        clearDirtyRects(&m_dirty_rects);
+        m_dirty_rects.clear();
     }
 
     // Recalculate overall value
