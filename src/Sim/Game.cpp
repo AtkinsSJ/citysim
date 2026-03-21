@@ -679,7 +679,6 @@ void GameScene::update_and_render(float delta_time)
     DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
 
     auto& renderer = the_renderer();
-    auto* gameState = App::the().game_state();
     City& city = m_state->city;
 
     // Update the simulation... need a smarter way of doing this!
@@ -701,7 +700,7 @@ void GameScene::update_and_render(float delta_time)
     }
 
     // UI!
-    updateAndRenderGameUI(gameState);
+    updateAndRenderGameUI(&*m_state);
 
     auto ghostColorValid = Colour::from_rgb_255(128, 255, 128, 255);
     auto ghostColorInvalid = Colour::from_rgb_255(255, 0, 0, 128);
@@ -719,9 +718,9 @@ void GameScene::update_and_render(float delta_time)
     {
         DEBUG_BLOCK_T("ActionMode update", DebugCodeDataTag::GameUpdate);
 
-        switch (gameState->actionMode) {
+        switch (m_state->actionMode) {
         case ActionMode::Build: {
-            BuildingDef* buildingDef = getBuildingDef(gameState->selectedBuildingTypeID);
+            BuildingDef* buildingDef = getBuildingDef(m_state->selectedBuildingTypeID);
 
             switch (buildingDef->buildMethod) {
             case BuildMethod::Paint: // Fallthrough
@@ -753,7 +752,7 @@ void GameScene::update_and_render(float delta_time)
             case BuildMethod::DragRect: {
                 DragType dragType = (buildingDef->buildMethod == BuildMethod::DragLine) ? DragType::Line : DragType::Rect;
 
-                DragResult dragResult = updateDragState(&gameState->worldDragState, city.bounds, mouseTilePos, mouseIsOverUI, dragType, buildingDef->size);
+                DragResult dragResult = updateDragState(&m_state->worldDragState, city.bounds, mouseTilePos, mouseIsOverUI, dragType, buildingDef->size);
                 s32 buildCost = city.calculate_build_cost(buildingDef, dragResult.dragRect);
 
                 switch (dragResult.operation) {
@@ -803,15 +802,15 @@ void GameScene::update_and_render(float delta_time)
         } break;
 
         case ActionMode::Zone: {
-            DragResult dragResult = updateDragState(&gameState->worldDragState, city.bounds, mouseTilePos, mouseIsOverUI, DragType::Rect);
+            DragResult dragResult = updateDragState(&m_state->worldDragState, city.bounds, mouseTilePos, mouseIsOverUI, DragType::Rect);
 
-            CanZoneQuery canZoneQuery = queryCanZoneTiles(&city, gameState->selectedZoneID, dragResult.dragRect);
+            CanZoneQuery canZoneQuery = queryCanZoneTiles(&city, m_state->selectedZoneID, dragResult.dragRect);
             s32 zoneCost = canZoneQuery.calculate_zone_cost();
 
             switch (dragResult.operation) {
             case DragResultOperation::DoAction: {
                 if (city.can_afford(zoneCost)) {
-                    placeZone(&city, gameState->selectedZoneID, dragResult.dragRect);
+                    placeZone(&city, m_state->selectedZoneID, dragResult.dragRect);
                     city.spend(zoneCost);
                 }
             } break;
@@ -822,7 +821,7 @@ void GameScene::update_and_render(float delta_time)
                 if (city.can_afford(zoneCost)) {
                     Colour palette[] = {
                         Colour::from_rgb_255(255, 0, 0, 16),
-                        ZONE_DEFS[gameState->selectedZoneID].color
+                        ZONE_DEFS[m_state->selectedZoneID].color
                     };
                     drawGrid(&renderer.world_overlay_buffer(), canZoneQuery.bounds, canZoneQuery.tileCanBeZoned, 2, palette);
                 } else {
@@ -836,7 +835,7 @@ void GameScene::update_and_render(float delta_time)
         } break;
 
         case ActionMode::Demolish: {
-            DragResult dragResult = updateDragState(&gameState->worldDragState, city.bounds, mouseTilePos, mouseIsOverUI, DragType::Rect);
+            DragResult dragResult = updateDragState(&m_state->worldDragState, city.bounds, mouseTilePos, mouseIsOverUI, DragType::Rect);
             s32 demolishCost = city.calculate_demolition_cost(dragResult.dragRect);
             city.demolitionRect = dragResult.dragRect;
 
@@ -873,7 +872,7 @@ void GameScene::update_and_render(float delta_time)
             if (!mouseIsOverUI
                 && mouseButtonPressed(MouseButton::Left)
                 && city.tile_exists(mouseTilePos.x, mouseTilePos.y)) {
-                city.terrainLayer.set_terrain_at(mouseTilePos.x, mouseTilePos.y, gameState->selectedTerrainID);
+                city.terrainLayer.set_terrain_at(mouseTilePos.x, mouseTilePos.y, m_state->selectedTerrainID);
             }
         } break;
 
@@ -896,13 +895,13 @@ void GameScene::update_and_render(float delta_time)
         case ActionMode::None: {
             if (!mouseIsOverUI && mouseButtonJustPressed(MouseButton::Left)) {
                 if (city.tile_exists(mouseTilePos.x, mouseTilePos.y)) {
-                    gameState->inspectedTilePosition = mouseTilePos;
+                    m_state->inspectedTilePosition = mouseTilePos;
                     V2I windowPos = v2i(ui_camera.mouse_position()) + v2i(16, 16);
-                    UI::showWindow(UI::WindowTitle::from_lambda([] {
-                        V2I tilePos = App::the().game_state()->inspectedTilePosition;
+                    UI::showWindow(UI::WindowTitle::from_lambda([this] {
+                        V2I tilePos = m_state->inspectedTilePosition;
                         return getText("title_inspect"_s, { formatInt(tilePos.x), formatInt(tilePos.y) });
                     }),
-                        250, 200, windowPos, "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Unique | WindowFlags::UniqueKeepPosition, inspectTileWindowProc, gameState);
+                        250, 200, windowPos, "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Unique | WindowFlags::UniqueKeepPosition, inspectTileWindowProc, &*m_state);
                 }
             }
         } break;
@@ -911,14 +910,14 @@ void GameScene::update_and_render(float delta_time)
         }
     }
 
-    if (gameState->worldDragState.isDragging && mouseIsOverUI && mouseButtonJustReleased(MouseButton::Left)) {
+    if (m_state->worldDragState.isDragging && mouseIsOverUI && mouseButtonJustReleased(MouseButton::Left)) {
         // Not sure if this is the best idea, but it's the best I can come up with.
-        gameState->worldDragState.isDragging = false;
+        m_state->worldDragState.isDragging = false;
     }
 
     if (mouseButtonJustPressed(MouseButton::Right)) {
         // Unselect current thing
-        gameState->actionMode = ActionMode::None;
+        m_state->actionMode = ActionMode::None;
         renderer.set_cursor("default"_s);
     }
 
@@ -934,8 +933,8 @@ void GameScene::update_and_render(float delta_time)
     city.draw(visibleTileBounds);
 
     // Data layer rendering
-    if (gameState->dataLayerToDraw != DataView::None) {
-        drawDataViewOverlay(gameState, visibleTileBounds);
+    if (m_state->dataLayerToDraw != DataView::None) {
+        drawDataViewOverlay(&*m_state, visibleTileBounds);
     }
 }
 
