@@ -6,9 +6,8 @@
 
 #include "DirtyRects.h"
 
-DirtyRects::DirtyRects(MemoryArena& arena, s32 expansion_radius, Optional<Rect2I> bounds)
+DirtyRects::DirtyRects(MemoryArena& arena, Optional<Rect2I> bounds)
     : m_bounds(move(bounds))
-    , m_expansion_radius(expansion_radius)
 {
     initChunkedArray(&m_rects, &arena, 32);
 }
@@ -17,13 +16,11 @@ void DirtyRects::mark_dirty(Rect2I rect)
 {
     bool added = false;
 
-    Rect2I rectToAdd = rect.expanded(m_expansion_radius);
-
     if (m_bounds.has_value())
-        rectToAdd = rectToAdd.intersected(m_bounds.value());
+        rect = rect.intersected(m_bounds.value());
 
     // Skip empty rects
-    if (!rectToAdd.has_positive_area())
+    if (!rect.has_positive_area())
         return;
 
     if (m_rects.count > 128) {
@@ -36,7 +33,7 @@ void DirtyRects::mark_dirty(Rect2I rect)
             it.next()) {
             auto& existingRect = it.get();
 
-            if (existingRect.contains(rectToAdd)) {
+            if (existingRect.contains(rect)) {
                 added = true;
                 break;
             }
@@ -48,7 +45,7 @@ void DirtyRects::mark_dirty(Rect2I rect)
                 it.hasNext();
                 it.next()) {
                 Rect2I existingRect = it.getValue();
-                if (rectToAdd.contains(existingRect)) {
+                if (rect.contains(existingRect)) {
                     m_rects.take_index(it.getIndex(), false);
                 }
             }
@@ -56,7 +53,7 @@ void DirtyRects::mark_dirty(Rect2I rect)
     }
 
     if (!added) {
-        m_rects.append(rectToAdd);
+        m_rects.append(rect);
     }
 }
 

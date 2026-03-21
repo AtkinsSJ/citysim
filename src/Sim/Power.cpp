@@ -14,7 +14,7 @@
 
 PowerLayer::PowerLayer(City& city, MemoryArena& arena)
     : m_bounds(city.bounds)
-    , m_dirty_rects(arena, m_power_max_distance, m_bounds)
+    , m_dirty_rects(arena, m_bounds)
 {
     initChunkedArray(&m_networks, &arena, 64);
     initChunkPool(&m_power_groups_chunk_pool, &arena, 4);
@@ -232,7 +232,7 @@ void PowerSector::set_rect_power_group_unknown(Rect2I area)
 
 void PowerLayer::mark_dirty(Rect2I bounds)
 {
-    m_dirty_rects.mark_dirty(bounds);
+    m_dirty_rects.mark_dirty(bounds.expanded(m_power_max_distance));
 }
 
 void PowerLayer::recalculate_sector_power_groups(City& city, PowerSector& sector)

@@ -13,7 +13,7 @@
 class DirtyRects {
 public:
     DirtyRects() = default; // FIXME: Temporary until users are initialized properly.
-    DirtyRects(MemoryArena&, s32 expansion_radius, Optional<Rect2I> bounds = {});
+    DirtyRects(MemoryArena&, Optional<Rect2I> bounds = {});
 
     void mark_dirty(Rect2I);
     void clear();
@@ -24,6 +24,5 @@ public:
 
 private:
     Optional<Rect2I> m_bounds;
-    s32 m_expansion_radius;
     ChunkedArray<Rect2I> m_rects;
 };

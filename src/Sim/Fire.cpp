@@ -15,7 +15,7 @@
 #include <Util/Random.h>
 
 FireLayer::FireLayer(City& city, MemoryArena& arena)
-    : m_dirty_rects(arena, m_max_fire_radius, city.bounds)
+    : m_dirty_rects(arena, city.bounds)
 {
     m_funding_level = 1.0f;
 
@@ -43,7 +43,7 @@ FireLayer::FireLayer(City& city, MemoryArena& arena)
 
 void FireLayer::mark_dirty(Rect2I bounds)
 {
-    m_dirty_rects.mark_dirty(bounds);
+    m_dirty_rects.mark_dirty(bounds.expanded(m_max_fire_radius));
 }
 
 void FireLayer::update(City& city)
@@ -205,7 +205,7 @@ void FireLayer::add_fire_raw(City& city, s32 x, s32 y, GameTimestamp start_date)
 
     m_active_fire_count++;
 
-    m_dirty_rects.mark_dirty({ x, y, 1, 1 });
+    mark_dirty({ x, y, 1, 1 });
 }
 
 void FireLayer::remove_fire_at(City& city, s32 x, s32 y)
@@ -220,7 +220,7 @@ void FireLayer::remove_fire_at(City& city, s32 x, s32 y)
         sectorAtPosition->activeFires.take_index(index);
         m_active_fire_count--;
 
-        m_dirty_rects.mark_dirty({ x, y, 1, 1 });
+        mark_dirty({ x, y, 1, 1 });
     }
 }
 

@@ -12,7 +12,7 @@
 #include <Sim/Effect.h>
 
 HealthLayer::HealthLayer(City& city, MemoryArena& arena)
-    : m_dirty_rects(arena, maxLandValueEffectDistance, city.bounds)
+    : m_dirty_rects(arena, city.bounds)
 {
     m_sectors = SectorGrid<BasicSector> { &arena, city.bounds.size(), 16, 8 };
 
@@ -70,7 +70,8 @@ void HealthLayer::update(City& city)
 
 void HealthLayer::mark_dirty(Rect2I bounds)
 {
-    m_dirty_rects.mark_dirty(bounds);
+    // FIXME: Why are we using the land-value radius?
+    m_dirty_rects.mark_dirty(bounds.expanded(maxLandValueEffectDistance));
 }
 
 void HealthLayer::notify_new_building(BuildingDef const& def, Building& building)

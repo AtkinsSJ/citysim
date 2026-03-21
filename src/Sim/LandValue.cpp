@@ -12,7 +12,7 @@
 #include <Sim/Effect.h>
 
 LandValueLayer::LandValueLayer(City& city, MemoryArena& arena)
-    : m_dirty_rects(arena, maxLandValueEffectDistance, city.bounds)
+    : m_dirty_rects(arena, city.bounds)
 {
     m_sectors = SectorGrid<BasicSector> { &arena, city.bounds.size(), 16, 8 };
 
@@ -25,7 +25,7 @@ LandValueLayer::LandValueLayer(City& city, MemoryArena& arena)
 
 void LandValueLayer::mark_dirty(Rect2I bounds)
 {
-    m_dirty_rects.mark_dirty(bounds);
+    m_dirty_rects.mark_dirty(bounds.expanded(maxLandValueEffectDistance));
 }
 
 void LandValueLayer::update(City& city)

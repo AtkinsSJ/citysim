@@ -13,7 +13,7 @@
 #include <Sim/LandValue.h>
 
 CrimeLayer::CrimeLayer(City& city, MemoryArena& arena)
-    : m_dirty_rects(arena, maxLandValueEffectDistance, city.bounds)
+    : m_dirty_rects(arena, city.bounds)
 {
     m_sectors = SectorGrid<BasicSector> { &arena, city.bounds.size(), 16, 8 };
 
@@ -84,7 +84,8 @@ void CrimeLayer::update(City& city)
 
 void CrimeLayer::mark_dirty(Rect2I bounds)
 {
-    m_dirty_rects.mark_dirty(bounds);
+    // FIXME: Why are we using the land-value radius?
+    m_dirty_rects.mark_dirty(bounds.expanded(maxLandValueEffectDistance));
 }
 
 void CrimeLayer::notify_new_building(BuildingDef const& def, Building& building)

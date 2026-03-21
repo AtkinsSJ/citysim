@@ -15,7 +15,7 @@
 #include <Sim/LandValue.h>
 
 PollutionLayer::PollutionLayer(City& city, MemoryArena& arena)
-    : m_dirty_rects(arena, maxPollutionEffectDistance, city.bounds)
+    : m_dirty_rects(arena, city.bounds)
 {
     m_tile_pollution = arena.allocate_array_2d<u8>(city.bounds.size());
     m_tile_pollution.fill(0);
@@ -104,7 +104,7 @@ void PollutionLayer::update(City& city)
 
 void PollutionLayer::mark_dirty(Rect2I bounds)
 {
-    m_dirty_rects.mark_dirty(bounds);
+    m_dirty_rects.mark_dirty(bounds.expanded(maxPollutionEffectDistance));
 }
 
 float PollutionLayer::get_pollution_percent_at(s32 x, s32 y) const

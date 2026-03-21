@@ -12,7 +12,7 @@
 #include <UI/Panel.h>
 
 TransportLayer::TransportLayer(City& city, MemoryArena& arena)
-    : m_dirty_rects(arena, m_transport_max_distance, city.bounds)
+    : m_dirty_rects(arena, city.bounds)
 {
     m_tile_transport_types = arena.allocate_array_2d<Flags<TransportType>>(city.bounds.size());
 
@@ -77,7 +77,7 @@ void TransportLayer::update(City& city)
 
 void TransportLayer::mark_dirty(Rect2I bounds)
 {
-    m_dirty_rects.mark_dirty(bounds);
+    m_dirty_rects.mark_dirty(bounds.expanded(m_transport_max_distance));
 }
 
 bool TransportLayer::tile_has_transport(s32 x, s32 y, TransportType type) const
