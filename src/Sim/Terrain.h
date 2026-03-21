@@ -14,6 +14,7 @@
 
 using TerrainType = u8;
 
+// FIXME: This isn't really a Layer. Rename it or move it into the City directly.
 class TerrainLayer {
     // FIXME: For remapping terrain types. Maybe move that?
     friend TerrainCatalogue;

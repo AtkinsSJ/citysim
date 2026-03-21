@@ -9,19 +9,21 @@
 #include <IO/Forward.h>
 #include <Sim/DirtyRects.h>
 #include <Sim/Forward.h>
+#include <Sim/Layer.h>
 #include <Sim/Sector.h>
 #include <Util/Forward.h>
 
-class CrimeLayer {
+class CrimeLayer final : public Layer {
 public:
     CrimeLayer() = default;
     CrimeLayer(City&, MemoryArena&);
+    virtual ~CrimeLayer() override = default;
 
-    void update(City&);
-    void mark_dirty(Rect2I bounds);
+    virtual void update(City&) override;
+    virtual void mark_dirty(Rect2I bounds) override;
 
-    void notify_new_building(BuildingDef const&, Building&);
-    void notify_building_demolished(BuildingDef const&, Building&);
+    virtual void notify_new_building(BuildingDef const&, Building&) override;
+    virtual void notify_building_demolished(BuildingDef const&, Building&) override;
 
     float get_police_coverage_percent_at(s32 x, s32 y) const;
 
@@ -29,8 +31,8 @@ public:
     ChunkedArray<BuildingRef>* police_buildings() { return &m_police_buildings; }
     Array2<u8>* tile_police_coverage() { return &m_tile_police_coverage; }
 
-    void save(BinaryFileWriter&) const;
-    bool load(BinaryFileReader&);
+    virtual void save(BinaryFileWriter&) const override;
+    virtual bool load(BinaryFileReader&, City&) override;
 
 private:
     DirtyRects m_dirty_rects;

@@ -102,7 +102,7 @@ void HealthLayer::save(BinaryFileWriter& writer) const
     writer.endSection<SAVSection_Health>(&healthSection);
 }
 
-bool HealthLayer::load(BinaryFileReader& reader)
+bool HealthLayer::load(BinaryFileReader& reader, City&)
 {
     bool succeeded = false;
     while (reader.startSection(SAV_HEALTH_ID, SAV_HEALTH_VERSION)) {

@@ -123,7 +123,7 @@ void PollutionLayer::save(BinaryFileWriter& writer) const
     writer.endSection<SAVSection_Pollution>(&pollutionSection);
 }
 
-bool PollutionLayer::load(BinaryFileReader& reader)
+bool PollutionLayer::load(BinaryFileReader& reader, City&)
 {
     bool succeeded = false;
     while (reader.startSection(SAV_POLLUTION_ID, SAV_POLLUTION_VERSION)) {

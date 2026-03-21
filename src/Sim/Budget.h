@@ -8,13 +8,15 @@
 
 #include <IO/Forward.h>
 #include <Sim/Forward.h>
+#include <Sim/Layer.h>
 #include <Util/Forward.h>
 
-class BudgetLayer {
+class BudgetLayer final : public Layer {
 public:
     BudgetLayer() = default;
     BudgetLayer(City&, MemoryArena&);
+    virtual ~BudgetLayer() override = default;
 
-    void save(BinaryFileWriter&) const;
-    bool load(BinaryFileReader&);
+    virtual void save(BinaryFileWriter&) const override;
+    virtual bool load(BinaryFileReader&, City&) override;
 };

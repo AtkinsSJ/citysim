@@ -65,22 +65,12 @@ bool writeSaveFile(FileHandle* file, GameState* gameState)
             writer.endSection(&metaSection);
         }
 
-        // Terrain
         city->terrainLayer.save(writer);
-
-        // Buildings
         city->save_buildings(&writer);
-
-        // Layers
-        city->budgetLayer.save(writer);
-        city->crimeLayer.save(writer);
-        city->educationLayer.save(writer);
-        city->fireLayer.save(writer);
-        city->healthLayer.save(writer);
-        city->landValueLayer.save(writer);
-        city->pollutionLayer.save(writer);
-        city->transportLayer.save(writer);
         city->zoneLayer.save(writer);
+
+        for (auto const& layer : city->m_layers)
+            layer->save(writer);
 
         succeeded = writer.outputToFile(file);
     }

@@ -639,21 +639,16 @@ ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const
                 break;
             if (!city->zoneLayer.load(reader))
                 break;
-            if (!city->crimeLayer.load(reader))
-                break;
-            if (!city->educationLayer.load(reader))
-                break;
-            if (!city->fireLayer.load(reader, *city))
-                break;
-            if (!city->healthLayer.load(reader))
-                break;
-            if (!city->landValueLayer.load(reader))
-                break;
-            if (!city->pollutionLayer.load(reader))
-                break;
-            if (!city->transportLayer.load(reader))
-                break;
-            if (!city->budgetLayer.load(reader))
+
+            bool any_city_layer_failed_to_load = false;
+            for (auto& layer : city->m_layers) {
+                if (!layer->load(reader, *city)) {
+                    any_city_layer_failed_to_load = true;
+                    break;
+                }
+            }
+
+            if (any_city_layer_failed_to_load)
                 break;
 
             // And we're done!
@@ -702,16 +697,7 @@ void GameScene::update_and_render(float delta_time)
             logInfo("New year!"_s);
         }
 
-        city.crimeLayer.update(city);
-        city.fireLayer.update(city);
-        city.healthLayer.update(city);
-        city.landValueLayer.update(city);
-        city.pollutionLayer.update(city);
-        city.powerLayer.update(city);
-        city.transportLayer.update(city);
-        city.zoneLayer.update(city);
-
-        city.update_some_buildings();
+        city.update();
     }
 
     // UI!

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -23,6 +23,7 @@ struct GameClock;
 struct GameState;
 class HealthLayer;
 class LandValueLayer;
+class Layer;
 class PollutionLayer;
 class PowerLayer;
 struct TerrainCatalogue;

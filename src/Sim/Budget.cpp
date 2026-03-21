@@ -8,7 +8,6 @@
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
 #include <Menus/SaveFile.h>
-#include <Sim/City.h>
 
 BudgetLayer::BudgetLayer(City&, MemoryArena&)
 {
@@ -22,7 +21,7 @@ void BudgetLayer::save(BinaryFileWriter& writer) const
     writer.endSection<SAVSection_Budget>(&budgetSection);
 }
 
-bool BudgetLayer::load(BinaryFileReader& reader)
+bool BudgetLayer::load(BinaryFileReader& reader, City&)
 {
     bool succeeded = false;
     while (reader.startSection(SAV_BUDGET_ID, SAV_BUDGET_VERSION)) {

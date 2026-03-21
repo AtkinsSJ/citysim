@@ -21,7 +21,7 @@ void EducationLayer::save(BinaryFileWriter& writer) const
     writer.endSection<SAVSection_Education>(&educationSection);
 }
 
-bool EducationLayer::load(BinaryFileReader& reader)
+bool EducationLayer::load(BinaryFileReader& reader, City&)
 {
     bool succeeded = false;
     while (reader.startSection(SAV_EDUCATION_ID, SAV_EDUCATION_VERSION)) {

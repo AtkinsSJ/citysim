@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2015-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -59,7 +59,7 @@ struct City {
     // each building is only listed once. No guarantees are made about the order.
     ChunkedArray<Building*> find_buildings_overlapping_area(Rect2I area, Flags<BuildingQueryFlag> flags = {}) const;
 
-    void update_some_buildings();
+    void update();
 
     Building* add_building(BuildingDef* def, Rect2I footprint, GameTimestamp creationDate = getCurrentTimestamp());
     bool can_place_building(BuildingDef* def, s32 left, s32 top) const;
@@ -129,6 +129,8 @@ struct City {
     TerrainLayer terrainLayer;
     TransportLayer transportLayer;
     ZoneLayer zoneLayer;
+
+    Array<Layer*> m_layers;
 
     Rect2I demolitionRect;
 

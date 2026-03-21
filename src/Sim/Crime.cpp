@@ -119,7 +119,7 @@ void CrimeLayer::save(BinaryFileWriter& writer) const
     writer.endSection<SAVSection_Crime>(&crimeSection);
 }
 
-bool CrimeLayer::load(BinaryFileReader& reader)
+bool CrimeLayer::load(BinaryFileReader& reader, City&)
 {
     bool succeeded = false;
     while (reader.startSection(SAV_CRIME_ID, SAV_CRIME_VERSION)) {

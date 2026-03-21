@@ -9,6 +9,7 @@
 #include <IO/Forward.h>
 #include <Sim/DirtyRects.h>
 #include <Sim/Forward.h>
+#include <Sim/Layer.h>
 #include <Sim/Sector.h>
 #include <UI/Forward.h>
 #include <Util/EnumMap.h>
@@ -20,13 +21,14 @@ enum class TransportType : u8 {
     COUNT
 };
 
-class TransportLayer {
+class TransportLayer final : public Layer {
 public:
     TransportLayer() = default;
     TransportLayer(City&, MemoryArena&);
+    virtual ~TransportLayer() override = default;
 
-    void update(City&);
-    void mark_dirty(Rect2I bounds);
+    virtual void update(City&) override;
+    virtual void mark_dirty(Rect2I bounds) override;
 
     void add_transport_to_tile(s32 x, s32 y, TransportType);
     void add_transport_to_tile(s32 x, s32 y, Flags<TransportType>);
@@ -38,8 +40,8 @@ public:
 
     void debug_inspect(UI::Panel& panel, V2I tile_position);
 
-    void save(BinaryFileWriter&) const;
-    bool load(BinaryFileReader&);
+    virtual void save(BinaryFileWriter&) const override;
+    virtual bool load(BinaryFileReader&, City&) override;
 
 private:
     u8 m_transport_max_distance { 8 };

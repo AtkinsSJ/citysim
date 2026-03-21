@@ -9,23 +9,25 @@
 #include <IO/Forward.h>
 #include <Sim/DirtyRects.h>
 #include <Sim/Forward.h>
+#include <Sim/Layer.h>
 #include <Sim/Sector.h>
 
-class LandValueLayer {
+class LandValueLayer final : public Layer {
 public:
     LandValueLayer() = default;
     LandValueLayer(City&, MemoryArena&);
+    virtual ~LandValueLayer() override = default;
 
-    void update(City&);
-    void mark_dirty(Rect2I bounds);
+    virtual void update(City&) override;
+    virtual void mark_dirty(Rect2I bounds) override;
 
     float get_land_value_percent_at(s32 x, s32 y) const;
 
     // FIXME: Temporary
     Array2<u8>* tile_land_value() { return &m_tile_land_value; }
 
-    void save(BinaryFileWriter&) const;
-    bool load(BinaryFileReader&);
+    virtual void save(BinaryFileWriter&) const override;
+    virtual bool load(BinaryFileReader&, City&) override;
 
 private:
     DirtyRects m_dirty_rects;

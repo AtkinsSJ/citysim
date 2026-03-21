@@ -14,6 +14,7 @@ target_sources(CitySim PRIVATE
     GameClock.cpp
     Health.cpp
     LandValue.cpp
+    Layer.cpp
     Pollution.cpp
     Power.cpp
     Terrain.cpp

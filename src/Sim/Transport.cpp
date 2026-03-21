@@ -123,7 +123,7 @@ void TransportLayer::save(BinaryFileWriter& writer) const
     writer.endSection<SAVSection_Transport>(&transportSection);
 }
 
-bool TransportLayer::load(BinaryFileReader& reader)
+bool TransportLayer::load(BinaryFileReader& reader, City&)
 {
     bool succeeded = false;
     while (reader.startSection(SAV_TRANSPORT_ID, SAV_TRANSPORT_VERSION)) {

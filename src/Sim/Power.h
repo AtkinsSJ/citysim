@@ -8,6 +8,7 @@
 
 #include <Sim/Building.h>
 #include <Sim/DirtyRects.h>
+#include <Sim/Layer.h>
 #include <Sim/Sector.h>
 
 struct PowerGroup {
@@ -50,16 +51,17 @@ struct PowerNetwork {
     s32 cachedConsumption;
 };
 
-class PowerLayer {
+class PowerLayer final : public Layer {
 public:
     PowerLayer() = default;
     PowerLayer(City&, MemoryArena&);
+    virtual ~PowerLayer() override = default;
 
-    void update(City&);
-    void mark_dirty(Rect2I bounds);
+    virtual void update(City&) override;
+    virtual void mark_dirty(Rect2I bounds) override;
 
-    void notify_new_building(BuildingDef const&, Building&);
-    void notify_building_demolished(BuildingDef const&, Building&);
+    virtual void notify_new_building(BuildingDef const&, Building&) override;
+    virtual void notify_building_demolished(BuildingDef const&, Building&) override;
 
     bool does_tile_have_power_network(s32 x, s32 y) const;
     u8 get_distance_to_power(s32 x, s32 y) const;
@@ -72,8 +74,8 @@ public:
     ChunkedArray<BuildingRef>* power_buildings() { return &m_power_buildings; }
 
     // FIXME: We should probably save and load this?
-    // void save(BinaryFileWriter&) const;
-    // bool load(BinaryFileReader&);
+    virtual void save(BinaryFileWriter&) const override { }
+    virtual bool load(BinaryFileReader&, City&) override { return true; }
 
 private:
     PowerNetwork& new_power_network();

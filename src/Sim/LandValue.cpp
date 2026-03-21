@@ -150,7 +150,7 @@ void LandValueLayer::save(BinaryFileWriter& writer) const
     writer.endSection<SAVSection_LandValue>(&landValueSection);
 }
 
-bool LandValueLayer::load(BinaryFileReader& reader)
+bool LandValueLayer::load(BinaryFileReader& reader, City&)
 {
     bool succeeded = false;
     while (reader.startSection(SAV_LANDVALUE_ID, SAV_LANDVALUE_VERSION)) {

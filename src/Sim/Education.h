@@ -8,17 +8,15 @@
 
 #include <IO/Forward.h>
 #include <Sim/Forward.h>
+#include <Sim/Layer.h>
 #include <Util/Forward.h>
 
-class EducationLayer {
+class EducationLayer final : public Layer {
 public:
     EducationLayer() = default;
     EducationLayer(City&, MemoryArena&);
+    virtual ~EducationLayer() override = default;
 
-    void save(BinaryFileWriter&) const;
-    bool load(BinaryFileReader&);
+    virtual void save(BinaryFileWriter&) const override;
+    virtual bool load(BinaryFileReader&, City&) override;
 };
-
-void initEducationLayer(EducationLayer* layer, City* city, MemoryArena* gameArena);
-void saveEducationLayer(EducationLayer* layer, BinaryFileWriter* writer);
-bool loadEducationLayer(EducationLayer* layer, City* city, BinaryFileReader* reader);

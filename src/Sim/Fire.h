@@ -10,6 +10,7 @@
 #include <Sim/DirtyRects.h>
 #include <Sim/Forward.h>
 #include <Sim/GameClock.h>
+#include <Sim/Layer.h>
 #include <Sim/Sector.h>
 #include <UI/Forward.h>
 #include <Util/ChunkedArray.h>
@@ -32,13 +33,14 @@ struct FireSector {
     ChunkedArray<Fire> activeFires;
 };
 
-class FireLayer {
+class FireLayer final : public Layer {
 public:
     FireLayer() = default;
     FireLayer(City&, MemoryArena&);
+    virtual ~FireLayer() override = default;
 
-    void update(City&);
-    void mark_dirty(Rect2I bounds);
+    virtual void update(City&) override;
+    virtual void mark_dirty(Rect2I bounds) override;
 
     Optional<Indexed<Fire>> find_fire_at(s32 x, s32 y);
     bool does_area_contain_fire(Rect2I bounds) const;
@@ -49,8 +51,8 @@ public:
     u8 get_fire_risk_at(s32 x, s32 y) const;
     float get_fire_protection_percent_at(s32 x, s32 y) const;
 
-    void notify_new_building(BuildingDef const&, Building&);
-    void notify_building_demolished(BuildingDef const&, Building&);
+    virtual void notify_new_building(BuildingDef const&, Building&) override;
+    virtual void notify_building_demolished(BuildingDef const&, Building&) override;
 
     void debug_inspect(UI::Panel& panel, V2I tile_position, Building*);
 
@@ -58,8 +60,8 @@ public:
     ChunkedArray<BuildingRef>* fire_protection_buildings() { return &m_fire_protection_buildings; }
     Array2<u8>* tile_overall_fire_risk() { return &m_tile_overall_fire_risk; }
 
-    void save(BinaryFileWriter&) const;
-    bool load(BinaryFileReader&, City&);
+    virtual void save(BinaryFileWriter&) const override;
+    virtual bool load(BinaryFileReader&, City&) override;
 
 private:
     u8 m_max_fire_radius { 4 };

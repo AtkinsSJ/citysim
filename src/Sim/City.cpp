@@ -12,9 +12,11 @@
 #include <IO/WriteBuffer.h>
 #include <Menus/SaveFile.h>
 #include <Sim/BuildingCatalogue.h>
+#include <Sim/Layer.h>
 #include <Sim/TerrainCatalogue.h>
 #include <Util/Random.h>
 #include <Util/Rectangle.h>
+#include <Util/Ref.h>
 
 void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String name, String playerName, s32 funds)
 {
@@ -53,6 +55,17 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
     new (&city->terrainLayer) TerrainLayer { *city, *gameArena };
     new (&city->transportLayer) TransportLayer { *city, *gameArena };
     new (&city->zoneLayer) ZoneLayer { *city, *gameArena };
+
+    city->m_layers = gameArena->allocate_array<Layer*>(9);
+    city->m_layers.append(&city->budgetLayer);
+    city->m_layers.append(&city->crimeLayer);
+    city->m_layers.append(&city->educationLayer);
+    city->m_layers.append(&city->fireLayer);
+    city->m_layers.append(&city->healthLayer);
+    city->m_layers.append(&city->landValueLayer);
+    city->m_layers.append(&city->pollutionLayer);
+    city->m_layers.append(&city->powerLayer);
+    city->m_layers.append(&city->transportLayer);
 
     city->highestBuildingID = 0;
 
@@ -136,10 +149,8 @@ Building* City::add_building_direct(s32 id, BuildingDef* def, Rect2I footprint, 
         }
     }
 
-    crimeLayer.notify_new_building(*def, building);
-    fireLayer.notify_new_building(*def, building);
-    healthLayer.notify_new_building(*def, building);
-    powerLayer.notify_new_building(*def, building);
+    for (auto const& layer : m_layers)
+        layer->notify_new_building(*def, building);
 
     return &building;
 }
@@ -159,13 +170,8 @@ Building* City::add_building(BuildingDef* def, Rect2I footprint, GameTimestamp c
 
 void City::mark_area_dirty(Rect2I dirty_area)
 {
-    crimeLayer.mark_dirty(dirty_area);
-    fireLayer.mark_dirty(dirty_area);
-    healthLayer.mark_dirty(dirty_area);
-    landValueLayer.mark_dirty(dirty_area);
-    pollutionLayer.mark_dirty(dirty_area);
-    powerLayer.mark_dirty(dirty_area);
-    transportLayer.mark_dirty(dirty_area);
+    for (auto& layer : m_layers)
+        layer->mark_dirty(dirty_area);
 }
 
 bool City::tile_exists(s32 x, s32 y) const
@@ -336,10 +342,8 @@ void City::demolish_rect(Rect2I area)
         Rect2I buildingFootprint = building->footprint;
 
         // Clean up other references
-        crimeLayer.notify_building_demolished(*def, *building);
-        fireLayer.notify_building_demolished(*def, *building);
-        healthLayer.notify_building_demolished(*def, *building);
-        powerLayer.notify_building_demolished(*def, *building);
+        for (auto& layer : m_layers)
+            layer->notify_building_demolished(*def, *building);
 
         building->id = 0;
         building->typeID = -1;
@@ -489,9 +493,14 @@ Building* City::get_building_at(s32 x, s32 y)
     return result;
 }
 
-// Runs an update on X sectors' buildings, gradually covering the whole city with subsequent calls.
-void City::update_some_buildings()
+void City::update()
 {
+    zoneLayer.update(*this);
+
+    for (auto& layer : m_layers)
+        layer->update(*this);
+
+    // Runs an update on X sectors' buildings, gradually covering the whole city with subsequent calls.
     for (s32 i = 0; i < sectors.sectors_to_update_per_tick(); i++) {
         auto [_, sector] = sectors.get_next_sector();
 
