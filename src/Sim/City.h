@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include <Sim/Budget.h>
 #include <Sim/Crime.h>
 #include <Sim/Education.h>
 #include <Sim/Entity.h>
@@ -116,8 +115,6 @@ struct City {
     SectorGrid<CitySector> sectors;
 
     OccupancyArray<Entity> entities;
-
-    BudgetLayer budgetLayer;
 
     CrimeLayer crimeLayer;
     EducationLayer educationLayer;

@@ -66,12 +66,6 @@ struct SAVSection_Mods {
     // binary blob.
 };
 
-u8 const SAV_BUDGET_VERSION = 1;
-FileIdentifier const SAV_BUDGET_ID = "BDGT"_id;
-struct SAVSection_Budget {
-    // TODO: Budget things
-};
-
 u8 const SAV_BUILDING_VERSION = 1;
 FileIdentifier const SAV_BUILDING_ID = "BLDG"_id;
 struct SAVSection_Buildings {

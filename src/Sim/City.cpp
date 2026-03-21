@@ -44,7 +44,6 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
 
     initOccupancyArray(&city->entities, gameArena, 1024);
 
-    new (&city->budgetLayer) BudgetLayer { *city, *gameArena };
     new (&city->crimeLayer) CrimeLayer { *city, *gameArena };
     new (&city->educationLayer) EducationLayer { *city, *gameArena };
     new (&city->fireLayer) FireLayer { *city, *gameArena };
@@ -56,8 +55,7 @@ void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String 
     new (&city->transportLayer) TransportLayer { *city, *gameArena };
     new (&city->zoneLayer) ZoneLayer { *city, *gameArena };
 
-    city->m_layers = gameArena->allocate_array<Layer*>(9);
-    city->m_layers.append(&city->budgetLayer);
+    city->m_layers = gameArena->allocate_array<Layer*>(8);
     city->m_layers.append(&city->crimeLayer);
     city->m_layers.append(&city->educationLayer);
     city->m_layers.append(&city->fireLayer);

@@ -24,7 +24,6 @@ bool writeSaveFile(FileHandle* file, GameState* gameState)
 
         // Prepare the TOC
         writer.addTOCEntry(SAV_META_ID);
-        writer.addTOCEntry(SAV_BUDGET_ID);
         writer.addTOCEntry(SAV_BUILDING_ID);
         writer.addTOCEntry(SAV_CRIME_ID);
         writer.addTOCEntry(SAV_EDUCATION_ID);

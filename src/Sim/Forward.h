@@ -6,7 +6,6 @@
 
 #pragma once
 
-class BudgetLayer;
 struct Building;
 struct BuildingCatalogue;
 struct BuildingDef;
