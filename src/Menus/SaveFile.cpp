@@ -13,12 +13,12 @@
 #include <Sim/Terrain.h>
 #include <Sim/Zone.h>
 
-bool writeSaveFile(FileHandle* file, GameState* gameState)
+bool write_save_file(FileHandle* file, GameState const& game_state)
 {
     bool succeeded = file->isOpen;
 
     if (succeeded) {
-        City* city = &gameState->city;
+        auto& city = game_state.city;
 
         BinaryFileWriter writer = startWritingFile(SAV_FILE_ID, SAV_VERSION, &temp_arena());
 
@@ -41,19 +41,19 @@ bool writeSaveFile(FileHandle* file, GameState* gameState)
             SAVSection_Meta metaSection = {};
 
             metaSection.saveTimestamp = get_current_unix_timestamp();
-            metaSection.cityWidth = (u16)city->bounds.width();
-            metaSection.cityHeight = (u16)city->bounds.height();
-            metaSection.funds = city->funds;
-            metaSection.population = city->zoneLayer.total_residents();
-            metaSection.jobs = city->zoneLayer.total_jobs();
+            metaSection.cityWidth = (u16)city.bounds.width();
+            metaSection.cityHeight = (u16)city.bounds.height();
+            metaSection.funds = city.funds;
+            metaSection.population = city.zoneLayer.total_residents();
+            metaSection.jobs = city.zoneLayer.total_jobs();
 
-            metaSection.cityName = writer.append_string(city->name);
-            metaSection.playerName = writer.append_string(city->playerName);
+            metaSection.cityName = writer.append_string(city.name);
+            metaSection.playerName = writer.append_string(city.playerName);
 
             // Clock
-            GameClock* clock = &gameState->gameClock;
-            metaSection.currentDate = clock->currentDay;
-            metaSection.timeWithinDay = clock->timeWithinDay;
+            auto& clock = game_state.gameClock;
+            metaSection.currentDate = clock.currentDay;
+            metaSection.timeWithinDay = clock.timeWithinDay;
 
             // Camera
             Camera& camera = the_renderer().world_camera();
@@ -64,11 +64,11 @@ bool writeSaveFile(FileHandle* file, GameState* gameState)
             writer.endSection(&metaSection);
         }
 
-        city->terrainLayer.save(writer);
-        city->save_buildings(&writer);
-        city->zoneLayer.save(writer);
+        city.terrainLayer.save(writer);
+        city.save_buildings(&writer);
+        city.zoneLayer.save(writer);
 
-        for (auto const& layer : city->m_layers)
+        for (auto const& layer : city.m_layers)
             layer->save(writer);
 
         succeeded = writer.outputToFile(file);
