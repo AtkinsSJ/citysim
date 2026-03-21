@@ -6,8 +6,8 @@
 
 #include "DirtyRects.h"
 
-DirtyRects::DirtyRects(MemoryArena& arena, s32 expansion_radius, Rect2I bounds)
-    : m_bounds(bounds)
+DirtyRects::DirtyRects(MemoryArena& arena, s32 expansion_radius, Optional<Rect2I> bounds)
+    : m_bounds(move(bounds))
     , m_expansion_radius(expansion_radius)
 {
     initChunkedArray(&m_rects, &arena, 32);
@@ -19,8 +19,8 @@ void DirtyRects::mark_dirty(Rect2I rect)
 
     Rect2I rectToAdd = rect.expanded(m_expansion_radius);
 
-    if (m_bounds.has_positive_area())
-        rectToAdd = rectToAdd.intersected(m_bounds);
+    if (m_bounds.has_value())
+        rectToAdd = rectToAdd.intersected(m_bounds.value());
 
     // Skip empty rects
     if (!rectToAdd.has_positive_area())
