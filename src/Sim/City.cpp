@@ -159,6 +159,7 @@ Building* City::add_building(BuildingDef* def, Rect2I footprint, GameTimestamp c
 
 void City::mark_area_dirty(Rect2I dirty_area)
 {
+    crimeLayer.mark_dirty(dirty_area);
     fireLayer.mark_dirty(dirty_area);
     healthLayer.mark_dirty(dirty_area);
     landValueLayer.mark_dirty(dirty_area);

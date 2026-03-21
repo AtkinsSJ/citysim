@@ -82,6 +82,11 @@ void CrimeLayer::update(City& city)
     }
 }
 
+void CrimeLayer::mark_dirty(Rect2I bounds)
+{
+    m_dirty_rects.mark_dirty(bounds);
+}
+
 void CrimeLayer::notify_new_building(BuildingDef const& def, Building& building)
 {
     if (def.policeEffect.has_effect() || (def.jailCapacity > 0)) {

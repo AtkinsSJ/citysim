@@ -18,6 +18,7 @@ public:
     CrimeLayer(City&, MemoryArena&);
 
     void update(City&);
+    void mark_dirty(Rect2I bounds);
 
     void notify_new_building(BuildingDef const&, Building&);
     void notify_building_demolished(BuildingDef const&, Building&);
