@@ -13,9 +13,10 @@
 #include <Util/OccupancyArray.h>
 #include <Util/StringTable.h>
 
+using TerrainType = u8;
 struct TerrainDef {
     String name;
-    u8 typeID;
+    TerrainType typeID;
 
     String textAssetName;
 
@@ -31,15 +32,15 @@ struct TerrainDef {
 struct TerrainCatalogue final : public AssetManagerListener {
     static TerrainCatalogue& the();
 
-    TerrainDef const& get_def(u8 terrain_type) const;
+    TerrainDef const& get_def(TerrainType terrain_type) const;
 
     OccupancyArray<TerrainDef> terrainDefs;
 
     HashTable<TerrainDef*> terrainDefsByName { 128 };
     StringTable terrainNames;
 
-    HashTable<u8> terrainNameToOldType { 128 };
-    HashTable<u8> terrainNameToType { 128 };
+    HashTable<TerrainType> terrainNameToOldType { 128 };
+    HashTable<TerrainType> terrainNameToType { 128 };
 
     // ^AssetManagerListener
     virtual void after_assets_loaded() override;
@@ -52,6 +53,6 @@ void loadTerrainDefs(Blob data, AssetMetadata& metadata, DeprecatedAsset& asset)
 void removeTerrainDefs(Array<String> namesToRemove);
 
 // Returns 0 if not found
-u8 findTerrainTypeByName(String name);
+TerrainType findTerrainTypeByName(String name);
 
 void saveTerrainTypes();

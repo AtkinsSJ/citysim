@@ -27,7 +27,7 @@ void initTerrainCatalogue(MemoryArena& arena)
     asset_manager().register_listener(&s_terrain_catalogue);
 }
 
-TerrainDef const& TerrainCatalogue::get_def(u8 terrain_type) const
+TerrainDef const& TerrainCatalogue::get_def(TerrainType terrain_type) const
 {
     if (terrain_type > 0 && terrain_type < s_terrain_catalogue.terrainDefs.count) {
         TerrainDef* found = s_terrain_catalogue.terrainDefs.get(terrain_type);
@@ -38,11 +38,11 @@ TerrainDef const& TerrainCatalogue::get_def(u8 terrain_type) const
     return *s_terrain_catalogue.terrainDefs.get(0);
 }
 
-u8 findTerrainTypeByName(String name)
+TerrainType findTerrainTypeByName(String name)
 {
     DEBUG_FUNCTION();
 
-    u8 result = 0;
+    TerrainType result = 0;
 
     auto def = s_terrain_catalogue.terrainDefsByName.find_value(name);
     if (def.has_value() && def != nullptr) {
@@ -65,15 +65,15 @@ void TerrainCatalogue::remap_terrain_types(City& city)
     // merged accidentally.
     for (auto it = terrainNameToOldType.iterate(); it.hasNext(); it.next()) {
         auto entry = it.getEntry();
-        terrainNameToType.ensure(entry->key, (u8)terrainNameToType.count());
+        terrainNameToType.ensure(entry->key, (TerrainType)terrainNameToType.count());
     }
 
     if (terrainNameToOldType.count() > 0) {
-        Array<u8> oldTypeToNewType = temp_arena().allocate_array<u8>(terrainNameToOldType.count(), true);
+        Array<TerrainType> oldTypeToNewType = temp_arena().allocate_array<TerrainType>(terrainNameToOldType.count(), true);
         for (auto it = terrainNameToOldType.iterate(); it.hasNext(); it.next()) {
             auto entry = it.getEntry();
             String terrainName = entry->key;
-            u8 oldType = entry->value;
+            TerrainType oldType = entry->value;
 
             oldTypeToNewType[oldType] = terrainNameToType.find_value(terrainName).value_or(0);
         }
@@ -82,7 +82,7 @@ void TerrainCatalogue::remap_terrain_types(City& city)
 
         for (s32 y = 0; y < layer.m_tile_terrain_type.height(); y++) {
             for (s32 x = 0; x < layer.m_tile_terrain_type.width(); x++) {
-                u8 oldType = layer.m_tile_terrain_type.get(x, y);
+                TerrainType oldType = layer.m_tile_terrain_type.get(x, y);
 
                 if (oldType < oldTypeToNewType.count && (oldTypeToNewType[oldType] != 0)) {
                     layer.m_tile_terrain_type.set(x, y, oldTypeToNewType[oldType]);
