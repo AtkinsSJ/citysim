@@ -138,8 +138,6 @@ struct GameState {
     Flags<InspectTileDebugFlags> inspectTileDebugFlags;
 };
 
-void freeGameState(GameState* gameState);
-
 void inputMoveCamera(Camera* camera, V2 windowSize, V2 windowMousePos, s32 cityWidth, s32 cityHeight, float delta_time);
 void updateAndRenderGameUI(GameState* gameState);
 void showCostTooltip(s32 buildCost);
