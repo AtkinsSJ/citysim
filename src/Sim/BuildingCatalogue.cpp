@@ -141,7 +141,7 @@ BuildingDef* appendNewBuildingDef(StringView name)
     return &result;
 }
 
-BuildingDef* getBuildingDef(s32 buildingTypeID)
+BuildingDef* getBuildingDef(BuildingType buildingTypeID)
 {
     auto& building_catalogue = BuildingCatalogue::the();
     BuildingDef* result = building_catalogue.allBuildings.get(0);
@@ -204,18 +204,18 @@ void BuildingCatalogue::remap_building_types(City& city)
     }
 
     if (buildingNameToOldTypeID.count() > 0) {
-        Array<s32> oldTypeToNewType = temp_arena().allocate_array<s32>(buildingNameToOldTypeID.count(), true);
+        Array<BuildingType> oldTypeToNewType = temp_arena().allocate_array<BuildingType>(buildingNameToOldTypeID.count(), true);
         for (auto it = buildingNameToOldTypeID.iterate(); it.hasNext(); it.next()) {
             auto entry = it.getEntry();
             String buildingName = entry->key;
-            s32 oldType = entry->value;
+            auto oldType = entry->value;
 
             oldTypeToNewType[oldType] = buildingNameToTypeID.find_value(buildingName).value_or(0);
         }
 
         for (auto it = city.buildings.iterate(); it.hasNext(); it.next()) {
             Building* building = it.get();
-            s32 oldType = building->typeID;
+            auto oldType = building->typeID;
             if (oldType < oldTypeToNewType.count && (oldTypeToNewType[oldType] != 0)) {
                 building->typeID = oldTypeToNewType[oldType];
             }

@@ -115,7 +115,7 @@ struct GameState {
     DragState worldDragState;
     ActionMode actionMode { ActionMode::None };
     union {
-        s32 selectedBuildingTypeID;
+        BuildingType selectedBuildingTypeID;
         ZoneType selectedZoneID;
         u8 selectedTerrainID;
     };

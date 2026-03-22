@@ -65,12 +65,9 @@ struct BuildingVariant {
     String spriteName;
 };
 
-// FIXME: Move this to a forward header
-enum class ZoneType : u8;
-
 struct BuildingDef {
     String name;
-    s32 typeID;
+    BuildingType typeID;
 
     String textAssetName;
 
@@ -138,7 +135,7 @@ EnumMap<BuildingProblem::Type, String> const buildingProblemNames {
 
 struct Building {
     u32 id;
-    s32 typeID;
+    BuildingType typeID;
     GameTimestamp creationDate;
     Rect2I footprint;
     Optional<s16> variantIndex;
@@ -158,7 +155,7 @@ struct Building {
 
 BuildingDef* getBuildingDef(Building const* building);
 
-bool buildingDefHasType(BuildingDef* def, s32 typeID);
+bool buildingDefHasType(BuildingDef* def, BuildingType typeID);
 
 s32 getRequiredPower(Building* building);
 bool buildingHasPower(Building* building);

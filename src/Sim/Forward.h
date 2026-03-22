@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <Util/Basic.h>
+
 struct Building;
 struct BuildingCatalogue;
 struct BuildingDef;
@@ -31,3 +33,6 @@ class TerrainLayer;
 class TransportLayer;
 struct ZoneDef;
 class ZoneLayer;
+
+using BuildingType = u32;
+enum class ZoneType : u8;

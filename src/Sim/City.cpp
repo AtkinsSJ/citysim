@@ -345,7 +345,6 @@ void City::demolish_rect(Rect2I area)
             layer->notify_building_demolished(*def, *building);
 
         building->id = 0;
-        building->typeID = -1;
 
         s32 buildingIndex = tileBuildingIndex.get(buildingFootprint.x(), buildingFootprint.y());
         buildings.removeIndex(buildingIndex);

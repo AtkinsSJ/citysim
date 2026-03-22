@@ -21,7 +21,7 @@ BuildingDef* getBuildingDef(Building const* building)
     return result;
 }
 
-bool buildingDefHasType(BuildingDef* def, s32 typeID)
+bool buildingDefHasType(BuildingDef* def, BuildingType typeID)
 {
     bool result = (def->typeID == typeID);
 

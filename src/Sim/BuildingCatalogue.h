@@ -6,13 +6,11 @@
 
 #pragma once
 
-#include "Util/Function.h"
-
 #include <Assets/AssetManagerListener.h>
-#include <Assets/Forward.h>
 #include <Sim/Forward.h>
 #include <Sim/Zone.h>
 #include <Util/ChunkedArray.h>
+#include <Util/Function.h>
 #include <Util/HashTable.h>
 #include <Util/OccupancyArray.h>
 #include <Util/StringTable.h>
@@ -30,8 +28,8 @@ struct BuildingCatalogue final : public AssetManagerListener {
     HashTable<BuildingDef*> buildingsByName { 128 };
     StringTable buildingNames;
 
-    HashTable<s32> buildingNameToTypeID { 128 };
-    HashTable<s32> buildingNameToOldTypeID { 128 };
+    HashTable<BuildingType> buildingNameToTypeID { 128 };
+    HashTable<BuildingType> buildingNameToOldTypeID { 128 };
 
     ChunkedArray<BuildingDef*> constructibleBuildings;
     ChunkedArray<BuildingDef*> rGrowableBuildings;
@@ -53,7 +51,7 @@ struct BuildingCatalogue final : public AssetManagerListener {
 void initBuildingCatalogue(MemoryArena&);
 
 BuildingDef* appendNewBuildingDef(StringView name);
-BuildingDef* getBuildingDef(s32 buildingTypeID);
+BuildingDef* getBuildingDef(BuildingType buildingTypeID);
 BuildingDef* findBuildingDef(String name);
 
 void saveBuildingTypes();
