@@ -122,5 +122,5 @@ Flags<ClockEvents> incrementClock(GameClock* clock, float deltaTime)
 
 GameTimestamp getCurrentTimestamp()
 {
-    return App::the().game_state()->gameClock.currentDay;
+    return App::the().game_state()->city.gameClock.currentDay;
 }

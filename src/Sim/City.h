@@ -103,6 +103,8 @@ struct City {
     String name;
     String playerName;
 
+    GameClock gameClock;
+
     s32 funds;
     s32 monthlyExpenditure;
 
@@ -144,4 +146,4 @@ u8 const maxDistanceToWater = 10;
 //
 // Public API
 //
-void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String name, String playerName, s32 funds);
+void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String name, String playerName, s32 funds, GameTimestamp date = 0, float time_of_day = 0.0f);

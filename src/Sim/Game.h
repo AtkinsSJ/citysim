@@ -10,7 +10,6 @@
 #include <Menus/SavedGames.h>
 #include <Sim/BuildingRef.h>
 #include <Sim/City.h>
-#include <Sim/GameClock.h>
 #include <Sim/Zone.h>
 #include <Util/Basic.h>
 #include <Util/ChunkedArray.h>
@@ -116,7 +115,6 @@ enum class InspectTileDebugFlags : u8 {
 
 struct GameState {
     OwnPtr<Random> gameRandom;
-    GameClock gameClock;
     City city;
 
     DataView dataLayerToDraw { DataView::None };

@@ -359,7 +359,7 @@ void updateAndRenderGameUI(GameState* gameState)
     // Game clock
     Rect2I clockBounds = {};
     {
-        GameClock* clock = &gameState->gameClock;
+        GameClock* clock = &city->gameClock;
 
         // We're sizing the clock area based on the speed control buttons.
         // The >>> button is the largest, so they're all set to that size.
@@ -574,8 +574,6 @@ NonnullOwnPtr<GameScene> GameScene::create_new(u32 seed)
     initCity(&game_scene->m_arena, &game_scene->m_state->city, 128, 128, getText("city_default_name"_s), getText("player_default_name"_s), gameStartFunds);
     game_scene->m_state->city.terrainLayer.generate(game_scene->m_state->city, seed);
 
-    initGameClock(&game_scene->m_state->gameClock);
-
     return game_scene;
 }
 
@@ -621,10 +619,7 @@ ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const
 
                 String cityName = reader.readString(meta->cityName);
                 String playerName = reader.readString(meta->playerName);
-                initCity(&game_scene->m_arena, city, meta->cityWidth, meta->cityHeight, cityName, playerName, meta->funds);
-
-                // Clock
-                initGameClock(&game_state.gameClock, meta->currentDate, meta->timeWithinDay);
+                initCity(&game_scene->m_arena, city, meta->cityWidth, meta->cityHeight, cityName, playerName, meta->funds, meta->currentDate, meta->timeWithinDay);
 
                 // Camera
                 auto& world_camera = the_renderer().world_camera();
@@ -685,7 +680,7 @@ void GameScene::update_and_render(float delta_time)
     if (!UI::hasPauseWindowOpen()) {
         DEBUG_BLOCK_T("Update simulation", DebugCodeDataTag::Simulation);
 
-        auto clockEvents = incrementClock(&m_state->gameClock, delta_time);
+        auto clockEvents = incrementClock(&city.gameClock, delta_time);
         if (clockEvents.has(ClockEvents::NewWeek)) {
             logInfo("New week!"_s);
         }

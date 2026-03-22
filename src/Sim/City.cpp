@@ -18,13 +18,14 @@
 #include <Util/Rectangle.h>
 #include <Util/Ref.h>
 
-void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String name, String playerName, s32 funds)
+void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String name, String playerName, s32 funds, GameTimestamp date, float time_of_day)
 {
     *city = {};
 
     // TODO: These want to be in some kind of buffer somewhere so they can be modified!
     city->name = gameArena->allocate_string(name);
     city->playerName = gameArena->allocate_string(playerName);
+    initGameClock(&city->gameClock, date, time_of_day);
     city->funds = funds;
     city->bounds = { 0u, 0u, width, height };
 

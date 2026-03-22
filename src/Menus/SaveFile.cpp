@@ -51,7 +51,7 @@ bool write_save_file(FileHandle* file, GameState const& game_state)
             metaSection.playerName = writer.append_string(city.playerName);
 
             // Clock
-            auto& clock = game_state.gameClock;
+            auto& clock = city.gameClock;
             metaSection.currentDate = clock.currentDay;
             metaSection.timeWithinDay = clock.timeWithinDay;
 
