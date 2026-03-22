@@ -29,24 +29,6 @@ EnumMap<GameClockSpeed, float> const GAME_DAYS_PER_SECOND {
 // u32 gives us over 11 million years, so should be plenty!
 typedef u32 GameTimestamp;
 
-struct GameClock {
-    // Internal values
-    GameTimestamp currentDay;
-    float timeWithinDay; // 0 to 1
-
-    // "Cosmetic" values generated from the internal values
-    DateTime cosmeticDate;
-
-    // TODO: @Speed Keep the current date string cached here? My string system doesn't make that very easy.
-
-    GameClockSpeed speed;
-    bool isPaused;
-};
-
-void initGameClock(GameClock* clock, GameTimestamp date = 0, float timeOfDay = 0.0f);
-
-void updateCosmeticDate(GameClock* clock);
-
 enum class ClockEvents : u8 {
     NewDay,
     NewWeek,
@@ -54,8 +36,38 @@ enum class ClockEvents : u8 {
     NewYear,
     COUNT,
 };
-// Returns a set of ClockEvents for events that occur
-Flags<ClockEvents> incrementClock(GameClock* clock, float deltaTime);
+
+class GameClock {
+public:
+    GameClock(GameTimestamp date = 0, float time_of_day = 0.0f);
+
+    Flags<ClockEvents> increment(float delta_time);
+
+    GameClockSpeed speed() const { return m_speed; }
+    bool is_paused() const { return m_is_paused; }
+    void set_speed(GameClockSpeed speed) { m_speed = speed; }
+    void set_is_paused(bool paused) { m_is_paused = paused; }
+
+    GameTimestamp current_day() const { return m_current_day; }
+    float current_day_completion() const { return m_current_day_completion; }
+
+    DateTime const& cosmetic_date() const { return m_cosmetic_date; }
+
+private:
+    void update_cosmetic_date();
+
+    // Internal values
+    GameTimestamp m_current_day;
+    float m_current_day_completion; // 0 to 1
+
+    // "Cosmetic" values generated from the internal values
+    DateTime m_cosmetic_date;
+
+    // TODO: @Speed Keep the current date string cached here? My string system doesn't make that very easy.
+
+    GameClockSpeed m_speed { GameClockSpeed::Slow };
+    bool m_is_paused { true };
+};
 
 GameTimestamp getCurrentTimestamp();
 GameTimestamp timestampFromParts(s32 year, MonthOfYear month, s32 day);

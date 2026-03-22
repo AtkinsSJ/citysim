@@ -369,14 +369,14 @@ void updateAndRenderGameUI(GameState* gameState)
         s32 clockWidth = (speedButtonSize.x * 4) + (uiPadding * 3);
         clockBounds = { right - clockWidth, uiPadding, clockWidth, toolbarHeight };
 
-        String dateString = formatDateTime(clock->cosmeticDate, DateTimeFormat::ShortDate);
+        String dateString = formatDateTime(clock->cosmetic_date(), DateTimeFormat::ShortDate);
         V2I dateStringSize = font.calculate_text_size(dateString, clockWidth);
 
         // Draw a progress bar for the current day
         Rect2I dateRect { right - clockWidth, uiPadding, clockWidth, dateStringSize.y };
         drawSingleRect(uiBuffer, dateRect, renderer.shaderIds.untextured, Colour::from_rgb_255(0, 0, 0, 128));
         Rect2I dateProgressRect = dateRect;
-        dateProgressRect.set_width(round_s32(dateProgressRect.width() * clock->timeWithinDay));
+        dateProgressRect.set_width(round_s32(dateProgressRect.width() * clock->current_day_completion()));
         drawSingleRect(uiBuffer, dateProgressRect, renderer.shaderIds.untextured, Colour::from_rgb_255(64, 255, 64, 128));
 
         UI::putLabel(dateString, dateRect, &label_style);
@@ -384,26 +384,26 @@ void updateAndRenderGameUI(GameState* gameState)
         // Speed control buttons
         Rect2I speedButtonRect { right - speedButtonSize.x, toolbarHeight - (uiPadding + speedButtonSize.y), speedButtonSize.x, speedButtonSize.y };
 
-        if (UI::putTextButton(">>>"_s, speedButtonRect, &button_style, buttonIsActive(clock->speed == GameClockSpeed::Fast))) {
-            clock->speed = GameClockSpeed::Fast;
-            clock->isPaused = false;
+        if (UI::putTextButton(">>>"_s, speedButtonRect, &button_style, buttonIsActive(clock->speed() == GameClockSpeed::Fast))) {
+            clock->set_speed(GameClockSpeed::Fast);
+            clock->set_is_paused(false);
         }
         speedButtonRect.set_x(speedButtonRect.x() - (speedButtonRect.width() + uiPadding));
 
-        if (UI::putTextButton(">>"_s, speedButtonRect, &button_style, buttonIsActive(clock->speed == GameClockSpeed::Medium))) {
-            clock->speed = GameClockSpeed::Medium;
-            clock->isPaused = false;
+        if (UI::putTextButton(">>"_s, speedButtonRect, &button_style, buttonIsActive(clock->speed() == GameClockSpeed::Medium))) {
+            clock->set_speed(GameClockSpeed::Medium);
+            clock->set_is_paused(false);
         }
         speedButtonRect.set_x(speedButtonRect.x() - (speedButtonRect.width() + uiPadding));
 
-        if (UI::putTextButton(">"_s, speedButtonRect, &button_style, buttonIsActive(clock->speed == GameClockSpeed::Slow))) {
-            clock->speed = GameClockSpeed::Slow;
-            clock->isPaused = false;
+        if (UI::putTextButton(">"_s, speedButtonRect, &button_style, buttonIsActive(clock->speed() == GameClockSpeed::Slow))) {
+            clock->set_speed(GameClockSpeed::Slow);
+            clock->set_is_paused(false);
         }
         speedButtonRect.set_x(speedButtonRect.x() - (speedButtonRect.width() + uiPadding));
 
-        if (UI::putTextButton("||"_s, speedButtonRect, &button_style, buttonIsActive(clock->isPaused))) {
-            clock->isPaused = !clock->isPaused;
+        if (UI::putTextButton("||"_s, speedButtonRect, &button_style, buttonIsActive(clock->is_paused()))) {
+            clock->set_is_paused(!clock->is_paused());
         }
     }
 
@@ -680,7 +680,7 @@ void GameScene::update_and_render(float delta_time)
     if (!UI::hasPauseWindowOpen()) {
         DEBUG_BLOCK_T("Update simulation", DebugCodeDataTag::Simulation);
 
-        auto clockEvents = incrementClock(&city.gameClock, delta_time);
+        auto clockEvents = city.gameClock.increment(delta_time);
         if (clockEvents.has(ClockEvents::NewWeek)) {
             logInfo("New week!"_s);
         }

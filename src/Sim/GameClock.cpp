@@ -16,33 +16,29 @@ EnumMap<MonthOfYear, u8> const DAYS_PER_MONTH {
     31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
 };
 
-void initGameClock(GameClock* clock, GameTimestamp date, float timeOfDay)
+GameClock::GameClock(GameTimestamp date, float time_of_day)
+    : m_current_day(date)
+    , m_current_day_completion(clamp01(time_of_day))
+    , m_speed(GameClockSpeed::Slow)
+    , m_is_paused(true)
 {
-    *clock = {};
-
-    clock->currentDay = date;
-    clock->timeWithinDay = clamp01(timeOfDay);
-
-    clock->speed = GameClockSpeed::Slow;
-    clock->isPaused = true;
-
-    updateCosmeticDate(clock);
+    update_cosmetic_date();
 }
 
-void updateCosmeticDate(GameClock* clock)
+void GameClock::update_cosmetic_date()
 {
-    DateTime dateTime = dateTimeFromTimestamp(clock->currentDay);
+    DateTime date_time = dateTimeFromTimestamp(m_current_day);
 
     // Time as a percentage
-    float fractionalHours = clamp01(clock->timeWithinDay) * 24.0f;
-    dateTime.hour = floor_s32(fractionalHours);
-    float fractionalMinutes = fraction_float(fractionalHours) * 60.0f;
-    dateTime.minute = floor_s32(fractionalMinutes);
-    float fractionalSeconds = fraction_float(fractionalMinutes) * 60.0f;
-    dateTime.second = floor_s32(fractionalSeconds);
-    dateTime.millisecond = floor_s32(fraction_float(fractionalSeconds) * 1000.0f);
+    float fractional_hours = clamp01(m_current_day_completion) * 24.0f;
+    date_time.hour = floor_s32(fractional_hours);
+    float fractional_minutes = fraction_float(fractional_hours) * 60.0f;
+    date_time.minute = floor_s32(fractional_minutes);
+    float fractional_seconds = fraction_float(fractional_minutes) * 60.0f;
+    date_time.second = floor_s32(fractional_seconds);
+    date_time.millisecond = floor_s32(fraction_float(fractional_seconds) * 1000.0f);
 
-    clock->cosmeticDate = dateTime;
+    m_cosmetic_date = date_time;
 }
 
 GameTimestamp timestampFromParts(s32 year, MonthOfYear month, s32 day)
@@ -83,44 +79,44 @@ DateTime dateTimeFromTimestamp(GameTimestamp timestamp)
     return dateTime;
 }
 
-Flags<ClockEvents> incrementClock(GameClock* clock, float deltaTime)
+Flags<ClockEvents> GameClock::increment(float delta_time)
 {
-    Flags<ClockEvents> clockEvents;
+    Flags<ClockEvents> clock_events;
 
-    if (!clock->isPaused) {
-        clock->timeWithinDay += (deltaTime * GAME_DAYS_PER_SECOND[clock->speed]);
+    if (!m_is_paused) {
+        m_current_day_completion += delta_time * GAME_DAYS_PER_SECOND[m_speed];
 
-        if (clock->timeWithinDay >= 1.0f) {
+        if (m_current_day_completion >= 1.0f) {
             // Next day!
-            clock->currentDay++;
-            clock->timeWithinDay -= 1.0f;
-            clockEvents.add(ClockEvents::NewDay);
+            m_current_day++;
+            m_current_day_completion -= 1.0f;
+            clock_events.add(ClockEvents::NewDay);
         }
 
         // We should never be able to increase by more than one day in a single frame!
-        ASSERT(clock->timeWithinDay < 1.0f);
+        ASSERT(m_current_day_completion < 1.0f);
 
-        DateTime oldCosmeticDate = clock->cosmeticDate;
-        updateCosmeticDate(clock);
+        DateTime old_cosmetic_date = m_cosmetic_date;
+        update_cosmetic_date();
 
-        if (oldCosmeticDate.year != clock->cosmeticDate.year) {
-            clockEvents.add(ClockEvents::NewYear);
+        if (old_cosmetic_date.year != m_cosmetic_date.year) {
+            clock_events.add(ClockEvents::NewYear);
         }
 
-        if (oldCosmeticDate.month != clock->cosmeticDate.month) {
-            clockEvents.add(ClockEvents::NewMonth);
+        if (old_cosmetic_date.month != m_cosmetic_date.month) {
+            clock_events.add(ClockEvents::NewMonth);
         }
 
-        if (clockEvents.has(ClockEvents::NewDay)
-            && clock->cosmeticDate.dayOfWeek == DayOfWeek::Monday) {
-            clockEvents.add(ClockEvents::NewWeek);
+        if (clock_events.has(ClockEvents::NewDay)
+            && m_cosmetic_date.dayOfWeek == DayOfWeek::Monday) {
+            clock_events.add(ClockEvents::NewWeek);
         }
     }
 
-    return clockEvents;
+    return clock_events;
 }
 
 GameTimestamp getCurrentTimestamp()
 {
-    return App::the().game_state()->city.gameClock.currentDay;
+    return App::the().game_state()->city.gameClock.current_day();
 }

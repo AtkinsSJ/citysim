@@ -52,8 +52,8 @@ bool write_save_file(FileHandle* file, GameState const& game_state)
 
             // Clock
             auto& clock = city.gameClock;
-            metaSection.currentDate = clock.currentDay;
-            metaSection.timeWithinDay = clock.timeWithinDay;
+            metaSection.currentDate = clock.current_day();
+            metaSection.timeWithinDay = clock.current_day_completion();
 
             // Camera
             Camera& camera = the_renderer().world_camera();

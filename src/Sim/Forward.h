@@ -18,7 +18,7 @@ class EffectRadius;
 struct Entity;
 struct Fire;
 class FireLayer;
-struct GameClock;
+class GameClock;
 struct GameState;
 class HealthLayer;
 class LandValueLayer;
