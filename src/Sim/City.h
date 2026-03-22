@@ -34,6 +34,14 @@ enum class BuildingQueryFlag : u8 {
     COUNT,
 };
 
+enum class InspectTileDebugFlags : u8 {
+    Fire,
+    Power,
+    Transport,
+
+    COUNT,
+};
+
 struct City {
     Building* get_building(BuildingRef const&);
     Building const* get_building(BuildingRef const& ref) const
@@ -136,6 +144,13 @@ struct City {
     ArrayChunkPool<Building*> sectorBuildingsChunkPool;
     ArrayChunkPool<Rect2I> sectorBoundariesChunkPool;
     ArrayChunkPool<BuildingRef> buildingRefsChunkPool;
+
+    // NB: This only works because we've made the inspect window unique! If we want to have multiple
+    // at once, we'll need to figure out where to dynamically store the tile positions.
+    // Honestly, I'd like to do that now anyway, but I can't think of a good way to do so.
+    // - Sam, 11/2/2019
+    V2I inspectedTilePosition;
+    Flags<InspectTileDebugFlags> inspectTileDebugFlags;
 
 private:
     Building* add_building_direct(s32 id, BuildingDef* def, Rect2I footprint, GameTimestamp creationDate);

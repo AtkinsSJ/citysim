@@ -233,7 +233,7 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
     GameState* gameState = (GameState*)userData;
     City* city = &gameState->city;
 
-    V2I tilePos = gameState->inspectedTilePosition;
+    V2I tilePos = city->inspectedTilePosition;
 
     // CitySector
     CitySector* sector = city->sectors.get_sector_at_tile_pos(tilePos.x, tilePos.y);
@@ -273,14 +273,14 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
     ui->addLabel(myprintf("Land value: {0}%"_s, { formatFloat(city->landValueLayer.get_land_value_percent_at(tilePos.x, tilePos.y) * 100.0f, 0) }));
 
     // Debug info
-    if (!gameState->inspectTileDebugFlags.is_empty()) {
-        if (gameState->inspectTileDebugFlags.has(InspectTileDebugFlags::Fire)) {
+    if (!city->inspectTileDebugFlags.is_empty()) {
+        if (city->inspectTileDebugFlags.has(InspectTileDebugFlags::Fire)) {
             city->fireLayer.debug_inspect(*ui, tilePos, building);
         }
-        if (gameState->inspectTileDebugFlags.has(InspectTileDebugFlags::Power)) {
+        if (city->inspectTileDebugFlags.has(InspectTileDebugFlags::Power)) {
             city->powerLayer.debug_inspect(*ui, tilePos);
         }
-        if (gameState->inspectTileDebugFlags.has(InspectTileDebugFlags::Transport)) {
+        if (city->inspectTileDebugFlags.has(InspectTileDebugFlags::Transport)) {
             city->transportLayer.debug_inspect(*ui, tilePos);
         }
     }
@@ -539,11 +539,12 @@ void showCostTooltip(s32 buildCost)
 void debugToolsWindowProc(UI::WindowContext* context, void* userData)
 {
     GameState* gameState = (GameState*)userData;
+    City& city = gameState->city;
     UI::Panel* ui = &context->windowPanel;
     ui->alignWidgets(HAlign::Fill);
 
-    if (ui->addTextButton("Inspect fire info"_s, buttonIsActive(gameState->inspectTileDebugFlags.has(InspectTileDebugFlags::Fire)))) {
-        gameState->inspectTileDebugFlags.toggle(InspectTileDebugFlags::Fire);
+    if (ui->addTextButton("Inspect fire info"_s, buttonIsActive(city.inspectTileDebugFlags.has(InspectTileDebugFlags::Fire)))) {
+        city.inspectTileDebugFlags.toggle(InspectTileDebugFlags::Fire);
     }
     if (ui->addTextButton("Add Fire"_s, buttonIsActive(gameState->actionMode == ActionMode::Debug_AddFire))) {
         gameState->actionMode = ActionMode::Debug_AddFire;
@@ -552,12 +553,12 @@ void debugToolsWindowProc(UI::WindowContext* context, void* userData)
         gameState->actionMode = ActionMode::Debug_RemoveFire;
     }
 
-    if (ui->addTextButton("Inspect power info"_s, buttonIsActive(gameState->inspectTileDebugFlags.has(InspectTileDebugFlags::Power)))) {
-        gameState->inspectTileDebugFlags.toggle(InspectTileDebugFlags::Power);
+    if (ui->addTextButton("Inspect power info"_s, buttonIsActive(city.inspectTileDebugFlags.has(InspectTileDebugFlags::Power)))) {
+        city.inspectTileDebugFlags.toggle(InspectTileDebugFlags::Power);
     }
 
-    if (ui->addTextButton("Inspect transport info"_s, buttonIsActive(gameState->inspectTileDebugFlags.has(InspectTileDebugFlags::Transport)))) {
-        gameState->inspectTileDebugFlags.toggle(InspectTileDebugFlags::Transport);
+    if (ui->addTextButton("Inspect transport info"_s, buttonIsActive(city.inspectTileDebugFlags.has(InspectTileDebugFlags::Transport)))) {
+        city.inspectTileDebugFlags.toggle(InspectTileDebugFlags::Transport);
     }
 }
 
@@ -890,10 +891,10 @@ void GameScene::update_and_render(float delta_time)
         case ActionMode::None: {
             if (!mouseIsOverUI && mouseButtonJustPressed(MouseButton::Left)) {
                 if (city.tile_exists(mouseTilePos.x, mouseTilePos.y)) {
-                    m_state->inspectedTilePosition = mouseTilePos;
+                    m_state->city.inspectedTilePosition = mouseTilePos;
                     V2I windowPos = v2i(ui_camera.mouse_position()) + v2i(16, 16);
                     UI::showWindow(UI::WindowTitle::from_lambda([this] {
-                        V2I tilePos = m_state->inspectedTilePosition;
+                        V2I tilePos = m_state->city.inspectedTilePosition;
                         return getText("title_inspect"_s, { formatInt(tilePos.x), formatInt(tilePos.y) });
                     }),
                         250, 200, windowPos, "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Unique | WindowFlags::UniqueKeepPosition, inspectTileWindowProc, &*m_state);

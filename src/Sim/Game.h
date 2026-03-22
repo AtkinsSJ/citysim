@@ -105,14 +105,6 @@ struct DataViewUI {
     CalculateTileValue calculate_tile_value;
 };
 
-enum class InspectTileDebugFlags : u8 {
-    Fire,
-    Power,
-    Transport,
-
-    COUNT,
-};
-
 struct GameState {
     OwnPtr<Random> gameRandom;
     City city;
@@ -127,13 +119,6 @@ struct GameState {
         ZoneType selectedZoneID;
         u8 selectedTerrainID;
     };
-
-    // NB: This only works because we've made the inspect window unique! If we want to have multiple
-    // at once, we'll need to figure out where to dynamically store the tile positions.
-    // Honestly, I'd like to do that now anyway, but I can't think of a good way to do so.
-    // - Sam, 11/2/2019
-    V2I inspectedTilePosition;
-    Flags<InspectTileDebugFlags> inspectTileDebugFlags;
 };
 
 void inputMoveCamera(Camera* camera, V2 windowSize, V2 windowMousePos, s32 cityWidth, s32 cityHeight, float delta_time);
