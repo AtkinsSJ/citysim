@@ -201,41 +201,40 @@ int main(int argc, char* argv[])
                  auto game = try_get_game();
                  if (!game.has_value())
                      return;
-                 auto& game_state = game->state();
 
                  if (argumentsCount == 0) {
                      // Hide layers
-                     game_state.dataLayerToDraw = DataView::None;
+                     game->set_active_data_view(DataView::None);
                      consoleWriteLine("Hiding data layers"_s, ConsoleLineStyle::Success);
                  } else if (argumentsCount == 1) {
                      TokenReader tokens { arguments };
                      auto layerName = tokens.next_token();
                      if (layerName == "crime"_s) {
-                         game_state.dataLayerToDraw = DataView::Crime;
+                         game->set_active_data_view(DataView::Crime);
                          consoleWriteLine("Showing crime layer"_s, ConsoleLineStyle::Success);
                      } else if (layerName == "des_res"_s) {
-                         game_state.dataLayerToDraw = DataView::Desirability_Residential;
+                         game->set_active_data_view(DataView::Desirability_Residential);
                          consoleWriteLine("Showing residential desirability"_s, ConsoleLineStyle::Success);
                      } else if (layerName == "des_com"_s) {
-                         game_state.dataLayerToDraw = DataView::Desirability_Commercial;
+                         game->set_active_data_view(DataView::Desirability_Commercial);
                          consoleWriteLine("Showing commercial desirability"_s, ConsoleLineStyle::Success);
                      } else if (layerName == "des_ind"_s) {
-                         game_state.dataLayerToDraw = DataView::Desirability_Industrial;
+                         game->set_active_data_view(DataView::Desirability_Industrial);
                          consoleWriteLine("Showing industrial desirability"_s, ConsoleLineStyle::Success);
                      } else if (layerName == "fire"_s) {
-                         game_state.dataLayerToDraw = DataView::Fire;
+                         game->set_active_data_view(DataView::Fire);
                          consoleWriteLine("Showing fire layer"_s, ConsoleLineStyle::Success);
                      } else if (layerName == "health"_s) {
-                         game_state.dataLayerToDraw = DataView::Health;
+                         game->set_active_data_view(DataView::Health);
                          consoleWriteLine("Showing health layer"_s, ConsoleLineStyle::Success);
                      } else if (layerName == "land_value"_s) {
-                         game_state.dataLayerToDraw = DataView::LandValue;
+                         game->set_active_data_view(DataView::LandValue);
                          consoleWriteLine("Showing land value layer"_s, ConsoleLineStyle::Success);
                      } else if (layerName == "pollution"_s) {
-                         game_state.dataLayerToDraw = DataView::Pollution;
+                         game->set_active_data_view(DataView::Pollution);
                          consoleWriteLine("Showing pollution layer"_s, ConsoleLineStyle::Success);
                      } else if (layerName == "power"_s) {
-                         game_state.dataLayerToDraw = DataView::Power;
+                         game->set_active_data_view(DataView::Power);
                          consoleWriteLine("Showing power layer"_s, ConsoleLineStyle::Success);
                      } else {
                          consoleWriteLine("Usage: show_layer (layer_name), or with no argument to hide the data layer. Layer names are: crime, des_res, des_com, des_ind, fire, health, land_value, pollution, power"_s, ConsoleLineStyle::Error);
@@ -340,9 +339,9 @@ int main(int argc, char* argv[])
                 DEBUG_ARENA(&temp_arena(), "Global Temp Arena");
                 DEBUG_ARENA(&renderer.arena(), "Renderer");
                 if (auto* game_scene = dynamic_cast<GameScene*>(&app->scene())) {
-                    DEBUG_ARENA(&game_scene->arena(), "GameState");
+                    DEBUG_ARENA(&game_scene->arena(), "Game");
                 } else {
-                    DEBUG_ARENA(nullptr, "GameState");
+                    DEBUG_ARENA(nullptr, "Game");
                 }
                 DEBUG_ARENA(&settings.arena, "Settings");
                 DEBUG_ARENA(&globalDebugState->arena, "Debug");

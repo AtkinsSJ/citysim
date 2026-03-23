@@ -68,11 +68,6 @@ struct DataViewUI {
     CalculateTileValue calculate_tile_value;
 };
 
-struct GameState {
-    DataView dataLayerToDraw { DataView::None };
-    EnumMap<DataView, DataViewUI> dataViewUI;
-};
-
 void showCostTooltip(s32 buildCost);
 
 //
@@ -98,18 +93,19 @@ public:
     virtual void update_and_render(float delta_time) override;
 
     MemoryArena& arena() { return m_arena; }
-    GameState& state() { return m_state; }
     City* city() { return m_city.ptr(); }
     void set_city(NonnullOwnPtr<City>);
 
     Tool const& active_tool() const { return m_active_tool; }
     void set_active_tool(NonnullOwnPtr<Tool>);
 
+    void set_active_data_view(DataView);
+
 private:
     GameScene();
 
     void init_data_view_ui();
-    void draw_data_view_ui() const;
+    void draw_data_view_ui();
     void draw_data_view_overlay(Rect2I visible_tile_bounds) const;
 
     void update_and_render_game_ui();
@@ -117,7 +113,10 @@ private:
     void move_camera_from_input(Camera&, V2 window_size, V2 window_mouse_pos, float delta_time);
 
     MemoryArena m_arena { "Game"_s };
-    Ref<GameState> m_state;
     OwnPtr<City> m_city;
+
+    EnumMap<DataView, DataViewUI> m_data_view_ui;
+    DataView m_active_data_view { DataView::None };
+
     NonnullOwnPtr<Tool> m_active_tool;
 };

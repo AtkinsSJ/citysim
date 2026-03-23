@@ -22,7 +22,6 @@ struct Entity;
 struct Fire;
 class FireLayer;
 class GameClock;
-struct GameState;
 class HealthLayer;
 class LandValueLayer;
 class Layer;

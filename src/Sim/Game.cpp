@@ -525,8 +525,7 @@ ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const
 }
 
 GameScene::GameScene()
-    : m_state(*m_arena.allocate<GameState>())
-    , m_active_tool(InspectTool::create())
+    : m_active_tool(InspectTool::create())
 {
     // FIXME: Set cursor for InspectTool
 }
@@ -596,61 +595,60 @@ void GameScene::update_and_render(float delta_time)
     city.draw(visibleTileBounds);
 
     // Data layer rendering
-    if (m_state->dataLayerToDraw != DataView::None) {
+    if (m_active_data_view != DataView::None) {
         draw_data_view_overlay(visibleTileBounds);
     }
 }
 
 void GameScene::init_data_view_ui()
 {
-    auto& dataViewUI = m_state->dataViewUI;
     City& city = *m_city;
 
-    dataViewUI[DataView::None].title = "data_view_none"_s;
+    m_data_view_ui[DataView::None].title = "data_view_none"_s;
 
-    dataViewUI[DataView::Desirability_Residential].title = "data_view_desirability_residential"_s;
-    setGradient(&dataViewUI[DataView::Desirability_Residential], "desirability"_s);
-    setTileOverlay(&dataViewUI[DataView::Desirability_Residential], &city.zoneLayer.tileDesirability[ZoneType::Residential], "desirability"_s);
+    m_data_view_ui[DataView::Desirability_Residential].title = "data_view_desirability_residential"_s;
+    setGradient(&m_data_view_ui[DataView::Desirability_Residential], "desirability"_s);
+    setTileOverlay(&m_data_view_ui[DataView::Desirability_Residential], &city.zoneLayer.tileDesirability[ZoneType::Residential], "desirability"_s);
 
-    dataViewUI[DataView::Desirability_Commercial].title = "data_view_desirability_commercial"_s;
-    setGradient(&dataViewUI[DataView::Desirability_Commercial], "desirability"_s);
-    setTileOverlay(&dataViewUI[DataView::Desirability_Commercial], &city.zoneLayer.tileDesirability[ZoneType::Commercial], "desirability"_s);
+    m_data_view_ui[DataView::Desirability_Commercial].title = "data_view_desirability_commercial"_s;
+    setGradient(&m_data_view_ui[DataView::Desirability_Commercial], "desirability"_s);
+    setTileOverlay(&m_data_view_ui[DataView::Desirability_Commercial], &city.zoneLayer.tileDesirability[ZoneType::Commercial], "desirability"_s);
 
-    dataViewUI[DataView::Desirability_Industrial].title = "data_view_desirability_industrial"_s;
-    setGradient(&dataViewUI[DataView::Desirability_Industrial], "desirability"_s);
-    setTileOverlay(&dataViewUI[DataView::Desirability_Industrial], &city.zoneLayer.tileDesirability[ZoneType::Industrial], "desirability"_s);
+    m_data_view_ui[DataView::Desirability_Industrial].title = "data_view_desirability_industrial"_s;
+    setGradient(&m_data_view_ui[DataView::Desirability_Industrial], "desirability"_s);
+    setTileOverlay(&m_data_view_ui[DataView::Desirability_Industrial], &city.zoneLayer.tileDesirability[ZoneType::Industrial], "desirability"_s);
 
-    dataViewUI[DataView::Crime].title = "data_view_crime"_s;
-    setGradient(&dataViewUI[DataView::Crime], "service_coverage"_s);
-    setFixedColors(&dataViewUI[DataView::Crime], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, m_arena);
-    setHighlightedBuildings(&dataViewUI[DataView::Crime], city.crimeLayer.police_buildings(), &BuildingDef::policeEffect);
-    setTileOverlay(&dataViewUI[DataView::Crime], city.crimeLayer.tile_police_coverage(), "service_coverage"_s);
+    m_data_view_ui[DataView::Crime].title = "data_view_crime"_s;
+    setGradient(&m_data_view_ui[DataView::Crime], "service_coverage"_s);
+    setFixedColors(&m_data_view_ui[DataView::Crime], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, m_arena);
+    setHighlightedBuildings(&m_data_view_ui[DataView::Crime], city.crimeLayer.police_buildings(), &BuildingDef::policeEffect);
+    setTileOverlay(&m_data_view_ui[DataView::Crime], city.crimeLayer.tile_police_coverage(), "service_coverage"_s);
 
-    dataViewUI[DataView::Fire].title = "data_view_fire"_s;
-    setGradient(&dataViewUI[DataView::Fire], "risk"_s);
-    setFixedColors(&dataViewUI[DataView::Fire], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, m_arena);
-    setHighlightedBuildings(&dataViewUI[DataView::Fire], city.fireLayer.fire_protection_buildings(), &BuildingDef::fireProtection);
-    setTileOverlay(&dataViewUI[DataView::Fire], city.fireLayer.tile_overall_fire_risk(), "risk"_s);
+    m_data_view_ui[DataView::Fire].title = "data_view_fire"_s;
+    setGradient(&m_data_view_ui[DataView::Fire], "risk"_s);
+    setFixedColors(&m_data_view_ui[DataView::Fire], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, m_arena);
+    setHighlightedBuildings(&m_data_view_ui[DataView::Fire], city.fireLayer.fire_protection_buildings(), &BuildingDef::fireProtection);
+    setTileOverlay(&m_data_view_ui[DataView::Fire], city.fireLayer.tile_overall_fire_risk(), "risk"_s);
 
-    dataViewUI[DataView::Health].title = "data_view_health"_s;
-    setGradient(&dataViewUI[DataView::Health], "service_coverage"_s);
-    setFixedColors(&dataViewUI[DataView::Health], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, m_arena);
-    setHighlightedBuildings(&dataViewUI[DataView::Health], city.healthLayer.health_buildings(), &BuildingDef::healthEffect);
-    setTileOverlay(&dataViewUI[DataView::Health], city.healthLayer.tile_health_coverage(), "service_coverage"_s);
+    m_data_view_ui[DataView::Health].title = "data_view_health"_s;
+    setGradient(&m_data_view_ui[DataView::Health], "service_coverage"_s);
+    setFixedColors(&m_data_view_ui[DataView::Health], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, m_arena);
+    setHighlightedBuildings(&m_data_view_ui[DataView::Health], city.healthLayer.health_buildings(), &BuildingDef::healthEffect);
+    setTileOverlay(&m_data_view_ui[DataView::Health], city.healthLayer.tile_health_coverage(), "service_coverage"_s);
 
-    dataViewUI[DataView::LandValue].title = "data_view_landvalue"_s;
-    setGradient(&dataViewUI[DataView::LandValue], "land_value"_s);
-    setTileOverlay(&dataViewUI[DataView::LandValue], city.landValueLayer.tile_land_value(), "land_value"_s);
+    m_data_view_ui[DataView::LandValue].title = "data_view_landvalue"_s;
+    setGradient(&m_data_view_ui[DataView::LandValue], "land_value"_s);
+    setTileOverlay(&m_data_view_ui[DataView::LandValue], city.landValueLayer.tile_land_value(), "land_value"_s);
 
-    dataViewUI[DataView::Pollution].title = "data_view_pollution"_s;
-    setGradient(&dataViewUI[DataView::Pollution], "pollution"_s);
-    setTileOverlay(&dataViewUI[DataView::Pollution], city.pollutionLayer.tile_pollution(), "pollution"_s);
+    m_data_view_ui[DataView::Pollution].title = "data_view_pollution"_s;
+    setGradient(&m_data_view_ui[DataView::Pollution], "pollution"_s);
+    setTileOverlay(&m_data_view_ui[DataView::Pollution], city.pollutionLayer.tile_pollution(), "pollution"_s);
 
-    dataViewUI[DataView::Power].title = "data_view_power"_s;
-    setFixedColors(&dataViewUI[DataView::Power], "power"_s, { "data_view_power_powered"_s, "data_view_power_brownout"_s, "data_view_power_blackout"_s }, m_arena);
+    m_data_view_ui[DataView::Power].title = "data_view_power"_s;
+    setFixedColors(&m_data_view_ui[DataView::Power], "power"_s, { "data_view_power_powered"_s, "data_view_power_brownout"_s, "data_view_power_blackout"_s }, m_arena);
 
-    setHighlightedBuildings(&dataViewUI[DataView::Power], city.powerLayer.power_buildings());
-    setTileOverlayCallback(&dataViewUI[DataView::Power], [](City* city, s32 x, s32 y) { return city->powerLayer.calculate_power_overlay_for_tile(x, y); }, "power"_s);
+    setHighlightedBuildings(&m_data_view_ui[DataView::Power], city.powerLayer.power_buildings());
+    setTileOverlayCallback(&m_data_view_ui[DataView::Power], [](City* city, s32 x, s32 y) { return city->powerLayer.calculate_power_overlay_for_tile(x, y); }, "power"_s);
 }
 
 void setGradient(DataViewUI* dataView, String paletteName)
@@ -768,15 +766,15 @@ void GameScene::draw_data_view_overlay(Rect2I visible_tile_bounds) const
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
 
-    if (m_state->dataLayerToDraw == DataView::None)
+    if (m_active_data_view == DataView::None)
         return;
-    ASSERT(to_underlying(m_state->dataLayerToDraw) < to_underlying(DataView::COUNT));
+    ASSERT(to_underlying(m_active_data_view) < to_underlying(DataView::COUNT));
     auto& renderer = the_renderer();
 
     auto& city = *m_city;
-    DataViewUI* dataView = &m_state->dataViewUI[m_state->dataLayerToDraw];
+    auto& dataView = m_data_view_ui[m_active_data_view];
 
-    if (dataView->overlayTileData) {
+    if (dataView.overlayTileData) {
         // TODO: Use the visible tile bounds for rendering instead. We have two paths, one is just to output
         // an array in the layer as a texture, which we use for most things. The other is to generate an array
         // dynamically, which we only calculate for the visibleTileBounds to save unnecessary work.
@@ -787,33 +785,33 @@ void GameScene::draw_data_view_overlay(Rect2I visible_tile_bounds) const
         // - Sam, 28/03/2020
         Rect2I bounds = city.bounds;
 
-        auto& overlayPalette = Palette::get(dataView->overlayPaletteName);
-        drawGrid(&renderer.world_overlay_buffer(), bounds, *dataView->overlayTileData, (u16)overlayPalette.size(), overlayPalette.raw_colour_data());
-    } else if (dataView->calculate_tile_value) {
+        auto& overlayPalette = Palette::get(dataView.overlayPaletteName);
+        drawGrid(&renderer.world_overlay_buffer(), bounds, *dataView.overlayTileData, (u16)overlayPalette.size(), overlayPalette.raw_colour_data());
+    } else if (dataView.calculate_tile_value) {
         // The per-tile overlay data is generated
         Array2<u8> overlayTileData = temp_arena().allocate_array_2d<u8>(visible_tile_bounds.size());
 
         for (s32 gridY = 0; gridY < visible_tile_bounds.height(); gridY++) {
             for (s32 gridX = 0; gridX < visible_tile_bounds.width(); gridX++) {
-                u8 tileValue = dataView->calculate_tile_value(&city, visible_tile_bounds.x() + gridX, visible_tile_bounds.y() + gridY);
+                u8 tileValue = dataView.calculate_tile_value(&city, visible_tile_bounds.x() + gridX, visible_tile_bounds.y() + gridY);
                 overlayTileData.set(gridX, gridY, tileValue);
             }
         }
 
-        auto& overlayPalette = Palette::get(dataView->overlayPaletteName);
+        auto& overlayPalette = Palette::get(dataView.overlayPaletteName);
         drawGrid(&renderer.world_overlay_buffer(), visible_tile_bounds, overlayTileData, (u16)overlayPalette.size(), overlayPalette.raw_colour_data());
     }
 
-    if (dataView->highlightedBuildings) {
-        drawBuildingHighlights(&city, dataView->highlightedBuildings);
+    if (dataView.highlightedBuildings) {
+        drawBuildingHighlights(&city, dataView.highlightedBuildings);
 
-        if (dataView->effectRadiusMember) {
-            drawBuildingEffectRadii(&city, dataView->highlightedBuildings, dataView->effectRadiusMember);
+        if (dataView.effectRadiusMember) {
+            drawBuildingEffectRadii(&city, dataView.highlightedBuildings, dataView.effectRadiusMember);
         }
     }
 }
 
-void GameScene::draw_data_view_ui() const
+void GameScene::draw_data_view_ui()
 {
     DEBUG_FUNCTION();
 
@@ -845,7 +843,7 @@ void GameScene::draw_data_view_ui() const
         s32 buttonMaxWidth = 0;
         s32 buttonMaxHeight = 0;
         for (auto data_view : enum_values<DataView>()) {
-            String buttonText = getText(m_state->dataViewUI[data_view].title);
+            String buttonText = getText(m_data_view_ui[data_view].title);
             V2I buttonSize = UI::calculateButtonSize(buttonText, &popupButtonStyle);
             buttonMaxWidth = max(buttonMaxWidth, buttonSize.x);
             buttonMaxHeight = max(buttonMaxHeight, buttonSize.y);
@@ -865,11 +863,11 @@ void GameScene::draw_data_view_ui() const
 
         // FIXME: Reversed iteration somehow
         for (auto data_view : enum_values<DataView>()) {
-            String buttonText = getText(m_state->dataViewUI[data_view].title);
+            String buttonText = getText(m_data_view_ui[data_view].title);
 
-            if (menu.addTextButton(buttonText, buttonIsActive(m_state->dataLayerToDraw == data_view))) {
+            if (menu.addTextButton(buttonText, buttonIsActive(m_active_data_view == data_view))) {
                 UI::hideMenus();
-                m_state->dataLayerToDraw = data_view;
+                m_active_data_view = data_view;
             }
         }
 
@@ -878,11 +876,11 @@ void GameScene::draw_data_view_ui() const
 
     // Data-view info
     if (!UI::isMenuVisible(to_underlying(GameMenuID::DataViews))
-        && m_state->dataLayerToDraw != DataView::None) {
+        && m_active_data_view != DataView::None) {
         V2I uiPos = dataViewButtonBounds.position();
         uiPos.y -= uiPadding;
 
-        DataViewUI* dataView = &m_state->dataViewUI[m_state->dataLayerToDraw];
+        DataViewUI* dataView = &m_data_view_ui[m_active_data_view];
 
         s32 paletteBlockSize = font.line_height();
 
@@ -940,7 +938,7 @@ void GameScene::draw_data_view_ui() const
             // Close button first to ensure it has space
             ui.alignWidgets(HAlign::Right);
             if (ui.addTextButton("X"_s)) {
-                m_state->dataLayerToDraw = DataView::None;
+                m_active_data_view = DataView::None;
             }
             ui.alignWidgets(HAlign::Left);
             ui.addLabel(getText(dataView->title), "title"_sv);
@@ -958,4 +956,9 @@ void GameScene::set_active_tool(NonnullOwnPtr<Tool> tool)
 {
     // TODO: Change cursors here
     m_active_tool = move(tool);
+}
+
+void GameScene::set_active_data_view(DataView data_view)
+{
+    m_active_data_view = data_view;
 }
