@@ -121,15 +121,10 @@ struct GameState {
     };
 };
 
-void inputMoveCamera(Camera* camera, V2 windowSize, V2 windowMousePos, s32 cityWidth, s32 cityHeight, float delta_time);
-void updateAndRenderGameUI(GameState* gameState);
 void showCostTooltip(s32 buildCost);
 
 Rect2I getDragArea(DragState* dragState, Rect2I cityBounds, DragType dragType, V2I itemSize);
 DragResult updateDragState(DragState* dragState, Rect2I cityBounds, V2I mouseTilePos, bool mouseIsOverUI, DragType dragType, V2I itemSize = { 1, 1 });
-
-void drawDataViewOverlay(GameState* gameState, Rect2I visibleTileBounds);
-void drawDataViewUI(GameState* gameState);
 
 //
 // Internal
@@ -160,6 +155,12 @@ private:
     GameScene();
 
     void init_data_view_ui();
+    void draw_data_view_ui() const;
+    void draw_data_view_overlay(Rect2I visible_tile_bounds) const;
+
+    void update_and_render_game_ui();
+
+    void move_camera_from_input(Camera&, V2 window_size, V2 window_mouse_pos, float delta_time);
 
     MemoryArena m_arena { "Game"_s };
     Ref<GameState> m_state;

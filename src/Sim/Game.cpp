@@ -23,7 +23,7 @@
 #include <UI/Window.h>
 #include <Util/Random.h>
 
-void inputMoveCamera(Camera* camera, V2 windowSize, V2 windowMousePos, s32 cityWidth, s32 cityHeight, float delta_time)
+void GameScene::move_camera_from_input(Camera& camera, V2 window_size, V2 window_mouse_pos, float delta_time)
 {
     DEBUG_FUNCTION();
 
@@ -43,42 +43,42 @@ void inputMoveCamera(Camera* camera, V2 windowSize, V2 windowMousePos, s32 cityW
     }
 
     if (zoomDelta) {
-        camera->zoom_by(zoomDelta * 0.1f);
+        camera.zoom_by(zoomDelta * 0.1f);
     }
 
     // Panning
-    float scrollSpeed = (CAMERA_PAN_SPEED * sqrt(camera->zoom())) * delta_time;
+    float scrollSpeed = (CAMERA_PAN_SPEED * sqrt(camera.zoom())) * delta_time;
     float cameraEdgeScrollPixelMargin = 8.0f;
 
     if (mouseButtonPressed(MouseButton::Middle)) {
         // Click-panning!
         float scale = scrollSpeed * 1.0f;
-        V2 clickStartPos = getClickStartPos(MouseButton::Middle, camera);
-        camera->move_by((camera->mouse_position() - clickStartPos) * scale);
+        V2 clickStartPos = getClickStartPos(MouseButton::Middle, &camera);
+        camera.move_by((camera.mouse_position() - clickStartPos) * scale);
     } else if (!isInputCaptured()) {
         if (keyIsPressed(SDLK_LEFT)
             || keyIsPressed(SDLK_a)
-            || (windowMousePos.x < cameraEdgeScrollPixelMargin)) {
-            camera->move_by(v2(-scrollSpeed, 0.f));
+            || (window_mouse_pos.x < cameraEdgeScrollPixelMargin)) {
+            camera.move_by(v2(-scrollSpeed, 0.f));
         } else if (keyIsPressed(SDLK_RIGHT)
             || keyIsPressed(SDLK_d)
-            || (windowMousePos.x > (windowSize.x - cameraEdgeScrollPixelMargin))) {
-            camera->move_by(v2(scrollSpeed, 0.f));
+            || (window_mouse_pos.x > (window_size.x - cameraEdgeScrollPixelMargin))) {
+            camera.move_by(v2(scrollSpeed, 0.f));
         }
 
         if (keyIsPressed(SDLK_UP)
             || keyIsPressed(SDLK_w)
-            || (windowMousePos.y < cameraEdgeScrollPixelMargin)) {
-            camera->move_by(v2(0.f, -scrollSpeed));
+            || (window_mouse_pos.y < cameraEdgeScrollPixelMargin)) {
+            camera.move_by(v2(0.f, -scrollSpeed));
         } else if (keyIsPressed(SDLK_DOWN)
             || keyIsPressed(SDLK_s)
-            || (windowMousePos.y > (windowSize.y - cameraEdgeScrollPixelMargin))) {
-            camera->move_by(v2(0.f, scrollSpeed));
+            || (window_mouse_pos.y > (window_size.y - cameraEdgeScrollPixelMargin))) {
+            camera.move_by(v2(0.f, scrollSpeed));
         }
     }
 
     // Clamp camera
-    camera->snap_to_rectangle({ -CAMERA_MARGIN, -CAMERA_MARGIN, cityWidth + (2 * CAMERA_MARGIN), cityHeight + (2 * CAMERA_MARGIN) });
+    camera.snap_to_rectangle({ -CAMERA_MARGIN, -CAMERA_MARGIN, m_state->city.bounds.width() + (2 * CAMERA_MARGIN), m_state->city.bounds.height() + (2 * CAMERA_MARGIN) });
 }
 
 Rect2I getDragArea(DragState* dragState, Rect2I cityBounds, DragType dragType, V2I itemSize)
@@ -331,7 +331,7 @@ void pauseMenuWindowProc(UI::WindowContext* context, void* /*userData*/)
     }
 }
 
-void updateAndRenderGameUI(GameState* gameState)
+void GameScene::update_and_render_game_ui()
 {
     DEBUG_FUNCTION();
 
@@ -339,7 +339,7 @@ void updateAndRenderGameUI(GameState* gameState)
     RenderBuffer* uiBuffer = &renderer.ui_buffer();
     auto& label_style = UI::LabelStyle::get("title"_s);
     auto& font = label_style.font.get();
-    City* city = &gameState->city;
+    City* city = &m_state->city;
 
     s32 const uiPadding = 4; // TODO: Move this somewhere sensible!
     s32 left = uiPadding;
@@ -446,10 +446,10 @@ void updateAndRenderGameUI(GameState* gameState)
             UI::Panel menu = UI::Panel({ buttonRect.x() - popup_menu_panel_style.padding.left, buttonRect.y() + buttonRect.height(), popupMenuWidth, popupMenuMaxHeight }, &popup_menu_panel_style);
             for (auto zone_type : enum_values<ZoneType>()) {
                 if (menu.addTextButton(getText(ZONE_DEFS[zone_type].textAssetName),
-                        buttonIsActive((gameState->actionMode == ActionMode::Zone) && gameState->selectedZoneID == zone_type))) {
+                        buttonIsActive((m_state->actionMode == ActionMode::Zone) && m_state->selectedZoneID == zone_type))) {
                     UI::hideMenus();
-                    gameState->selectedZoneID = zone_type;
-                    gameState->actionMode = ActionMode::Zone;
+                    m_state->selectedZoneID = zone_type;
+                    m_state->actionMode = ActionMode::Zone;
                     renderer.set_cursor("build"_s);
                 }
             }
@@ -479,10 +479,10 @@ void updateAndRenderGameUI(GameState* gameState)
                 BuildingDef* buildingDef = it.getValue();
 
                 if (menu.addTextButton(getText(buildingDef->textAssetName),
-                        buttonIsActive((gameState->actionMode == ActionMode::Build) && (gameState->selectedBuildingTypeID == buildingDef->typeID)))) {
+                        buttonIsActive((m_state->actionMode == ActionMode::Build) && (m_state->selectedBuildingTypeID == buildingDef->typeID)))) {
                     UI::hideMenus();
-                    gameState->selectedBuildingTypeID = buildingDef->typeID;
-                    gameState->actionMode = ActionMode::Build;
+                    m_state->selectedBuildingTypeID = buildingDef->typeID;
+                    m_state->actionMode = ActionMode::Build;
                     renderer.set_cursor("build"_s);
                 }
             }
@@ -508,14 +508,14 @@ void updateAndRenderGameUI(GameState* gameState)
         String demolishButtonText = getText("button_demolish"_s);
         buttonRect.set_size(UI::calculateButtonSize(demolishButtonText, &button_style));
         if (UI::putTextButton(demolishButtonText, buttonRect, &button_style,
-                buttonIsActive(gameState->actionMode == ActionMode::Demolish))) {
-            gameState->actionMode = ActionMode::Demolish;
+                buttonIsActive(m_state->actionMode == ActionMode::Demolish))) {
+            m_state->actionMode = ActionMode::Demolish;
             renderer.set_cursor("demolish"_s);
         }
         buttonRect.set_x(buttonRect.x() + buttonRect.width() + uiPadding);
     }
 
-    drawDataViewUI(gameState);
+    draw_data_view_ui();
 }
 
 void costTooltipWindowProc(UI::WindowContext* context, void* userData)
@@ -698,7 +698,7 @@ void GameScene::update_and_render(float delta_time)
     }
 
     // UI!
-    updateAndRenderGameUI(&*m_state);
+    update_and_render_game_ui();
 
     auto ghostColorValid = Colour::from_rgb_255(128, 255, 128, 255);
     auto ghostColorInvalid = Colour::from_rgb_255(255, 0, 0, 128);
@@ -706,7 +706,7 @@ void GameScene::update_and_render(float delta_time)
     // CAMERA!
     Camera& world_camera = renderer.world_camera();
     Camera& ui_camera = renderer.ui_camera();
-    inputMoveCamera(&world_camera, ui_camera.size(), ui_camera.mouse_position(), city.bounds.width(), city.bounds.height(), delta_time);
+    move_camera_from_input(world_camera, ui_camera.size(), ui_camera.mouse_position(), delta_time);
 
     V2I mouseTilePos = v2i(world_camera.mouse_position());
     bool mouseIsOverUI = UI::isMouseInputHandled() || UI::mouseIsWithinUIRects();
@@ -927,7 +927,7 @@ void GameScene::update_and_render(float delta_time)
 
     // Data layer rendering
     if (m_state->dataLayerToDraw != DataView::None) {
-        drawDataViewOverlay(&*m_state, visibleTileBounds);
+        draw_data_view_overlay(visibleTileBounds);
     }
 }
 
@@ -1094,17 +1094,17 @@ static void drawBuildingEffectRadii(City* city, Iterable* buildingRefs, EffectRa
     }
 }
 
-void drawDataViewOverlay(GameState* gameState, Rect2I visibleTileBounds)
+void GameScene::draw_data_view_overlay(Rect2I visible_tile_bounds) const
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
 
-    if (gameState->dataLayerToDraw == DataView::None)
+    if (m_state->dataLayerToDraw == DataView::None)
         return;
-    ASSERT(to_underlying(gameState->dataLayerToDraw) < to_underlying(DataView::COUNT));
+    ASSERT(to_underlying(m_state->dataLayerToDraw) < to_underlying(DataView::COUNT));
     auto& renderer = the_renderer();
 
-    City* city = &gameState->city;
-    DataViewUI* dataView = &gameState->dataViewUI[gameState->dataLayerToDraw];
+    City* city = &m_state->city;
+    DataViewUI* dataView = &m_state->dataViewUI[m_state->dataLayerToDraw];
 
     if (dataView->overlayTileData) {
         // TODO: Use the visible tile bounds for rendering instead. We have two paths, one is just to output
@@ -1121,17 +1121,17 @@ void drawDataViewOverlay(GameState* gameState, Rect2I visibleTileBounds)
         drawGrid(&renderer.world_overlay_buffer(), bounds, *dataView->overlayTileData, (u16)overlayPalette.size(), overlayPalette.raw_colour_data());
     } else if (dataView->calculate_tile_value) {
         // The per-tile overlay data is generated
-        Array2<u8> overlayTileData = temp_arena().allocate_array_2d<u8>(visibleTileBounds.size());
+        Array2<u8> overlayTileData = temp_arena().allocate_array_2d<u8>(visible_tile_bounds.size());
 
-        for (s32 gridY = 0; gridY < visibleTileBounds.height(); gridY++) {
-            for (s32 gridX = 0; gridX < visibleTileBounds.width(); gridX++) {
-                u8 tileValue = dataView->calculate_tile_value(city, visibleTileBounds.x() + gridX, visibleTileBounds.y() + gridY);
+        for (s32 gridY = 0; gridY < visible_tile_bounds.height(); gridY++) {
+            for (s32 gridX = 0; gridX < visible_tile_bounds.width(); gridX++) {
+                u8 tileValue = dataView->calculate_tile_value(city, visible_tile_bounds.x() + gridX, visible_tile_bounds.y() + gridY);
                 overlayTileData.set(gridX, gridY, tileValue);
             }
         }
 
         auto& overlayPalette = Palette::get(dataView->overlayPaletteName);
-        drawGrid(&renderer.world_overlay_buffer(), visibleTileBounds, overlayTileData, (u16)overlayPalette.size(), overlayPalette.raw_colour_data());
+        drawGrid(&renderer.world_overlay_buffer(), visible_tile_bounds, overlayTileData, (u16)overlayPalette.size(), overlayPalette.raw_colour_data());
     }
 
     if (dataView->highlightedBuildings) {
@@ -1143,7 +1143,7 @@ void drawDataViewOverlay(GameState* gameState, Rect2I visibleTileBounds)
     }
 }
 
-void drawDataViewUI(GameState* gameState)
+void GameScene::draw_data_view_ui() const
 {
     DEBUG_FUNCTION();
 
@@ -1175,7 +1175,7 @@ void drawDataViewUI(GameState* gameState)
         s32 buttonMaxWidth = 0;
         s32 buttonMaxHeight = 0;
         for (auto data_view : enum_values<DataView>()) {
-            String buttonText = getText(gameState->dataViewUI[data_view].title);
+            String buttonText = getText(m_state->dataViewUI[data_view].title);
             V2I buttonSize = UI::calculateButtonSize(buttonText, &popupButtonStyle);
             buttonMaxWidth = max(buttonMaxWidth, buttonSize.x);
             buttonMaxHeight = max(buttonMaxHeight, buttonSize.y);
@@ -1195,11 +1195,11 @@ void drawDataViewUI(GameState* gameState)
 
         // FIXME: Reversed iteration somehow
         for (auto data_view : enum_values<DataView>()) {
-            String buttonText = getText(gameState->dataViewUI[data_view].title);
+            String buttonText = getText(m_state->dataViewUI[data_view].title);
 
-            if (menu.addTextButton(buttonText, buttonIsActive(gameState->dataLayerToDraw == data_view))) {
+            if (menu.addTextButton(buttonText, buttonIsActive(m_state->dataLayerToDraw == data_view))) {
                 UI::hideMenus();
-                gameState->dataLayerToDraw = data_view;
+                m_state->dataLayerToDraw = data_view;
             }
         }
 
@@ -1208,11 +1208,11 @@ void drawDataViewUI(GameState* gameState)
 
     // Data-view info
     if (!UI::isMenuVisible(to_underlying(GameMenuID::DataViews))
-        && gameState->dataLayerToDraw != DataView::None) {
+        && m_state->dataLayerToDraw != DataView::None) {
         V2I uiPos = dataViewButtonBounds.position();
         uiPos.y -= uiPadding;
 
-        DataViewUI* dataView = &gameState->dataViewUI[gameState->dataLayerToDraw];
+        DataViewUI* dataView = &m_state->dataViewUI[m_state->dataLayerToDraw];
 
         s32 paletteBlockSize = font.line_height();
 
@@ -1270,7 +1270,7 @@ void drawDataViewUI(GameState* gameState)
             // Close button first to ensure it has space
             ui.alignWidgets(HAlign::Right);
             if (ui.addTextButton("X"_s)) {
-                gameState->dataLayerToDraw = DataView::None;
+                m_state->dataLayerToDraw = DataView::None;
             }
             ui.alignWidgets(HAlign::Left);
             ui.addLabel(getText(dataView->title), "title"_sv);
