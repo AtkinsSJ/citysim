@@ -29,6 +29,9 @@ public:
     };
     static Flags<DebugFlags> debug_flags;
 
+    // FIXME: This should REALLY go in InspectWindow, so that we can potentially have multiple of them open inspecting different things.
+    static V2I inspected_tile_pos;
+
     static NonnullOwnPtr<InspectTool> create();
     virtual ~InspectTool() override = default;
 

@@ -92,24 +92,24 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
 
     City* city = static_cast<City*>(userData);
 
-    V2I tilePos = city->inspectedTilePosition;
+    auto const& tile_pos = InspectTool::inspected_tile_pos;
 
     // CitySector
-    CitySector* sector = city->sectors.get_sector_at_tile_pos(tilePos.x, tilePos.y);
+    CitySector* sector = city->sectors.get_sector_at_tile_pos(tile_pos.x, tile_pos.y);
     ui->addLabel(myprintf("CitySector: x={0} y={1} w={2} h={3}"_s, { formatInt(sector->bounds.x()), formatInt(sector->bounds.y()), formatInt(sector->bounds.width()), formatInt(sector->bounds.height()) }));
 
     // Terrain
-    auto& terrain = city->terrainLayer.terrain_at(tilePos.x, tilePos.y);
-    ui->addLabel(myprintf("Terrain: {0}, {1} tiles from water"_s, { getText(terrain.textAssetName), formatInt(city->terrainLayer.distance_to_water_at(tilePos.x, tilePos.y)) }));
+    auto& terrain = city->terrainLayer.terrain_at(tile_pos.x, tile_pos.y);
+    ui->addLabel(myprintf("Terrain: {0}, {1} tiles from water"_s, { getText(terrain.textAssetName), formatInt(city->terrainLayer.distance_to_water_at(tile_pos.x, tile_pos.y)) }));
 
     // Zone
-    ZoneType zone = city->zoneLayer.get_zone_at(tilePos.x, tilePos.y);
+    ZoneType zone = city->zoneLayer.get_zone_at(tile_pos.x, tile_pos.y);
     ui->addLabel(myprintf("Zone: {0}"_s, { zone == ZoneType::None ? "None"_s : getText(ZONE_DEFS[zone].textAssetName) }));
 
     // Building
-    Building* building = city->get_building_at(tilePos.x, tilePos.y);
+    Building* building = city->get_building_at(tile_pos.x, tile_pos.y);
     if (building != nullptr) {
-        s32 buildingIndex = city->tileBuildingIndex.get(tilePos.x, tilePos.y);
+        s32 buildingIndex = city->tileBuildingIndex.get(tile_pos.x, tile_pos.y);
         BuildingDef* def = getBuildingDef(building);
         ui->addLabel(myprintf("Building: {0} (ID {1}, array index {2})"_s, { getText(def->textAssetName), formatInt(building->id), formatInt(buildingIndex) }));
         ui->addLabel(myprintf("Constructed: {0}"_s, { formatDateTime(dateTimeFromTimestamp(building->creationDate), DateTimeFormat::ShortDate) }));
@@ -129,16 +129,16 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
     }
 
     // Land value
-    ui->addLabel(myprintf("Land value: {0}%"_s, { formatFloat(city->landValueLayer.get_land_value_percent_at(tilePos.x, tilePos.y) * 100.0f, 0) }));
+    ui->addLabel(myprintf("Land value: {0}%"_s, { formatFloat(city->landValueLayer.get_land_value_percent_at(tile_pos.x, tile_pos.y) * 100.0f, 0) }));
 
     // Debug info
     auto& inspection_flags = InspectTool::debug_flags;
     if (inspection_flags.has(InspectTool::DebugFlags::Fire))
-        city->fireLayer.debug_inspect(*ui, tilePos, building);
+        city->fireLayer.debug_inspect(*ui, tile_pos, building);
     if (inspection_flags.has(InspectTool::DebugFlags::Power))
-        city->powerLayer.debug_inspect(*ui, tilePos);
+        city->powerLayer.debug_inspect(*ui, tile_pos);
     if (inspection_flags.has(InspectTool::DebugFlags::Transport))
-        city->transportLayer.debug_inspect(*ui, tilePos);
+        city->transportLayer.debug_inspect(*ui, tile_pos);
 
     // Highlight
     // Part of me wants this to happen outside of this windowproc, but we don't have a way of knowing when
@@ -150,7 +150,7 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
 
     auto tileHighlightColor = Colour::from_rgb_255(196, 196, 255, 64);
     auto& renderer = the_renderer();
-    drawSingleRect(&renderer.world_overlay_buffer(), Rect2 { tilePos.x, tilePos.y, 1, 1 }, renderer.shaderIds.untextured, tileHighlightColor);
+    drawSingleRect(&renderer.world_overlay_buffer(), Rect2 { tile_pos.x, tile_pos.y, 1, 1 }, renderer.shaderIds.untextured, tileHighlightColor);
 }
 
 void pauseMenuWindowProc(UI::WindowContext* context, void* /*userData*/)

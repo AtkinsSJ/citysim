@@ -15,6 +15,7 @@
 #include <Util/OwnPtr.h>
 
 Flags<InspectTool::DebugFlags> InspectTool::debug_flags;
+V2I InspectTool::inspected_tile_pos;
 
 NonnullOwnPtr<InspectTool> InspectTool::create()
 {
@@ -26,11 +27,11 @@ void InspectTool::act(City& city, bool mouse_is_over_ui, V2I mouse_tile_pos)
     if (!mouse_is_over_ui && mouseButtonJustPressed(MouseButton::Left)) {
         if (city.tile_exists(mouse_tile_pos.x, mouse_tile_pos.y)) {
             // FIXME: Pass this into the InspectionWindow constructor, or whatever, once that's a thing.
-            city.inspectedTilePosition = mouse_tile_pos;
+            InspectTool::inspected_tile_pos = mouse_tile_pos;
 
             V2I windowPos = v2i(the_renderer().ui_camera().mouse_position()) + v2i(16, 16);
-            UI::showWindow(UI::WindowTitle::from_lambda([&city] {
-                V2I tilePos = city.inspectedTilePosition;
+            UI::showWindow(UI::WindowTitle::from_lambda([] {
+                V2I tilePos = InspectTool::inspected_tile_pos;
                 return getText("title_inspect"_s, { formatInt(tilePos.x), formatInt(tilePos.y) });
             }),
                 250, 200, windowPos, "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Unique | WindowFlags::UniqueKeepPosition, inspectTileWindowProc, &city);
