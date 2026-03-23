@@ -84,13 +84,13 @@ void BuildTool::act(City& city, bool mouse_is_over_ui, V2I mouse_tile_pos)
 
     case BuildMethod::DragLine: // Fallthrough
     case BuildMethod::DragRect: {
-        DragResult dragResult = m_drag_state.update(city.bounds, mouse_tile_pos, mouse_is_over_ui);
-        s32 buildCost = city.calculate_build_cost(buildingDef, dragResult.dragRect);
+        auto [drag_operation, drag_rect] = m_drag_state.update(city.bounds, mouse_tile_pos, mouse_is_over_ui);
+        s32 buildCost = city.calculate_build_cost(buildingDef, drag_rect);
 
-        switch (dragResult.operation) {
+        switch (drag_operation) {
         case DragResultOperation::DoAction: {
             if (city.can_afford(buildCost)) {
-                city.place_building_rect(buildingDef, dragResult.dragRect);
+                city.place_building_rect(buildingDef, drag_rect);
                 city.spend(buildCost);
             } else {
                 UI::Toast::show(getText("msg_cannot_afford_construction"_s));
@@ -103,14 +103,14 @@ void BuildTool::act(City& city, bool mouse_is_over_ui, V2I mouse_tile_pos)
 
             if (city.can_afford(buildCost)) {
                 auto& sprite = Sprite::get(buildingDef->spriteName);
-                s32 maxGhosts = (dragResult.dragRect.width() / buildingDef->size.x) * (dragResult.dragRect.height() / buildingDef->size.y);
+                s32 maxGhosts = (drag_rect.width() / buildingDef->size.x) * (drag_rect.height() / buildingDef->size.y);
                 // TODO: If maxGhosts is 1, just draw 1!
                 DrawRectsGroup* rectsGroup = beginRectsGroupTextured(&renderer.world_overlay_buffer(), sprite.texture, renderer.shaderIds.pixelArt, maxGhosts);
-                for (s32 y = 0; y + buildingDef->size.y <= dragResult.dragRect.height(); y += buildingDef->size.y) {
-                    for (s32 x = 0; x + buildingDef->size.x <= dragResult.dragRect.width(); x += buildingDef->size.x) {
-                        bool canPlace = city.can_place_building(buildingDef, dragResult.dragRect.x() + x, dragResult.dragRect.y() + y);
+                for (s32 y = 0; y + buildingDef->size.y <= drag_rect.height(); y += buildingDef->size.y) {
+                    for (s32 x = 0; x + buildingDef->size.x <= drag_rect.width(); x += buildingDef->size.x) {
+                        bool canPlace = city.can_place_building(buildingDef, drag_rect.x() + x, drag_rect.y() + y);
 
-                        Rect2 rect { dragResult.dragRect.x() + x, dragResult.dragRect.y() + y, buildingDef->size.x, buildingDef->size.y };
+                        Rect2 rect { drag_rect.x() + x, drag_rect.y() + y, buildingDef->size.x, buildingDef->size.y };
 
                         auto color = canPlace ? ghostColorValid : ghostColorInvalid;
                         // TODO: All the sprites are the same, so we could optimise this!
@@ -120,7 +120,7 @@ void BuildTool::act(City& city, bool mouse_is_over_ui, V2I mouse_tile_pos)
                 }
                 endRectsGroup(rectsGroup);
             } else {
-                drawSingleRect(&renderer.world_overlay_buffer(), dragResult.dragRect, renderer.shaderIds.untextured, Colour::from_rgb_255(255, 64, 64, 128));
+                drawSingleRect(&renderer.world_overlay_buffer(), drag_rect, renderer.shaderIds.untextured, Colour::from_rgb_255(255, 64, 64, 128));
             }
         } break;
 
@@ -141,14 +141,14 @@ NonnullOwnPtr<DemolishTool> DemolishTool::create()
 void DemolishTool::act(City& city, bool mouse_is_over_ui, V2I mouse_tile_pos)
 {
     auto& renderer = the_renderer();
-    DragResult dragResult = m_drag_state.update(city.bounds, mouse_tile_pos, mouse_is_over_ui);
-    s32 demolishCost = city.calculate_demolition_cost(dragResult.dragRect);
-    city.demolitionRect = dragResult.dragRect;
+    auto [drag_operation, drag_rect] = m_drag_state.update(city.bounds, mouse_tile_pos, mouse_is_over_ui);
+    s32 demolishCost = city.calculate_demolition_cost(drag_rect);
+    city.demolitionRect = drag_rect;
 
-    switch (dragResult.operation) {
+    switch (drag_operation) {
     case DragResultOperation::DoAction: {
         if (city.can_afford(demolishCost)) {
-            city.demolish_rect(dragResult.dragRect);
+            city.demolish_rect(drag_rect);
             city.spend(demolishCost);
         } else {
             UI::Toast::show(getText("msg_cannot_afford_demolition"_s));
@@ -161,9 +161,9 @@ void DemolishTool::act(City& city, bool mouse_is_over_ui, V2I mouse_tile_pos)
 
         if (city.can_afford(demolishCost)) {
             // Demolition outline
-            drawSingleRect(&renderer.world_overlay_buffer(), dragResult.dragRect, renderer.shaderIds.untextured, Colour::from_rgb_255(128, 0, 0, 128));
+            drawSingleRect(&renderer.world_overlay_buffer(), drag_rect, renderer.shaderIds.untextured, Colour::from_rgb_255(128, 0, 0, 128));
         } else {
-            drawSingleRect(&renderer.world_overlay_buffer(), dragResult.dragRect, renderer.shaderIds.untextured, Colour::from_rgb_255(255, 64, 64, 128));
+            drawSingleRect(&renderer.world_overlay_buffer(), drag_rect, renderer.shaderIds.untextured, Colour::from_rgb_255(255, 64, 64, 128));
         }
     } break;
 
@@ -185,15 +185,15 @@ ZoneTool::ZoneTool(ZoneType type)
 void ZoneTool::act(City& city, bool mouse_is_over_ui, V2I mouse_tile_pos)
 {
     auto& renderer = the_renderer();
-    DragResult dragResult = m_drag_state.update(city.bounds, mouse_tile_pos, mouse_is_over_ui);
+    auto [drag_operation, drag_rect] = m_drag_state.update(city.bounds, mouse_tile_pos, mouse_is_over_ui);
 
-    CanZoneQuery canZoneQuery = queryCanZoneTiles(&city, m_zone_type, dragResult.dragRect);
+    CanZoneQuery canZoneQuery = queryCanZoneTiles(&city, m_zone_type, drag_rect);
     s32 zoneCost = canZoneQuery.calculate_zone_cost();
 
-    switch (dragResult.operation) {
+    switch (drag_operation) {
     case DragResultOperation::DoAction: {
         if (city.can_afford(zoneCost)) {
-            placeZone(&city, m_zone_type, dragResult.dragRect);
+            placeZone(&city, m_zone_type, drag_rect);
             city.spend(zoneCost);
         }
     } break;
@@ -208,7 +208,7 @@ void ZoneTool::act(City& city, bool mouse_is_over_ui, V2I mouse_tile_pos)
             };
             drawGrid(&renderer.world_overlay_buffer(), canZoneQuery.bounds, canZoneQuery.tileCanBeZoned, 2, palette);
         } else {
-            drawSingleRect(&renderer.world_overlay_buffer(), dragResult.dragRect, renderer.shaderIds.untextured, Colour::from_rgb_255(255, 64, 64, 128));
+            drawSingleRect(&renderer.world_overlay_buffer(), drag_rect, renderer.shaderIds.untextured, Colour::from_rgb_255(255, 64, 64, 128));
         }
     } break;
 
