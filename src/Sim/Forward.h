@@ -15,6 +15,7 @@ class BuildingRef;
 struct City;
 class CrimeLayer;
 class DirtyRects;
+class DragState;
 class EducationLayer;
 class EffectRadius;
 struct Entity;

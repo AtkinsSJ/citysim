@@ -26,28 +26,6 @@ enum class GameMenuID : u8 {
     DataViews,
 };
 
-struct DragState {
-    bool isDragging;
-    V2I mouseDragStartWorldPos;
-    V2I mouseDragEndWorldPos;
-};
-
-enum class DragType : u8 {
-    Line,
-    Rect
-};
-
-enum class DragResultOperation : u8 {
-    Nothing,
-    DoAction,
-    ShowPreview,
-};
-
-struct DragResult {
-    DragResultOperation operation;
-    Rect2I dragRect;
-};
-
 enum class DataView : u8 {
     None,
 
@@ -99,9 +77,6 @@ struct GameState {
 };
 
 void showCostTooltip(s32 buildCost);
-
-Rect2I getDragArea(DragState* dragState, Rect2I cityBounds, DragType dragType, V2I itemSize);
-DragResult updateDragState(DragState* dragState, Rect2I cityBounds, V2I mouseTilePos, bool mouseIsOverUI, DragType dragType, V2I itemSize = { 1, 1 });
 
 //
 // Internal

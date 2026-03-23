@@ -6,8 +6,9 @@
 
 #pragma once
 
+#include <Sim/DragState.h>
 #include <Sim/Forward.h>
-#include <Sim/Game.h>
+#include <Sim/Terrain.h>
 
 class Tool {
 public:
@@ -34,10 +35,10 @@ public:
     virtual void act(City&, bool mouse_is_over_ui, V2I mouse_tile_pos) override;
 
 private:
-    explicit BuildTool(BuildingType);
+    explicit BuildTool(BuildingType, DragType, V2I building_size);
 
     BuildingType m_building_type;
-    DragState m_drag_state {};
+    DragState m_drag_state;
 };
 
 class DemolishTool final : public Tool {
@@ -48,7 +49,7 @@ public:
     virtual void act(City&, bool mouse_is_over_ui, V2I mouse_tile_pos) override;
 
 private:
-    DragState m_drag_state {};
+    DragState m_drag_state { DragType::Rect, { 1, 1 } };
 };
 
 class ZoneTool final : public Tool {
@@ -64,7 +65,7 @@ private:
     explicit ZoneTool(ZoneType);
 
     ZoneType m_zone_type;
-    DragState m_drag_state {};
+    DragState m_drag_state { DragType::Rect, { 1, 1 } };
 };
 
 class SetTerrainTool final : public Tool {

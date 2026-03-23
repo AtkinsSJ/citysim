@@ -38,11 +38,14 @@ void InspectTool::act(City& city, bool mouse_is_over_ui, V2I mouse_tile_pos)
 
 NonnullOwnPtr<BuildTool> BuildTool::create(BuildingType type)
 {
-    return adopt_own(*new BuildTool(type));
+    auto& def = *getBuildingDef(type);
+    auto drag_type = def.buildMethod == BuildMethod::DragLine ? DragType::Line : DragType::Rect;
+    return adopt_own(*new BuildTool(type, drag_type, def.size));
 }
 
-BuildTool::BuildTool(BuildingType type)
+BuildTool::BuildTool(BuildingType type, DragType drag_type, V2I building_size)
     : m_building_type(type)
+    , m_drag_state(drag_type, building_size)
 {
 }
 
@@ -81,9 +84,7 @@ void BuildTool::act(City& city, bool mouse_is_over_ui, V2I mouse_tile_pos)
 
     case BuildMethod::DragLine: // Fallthrough
     case BuildMethod::DragRect: {
-        DragType dragType = (buildingDef->buildMethod == BuildMethod::DragLine) ? DragType::Line : DragType::Rect;
-
-        DragResult dragResult = updateDragState(&m_drag_state, city.bounds, mouse_tile_pos, mouse_is_over_ui, dragType, buildingDef->size);
+        DragResult dragResult = m_drag_state.update(city.bounds, mouse_tile_pos, mouse_is_over_ui);
         s32 buildCost = city.calculate_build_cost(buildingDef, dragResult.dragRect);
 
         switch (dragResult.operation) {
@@ -140,7 +141,7 @@ NonnullOwnPtr<DemolishTool> DemolishTool::create()
 void DemolishTool::act(City& city, bool mouse_is_over_ui, V2I mouse_tile_pos)
 {
     auto& renderer = the_renderer();
-    DragResult dragResult = updateDragState(&m_drag_state, city.bounds, mouse_tile_pos, mouse_is_over_ui, DragType::Rect);
+    DragResult dragResult = m_drag_state.update(city.bounds, mouse_tile_pos, mouse_is_over_ui);
     s32 demolishCost = city.calculate_demolition_cost(dragResult.dragRect);
     city.demolitionRect = dragResult.dragRect;
 
@@ -184,7 +185,7 @@ ZoneTool::ZoneTool(ZoneType type)
 void ZoneTool::act(City& city, bool mouse_is_over_ui, V2I mouse_tile_pos)
 {
     auto& renderer = the_renderer();
-    DragResult dragResult = updateDragState(&m_drag_state, city.bounds, mouse_tile_pos, mouse_is_over_ui, DragType::Rect);
+    DragResult dragResult = m_drag_state.update(city.bounds, mouse_tile_pos, mouse_is_over_ui);
 
     CanZoneQuery canZoneQuery = queryCanZoneTiles(&city, m_zone_type, dragResult.dragRect);
     s32 zoneCost = canZoneQuery.calculate_zone_cost();

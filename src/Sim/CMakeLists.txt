@@ -6,6 +6,7 @@ target_sources(CitySim PRIVATE
     City.cpp
     Crime.cpp
     DirtyRects.cpp
+    DragState.cpp
     Education.cpp
     Effect.cpp
     Fire.cpp
