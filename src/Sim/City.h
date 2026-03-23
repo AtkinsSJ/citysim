@@ -105,6 +105,7 @@ struct City {
     String playerName;
 
     GameClock gameClock;
+    OwnPtr<Random> random;
 
     s32 funds;
     s32 monthlyExpenditure;

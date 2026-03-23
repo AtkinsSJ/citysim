@@ -387,7 +387,7 @@ void growSomeZoneBuildings(City* city)
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
     ZoneLayer* layer = &city->zoneLayer;
-    auto& random = App::the().game_state()->gameRandom;
+    auto& random = *city->random;
     auto& building_catalogue = BuildingCatalogue::the();
 
     for (auto zone_type : enum_values<ZoneType>()) {
@@ -403,8 +403,8 @@ void growSomeZoneBuildings(City* city)
                 && (layer->sectorsWithEmptyZones[zone_type].setBitCount > 0)
                 && (remainingDemand > minimumDemand)) {
                 bool foundAZone = false;
-                s32 randomXOffset = random->next();
-                s32 randomYOffset = random->next();
+                s32 randomXOffset = random.next();
+                s32 randomYOffset = random.next();
 
                 V2I zonePos = {};
                 {
@@ -467,8 +467,8 @@ void growSomeZoneBuildings(City* city)
                     DEBUG_BLOCK_T("growSomeZoneBuildings - expand rect", DebugCodeDataTag::Simulation);
                     // Gradually expand from zonePos outwards, checking if there is available, zoned space
 
-                    bool tryX = random->random_bool();
-                    bool positive = random->random_bool();
+                    bool tryX = random.random_bool();
+                    bool positive = random.random_bool();
 
                     while (true) {
                         bool canExpand = true;
@@ -545,14 +545,14 @@ void growSomeZoneBuildings(City* city)
                         if (zoneFootprint.width() >= maxRBuildingDim && zoneFootprint.height() >= maxRBuildingDim)
                             break;
 
-                        tryX = !tryX;                     // Alternate x and y
-                        positive = random->random_bool(); // random direction to expand in
+                        tryX = !tryX;                    // Alternate x and y
+                        positive = random.random_bool(); // random direction to expand in
                     }
                 }
 
                 // Pick a building def that fits the space and is not more than 10% more than the remaining demand
                 s32 maxPopulation = (s32)((float)remainingDemand * 1.1f);
-                auto buildingDef = building_catalogue.find_random_zone_building(zone_type, *random, [=](BuildingDef const& it) -> bool {
+                auto buildingDef = building_catalogue.find_random_zone_building(zone_type, random, [=](BuildingDef const& it) -> bool {
                     if (it.size.x > zoneFootprint.width() || it.size.y > zoneFootprint.height())
                         return false;
 
@@ -565,7 +565,7 @@ void growSomeZoneBuildings(City* city)
                 if (buildingDef.has_value()) {
                     // Place it!
                     // TODO: This picks a random spot within the zoneFootprint; we should probably pick the most desirable part? @Desirability
-                    Rect2I footprint = Rect2I::placed_randomly_within(*random, buildingDef->size, zoneFootprint);
+                    Rect2I footprint = Rect2I::placed_randomly_within(random, buildingDef->size, zoneFootprint);
 
                     // FIXME: Oh boy do we need to do some const-correctness.
                     auto* building_def_ptr = const_cast<BuildingDef*>(&buildingDef.value());

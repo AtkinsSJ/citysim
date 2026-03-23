@@ -439,7 +439,6 @@ NonnullOwnPtr<GameScene> GameScene::create_new(u32 seed)
 
     auto game_scene = adopt_own(*new GameScene);
 
-    game_scene->m_state->gameRandom = Random::create(seed);
     app_state.set_game_state(&*game_scene->m_state);
 
     s32 gameStartFunds = 1000000;
@@ -456,8 +455,6 @@ ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const
     auto game_scene = adopt_own(*new GameScene);
 
     auto& game_state = *game_scene->m_state;
-    // FIXME: Replace this fixed seed once we're not in dev mode.
-    game_state.gameRandom = Random::create(12345);
 
     FileHandle saveFile = openFile(saved_game_info.fullPath, FileAccessMode::Read);
     bool loadSucceeded = [&] {

@@ -5,6 +5,7 @@
  */
 
 #include <Util/Platform.h>
+#include <ctime>
 
 #if BUILD_DEBUG
 // 3 is the max level.
@@ -170,7 +171,8 @@ int main(int argc, char* argv[])
                      city->highestBuildingID = 0;
                  }
                  // FIXME: Make command take a seed parameter
-                 city->terrainLayer.generate(*city, game_state.gameRandom->next());
+                 auto seed = static_cast<u32>(time(nullptr));
+                 city->terrainLayer.generate(*city, seed);
 
                  consoleWriteLine("Generated new map"_s, ConsoleLineStyle::Success);
              } });

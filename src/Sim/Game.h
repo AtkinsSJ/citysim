@@ -69,7 +69,6 @@ struct DataViewUI {
 };
 
 struct GameState {
-    OwnPtr<Random> gameRandom;
     City city;
 
     DataView dataLayerToDraw { DataView::None };
