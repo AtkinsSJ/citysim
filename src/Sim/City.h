@@ -34,14 +34,6 @@ enum class BuildingQueryFlag : u8 {
     COUNT,
 };
 
-enum class InspectTileDebugFlags : u8 {
-    Fire,
-    Power,
-    Transport,
-
-    COUNT,
-};
-
 struct City {
     Building* get_building(BuildingRef const&);
     Building const* get_building(BuildingRef const& ref) const
@@ -64,6 +56,7 @@ struct City {
 
     // Returns a TEMPORARY-allocated list of buildings that are overlapping `area`, guaranteeing that
     // each building is only listed once. No guarantees are made about the order.
+    // FIXME: Replace with a "for_each_...()" with callback. Nobody keeps them around.
     ChunkedArray<Building*> find_buildings_overlapping_area(Rect2I area, Flags<BuildingQueryFlag> flags = {}) const;
 
     void update();
@@ -150,7 +143,6 @@ struct City {
     // Honestly, I'd like to do that now anyway, but I can't think of a good way to do so.
     // - Sam, 11/2/2019
     V2I inspectedTilePosition;
-    Flags<InspectTileDebugFlags> inspectTileDebugFlags;
 
 private:
     Building* add_building_direct(s32 id, BuildingDef* def, Rect2I footprint, GameTimestamp creationDate);

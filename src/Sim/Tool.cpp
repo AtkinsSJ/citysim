@@ -14,6 +14,8 @@
 #include <UI/Window.h>
 #include <Util/OwnPtr.h>
 
+Flags<InspectTool::DebugFlags> InspectTool::debug_flags;
+
 NonnullOwnPtr<InspectTool> InspectTool::create()
 {
     return adopt_own(*new InspectTool);

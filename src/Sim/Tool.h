@@ -19,6 +19,16 @@ public:
 
 class InspectTool final : public Tool {
 public:
+    // FIXME: This should really go in the InspectWindow once that exists.
+    enum class DebugFlags : u8 {
+        Fire,
+        Power,
+        Transport,
+
+        COUNT,
+    };
+    static Flags<DebugFlags> debug_flags;
+
     static NonnullOwnPtr<InspectTool> create();
     virtual ~InspectTool() override = default;
 

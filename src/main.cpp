@@ -129,16 +129,11 @@ int main(int argc, char* argv[])
 
         globalConsole->register_command(
             { "debug_tools"_s, [](Console*, s32, StringView) {
-                 auto game = try_get_game();
-                 if (!game.has_value())
-                     return;
-                 auto& game_state = game->state();
-
                  // @Hack: This sets the position to outside the camera, and then relies on it automatically snapping back into bounds
                  auto& renderer = the_renderer();
                  V2I windowPos = v2i(renderer.ui_camera().position() + renderer.ui_camera().size());
 
-                 UI::showWindow(UI::WindowTitle::from_text_asset("title_debug_tools"_s), 250, 200, windowPos, "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Unique | WindowFlags::UniqueKeepPosition, debugToolsWindowProc, &game_state);
+                 UI::showWindow(UI::WindowTitle::from_text_asset("title_debug_tools"_s), 250, 200, windowPos, "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Unique | WindowFlags::UniqueKeepPosition, debugToolsWindowProc);
              } });
 
         globalConsole->register_command(

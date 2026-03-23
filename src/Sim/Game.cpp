@@ -132,17 +132,13 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
     ui->addLabel(myprintf("Land value: {0}%"_s, { formatFloat(city->landValueLayer.get_land_value_percent_at(tilePos.x, tilePos.y) * 100.0f, 0) }));
 
     // Debug info
-    if (!city->inspectTileDebugFlags.is_empty()) {
-        if (city->inspectTileDebugFlags.has(InspectTileDebugFlags::Fire)) {
-            city->fireLayer.debug_inspect(*ui, tilePos, building);
-        }
-        if (city->inspectTileDebugFlags.has(InspectTileDebugFlags::Power)) {
-            city->powerLayer.debug_inspect(*ui, tilePos);
-        }
-        if (city->inspectTileDebugFlags.has(InspectTileDebugFlags::Transport)) {
-            city->transportLayer.debug_inspect(*ui, tilePos);
-        }
-    }
+    auto& inspection_flags = InspectTool::debug_flags;
+    if (inspection_flags.has(InspectTool::DebugFlags::Fire))
+        city->fireLayer.debug_inspect(*ui, tilePos, building);
+    if (inspection_flags.has(InspectTool::DebugFlags::Power))
+        city->powerLayer.debug_inspect(*ui, tilePos);
+    if (inspection_flags.has(InspectTool::DebugFlags::Transport))
+        city->transportLayer.debug_inspect(*ui, tilePos);
 
     // Highlight
     // Part of me wants this to happen outside of this windowproc, but we don't have a way of knowing when
@@ -402,7 +398,7 @@ void showCostTooltip(s32 buildCost)
     UI::showTooltip(costTooltipWindowProc, (void*)(smm)buildCost);
 }
 
-void debugToolsWindowProc(UI::WindowContext* context, void* userData)
+void debugToolsWindowProc(UI::WindowContext* context, void*)
 {
     auto* game_scene = dynamic_cast<GameScene*>(&App::the().scene());
     if (!game_scene) {
@@ -410,13 +406,11 @@ void debugToolsWindowProc(UI::WindowContext* context, void* userData)
         return;
     }
 
-    GameState* gameState = (GameState*)userData;
-    City& city = gameState->city;
     UI::Panel* ui = &context->windowPanel;
     ui->alignWidgets(HAlign::Fill);
 
-    if (ui->addTextButton("Inspect fire info"_s, buttonIsActive(city.inspectTileDebugFlags.has(InspectTileDebugFlags::Fire)))) {
-        city.inspectTileDebugFlags.toggle(InspectTileDebugFlags::Fire);
+    if (ui->addTextButton("Inspect fire info"_s, buttonIsActive(InspectTool::debug_flags.has(InspectTool::DebugFlags::Fire)))) {
+        InspectTool::debug_flags.toggle(InspectTool::DebugFlags::Fire);
     }
     auto debug_tool_is_active = [&](DebugTool::Mode mode) {
         if (auto* debug_tool = dynamic_cast<DebugTool const*>(&game_scene->active_tool()); debug_tool && debug_tool->mode() == mode)
@@ -430,12 +424,12 @@ void debugToolsWindowProc(UI::WindowContext* context, void* userData)
         game_scene->set_active_tool(DebugTool::create(DebugTool::Mode::RemoveFire));
     }
 
-    if (ui->addTextButton("Inspect power info"_s, buttonIsActive(city.inspectTileDebugFlags.has(InspectTileDebugFlags::Power)))) {
-        city.inspectTileDebugFlags.toggle(InspectTileDebugFlags::Power);
+    if (ui->addTextButton("Inspect power info"_s, buttonIsActive(InspectTool::debug_flags.has(InspectTool::DebugFlags::Power)))) {
+        InspectTool::debug_flags.toggle(InspectTool::DebugFlags::Power);
     }
 
-    if (ui->addTextButton("Inspect transport info"_s, buttonIsActive(city.inspectTileDebugFlags.has(InspectTileDebugFlags::Transport)))) {
-        city.inspectTileDebugFlags.toggle(InspectTileDebugFlags::Transport);
+    if (ui->addTextButton("Inspect transport info"_s, buttonIsActive(InspectTool::debug_flags.has(InspectTool::DebugFlags::Transport)))) {
+        InspectTool::debug_flags.toggle(InspectTool::DebugFlags::Transport);
     }
 }
 
