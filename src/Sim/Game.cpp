@@ -190,8 +190,10 @@ DragResult updateDragState(DragState* dragState, Rect2I cityBounds, V2I mouseTil
     DragResult result = {};
 
     if (dragState->isDragging && mouseButtonJustReleased(MouseButton::Left)) {
-        result.operation = DragResultOperation::DoAction;
-        result.dragRect = getDragArea(dragState, cityBounds, dragType, itemSize);
+        if (!mouseIsOverUI) {
+            result.operation = DragResultOperation::DoAction;
+            result.dragRect = getDragArea(dragState, cityBounds, dragType, itemSize);
+        }
 
         dragState->isDragging = false;
     } else {
@@ -904,11 +906,6 @@ void GameScene::update_and_render(float delta_time)
 
             INVALID_DEFAULT_CASE;
         }
-    }
-
-    if (m_state->worldDragState.isDragging && mouseIsOverUI && mouseButtonJustReleased(MouseButton::Left)) {
-        // Not sure if this is the best idea, but it's the best I can come up with.
-        m_state->worldDragState.isDragging = false;
     }
 
     if (mouseButtonJustPressed(MouseButton::Right)) {
