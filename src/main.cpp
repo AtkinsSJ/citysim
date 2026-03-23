@@ -140,15 +140,15 @@ int main(int argc, char* argv[])
         globalConsole->register_command(
             { "funds"_s, [](Console*, s32, StringView arguments) {
                  auto game = try_get_game();
-                 if (!game.has_value())
+                 if (!game.has_value() || game->city() == nullptr)
                      return;
-                 auto& game_state = game->state();
+                 auto& city = *game->city();
 
                  TokenReader tokens { arguments };
                  if (auto sAmount = tokens.next_token(); sAmount.has_value()) {
                      if (auto amount = sAmount.value().to_int(); amount.has_value()) {
                          consoleWriteLine(myprintf("Set funds to {0}"_s, { sAmount.value() }), ConsoleLineStyle::Success);
-                         game_state.city.funds = truncate32(amount.value());
+                         city.funds = truncate32(amount.value());
                          return;
                      }
                  }
@@ -159,20 +159,19 @@ int main(int argc, char* argv[])
         globalConsole->register_command(
             { "generate"_s, [](Console*, s32, StringView) {
                  auto game = try_get_game();
-                 if (!game.has_value())
+                 if (!game.has_value() || game->city() == nullptr)
                      return;
-                 auto& game_state = game->state();
+                 auto& city = *game->city();
 
-                 City* city = &game_state.city;
                  // TODO: Some kind of reset would be better than this, but this is temporary until we add
                  //       proper terrain generation and UI, so meh.
-                 if (city->buildings.count > 0) {
-                     city->demolish_rect(city->bounds);
-                     city->highestBuildingID = 0;
+                 if (city.buildings.count > 0) {
+                     city.demolish_rect(city.bounds);
+                     city.highestBuildingID = 0;
                  }
                  // FIXME: Make command take a seed parameter
                  auto seed = static_cast<u32>(time(nullptr));
-                 city->terrainLayer.generate(*city, seed);
+                 city.terrainLayer.generate(city, seed);
 
                  consoleWriteLine("Generated new map"_s, ConsoleLineStyle::Success);
              } });
@@ -180,24 +179,21 @@ int main(int argc, char* argv[])
         globalConsole->register_command(
             { "map_info"_s, [](Console*, s32, StringView) {
                  auto game = try_get_game();
-                 if (!game.has_value())
+                 if (!game.has_value() || game->city() == nullptr)
                      return;
-                 auto& game_state = game->state();
+                 auto& city = *game->city();
 
-                 City* city = &game_state.city;
-
-                 consoleWriteLine(myprintf("Map: {0} x {1} tiles. Seed: {2}"_s, { formatInt(city->bounds.width()), formatInt(city->bounds.height()), formatInt(city->terrainLayer.generation_seed()) }), ConsoleLineStyle::Success);
+                 consoleWriteLine(myprintf("Map: {0} x {1} tiles. Seed: {2}"_s, { formatInt(city.bounds.width()), formatInt(city.bounds.height()), formatInt(city.terrainLayer.generation_seed()) }), ConsoleLineStyle::Success);
              } });
 
         globalConsole->register_command(
             { "mark_all_dirty"_s, [](Console*, s32, StringView) {
                  auto game = try_get_game();
-                 if (!game.has_value())
+                 if (!game.has_value() || game->city() == nullptr)
                      return;
-                 auto& game_state = game->state();
+                 auto& city = *game->city();
 
-                 City* city = &game_state.city;
-                 city->mark_area_dirty(city->bounds);
+                 city.mark_area_dirty(city.bounds);
              } });
 
         globalConsole->register_command(

@@ -96,6 +96,8 @@ void TerrainCatalogue::remap_terrain_types(City& city)
 
 void TerrainCatalogue::after_assets_loaded()
 {
-    if (auto* game_scene = dynamic_cast<GameScene*>(&App::the().scene()))
-        remap_terrain_types(game_scene->state().city);
+    if (auto* game_scene = dynamic_cast<GameScene*>(&App::the().scene())) {
+        if (auto* city = game_scene->city())
+            remap_terrain_types(*city);
+    }
 }

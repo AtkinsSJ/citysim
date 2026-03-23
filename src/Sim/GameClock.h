@@ -69,6 +69,5 @@ private:
     bool m_is_paused { true };
 };
 
-GameTimestamp getCurrentTimestamp();
 GameTimestamp timestampFromParts(s32 year, MonthOfYear month, s32 day);
 DateTime dateTimeFromTimestamp(GameTimestamp timestamp);

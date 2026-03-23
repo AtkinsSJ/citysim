@@ -344,9 +344,9 @@ void loadGame(SavedGameInfo const& saved_game)
 bool saveGame(String saveName)
 {
     auto* game_scene = dynamic_cast<GameScene*>(&App::the().scene());
-    if (!game_scene)
+    if (!game_scene || !game_scene->city())
         return false;
-    auto& game_state = game_scene->state();
+    auto& city = *game_scene->city();
     SavedGamesCatalogue* catalogue = &savedGamesCatalogue;
 
     String saveFilename = saveName;
@@ -356,7 +356,7 @@ bool saveGame(String saveName)
 
     String savePath = constructPath({ catalogue->savedGamesPath, saveFilename });
     FileHandle saveFile = openFile(savePath, FileAccessMode::Write);
-    bool saveSucceeded = write_save_file(&saveFile, game_state);
+    bool saveSucceeded = write_save_file(&saveFile, city);
     closeFile(&saveFile);
 
     if (saveSucceeded) {

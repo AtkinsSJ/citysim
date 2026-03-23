@@ -69,8 +69,6 @@ struct DataViewUI {
 };
 
 struct GameState {
-    City city;
-
     DataView dataLayerToDraw { DataView::None };
     EnumMap<DataView, DataViewUI> dataViewUI;
 };
@@ -101,6 +99,8 @@ public:
 
     MemoryArena& arena() { return m_arena; }
     GameState& state() { return m_state; }
+    City* city() { return m_city.ptr(); }
+    void set_city(NonnullOwnPtr<City>);
 
     Tool const& active_tool() const { return m_active_tool; }
     void set_active_tool(NonnullOwnPtr<Tool>);
@@ -118,5 +118,6 @@ private:
 
     MemoryArena m_arena { "Game"_s };
     Ref<GameState> m_state;
+    OwnPtr<City> m_city;
     NonnullOwnPtr<Tool> m_active_tool;
 };

@@ -163,7 +163,7 @@ bool buildingHasPower(Building* building);
 void initBuilding(Building* building);
 void initBuilding(Building* building, s32 id, BuildingDef* def, Rect2I footprint, GameTimestamp creationDate);
 void updateBuilding(City* city, Building* building);
-void addProblem(Building* building, BuildingProblem::Type problem);
+void addProblem(Building* building, BuildingProblem::Type problem, City&);
 void removeProblem(Building* building, BuildingProblem::Type problem);
 bool hasProblem(Building* building, BuildingProblem::Type problem);
 

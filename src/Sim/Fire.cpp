@@ -184,7 +184,7 @@ void FireLayer::start_fire_at(City& city, s32 x, s32 y)
         // TODO: make the fire stronger?
         logWarn("Fire at {0},{1} already exists!"_s, { formatInt(x), formatInt(y) });
     } else {
-        add_fire_raw(city, x, y, getCurrentTimestamp());
+        add_fire_raw(city, x, y, city.gameClock.current_day());
     }
 }
 

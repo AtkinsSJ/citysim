@@ -13,13 +13,11 @@
 #include <Sim/Terrain.h>
 #include <Sim/Zone.h>
 
-bool write_save_file(FileHandle* file, GameState const& game_state)
+bool write_save_file(FileHandle* file, City const& city)
 {
     bool succeeded = file->isOpen;
 
     if (succeeded) {
-        auto& city = game_state.city;
-
         BinaryFileWriter writer = startWritingFile(SAV_FILE_ID, SAV_VERSION, &temp_arena());
 
         // Prepare the TOC

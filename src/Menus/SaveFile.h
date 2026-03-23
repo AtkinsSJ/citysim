@@ -182,4 +182,4 @@ struct SAVSection_Zone {
 
 #pragma pack(pop)
 
-bool write_save_file(FileHandle* file, GameState const& game_state);
+bool write_save_file(FileHandle* file, City const& city);

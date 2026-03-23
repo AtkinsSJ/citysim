@@ -35,6 +35,8 @@ enum class BuildingQueryFlag : u8 {
 };
 
 struct City {
+    static NonnullOwnPtr<City> create(MemoryArena&, u32 width, u32 height, String name, String player_name, s32 funds, GameTimestamp date = 0, float time_of_day = 0.0f);
+
     Building* get_building(BuildingRef const&);
     Building const* get_building(BuildingRef const& ref) const
     {
@@ -61,7 +63,7 @@ struct City {
 
     void update();
 
-    Building* add_building(BuildingDef* def, Rect2I footprint, GameTimestamp creationDate = getCurrentTimestamp());
+    Building* add_building(BuildingDef* def, Rect2I footprint, Optional<GameTimestamp> const& = {});
     bool can_place_building(BuildingDef* def, s32 left, s32 top) const;
     s32 calculate_build_cost(BuildingDef* def, Rect2I area) const;
     void place_building(BuildingDef* def, s32 left, s32 top, bool markAreasDirty = true);
@@ -101,20 +103,21 @@ struct City {
     bool can_afford(s32 cost) const;
     void spend(s32 cost);
 
+    // TODO: These want to be in some kind of buffer somewhere so they can be modified!
     String name;
     String playerName;
 
     GameClock gameClock;
     OwnPtr<Random> random;
 
-    s32 funds;
-    s32 monthlyExpenditure;
+    s32 funds { 0 };
+    s32 monthlyExpenditure { 0 };
 
     Rect2I bounds;
 
     Array2<s32> tileBuildingIndex; // NB: Index into buildings array, NOT Building.id!
     OccupancyArray<Building> buildings;
-    u32 highestBuildingID;
+    u32 highestBuildingID { 0 };
 
     SectorGrid<CitySector> sectors;
 
@@ -140,12 +143,9 @@ struct City {
     ArrayChunkPool<BuildingRef> buildingRefsChunkPool;
 
 private:
+    City(MemoryArena&, u32 width, u32 height, String name, String player_name, s32 funds, GameTimestamp date, float time_of_day);
+
     Building* add_building_direct(s32 id, BuildingDef* def, Rect2I footprint, GameTimestamp creationDate);
 };
 
 u8 const maxDistanceToWater = 10;
-
-//
-// Public API
-//
-void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String name, String playerName, s32 funds, GameTimestamp date = 0, float time_of_day = 0.0f);

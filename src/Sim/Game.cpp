@@ -80,7 +80,7 @@ void GameScene::move_camera_from_input(Camera& camera, V2 window_size, V2 window
     }
 
     // Clamp camera
-    camera.snap_to_rectangle({ -CAMERA_MARGIN, -CAMERA_MARGIN, m_state->city.bounds.width() + (2 * CAMERA_MARGIN), m_state->city.bounds.height() + (2 * CAMERA_MARGIN) });
+    camera.snap_to_rectangle({ -CAMERA_MARGIN, -CAMERA_MARGIN, m_city->bounds.width() + (2 * CAMERA_MARGIN), m_city->bounds.height() + (2 * CAMERA_MARGIN) });
 }
 
 void inspectTileWindowProc(UI::WindowContext* context, void* userData)
@@ -192,7 +192,7 @@ void GameScene::update_and_render_game_ui()
     RenderBuffer* uiBuffer = &renderer.ui_buffer();
     auto& label_style = UI::LabelStyle::get("title"_s);
     auto& font = label_style.font.get();
-    City* city = &m_state->city;
+    auto& city = *m_city;
 
     s32 const uiPadding = 4; // TODO: Move this somewhere sensible!
     s32 left = uiPadding;
@@ -205,16 +205,16 @@ void GameScene::update_and_render_game_ui()
     UI::addUIRect(uiRect);
     drawSingleRect(uiBuffer, uiRect, renderer.shaderIds.untextured, Colour::from_rgb_255(0, 0, 0, 128));
 
-    UI::putLabel(city->name, { left, uiPadding, width3, rowHeight }, &label_style);
+    UI::putLabel(city.name, { left, uiPadding, width3, rowHeight }, &label_style);
 
-    UI::putLabel(myprintf("£{0} (-£{1}/month)"_s, { formatInt(city->funds), formatInt(city->monthlyExpenditure) }), { width3, uiPadding, width3, rowHeight }, &label_style);
+    UI::putLabel(myprintf("£{0} (-£{1}/month)"_s, { formatInt(city.funds), formatInt(city.monthlyExpenditure) }), { width3, uiPadding, width3, rowHeight }, &label_style);
 
-    UI::putLabel(myprintf("Pop: {0}, Jobs: {1}"_s, { formatInt(city->zoneLayer.total_residents()), formatInt(city->zoneLayer.total_jobs()) }), { width3, uiPadding + rowHeight, width3, rowHeight }, &label_style);
+    UI::putLabel(myprintf("Pop: {0}, Jobs: {1}"_s, { formatInt(city.zoneLayer.total_residents()), formatInt(city.zoneLayer.total_jobs()) }), { width3, uiPadding + rowHeight, width3, rowHeight }, &label_style);
 
     // Game clock
     Rect2I clockBounds = {};
     {
-        GameClock* clock = &city->gameClock;
+        GameClock* clock = &city.gameClock;
 
         // We're sizing the clock area based on the speed control buttons.
         // The >>> button is the largest, so they're all set to that size.
@@ -262,12 +262,7 @@ void GameScene::update_and_render_game_ui()
         }
     }
 
-    /*
-            UI::putLabel(myprintf("Power: {0}/{1}"_s, {formatInt(city->powerLayer.cachedCombinedConsumption), formatInt(city->powerLayer.cachedCombinedProduction)}),
-                   irectXYWH(right - width3, uiPadding, width3, rowHeight), labelStyle);
-    */
-
-    UI::putLabel(myprintf("R: {0}\nC: {1}\nI: {2}"_s, { formatInt(city->zoneLayer.demand[ZoneType::Residential]), formatInt(city->zoneLayer.demand[ZoneType::Commercial]), formatInt(city->zoneLayer.demand[ZoneType::Industrial]) }),
+    UI::putLabel(myprintf("R: {0}\nC: {1}\nI: {2}"_s, { formatInt(city.zoneLayer.demand[ZoneType::Residential]), formatInt(city.zoneLayer.demand[ZoneType::Commercial]), formatInt(city.zoneLayer.demand[ZoneType::Industrial]) }),
         { clockBounds.x() - 100, uiPadding, 100, toolbarHeight }, &label_style);
 
     auto& button_style = UI::ButtonStyle::get("default"_s);
@@ -380,12 +375,16 @@ void GameScene::update_and_render_game_ui()
 
 void costTooltipWindowProc(UI::WindowContext* context, void* userData)
 {
-    s32 buildCost = truncate32((smm)userData);
-    City* city = &App::the().game_state()->city;
-
+    auto* game_scene = dynamic_cast<GameScene*>(&App::the().scene());
+    if (!game_scene) {
+        context->closeRequested = true;
+        return;
+    }
+    auto& city = *game_scene->city();
     UI::Panel* ui = &context->windowPanel;
+    s32 buildCost = truncate32((smm)userData);
 
-    auto style = city->can_afford(buildCost)
+    auto style = city.can_afford(buildCost)
         ? "cost-affordable"_sv
         : "cost-unaffordable"_sv;
 
@@ -438,12 +437,13 @@ NonnullOwnPtr<GameScene> GameScene::create_new(u32 seed)
     auto& app_state = App::the();
 
     auto game_scene = adopt_own(*new GameScene);
-
     app_state.set_game_state(&*game_scene->m_state);
 
     s32 gameStartFunds = 1000000;
-    initCity(&game_scene->m_arena, &game_scene->m_state->city, 128, 128, getText("city_default_name"_s), getText("player_default_name"_s), gameStartFunds);
-    game_scene->m_state->city.terrainLayer.generate(game_scene->m_state->city, seed);
+    auto city = City::create(game_scene->m_arena, 128, 128, getText("city_default_name"_s), getText("player_default_name"_s), gameStartFunds);
+    city->terrainLayer.generate(*city, seed);
+    game_scene->set_city(move(city));
+    game_scene->init_data_view_ui();
 
     return game_scene;
 }
@@ -476,26 +476,26 @@ ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const
 
         bool succeeded = false;
 
-        City* city = &game_state.city;
+        OwnPtr<City> city;
 
         BinaryFileReader reader = readBinaryFile(&saveFile, SAV_FILE_ID, &temp_arena());
         // This doesn't actually loop, we're just using a `while` so we can break out of it
         while (reader.isValidFile) {
             // META
-            bool readMeta = reader.startSection(SAV_META_ID, SAV_META_VERSION);
-            if (readMeta) {
+            if (reader.startSection(SAV_META_ID, SAV_META_VERSION)) {
                 SAVSection_Meta* meta = reader.readStruct<SAVSection_Meta>(0);
 
                 String cityName = reader.readString(meta->cityName);
                 String playerName = reader.readString(meta->playerName);
-                initCity(&game_scene->m_arena, city, meta->cityWidth, meta->cityHeight, cityName, playerName, meta->funds, meta->currentDate, meta->timeWithinDay);
+                city = City::create(game_scene->m_arena, meta->cityWidth, meta->cityHeight, cityName, playerName, meta->funds, meta->currentDate, meta->timeWithinDay);
 
                 // Camera
                 auto& world_camera = the_renderer().world_camera();
                 world_camera.set_position(v2(meta->cameraX, meta->cameraY));
                 world_camera.set_zoom(meta->cameraZoom);
-            } else
+            } else {
                 break;
+            }
 
             if (!city->terrainLayer.load(reader))
                 break;
@@ -516,6 +516,7 @@ ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const
                 break;
 
             // And we're done!
+            game_scene->set_city(city.release_nonnull());
             succeeded = true;
             break;
         }
@@ -527,6 +528,7 @@ ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const
     if (!loadSucceeded)
         return getText("msg_load_failure"_s, { saved_game_info.shortName });
     app_state.set_game_state(&game_state);
+    game_scene->init_data_view_ui();
     return game_scene;
 }
 
@@ -534,7 +536,6 @@ GameScene::GameScene()
     : m_state(*m_arena.allocate<GameState>())
     , m_active_tool(InspectTool::create())
 {
-    init_data_view_ui();
     // FIXME: Set cursor for InspectTool
 }
 
@@ -545,7 +546,7 @@ void GameScene::update_and_render(float delta_time)
     DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
 
     auto& renderer = the_renderer();
-    City& city = m_state->city;
+    City& city = *m_city;
 
     // Update the simulation... need a smarter way of doing this!
     if (!UI::hasPauseWindowOpen()) {
@@ -611,52 +612,52 @@ void GameScene::update_and_render(float delta_time)
 void GameScene::init_data_view_ui()
 {
     auto& dataViewUI = m_state->dataViewUI;
-    City* city = &m_state->city;
+    City& city = *m_city;
 
     dataViewUI[DataView::None].title = "data_view_none"_s;
 
     dataViewUI[DataView::Desirability_Residential].title = "data_view_desirability_residential"_s;
     setGradient(&dataViewUI[DataView::Desirability_Residential], "desirability"_s);
-    setTileOverlay(&dataViewUI[DataView::Desirability_Residential], &city->zoneLayer.tileDesirability[ZoneType::Residential], "desirability"_s);
+    setTileOverlay(&dataViewUI[DataView::Desirability_Residential], &city.zoneLayer.tileDesirability[ZoneType::Residential], "desirability"_s);
 
     dataViewUI[DataView::Desirability_Commercial].title = "data_view_desirability_commercial"_s;
     setGradient(&dataViewUI[DataView::Desirability_Commercial], "desirability"_s);
-    setTileOverlay(&dataViewUI[DataView::Desirability_Commercial], &city->zoneLayer.tileDesirability[ZoneType::Commercial], "desirability"_s);
+    setTileOverlay(&dataViewUI[DataView::Desirability_Commercial], &city.zoneLayer.tileDesirability[ZoneType::Commercial], "desirability"_s);
 
     dataViewUI[DataView::Desirability_Industrial].title = "data_view_desirability_industrial"_s;
     setGradient(&dataViewUI[DataView::Desirability_Industrial], "desirability"_s);
-    setTileOverlay(&dataViewUI[DataView::Desirability_Industrial], &city->zoneLayer.tileDesirability[ZoneType::Industrial], "desirability"_s);
+    setTileOverlay(&dataViewUI[DataView::Desirability_Industrial], &city.zoneLayer.tileDesirability[ZoneType::Industrial], "desirability"_s);
 
     dataViewUI[DataView::Crime].title = "data_view_crime"_s;
     setGradient(&dataViewUI[DataView::Crime], "service_coverage"_s);
     setFixedColors(&dataViewUI[DataView::Crime], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, m_arena);
-    setHighlightedBuildings(&dataViewUI[DataView::Crime], city->crimeLayer.police_buildings(), &BuildingDef::policeEffect);
-    setTileOverlay(&dataViewUI[DataView::Crime], city->crimeLayer.tile_police_coverage(), "service_coverage"_s);
+    setHighlightedBuildings(&dataViewUI[DataView::Crime], city.crimeLayer.police_buildings(), &BuildingDef::policeEffect);
+    setTileOverlay(&dataViewUI[DataView::Crime], city.crimeLayer.tile_police_coverage(), "service_coverage"_s);
 
     dataViewUI[DataView::Fire].title = "data_view_fire"_s;
     setGradient(&dataViewUI[DataView::Fire], "risk"_s);
     setFixedColors(&dataViewUI[DataView::Fire], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, m_arena);
-    setHighlightedBuildings(&dataViewUI[DataView::Fire], city->fireLayer.fire_protection_buildings(), &BuildingDef::fireProtection);
-    setTileOverlay(&dataViewUI[DataView::Fire], city->fireLayer.tile_overall_fire_risk(), "risk"_s);
+    setHighlightedBuildings(&dataViewUI[DataView::Fire], city.fireLayer.fire_protection_buildings(), &BuildingDef::fireProtection);
+    setTileOverlay(&dataViewUI[DataView::Fire], city.fireLayer.tile_overall_fire_risk(), "risk"_s);
 
     dataViewUI[DataView::Health].title = "data_view_health"_s;
     setGradient(&dataViewUI[DataView::Health], "service_coverage"_s);
     setFixedColors(&dataViewUI[DataView::Health], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, m_arena);
-    setHighlightedBuildings(&dataViewUI[DataView::Health], city->healthLayer.health_buildings(), &BuildingDef::healthEffect);
-    setTileOverlay(&dataViewUI[DataView::Health], city->healthLayer.tile_health_coverage(), "service_coverage"_s);
+    setHighlightedBuildings(&dataViewUI[DataView::Health], city.healthLayer.health_buildings(), &BuildingDef::healthEffect);
+    setTileOverlay(&dataViewUI[DataView::Health], city.healthLayer.tile_health_coverage(), "service_coverage"_s);
 
     dataViewUI[DataView::LandValue].title = "data_view_landvalue"_s;
     setGradient(&dataViewUI[DataView::LandValue], "land_value"_s);
-    setTileOverlay(&dataViewUI[DataView::LandValue], city->landValueLayer.tile_land_value(), "land_value"_s);
+    setTileOverlay(&dataViewUI[DataView::LandValue], city.landValueLayer.tile_land_value(), "land_value"_s);
 
     dataViewUI[DataView::Pollution].title = "data_view_pollution"_s;
     setGradient(&dataViewUI[DataView::Pollution], "pollution"_s);
-    setTileOverlay(&dataViewUI[DataView::Pollution], city->pollutionLayer.tile_pollution(), "pollution"_s);
+    setTileOverlay(&dataViewUI[DataView::Pollution], city.pollutionLayer.tile_pollution(), "pollution"_s);
 
     dataViewUI[DataView::Power].title = "data_view_power"_s;
     setFixedColors(&dataViewUI[DataView::Power], "power"_s, { "data_view_power_powered"_s, "data_view_power_brownout"_s, "data_view_power_blackout"_s }, m_arena);
 
-    setHighlightedBuildings(&dataViewUI[DataView::Power], city->powerLayer.power_buildings());
+    setHighlightedBuildings(&dataViewUI[DataView::Power], city.powerLayer.power_buildings());
     setTileOverlayCallback(&dataViewUI[DataView::Power], [](City* city, s32 x, s32 y) { return city->powerLayer.calculate_power_overlay_for_tile(x, y); }, "power"_s);
 }
 
@@ -780,7 +781,7 @@ void GameScene::draw_data_view_overlay(Rect2I visible_tile_bounds) const
     ASSERT(to_underlying(m_state->dataLayerToDraw) < to_underlying(DataView::COUNT));
     auto& renderer = the_renderer();
 
-    City* city = &m_state->city;
+    auto& city = *m_city;
     DataViewUI* dataView = &m_state->dataViewUI[m_state->dataLayerToDraw];
 
     if (dataView->overlayTileData) {
@@ -792,7 +793,7 @@ void GameScene::draw_data_view_overlay(Rect2I visible_tile_bounds) const
         // though cropping it is non-trivial. But yeah, if they are consistent that would make things easier
         // to follow.
         // - Sam, 28/03/2020
-        Rect2I bounds = city->bounds;
+        Rect2I bounds = city.bounds;
 
         auto& overlayPalette = Palette::get(dataView->overlayPaletteName);
         drawGrid(&renderer.world_overlay_buffer(), bounds, *dataView->overlayTileData, (u16)overlayPalette.size(), overlayPalette.raw_colour_data());
@@ -802,7 +803,7 @@ void GameScene::draw_data_view_overlay(Rect2I visible_tile_bounds) const
 
         for (s32 gridY = 0; gridY < visible_tile_bounds.height(); gridY++) {
             for (s32 gridX = 0; gridX < visible_tile_bounds.width(); gridX++) {
-                u8 tileValue = dataView->calculate_tile_value(city, visible_tile_bounds.x() + gridX, visible_tile_bounds.y() + gridY);
+                u8 tileValue = dataView->calculate_tile_value(&city, visible_tile_bounds.x() + gridX, visible_tile_bounds.y() + gridY);
                 overlayTileData.set(gridX, gridY, tileValue);
             }
         }
@@ -812,10 +813,10 @@ void GameScene::draw_data_view_overlay(Rect2I visible_tile_bounds) const
     }
 
     if (dataView->highlightedBuildings) {
-        drawBuildingHighlights(city, dataView->highlightedBuildings);
+        drawBuildingHighlights(&city, dataView->highlightedBuildings);
 
         if (dataView->effectRadiusMember) {
-            drawBuildingEffectRadii(city, dataView->highlightedBuildings, dataView->effectRadiusMember);
+            drawBuildingEffectRadii(&city, dataView->highlightedBuildings, dataView->effectRadiusMember);
         }
     }
 }
@@ -954,6 +955,11 @@ void GameScene::draw_data_view_ui() const
         }
         ui.end(true);
     }
+}
+
+void GameScene::set_city(NonnullOwnPtr<City> city)
+{
+    m_city = move(city);
 }
 
 void GameScene::set_active_tool(NonnullOwnPtr<Tool> tool)

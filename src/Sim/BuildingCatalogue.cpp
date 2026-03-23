@@ -122,8 +122,10 @@ Optional<BuildingDef const&> BuildingCatalogue::find_random_zone_building(ZoneTy
 
 void BuildingCatalogue::after_assets_loaded()
 {
-    if (auto* game_scene = dynamic_cast<GameScene*>(&App::the().scene()))
-        remap_building_types(game_scene->state().city);
+    if (auto* game_scene = dynamic_cast<GameScene*>(&App::the().scene())) {
+        if (auto* city = game_scene->city())
+            remap_building_types(*city);
+    }
 }
 
 BuildingDef* appendNewBuildingDef(StringView name)

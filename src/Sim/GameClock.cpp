@@ -115,8 +115,3 @@ Flags<ClockEvents> GameClock::increment(float delta_time)
 
     return clock_events;
 }
-
-GameTimestamp getCurrentTimestamp()
-{
-    return App::the().game_state()->city.gameClock.current_day();
-}

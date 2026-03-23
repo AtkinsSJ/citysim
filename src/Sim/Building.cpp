@@ -223,14 +223,14 @@ void updateBuilding(City* city, Building* building)
         if (def->growsInZone != ZoneType::None) {
             // Zoned buildings inherit their zone's max distance to road.
             if (distanceToRoad > ZONE_DEFS[def->growsInZone].maximumDistanceToRoad) {
-                addProblem(building, BuildingProblem::Type::NoTransportAccess);
+                addProblem(building, BuildingProblem::Type::NoTransportAccess, *city);
             } else {
                 removeProblem(building, BuildingProblem::Type::NoTransportAccess);
             }
         } else if (def->flags.has(BuildingFlags::RequiresTransportConnection)) {
             // Other buildings require direct contact
             if (distanceToRoad > 1) {
-                addProblem(building, BuildingProblem::Type::NoTransportAccess);
+                addProblem(building, BuildingProblem::Type::NoTransportAccess, *city);
             } else {
                 removeProblem(building, BuildingProblem::Type::NoTransportAccess);
             }
@@ -239,7 +239,7 @@ void updateBuilding(City* city, Building* building)
 
     // Fire!
     if (city->fireLayer.does_area_contain_fire(building->footprint)) {
-        addProblem(building, BuildingProblem::Type::Fire);
+        addProblem(building, BuildingProblem::Type::Fire, *city);
     } else {
         removeProblem(building, BuildingProblem::Type::Fire);
     }
@@ -247,7 +247,7 @@ void updateBuilding(City* city, Building* building)
     // Power!
     if (def->power < 0) {
         if (-def->power > building->allocatedPower) {
-            addProblem(building, BuildingProblem::Type::NoPower);
+            addProblem(building, BuildingProblem::Type::NoPower, *city);
         } else {
             removeProblem(building, BuildingProblem::Type::NoPower);
         }
@@ -264,13 +264,13 @@ void updateBuilding(City* city, Building* building)
     }
 }
 
-void addProblem(Building* building, BuildingProblem::Type problem)
+void addProblem(Building* building, BuildingProblem::Type problem, City& city)
 {
     BuildingProblem* bp = &building->problems[problem];
     if (!bp->isActive) {
         bp->isActive = true;
         bp->type = problem;
-        bp->startDate = getCurrentTimestamp();
+        bp->startDate = city.gameClock.current_day();
     }
 
     // TODO: Update zots!

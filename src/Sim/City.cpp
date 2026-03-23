@@ -17,65 +17,64 @@
 #include <Util/Random.h>
 #include <Util/Rectangle.h>
 
-void initCity(MemoryArena* gameArena, City* city, u32 width, u32 height, String name, String playerName, s32 funds, GameTimestamp date, float time_of_day)
+NonnullOwnPtr<City> City::create(MemoryArena& arena, u32 width, u32 height, String name, String player_name, s32 funds, GameTimestamp date, float time_of_day)
 {
-    *city = {};
+    return adopt_own(*new City(arena, width, height, name, player_name, funds, date, time_of_day));
+}
 
-    city->random = Random::create();
+City::City(MemoryArena& arena, u32 width, u32 height, String name, String player_name, s32 funds, GameTimestamp date, float time_of_day)
+    : name(arena.allocate_string(name))
+    , playerName(arena.allocate_string(player_name))
+    , gameClock(date, time_of_day)
+    , random(Random::create())
+    , funds(funds)
+    , bounds(0u, 0u, width, height)
+    , tileBuildingIndex(arena.allocate_array_2d<s32>(width, height))
+    , sectors(&arena, bounds.size(), 16, 8)
+{
+    initChunkPool(&sectorBuildingsChunkPool, &arena, 128);
+    initChunkPool(&sectorBoundariesChunkPool, &arena, 8);
+    initChunkPool(&buildingRefsChunkPool, &arena, 128);
 
-    // TODO: These want to be in some kind of buffer somewhere so they can be modified!
-    city->name = gameArena->allocate_string(name);
-    city->playerName = gameArena->allocate_string(playerName);
-    new (&city->gameClock) GameClock(date, time_of_day);
-    city->funds = funds;
-    city->bounds = { 0u, 0u, width, height };
-
-    city->tileBuildingIndex = gameArena->allocate_array_2d<s32>(width, height);
-    initChunkPool(&city->sectorBuildingsChunkPool, gameArena, 128);
-    initChunkPool(&city->sectorBoundariesChunkPool, gameArena, 8);
-    initChunkPool(&city->buildingRefsChunkPool, gameArena, 128);
-
-    city->sectors = SectorGrid<CitySector> { gameArena, city->bounds.size(), 16, 8 };
-    for (s32 sectorIndex = 0; sectorIndex < city->sectors.sector_count(); sectorIndex++) {
-        CitySector* sector = city->sectors.get_by_index(sectorIndex);
-        initChunkedArray(&sector->ownedBuildings, &city->sectorBuildingsChunkPool);
+    for (s32 sectorIndex = 0; sectorIndex < sectors.sector_count(); sectorIndex++) {
+        CitySector* sector = sectors.get_by_index(sectorIndex);
+        initChunkedArray(&sector->ownedBuildings, &sectorBuildingsChunkPool);
     }
 
-    initOccupancyArray(&city->buildings, gameArena, 1024);
-    (void)city->buildings.append(); // Null building
+    initOccupancyArray(&buildings, &arena, 1024);
+    (void)buildings.append(); // Null building
 
-    initOccupancyArray(&city->entities, gameArena, 1024);
+    initOccupancyArray(&entities, &arena, 1024);
 
-    new (&city->crimeLayer) CrimeLayer { *city, *gameArena };
-    new (&city->educationLayer) EducationLayer { *city, *gameArena };
-    new (&city->fireLayer) FireLayer { *city, *gameArena };
-    new (&city->healthLayer) HealthLayer { *city, *gameArena };
-    new (&city->landValueLayer) LandValueLayer { *city, *gameArena };
-    new (&city->pollutionLayer) PollutionLayer { *city, *gameArena };
-    new (&city->powerLayer) PowerLayer { *city, *gameArena };
-    new (&city->terrainLayer) TerrainLayer { *city, *gameArena };
-    new (&city->transportLayer) TransportLayer { *city, *gameArena };
-    new (&city->zoneLayer) ZoneLayer { *city, *gameArena };
+    // FIXME: Layers need to be initialized after chunk pools etc.
+    new (&crimeLayer) CrimeLayer { *this, arena };
+    new (&educationLayer) EducationLayer { *this, arena };
+    new (&fireLayer) FireLayer { *this, arena };
+    new (&healthLayer) HealthLayer { *this, arena };
+    new (&landValueLayer) LandValueLayer { *this, arena };
+    new (&pollutionLayer) PollutionLayer { *this, arena };
+    new (&powerLayer) PowerLayer { *this, arena };
+    new (&terrainLayer) TerrainLayer { *this, arena };
+    new (&transportLayer) TransportLayer { *this, arena };
+    new (&zoneLayer) ZoneLayer { *this, arena };
 
-    city->m_layers = gameArena->allocate_array<Layer*>(8);
-    city->m_layers.append(&city->crimeLayer);
-    city->m_layers.append(&city->educationLayer);
-    city->m_layers.append(&city->fireLayer);
-    city->m_layers.append(&city->healthLayer);
-    city->m_layers.append(&city->landValueLayer);
-    city->m_layers.append(&city->pollutionLayer);
-    city->m_layers.append(&city->powerLayer);
-    city->m_layers.append(&city->transportLayer);
-
-    city->highestBuildingID = 0;
+    m_layers = arena.allocate_array<Layer*>(8);
+    m_layers.append(&crimeLayer);
+    m_layers.append(&educationLayer);
+    m_layers.append(&fireLayer);
+    m_layers.append(&healthLayer);
+    m_layers.append(&landValueLayer);
+    m_layers.append(&pollutionLayer);
+    m_layers.append(&powerLayer);
+    m_layers.append(&transportLayer);
 
     // TODO: The rest of this code doesn't really belong here!
     // It belongs in a "we've just started/loaded a game, so initialise things" place.
 
     // TODO: Are we sure we want to do this?
-    city->mark_area_dirty(city->bounds);
+    mark_area_dirty(bounds);
 
-    the_renderer().world_camera().set_position(v2(city->bounds.size()) / 2);
+    the_renderer().world_camera().set_position(v2(bounds.size()) / 2);
 
     saveBuildingTypes();
     saveTerrainTypes();
@@ -155,11 +154,11 @@ Building* City::add_building_direct(s32 id, BuildingDef* def, Rect2I footprint, 
     return &building;
 }
 
-Building* City::add_building(BuildingDef* def, Rect2I footprint, GameTimestamp creationDate)
+Building* City::add_building(BuildingDef* def, Rect2I footprint, Optional<GameTimestamp> const& creation_date)
 {
     DEBUG_FUNCTION();
 
-    Building* building = add_building_direct(++highestBuildingID, def, footprint, creationDate);
+    Building* building = add_building_direct(++highestBuildingID, def, footprint, creation_date.value_or(gameClock.current_day()));
 
     // TODO: Properly calculate occupancy!
     building->currentResidents = def->residents;
