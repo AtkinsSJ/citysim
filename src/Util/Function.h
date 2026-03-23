@@ -38,13 +38,13 @@ public:
         return *this;
     }
 
-    Out operator()(In... in)
+    Out operator()(In... in) const
     {
         ASSERT(m_callable);
         return m_callable->call(forward<In>(in)...);
     }
 
-    operator bool()
+    operator bool() const
     {
         return m_callable;
     }
@@ -53,7 +53,7 @@ private:
     class WrapperBase {
     public:
         virtual ~WrapperBase() = default;
-        virtual Out call(In...) = 0;
+        virtual Out call(In...) const = 0;
     };
 
     template<typename Callable>
@@ -65,7 +65,7 @@ private:
         }
 
         virtual ~Wrapper() override = default;
-        virtual Out call(In... in) override
+        virtual Out call(In... in) const override
         {
             return m_callable.operator()(forward<In>(in)...);
         }
