@@ -20,6 +20,7 @@ target_sources(CitySim PRIVATE
     TerrainCatalogue.cpp
     TerrainDefs.cpp
     TileUtils.cpp
+    Tool.cpp
     Transport.cpp
     Zone.cpp
 )

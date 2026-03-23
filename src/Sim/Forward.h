@@ -30,6 +30,7 @@ class PowerLayer;
 struct TerrainCatalogue;
 struct TerrainDef;
 class TerrainLayer;
+class Tool;
 class TransportLayer;
 struct ZoneDef;
 class ZoneLayer;

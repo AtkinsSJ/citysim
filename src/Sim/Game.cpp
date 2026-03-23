@@ -5,6 +5,7 @@
  */
 
 #include "Game.h"
+
 #include <App/App.h>
 #include <Assets/AssetManager.h>
 #include <Gfx/BitmapFont.h>
@@ -19,6 +20,7 @@
 #include <Sim/BuildingCatalogue.h>
 #include <Sim/City.h>
 #include <Sim/TerrainCatalogue.h>
+#include <Sim/Tool.h>
 #include <UI/Toast.h>
 #include <UI/Window.h>
 #include <Util/Random.h>
@@ -232,8 +234,7 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
     UI::Panel* ui = &context->windowPanel;
     ui->alignWidgets(HAlign::Fill);
 
-    GameState* gameState = (GameState*)userData;
-    City* city = &gameState->city;
+    City* city = static_cast<City*>(userData);
 
     V2I tilePos = city->inspectedTilePosition;
 
@@ -445,11 +446,14 @@ void GameScene::update_and_render_game_ui()
 
             UI::Panel menu = UI::Panel({ buttonRect.x() - popup_menu_panel_style.padding.left, buttonRect.y() + buttonRect.height(), popupMenuWidth, popupMenuMaxHeight }, &popup_menu_panel_style);
             for (auto zone_type : enum_values<ZoneType>()) {
-                if (menu.addTextButton(getText(ZONE_DEFS[zone_type].textAssetName),
-                        buttonIsActive((m_state->actionMode == ActionMode::Zone) && m_state->selectedZoneID == zone_type))) {
+                auto is_active = [&] {
+                    if (auto* zone_tool = dynamic_cast<ZoneTool*>(m_active_tool.ptr()); zone_tool && zone_tool->zone_type() == zone_type)
+                        return ButtonState::Active;
+                    return ButtonState::Normal;
+                }();
+                if (menu.addTextButton(getText(ZONE_DEFS[zone_type].textAssetName), is_active)) {
                     UI::hideMenus();
-                    m_state->selectedZoneID = zone_type;
-                    m_state->actionMode = ActionMode::Zone;
+                    set_active_tool(ZoneTool::create(zone_type));
                     renderer.set_cursor("build"_s);
                 }
             }
@@ -478,11 +482,15 @@ void GameScene::update_and_render_game_ui()
                 it.next()) {
                 BuildingDef* buildingDef = it.getValue();
 
-                if (menu.addTextButton(getText(buildingDef->textAssetName),
-                        buttonIsActive((m_state->actionMode == ActionMode::Build) && (m_state->selectedBuildingTypeID == buildingDef->typeID)))) {
+                auto is_active = [&] {
+                    if (auto* build_tool = dynamic_cast<BuildTool*>(m_active_tool.ptr()); build_tool && build_tool->building_type() == buildingDef->typeID)
+                        return ButtonState::Active;
+                    return ButtonState::Normal;
+                }();
+
+                if (menu.addTextButton(getText(buildingDef->textAssetName), is_active)) {
                     UI::hideMenus();
-                    m_state->selectedBuildingTypeID = buildingDef->typeID;
-                    m_state->actionMode = ActionMode::Build;
+                    set_active_tool(BuildTool::create(buildingDef->typeID));
                     renderer.set_cursor("build"_s);
                 }
             }
@@ -508,8 +516,8 @@ void GameScene::update_and_render_game_ui()
         String demolishButtonText = getText("button_demolish"_s);
         buttonRect.set_size(UI::calculateButtonSize(demolishButtonText, &button_style));
         if (UI::putTextButton(demolishButtonText, buttonRect, &button_style,
-                buttonIsActive(m_state->actionMode == ActionMode::Demolish))) {
-            m_state->actionMode = ActionMode::Demolish;
+                buttonIsActive(dynamic_cast<DemolishTool*>(m_active_tool.ptr()) != nullptr))) {
+            set_active_tool(DemolishTool::create());
             renderer.set_cursor("demolish"_s);
         }
         buttonRect.set_x(buttonRect.x() + buttonRect.width() + uiPadding);
@@ -540,6 +548,12 @@ void showCostTooltip(s32 buildCost)
 
 void debugToolsWindowProc(UI::WindowContext* context, void* userData)
 {
+    auto* game_scene = dynamic_cast<GameScene*>(&App::the().scene());
+    if (!game_scene) {
+        context->closeRequested = true;
+        return;
+    }
+
     GameState* gameState = (GameState*)userData;
     City& city = gameState->city;
     UI::Panel* ui = &context->windowPanel;
@@ -548,11 +562,16 @@ void debugToolsWindowProc(UI::WindowContext* context, void* userData)
     if (ui->addTextButton("Inspect fire info"_s, buttonIsActive(city.inspectTileDebugFlags.has(InspectTileDebugFlags::Fire)))) {
         city.inspectTileDebugFlags.toggle(InspectTileDebugFlags::Fire);
     }
-    if (ui->addTextButton("Add Fire"_s, buttonIsActive(gameState->actionMode == ActionMode::Debug_AddFire))) {
-        gameState->actionMode = ActionMode::Debug_AddFire;
+    auto debug_tool_is_active = [&](DebugTool::Mode mode) {
+        if (auto* debug_tool = dynamic_cast<DebugTool const*>(&game_scene->active_tool()); debug_tool && debug_tool->mode() == mode)
+            return ButtonState::Active;
+        return ButtonState::Normal;
+    };
+    if (ui->addTextButton("Add Fire"_s, debug_tool_is_active(DebugTool::Mode::AddFire))) {
+        game_scene->set_active_tool(DebugTool::create(DebugTool::Mode::AddFire));
     }
-    if (ui->addTextButton("Remove Fire"_s, buttonIsActive(gameState->actionMode == ActionMode::Debug_RemoveFire))) {
-        gameState->actionMode = ActionMode::Debug_RemoveFire;
+    if (ui->addTextButton("Remove Fire"_s, debug_tool_is_active(DebugTool::Mode::RemoveFire))) {
+        game_scene->set_active_tool(DebugTool::create(DebugTool::Mode::RemoveFire));
     }
 
     if (ui->addTextButton("Inspect power info"_s, buttonIsActive(city.inspectTileDebugFlags.has(InspectTileDebugFlags::Power)))) {
@@ -666,8 +685,10 @@ ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const
 
 GameScene::GameScene()
     : m_state(*m_arena.allocate<GameState>())
+    , m_active_tool(InspectTool::create())
 {
     init_data_view_ui();
+    // FIXME: Set cursor for InspectTool
 }
 
 GameScene::~GameScene() = default;
@@ -700,9 +721,6 @@ void GameScene::update_and_render(float delta_time)
     // UI!
     update_and_render_game_ui();
 
-    auto ghostColorValid = Colour::from_rgb_255(128, 255, 128, 255);
-    auto ghostColorInvalid = Colour::from_rgb_255(255, 0, 0, 128);
-
     // CAMERA!
     Camera& world_camera = renderer.world_camera();
     Camera& ui_camera = renderer.ui_camera();
@@ -714,204 +732,16 @@ void GameScene::update_and_render(float delta_time)
     city.demolitionRect = Rect2I::create_negative_infinity();
 
     {
-        DEBUG_BLOCK_T("ActionMode update", DebugCodeDataTag::GameUpdate);
-
-        switch (m_state->actionMode) {
-        case ActionMode::Build: {
-            BuildingDef* buildingDef = getBuildingDef(m_state->selectedBuildingTypeID);
-
-            switch (buildingDef->buildMethod) {
-            case BuildMethod::Paint: // Fallthrough
-            case BuildMethod::Plop: {
-                if (!mouseIsOverUI) {
-                    Rect2I footprint = Rect2I::create_centre_size(mouseTilePos, buildingDef->size);
-                    s32 buildCost = buildingDef->buildCost;
-
-                    bool canPlace = city.can_place_building(buildingDef, footprint.x(), footprint.y());
-
-                    if ((buildingDef->buildMethod == BuildMethod::Plop && mouseButtonJustReleased(MouseButton::Left))
-                        || (buildingDef->buildMethod == BuildMethod::Paint && mouseButtonPressed(MouseButton::Left))) {
-                        if (canPlace && city.can_afford(buildCost)) {
-                            city.place_building(buildingDef, footprint.x(), footprint.y());
-                            city.spend(buildCost);
-                        }
-                    }
-
-                    if (!mouseIsOverUI)
-                        showCostTooltip(buildCost);
-
-                    auto& sprite = Sprite::get(buildingDef->spriteName);
-                    auto color = canPlace ? ghostColorValid : ghostColorInvalid;
-                    drawSingleSprite(&renderer.world_overlay_buffer(), &sprite, footprint, renderer.shaderIds.pixelArt, color);
-                }
-            } break;
-
-            case BuildMethod::DragLine: // Fallthrough
-            case BuildMethod::DragRect: {
-                DragType dragType = (buildingDef->buildMethod == BuildMethod::DragLine) ? DragType::Line : DragType::Rect;
-
-                DragResult dragResult = updateDragState(&m_state->worldDragState, city.bounds, mouseTilePos, mouseIsOverUI, dragType, buildingDef->size);
-                s32 buildCost = city.calculate_build_cost(buildingDef, dragResult.dragRect);
-
-                switch (dragResult.operation) {
-                case DragResultOperation::DoAction: {
-                    if (city.can_afford(buildCost)) {
-                        city.place_building_rect(buildingDef, dragResult.dragRect);
-                        city.spend(buildCost);
-                    } else {
-                        UI::Toast::show(getText("msg_cannot_afford_construction"_s));
-                    }
-                } break;
-
-                case DragResultOperation::ShowPreview: {
-                    if (!mouseIsOverUI)
-                        showCostTooltip(buildCost);
-
-                    if (city.can_afford(buildCost)) {
-                        auto& sprite = Sprite::get(buildingDef->spriteName);
-                        s32 maxGhosts = (dragResult.dragRect.width() / buildingDef->size.x) * (dragResult.dragRect.height() / buildingDef->size.y);
-                        // TODO: If maxGhosts is 1, just draw 1!
-                        DrawRectsGroup* rectsGroup = beginRectsGroupTextured(&renderer.world_overlay_buffer(), sprite.texture, renderer.shaderIds.pixelArt, maxGhosts);
-                        for (s32 y = 0; y + buildingDef->size.y <= dragResult.dragRect.height(); y += buildingDef->size.y) {
-                            for (s32 x = 0; x + buildingDef->size.x <= dragResult.dragRect.width(); x += buildingDef->size.x) {
-                                bool canPlace = city.can_place_building(buildingDef, dragResult.dragRect.x() + x, dragResult.dragRect.y() + y);
-
-                                Rect2 rect { dragResult.dragRect.x() + x, dragResult.dragRect.y() + y, buildingDef->size.x, buildingDef->size.y };
-
-                                auto color = canPlace ? ghostColorValid : ghostColorInvalid;
-                                // TODO: All the sprites are the same, so we could optimise this!
-                                // Then again, eventually we might want ghosts to not be identical, eg ghost roads that visually connect.
-                                addSpriteRect(rectsGroup, &sprite, rect, color);
-                            }
-                        }
-                        endRectsGroup(rectsGroup);
-                    } else {
-                        drawSingleRect(&renderer.world_overlay_buffer(), dragResult.dragRect, renderer.shaderIds.untextured, Colour::from_rgb_255(255, 64, 64, 128));
-                    }
-                } break;
-
-                default:
-                    break;
-                }
-            } break;
-
-                INVALID_DEFAULT_CASE;
-            }
-        } break;
-
-        case ActionMode::Zone: {
-            DragResult dragResult = updateDragState(&m_state->worldDragState, city.bounds, mouseTilePos, mouseIsOverUI, DragType::Rect);
-
-            CanZoneQuery canZoneQuery = queryCanZoneTiles(&city, m_state->selectedZoneID, dragResult.dragRect);
-            s32 zoneCost = canZoneQuery.calculate_zone_cost();
-
-            switch (dragResult.operation) {
-            case DragResultOperation::DoAction: {
-                if (city.can_afford(zoneCost)) {
-                    placeZone(&city, m_state->selectedZoneID, dragResult.dragRect);
-                    city.spend(zoneCost);
-                }
-            } break;
-
-            case DragResultOperation::ShowPreview: {
-                if (!mouseIsOverUI)
-                    showCostTooltip(zoneCost);
-                if (city.can_afford(zoneCost)) {
-                    Colour palette[] = {
-                        Colour::from_rgb_255(255, 0, 0, 16),
-                        ZONE_DEFS[m_state->selectedZoneID].color
-                    };
-                    drawGrid(&renderer.world_overlay_buffer(), canZoneQuery.bounds, canZoneQuery.tileCanBeZoned, 2, palette);
-                } else {
-                    drawSingleRect(&renderer.world_overlay_buffer(), dragResult.dragRect, renderer.shaderIds.untextured, Colour::from_rgb_255(255, 64, 64, 128));
-                }
-            } break;
-
-            default:
-                break;
-            }
-        } break;
-
-        case ActionMode::Demolish: {
-            DragResult dragResult = updateDragState(&m_state->worldDragState, city.bounds, mouseTilePos, mouseIsOverUI, DragType::Rect);
-            s32 demolishCost = city.calculate_demolition_cost(dragResult.dragRect);
-            city.demolitionRect = dragResult.dragRect;
-
-            switch (dragResult.operation) {
-            case DragResultOperation::DoAction: {
-                if (city.can_afford(demolishCost)) {
-                    city.demolish_rect(dragResult.dragRect);
-                    city.spend(demolishCost);
-                } else {
-                    UI::Toast::show(getText("msg_cannot_afford_demolition"_s));
-                }
-            } break;
-
-            case DragResultOperation::ShowPreview: {
-                if (!mouseIsOverUI)
-                    showCostTooltip(demolishCost);
-
-                if (city.can_afford(demolishCost)) {
-                    // Demolition outline
-                    drawSingleRect(&renderer.world_overlay_buffer(), dragResult.dragRect, renderer.shaderIds.untextured, Colour::from_rgb_255(128, 0, 0, 128));
-                } else {
-                    drawSingleRect(&renderer.world_overlay_buffer(), dragResult.dragRect, renderer.shaderIds.untextured, Colour::from_rgb_255(255, 64, 64, 128));
-                }
-            } break;
-
-            default:
-                break;
-            }
-        } break;
-
-        case ActionMode::SetTerrain: {
-            // Temporary click-and-drag, no-cost terrain editing
-            // We probably want to make this better in several ways, and add a cost to it, and such
-            if (!mouseIsOverUI
-                && mouseButtonPressed(MouseButton::Left)
-                && city.tile_exists(mouseTilePos.x, mouseTilePos.y)) {
-                city.terrainLayer.set_terrain_at(mouseTilePos.x, mouseTilePos.y, m_state->selectedTerrainID);
-            }
-        } break;
-
-        case ActionMode::Debug_AddFire: {
-            if (!mouseIsOverUI
-                && mouseButtonJustPressed(MouseButton::Left)
-                && city.tile_exists(mouseTilePos.x, mouseTilePos.y)) {
-                city.fireLayer.start_fire_at(city, mouseTilePos.x, mouseTilePos.y);
-            }
-        } break;
-
-        case ActionMode::Debug_RemoveFire: {
-            if (!mouseIsOverUI
-                && mouseButtonJustPressed(MouseButton::Left)
-                && city.tile_exists(mouseTilePos.x, mouseTilePos.y)) {
-                city.fireLayer.remove_fire_at(city, mouseTilePos.x, mouseTilePos.y);
-            }
-        } break;
-
-        case ActionMode::None: {
-            if (!mouseIsOverUI && mouseButtonJustPressed(MouseButton::Left)) {
-                if (city.tile_exists(mouseTilePos.x, mouseTilePos.y)) {
-                    m_state->city.inspectedTilePosition = mouseTilePos;
-                    V2I windowPos = v2i(ui_camera.mouse_position()) + v2i(16, 16);
-                    UI::showWindow(UI::WindowTitle::from_lambda([this] {
-                        V2I tilePos = m_state->city.inspectedTilePosition;
-                        return getText("title_inspect"_s, { formatInt(tilePos.x), formatInt(tilePos.y) });
-                    }),
-                        250, 200, windowPos, "default"_s, WindowFlags::AutomaticHeight | WindowFlags::Unique | WindowFlags::UniqueKeepPosition, inspectTileWindowProc, &*m_state);
-                }
-            }
-        } break;
-
-            INVALID_DEFAULT_CASE;
-        }
+        DEBUG_BLOCK_T("Tool update", DebugCodeDataTag::GameUpdate);
+        m_active_tool->act(city, mouseIsOverUI, mouseTilePos);
     }
 
     if (mouseButtonJustPressed(MouseButton::Right)) {
-        // Unselect current thing
-        m_state->actionMode = ActionMode::None;
-        renderer.set_cursor("default"_s);
+        // Switch to inspect tool
+        if (dynamic_cast<InspectTool*>(m_active_tool.ptr()) == nullptr) {
+            set_active_tool(InspectTool::create());
+            renderer.set_cursor("default"_s);
+        }
     }
 
     // RENDERING
@@ -1277,4 +1107,10 @@ void GameScene::draw_data_view_ui() const
         }
         ui.end(true);
     }
+}
+
+void GameScene::set_active_tool(NonnullOwnPtr<Tool> tool)
+{
+    // TODO: Change cursors here
+    m_active_tool = move(tool);
 }

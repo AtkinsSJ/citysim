@@ -5,6 +5,7 @@
  */
 
 #include "Terrain.h"
+
 #include <App/App.h>
 #include <Gfx/Renderer.h>
 #include <IO/BinaryFileReader.h>
@@ -14,6 +15,7 @@
 #include <Sim/City.h>
 #include <Sim/Game.h>
 #include <Sim/TerrainCatalogue.h>
+#include <Sim/Tool.h>
 #include <UI/Window.h>
 #include <Util/Splat.h>
 
@@ -288,19 +290,27 @@ void show_terrain_window()
 
 void modify_terrain_window_proc(UI::WindowContext* context, void*)
 {
-    UI::Panel* ui = &context->windowPanel;
     auto* game_scene = dynamic_cast<GameScene*>(&App::the().scene());
-    auto& game_state = game_scene->state();
-    bool terrainToolIsActive = game_state.actionMode == ActionMode::SetTerrain;
+    if (!game_scene) {
+        context->closeRequested = true;
+        return;
+    }
+
+    UI::Panel* ui = &context->windowPanel;
+
+    auto terrain_tool_is_active = [&](TerrainType type) {
+        if (auto* terrain_tool = dynamic_cast<SetTerrainTool const*>(&game_scene->active_tool()); terrain_tool && terrain_tool->terrain_type() == type)
+            return ButtonState::Active;
+        return ButtonState::Normal;
+    };
 
     for (auto it = TerrainCatalogue::the().terrainDefs.iterate(); it.hasNext(); it.next()) {
         TerrainDef* terrain = it.get();
         if (terrain->typeID == 0)
             continue; // Skip the null terrain
 
-        if (ui->addImageButton(&Sprite::get(terrain->spriteName), buttonIsActive(terrainToolIsActive && game_state.selectedTerrainID == terrain->typeID))) {
-            game_state.actionMode = ActionMode::SetTerrain;
-            game_state.selectedTerrainID = terrain->typeID;
+        if (ui->addImageButton(&Sprite::get(terrain->spriteName), terrain_tool_is_active(terrain->typeID))) {
+            game_scene->set_active_tool(SetTerrainTool::create(terrain->typeID));
         }
     }
 }

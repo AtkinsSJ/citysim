@@ -10,11 +10,9 @@
 #include <Menus/SavedGames.h>
 #include <Sim/BuildingRef.h>
 #include <Sim/City.h>
-#include <Sim/Zone.h>
 #include <Util/Basic.h>
 #include <Util/ChunkedArray.h>
 #include <Util/EnumMap.h>
-#include <Util/Flags.h>
 #include <Util/Random.h>
 #include <Util/Ref.h>
 #include <Util/String.h>
@@ -26,19 +24,6 @@ enum class GameMenuID : u8 {
     Zone,
     System,
     DataViews,
-};
-
-enum class ActionMode : u8 {
-    None = 0,
-
-    Build,
-    Demolish,
-    Zone,
-
-    SetTerrain,
-
-    Debug_AddFire,
-    Debug_RemoveFire,
 };
 
 struct DragState {
@@ -111,14 +96,6 @@ struct GameState {
 
     DataView dataLayerToDraw { DataView::None };
     EnumMap<DataView, DataViewUI> dataViewUI;
-
-    DragState worldDragState;
-    ActionMode actionMode { ActionMode::None };
-    union {
-        BuildingType selectedBuildingTypeID;
-        ZoneType selectedZoneID;
-        u8 selectedTerrainID;
-    };
 };
 
 void showCostTooltip(s32 buildCost);
@@ -151,6 +128,9 @@ public:
     MemoryArena& arena() { return m_arena; }
     GameState& state() { return m_state; }
 
+    Tool const& active_tool() const { return m_active_tool; }
+    void set_active_tool(NonnullOwnPtr<Tool>);
+
 private:
     GameScene();
 
@@ -164,4 +144,5 @@ private:
 
     MemoryArena m_arena { "Game"_s };
     Ref<GameState> m_state;
+    NonnullOwnPtr<Tool> m_active_tool;
 };
