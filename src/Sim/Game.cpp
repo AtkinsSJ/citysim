@@ -434,10 +434,7 @@ void debugToolsWindowProc(UI::WindowContext* context, void*)
 
 NonnullOwnPtr<GameScene> GameScene::create_new(u32 seed)
 {
-    auto& app_state = App::the();
-
     auto game_scene = adopt_own(*new GameScene);
-    app_state.set_game_state(&*game_scene->m_state);
 
     s32 gameStartFunds = 1000000;
     auto city = City::create(game_scene->m_arena, 128, 128, getText("city_default_name"_s), getText("player_default_name"_s), gameStartFunds);
@@ -450,11 +447,7 @@ NonnullOwnPtr<GameScene> GameScene::create_new(u32 seed)
 
 ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const& saved_game_info)
 {
-    auto& app_state = App::the();
-
     auto game_scene = adopt_own(*new GameScene);
-
-    auto& game_state = *game_scene->m_state;
 
     FileHandle saveFile = openFile(saved_game_info.fullPath, FileAccessMode::Read);
     bool loadSucceeded = [&] {
@@ -527,7 +520,6 @@ ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const
 
     if (!loadSucceeded)
         return getText("msg_load_failure"_s, { saved_game_info.shortName });
-    app_state.set_game_state(&game_state);
     game_scene->init_data_view_ui();
     return game_scene;
 }

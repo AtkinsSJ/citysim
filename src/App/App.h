@@ -7,7 +7,6 @@
 #pragma once
 
 #include <App/Forward.h>
-#include <Sim/Forward.h>
 #include <Util/OwnPtr.h>
 
 class App {
@@ -25,10 +24,6 @@ public:
 
     Random& cosmetic_random() { return *m_cosmetic_random; }
 
-    // FIXME: Replace these with a Scene class, which we hold a single one of.
-    GameState* game_state() const { return m_game_state; }
-    void set_game_state(GameState* state) { m_game_state = state; }
-
     void switch_to_scene(NonnullOwnPtr<Scene>);
     void transition_to_next_scene_if_needed();
     Scene& scene() const;
@@ -42,5 +37,4 @@ private:
     NonnullOwnPtr<Random> m_cosmetic_random;
     NonnullOwnPtr<Scene> m_scene;
     OwnPtr<Scene> m_next_scene { nullptr };
-    GameState* m_game_state { nullptr };
 };
