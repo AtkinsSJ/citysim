@@ -126,6 +126,15 @@ struct OccupancyArray {
         return result;
     }
 
+    template<typename... Args>
+    Indexed<T> empend(Args&&... args)
+    {
+        // FIXME: Using append() is a stop-gap; generalize both with an internal method that gets the memory for a new item.
+        auto result = append();
+        new (&result.value()) T(forward<Args>(args)...);
+        return result;
+    }
+
     T* get(s32 index)
     {
         ASSERT(index < chunkCount * itemsPerChunk);
