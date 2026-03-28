@@ -152,9 +152,9 @@ void initBuilding(Building* building, s32 id, BuildingDef* def, Rect2I footprint
     building->variantIndex = {};
 }
 
-void updateBuilding(City* city, Building* building)
+void Building::update(City& city)
 {
-    auto& def = building->get_def();
+    auto& def = get_def();
 
     // Check the building's needs are met
     // ... except for the ones that are checked by layers.
@@ -167,42 +167,42 @@ void updateBuilding(City* city, Building* building)
         // the inner tiles... unless we allow multiple buildings per tile. Actually maybe we do? I'm not sure how that
         // would work really. Anyway, can think about that later.
         // - Sam, 30/08/2019
-        for (s32 y = building->footprint.y(); y < building->footprint.y() + building->footprint.height(); y++) {
-            for (s32 x = building->footprint.x(); x < building->footprint.x() + building->footprint.width(); x++) {
-                distanceToRoad = min(distanceToRoad, city->transportLayer.distance_to_transport(x, y, TransportType::Road));
+        for (s32 y = footprint.y(); y < footprint.y() + footprint.height(); y++) {
+            for (s32 x = footprint.x(); x < footprint.x() + footprint.width(); x++) {
+                distanceToRoad = min(distanceToRoad, city.transportLayer.distance_to_transport(x, y, TransportType::Road));
             }
         }
 
         if (def.growsInZone != ZoneType::None) {
             // Zoned buildings inherit their zone's max distance to road.
             if (distanceToRoad > ZONE_DEFS[def.growsInZone].maximumDistanceToRoad) {
-                building->add_problem(BuildingProblem::Type::NoTransportAccess, *city);
+                add_problem(BuildingProblem::Type::NoTransportAccess, city);
             } else {
-                building->remove_problem(BuildingProblem::Type::NoTransportAccess);
+                remove_problem(BuildingProblem::Type::NoTransportAccess);
             }
         } else if (def.flags.has(BuildingFlags::RequiresTransportConnection)) {
             // Other buildings require direct contact
             if (distanceToRoad > 1) {
-                building->add_problem(BuildingProblem::Type::NoTransportAccess, *city);
+                add_problem(BuildingProblem::Type::NoTransportAccess, city);
             } else {
-                building->remove_problem(BuildingProblem::Type::NoTransportAccess);
+                remove_problem(BuildingProblem::Type::NoTransportAccess);
             }
         }
     }
 
     // Fire!
-    if (city->fireLayer.does_area_contain_fire(building->footprint)) {
-        building->add_problem(BuildingProblem::Type::Fire, *city);
+    if (city.fireLayer.does_area_contain_fire(footprint)) {
+        add_problem(BuildingProblem::Type::Fire, city);
     } else {
-        building->remove_problem(BuildingProblem::Type::Fire);
+        remove_problem(BuildingProblem::Type::Fire);
     }
 
     // Power!
     if (def.power < 0) {
-        if (-def.power > building->allocatedPower) {
-            building->add_problem(BuildingProblem::Type::NoPower, *city);
+        if (-def.power > allocatedPower) {
+            add_problem(BuildingProblem::Type::NoPower, city);
         } else {
-            building->remove_problem(BuildingProblem::Type::NoPower);
+            remove_problem(BuildingProblem::Type::NoPower);
         }
     }
 
@@ -210,10 +210,10 @@ void updateBuilding(City* city, Building* building)
     auto drawColorNormal = Colour::white();
     auto drawColorNoPower = Colour::from_rgb_255(32, 32, 64, 255);
 
-    if (!building->has_power()) {
-        building->entity->color = drawColorNoPower;
+    if (!has_power()) {
+        entity->color = drawColorNoPower;
     } else {
-        building->entity->color = drawColorNormal;
+        entity->color = drawColorNormal;
     }
 }
 

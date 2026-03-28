@@ -158,6 +158,8 @@ struct Building {
     BuildingRef get_reference() const;
     BuildingDef const& get_def() const;
 
+    void update(City&);
+
     void add_problem(BuildingProblem::Type, City&);
     void remove_problem(BuildingProblem::Type);
     bool has_problem(BuildingProblem::Type) const;
@@ -171,4 +173,3 @@ struct Building {
 
 void initBuilding(Building* building);
 void initBuilding(Building* building, s32 id, BuildingDef* def, Rect2I footprint, GameTimestamp creationDate);
-void updateBuilding(City* city, Building* building);

@@ -507,7 +507,7 @@ void City::update()
 
         for (auto it = sector.ownedBuildings.iterate(); it.hasNext(); it.next()) {
             Building* building = it.getValue();
-            updateBuilding(this, building);
+            building->update(*this);
         }
     }
 }
