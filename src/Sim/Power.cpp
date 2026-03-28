@@ -654,7 +654,7 @@ void PowerLayer::update(City& city)
                         // Supply power to buildings if we can, and mark the rest as unpowered.
                         // TODO: Implement some kind of "rolling brownout" system where buildings get powered
                         // and unpowered over time to even things out, instead of it always being first-come-first-served.
-                        s32 requiredPower = getRequiredPower(building);
+                        s32 requiredPower = building->required_power();
                         if (powerRemaining >= requiredPower) {
                             building->allocatedPower = requiredPower;
                             powerRemaining -= requiredPower;
@@ -664,7 +664,7 @@ void PowerLayer::update(City& city)
                     } break;
 
                     case NetworkMode::FullCoverage: {
-                        building->allocatedPower = getRequiredPower(building);
+                        building->allocatedPower = building->required_power();
                     } break;
                     }
                 }

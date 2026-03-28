@@ -371,20 +371,20 @@ ErrorOr<NonnullOwnPtr<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata,
 
                     // Check the values are valid first, because that's less verbose than checking each one individually.
                     for (auto i = 0; i < directionFlags.length(); i++) {
-                        if (!connectionTypeOf(directionFlags[i]).has_value()) {
+                        if (!connection_type_of(directionFlags[i]).has_value()) {
                             return reader.make_error_message("Unrecognized connection type character '{0}', valid values: '012*'"_s, { String::repeat(directionFlags[i], 1) });
                         }
                     }
 
                     if (directionFlags.length() == 8) {
-                        variant->connections[ConnectionDirection::N] = connectionTypeOf(directionFlags[0]).value();
-                        variant->connections[ConnectionDirection::NE] = connectionTypeOf(directionFlags[1]).value();
-                        variant->connections[ConnectionDirection::E] = connectionTypeOf(directionFlags[2]).value();
-                        variant->connections[ConnectionDirection::SE] = connectionTypeOf(directionFlags[3]).value();
-                        variant->connections[ConnectionDirection::S] = connectionTypeOf(directionFlags[4]).value();
-                        variant->connections[ConnectionDirection::SW] = connectionTypeOf(directionFlags[5]).value();
-                        variant->connections[ConnectionDirection::W] = connectionTypeOf(directionFlags[6]).value();
-                        variant->connections[ConnectionDirection::NW] = connectionTypeOf(directionFlags[7]).value();
+                        variant->connections[ConnectionDirection::N] = connection_type_of(directionFlags[0]).value();
+                        variant->connections[ConnectionDirection::NE] = connection_type_of(directionFlags[1]).value();
+                        variant->connections[ConnectionDirection::E] = connection_type_of(directionFlags[2]).value();
+                        variant->connections[ConnectionDirection::SE] = connection_type_of(directionFlags[3]).value();
+                        variant->connections[ConnectionDirection::S] = connection_type_of(directionFlags[4]).value();
+                        variant->connections[ConnectionDirection::SW] = connection_type_of(directionFlags[5]).value();
+                        variant->connections[ConnectionDirection::W] = connection_type_of(directionFlags[6]).value();
+                        variant->connections[ConnectionDirection::NW] = connection_type_of(directionFlags[7]).value();
                     } else if (directionFlags.length() == 4) {
                         // The 4 other directions don't matter
                         variant->connections[ConnectionDirection::NE] = ConnectionType::Anything;
@@ -392,10 +392,10 @@ ErrorOr<NonnullOwnPtr<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata,
                         variant->connections[ConnectionDirection::SW] = ConnectionType::Anything;
                         variant->connections[ConnectionDirection::NW] = ConnectionType::Anything;
 
-                        variant->connections[ConnectionDirection::N] = connectionTypeOf(directionFlags[0]).value();
-                        variant->connections[ConnectionDirection::E] = connectionTypeOf(directionFlags[1]).value();
-                        variant->connections[ConnectionDirection::S] = connectionTypeOf(directionFlags[2]).value();
-                        variant->connections[ConnectionDirection::W] = connectionTypeOf(directionFlags[3]).value();
+                        variant->connections[ConnectionDirection::N] = connection_type_of(directionFlags[0]).value();
+                        variant->connections[ConnectionDirection::E] = connection_type_of(directionFlags[1]).value();
+                        variant->connections[ConnectionDirection::S] = connection_type_of(directionFlags[2]).value();
+                        variant->connections[ConnectionDirection::W] = connection_type_of(directionFlags[3]).value();
                     } else {
                         return reader.make_error_message("First argument for a building 'variant' should be a 4 or 8 character string consisting of 0/1/2/* flags (meaning nothing/part1/part2/anything) for N/E/S/W or N/NE/E/SE/S/SW/W/NW connectivity. eg, 101012**"_s);
                     }

@@ -26,18 +26,18 @@ BuildingDef* getBuildingDef(Building const* building)
     return result;
 }
 
-bool buildingDefHasType(BuildingDef* def, BuildingType typeID)
+bool BuildingDef::has_type(BuildingType type) const
 {
-    bool result = (def->typeID == typeID);
+    if (typeID == type)
+        return true;
 
-    if (def->isIntersection) {
-        result = result || (def->intersectionPart1TypeID == typeID) || (def->intersectionPart2TypeID == typeID);
-    }
+    if (isIntersection)
+        return intersectionPart1TypeID == type || intersectionPart2TypeID == type;
 
-    return result;
+    return false;
 }
 
-bool matchesVariant(BuildingDef* def, BuildingVariant* variant, EnumMap<ConnectionDirection, BuildingDef*> const& neighbourDefs)
+bool BuildingDef::matches_variant(BuildingVariant const& variant, EnumMap<ConnectionDirection, Optional<BuildingDef const&>> const& neighbour_defs) const
 {
     DEBUG_FUNCTION();
 
@@ -45,33 +45,33 @@ bool matchesVariant(BuildingDef* def, BuildingVariant* variant, EnumMap<Connecti
 
     for (auto direction : enum_values<ConnectionDirection>()) {
         bool matchedDirection = false;
-        ConnectionType connectionType = variant->connections[direction];
-        BuildingDef* neighbourDef = neighbourDefs[direction];
+        ConnectionType connectionType = variant.connections[direction];
+        auto& neighbourDef = neighbour_defs[direction];
 
-        if (neighbourDef == nullptr) {
+        if (!neighbourDef.has_value()) {
             matchedDirection = (connectionType == ConnectionType::Nothing) || (connectionType == ConnectionType::Anything);
         } else {
             switch (connectionType) {
             case ConnectionType::Nothing: {
-                if (def->isIntersection) {
-                    matchedDirection = !buildingDefHasType(neighbourDef, def->intersectionPart1TypeID)
-                        && !buildingDefHasType(neighbourDef, def->intersectionPart2TypeID);
+                if (isIntersection) {
+                    matchedDirection = !neighbourDef->has_type(intersectionPart1TypeID)
+                        && !neighbourDef->has_type(intersectionPart2TypeID);
                 } else {
-                    matchedDirection = !buildingDefHasType(neighbourDef, def->typeID);
+                    matchedDirection = !neighbourDef->has_type(typeID);
                 }
             } break;
 
             case ConnectionType::Building1: {
-                if (def->isIntersection) {
-                    matchedDirection = buildingDefHasType(neighbourDef, def->intersectionPart1TypeID);
+                if (isIntersection) {
+                    matchedDirection = neighbourDef->has_type(intersectionPart1TypeID);
                 } else {
-                    matchedDirection = buildingDefHasType(neighbourDef, def->typeID);
+                    matchedDirection = neighbourDef->has_type(typeID);
                 }
             } break;
 
             case ConnectionType::Building2: {
-                if (def->isIntersection) {
-                    matchedDirection = buildingDefHasType(neighbourDef, def->intersectionPart2TypeID);
+                if (isIntersection) {
+                    matchedDirection = neighbourDef->has_type(intersectionPart2TypeID);
                 } else {
                     matchedDirection = false;
                 }
@@ -87,7 +87,7 @@ bool matchesVariant(BuildingDef* def, BuildingVariant* variant, EnumMap<Connecti
             }
         }
 
-        if (matchedDirection == false) {
+        if (!matchedDirection) {
             result = false;
             break;
         }
@@ -118,17 +118,19 @@ void updateBuildingVariant(City* city, Building* building, BuildingDef* passedDe
         s32 y = building->footprint.y();
 
         static_assert(to_underlying(ConnectionDirection::COUNT) == 8, "updateBuildingVariant() assumes ConnectionDirectionCount == 8");
-        EnumMap<ConnectionDirection, BuildingDef*> neighbourDefs;
+        EnumMap<ConnectionDirection, Optional<BuildingDef const&>> neighbourDefs;
         for (auto direction : enum_values<ConnectionDirection>()) {
-            neighbourDefs[direction] = getBuildingDef(city->get_building_at(x + connection_offsets[direction].x, y + connection_offsets[direction].y));
+            if (auto* building_in_direction = city->get_building_at(x + connection_offsets[direction].x, y + connection_offsets[direction].y)) {
+                neighbourDefs[direction] = building_in_direction->get_def();
+            }
         }
 
         // Search for a matching variant
         // Right now... YAY LINEAR SEARCH! @Speed
         bool foundVariant = false;
         for (s32 variantIndex = 0; variantIndex < def->variants.count; variantIndex++) {
-            BuildingVariant* variant = &def->variants[variantIndex];
-            if (matchesVariant(def, variant, neighbourDefs)) {
+            auto& variant = def->variants[variantIndex];
+            if (def->matches_variant(variant, neighbourDefs)) {
                 building->variantIndex = variantIndex;
                 foundVariant = true;
                 logInfo("Matched building {0}#{1} with variant #{2}"_s, { def->name, formatInt(building->id), formatInt(variantIndex) });
@@ -150,7 +152,7 @@ void updateBuildingVariant(City* city, Building* building, BuildingDef* passedDe
     }
 
     // Update the entity sprite
-    loadBuildingSprite(building);
+    building->load_sprite();
 }
 
 void updateAdjacentBuildingVariants(City* city, Rect2I footprint)
@@ -228,33 +230,33 @@ void updateBuilding(City* city, Building* building)
         if (def->growsInZone != ZoneType::None) {
             // Zoned buildings inherit their zone's max distance to road.
             if (distanceToRoad > ZONE_DEFS[def->growsInZone].maximumDistanceToRoad) {
-                addProblem(building, BuildingProblem::Type::NoTransportAccess, *city);
+                building->add_problem(BuildingProblem::Type::NoTransportAccess, *city);
             } else {
-                removeProblem(building, BuildingProblem::Type::NoTransportAccess);
+                building->remove_problem(BuildingProblem::Type::NoTransportAccess);
             }
         } else if (def->flags.has(BuildingFlags::RequiresTransportConnection)) {
             // Other buildings require direct contact
             if (distanceToRoad > 1) {
-                addProblem(building, BuildingProblem::Type::NoTransportAccess, *city);
+                building->add_problem(BuildingProblem::Type::NoTransportAccess, *city);
             } else {
-                removeProblem(building, BuildingProblem::Type::NoTransportAccess);
+                building->remove_problem(BuildingProblem::Type::NoTransportAccess);
             }
         }
     }
 
     // Fire!
     if (city->fireLayer.does_area_contain_fire(building->footprint)) {
-        addProblem(building, BuildingProblem::Type::Fire, *city);
+        building->add_problem(BuildingProblem::Type::Fire, *city);
     } else {
-        removeProblem(building, BuildingProblem::Type::Fire);
+        building->remove_problem(BuildingProblem::Type::Fire);
     }
 
     // Power!
     if (def->power < 0) {
         if (-def->power > building->allocatedPower) {
-            addProblem(building, BuildingProblem::Type::NoPower, *city);
+            building->add_problem(BuildingProblem::Type::NoPower, *city);
         } else {
-            removeProblem(building, BuildingProblem::Type::NoPower);
+            building->remove_problem(BuildingProblem::Type::NoPower);
         }
     }
 
@@ -262,53 +264,50 @@ void updateBuilding(City* city, Building* building)
     auto drawColorNormal = Colour::white();
     auto drawColorNoPower = Colour::from_rgb_255(32, 32, 64, 255);
 
-    if (!buildingHasPower(building)) {
+    if (!building->has_power()) {
         building->entity->color = drawColorNoPower;
     } else {
         building->entity->color = drawColorNormal;
     }
 }
 
-void addProblem(Building* building, BuildingProblem::Type problem, City& city)
+void Building::add_problem(BuildingProblem::Type problem_type, City& city)
 {
-    BuildingProblem* bp = &building->problems[problem];
-    if (!bp->isActive) {
-        bp->isActive = true;
-        bp->type = problem;
-        bp->startDate = city.gameClock.current_day();
+    auto& problem = problems[problem_type];
+    if (!problem.isActive) {
+        problem.isActive = true;
+        problem.type = problem_type;
+        problem.startDate = city.gameClock.current_day();
     }
 
     // TODO: Update zots!
 }
 
-void removeProblem(Building* building, BuildingProblem::Type problem)
+void Building::remove_problem(BuildingProblem::Type problem_type)
 {
-    if (building->problems[problem].isActive) {
-        building->problems[problem].isActive = false;
+    if (problems[problem_type].isActive) {
+        problems[problem_type].isActive = false;
 
         // TODO: Update zots!
     }
 }
 
-bool hasProblem(Building* building, BuildingProblem::Type problem)
+bool Building::has_problem(BuildingProblem::Type problem_type) const
 {
-    bool result = building->problems[problem].isActive;
-
-    return result;
+    return problems[problem_type].isActive;
 }
 
-void loadBuildingSprite(Building* building)
+void Building::load_sprite()
 {
-    BuildingDef* def = getBuildingDef(building);
-
-    if (building->variantIndex.has_value()) {
-        building->entity->sprite = SpriteRef { def->variants[building->variantIndex.value()].spriteName, building->spriteOffset };
+    auto& def = get_def();
+    if (variantIndex.has_value()) {
+        entity->sprite = SpriteRef { def.variants[variantIndex.value()].spriteName, spriteOffset };
     } else {
-        building->entity->sprite = SpriteRef { def->spriteName, building->spriteOffset };
+        entity->sprite = SpriteRef { def.spriteName, spriteOffset };
     }
 }
 
-Optional<ConnectionType> connectionTypeOf(char c)
+Optional<ConnectionType> connection_type_of(char c)
 {
     switch (c) {
     case '0':
@@ -324,11 +323,11 @@ Optional<ConnectionType> connectionTypeOf(char c)
     }
 }
 
-char asChar(ConnectionType connectionType)
+char as_char(ConnectionType connection_type)
 {
     char result;
 
-    switch (connectionType) {
+    switch (connection_type) {
     case ConnectionType::Nothing:
         result = '0';
         break;
@@ -350,21 +349,17 @@ char asChar(ConnectionType connectionType)
     return result;
 }
 
-s32 getRequiredPower(Building* building)
+s32 Building::required_power() const
 {
-    s32 result = 0;
+    if (auto power = get_def().power; power < 0)
+        return -power;
 
-    BuildingDef* def = getBuildingDef(building);
-    if (def->power < 0) {
-        result = -def->power;
-    }
-
-    return result;
+    return 0;
 }
 
-bool buildingHasPower(Building* building)
+bool Building::has_power() const
 {
-    return !hasProblem(building, BuildingProblem::Type::NoPower);
+    return !has_problem(BuildingProblem::Type::NoPower);
 }
 
 BuildingRef Building::get_reference() const

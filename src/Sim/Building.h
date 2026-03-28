@@ -59,6 +59,8 @@ enum class ConnectionType : u8 {
     Building2,
     Anything,
 };
+Optional<ConnectionType> connection_type_of(char c);
+char as_char(ConnectionType connection_type);
 
 struct BuildingVariant {
     EnumMap<ConnectionDirection, ConnectionType> connections;
@@ -111,6 +113,9 @@ struct BuildingDef {
 
     // NB: When you add new fields here, make sure to add them to loadBuildingDefs(), and
     // copy their values when a building `extends` a template!
+
+    bool has_type(BuildingType) const;
+    bool matches_variant(BuildingVariant const& variant, EnumMap<ConnectionDirection, Optional<BuildingDef const&>> const&) const;
 };
 
 struct BuildingProblem {
@@ -152,27 +157,22 @@ struct Building {
 
     BuildingRef get_reference() const;
     BuildingDef const& get_def() const;
+
+    void add_problem(BuildingProblem::Type, City&);
+    void remove_problem(BuildingProblem::Type);
+    bool has_problem(BuildingProblem::Type) const;
+
+    s32 required_power() const;
+    bool has_power() const;
+
+    void load_sprite();
 };
 
 BuildingDef* getBuildingDef(Building const* building);
 
-bool buildingDefHasType(BuildingDef* def, BuildingType typeID);
-
-s32 getRequiredPower(Building* building);
-bool buildingHasPower(Building* building);
-
 void initBuilding(Building* building);
 void initBuilding(Building* building, s32 id, BuildingDef* def, Rect2I footprint, GameTimestamp creationDate);
 void updateBuilding(City* city, Building* building);
-void addProblem(Building* building, BuildingProblem::Type problem, City&);
-void removeProblem(Building* building, BuildingProblem::Type problem);
-bool hasProblem(Building* building, BuildingProblem::Type problem);
-
-void loadBuildingSprite(Building* building);
-
-Optional<ConnectionType> connectionTypeOf(char c);
-char asChar(ConnectionType connectionType);
-bool matchesVariant(BuildingDef* def, BuildingVariant* variant, BuildingDef** neighbourDefs);
 
 void updateBuildingVariant(City* city, Building* building, BuildingDef* def = nullptr);
 void updateAdjacentBuildingVariants(City* city, Rect2I footprint);

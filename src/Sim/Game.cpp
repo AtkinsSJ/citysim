@@ -120,7 +120,7 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
 
         // Problems
         for (auto problem_type : enum_values<BuildingProblem::Type>()) {
-            if (hasProblem(building, problem_type)) {
+            if (building->has_problem(problem_type)) {
                 ui->addLabel(myprintf("- PROBLEM: {0}"_s, { getText(buildingProblemNames[problem_type]) }));
             }
         }
@@ -701,7 +701,7 @@ static void drawBuildingHighlights(City* city, Iterable* buildingRefs)
             Building* building = city->get_building(it.getValue());
             // NB: If we're doing this in a separate loop, we could crop out buildings that aren't in the visible tile bounds
             if (building != nullptr) {
-                s32 paletteIndex = (buildingHasPower(building) ? paletteIndexPowered : paletteIndexUnpowered);
+                s32 paletteIndex = (building->has_power() ? paletteIndexPowered : paletteIndexUnpowered);
                 addUntexturedRect(buildingHighlights, building->footprint, buildingsPalette.colour_at(paletteIndex));
             }
         }
@@ -752,7 +752,7 @@ static void drawBuildingEffectRadii(City* city, Iterable* buildingRefs, EffectRa
                 BuildingDef* def = getBuildingDef(building);
                 EffectRadius* effect = &(def->*effectMember);
                 if (effect->has_effect()) {
-                    s32 paletteIndex = (buildingHasPower(building) ? paletteIndexPowered : paletteIndexUnpowered);
+                    s32 paletteIndex = (building->has_power() ? paletteIndexPowered : paletteIndexUnpowered);
                     addRing(buildingRadii, building->footprint.centre(), static_cast<float>(effect->radius()), 0.5f, ringsPalette.colour_at(paletteIndex));
                 }
             }

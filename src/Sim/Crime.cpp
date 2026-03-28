@@ -68,7 +68,7 @@ void CrimeLayer::update(City& city)
                         // Budget
                         float effectiveness = m_funding_level;
 
-                        if (!buildingHasPower(building)) {
+                        if (!building->has_power()) {
                             effectiveness *= 0.4f; // @Balance
 
                             // TODO: Consider water access too

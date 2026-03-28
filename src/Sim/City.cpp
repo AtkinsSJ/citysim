@@ -131,7 +131,7 @@ Building* City::add_building_direct(s32 id, BuildingDef* def, Rect2I footprint, 
 
     building.entity = add_entity(Entity::Type::Building, &building);
     building.entity->bounds = footprint;
-    loadBuildingSprite(&building);
+    building.load_sprite();
     building.entity->canBeDemolished = true;
 
     CitySector* ownerSector = sectors.get_sector_at_tile_pos(footprint.x(), footprint.y());
@@ -650,7 +650,7 @@ bool City::load_buildings(BinaryFileReader* reader)
             // need to overwrite the sprite here.
             // Probably there's a better way to organise this, but this works.
             // - Sam, 26/09/2020
-            loadBuildingSprite(building);
+            building->load_sprite();
 
             // This is a bit hacky but it's how we calculate it elsewhere
             zoneLayer.population[def->growsInZone] += building->currentResidents + building->currentJobs;

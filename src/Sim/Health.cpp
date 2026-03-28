@@ -53,7 +53,7 @@ void HealthLayer::update(City& city)
                     float effectiveness = m_funding_level;
 
                     // Power
-                    if (!buildingHasPower(building)) {
+                    if (!building->has_power()) {
                         effectiveness *= 0.4f; // @Balance
                     }
 
