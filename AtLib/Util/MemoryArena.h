@@ -96,6 +96,24 @@ public:
         return Span { count, items };
     }
 
+    template<typename T, typename Item = u8>
+    struct ObjectAndData {
+        T& object;
+        Span<Item> data;
+    };
+    template<typename T, typename Item = u8>
+    ObjectAndData<T, Item> allocate_with_data(size_t item_count)
+    {
+        // FIXME: Figure out alignment requirements so that the Item array is aligned too.
+        auto* memory = allocate_internal(sizeof(T) + (sizeof(Item) * item_count));
+        ObjectAndData<T, Item> result {
+            .object = *static_cast<T*>(memory),
+            .data = { item_count, reinterpret_cast<Item*>(static_cast<u8*>(memory) + sizeof(T)) },
+        };
+        new (&result.object) T();
+        return result;
+    }
+
     template<typename T>
     T* allocate_multiple_deprecated(size_t count)
     {
