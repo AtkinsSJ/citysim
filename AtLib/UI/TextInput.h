@@ -26,6 +26,7 @@ struct TextInput {
     s32 byteLength;
     s32 glyphLength;
 
+    // FIXME: Replace with a Span
     s32 maxByteLength;
 
     TextInputPos caret;

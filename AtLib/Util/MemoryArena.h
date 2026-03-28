@@ -114,24 +114,6 @@ public:
     }
 
     template<typename T>
-    T* allocate_multiple_deprecated(size_t count)
-    {
-        // Negative allocations are obviously incorrect, so we assert them.
-        // However, count=0 sometimes is used, eg when interning an empty string that's used
-        // as a hashtable key. To avoid needlessly complicating user code, we just return null
-        // here when you try to allocate 0 things. The end result is the same - you're not going
-        // to use the memory if you've got 0 things allocated anyway!
-        // - Sam, 28/03/2020
-        ASSERT(count >= 0);
-
-        if (count == 0)
-            return nullptr;
-
-        auto* memory = allocate_internal(sizeof(T) * count);
-        return new (memory) T[count];
-    }
-
-    template<typename T>
     Array<T> allocate_array(size_t count, bool mark_as_full = false)
     {
         auto items = allocate_multiple<T>(count);

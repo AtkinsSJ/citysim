@@ -49,6 +49,7 @@ public:
     String deprecated_to_string() const;
 
 private:
+    // FIXME: Replace capacity with a Span
     size_t m_capacity;
     size_t m_length { 0 };
     char* m_buffer;

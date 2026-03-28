@@ -550,14 +550,14 @@ static String get_gl_info_log(auto get_log, auto get_log_length, auto id)
 {
     int log_max_length = 0;
     get_log_length(id, GL_INFO_LOG_LENGTH, &log_max_length);
-    auto* log_chars = temp_arena().allocate_multiple_deprecated<char>(log_max_length);
+    auto log_chars = temp_arena().allocate_multiple<char>(log_max_length);
     GLint log_length = 0;
-    get_log(id, log_max_length, &log_length, log_chars);
+    get_log(id, log_max_length, &log_length, log_chars.raw_data());
 
     if (log_length == 0)
         return "No error log provided by OpenGL. Sad panda."_s;
 
-    return String { log_chars, static_cast<unsigned long>(log_length) };
+    return String { log_chars.raw_data(), static_cast<size_t>(log_length) };
 }
 
 bool compileShader(ShaderProgram* glShader, String shaderName, Shader* shaderProgram, ShaderPart shaderPart)

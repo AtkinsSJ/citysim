@@ -215,29 +215,29 @@ String formatInt(u64 value, u8 base, s32 zeroPadWidth)
 {
     ASSERT((base > 1) && (base <= 36)); // formatInt() only handles base 2 to base 36.
     s32 arraySize = max(64, zeroPadWidth);
-    char* temp = temp_arena().allocate_multiple_deprecated<char>(arraySize); // Worst case is base 1, which is 64 characters!
+    auto buffer = temp_arena().allocate_multiple<char>(arraySize); // Worst case is base 1, which is 64 characters!
     auto count = 0u;
 
     u64 v = value;
 
     do {
         // We start at the end and work backwards, so that we don't have to reverse the string afterwards!
-        temp[arraySize - 1 - count++] = intBaseChars[v % base];
+        buffer[arraySize - 1 - count++] = intBaseChars[v % base];
         v = v / base;
     } while (v != 0);
 
     while (count < zeroPadWidth) {
-        temp[arraySize - 1 - count++] = '0';
+        buffer[arraySize - 1 - count++] = '0';
     }
 
-    return String { temp + (arraySize - count), count };
+    return String { buffer.raw_data() + (arraySize - count), count };
 }
 
 String formatInt(s64 value, u8 base, s32 zeroPadWidth)
 {
     ASSERT((base > 1) && (base <= 36)); // formatInt() only handles base 2 to base 36.
     s32 arraySize = max(65, zeroPadWidth + 1);
-    char* temp = temp_arena().allocate_multiple_deprecated<char>(arraySize); // Worst case is base 1, which is 64 characters! Plus 1 for sign
+    auto buffer = temp_arena().allocate_multiple<char>(arraySize); // Worst case is base 1, which is 64 characters! Plus 1 for sign
     bool isNegative = (value < 0);
     auto count = 0u;
 
@@ -249,19 +249,19 @@ String formatInt(s64 value, u8 base, s32 zeroPadWidth)
     s64 v = value;
 
     do {
-        temp[arraySize - 1 - count++] = intBaseChars[((isNegative ? -1 : 1) * (v % base))];
+        buffer[arraySize - 1 - count++] = intBaseChars[((isNegative ? -1 : 1) * (v % base))];
         v = v / base;
     } while (v != 0);
 
     while (count < zeroPadWidth) {
-        temp[arraySize - 1 - count++] = '0';
+        buffer[arraySize - 1 - count++] = '0';
     }
 
     if (isNegative) {
-        temp[arraySize - 1 - count++] = '-';
+        buffer[arraySize - 1 - count++] = '-';
     }
 
-    return String { temp + (arraySize - count), count };
+    return String { buffer.raw_data() + (arraySize - count), count };
 }
 
 // TODO: formatFloat() is a total trainwreck, we should really do this a lot better!
@@ -273,10 +273,10 @@ String formatFloat(double value, s32 decimalPlaces)
     String formatString = myprintf("%.{0}f"_s, { formatInt(decimalPlaces) }, true);
 
     size_t length = 100; // TODO: is 100 enough?
-    char* buffer = temp_arena().allocate_multiple_deprecated<char>(length);
-    size_t written = snprintf(buffer, length, formatString.raw_pointer_to_characters(), value);
+    auto buffer = temp_arena().allocate_multiple<char>(length);
+    size_t written = snprintf(buffer.raw_data(), length, formatString.raw_pointer_to_characters(), value);
 
-    return { buffer, min(written, length) };
+    return { buffer.raw_data(), min(written, length) };
 }
 
 String formatString(String value, s32 length, bool align_left, char padding_char)
