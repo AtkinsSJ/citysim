@@ -151,6 +151,7 @@ struct Building {
     EnumMap<BuildingProblem::Type, BuildingProblem> problems;
 
     BuildingRef get_reference() const;
+    BuildingDef const& get_def() const;
 };
 
 BuildingDef* getBuildingDef(Building const* building);

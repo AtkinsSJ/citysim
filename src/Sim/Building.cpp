@@ -10,6 +10,11 @@
 #include <Sim/BuildingCatalogue.h>
 #include <Sim/City.h>
 
+BuildingDef const& Building::get_def() const
+{
+    return *getBuildingDef(typeID);
+}
+
 BuildingDef* getBuildingDef(Building const* building)
 {
     BuildingDef* result = nullptr;
