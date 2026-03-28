@@ -75,7 +75,6 @@ public:
     void revert_to(ResetState const&);
     void reset();
 
-    void* allocate_deprecated(size_t size) { return allocate_internal(size); }
     Blob allocate_blob(size_t size);
 
     template<typename T, typename... Args>
