@@ -132,18 +132,10 @@ public:
     }
 
     template<typename T>
-    Array<T> allocate_array(s32 count, bool markAsFull = false)
+    Array<T> allocate_array(size_t count, bool mark_as_full = false)
     {
-        Array<T> result;
-
-        if (count == 0) {
-            result = makeEmptyArray<T>();
-        } else {
-            ASSERT(count > 0);
-            result = makeArray<T>(count, allocate_multiple_deprecated<T>(count), markAsFull ? count : 0);
-        }
-
-        return result;
+        auto items = allocate_multiple<T>(count);
+        return makeArray<T>(items.size(), items.raw_data(), mark_as_full ? count : 0);
     }
 
     template<typename T>
