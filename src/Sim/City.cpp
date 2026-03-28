@@ -313,11 +313,9 @@ s32 City::calculate_demolition_cost(Rect2I area) const
     s32 total = 0;
 
     // Building demolition cost
-    ChunkedArray<Building*> buildingsToDemolish = find_buildings_overlapping_area(area);
-    for (auto it = buildingsToDemolish.iterate(); it.hasNext(); it.next()) {
-        Building* building = it.getValue();
-        total += getBuildingDef(building)->demolishCost;
-    }
+    for_each_building_overlapping_area(area, {}, [&](auto& building) {
+        total += building.get_def().demolishCost;
+    });
 
     return total;
 }
@@ -329,7 +327,12 @@ void City::demolish_rect(Rect2I area)
     // NB: We assume that we've already checked we can afford this!
 
     // Building demolition
-    ChunkedArray<Building*> buildingsToDemolish = find_buildings_overlapping_area(area);
+    // FIXME: We first accumulate the buildings into an array to make removal safe. Find some way to avoid this?
+    ChunkedArray<Building*> buildingsToDemolish;
+    initChunkedArray(&buildingsToDemolish, &temp_arena(), 1024);
+    for_each_building_overlapping_area(area, {}, [&](Building& building) {
+        buildingsToDemolish.append(&building);
+    });
     for (auto it = buildingsToDemolish.iterate(buildingsToDemolish.count - 1, false, true);
         it.hasNext();
         it.next()) {
@@ -408,12 +411,9 @@ void City::demolish_rect(Rect2I area)
     updateAdjacentBuildingVariants(this, area);
 }
 
-ChunkedArray<Building*> City::find_buildings_overlapping_area(Rect2I area, Flags<BuildingQueryFlag> flags) const
+void City::for_each_building_overlapping_area(Rect2I area, Flags<BuildingQueryFlag> flags, Function<void(Building&)> const& callback)
 {
     DEBUG_FUNCTION();
-
-    ChunkedArray<Building*> result = {};
-    initChunkedArray(&result, &temp_arena(), 64);
 
     // Expand the area to account for buildings to the left or up from it
     // (but don't do that if we only care about origins)
@@ -431,14 +431,18 @@ ChunkedArray<Building*> City::find_buildings_overlapping_area(Rect2I area, Flags
 
             for (auto it = sector->ownedBuildings.iterate(); it.hasNext(); it.next()) {
                 Building* building = it.getValue();
-                if (building->footprint.overlaps(area)) {
-                    result.append(building);
-                }
+                if (building->footprint.overlaps(area))
+                    callback(*building);
             }
         }
     }
+}
 
-    return result;
+void City::for_each_building_overlapping_area(Rect2I area, Flags<BuildingQueryFlag> flags, Function<void(Building const&)> const& callback) const
+{
+    const_cast<City*>(this)->for_each_building_overlapping_area(area, flags, [&callback](auto const& building) {
+        callback(const_cast<Building&>(building));
+    });
 }
 
 void City::draw(Rect2I visible_tile_bounds) const

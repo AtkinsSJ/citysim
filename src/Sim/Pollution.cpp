@@ -41,16 +41,10 @@ void PollutionLayer::update(City& city)
 
                 m_tile_building_contributions.fill_region(dirtyRect, 0);
 
-                ChunkedArray<Building*> contributingBuildings = city.find_buildings_overlapping_area(dirtyRect.expanded(maxLandValueEffectDistance));
-                for (auto buildingIt = contributingBuildings.iterate();
-                    buildingIt.hasNext();
-                    buildingIt.next()) {
-                    Building* building = buildingIt.getValue();
-                    BuildingDef* def = getBuildingDef(building);
-                    if (def->pollutionEffect.has_effect()) {
-                        def->pollutionEffect.apply(m_tile_building_contributions, dirtyRect, building->footprint.centre(), EffectType::Add);
-                    }
-                }
+                city.for_each_building_overlapping_area(dirtyRect.expanded(maxLandValueEffectDistance), {}, [&](auto& building) {
+                    auto& def = building.get_def();
+                    def.pollutionEffect.apply(m_tile_building_contributions, dirtyRect, building.footprint.centre(), EffectType::Add);
+                });
 
                 // Now, clamp the tile values into the range we want!
                 // The above process may have overflowed the -255 to 255 range we want the values to be,

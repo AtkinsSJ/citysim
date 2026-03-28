@@ -34,9 +34,12 @@ public:
     bool has_effect() const { return m_radius > 0; }
 
     template<typename T>
-    void apply(Array2<T>& tiles, Rect2I region, V2 effect_centre, EffectType type, float scale = 1.0f)
+    void apply(Array2<T>& tiles, Rect2I region, V2 effect_centre, EffectType type, float scale = 1.0f) const
     {
         DEBUG_FUNCTION();
+
+        if (!has_effect())
+            return;
 
         float inverse_radius = 1.0f / m_radius;
         float square_radius = static_cast<float>(m_radius * m_radius);

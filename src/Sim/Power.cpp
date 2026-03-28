@@ -114,23 +114,18 @@ void PowerSector::update_power_values(City& city)
     }
 
     // Count power from buildings
-    ChunkedArray<Building*> sectorBuildings = city.find_buildings_overlapping_area(bounds, BuildingQueryFlag::RequireOriginInArea);
-    for (auto it = sectorBuildings.iterate();
-        it.hasNext();
-        it.next()) {
-        Building* building = it.getValue();
-        BuildingDef* def = getBuildingDef(building);
-
-        if (def->power != 0) {
-            u8 powerGroupIndex = get_power_group_id(building->footprint.x() - bounds.x(), building->footprint.y() - bounds.y());
+    city.for_each_building_overlapping_area(bounds, BuildingQueryFlag::RequireOriginInArea, [&](auto& building) {
+        auto& def = building.get_def();
+        if (def.power != 0) {
+            u8 powerGroupIndex = get_power_group_id(building.footprint.x() - bounds.x(), building.footprint.y() - bounds.y());
             auto& power_group = powerGroups.get(powerGroupIndex - 1);
-            if (def->power > 0) {
-                power_group.production += def->power;
+            if (def.power > 0) {
+                power_group.production += def.power;
             } else {
-                power_group.consumption -= def->power;
+                power_group.consumption -= def.power;
             }
         }
-    }
+    });
 }
 
 bool PowerLayer::does_tile_have_power_network(s32 x, s32 y) const
@@ -297,21 +292,18 @@ void PowerLayer::recalculate_sector_power_groups(City& city, PowerSector& sector
         return;
 
     // Store references to the buildings in each group, for faster updating later
-    ChunkedArray<Building*> sectorBuildings = city.find_buildings_overlapping_area(sector.bounds);
-    for (auto it = sectorBuildings.iterate();
-        it.hasNext();
-        it.next()) {
-        Building* building = it.getValue();
-        if (getBuildingDef(building)->power == 0)
-            continue; // We only care about powered buildings!
+    city.for_each_building_overlapping_area(sector.bounds, {}, [&](auto& building) {
+        auto& def = building.get_def();
+        if (def.power == 0)
+            return; // We only care about powered buildings!
 
-        if (sector.bounds.contains(building->footprint.position())) {
-            PowerGroup* group = sector.get_power_group_at(building->footprint.x() - sector.bounds.x(), building->footprint.y() - sector.bounds.y());
+        if (sector.bounds.contains(building.footprint.position())) {
+            PowerGroup* group = sector.get_power_group_at(building.footprint.x() - sector.bounds.x(), building.footprint.y() - sector.bounds.y());
 
             ASSERT(group != nullptr);
-            group->buildings.append(building->get_reference());
+            group->buildings.append(building.get_reference());
         }
-    }
+    });
 
     // Step 3: Calculate power production/consumption for OWNED buildings, and add to their PowerGroups
     sector.update_power_values(city);

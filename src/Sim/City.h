@@ -56,10 +56,8 @@ struct City {
         return const_cast<City*>(this)->get_building_at(x, y);
     }
 
-    // Returns a TEMPORARY-allocated list of buildings that are overlapping `area`, guaranteeing that
-    // each building is only listed once. No guarantees are made about the order.
-    // FIXME: Replace with a "for_each_...()" with callback. Nobody keeps them around.
-    ChunkedArray<Building*> find_buildings_overlapping_area(Rect2I area, Flags<BuildingQueryFlag> flags = {}) const;
+    void for_each_building_overlapping_area(Rect2I area, Flags<BuildingQueryFlag> flags, Function<void(Building&)> const&);
+    void for_each_building_overlapping_area(Rect2I area, Flags<BuildingQueryFlag> flags, Function<void(Building const&)> const&) const;
 
     void update();
 
