@@ -101,6 +101,8 @@ struct City {
     bool can_afford(s32 cost) const;
     void spend(s32 cost);
 
+    void update_adjacent_building_variants(Rect2I footprint);
+
     // TODO: These want to be in some kind of buffer somewhere so they can be modified!
     String name;
     String playerName;

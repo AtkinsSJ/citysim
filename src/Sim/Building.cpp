@@ -96,16 +96,13 @@ bool BuildingDef::matches_variant(BuildingVariant const& variant, EnumMap<Connec
     return result;
 }
 
-void updateBuildingVariant(City* city, Building* building, BuildingDef* passedDef)
+void Building::update_variant(City& city, Optional<BuildingDef const&> passed_def)
 {
     DEBUG_FUNCTION();
 
-    if (building == nullptr)
-        return;
+    auto const& def = passed_def.value_or(get_def());
 
-    BuildingDef* def = (passedDef != nullptr) ? passedDef : getBuildingDef(building);
-
-    if (def->variants.count > 0) {
+    if (def.variants.count > 0) {
         // NB: Right now we only allow variants for 1x1 buildings.
         // Later, we might want to expand that, but it will make things a LOT more complicated, so I'm
         // starting simple!
@@ -114,13 +111,13 @@ void updateBuildingVariant(City* city, Building* building, BuildingDef* passedDe
         // - Sam, 14/02/2020
 
         // Calculate our connections
-        s32 x = building->footprint.x();
-        s32 y = building->footprint.y();
+        s32 x = footprint.x();
+        s32 y = footprint.y();
 
         static_assert(to_underlying(ConnectionDirection::COUNT) == 8, "updateBuildingVariant() assumes ConnectionDirectionCount == 8");
         EnumMap<ConnectionDirection, Optional<BuildingDef const&>> neighbourDefs;
         for (auto direction : enum_values<ConnectionDirection>()) {
-            if (auto* building_in_direction = city->get_building_at(x + connection_offsets[direction].x, y + connection_offsets[direction].y)) {
+            if (auto* building_in_direction = city.get_building_at(x + connection_offsets[direction].x, y + connection_offsets[direction].y)) {
                 neighbourDefs[direction] = building_in_direction->get_def();
             }
         }
@@ -128,71 +125,31 @@ void updateBuildingVariant(City* city, Building* building, BuildingDef* passedDe
         // Search for a matching variant
         // Right now... YAY LINEAR SEARCH! @Speed
         bool foundVariant = false;
-        for (s32 variantIndex = 0; variantIndex < def->variants.count; variantIndex++) {
-            auto& variant = def->variants[variantIndex];
-            if (def->matches_variant(variant, neighbourDefs)) {
-                building->variantIndex = variantIndex;
+        for (s32 variant_index = 0; variant_index < def.variants.count; variant_index++) {
+            auto& variant = def.variants[variant_index];
+            if (def.matches_variant(variant, neighbourDefs)) {
+                this->variantIndex = variant_index;
                 foundVariant = true;
-                logInfo("Matched building {0}#{1} with variant #{2}"_s, { def->name, formatInt(building->id), formatInt(variantIndex) });
+                logInfo("Matched building {0}#{1} with variant #{2}"_s, { def.name, formatInt(id), formatInt(variant_index) });
                 break;
             }
         }
 
         if (!foundVariant) {
-            if (!def->spriteName.is_empty()) {
-                logWarn("Unable to find a matching variant for building '{0}'. Defaulting to the building's defined sprite, '{1}'."_s, { def->name, def->spriteName });
-                building->variantIndex = {};
+            if (!def.spriteName.is_empty()) {
+                logWarn("Unable to find a matching variant for building '{0}'. Defaulting to the building's defined sprite, '{1}'."_s, { def.name, def.spriteName });
+                variantIndex = {};
             } else {
-                logWarn("Unable to find a matching variant for building '{0}'. Defaulting to variant #0."_s, { def->name });
-                building->variantIndex = 0;
+                logWarn("Unable to find a matching variant for building '{0}'. Defaulting to variant #0."_s, { def.name });
+                variantIndex = 0;
             }
         }
     } else {
-        building->variantIndex = {};
+        variantIndex = {};
     }
 
     // Update the entity sprite
-    building->load_sprite();
-}
-
-void updateAdjacentBuildingVariants(City* city, Rect2I footprint)
-{
-    DEBUG_FUNCTION();
-
-    for (s32 y = footprint.y();
-        y < footprint.y() + footprint.height();
-        y++) {
-        Building* buildingL = city->get_building_at(footprint.x() - 1, y);
-        if (buildingL) {
-            BuildingDef* defL = getBuildingDef(buildingL);
-            if (defL->variants.count > 0)
-                updateBuildingVariant(city, buildingL, defL);
-        }
-
-        Building* buildingR = city->get_building_at(footprint.x() + footprint.width(), y);
-        if (buildingR) {
-            BuildingDef* defD = getBuildingDef(buildingR);
-            if (defD->variants.count > 0)
-                updateBuildingVariant(city, buildingR, defD);
-        }
-    }
-
-    for (s32 x = footprint.x();
-        x < footprint.x() + footprint.width();
-        x++) {
-        Building* buildingU = city->get_building_at(x, footprint.y() - 1);
-        Building* buildingD = city->get_building_at(x, footprint.y() + footprint.height());
-        if (buildingU) {
-            BuildingDef* defU = getBuildingDef(buildingU);
-            if (defU->variants.count > 0)
-                updateBuildingVariant(city, buildingU, defU);
-        }
-        if (buildingD) {
-            BuildingDef* defR = getBuildingDef(buildingD);
-            if (defR->variants.count > 0)
-                updateBuildingVariant(city, buildingD, defR);
-        }
-    }
+    load_sprite();
 }
 
 void initBuilding(Building* building, s32 id, BuildingDef* def, Rect2I footprint, GameTimestamp creationDate)

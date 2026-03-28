@@ -572,7 +572,7 @@ void growSomeZoneBuildings(City* city)
 
                     Building* building = city->add_building(building_def_ptr, footprint);
                     layer->population[zone_type] += building->currentResidents + building->currentJobs;
-                    updateBuildingVariant(city, building, building_def_ptr);
+                    building->update_variant(*city, buildingDef.value());
 
                     city->mark_area_dirty(footprint);
 

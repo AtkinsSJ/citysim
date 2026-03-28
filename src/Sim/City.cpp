@@ -266,8 +266,8 @@ void City::place_building(BuildingDef* def, s32 left, s32 top, bool markAreasDir
 
     zoneLayer.population[def->growsInZone] += building->currentResidents + building->currentJobs;
 
-    updateBuildingVariant(this, building, def);
-    updateAdjacentBuildingVariants(this, footprint);
+    building->update_variant(*this, *def);
+    update_adjacent_building_variants(footprint);
 
     if (markAreasDirty) {
         mark_area_dirty(footprint);
@@ -408,7 +408,7 @@ void City::demolish_rect(Rect2I area)
     mark_area_dirty(area);
 
     // Any buildings that would have connected with something that just got demolished need to refresh!
-    updateAdjacentBuildingVariants(this, area);
+    update_adjacent_building_variants(area);
 }
 
 void City::for_each_building_overlapping_area(Rect2I area, Flags<BuildingQueryFlag> flags, Function<void(Building&)> const& callback)
@@ -670,4 +670,32 @@ Building* City::get_building(BuildingRef const& ref)
     }
 
     return nullptr;
+}
+
+void City::update_adjacent_building_variants(Rect2I footprint)
+{
+    DEBUG_FUNCTION();
+
+    for (s32 y = footprint.y(); y < footprint.y() + footprint.height(); y++) {
+        if (auto* left_building = get_building_at(footprint.x() - 1, y)) {
+            if (auto& left_def = left_building->get_def(); left_def.variants.count > 0)
+                left_building->update_variant(*this, left_def);
+        }
+
+        if (auto* right_building = get_building_at(footprint.x() + footprint.width(), y)) {
+            if (auto& right_def = right_building->get_def(); right_def.variants.count > 0)
+                right_building->update_variant(*this, right_def);
+        }
+    }
+
+    for (s32 x = footprint.x(); x < footprint.x() + footprint.width(); x++) {
+        if (auto* up_building = get_building_at(x, footprint.y() - 1)) {
+            if (auto& up_def = up_building->get_def(); up_def.variants.count > 0)
+                up_building->update_variant(*this, up_def);
+        }
+        if (auto* down_building = get_building_at(x, footprint.y() + footprint.height())) {
+            if (auto& down_def = down_building->get_def(); down_def.variants.count > 0)
+                down_building->update_variant(*this, down_def);
+        }
+    }
 }

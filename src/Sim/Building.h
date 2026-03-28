@@ -166,6 +166,7 @@ struct Building {
     bool has_power() const;
 
     void load_sprite();
+    void update_variant(City&, Optional<BuildingDef const&>);
 };
 
 BuildingDef* getBuildingDef(Building const* building);
@@ -173,6 +174,3 @@ BuildingDef* getBuildingDef(Building const* building);
 void initBuilding(Building* building);
 void initBuilding(Building* building, s32 id, BuildingDef* def, Rect2I footprint, GameTimestamp creationDate);
 void updateBuilding(City* city, Building* building);
-
-void updateBuildingVariant(City* city, Building* building, BuildingDef* def = nullptr);
-void updateAdjacentBuildingVariants(City* city, Rect2I footprint);
