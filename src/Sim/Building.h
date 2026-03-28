@@ -139,6 +139,10 @@ EnumMap<BuildingProblem::Type, String> const buildingProblemNames {
 };
 
 struct Building {
+    // FIXME: Temporary until OccupancyArray can construct items properly.
+    Building() = default;
+    Building(s32 id, BuildingDef const&, Rect2I footprint, GameTimestamp);
+
     u32 id;
     BuildingType typeID;
     GameTimestamp creationDate;
@@ -170,6 +174,3 @@ struct Building {
     void load_sprite();
     void update_variant(City&, Optional<BuildingDef const&>);
 };
-
-void initBuilding(Building* building);
-void initBuilding(Building* building, s32 id, BuildingDef* def, Rect2I footprint, GameTimestamp creationDate);

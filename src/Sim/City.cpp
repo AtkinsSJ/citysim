@@ -121,10 +121,8 @@ Building* City::add_building_direct(s32 id, BuildingDef* def, Rect2I footprint, 
 {
     DEBUG_FUNCTION();
 
-    Indexed<Building> buildingSlot = buildings.append();
-    s32 buildingIndex = buildingSlot.index();
-    Building& building = buildingSlot.value();
-    initBuilding(&building, id, def, footprint, creationDate);
+    // FIXME: This is weird, we should construct in one go.
+    auto [building_index, building] = buildings.empend(id, *def, footprint, creationDate);
 
     // Random sprite!
     building.spriteOffset = App::the().cosmetic_random().random_integer<u16>();
@@ -144,7 +142,7 @@ Building* City::add_building_direct(s32 id, BuildingDef* def, Rect2I footprint, 
         for (s32 x = footprint.x();
             x < footprint.x() + footprint.width();
             x++) {
-            tileBuildingIndex.set(x, y, buildingIndex);
+            tileBuildingIndex.set(x, y, building_index);
         }
     }
 

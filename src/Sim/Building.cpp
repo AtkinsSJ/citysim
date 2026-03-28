@@ -141,15 +141,12 @@ void Building::update_variant(City& city, Optional<BuildingDef const&> passed_de
     load_sprite();
 }
 
-void initBuilding(Building* building, s32 id, BuildingDef* def, Rect2I footprint, GameTimestamp creationDate)
+Building::Building(s32 id, BuildingDef const& def, Rect2I footprint, GameTimestamp creation_date)
+    : id(id)
+    , typeID(def.typeID)
+    , creationDate(creation_date)
+    , footprint(footprint)
 {
-    *building = {};
-
-    building->id = id;
-    building->typeID = def->typeID;
-    building->creationDate = creationDate;
-    building->footprint = footprint;
-    building->variantIndex = {};
 }
 
 void Building::update(City& city)
