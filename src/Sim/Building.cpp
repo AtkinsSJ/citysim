@@ -15,17 +15,6 @@ BuildingDef const& Building::get_def() const
     return *getBuildingDef(typeID);
 }
 
-BuildingDef* getBuildingDef(Building const* building)
-{
-    BuildingDef* result = nullptr;
-
-    if (building != nullptr) {
-        result = getBuildingDef(building->typeID);
-    }
-
-    return result;
-}
-
 bool BuildingDef::has_type(BuildingType type) const
 {
     if (typeID == type)
@@ -165,14 +154,14 @@ void initBuilding(Building* building, s32 id, BuildingDef* def, Rect2I footprint
 
 void updateBuilding(City* city, Building* building)
 {
-    BuildingDef* def = getBuildingDef(building);
+    auto& def = building->get_def();
 
     // Check the building's needs are met
     // ... except for the ones that are checked by layers.
 
     // Distance to road
     // TODO: Replace with access to any transport types, instead of just road? Not sure what we want with that.
-    if ((def->flags.has(BuildingFlags::RequiresTransportConnection)) || (def->growsInZone != ZoneType::None)) {
+    if ((def.flags.has(BuildingFlags::RequiresTransportConnection)) || (def.growsInZone != ZoneType::None)) {
         s32 distanceToRoad = s32Max;
         // TODO: @Speed: We only actually need to check the boundary tiles, because they're guaranteed to be less than
         // the inner tiles... unless we allow multiple buildings per tile. Actually maybe we do? I'm not sure how that
@@ -184,14 +173,14 @@ void updateBuilding(City* city, Building* building)
             }
         }
 
-        if (def->growsInZone != ZoneType::None) {
+        if (def.growsInZone != ZoneType::None) {
             // Zoned buildings inherit their zone's max distance to road.
-            if (distanceToRoad > ZONE_DEFS[def->growsInZone].maximumDistanceToRoad) {
+            if (distanceToRoad > ZONE_DEFS[def.growsInZone].maximumDistanceToRoad) {
                 building->add_problem(BuildingProblem::Type::NoTransportAccess, *city);
             } else {
                 building->remove_problem(BuildingProblem::Type::NoTransportAccess);
             }
-        } else if (def->flags.has(BuildingFlags::RequiresTransportConnection)) {
+        } else if (def.flags.has(BuildingFlags::RequiresTransportConnection)) {
             // Other buildings require direct contact
             if (distanceToRoad > 1) {
                 building->add_problem(BuildingProblem::Type::NoTransportAccess, *city);
@@ -209,8 +198,8 @@ void updateBuilding(City* city, Building* building)
     }
 
     // Power!
-    if (def->power < 0) {
-        if (-def->power > building->allocatedPower) {
+    if (def.power < 0) {
+        if (-def.power > building->allocatedPower) {
             building->add_problem(BuildingProblem::Type::NoPower, *city);
         } else {
             building->remove_problem(BuildingProblem::Type::NoPower);

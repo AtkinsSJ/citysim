@@ -47,7 +47,7 @@ void HealthLayer::update(City& city)
             for (auto it = m_health_buildings.iterate(); it.hasNext(); it.next()) {
                 Building* building = city.get_building(it.getValue());
                 if (building != nullptr) {
-                    BuildingDef* def = getBuildingDef(building);
+                    auto& def = building->get_def();
 
                     // Budget
                     float effectiveness = m_funding_level;
@@ -61,7 +61,7 @@ void HealthLayer::update(City& city)
 
                     // TODO: Overcrowding
 
-                    def->healthEffect.apply(m_tile_health_coverage, sector.bounds, building->footprint.centre(), EffectType::Max, effectiveness);
+                    def.healthEffect.apply(m_tile_health_coverage, sector.bounds, building->footprint.centre(), EffectType::Max, effectiveness);
                 }
             }
         }

@@ -169,8 +169,6 @@ struct Building {
     void update_variant(City&, Optional<BuildingDef const&>);
 };
 
-BuildingDef* getBuildingDef(Building const* building);
-
 void initBuilding(Building* building);
 void initBuilding(Building* building, s32 id, BuildingDef* def, Rect2I footprint, GameTimestamp creationDate);
 void updateBuilding(City* city, Building* building);

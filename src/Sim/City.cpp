@@ -219,7 +219,7 @@ bool City::can_place_building(BuildingDef* def, s32 left, s32 top) const
             auto* buildingAtPos = get_building_at(x, y);
             if (buildingAtPos != nullptr) {
                 // Check if we can combine this with the building that's already there
-                if (catalogue.find_building_intersection(*getBuildingDef(buildingAtPos), *def).has_value()) {
+                if (catalogue.find_building_intersection(buildingAtPos->get_def(), *def).has_value()) {
                     // We can!
                     // TODO: We want to check if there is a valid variant, before we build.
                     // But that means matching against buildings that aren't constructed yet,
@@ -245,14 +245,13 @@ void City::place_building(BuildingDef* def, s32 left, s32 top, bool markAreasDir
     if (building != nullptr) {
         // Do a quick replace! We already established in canPlaceBuilding() that we match.
         // NB: We're keeping the old building's id. I think that's preferable, but might want to change that later.
-        BuildingDef* oldDef = getBuildingDef(building);
-
-        auto& intersection_def = BuildingCatalogue::the().find_building_intersection(*oldDef, *def).release_value();
+        auto& old_def = building->get_def();
+        auto& intersection_def = BuildingCatalogue::the().find_building_intersection(old_def, *def).release_value();
 
         building->typeID = intersection_def.typeID;
         def = const_cast<BuildingDef*>(&intersection_def); // I really don't like this but I don't want to rewrite this entire function right now!
 
-        zoneLayer.population[oldDef->growsInZone] -= building->currentResidents + building->currentJobs;
+        zoneLayer.population[old_def.growsInZone] -= building->currentResidents + building->currentJobs;
     } else {
         // Remove zones
         placeZone(this, ZoneType::None, footprint);
@@ -337,15 +336,15 @@ void City::demolish_rect(Rect2I area)
         it.hasNext();
         it.next()) {
         Building* building = it.getValue();
-        BuildingDef* def = getBuildingDef(building);
+        auto& def = building->get_def();
 
-        zoneLayer.population[def->growsInZone] -= building->currentResidents + building->currentJobs;
+        zoneLayer.population[def.growsInZone] -= building->currentResidents + building->currentJobs;
 
         Rect2I buildingFootprint = building->footprint;
 
         // Clean up other references
         for (auto& layer : m_layers)
-            layer->notify_building_demolished(*def, *building);
+            layer->notify_building_demolished(def, *building);
 
         building->id = 0;
 

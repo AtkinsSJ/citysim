@@ -95,7 +95,7 @@ void FireLayer::update(City& city)
                 for (auto it = m_fire_protection_buildings.iterate(); it.hasNext(); it.next()) {
                     Building* building = city.get_building(it.getValue());
                     if (building != nullptr) {
-                        BuildingDef* def = getBuildingDef(building);
+                        auto& def = building->get_def();
 
                         float effectiveness = m_funding_level;
 
@@ -103,7 +103,7 @@ void FireLayer::update(City& city)
                             effectiveness *= 0.4f; // @Balance
                         }
 
-                        def->fireProtection.apply(m_tile_fire_protection, sector.bounds, building->footprint.centre(), EffectType::Max, effectiveness);
+                        def.fireProtection.apply(m_tile_fire_protection, sector.bounds, building->footprint.centre(), EffectType::Max, effectiveness);
                     }
                 }
             }
@@ -112,10 +112,9 @@ void FireLayer::update(City& city)
                 for (s32 x = sector.bounds.x(); x < sector.bounds.x() + sector.bounds.width(); x++) {
                     float tileFireRisk = 0.0f;
 
-                    Building* building = city.get_building_at(x, y);
-                    if (building) {
-                        BuildingDef* def = getBuildingDef(building);
-                        tileFireRisk += def->fireRisk;
+                    if (auto* building = city.get_building_at(x, y)) {
+                        auto& def = building->get_def();
+                        tileFireRisk += def.fireRisk;
                     }
 
                     // Being near a fire has a HUGE risk!
@@ -255,7 +254,7 @@ void FireLayer::debug_inspect(UI::Panel& panel, V2I tile_position, Building* bui
 
     panel.addLabel(myprintf("There are {0} fire protection buildings and {1} active fires in the city."_s, { formatInt(m_fire_protection_buildings.count), formatInt(m_active_fire_count) }));
 
-    float buildingFireRisk = 100.0f * ((building == nullptr) ? 0.0f : getBuildingDef(building)->fireRisk);
+    float buildingFireRisk = 100.0f * ((building == nullptr) ? 0.0f : building->get_def().fireRisk);
 
     panel.addLabel(myprintf("Fire risk: {0}, from:\n- Building: {1}%\n- Nearby fires: {2}"_s,
         {

@@ -47,8 +47,8 @@ void TransportLayer::update(City& city)
                 for (s32 x = dirtyRect.x(); x < dirtyRect.x() + dirtyRect.width(); x++) {
                     Building* building = city.get_building_at(x, y);
                     if (building != nullptr) {
-                        BuildingDef* def = getBuildingDef(building);
-                        m_tile_transport_types.set(x, y, def->transportTypes);
+                        auto& def = building->get_def();
+                        m_tile_transport_types.set(x, y, def.transportTypes);
                     } else {
                         m_tile_transport_types.set(x, y, {});
                     }

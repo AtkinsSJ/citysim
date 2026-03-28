@@ -537,9 +537,9 @@ void PowerLayer::update(City& city)
             for (s32 y = dirtyRect.y(); y < dirtyRect.y() + dirtyRect.height(); y++) {
                 for (s32 x = dirtyRect.x(); x < dirtyRect.x() + dirtyRect.width(); x++) {
                     Building* building = city.get_building_at(x, y);
-                    BuildingDef* def = nullptr;
+                    BuildingDef const* def = nullptr;
                     if (building != nullptr) {
-                        def = getBuildingDef(building);
+                        def = &building->get_def();
                     }
 
                     if (def != nullptr && def->flags.has(BuildingFlags::CarriesPower)) {

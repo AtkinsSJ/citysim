@@ -110,13 +110,13 @@ void inspectTileWindowProc(UI::WindowContext* context, void* userData)
     Building* building = city->get_building_at(tile_pos.x, tile_pos.y);
     if (building != nullptr) {
         s32 buildingIndex = city->tileBuildingIndex.get(tile_pos.x, tile_pos.y);
-        BuildingDef* def = getBuildingDef(building);
-        ui->addLabel(myprintf("Building: {0} (ID {1}, array index {2})"_s, { getText(def->textAssetName), formatInt(building->id), formatInt(buildingIndex) }));
+        auto& def = building->get_def();
+        ui->addLabel(myprintf("Building: {0} (ID {1}, array index {2})"_s, { getText(def.textAssetName), formatInt(building->id), formatInt(buildingIndex) }));
         ui->addLabel(myprintf("Constructed: {0}"_s, { formatDateTime(dateTimeFromTimestamp(building->creationDate), DateTimeFormat::ShortDate) }));
         ui->addLabel(myprintf("Variant: {0}"_s, { formatInt(building->variantIndex.value_or(-1)) }));
-        ui->addLabel(myprintf("- Residents: {0} / {1}"_s, { formatInt(building->currentResidents), formatInt(def->residents) }));
-        ui->addLabel(myprintf("- Jobs: {0} / {1}"_s, { formatInt(building->currentJobs), formatInt(def->jobs) }));
-        ui->addLabel(myprintf("- Power: {0}"_s, { formatInt(def->power) }));
+        ui->addLabel(myprintf("- Residents: {0} / {1}"_s, { formatInt(building->currentResidents), formatInt(def.residents) }));
+        ui->addLabel(myprintf("- Jobs: {0} / {1}"_s, { formatInt(building->currentJobs), formatInt(def.jobs) }));
+        ui->addLabel(myprintf("- Power: {0}"_s, { formatInt(def.power) }));
 
         // Problems
         for (auto problem_type : enum_values<BuildingProblem::Type>()) {
@@ -749,8 +749,8 @@ static void drawBuildingEffectRadii(City* city, Iterable* buildingRefs, EffectRa
             // NB: We don't filter buildings outside of the visibleTileBounds because their radius might be
             // visible even if the building isn't!
             if (building != nullptr) {
-                BuildingDef* def = getBuildingDef(building);
-                EffectRadius* effect = &(def->*effectMember);
+                auto& def = building->get_def();
+                auto* effect = &(def.*effectMember);
                 if (effect->has_effect()) {
                     s32 paletteIndex = (building->has_power() ? paletteIndexPowered : paletteIndexUnpowered);
                     addRing(buildingRadii, building->footprint.centre(), static_cast<float>(effect->radius()), 0.5f, ringsPalette.colour_at(paletteIndex));

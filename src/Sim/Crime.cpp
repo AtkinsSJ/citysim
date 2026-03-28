@@ -45,9 +45,8 @@ void CrimeLayer::update(City& city)
     for (auto it = m_police_buildings.iterate(); it.hasNext(); it.next()) {
         Building* building = city.get_building(it.getValue());
         if (building != nullptr) {
-            BuildingDef* def = getBuildingDef(building);
-            if (def->jailCapacity > 0)
-                m_total_jail_capacity += def->jailCapacity;
+            if (auto& def = building->get_def(); def.jailCapacity > 0)
+                m_total_jail_capacity += def.jailCapacity;
         }
     }
 
@@ -62,9 +61,7 @@ void CrimeLayer::update(City& city)
             for (auto it = m_police_buildings.iterate(); it.hasNext(); it.next()) {
                 Building* building = city.get_building(it.getValue());
                 if (building != nullptr) {
-                    BuildingDef* def = getBuildingDef(building);
-
-                    if (def->policeEffect.has_effect()) {
+                    if (auto& def = building->get_def(); def.policeEffect.has_effect()) {
                         // Budget
                         float effectiveness = m_funding_level;
 
@@ -74,7 +71,7 @@ void CrimeLayer::update(City& city)
                             // TODO: Consider water access too
                         }
 
-                        def->policeEffect.apply(m_tile_police_coverage, sector.bounds, building->footprint.centre(), EffectType::Add, effectiveness);
+                        def.policeEffect.apply(m_tile_police_coverage, sector.bounds, building->footprint.centre(), EffectType::Add, effectiveness);
                     }
                 }
             }
