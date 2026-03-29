@@ -541,7 +541,6 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
 
                     auto& pack = styles.ensure(name, {});
                     target = &pack[styleType];
-                    *target = {};
                     target->name = name;
                     target->type = styleType;
 

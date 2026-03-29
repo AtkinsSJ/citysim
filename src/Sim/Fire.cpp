@@ -283,7 +283,6 @@ void FireLayer::save(BinaryFileWriter& writer) const
         for (auto it = sector->activeFires.iterate(); it.hasNext(); it.next()) {
             auto& fire = it.get();
             SAVFire* savFire = tempFires.append();
-            *savFire = {};
             savFire->x = (u16)fire.pos.x;
             savFire->y = (u16)fire.pos.y;
             savFire->startDate = fire.startDate;

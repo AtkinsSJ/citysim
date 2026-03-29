@@ -595,8 +595,6 @@ DrawRectsGroup* beginRectsGroupInternal(RenderBuffer* buffer, AssetMetadata* tex
         addSetTexture(buffer, texture);
 
     DrawRectsGroup* result = temp_arena().allocate<DrawRectsGroup>();
-    *result = {};
-
     result->buffer = buffer;
     result->count = 0;
     result->maxCount = maxCount;
@@ -773,8 +771,6 @@ DrawRingsGroup* beginRingsGroup(RenderBuffer* buffer, s32 maxCount)
     addSetShader(buffer, s_renderer->shaderIds.untextured);
 
     DrawRingsGroup* result = temp_arena().allocate<DrawRingsGroup>();
-    *result = {};
-
     result->buffer = buffer;
     result->count = 0;
     result->maxCount = maxCount;

@@ -359,8 +359,6 @@ ErrorOr<NonnullOwnPtr<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata,
                 if (def->variants.count < def->variants.capacity) {
                     BuildingVariant* variant = def->variants.append();
 
-                    *variant = {};
-
                     auto maybe_direction_flags = reader.next_token();
                     auto maybe_sprite_name = reader.next_token();
                     if (!maybe_direction_flags.has_value() || !maybe_sprite_name.has_value()) {
