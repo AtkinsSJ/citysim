@@ -6,6 +6,7 @@
 
 #pragma once
 
+class Allocator;
 class BitArray;
 class BitArrayIterator;
 class Blob;

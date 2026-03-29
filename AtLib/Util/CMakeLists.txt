@@ -1,5 +1,6 @@
 add_library(Util STATIC
     Alignment.cpp
+    Allocator.cpp
     BitArray.cpp
     Blob.cpp
     Interpolate.cpp

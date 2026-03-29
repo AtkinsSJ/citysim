@@ -6,15 +6,13 @@
 
 #pragma once
 
-#include <Util/Array.h>
-#include <Util/Array2.h>
-#include <Util/Assert.h>
+#include <Util/Allocator.h>
 #include <Util/Basic.h>
 #include <Util/Memory.h>
 #include <Util/Optional.h>
 #include <Util/String.h>
 
-class MemoryArena {
+class MemoryArena final : public Allocator {
 public:
     // NB: MemoryBlock is positioned just before its memory pointer.
     // So when deallocating, we can just free(block)!
@@ -75,71 +73,11 @@ public:
     void revert_to(ResetState const&);
     void reset();
 
-    Blob allocate_blob(size_t size);
-
-    template<typename T, typename... Args>
-    T* allocate(Args&&... args)
-    {
-        auto memory = allocate_internal(sizeof(T));
-        return new (memory.raw_data()) T(forward<Args>(args)...);
-    }
-
-    template<typename T>
-    Span<T> allocate_multiple(size_t count)
-    {
-        if (count == 0)
-            return {};
-
-        auto memory = allocate_internal(sizeof(T) * count);
-        auto* items = new (memory.raw_data()) T[count];
-        return Span { count, items };
-    }
-
-    template<typename T, typename Item = u8>
-    struct ObjectAndData {
-        T& object;
-        Span<Item> data;
-    };
-    template<typename T, typename Item = u8>
-    ObjectAndData<T, Item> allocate_with_data(size_t item_count)
-    {
-        // FIXME: Figure out alignment requirements so that the Item array is aligned too.
-        auto memory = allocate_internal(sizeof(T) + (sizeof(Item) * item_count));
-        ObjectAndData<T, Item> result {
-            .object = *reinterpret_cast<T*>(memory.raw_data()),
-            .data = { item_count, reinterpret_cast<Item*>(reinterpret_cast<u8*>(memory.raw_data()) + sizeof(T)) },
-        };
-        new (&result.object) T();
-        return result;
-    }
-
-    template<typename T>
-    Array<T> allocate_array(size_t count, bool mark_as_full = false)
-    {
-        auto items = allocate_multiple<T>(count);
-        return makeArray<T>(items.size(), items.raw_data(), mark_as_full ? count : 0);
-    }
-
-    template<typename T>
-    Array2<T> allocate_array_2d(V2I size)
-    {
-        return allocate_array_2d<T>(size.x, size.y);
-    }
-
-    template<typename T>
-    Array2<T> allocate_array_2d(u32 w, u32 h)
-    {
-        ASSERT(w > 0 && h > 0);
-        return Array2<T> { w, h, allocate_multiple<T>(w * h) };
-    }
-
-    String allocate_string(StringView input);
-
 private:
     bool allocate_block(size_t size);
     void free_current_block();
 
-    Span<u8> allocate_internal(size_t size);
+    virtual Span<u8> allocate_internal(size_t size) override;
 
     String m_name { "UNINITIALIZED"_s };
     MemoryBlock* m_current_block { nullptr };
