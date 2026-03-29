@@ -33,14 +33,11 @@ struct ArrayChunk : PoolItem {
 template<typename T>
 ArrayChunk<T>* allocateChunk(MemoryArena* arena, s32 itemsPerChunk)
 {
-    // Rolled into a single allocation
-    Blob blob = arena->allocate_blob(sizeof(ArrayChunk<T>) + (sizeof(T) * itemsPerChunk));
-    ArrayChunk<T>* newChunk = (ArrayChunk<T>*)blob.data();
-    *newChunk = {};
-    newChunk->count = 0;
-    newChunk->items = (T*)(blob.data() + sizeof(ArrayChunk<T>));
+    auto [chunk, items] = arena->allocate_with_data<ArrayChunk<T>, T>(itemsPerChunk);
+    chunk.count = 0;
+    chunk.items = items.raw_data();
 
-    return newChunk;
+    return &chunk;
 }
 
 template<typename T>
