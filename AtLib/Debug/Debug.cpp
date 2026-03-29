@@ -145,83 +145,85 @@ void clearNewFrameDebugData(DebugState* debugState)
     }
 }
 
-struct DebugTextState {
-    V2I pos;
-    HAlign hAlign;
-    char buffer[1024];
-    BitmapFont* font;
-    Colour color;
-    s32 maxWidth;
-    bool progressUpwards;
+class DebugTextPrinter {
+public:
+    DebugTextPrinter(Renderer& renderer, BitmapFont& font, Colour text_color, s32 screen_edge_padding, bool upwards, HAlign horizontal_alignment)
+        : m_render_buffer(renderer.debug_buffer())
+        , m_camera(renderer.ui_camera())
+        , m_h_align(horizontal_alignment)
+        , m_font(font)
+        , m_color(text_color)
+        , m_max_width(floor_s32(m_camera.size().x) - (2 * screen_edge_padding))
+        , m_progress_upwards(upwards)
+        , m_text_shader_id(renderer.shaderIds.text)
+        , m_untextured_shader_id(renderer.shaderIds.untextured)
+    {
+        switch (horizontal_alignment) {
+        case HAlign::Right:
+            m_pos.x = ceil_s32(m_camera.size().x) - screen_edge_padding;
+            break;
+        case HAlign::Left:
+            // TODO: Implement these if we care.
+        case HAlign::Centre:
+        case HAlign::Fill:
+            m_pos.x = screen_edge_padding;
+            break;
+        }
 
-    RenderBuffer* renderBuffer;
-    Camera* camera;
-    s8 textShaderID;
-    s8 untexturedShaderID;
+        if (upwards) {
+            m_pos.y = ceil_s32(m_camera.size().y) - screen_edge_padding;
+        } else {
+            m_pos.y = screen_edge_padding;
+        }
+    }
 
-    u32 charsLastPrinted;
+    void write(StringView text, bool draw_highlight = false, Optional<Colour> override_text_color = {})
+    {
+        Alignment align { m_h_align, m_progress_upwards ? VAlign::Bottom : VAlign::Top };
+
+        m_chars_last_printed = text.length();
+        auto text_color = override_text_color.value_or(m_color);
+
+        V2I textSize = m_font.calculate_text_size(text, m_max_width);
+        V2I topLeft = calculateTextPosition(m_pos, textSize, align);
+
+        Rect2I bounds { topLeft, textSize };
+
+        if (draw_highlight && bounds.contains(v2i(m_camera.mouse_position()))) {
+            drawSingleRect(&m_render_buffer, bounds, m_untextured_shader_id, text_color * 0.5f);
+            drawText(&m_render_buffer, &m_font, text, bounds, align, Colour::from_rgb_255(0, 0, 0, 255), m_text_shader_id);
+        } else {
+            drawText(&m_render_buffer, &m_font, text, bounds, align, text_color, m_text_shader_id);
+        }
+
+        if (m_progress_upwards) {
+            m_pos.y -= bounds.height();
+        } else {
+            m_pos.y += bounds.height();
+        }
+    }
+
+    void write_horizontal_line()
+    {
+        write(String::repeat('-', m_chars_last_printed));
+    }
+
+private:
+    RenderBuffer& m_render_buffer;
+    Camera& m_camera;
+
+    V2I m_pos;
+    HAlign m_h_align;
+    BitmapFont& m_font;
+    Colour m_color;
+    s32 m_max_width;
+    bool m_progress_upwards;
+
+    s8 m_text_shader_id;
+    s8 m_untextured_shader_id;
+
+    u32 m_chars_last_printed { 0 };
 };
-
-static void initDebugTextState(DebugTextState* textState, BitmapFont* font, Colour textColor, s32 screenEdgePadding, bool upwards, HAlign horizontal_alignment)
-{
-    auto& renderer = the_renderer();
-    *textState = {};
-
-    textState->renderBuffer = &renderer.debug_buffer();
-    textState->camera = &renderer.ui_camera();
-
-    textState->progressUpwards = upwards;
-    textState->hAlign = horizontal_alignment;
-    switch (horizontal_alignment) {
-    case HAlign::Right:
-        textState->pos.x = ceil_s32(textState->camera->size().x) - screenEdgePadding;
-        break;
-    case HAlign::Left:
-        // TODO: Implement these if we care.
-    case HAlign::Centre:
-    case HAlign::Fill:
-        textState->pos.x = screenEdgePadding;
-        break;
-    }
-
-    if (upwards) {
-        textState->pos.y = ceil_s32(textState->camera->size().y) - screenEdgePadding;
-    } else {
-        textState->pos.y = screenEdgePadding;
-    }
-    textState->font = font;
-    textState->color = textColor;
-    textState->maxWidth = floor_s32(textState->camera->size().x) - (2 * screenEdgePadding);
-
-    textState->textShaderID = renderer.shaderIds.text;
-    textState->untexturedShaderID = renderer.shaderIds.untextured;
-}
-
-void debugTextOut(DebugTextState* textState, String text, bool doHighlight = false, Colour const* color = nullptr)
-{
-    Alignment align { textState->hAlign, textState->progressUpwards ? VAlign::Bottom : VAlign::Top };
-
-    textState->charsLastPrinted = text.length();
-    Colour textColor = (color != nullptr) ? *color : textState->color;
-
-    V2I textSize = textState->font->calculate_text_size(text, textState->maxWidth);
-    V2I topLeft = calculateTextPosition(textState->pos, textSize, align);
-
-    Rect2I bounds { topLeft, textSize };
-
-    if (doHighlight && bounds.contains(v2i(textState->camera->mouse_position()))) {
-        drawSingleRect(textState->renderBuffer, bounds, textState->untexturedShaderID, textColor * 0.5f);
-        drawText(textState->renderBuffer, textState->font, text, bounds, align, Colour::from_rgb_255(0, 0, 0, 255), textState->textShaderID);
-    } else {
-        drawText(textState->renderBuffer, textState->font, text, bounds, align, textColor, textState->textShaderID);
-    }
-
-    if (textState->progressUpwards) {
-        textState->pos.y -= bounds.height();
-    } else {
-        textState->pos.y += bounds.height();
-    }
-}
 
 void renderDebugData(DebugState* debugState)
 {
@@ -265,27 +267,35 @@ void renderDebugData(DebugState* debugState)
         endRectsGroup(rectsGroup);
     }
 
-    DebugTextState textState;
-    initDebugTextState(&textState, &font, Colour::white(), 16, false, HAlign::Left);
+    DebugTextPrinter textState { the_renderer(), font, Colour::white(), 16, false, HAlign::Left };
 
     u32 framesAgo = wrap<u32>(debugState->writingFrameIndex - rfi, DEBUG_FRAMES_COUNT);
-    debugTextOut(&textState, myprintf("Examining {0} frames ago"_s, { formatInt(framesAgo) }));
+    textState.write(myprintf("Examining {0} frames ago"_s, { formatInt(framesAgo) }));
 
     // Asset system
     {
         DebugAssetData* assetData = &debugState->assetData;
         smm totalAssetMemory = assetData->assetMemoryAllocated[rfi] + assetData->assetsByNameSize[rfi] + assetData->arenaTotalSize[rfi];
         smm usedAssetMemory = assetData->assetMemoryAllocated[rfi] + assetData->assetsByNameSize[rfi] + assetData->arenaUsedSize[rfi];
-        debugTextOut(&textState, myprintf("Asset system: {0}/{1} assets loaded, using {2} bytes ({3} allocated)\n    {4} bytes in arena, {5} bytes in assets, {6} bytes in hashtables\n    sizeof(Asset) = {7}"_s, { formatInt(assetData->loadedAssetCount[rfi]), formatInt(assetData->assetCount[rfi]), formatInt(usedAssetMemory), formatInt(totalAssetMemory),
-
-                                                                                                                                                                                                                       formatInt(assetData->arenaUsedSize[rfi]), formatInt(assetData->assetMemoryAllocated[rfi]), formatInt(assetData->assetsByNameSize[rfi]), formatInt(sizeof(AssetMetadata)) }));
+        textState.write(
+            myprintf("Asset system: {0}/{1} assets loaded, using {2} bytes ({3} allocated)\n    {4} bytes in arena, {5} bytes in assets, {6} bytes in hashtables\n    sizeof(Asset) = {7}"_s,
+                {
+                    formatInt(assetData->loadedAssetCount[rfi]),
+                    formatInt(assetData->assetCount[rfi]),
+                    formatInt(usedAssetMemory),
+                    formatInt(totalAssetMemory),
+                    formatInt(assetData->arenaUsedSize[rfi]),
+                    formatInt(assetData->assetMemoryAllocated[rfi]),
+                    formatInt(assetData->assetsByNameSize[rfi]),
+                    formatInt(sizeof(AssetMetadata)),
+                }));
     }
 
     // Memory arenas
     {
         DebugArenaData* arena = debugState->arenaDataSentinel.nextNode;
         while (arena != &debugState->arenaDataSentinel) {
-            debugTextOut(&textState, myprintf("Memory arena {0}: {1} blocks, {2} used / {3} allocated ({4}%)"_s, { arena->name, formatInt(arena->blockCount[rfi]), formatInt(arena->usedSize[rfi]), formatInt(arena->totalSize[rfi]), formatFloat(100.0f * (float)arena->usedSize[rfi] / (float)arena->totalSize[rfi], 1) }));
+            textState.write(myprintf("Memory arena {0}: {1} blocks, {2} used / {3} allocated ({4}%)"_s, { arena->name, formatInt(arena->blockCount[rfi]), formatInt(arena->usedSize[rfi]), formatInt(arena->totalSize[rfi]), formatFloat(100.0f * (float)arena->usedSize[rfi] / (float)arena->totalSize[rfi], 1) }));
             arena = arena->nextNode;
         }
     }
@@ -294,7 +304,7 @@ void renderDebugData(DebugState* debugState)
     {
         DebugPoolData* pool = debugState->poolDataSentinel.nextNode;
         while (pool != &debugState->poolDataSentinel) {
-            debugTextOut(&textState, myprintf("Pool {0}: {1} / {2}"_s, { pool->name, formatInt(pool->pooledItemCount[rfi]), formatInt(pool->totalItemCount[rfi]) }));
+            textState.write(myprintf("Pool {0}: {1} / {2}"_s, { pool->name, formatInt(pool->pooledItemCount[rfi]), formatInt(pool->totalItemCount[rfi]) }));
             pool = pool->nextNode;
         }
     }
@@ -310,26 +320,26 @@ void renderDebugData(DebugState* debugState)
                 for (s32 i = 0; i < drawCallCount; i++) {
                     itemsDrawn += renderBufferData->drawCalls[rfi][i].itemsDrawn;
                 }
-                debugTextOut(&textState, myprintf("Render buffer '{0}': {1} items drawn, in {2} batches. ({3} chunks)"_s, { renderBufferData->name, formatInt(itemsDrawn), formatInt(drawCallCount), formatInt(renderBufferData->chunkCount[rfi]) }));
+                textState.write(myprintf("Render buffer '{0}': {1} items drawn, in {2} batches. ({3} chunks)"_s, { renderBufferData->name, formatInt(itemsDrawn), formatInt(drawCallCount), formatInt(renderBufferData->chunkCount[rfi]) }));
             }
             renderBufferData = renderBufferData->nextNode;
         }
     }
 
-    debugTextOut(&textState, myprintf("There are {0} cycles in a second"_s, { formatInt(cyclesPerSecond) }));
+    textState.write(myprintf("There are {0} cycles in a second"_s, { formatInt(cyclesPerSecond) }));
 
     // Top code blocks
     {
-        debugTextOut(&textState, myprintf("{0}| {1}| {2}| {3}| {4}"_s, { formatString("Code", 60), formatString("Total cycles", 20, false), formatString("Calls", 10, false), formatString("Avg Cycles", 20, false), formatString("2-second avg cycles", 20, false) }));
+        textState.write(myprintf("{0}| {1}| {2}| {3}| {4}"_s, { formatString("Code", 60), formatString("Total cycles", 20, false), formatString("Calls", 10, false), formatString("Avg Cycles", 20, false), formatString("2-second avg cycles", 20, false) }));
 
-        debugTextOut(&textState, String::repeat('-', textState.charsLastPrinted));
+        textState.write_horizontal_line();
         DebugCodeDataWrapper* topBlock = debugState->topCodeBlocksSentinel.nextNode;
         float msPerCycle = 1000.0f / (float)cyclesPerSecond;
         while (topBlock != &debugState->topCodeBlocksSentinel) {
             DebugCodeData* code = topBlock->data;
             float totalCycles = (float)code->totalCycleCount[rfi];
             float averageCycles = totalCycles / (float)code->callCount[rfi];
-            debugTextOut(&textState,
+            textState.write(
                 myprintf("{0}| {1} ({2}ms)| {3}| {4} ({5}ms)| {6} ({7}ms)"_s,
                     {
                         formatString(code->name, 60),
@@ -341,14 +351,14 @@ void renderDebugData(DebugState* debugState)
                         formatString(formatInt(code->averageTotalCycleCount), 10, false),
                         formatString(formatFloat(code->averageTotalCycleCount * msPerCycle, 2), 5, false),
                     }),
-                true, &debugCodeDataTagColors[code->tag]);
+                true, debugCodeDataTagColors[code->tag]);
             topBlock = topBlock->nextNode;
         }
     }
 
     // Put FPS in top right
-    initDebugTextState(&textState, &font, Colour::white(), 16, false, HAlign::Right);
     {
+        DebugTextPrinter top_right_text { renderer, font, Colour::white(), 16, false, HAlign::Right };
         String smsForFrame = "???"_s;
         String sfps = "???"_s;
         if (rfi != debugState->writingFrameIndex) {
@@ -356,7 +366,7 @@ void renderDebugData(DebugState* debugState)
             smsForFrame = formatFloat(msForFrame, 2);
             sfps = formatFloat(1000.0f / max(msForFrame, 1.0f), 2);
         }
-        debugTextOut(&textState, myprintf("FPS: {0} ({1}ms)"_s, { sfps, smsForFrame }));
+        top_right_text.write(myprintf("FPS: {0} ({1}ms)"_s, { sfps, smsForFrame }));
     }
 }
 
