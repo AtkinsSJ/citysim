@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2015-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -8,7 +8,6 @@
 
 #include <Util/Basic.h>
 #include <Util/Forward.h>
-#include <Util/MemoryArena.h>
 #include <Util/String.h>
 
 /**
@@ -31,7 +30,6 @@ class StringBuilder {
 public:
     explicit StringBuilder(size_t initial_size = 256);
     explicit StringBuilder(Blob buffer);
-    explicit StringBuilder(char* buffer, size_t length);
 
     void append(StringBase const&);
     void append(char);
@@ -49,9 +47,7 @@ public:
     String deprecated_to_string() const;
 
 private:
-    // FIXME: Replace capacity with a Span
-    size_t m_capacity;
+    Span<char> m_buffer;
     size_t m_length { 0 };
-    char* m_buffer;
     bool m_fixed_buffer { false };
 };

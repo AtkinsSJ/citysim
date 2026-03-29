@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2015-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -7,21 +7,15 @@
 #include "StringBuilder.h"
 #include <Util/Log.h>
 #include <Util/Memory.h>
+#include <Util/MemoryArena.h>
 
 StringBuilder::StringBuilder(size_t initial_size)
-    : m_capacity(max(initial_size, 256))
-    , m_buffer(temp_arena().allocate_multiple<char>(m_capacity).raw_data())
+    : m_buffer(temp_arena().allocate_multiple<char>(max(initial_size, 256)))
 {
 }
 
 StringBuilder::StringBuilder(Blob buffer)
-    : StringBuilder(reinterpret_cast<char*>(buffer.writable_data()), buffer.size())
-{
-}
-
-StringBuilder::StringBuilder(char* buffer, size_t length)
-    : m_capacity(length)
-    , m_buffer(buffer)
+    : m_buffer { buffer.size(), reinterpret_cast<char*>(buffer.writable_data()) }
     , m_fixed_buffer(true)
 {
 }
@@ -29,10 +23,10 @@ StringBuilder::StringBuilder(char* buffer, size_t length)
 void StringBuilder::append(StringBase const& string)
 {
     auto new_length = m_length + string.length();
-    if (new_length > m_capacity)
+    if (new_length > m_buffer.size())
         ensure_capacity(new_length);
 
-    copyMemory(string.raw_pointer_to_characters(), m_buffer + m_length, string.length());
+    copyMemory(string.raw_pointer_to_characters(), m_buffer.raw_data() + m_length, string.length());
     m_length += string.length();
 }
 
@@ -52,13 +46,11 @@ void StringBuilder::ensure_capacity(size_t new_capacity)
 
     logWarn("Expanding StringBuilder"_s);
 
-    s32 target_capacity = max(new_capacity, m_capacity * 2);
+    s32 target_capacity = max(new_capacity, m_buffer.size() * 2);
 
     auto newBuffer = temp_arena().allocate_multiple<char>(target_capacity);
-    copyMemory(m_buffer, newBuffer.raw_data(), m_length);
-
-    m_buffer = newBuffer.raw_data();
-    m_capacity = target_capacity;
+    copyMemory(m_buffer.raw_data(), newBuffer.raw_data(), m_length);
+    m_buffer = newBuffer;
 }
 
 void StringBuilder::remove(size_t count)
@@ -75,10 +67,10 @@ char StringBuilder::char_at(size_t index) const
 
 StringView StringBuilder::to_string_view() const
 {
-    return StringView { m_buffer, m_length };
+    return StringView { m_buffer.raw_data(), m_length };
 }
 
 String StringBuilder::deprecated_to_string() const
 {
-    return String { m_buffer, m_length };
+    return String { m_buffer.raw_data(), m_length };
 }
