@@ -56,8 +56,8 @@ void endFrame()
 {
     auto current_toast = uiState.toasts.peek();
     if (current_toast.has_value()) {
-        Toast* toast = current_toast.value();
-        if (toast->update_and_draw(App::the().delta_time()))
+        auto& toast = current_toast.value();
+        if (toast.update_and_draw(App::the().delta_time()))
             (void)uiState.toasts.pop();
     }
 

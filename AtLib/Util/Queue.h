@@ -39,90 +39,91 @@ template<typename T>
 struct QueueIterator;
 
 template<typename T>
-struct Queue {
+class Queue {
+public:
     // FIXME: Temporary until initialization is more sane everywhere.
     Queue() = default;
 
     explicit Queue(MemoryArena& arena, s32 chunk_size = 32)
-        : chunkSize(chunk_size)
+        : m_chunk_size(chunk_size)
     {
-        initPool<QueueChunk<T>>(&chunkPool, &arena, [](MemoryArena* arena, void* userData) {
+        initPool<QueueChunk<T>>(&m_chunk_pool, &arena, [](MemoryArena* arena, void* userData) {
                     s32 chunk_size = *static_cast<s32*>(userData);
 
                     auto [new_chunk, items] = arena->allocate_with_data<QueueChunk<T>, T>(chunk_size);
                     new_chunk.items = items.raw_data();
-                    return &new_chunk; }, &chunkSize);
+                    return &new_chunk; }, &m_chunk_size);
 
         // We're starting off with one chunk, even though it's empty. Perhaps we should wait
         // until we actually add something? I'm not sure.
-        startChunk = getItemFromPool(&chunkPool);
-        endChunk = startChunk;
+        m_start_chunk = getItemFromPool(&m_chunk_pool);
+        m_end_chunk = m_start_chunk;
     }
 
-    bool isEmpty() { return count == 0; }
+    bool is_empty() const { return m_count == 0; }
 
     template<typename... Args>
     T& push(Args&&... args)
     {
-        if (endChunk == nullptr) {
+        if (m_end_chunk == nullptr) {
             // In case we don't yet have a chunk, or we became empty and removed it, add one.
-            ASSERT(startChunk == nullptr); // If we have a start but no end, something has gone very wrong!!!
-            startChunk = getItemFromPool(&chunkPool);
-            startChunk->count = 0;
-            startChunk->startIndex = 0;
-            endChunk = startChunk;
-        } else if (endChunk->count == chunkSize) {
+            ASSERT(m_start_chunk == nullptr); // If we have a start but no end, something has gone very wrong!!!
+            m_start_chunk = getItemFromPool(&m_chunk_pool);
+            m_start_chunk->count = 0;
+            m_start_chunk->startIndex = 0;
+            m_end_chunk = m_start_chunk;
+        } else if (m_end_chunk->count == m_chunk_size) {
             // We're full, so get a new chunk
-            QueueChunk<T>* newChunk = getItemFromPool(&chunkPool);
+            QueueChunk<T>* newChunk = getItemFromPool(&m_chunk_pool);
             newChunk->count = 0;
             newChunk->startIndex = 0;
-            newChunk->prevChunk = endChunk;
-            endChunk->nextChunk = newChunk;
+            newChunk->prevChunk = m_end_chunk;
+            m_end_chunk->nextChunk = newChunk;
 
-            endChunk = newChunk;
+            m_end_chunk = newChunk;
         }
 
-        void* data = endChunk->items + endChunk->startIndex + endChunk->count;
-        endChunk->count++;
-        count++;
+        void* data = m_end_chunk->items + m_end_chunk->startIndex + m_end_chunk->count;
+        m_end_chunk->count++;
+        m_count++;
 
         return *new (data) T(forward<Args>(args)...);
     }
 
-    Optional<T*> peek()
+    Optional<T&> peek() const
     {
-        if (!isEmpty())
-            return startChunk->items + startChunk->startIndex;
+        if (!is_empty())
+            return m_start_chunk->items[m_start_chunk->startIndex];
 
         return {};
     }
 
     Optional<T> pop()
     {
-        if (!isEmpty()) {
-            Optional<T> result = move(startChunk->items[startChunk->startIndex]);
+        if (!is_empty()) {
+            Optional<T> result = move(m_start_chunk->items[m_start_chunk->startIndex]);
 
-            startChunk->count--;
-            startChunk->startIndex++;
-            count--;
+            m_start_chunk->count--;
+            m_start_chunk->startIndex++;
+            m_count--;
 
-            if (startChunk->count == 0) {
+            if (m_start_chunk->count == 0) {
                 // We're empty! So return it to the pool.
                 // EXCEPT: If this is the only chunk, we might as well keep it and just clear it!
-                if (startChunk == endChunk) {
-                    startChunk->startIndex = 0;
+                if (m_start_chunk == m_end_chunk) {
+                    m_start_chunk->startIndex = 0;
                 } else {
-                    QueueChunk<T>* newStartChunk = startChunk->nextChunk;
+                    QueueChunk<T>* newStartChunk = m_start_chunk->nextChunk;
                     if (newStartChunk != nullptr) {
                         newStartChunk->prevChunk = nullptr;
                     }
 
-                    addItemToPool(&chunkPool, startChunk);
-                    startChunk = newStartChunk;
+                    addItemToPool(&m_chunk_pool, m_start_chunk);
+                    m_start_chunk = newStartChunk;
 
                     // If we just removed the only chunk, make sure to clear the endChunk to match.
-                    if (startChunk == nullptr) {
-                        endChunk = nullptr;
+                    if (m_start_chunk == nullptr) {
+                        m_end_chunk = nullptr;
                     }
                 }
             }
@@ -138,29 +139,29 @@ struct Queue {
 
         result.queue = this;
         result.goBackwards = goBackwards;
-        result.isDone = isEmpty();
+        result.isDone = is_empty();
 
         if (!result.isDone) {
             if (goBackwards) {
-                result.currentChunk = this->endChunk;
-                result.indexInChunk = this->endChunk->startIndex + this->endChunk->count - 1;
+                result.currentChunk = m_end_chunk;
+                result.indexInChunk = m_end_chunk->startIndex + m_end_chunk->count - 1;
             } else {
-                result.currentChunk = this->startChunk;
-                result.indexInChunk = this->startChunk->startIndex;
+                result.currentChunk = m_start_chunk;
+                result.indexInChunk = m_start_chunk->startIndex;
             }
         }
 
         return result;
     }
 
-    // "private"
-    DeprecatedPool<QueueChunk<T>> chunkPool;
-    s32 chunkSize;
+private:
+    DeprecatedPool<QueueChunk<T>> m_chunk_pool;
+    s32 m_chunk_size;
 
-    s32 count { 0 };
+    s32 m_count { 0 };
 
-    QueueChunk<T>* startChunk;
-    QueueChunk<T>* endChunk;
+    QueueChunk<T>* m_start_chunk;
+    QueueChunk<T>* m_end_chunk;
 };
 
 template<typename T>

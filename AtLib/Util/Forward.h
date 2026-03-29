@@ -55,6 +55,9 @@ template<typename T>
 class NonnullOwnPtr;
 
 template<typename T>
+class Queue;
+
+template<typename T>
 class Ref;
 
 template<typename T>
