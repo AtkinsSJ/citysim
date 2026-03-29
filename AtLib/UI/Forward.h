@@ -18,7 +18,7 @@ class LabelStyle;
 struct Panel;
 class PanelStyle;
 class RadioButtonStyle;
-struct ScrollbarState;
+class Scrollbar;
 class ScrollbarStyle;
 class SliderStyle;
 struct TextInput;

@@ -68,7 +68,6 @@ void initConsole(MemoryArena* debugArena, float openHeight, float maximisedHeigh
     console->inputHistoryCursor = -1;
 
     initChunkedArray(&console->outputLines, debugArena, 1024);
-    UI::initScrollbar(&console->scrollbar, Orientation::Vertical);
 
     // NB: Increase the count before we reach it - hash tables like lots of extra space!
     s32 commandCapacity = 128;
@@ -224,19 +223,19 @@ void updateAndRenderConsole(Console* console)
             s32 fontLineHeight = consoleStyle.font.get().line_height();
             s32 contentHeight = ((console->outputLines.count - 1) * fontLineHeight) + scrollbarBounds.height();
             if (scrollToBottom) {
-                console->scrollbar.scrollPercent = 1.0f;
+                console->scrollbar.scroll_to_bottom();
             }
 
-            console->scrollbar.mouseWheelStepSize = 3 * fontLineHeight;
+            console->scrollbar.set_mouse_wheel_step_size(3 * fontLineHeight);
 
-            UI::putScrollbar(&console->scrollbar, contentHeight, scrollbarBounds, &scrollbarStyle, false, renderBuffer);
+            console->scrollbar.place(contentHeight, scrollbarBounds, &scrollbarStyle, false, renderBuffer);
         }
 
         textPos.y -= consoleStyle.padding.bottom;
 
         // print output lines
         auto& consoleFont = consoleStyle.font.get();
-        s32 scrollLinePos = clamp(floor_s32(console->scrollbar.scrollPercent * console->outputLines.count), 0, console->outputLines.count - 1);
+        s32 scrollLinePos = clamp(floor_s32(console->scrollbar.scroll_percent() * console->outputLines.count), 0, console->outputLines.count - 1);
         Alignment outputLinesAlign { HAlign::Left, VAlign::Bottom };
         for (auto it = console->outputLines.iterate(scrollLinePos, false, true);
             it.hasNext();

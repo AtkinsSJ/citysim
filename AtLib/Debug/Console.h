@@ -63,7 +63,7 @@ struct Console : public AssetManagerListener {
     s32 inputHistoryCursor;
 
     ChunkedArray<ConsoleOutputLine> outputLines;
-    UI::ScrollbarState scrollbar;
+    UI::Scrollbar scrollbar { Orientation::Vertical };
 
     HashTable<Command> commands;
     ChunkedArray<CommandShortcut> commandShortcuts;

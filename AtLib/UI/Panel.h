@@ -56,8 +56,8 @@ struct Panel {
     }
 
     // Configuration functions, which should be called before adding any widgets
-    void enableHorizontalScrolling(ScrollbarState* hScrollbar);
-    void enableVerticalScrolling(ScrollbarState* vScrollbar, bool expandWidth = false);
+    void enableHorizontalScrolling(Scrollbar* hScrollbar);
+    void enableVerticalScrolling(Scrollbar* vScrollbar, bool expandWidth = false);
 
     // Add stuff to the panel
     bool addTextButton(StringView text, ButtonState state = ButtonState::Normal, Optional<StringView> style_name = {});
@@ -207,20 +207,20 @@ struct Panel {
             space.set_y(contentArea.y() + currentBottom);
 
             if (vScrollbar != nullptr) {
-                space.set_y(space.y() + (vScrollbar->contentSize - getScrollbarContentOffset(vScrollbar, bounds.height()) - bounds.height()));
+                space.set_y(space.y() + (vScrollbar->content_size() - vScrollbar->content_offset(bounds.height()) - bounds.height()));
             }
         } else {
             space.set_y(contentArea.y() + currentTop);
 
             if (vScrollbar != nullptr) {
-                space.set_y(space.y() - getScrollbarContentOffset(vScrollbar, bounds.height()));
+                space.set_y(space.y() - vScrollbar->content_offset(bounds.height()));
             }
         }
 
         // Adjust if we're in a scrolling area
         if (hScrollbar != nullptr) {
             space.set_width(s16Max); // Not s32 because then we'd have overflow issues. s16 should be plenty large enough.
-            space.set_x(space.x() - getScrollbarContentOffset(hScrollbar, bounds.width()));
+            space.set_x(space.x() - hScrollbar->content_offset(bounds.width()));
         }
         ASSERT(space.width() > 0);
 
@@ -256,9 +256,9 @@ struct Panel {
     Rect2I contentArea {};
     Alignment widgetAlignment;
 
-    ScrollbarState* hScrollbar { nullptr };
+    Scrollbar* hScrollbar { nullptr };
     Rect2I hScrollbarBounds {};
-    ScrollbarState* vScrollbar { nullptr };
+    Scrollbar* vScrollbar { nullptr };
     Rect2I vScrollbarBounds {};
 
     // Relative to contentArea

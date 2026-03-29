@@ -30,16 +30,29 @@ inline ButtonState buttonIsActive(bool isActive)
 
 namespace UI {
 
-// Annoyingly, we have to predeclare all the style types. Yay for C++
-// (I tried rearranging our includes, it got messy fast.)
-// I guess the alternative is switching to an individual-files build. Might be a good idea.
+class Scrollbar {
+public:
+    explicit Scrollbar(Orientation, s32 mouse_wheel_step_size = 64);
+    void reset();
 
-struct ScrollbarState {
-    Orientation orientation;
-    s32 contentSize;
-    float scrollPercent;
+    void place(s32 content_size, Rect2I bounds, ScrollbarStyle* = nullptr, bool is_disabled = false, RenderBuffer* = nullptr);
 
-    s32 mouseWheelStepSize;
+    float scroll_percent() const { return m_scroll_percent; }
+    void scroll_to_top() { m_scroll_percent = 0; }
+    void scroll_to_bottom() { m_scroll_percent = 1; }
+
+    void set_mouse_wheel_step_size(s32 size) { m_mouse_wheel_step_size = size; }
+
+    // NB: When the viewport is larger than the content, there's no thumb rect so nothing is returned
+    Optional<Rect2I> thumb_bounds(Rect2I scrollbar_bounds, ScrollbarStyle const&) const;
+    s32 content_size() const { return m_content_size; }
+    s32 content_offset(s32 scrollbar_size) const;
+
+private:
+    Orientation m_orientation;
+    s32 m_content_size { 0 };
+    float m_scroll_percent { 0 };
+    s32 m_mouse_wheel_step_size;
 };
 
 typedef void (*WindowProc)(WindowContext*, void*);
@@ -64,11 +77,11 @@ struct UIState {
     ChunkedArray<Rect2I> uiRects;
 
     s32 openMenu;
-    ScrollbarState openMenuScrollbar;
+    Scrollbar openMenuScrollbar { Orientation::Vertical };
 
     // DropDownList stuff
     void* openDropDownList; // We use the pointer to the options array
-    ScrollbarState openDropDownListScrollbar;
+    Scrollbar openDropDownListScrollbar { Orientation::Vertical };
     RenderBuffer* openDropDownListRenderBuffer;
 
     // Toast stuff
@@ -240,18 +253,11 @@ void showMenu(s32 menuID);
 void hideMenus();
 void toggleMenuVisible(s32 menuID);
 bool isMenuVisible(s32 menuID);
-ScrollbarState* getMenuScrollbar();
+Scrollbar* getMenuScrollbar();
 
 // Radio Buttons
 V2I calculateRadioButtonSize(RadioButtonStyle* style = nullptr);
 void putRadioButton(s32* selectedValue, s32 value, Rect2I bounds, RadioButtonStyle* style = nullptr, bool isDisabled = false, RenderBuffer* renderBuffer = nullptr);
-
-// Scrollbars
-void initScrollbar(ScrollbarState* state, Orientation orientation, s32 mouseWheelStepSize = 64);
-// NB: When the viewport is larger than the content, there's no thumb rect so nothing is returned
-Optional<Rect2I> get_scrollbar_thumb_bounds(ScrollbarState* state, Rect2I scrollbarBounds, ScrollbarStyle* style);
-void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, ScrollbarStyle* style = nullptr, bool isDisabled = false, RenderBuffer* renderBuffer = nullptr);
-s32 getScrollbarContentOffset(ScrollbarState* state, s32 scrollbarSize);
 
 // Sliders
 // NB: fillSpace only applies to the "length" of the slider, not its "thickness"

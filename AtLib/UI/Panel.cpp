@@ -28,7 +28,7 @@ Panel::Panel(Rect2I bounds, PanelStyle* panelStyle, u32 flags, RenderBuffer* ren
 {
 }
 
-void Panel::enableHorizontalScrolling(ScrollbarState* scrollbarState)
+void Panel::enableHorizontalScrolling(Scrollbar* scrollbarState)
 {
     auto& scrollbar_style = style->scrollbarStyle.get();
 
@@ -39,7 +39,7 @@ void Panel::enableHorizontalScrolling(ScrollbarState* scrollbarState)
     updateLayoutPosition();
 }
 
-void Panel::enableVerticalScrolling(ScrollbarState* scrollbarState, bool expandWidth)
+void Panel::enableVerticalScrolling(Scrollbar* scrollbarState, bool expandWidth)
 {
     auto& scrollbar_style = style->scrollbarStyle.get();
 
@@ -401,7 +401,7 @@ void Panel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
         auto& scrollbar_style = style->scrollbarStyle.get();
 
         if (!hideWidgets) {
-            putScrollbar(hScrollbar, largestLineWidth + style->padding.left + style->padding.right, hScrollbarBounds, &scrollbar_style, false, renderBuffer);
+            hScrollbar->place(largestLineWidth + style->padding.left + style->padding.right, hScrollbarBounds, &scrollbar_style, false, renderBuffer);
         }
     }
 
@@ -409,7 +409,7 @@ void Panel::end(bool shrinkToContentHeight, bool shrinkToContentWidth)
         auto& scrollbar_style = style->scrollbarStyle.get();
 
         if (!hideWidgets) {
-            putScrollbar(vScrollbar, contentHeight, vScrollbarBounds, &scrollbar_style, false, renderBuffer);
+            vScrollbar->place(contentHeight, vScrollbarBounds, &scrollbar_style, false, renderBuffer);
         }
     }
 

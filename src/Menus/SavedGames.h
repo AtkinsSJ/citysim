@@ -55,7 +55,7 @@ struct SavedGamesCatalogue {
     s32 selectedSavedGameIndex;
     UI::TextInput saveGameName;
 
-    UI::ScrollbarState savedGamesListScrollbar;
+    UI::Scrollbar savedGamesListScrollbar { Orientation::Vertical };
 };
 
 void initSavedGamesCatalogue();

@@ -32,10 +32,6 @@ void init(MemoryArena* arena)
     initChunkedArray(&uiState.openWindows, arena, 64);
     initSet(&uiState.windowsToClose, arena);
     initSet(&uiState.windowsToMakeActive, arena);
-
-    initScrollbar(&uiState.openMenuScrollbar, Orientation::Vertical);
-
-    initScrollbar(&uiState.openDropDownListScrollbar, Orientation::Vertical);
 }
 
 void startFrame()
@@ -418,7 +414,7 @@ void openDropDownList(void* pointer)
         uiState.openDropDownListRenderBuffer = the_renderer().get_temporary_render_buffer("DropDownList"_s);
     }
     uiState.openDropDownListRenderBuffer->clear_for_pool();
-    initScrollbar(&uiState.openDropDownListScrollbar, Orientation::Vertical);
+    uiState.openDropDownListScrollbar.reset();
 }
 
 void closeDropDownList()
@@ -475,7 +471,7 @@ void showMenu(s32 menuID)
 {
     // NB: Do all menu-state-initialisation here!
     uiState.openMenu = menuID;
-    uiState.openMenuScrollbar = {};
+    uiState.openMenuScrollbar.reset();
 }
 
 void hideMenus()
@@ -497,7 +493,7 @@ bool isMenuVisible(s32 menuID)
     return (uiState.openMenu == menuID);
 }
 
-ScrollbarState* getMenuScrollbar()
+Scrollbar* getMenuScrollbar()
 {
     return &uiState.openMenuScrollbar;
 }
@@ -554,15 +550,19 @@ void putRadioButton(s32* selectedValue, s32 value, Rect2I bounds, RadioButtonSty
     }
 }
 
-void initScrollbar(ScrollbarState* state, Orientation orientation, s32 mouseWheelStepSize)
+Scrollbar::Scrollbar(Orientation orientation, s32 mouse_wheel_step_size)
+    : m_orientation(orientation)
+    , m_mouse_wheel_step_size(mouse_wheel_step_size)
 {
-    *state = {};
-
-    state->orientation = orientation;
-    state->mouseWheelStepSize = mouseWheelStepSize;
 }
 
-Optional<Rect2I> get_scrollbar_thumb_bounds(ScrollbarState* state, Rect2I scrollbarBounds, ScrollbarStyle* style)
+void Scrollbar::reset()
+{
+    m_content_size = 0;
+    m_scroll_percent = 0;
+}
+
+Optional<Rect2I> Scrollbar::thumb_bounds(Rect2I scrollbar_bounds, ScrollbarStyle const& style) const
 {
     // NB: This algorithm for thumb size came from here: https://ux.stackexchange.com/a/85698
     // (Which is ultimately taken from Microsoft's .NET documentation.)
@@ -571,40 +571,40 @@ Optional<Rect2I> get_scrollbar_thumb_bounds(ScrollbarState* state, Rect2I scroll
     // keeping them as separate variables, which is why viewportSize and trackSize are
     // the same. If we add scrollbar buttons, that'll reduce the track size.
     // - Sam, 01/04/2021
-    if (state->orientation == Orientation::Horizontal) {
-        s32 thumbHeight = style->width;
-        s32 viewportSize = scrollbarBounds.width();
+    if (m_orientation == Orientation::Horizontal) {
+        s32 thumbHeight = style.width;
+        s32 viewportSize = scrollbar_bounds.width();
 
-        if (viewportSize < state->contentSize) {
-            s32 trackSize = scrollbarBounds.width();
-            s32 desiredThumbSize = trackSize * viewportSize / (state->contentSize + viewportSize);
-            s32 thumbWidth = clamp(desiredThumbSize, style->width, scrollbarBounds.width());
+        if (viewportSize < m_content_size) {
+            s32 trackSize = scrollbar_bounds.width();
+            s32 desiredThumbSize = trackSize * viewportSize / (m_content_size + viewportSize);
+            s32 thumbWidth = clamp(desiredThumbSize, style.width, scrollbar_bounds.width());
 
-            s32 thumbPos = round_s32(state->scrollPercent * (scrollbarBounds.width() - thumbWidth));
+            s32 thumbPos = round_s32(m_scroll_percent * (scrollbar_bounds.width() - thumbWidth));
 
-            return Rect2I { scrollbarBounds.x() + thumbPos, scrollbarBounds.y(), thumbWidth, thumbHeight };
+            return Rect2I { scrollbar_bounds.x() + thumbPos, scrollbar_bounds.y(), thumbWidth, thumbHeight };
         }
     } else {
-        ASSERT(state->orientation == Orientation::Vertical);
+        ASSERT(m_orientation == Orientation::Vertical);
 
-        s32 thumbWidth = style->width;
-        s32 viewportSize = scrollbarBounds.height();
+        s32 thumbWidth = style.width;
+        s32 viewportSize = scrollbar_bounds.height();
 
-        if (viewportSize < state->contentSize) {
-            s32 trackSize = scrollbarBounds.height();
-            s32 desiredThumbSize = trackSize * viewportSize / (state->contentSize + viewportSize);
-            s32 thumbHeight = clamp(desiredThumbSize, style->width, scrollbarBounds.height());
+        if (viewportSize < m_content_size) {
+            s32 trackSize = scrollbar_bounds.height();
+            s32 desiredThumbSize = trackSize * viewportSize / (m_content_size + viewportSize);
+            s32 thumbHeight = clamp(desiredThumbSize, style.width, scrollbar_bounds.height());
 
-            s32 thumbPos = round_s32(state->scrollPercent * (scrollbarBounds.height() - thumbHeight));
+            s32 thumbPos = round_s32(m_scroll_percent * (scrollbar_bounds.height() - thumbHeight));
 
-            return Rect2I { scrollbarBounds.x(), scrollbarBounds.y() + thumbPos, thumbWidth, thumbHeight };
+            return Rect2I { scrollbar_bounds.x(), scrollbar_bounds.y() + thumbPos, thumbWidth, thumbHeight };
         }
     }
 
     return {};
 }
 
-void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, ScrollbarStyle* style, bool isDisabled, RenderBuffer* renderBuffer)
+void Scrollbar::place(s32 content_size, Rect2I bounds, ScrollbarStyle* style, bool is_disabled, RenderBuffer* render_buffer)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::UI);
 
@@ -613,25 +613,25 @@ void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, Scrollb
     auto& renderer = the_renderer();
     if (style == nullptr)
         style = &ScrollbarStyle::get("default"_s);
-    if (renderBuffer == nullptr)
-        renderBuffer = &renderer.ui_buffer();
+    if (render_buffer == nullptr)
+        render_buffer = &renderer.ui_buffer();
 
-    Drawable(&style->background).draw(renderBuffer, bounds);
+    Drawable(&style->background).draw(render_buffer, bounds);
 
-    state->contentSize = contentSize;
+    m_content_size = content_size;
 
     // If the content is smaller than the scrollbar, then snap it to position 0 and don't allow interaction.
-    if (bounds.height() > state->contentSize) {
-        state->scrollPercent = 0.0f;
+    if (bounds.height() > m_content_size) {
+        m_scroll_percent = 0.0f;
     } else {
         if (!isMouseInputHandled()) {
-            bool isHorizontal = (state->orientation == Orientation::Horizontal);
-            ASSERT(isHorizontal || (state->orientation == Orientation::Vertical));
+            bool isHorizontal = (m_orientation == Orientation::Horizontal);
+            ASSERT(isHorizontal || (m_orientation == Orientation::Vertical));
 
-            auto maybe_thumb = get_scrollbar_thumb_bounds(state, bounds, style);
+            auto maybe_thumb = thumb_bounds(bounds, *style);
             if (maybe_thumb.has_value()) {
                 Rect2I thumb = maybe_thumb.release_value();
-                s32 overflowSize = state->contentSize - (isHorizontal ? bounds.width() : bounds.height());
+                s32 overflowSize = m_content_size - (isHorizontal ? bounds.width() : bounds.height());
                 s32 thumbSize = isHorizontal ? thumb.width() : thumb.height();
                 s32 gutterSize = isHorizontal ? bounds.width() : bounds.height();
                 s32 thumbRange = gutterSize - thumbSize;
@@ -640,17 +640,17 @@ void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, Scrollb
                 // (It's weird that we're putting this within mouseInputHandled, but eh)
                 s32 mouseWheelDelta = (isHorizontal ? input_state().wheelX : -input_state().wheelY);
                 if (mouseWheelDelta != 0) {
-                    s32 oldScrollOffset = getScrollbarContentOffset(state, gutterSize);
-                    s32 scrollOffset = oldScrollOffset + (state->mouseWheelStepSize * mouseWheelDelta);
+                    s32 oldScrollOffset = content_offset(gutterSize);
+                    s32 scrollOffset = oldScrollOffset + (m_mouse_wheel_step_size * mouseWheelDelta);
 
-                    state->scrollPercent = clamp01((float)scrollOffset / (float)overflowSize);
+                    m_scroll_percent = clamp01((float)scrollOffset / (float)overflowSize);
                 }
 
                 // Mouse stuff
                 DrawableStyle* thumbStyle = &style->thumb;
-                if (isDisabled) {
+                if (is_disabled) {
                     thumbStyle = &style->thumbDisabled;
-                } else if (isDragging(state)) {
+                } else if (isDragging(this)) {
                     // Move
                     V2I thumbPos = getDraggingObjectPos();
 
@@ -658,10 +658,10 @@ void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, Scrollb
                     // the new thumb position. It's really awkward but I don't know how to pull the logic out.
                     if (isHorizontal) {
                         thumb.set_x(clamp(thumbPos.x, bounds.x(), bounds.x() + thumbRange));
-                        state->scrollPercent = clamp01((float)(thumb.x() - bounds.x()) / (float)thumbRange);
+                        m_scroll_percent = clamp01((float)(thumb.x() - bounds.x()) / (float)thumbRange);
                     } else {
                         thumb.set_y(clamp(thumbPos.y, bounds.y(), bounds.y() + thumbRange));
-                        state->scrollPercent = clamp01((float)(thumb.y() - bounds.y()) / (float)thumbRange);
+                        m_scroll_percent = clamp01((float)(thumb.y() - bounds.y()) / (float)thumbRange);
                     }
 
                     thumbStyle = &style->thumbPressed;
@@ -673,15 +673,15 @@ void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, Scrollb
                         if (!inThumbBounds) {
                             if (isHorizontal) {
                                 thumb.set_x(clamp(mousePos.x - (thumb.width() / 2), bounds.x(), bounds.x() + thumbRange));
-                                state->scrollPercent = clamp01((float)(thumb.x() - bounds.x()) / (float)thumbRange);
+                                m_scroll_percent = clamp01((float)(thumb.x() - bounds.x()) / (float)thumbRange);
                             } else {
                                 thumb.set_y(clamp(mousePos.y - (thumb.height() / 2), bounds.y(), bounds.y() + thumbRange));
-                                state->scrollPercent = clamp01((float)(thumb.y() - bounds.y()) / (float)thumbRange);
+                                m_scroll_percent = clamp01((float)(thumb.y() - bounds.y()) / (float)thumbRange);
                             }
                         }
 
                         // Start drag
-                        startDragging(state, thumb.position());
+                        startDragging(this, thumb.position());
 
                         thumbStyle = &style->thumbPressed;
                     } else if (inThumbBounds) {
@@ -690,17 +690,17 @@ void putScrollbar(ScrollbarState* state, s32 contentSize, Rect2I bounds, Scrollb
                     }
                 }
 
-                Drawable(thumbStyle).draw(renderBuffer, thumb);
+                Drawable(thumbStyle).draw(render_buffer, thumb);
             }
         }
     }
 }
 
-s32 getScrollbarContentOffset(ScrollbarState* state, s32 scrollbarSize)
+s32 Scrollbar::content_offset(s32 scrollbar_size) const
 {
-    s32 overflowSize = state->contentSize - scrollbarSize;
+    s32 overflowSize = m_content_size - scrollbar_size;
 
-    s32 result = round_s32(state->scrollPercent * overflowSize);
+    s32 result = round_s32(m_scroll_percent * overflowSize);
 
     return result;
 }
