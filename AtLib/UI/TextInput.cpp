@@ -63,7 +63,7 @@ void TextInput::moveCaretRight(s32 count)
         s32 toMove = min(count, glyphLength - caret.glyphPos);
 
         while (toMove--) {
-            caret.bytePos = find_start_of_next_glyph(buffer, caret.bytePos);
+            caret.bytePos = find_start_of_next_glyph(buffer, caret.bytePos).release_value();
             caret.glyphPos++;
         }
     }
@@ -253,7 +253,7 @@ TextInputPos TextInput::findStartOfWordRight() const
 
     while (result.glyphPos < glyphLength) {
         result.glyphPos++;
-        result.bytePos = find_start_of_next_glyph(buffer, result.bytePos);
+        result.bytePos = find_start_of_next_glyph(buffer, result.bytePos).release_value();
 
         unichar glyph = read_unicode_char(buffer.slice(result.bytePos));
         if (is_whitespace(glyph)) {

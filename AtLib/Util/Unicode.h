@@ -21,8 +21,7 @@ size_t length_of_unichar(unichar c);
 // returns 0 (start of the buffer) if can't find the start of the glyph
 size_t find_start_of_glyph(ReadonlySpan<char> const& buffer, size_t start_offset);
 
-// returns -1 if no next glyph exists
-s32 find_start_of_next_glyph(ReadonlySpan<char> const& buffer, size_t start_offset);
+Optional<size_t> find_start_of_next_glyph(ReadonlySpan<char> const& buffer, size_t start_offset);
 
 struct GlyphAndByteCounts {
     size_t glyph_count { 0 };

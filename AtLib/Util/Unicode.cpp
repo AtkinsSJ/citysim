@@ -67,25 +67,19 @@ size_t find_start_of_glyph(ReadonlySpan<char> const& buffer, size_t start_offset
     return pos;
 }
 
-// returns -1 if no next glyph exists
-// FIXME: Return Optional<> instead
-s32 find_start_of_next_glyph(ReadonlySpan<char> const& buffer, size_t start_offset)
+Optional<size_t> find_start_of_next_glyph(ReadonlySpan<char> const& buffer, size_t start_offset)
 {
-    s32 result = -1;
-
-    if (buffer.size() > 0) {
+    if (!buffer.is_empty()) {
         auto pos = start_offset + 1;
 
-        while ((pos < buffer.size()) && !byte_is_start_of_glyph(buffer[pos])) {
+        while (pos < buffer.size() && !byte_is_start_of_glyph(buffer[pos]))
             pos++;
-        }
 
-        if (byte_is_start_of_glyph(buffer[pos])) {
-            result = pos;
-        }
+        if (byte_is_start_of_glyph(buffer[pos]))
+            return pos;
     }
 
-    return result;
+    return {};
 }
 
 GlyphAndByteCounts floor_to_whole_glyphs(ReadonlySpan<char> buffer)
