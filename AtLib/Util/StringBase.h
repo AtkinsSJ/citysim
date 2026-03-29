@@ -9,6 +9,7 @@
 #include <Util/Basic.h>
 #include <Util/Forward.h>
 #include <Util/Optional.h>
+#include <Util/Span.h>
 
 enum class SearchFrom : u8 {
     Start,
@@ -43,6 +44,9 @@ public:
 
     StringView view() const;
     operator StringView() const;
+
+    operator ReadonlySpan<char>() const { return bytes(); }
+    ReadonlySpan<char> bytes() const { return { m_length, m_chars }; }
 
     StringView substring(size_t start, Optional<size_t> length = {}) const;
     StringView with_whitespace_trimmed(TrimSide = TrimSide::Both) const;
