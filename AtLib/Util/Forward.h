@@ -61,6 +61,9 @@ template<typename T>
 class Ref;
 
 template<typename T>
+class Set;
+
+template<typename T>
 class Span;
 
 template<typename T>

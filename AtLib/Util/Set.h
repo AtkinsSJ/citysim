@@ -12,15 +12,18 @@ template<typename T>
 struct SetIterator;
 
 template<typename T>
-struct Set {
-    // TODO: @Speed: This is a really dumb, linearly-compare-with-all-the-elements implementation!
-    // Replace it with a binary tree or some kind of hash map or something, if we end up using this a lot.
-    // For now, simple is better!
-    // - Sam, 03/09/2019
-    ChunkedArray<T> items;
-    bool (*areItemsEqual)(T* a, T* b);
+class Set {
+public:
+    // FIXME: Temporary until initialization is more sane everywhere.
+    Set() = default;
 
-    // Methods
+    using ComparisonFunction = Function<bool(T*, T*)>;
+
+    Set(MemoryArena& arena, ComparisonFunction are_items_equal = [](T* a, T* b) { return *a == *b; })
+        : m_are_items_equal(are_items_equal)
+    {
+        initChunkedArray(&m_items, &arena, 64); // 64 is an arbitrary choice!
+    }
 
     // Returns true if the item got added (aka, it was not already in the set)
     bool add(T item)
@@ -28,7 +31,7 @@ struct Set {
         bool didAdd = false;
 
         if (!contains(item)) {
-            items.append(item);
+            m_items.append(item);
             didAdd = true;
         }
 
@@ -39,7 +42,7 @@ struct Set {
     {
         bool didRemove = false;
 
-        s32 removed = items.removeAll([&](T* t) { return areItemsEqual(&item, t); }, 1);
+        s32 removed = m_items.removeAll([&](T* t) { return m_are_items_equal(&item, t); }, 1);
         didRemove = (removed == 1);
 
         return didRemove;
@@ -49,8 +52,8 @@ struct Set {
     {
         bool result = false;
 
-        for (auto it = items.iterate(); it.hasNext(); it.next()) {
-            if (areItemsEqual(&item, &it.get())) {
+        for (auto it = m_items.iterate(); it.hasNext(); it.next()) {
+            if (m_are_items_equal(&item, &it.get())) {
                 result = true;
                 break;
             }
@@ -59,13 +62,13 @@ struct Set {
         return result;
     }
 
-    bool is_empty() const { return items.is_empty(); }
-    void clear() { items.clear(); }
+    bool is_empty() const { return m_items.is_empty(); }
+    void clear() { m_items.clear(); }
 
     SetIterator<T> iterate()
     {
         SetIterator<T> result = {};
-        result.itemsIterator = items.iterate();
+        result.itemsIterator = m_items.iterate();
 
         return result;
     }
@@ -76,7 +79,7 @@ struct Set {
         Array<T> result = makeEmptyArray<T>();
 
         if (!is_empty()) {
-            result = temp_arena().allocate_array<T>(items.count, false);
+            result = temp_arena().allocate_array<T>(m_items.count, false);
 
             // Gather
             for (auto it = iterate(); it.hasNext(); it.next()) {
@@ -89,15 +92,15 @@ struct Set {
 
         return result;
     }
-};
 
-template<typename T>
-void initSet(Set<T>* set, MemoryArena* arena, bool (*areItemsEqual)(T* a, T* b) = [](T* a, T* b) { return *a == *b; })
-{
-    *set = {};
-    initChunkedArray(&set->items, arena, 64); // 64 is an arbitrary choice!
-    set->areItemsEqual = areItemsEqual;
-}
+private:
+    // TODO: @Speed: This is a really dumb, linearly-compare-with-all-the-elements implementation!
+    // Replace it with a binary tree or some kind of hash map or something, if we end up using this a lot.
+    // For now, simple is better!
+    // - Sam, 03/09/2019
+    ChunkedArray<T> m_items;
+    ComparisonFunction m_are_items_equal;
+};
 
 template<typename T>
 struct SetIterator {

@@ -41,7 +41,7 @@ void initAssets()
     UI::initStyleConstants();
 
     auto compareStrings = [](String* a, String* b) { return *a == *b; };
-    initSet<String>(&s_assets->missingTextIDs, &s_assets->arena, compareStrings);
+    new (&s_assets->missingTextIDs) Set<String> { s_assets->arena, compareStrings };
 
     initChunkedArray(&s_assets->listeners, &s_assets->arena, 32);
     initChunkedArray(&s_assets->asset_loaders, &s_assets->arena, 32);
@@ -402,7 +402,7 @@ AssetType AssetManager::register_asset_type(String name, AssetLoader& loader, As
         .missing_asset_names = {},
     };
     auto compareStrings = [](String* a, String* b) { return *a == *b; };
-    initSet<String>(&data.missing_asset_names, &arena, compareStrings);
+    new (&data.missing_asset_names) Set<String> { arena, compareStrings };
     asset_type_data.append(move(data));
 
     if (config.directory.has_value())

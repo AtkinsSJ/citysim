@@ -525,8 +525,7 @@ void PowerLayer::update(City& city)
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
     if (m_dirty_rects.is_dirty()) {
-        Set<PowerSector*> touchedSectors;
-        initSet<PowerSector*>(&touchedSectors, &temp_arena(), [](PowerSector** a, PowerSector** b) { return *a == *b; });
+        Set<PowerSector*> touchedSectors { temp_arena(), [](PowerSector** a, PowerSector** b) { return *a == *b; } };
 
         for (auto it = m_dirty_rects.rects().iterate();
             it.hasNext();

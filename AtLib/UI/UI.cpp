@@ -30,8 +30,8 @@ void init(MemoryArena* arena)
     new (&uiState.toasts) Queue<Toast> { *arena };
 
     initChunkedArray(&uiState.openWindows, arena, 64);
-    initSet(&uiState.windowsToClose, arena);
-    initSet(&uiState.windowsToMakeActive, arena);
+    new (&uiState.windowsToClose) Set<String> { *arena };
+    new (&uiState.windowsToMakeActive) Set<String> { *arena };
 }
 
 void startFrame()
