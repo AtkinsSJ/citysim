@@ -40,6 +40,25 @@ struct QueueIterator;
 
 template<typename T>
 struct Queue {
+    // FIXME: Temporary until initialization is more sane everywhere.
+    Queue() = default;
+
+    explicit Queue(MemoryArena& arena, s32 chunk_size = 32)
+        : chunkSize(chunk_size)
+    {
+        initPool<QueueChunk<T>>(&chunkPool, &arena, [](MemoryArena* arena, void* userData) {
+                    s32 chunk_size = *static_cast<s32*>(userData);
+
+                    auto [new_chunk, items] = arena->allocate_with_data<QueueChunk<T>, T>(chunk_size);
+                    new_chunk.items = items.raw_data();
+                    return &new_chunk; }, &chunkSize);
+
+        // We're starting off with one chunk, even though it's empty. Perhaps we should wait
+        // until we actually add something? I'm not sure.
+        startChunk = getItemFromPool(&chunkPool);
+        endChunk = startChunk;
+    }
+
     bool isEmpty() { return count == 0; }
 
     template<typename... Args>
@@ -138,31 +157,11 @@ struct Queue {
     DeprecatedPool<QueueChunk<T>> chunkPool;
     s32 chunkSize;
 
-    s32 count;
+    s32 count { 0 };
 
     QueueChunk<T>* startChunk;
     QueueChunk<T>* endChunk;
 };
-
-template<typename T>
-void initQueue(Queue<T>* queue, MemoryArena* arena, s32 chunkSize = 32)
-{
-    *queue = {};
-
-    queue->chunkSize = chunkSize;
-
-    initPool<QueueChunk<T>>(&queue->chunkPool, arena, [](MemoryArena* arena, void* userData) {
-                s32 chunk_size = *static_cast<s32*>(userData);
-
-                auto [new_chunk, items] = arena->allocate_with_data<QueueChunk<T>, T>(chunk_size);
-                new_chunk.items = items.raw_data();
-                return &new_chunk; }, &queue->chunkSize);
-
-    // We're starting off with one chunk, even though it's empty. Perhaps we should wait
-    // until we actually add something? I'm not sure.
-    queue->startChunk = getItemFromPool(&queue->chunkPool);
-    queue->endChunk = queue->startChunk;
-}
 
 template<typename T>
 struct QueueIterator {
