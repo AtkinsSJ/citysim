@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2015-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -80,8 +80,8 @@ public:
     template<typename T, typename... Args>
     T* allocate(Args&&... args)
     {
-        auto* memory = allocate_internal(sizeof(T));
-        return new (memory) T(forward<Args>(args)...);
+        auto memory = allocate_internal(sizeof(T));
+        return new (memory.raw_data()) T(forward<Args>(args)...);
     }
 
     template<typename T>
@@ -90,8 +90,8 @@ public:
         if (count == 0)
             return {};
 
-        auto* memory = allocate_internal(sizeof(T) * count);
-        auto* items = new (memory) T[count];
+        auto memory = allocate_internal(sizeof(T) * count);
+        auto* items = new (memory.raw_data()) T[count];
         return Span { count, items };
     }
 
@@ -104,10 +104,10 @@ public:
     ObjectAndData<T, Item> allocate_with_data(size_t item_count)
     {
         // FIXME: Figure out alignment requirements so that the Item array is aligned too.
-        auto* memory = allocate_internal(sizeof(T) + (sizeof(Item) * item_count));
+        auto memory = allocate_internal(sizeof(T) + (sizeof(Item) * item_count));
         ObjectAndData<T, Item> result {
-            .object = *static_cast<T*>(memory),
-            .data = { item_count, reinterpret_cast<Item*>(static_cast<u8*>(memory) + sizeof(T)) },
+            .object = *reinterpret_cast<T*>(memory.raw_data()),
+            .data = { item_count, reinterpret_cast<Item*>(reinterpret_cast<u8*>(memory.raw_data()) + sizeof(T)) },
         };
         new (&result.object) T();
         return result;
@@ -139,7 +139,7 @@ private:
     bool allocate_block(size_t size);
     void free_current_block();
 
-    void* allocate_internal(size_t size);
+    Span<u8> allocate_internal(size_t size);
 
     String m_name { "UNINITIALIZED"_s };
     MemoryBlock* m_current_block { nullptr };

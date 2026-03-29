@@ -124,7 +124,7 @@ void MemoryArena::reset()
 
 Blob MemoryArena::allocate_blob(size_t size)
 {
-    return Blob { size, static_cast<u8*>(allocate_internal(size)) };
+    return Blob { size, allocate_internal(size).raw_data() };
 }
 
 String MemoryArena::allocate_string(StringView input)
@@ -166,7 +166,7 @@ MemoryArena& temp_arena()
     return s_temp_arena;
 }
 
-void* MemoryArena::allocate_internal(size_t size)
+Span<u8> MemoryArena::allocate_internal(size_t size)
 {
     if (size > m_minimum_block_size) {
         logWarn("Large allocation in {0} arena: {1} bytes when block size is {2} bytes"_s, { name(), formatInt(size), formatInt(m_minimum_block_size) });
@@ -187,5 +187,5 @@ void* MemoryArena::allocate_internal(size_t size)
 
     m_current_block->used += size;
 
-    return result;
+    return { size, result };
 }
