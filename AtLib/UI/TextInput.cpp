@@ -81,23 +81,26 @@ void TextInput::moveCaretRightWholeWord()
 
 void TextInput::append(StringView source)
 {
-    auto bytesToCopy = source.length();
-    if (byteLength + source.length() > buffer.size()) {
-        auto newByteLengthToCopy = buffer.size() - byteLength;
+    // If no room, early-exit
+    if (buffer.size() == byteLength)
+        return;
 
-        bytesToCopy = floorToWholeGlyphs(source.raw_pointer_to_characters(), newByteLengthToCopy);
+    auto bytes_to_copy = source.bytes();
+    if (bytes_to_copy.size() + byteLength > buffer.size()) {
+        // We know at least 1 byte can fit, so the slice length will be positive.
+        bytes_to_copy = bytes_to_copy.slice(0, buffer.size() - byteLength);
     }
 
-    auto glyphsToCopy = count_whole_glyphs(source);
+    auto [glyph_count, byte_count] = floor_to_whole_glyphs(bytes_to_copy);
 
-    for (auto i = 0; i < bytesToCopy; i++) {
+    for (auto i = 0; i < byte_count; i++) {
         buffer[byteLength++] = source[i];
     }
 
-    caret.bytePos += bytesToCopy;
-    caret.glyphPos += glyphsToCopy;
+    caret.bytePos += byte_count;
+    caret.glyphPos += glyph_count;
 
-    glyphLength += glyphsToCopy;
+    glyphLength += glyph_count;
 }
 
 void TextInput::append(char c)
@@ -107,35 +110,38 @@ void TextInput::append(char c)
 
 void TextInput::insert(StringView source)
 {
+    // If no room, early-exit
+    if (buffer.size() == byteLength)
+        return;
+
     if (caret.bytePos == byteLength) {
         append(source);
         return;
     }
 
-    auto bytesToCopy = source.length();
-    if (byteLength + source.length() > buffer.size()) {
-        auto newByteLengthToCopy = buffer.size() - byteLength;
-
-        bytesToCopy = floorToWholeGlyphs(source.raw_pointer_to_characters(), newByteLengthToCopy);
+    auto bytes_to_copy = source.bytes();
+    if (bytes_to_copy.size() + byteLength > buffer.size()) {
+        // We know at least 1 byte can fit, so the slice length will be positive.
+        bytes_to_copy = bytes_to_copy.slice(0, buffer.size() - byteLength);
     }
 
-    auto glyphsToCopy = count_whole_glyphs(source);
+    auto [glyph_count, byte_count] = floor_to_whole_glyphs(bytes_to_copy);
 
     // move the existing chars by bytesToCopy
     for (auto i = byteLength - caret.bytePos - 1; i >= 0; i--) {
-        buffer[caret.bytePos + bytesToCopy + i] = buffer[caret.bytePos + i];
+        buffer[caret.bytePos + byte_count + i] = buffer[caret.bytePos + i];
     }
 
     // write from source
-    for (auto i = 0; i < bytesToCopy; i++) {
+    for (auto i = 0; i < byte_count; i++) {
         buffer[caret.bytePos + i] = source[i];
     }
 
-    byteLength += bytesToCopy;
-    caret.bytePos += bytesToCopy;
+    byteLength += byte_count;
+    caret.bytePos += byte_count;
 
-    glyphLength += glyphsToCopy;
-    caret.glyphPos += glyphsToCopy;
+    glyphLength += glyph_count;
+    caret.glyphPos += glyph_count;
 }
 
 void TextInput::insert(char c)

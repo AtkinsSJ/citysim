@@ -88,33 +88,9 @@ s32 find_start_of_next_glyph(ReadonlySpan<char> const& buffer, size_t start_offs
     return result;
 }
 
-// returns 0 if we start mid-way through a glyph
-s32 floorToWholeGlyphs(char const* startByte, s32 byteLength)
+GlyphAndByteCounts floor_to_whole_glyphs(ReadonlySpan<char> buffer)
 {
-    // @Speed: Should be able to start at the end, find the start of that glyph, then see how many bytes it
-    // is - that's all we need to know to floor it!
-
-    s32 flooredByteCount = 0;
-
-    // Only count if we start at the beginning of a glyph.
-    // Otherwise, we return 0.
-    if (byteLength > 0 && byte_is_start_of_glyph(*startByte)) {
-        s32 pos = 0;
-        s32 glyphLength = length_of_glyph(startByte[pos]);
-        while (pos + glyphLength <= byteLength) {
-            pos += glyphLength;
-            flooredByteCount += glyphLength;
-            glyphLength = length_of_glyph(startByte[pos]);
-        }
-    }
-
-    return flooredByteCount;
-}
-
-// Counts how many full glyphs are in the buffer
-size_t count_whole_glyphs(ReadonlySpan<char> buffer)
-{
-    size_t glyph_count = 0;
+    GlyphAndByteCounts counts;
 
     if (buffer.size() > 0) {
         size_t pos = 0;
@@ -127,13 +103,14 @@ size_t count_whole_glyphs(ReadonlySpan<char> buffer)
                     logError("Invalid unicode codepoint {2} at pos {0} of string '{1}'"_s, { formatInt(pos), String { buffer.raw_data(), buffer.size() }, formatInt(buffer[pos], 16) });
                     break;
                 }
-                glyph_count++;
+                counts.glyph_count++;
+                counts.byte_count += glyph_length;
                 pos += glyph_length;
             }
         }
     }
 
-    return glyph_count;
+    return counts;
 }
 
 // If the first char is not a start byte, we return 0.

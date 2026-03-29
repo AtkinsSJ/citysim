@@ -24,11 +24,11 @@ size_t find_start_of_glyph(ReadonlySpan<char> const& buffer, size_t start_offset
 // returns -1 if no next glyph exists
 s32 find_start_of_next_glyph(ReadonlySpan<char> const& buffer, size_t start_offset);
 
-// returns 0 if we start mid-way through a glyph
-s32 floorToWholeGlyphs(char const* startByte, s32 byteLength);
-
-// Counts how many full glyphs are in the buffer
-size_t count_whole_glyphs(ReadonlySpan<char> buffer);
+struct GlyphAndByteCounts {
+    size_t glyph_count { 0 };
+    size_t byte_count { 0 };
+};
+GlyphAndByteCounts floor_to_whole_glyphs(ReadonlySpan<char>);
 
 // If the first char is not a start byte, we return 0.
 unichar read_unicode_char(ReadonlySpan<char> buffer);
