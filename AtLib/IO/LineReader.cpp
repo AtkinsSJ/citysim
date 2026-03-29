@@ -43,14 +43,14 @@ u32 LineReader::line_count() const
         // Code originally based on loadNextLine() but with a lot of alterations!
         do {
             ++result;
-            while ((startOfNextLine < m_data.size()) && !isNewline(m_data.data()[startOfNextLine])) {
+            while ((startOfNextLine < m_data.size()) && !is_newline(m_data.data()[startOfNextLine])) {
                 ++startOfNextLine;
             }
 
             // Handle Windows' stupid double-character newline.
             if (startOfNextLine < m_data.size()) {
                 ++startOfNextLine;
-                if (isNewline(m_data.data()[startOfNextLine]) && (m_data.data()[startOfNextLine] != m_data.data()[startOfNextLine - 1])) {
+                if (is_newline(m_data.data()[startOfNextLine]) && (m_data.data()[startOfNextLine] != m_data.data()[startOfNextLine - 1])) {
                     ++startOfNextLine;
                 }
             }
@@ -94,7 +94,7 @@ bool LineReader::load_next_line()
         ++m_state.current_line_number;
         auto* line_chars = (char*)(m_data.data() + m_state.start_of_next_line);
         auto line_length = 0u;
-        while ((m_state.start_of_next_line < m_data.size()) && !isNewline(m_data.data()[m_state.start_of_next_line])) {
+        while ((m_state.start_of_next_line < m_data.size()) && !is_newline(m_data.data()[m_state.start_of_next_line])) {
             ++m_state.start_of_next_line;
             ++line_length;
         }
@@ -102,7 +102,7 @@ bool LineReader::load_next_line()
         // Handle Windows' stupid double-character newline.
         if (m_state.start_of_next_line < m_data.size()) {
             ++m_state.start_of_next_line;
-            if (isNewline(m_data.data()[m_state.start_of_next_line]) && (m_data.data()[m_state.start_of_next_line] != m_data.data()[m_state.start_of_next_line - 1])) {
+            if (is_newline(m_data.data()[m_state.start_of_next_line]) && (m_data.data()[m_state.start_of_next_line] != m_data.data()[m_state.start_of_next_line - 1])) {
                 ++m_state.start_of_next_line;
             }
         }

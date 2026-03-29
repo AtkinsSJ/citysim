@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2017-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -8,34 +8,34 @@
 #include <Util/Basic.h>
 #include <Util/String.h>
 
-bool byteIsStartOfGlyph(char b);
+bool byte_is_start_of_glyph(char b);
 
 // Decodes the byte to see how long it claims to be.
 // There is no guarantee that the bytes that follow it are valid within the string, we don't check!
 // returns 0 for an invalid start byte
-s32 lengthOfGlyph(char startByte);
+size_t length_of_glyph(char start_byte);
 
 // Determines how many utf8 bytes are required to store the given unichar
-s32 lengthOfUnichar(unichar c);
+size_t length_of_unichar(unichar c);
 
 // returns 0 (start of the buffer) if can't find the start of the glyph
-s32 findStartOfGlyph(char const* buffer, s32 byteOffset);
+size_t find_start_of_glyph(ReadonlySpan<char> const& buffer, size_t start_offset);
 
 // returns -1 if no next glyph exists
-s32 findStartOfNextGlyph(char const* buffer, s32 byteOffset, s32 bufferByteLength);
+s32 find_start_of_next_glyph(ReadonlySpan<char> const& buffer, size_t start_offset);
 
 // returns 0 if we start mid-way through a glyph
 s32 floorToWholeGlyphs(char const* startByte, s32 byteLength);
 
 // Counts how many full glyphs are in the buffer
-s32 countGlyphs(char const* startByte, s32 byteLength);
+size_t count_whole_glyphs(ReadonlySpan<char> buffer);
 
 // If the first char is not a start byte, we return 0.
-unichar readUnicodeChar(char const* firstChar);
+unichar read_unicode_char(ReadonlySpan<char> buffer);
 
-bool isWhitespace(unichar uChar, bool countNewlines = true);
+bool is_whitespace(unichar u_char, bool include_newlines = true);
 
-bool isNewline(unichar uChar);
+bool is_newline(unichar u_char);
 
 // Byte pos is read and written to.
 bool getNextUnichar(StringView string, s32* bytePos, unichar* result);

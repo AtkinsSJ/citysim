@@ -122,14 +122,14 @@ StringView StringBase::with_whitespace_trimmed(TrimSide trim_side) const
     size_t length = m_length;
 
     if (trim_side != TrimSide::End) {
-        while (length > 0 && isWhitespace(m_chars[start], false)) {
+        while (length > 0 && is_whitespace(m_chars[start], false)) {
             ++start;
             --length;
         }
     }
 
     if (trim_side != TrimSide::Start) {
-        while (length > 0 && isWhitespace(m_chars[start + length - 1], false)) {
+        while (length > 0 && is_whitespace(m_chars[start + length - 1], false)) {
             --length;
         }
     }

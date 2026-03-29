@@ -234,7 +234,7 @@ V2I BitmapFont::calculate_text_size(StringView text, s32 max_width) const
     bool foundNext = getNextUnichar(text, &bytePos, &c);
 
     while (foundNext) {
-        if (isNewline(c)) {
+        if (is_newline(c)) {
             bool prevWasCR = false;
 
             longestLineWidth = max(longestLineWidth, currentLineWidth + currentWordWidth + whitespaceWidthBeforeCurrentWord);
@@ -254,8 +254,8 @@ V2I BitmapFont::calculate_text_size(StringView text, s32 max_width) const
 
                 prevWasCR = (c == '\r');
                 foundNext = getNextUnichar(text, &bytePos, &c);
-            } while (foundNext && isNewline(c));
-        } else if (isWhitespace(c, false)) {
+            } while (foundNext && is_newline(c));
+        } else if (is_whitespace(c, false)) {
             // WHITESPACE LOOP
 
             // If we had a previous word, we know that it must have just finished, so add the whitespace!
@@ -277,7 +277,7 @@ V2I BitmapFont::calculate_text_size(StringView text, s32 max_width) const
                 }
 
                 foundNext = getNextUnichar(text, &bytePos, &c);
-            } while (foundNext && isWhitespace(c, false));
+            } while (foundNext && is_whitespace(c, false));
 
             currentX += whitespaceWidthBeforeCurrentWord;
 
@@ -436,7 +436,7 @@ void drawText(RenderBuffer* renderBuffer, BitmapFont* font, StringView text, Rec
 
     bool foundNext = getNextUnichar(text, &bytePos, &c);
     while (foundNext) {
-        if (isNewline(c)) {
+        if (is_newline(c)) {
             bool prevWasCR = false;
 
             // Do line-alignment stuff
@@ -462,8 +462,8 @@ void drawText(RenderBuffer* renderBuffer, BitmapFont* font, StringView text, Rec
 
                 prevWasCR = (c == '\r');
                 foundNext = getNextUnichar(text, &bytePos, &c);
-            } while (foundNext && isNewline(c));
-        } else if (isWhitespace(c, false)) {
+            } while (foundNext && is_newline(c));
+        } else if (is_whitespace(c, false)) {
             // NB: We don't handle whitespace characters that actually print something visibly.
             // Despite being an oxymoron, they do actually exist, but the chance of me actually
             // needing to use the "Ogham space mark" is rather slim, though I did add support
@@ -487,7 +487,7 @@ void drawText(RenderBuffer* renderBuffer, BitmapFont* font, StringView text, Rec
                     }
                 }
                 foundNext = getNextUnichar(text, &bytePos, &c);
-            } while (foundNext && isWhitespace(c, false));
+            } while (foundNext && is_whitespace(c, false));
 
             currentX += whitespaceWidthBeforeCurrentWord;
         } else {
@@ -546,7 +546,7 @@ void drawText(RenderBuffer* renderBuffer, BitmapFont* font, StringView text, Rec
                     glyphCount++;
                 }
                 foundNext = getNextUnichar(text, &bytePos, &c);
-            } while (foundNext && !isWhitespace(c, true));
+            } while (foundNext && !is_whitespace(c, true));
 
             currentLineWidth += currentWordWidth + whitespaceWidthBeforeCurrentWord;
             whitespaceWidthBeforeCurrentWord = 0;

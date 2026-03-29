@@ -11,7 +11,7 @@ static bool is_split_char(char input, Optional<char> const& split_char)
 {
     if (split_char.has_value())
         return input == split_char.value();
-    return isWhitespace(input);
+    return is_whitespace(input);
 }
 
 u32 TokenReader::remaining_token_count(Optional<char> const& split_char) const

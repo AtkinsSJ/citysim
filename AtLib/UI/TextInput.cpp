@@ -48,7 +48,7 @@ void TextInput::moveCaretLeft(s32 count)
         s32 toMove = min(count, caret.glyphPos);
 
         while (toMove--) {
-            caret.bytePos = findStartOfGlyph(buffer, caret.bytePos - 1);
+            caret.bytePos = find_start_of_glyph({ static_cast<size_t>(maxByteLength), buffer }, caret.bytePos - 1);
             caret.glyphPos--;
         }
     }
@@ -63,7 +63,7 @@ void TextInput::moveCaretRight(s32 count)
         s32 toMove = min(count, glyphLength - caret.glyphPos);
 
         while (toMove--) {
-            caret.bytePos = findStartOfNextGlyph(buffer, caret.bytePos, maxByteLength);
+            caret.bytePos = find_start_of_next_glyph({ static_cast<size_t>(maxByteLength), buffer }, caret.bytePos);
             caret.glyphPos++;
         }
     }
@@ -88,7 +88,7 @@ void TextInput::append(StringView source)
         bytesToCopy = floorToWholeGlyphs(source.raw_pointer_to_characters(), newByteLengthToCopy);
     }
 
-    auto glyphsToCopy = countGlyphs(source.raw_pointer_to_characters(), bytesToCopy);
+    auto glyphsToCopy = count_whole_glyphs(source.bytes().slice(0, bytesToCopy));
 
     for (auto i = 0; i < bytesToCopy; i++) {
         buffer[byteLength++] = source[i];
@@ -119,7 +119,7 @@ void TextInput::insert(StringView source)
         bytesToCopy = floorToWholeGlyphs(source.raw_pointer_to_characters(), newByteLengthToCopy);
     }
 
-    auto glyphsToCopy = countGlyphs(source.raw_pointer_to_characters(), bytesToCopy);
+    auto glyphsToCopy = count_whole_glyphs(source.bytes().slice(0, bytesToCopy));
 
     // move the existing chars by bytesToCopy
     for (auto i = byteLength - caret.bytePos - 1; i >= 0; i--) {
@@ -223,14 +223,14 @@ TextInputPos TextInput::findStartOfWordLeft() const
 
     if (result.glyphPos > 0) {
         result.glyphPos--;
-        result.bytePos = findStartOfGlyph(buffer, result.bytePos - 1);
+        result.bytePos = find_start_of_glyph({ static_cast<size_t>(maxByteLength), buffer }, result.bytePos - 1);
     }
 
     while (result.glyphPos > 0) {
-        s32 nextBytePos = findStartOfGlyph(buffer, result.bytePos - 1);
+        s32 nextBytePos = find_start_of_glyph({ static_cast<size_t>(maxByteLength), buffer }, result.bytePos - 1);
 
-        unichar glyph = readUnicodeChar(buffer + nextBytePos);
-        if (isWhitespace(glyph)) {
+        unichar glyph = read_unicode_char(Span { static_cast<size_t>(maxByteLength), buffer }.slice(nextBytePos));
+        if (is_whitespace(glyph)) {
             break;
         }
 
@@ -247,10 +247,10 @@ TextInputPos TextInput::findStartOfWordRight() const
 
     while (result.glyphPos < glyphLength) {
         result.glyphPos++;
-        result.bytePos = findStartOfNextGlyph(buffer, result.bytePos, maxByteLength);
+        result.bytePos = find_start_of_next_glyph({ static_cast<size_t>(maxByteLength), buffer }, result.bytePos);
 
-        unichar glyph = readUnicodeChar(buffer + result.bytePos);
-        if (isWhitespace(glyph)) {
+        unichar glyph = read_unicode_char(Span { static_cast<size_t>(maxByteLength), buffer }.slice(result.bytePos));
+        if (is_whitespace(glyph)) {
             break;
         }
     }

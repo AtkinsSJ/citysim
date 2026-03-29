@@ -1,42 +1,41 @@
 /*
- * Copyright (c) 2017-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2017-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "Unicode.h"
 #include <Util/Log.h>
+#include <Util/Span.h>
 
-bool byteIsStartOfGlyph(char b)
+bool byte_is_start_of_glyph(char b)
 {
-    // continuation bytes always start with 10xxxxxx
+    // Continuation bytes always start with 10xxxxxx
     // So if it doesn't, it must be the start byte!
-    bool result = ((b & 0b11000000) != 0b10000000);
-
-    return result;
+    return (b & 0b11000000) != 0b10000000;
 }
 
 // Decodes the byte to see how long it claims to be.
 // There is no guarantee that the bytes that follow it are valid within the string, we don't check!
 // returns 0 for an invalid start byte
-s32 lengthOfGlyph(char startByte)
+size_t length_of_glyph(char start_byte)
 {
     s32 result = 0;
 
-    if ((startByte & 0b10000000) == 0) {
+    if ((start_byte & 0b10000000) == 0) {
         result = 1;
-    } else if ((startByte & 0b11000000) == 0b11000000) {
+    } else if ((start_byte & 0b11000000) == 0b11000000) {
         result = 2;
 
-        if (startByte & 0b00100000) {
+        if (start_byte & 0b00100000) {
             result = 3;
 
-            if (startByte & 0b00010000) {
+            if (start_byte & 0b00010000) {
                 result = 4;
-                if (startByte & 0b00001000) {
+                if (start_byte & 0b00001000) {
                     result = 5;
 
-                    if (startByte & 0b00000100) {
+                    if (start_byte & 0b00000100) {
                         result = 6;
                     }
                 }
@@ -47,47 +46,41 @@ s32 lengthOfGlyph(char startByte)
     return result;
 }
 
-s32 lengthOfUnichar(unichar c)
+size_t length_of_unichar(unichar c)
 {
-    if (c <= 0x7F) {
+    if (c <= 0x7F)
         return 1;
-    } else if (c <= 0x7FF) {
+    if (c <= 0x7FF)
         return 2;
-    } else if (c <= 0xFFFF) {
+    if (c <= 0xFFFF)
         return 3;
-    } else {
-        return 4;
-    }
+    return 4;
 }
 
 // returns 0 (start of the buffer) if can't find the start of the glyph
-s32 findStartOfGlyph(char const* buffer, s32 byteOffset)
+size_t find_start_of_glyph(ReadonlySpan<char> const& buffer, size_t start_offset)
 {
-    s32 pos = 0;
-
-    if (buffer != nullptr) {
-        pos = byteOffset;
-        while ((pos > 0) && !byteIsStartOfGlyph(buffer[pos])) {
-            pos--;
-        }
+    auto pos = start_offset;
+    while ((pos > 0) && !byte_is_start_of_glyph(buffer[pos])) {
+        pos--;
     }
-
     return pos;
 }
 
 // returns -1 if no next glyph exists
-s32 findStartOfNextGlyph(char const* buffer, s32 byteOffset, s32 bufferByteLength)
+// FIXME: Return Optional<> instead
+s32 find_start_of_next_glyph(ReadonlySpan<char> const& buffer, size_t start_offset)
 {
     s32 result = -1;
 
-    if (bufferByteLength > 0) {
-        s32 pos = byteOffset + 1;
+    if (buffer.size() > 0) {
+        auto pos = start_offset + 1;
 
-        while ((pos < bufferByteLength) && !byteIsStartOfGlyph(buffer[pos])) {
+        while ((pos < buffer.size()) && !byte_is_start_of_glyph(buffer[pos])) {
             pos++;
         }
 
-        if (byteIsStartOfGlyph(buffer[pos])) {
+        if (byte_is_start_of_glyph(buffer[pos])) {
             result = pos;
         }
     }
@@ -105,13 +98,13 @@ s32 floorToWholeGlyphs(char const* startByte, s32 byteLength)
 
     // Only count if we start at the beginning of a glyph.
     // Otherwise, we return 0.
-    if (byteLength > 0 && byteIsStartOfGlyph(*startByte)) {
+    if (byteLength > 0 && byte_is_start_of_glyph(*startByte)) {
         s32 pos = 0;
-        s32 glyphLength = lengthOfGlyph(startByte[pos]);
+        s32 glyphLength = length_of_glyph(startByte[pos]);
         while (pos + glyphLength <= byteLength) {
             pos += glyphLength;
             flooredByteCount += glyphLength;
-            glyphLength = lengthOfGlyph(startByte[pos]);
+            glyphLength = length_of_glyph(startByte[pos]);
         }
     }
 
@@ -119,41 +112,40 @@ s32 floorToWholeGlyphs(char const* startByte, s32 byteLength)
 }
 
 // Counts how many full glyphs are in the buffer
-s32 countGlyphs(char const* startByte, s32 byteLength)
+size_t count_whole_glyphs(ReadonlySpan<char> buffer)
 {
-    s32 glyphCount = 0;
+    size_t glyph_count = 0;
 
-    if (byteLength > 0) {
-        s32 pos = 0;
+    if (buffer.size() > 0) {
+        size_t pos = 0;
 
-        while (pos < byteLength) {
-            if (byteIsStartOfGlyph(startByte[pos])) {
-                s32 glyphLength = lengthOfGlyph(startByte[pos]);
+        while (pos < buffer.size()) {
+            if (byte_is_start_of_glyph(buffer[pos])) {
+                auto glyph_length = length_of_glyph(buffer[pos]);
 
-                if (glyphLength == 0) {
-                    logError("Invalid unicode codepoint {2} at pos {0} of string '{1}'"_s, { formatInt(pos), String { startByte, (size_t)byteLength }, formatInt(startByte[pos], 16) });
+                if (glyph_length == 0) {
+                    logError("Invalid unicode codepoint {2} at pos {0} of string '{1}'"_s, { formatInt(pos), String { buffer.raw_data(), buffer.size() }, formatInt(buffer[pos], 16) });
                     break;
-                } else {
-                    glyphCount++;
-                    pos += glyphLength;
                 }
+                glyph_count++;
+                pos += glyph_length;
             }
         }
     }
 
-    return glyphCount;
+    return glyph_count;
 }
 
 // If the first char is not a start byte, we return 0.
-unichar readUnicodeChar(char const* firstChar)
+unichar read_unicode_char(ReadonlySpan<char> buffer)
 {
     unichar result = 0;
 
-    if (firstChar != nullptr && byteIsStartOfGlyph(*firstChar)) {
-        u8 b1 = *firstChar;
+    if (!buffer.is_empty() && byte_is_start_of_glyph(buffer[0])) {
+        auto b1 = buffer[0];
         if ((b1 & 0b10000000) == 0) {
             // 7-bit ASCII, so just pass through
-            result = (u32)b1;
+            result = static_cast<unichar>(b1);
         }
         // NB: I disabled the extra checks for valid utf8, we're just going to assume it's valid because
         // that's faster and this gets called a lot. If we really care about possibly-malformed utf8, we
@@ -162,31 +154,31 @@ unichar readUnicodeChar(char const* firstChar)
         else // if ((b1 & 0b11000000) == 0b11000000)
         {
             // Start of a multibyte codepoint!
-            s32 extraBytes = 1;
+            size_t extra_bytes = 1;
             result = b1 & 0b00011111;
 
             if (b1 & 0b00100000) {
-                extraBytes++; // 3 total
+                extra_bytes++; // 3 total
                 result &= 0b00001111;
 
                 if (b1 & 0b00010000) {
-                    extraBytes++; // 4 total
+                    extra_bytes++; // 4 total
                     result &= 0b00000111;
 
                     if (b1 & 0b00001000) {
-                        extraBytes++; // 5 total
+                        extra_bytes++; // 5 total
                         result &= 0b00000011;
 
                         if (b1 & 0b00000100) {
-                            extraBytes++; // 6 total
+                            extra_bytes++; // 6 total
                             result &= 0b00000001;
                         }
                     }
                 }
             }
 
-            for (s32 pos = 1; pos <= extraBytes; pos++) {
-                u8 bn = firstChar[pos];
+            for (auto pos = 1u; pos <= extra_bytes; pos++) {
+                auto bn = buffer[pos];
                 // ASSERT((bn & 0b11000000) == 0b10000000); //Unicode codepoint continuation byte is invalid! D:
                 result = (result << 6) | (bn & 0b00111111);
             }
@@ -196,13 +188,10 @@ unichar readUnicodeChar(char const* firstChar)
     return result;
 }
 
-bool isWhitespace(unichar uChar, bool countNewlines)
+bool is_whitespace(unichar u_char, bool include_newlines)
 {
     // NB: See note in isNewline() about why we use a switch. (Basically, it's faster!)
-
-    bool result = false;
-
-    switch (uChar) {
+    switch (u_char) {
     // TODO: @Cleanup We handle null as a whitespace, but it's not actually one.
     // Keeping this here for now to avoid breaking stuff, but should check and remove if
     // it's not useful, and correct places we do need it.
@@ -225,8 +214,7 @@ bool isWhitespace(unichar uChar, bool countNewlines)
     case L'\u202F': // Narrow no-break space
     case L'\u205F': // Medium mathematical space
     case L'\u3000': // Ideographic space
-        result = true;
-        break;
+        return true;
 
     // NB: Copied from isNewline(), so we can have this as a single switch
     case '\n':
@@ -236,17 +224,15 @@ bool isWhitespace(unichar uChar, bool countNewlines)
     case L'\u0085': // Unicode NEL (next line)
     case L'\u2028': // Unicode LS (line separator)
     case L'\u2029': // Unicode PS (paragraph separator)
-        result = countNewlines;
-        break;
-    }
+        return include_newlines;
 
-    return result;
+    default:
+        return false;
+    }
 }
 
-bool isNewline(unichar uChar)
+bool is_newline(unichar u_char)
 {
-    bool result = false;
-
     //
     // In testing, the switch below was significantly faster than doing a chain of comparissons like:
     //
@@ -263,7 +249,7 @@ bool isNewline(unichar uChar)
     //
     // - Sam, 10/07/2019
     //
-    switch (uChar) {
+    switch (u_char) {
     case '\n':
     case '\r':
     case '\v':      // Vertical tab
@@ -271,11 +257,11 @@ bool isNewline(unichar uChar)
     case L'\u0085': // Unicode NEL (next line)
     case L'\u2028': // Unicode LS (line separator)
     case L'\u2029': // Unicode PS (paragraph separator)
-        result = true;
-        break;
-    }
+        return true;
 
-    return result;
+    default:
+        return false;
+    }
 }
 
 // FIXME: Replace with an iterator of some kind
@@ -284,11 +270,11 @@ bool getNextUnichar(StringView string, s32* bytePos, unichar* result)
     bool foundResult = false;
 
     if (*bytePos < string.length()) {
-        unichar c = readUnicodeChar(string.raw_pointer_to_characters() + *bytePos);
+        unichar c = read_unicode_char(string.bytes().slice(*bytePos));
 
         *result = c;
 
-        *bytePos += lengthOfUnichar(c);
+        *bytePos += length_of_unichar(c);
 
         foundResult = true;
     }
