@@ -6,7 +6,9 @@
 
 #pragma once
 
+#include <Util/Badge.h>
 #include <Util/Basic.h>
+#include <Util/Optional.h>
 
 template<typename T>
 class Span {
@@ -44,6 +46,20 @@ public:
         return m_items[index];
     }
     T const& operator[](size_t index) const { return const_cast<Span&>(*this)[index]; }
+
+    operator Span<T const>() const { return { m_size, m_items }; }
+
+    Span slice(size_t start, Optional<size_t> length = {}) const
+    {
+        if (length.has_value()) {
+            if (start + length.value() > m_size)
+                return {};
+            return { length.value(), m_items + start };
+        }
+        if (start >= m_size)
+            return {};
+        return { m_size - start, m_items + start };
+    }
 
     template<typename Filter>
     bool all_are(Filter filter) const
