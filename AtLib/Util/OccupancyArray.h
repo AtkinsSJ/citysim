@@ -44,35 +44,27 @@ struct OccupancyArray {
     {
         if (firstChunkWithSpace == nullptr) {
             // Append a new chunk
-
-            // @Copypasta ArrayChunk::allocateChunk(). We probably want to move this logic into
-            // an "allocate a struct with its data array" function somehow? That's not easy in C++ though.
-            // Actually, this one has two extra parts, so that's even more complicated...
-            // - Sam, 21/08/2019
-            smm structSize = sizeof(OccupancyArrayChunk<T>);
             smm arraySize = sizeof(T) * itemsPerChunk;
             s32 occupancyArrayCount = BitArray::calculate_u64_count(itemsPerChunk);
             smm occupancyArraySize = occupancyArrayCount * sizeof(u64);
 
-            Blob blob = memoryArena->allocate_blob(structSize + arraySize + occupancyArraySize);
-            OccupancyArrayChunk<T>* newChunk = (OccupancyArrayChunk<T>*)blob.data();
-            *newChunk = {};
-            newChunk->items = (T*)(blob.writable_data() + structSize);
-            initBitArray(&newChunk->occupancy, itemsPerChunk, makeArray(occupancyArrayCount, (u64*)(blob.writable_data() + structSize + arraySize), occupancyArrayCount));
+            auto [new_chunk, items] = memoryArena->allocate_with_data<OccupancyArrayChunk<T>>(arraySize + occupancyArraySize);
+            new_chunk.items = reinterpret_cast<T*>(items.raw_data());
+            initBitArray(&new_chunk.occupancy, itemsPerChunk, makeArray(occupancyArrayCount, reinterpret_cast<u64*>(items.raw_data() + arraySize), occupancyArrayCount));
 
             chunkCount++;
 
             // Attach the chunk to the end, but also make it the "firstChunkWithSpace"
             if (firstChunk == nullptr)
-                firstChunk = newChunk;
+                firstChunk = &new_chunk;
 
             if (lastChunk != nullptr) {
-                lastChunk->nextChunk = newChunk;
-                newChunk->prevChunk = lastChunk;
+                lastChunk->nextChunk = &new_chunk;
+                new_chunk.prevChunk = lastChunk;
             }
-            lastChunk = newChunk;
+            lastChunk = &new_chunk;
 
-            firstChunkWithSpace = newChunk;
+            firstChunkWithSpace = &new_chunk;
             firstChunkWithSpaceIndex = chunkCount - 1;
         }
 
