@@ -13,6 +13,10 @@
 #include <Util/MemoryArena.h>
 #include <Util/Rectangle.h>
 
+struct BasicSector {
+    Rect2I bounds;
+};
+
 template<typename Sector>
 struct SectorGrid {
     SectorGrid() = default;
@@ -22,7 +26,6 @@ struct SectorGrid {
         , m_sectors(arena->allocate_array_2d<Sector>(divideCeil(world_size.x, sector_size), divideCeil(world_size.y, sector_size)))
         , m_sectors_to_update_per_tick(sectors_to_update_per_tick)
     {
-
         s32 remainder_width = world_size.x % sector_size;
         s32 remainder_height = world_size.y % sector_size;
         for (s32 y = 0; y < m_sectors.height(); y++) {
@@ -133,9 +136,3 @@ private:
     // FIXME: This is awkward being here. SectorGrid itself doesn't use it.
     s32 m_sectors_to_update_per_tick;
 };
-
-struct BasicSector {
-    Rect2I bounds;
-};
-
-// NB: The Sector struct needs to contain a "Rect2I bounds;" member. This is filled-in inside initSectorGrid().

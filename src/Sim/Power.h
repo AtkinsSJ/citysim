@@ -22,7 +22,7 @@ struct PowerGroup {
     ChunkedArray<BuildingRef> buildings;
 };
 
-struct PowerSector {
+struct PowerSector : public BasicSector {
     u8 get_power_group_id(s32 relX, s32 relY) const;
     void set_power_group_id(s32 relX, s32 relY, u8 value);
     PowerGroup* get_power_group_at(s32 relX, s32 relY);
@@ -31,8 +31,6 @@ struct PowerSector {
 
     void flood_fill_power_group(s32 x, s32 y, u8 fillValue);
     void set_rect_power_group_unknown(Rect2I area);
-
-    Rect2I bounds;
 
     // 0 = none, >0 = any tile with the same value is connected
     // POWER_GROUP_UNKNOWN is used as a temporary value while recalculating

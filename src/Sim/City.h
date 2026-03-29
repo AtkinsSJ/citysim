@@ -22,9 +22,7 @@
 #include <Util/OccupancyArray.h>
 #include <Util/Rectangle.h>
 
-struct CitySector {
-    Rect2I bounds;
-
+struct CitySector : public BasicSector {
     // NB: A building is owned by a CitySector if its top-left corner tile is inside that CitySector.
     ChunkedArray<Building*> ownedBuildings;
 };

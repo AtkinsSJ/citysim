@@ -27,9 +27,7 @@ struct Fire {
     GameTimestamp startDate;
 };
 
-struct FireSector {
-    Rect2I bounds;
-
+struct FireSector : public BasicSector {
     ChunkedArray<Fire> activeFires;
 };
 

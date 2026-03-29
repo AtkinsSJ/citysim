@@ -52,8 +52,7 @@ enum class ZoneSectorFlags : u8 {
     COUNT,
 };
 
-struct ZoneSector {
-    Rect2I bounds;
+struct ZoneSector : public BasicSector {
     Flags<ZoneSectorFlags> zoneSectorFlags;
 
     EnumMap<ZoneType, float> averageDesirability;
