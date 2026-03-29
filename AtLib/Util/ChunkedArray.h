@@ -1,18 +1,16 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2015-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #pragma once
 
-#include "Deferred.h"
-
 #include <Util/Basic.h>
+#include <Util/Deferred.h>
 #include <Util/DeprecatedPool.h>
 #include <Util/Indexed.h>
 #include <Util/Log.h>
-#include <Util/Memory.h>
 #include <Util/MemoryArena.h>
 
 /**
@@ -50,6 +48,32 @@ struct ChunkedArrayIterator;
 
 template<typename T>
 struct ChunkedArray {
+    // FIXME: Temporary until initialization is sane everywhere.
+    ChunkedArray() = default;
+
+    explicit ChunkedArray(MemoryArena& arena, s32 items_per_chunk)
+        : chunkPool(nullptr)
+        , memoryArena(&arena)
+        , itemsPerChunk(items_per_chunk)
+        , chunkCount(0)
+        , count(0)
+        , firstChunk(nullptr)
+        , lastChunk(nullptr)
+    {
+        appendChunk();
+    }
+
+    explicit ChunkedArray(ArrayChunkPool<T>& pool)
+        : chunkPool(&pool)
+        , memoryArena(nullptr)
+        , itemsPerChunk(pool.itemsPerChunk)
+        , chunkCount(0)
+        , count(0)
+        , firstChunk(nullptr)
+        , lastChunk(nullptr)
+    {
+    }
+
     ArrayChunkPool<T>* chunkPool;
     MemoryArena* memoryArena;
 
@@ -514,18 +538,6 @@ void initChunkedArray(ChunkedArray<T>* array, MemoryArena* arena, s32 itemsPerCh
     array->lastChunk = nullptr;
 
     array->appendChunk();
-}
-
-template<typename T>
-void initChunkedArray(ChunkedArray<T>* array, ArrayChunkPool<T>* pool)
-{
-    array->memoryArena = nullptr;
-    array->chunkPool = pool;
-    array->itemsPerChunk = pool->itemsPerChunk;
-    array->chunkCount = 0;
-    array->count = 0;
-    array->firstChunk = nullptr;
-    array->lastChunk = nullptr;
 }
 
 template<typename T>

@@ -15,33 +15,31 @@
 PowerLayer::PowerLayer(City& city, MemoryArena& arena)
     : m_bounds(city.bounds)
     , m_dirty_rects(arena, m_bounds)
+    , m_sectors(&arena, m_bounds.size(), 16, 0)
+    , m_tile_power_distance(arena.allocate_array_2d<u8>(m_bounds.size()))
+    , m_networks(arena, 64)
+    , m_power_buildings(city.buildingRefsChunkPool)
 {
-    initChunkedArray(&m_networks, &arena, 64);
     initChunkPool(&m_power_groups_chunk_pool, &arena, 4);
     initChunkPool(&m_power_group_pointers_chunk_pool, &arena, 32);
 
-    m_tile_power_distance = arena.allocate_array_2d<u8>(m_bounds.size());
     m_tile_power_distance.fill(255);
 
-    m_sectors = SectorGrid<PowerSector> { &arena, m_bounds.size(), 16, 0 };
     for (s32 sectorIndex = 0; sectorIndex < m_sectors.sector_count(); sectorIndex++) {
         PowerSector* sector = m_sectors.get_by_index(sectorIndex);
-
         sector->tilePowerGroup = arena.allocate_array_2d<u8>(sector->bounds.size());
-
-        initChunkedArray(&sector->powerGroups, &m_power_groups_chunk_pool);
+        new (&sector->powerGroups) ChunkedArray { m_power_groups_chunk_pool };
     }
-
-    initChunkedArray(&m_power_buildings, &city.buildingRefsChunkPool);
 }
 
 PowerNetwork& PowerLayer::new_power_network()
 {
-    PowerNetwork* network = m_networks.appendBlank();
-    network->id = m_networks.count;
-    initChunkedArray(&network->groups, &m_power_group_pointers_chunk_pool);
-
-    return *network;
+    return *m_networks.append({
+        .id = m_networks.count,
+        .groups = ChunkedArray { m_power_group_pointers_chunk_pool },
+        .cachedProduction = 0,
+        .cachedConsumption = 0,
+    });
 }
 
 void PowerLayer::free_power_network(PowerNetwork& network)
@@ -275,14 +273,15 @@ void PowerLayer::recalculate_sector_power_groups(City& city, PowerSector& sector
             if (sector.get_power_group_id(relX, relY) != POWER_GROUP_UNKNOWN)
                 continue;
 
-            PowerGroup* newGroup = sector.powerGroups.appendBlank();
-
-            initChunkedArray(&newGroup->sectorBoundaries, &city.sectorBoundariesChunkPool);
-            initChunkedArray(&newGroup->buildings, &city.buildingRefsChunkPool);
+            sector.powerGroups.append({
+                .production = 0,
+                .consumption = 0,
+                .sectorBoundaries = ChunkedArray { city.sectorBoundariesChunkPool },
+                .networkID = 0,
+                .buildings = ChunkedArray { city.buildingRefsChunkPool },
+            });
 
             u8 powerGroupID = (u8)sector.powerGroups.count;
-            newGroup->production = 0;
-            newGroup->consumption = 0;
             sector.flood_fill_power_group(relX, relY, powerGroupID);
         }
     }

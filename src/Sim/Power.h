@@ -45,8 +45,8 @@ struct PowerNetwork {
 
     ChunkedArray<PowerGroup*> groups;
 
-    s32 cachedProduction;
-    s32 cachedConsumption;
+    s32 cachedProduction { 0 };
+    s32 cachedConsumption { 0 };
 };
 
 class PowerLayer final : public Layer {
@@ -100,8 +100,8 @@ private:
 
     ChunkedArray<BuildingRef> m_power_buildings;
 
-    s32 m_cached_combined_production;
-    s32 m_cached_combined_consumption;
+    s32 m_cached_combined_production { 0 };
+    s32 m_cached_combined_consumption { 0 };
 };
 
 u8 const POWER_GROUP_UNKNOWN = 255;

@@ -38,7 +38,7 @@ City::City(MemoryArena& arena, u32 width, u32 height, String name, String player
 
     for (s32 sectorIndex = 0; sectorIndex < sectors.sector_count(); sectorIndex++) {
         CitySector* sector = sectors.get_by_index(sectorIndex);
-        initChunkedArray(&sector->ownedBuildings, &sectorBuildingsChunkPool);
+        new (&sector->ownedBuildings) ChunkedArray { sectorBuildingsChunkPool };
     }
 
     initOccupancyArray(&buildings, &arena, 1024);

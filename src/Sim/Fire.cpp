@@ -16,28 +16,24 @@
 
 FireLayer::FireLayer(City& city, MemoryArena& arena)
     : m_dirty_rects(arena, city.bounds)
+    , m_sectors(SectorGrid<FireSector> { &arena, city.bounds.size(), 16, 8 })
+    , m_tile_fire_proximity_effect(arena.allocate_array_2d<u16>(city.bounds.size()))
+    , m_tile_total_fire_risk(arena.allocate_array_2d<u8>(city.bounds.size()))
+    , m_tile_fire_protection(arena.allocate_array_2d<u8>(city.bounds.size()))
+    , m_tile_overall_fire_risk(arena.allocate_array_2d<u8>(city.bounds.size()))
+    , m_fire_protection_buildings(city.buildingRefsChunkPool)
+    , m_active_fire_count(0)
+    , m_funding_level(1.0f)
 {
-    m_funding_level = 1.0f;
-
-    m_tile_fire_proximity_effect = arena.allocate_array_2d<u16>(city.bounds.size());
     m_tile_fire_proximity_effect.fill(0);
-
-    m_tile_total_fire_risk = arena.allocate_array_2d<u8>(city.bounds.size());
     m_tile_total_fire_risk.fill(0);
-    m_tile_fire_protection = arena.allocate_array_2d<u8>(city.bounds.size());
     m_tile_fire_protection.fill(0);
-    m_tile_overall_fire_risk = arena.allocate_array_2d<u8>(city.bounds.size());
     m_tile_overall_fire_risk.fill(0);
 
-    initChunkedArray(&m_fire_protection_buildings, &city.buildingRefsChunkPool);
-
-    m_active_fire_count = 0;
     initChunkPool(&m_fire_pool, &arena, 64);
-    m_sectors = SectorGrid<FireSector> { &arena, city.bounds.size(), 16, 8 };
     for (s32 sectorIndex = 0; sectorIndex < m_sectors.sector_count(); sectorIndex++) {
         FireSector* sector = m_sectors.get_by_index(sectorIndex);
-
-        initChunkedArray(&sector->activeFires, &m_fire_pool);
+        new (&sector->activeFires) ChunkedArray { m_fire_pool };
     }
 }
 
