@@ -185,7 +185,7 @@ public:
             theKey.hash();
             entry->key = theKey;
 
-            entry->value = move(value);
+            new (&entry->value) T(move(value));
         }
         return entry->value;
     }
@@ -204,7 +204,7 @@ public:
             entry->key = theKey;
         }
 
-        entry->value = move(value);
+        new (&entry->value) T(move(value));
 
         return entry->value;
     }
