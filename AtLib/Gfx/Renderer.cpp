@@ -290,7 +290,6 @@ void addSetShader(RenderBuffer* buffer, s8 shaderID)
 {
     if (buffer->currentShader != shaderID) {
         RenderItem_SetShader* shaderItem = appendRenderItem<RenderItem_SetShader>(buffer, RenderItemType::SetShader);
-        *shaderItem = {};
         shaderItem->shaderID = shaderID;
 
         buffer->currentShader = shaderID;
@@ -307,7 +306,6 @@ void addSetTexture(RenderBuffer* buffer, AssetMetadata* texture)
 
     if (buffer->currentTexture != texture) {
         RenderItem_SetTexture* textureItem = appendRenderItem<RenderItem_SetTexture>(buffer, RenderItemType::SetTexture);
-        *textureItem = {};
         textureItem->texture = texture;
 
         buffer->currentTexture = texture;
@@ -322,7 +320,6 @@ void addSetTextureRaw(RenderBuffer* buffer, s32 width, s32 height, u8 bytesPerPi
     auto itemAndData = appendRenderItem<RenderItem_SetTexture>(buffer, RenderItemType::SetTexture, pixelDataSize);
 
     RenderItem_SetTexture* textureItem = itemAndData.item;
-    *textureItem = {};
     textureItem->texture = nullptr;
     textureItem->width = width;
     textureItem->height = height;
@@ -416,7 +413,6 @@ DrawRectPlaceholder appendDrawRectPlaceholder(RenderBuffer* buffer, s8 shaderID,
 
     if (hasTexture) {
         RenderItem_SetTexture* textureItem = appendRenderItem<RenderItem_SetTexture>(buffer, RenderItemType::SetTexture);
-        *textureItem = {};
 
         // We need to clear this, because we don't know what this texture will be, so any following draw calls
         // have to assume that they need to set their texture

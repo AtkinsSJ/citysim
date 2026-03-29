@@ -142,7 +142,7 @@ template<typename T>
 T* appendRenderItem(RenderBuffer* buffer, RenderItemType type)
 {
     u8* data = appendRenderItemInternal(buffer, type, sizeof(T), 0);
-    return (T*)data;
+    return new (data) T();
 }
 
 template<typename T>
@@ -156,7 +156,7 @@ RenderItemAndData<T> appendRenderItem(RenderBuffer* buffer, RenderItemType type,
     RenderItemAndData<T> result = {};
 
     u8* bufferData = appendRenderItemInternal(buffer, type, sizeof(T) + dataSize, 0);
-    result.item = (T*)bufferData;
+    result.item = new (bufferData) T();
     result.data = bufferData + sizeof(T);
 
     return result;
