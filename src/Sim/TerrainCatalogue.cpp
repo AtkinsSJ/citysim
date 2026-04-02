@@ -19,7 +19,7 @@ TerrainCatalogue& TerrainCatalogue::the()
 
 void initTerrainCatalogue(MemoryArena& arena)
 {
-    initOccupancyArray(&s_terrain_catalogue.terrainDefs, &arena, 128);
+    s_terrain_catalogue.terrainDefs = { arena, 128 };
     (void)s_terrain_catalogue.terrainDefs.append(); // Null terrain def
 
     s_terrain_catalogue.terrainNameToType.put({}, 0);

@@ -30,7 +30,9 @@ City::City(MemoryArena& arena, u32 width, u32 height, String name, String player
     , funds(funds)
     , bounds(0u, 0u, width, height)
     , tileBuildingIndex(arena.allocate_array_2d<s32>(width, height))
+    , buildings(arena, 1024)
     , sectors(&arena, bounds.size(), 16, 8)
+    , entities(arena, 1024)
     , sectorBuildingsChunkPool(arena, 128)
     , sectorBoundariesChunkPool(arena, 8)
     , buildingRefsChunkPool(arena, 128)
@@ -41,10 +43,7 @@ City::City(MemoryArena& arena, u32 width, u32 height, String name, String player
         new (&sector->ownedBuildings) ChunkedArray { sectorBuildingsChunkPool };
     }
 
-    initOccupancyArray(&buildings, &arena, 1024);
     (void)buildings.append(); // Null building
-
-    initOccupancyArray(&entities, &arena, 1024);
 
     // FIXME: Layers need to be initialized after chunk pools etc.
     new (&crimeLayer) CrimeLayer { *this, arena };

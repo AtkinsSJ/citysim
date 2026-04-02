@@ -27,17 +27,24 @@ struct OccupancyArrayIterator;
 // (The regular ChunkedArray just moves the elements to fill empty slots, so the order can change.)
 template<typename T>
 struct OccupancyArray {
+    OccupancyArray() = default; // FIXME: Temporary
+    OccupancyArray(MemoryArena& arena, s32 itemsPerChunk)
+        : memoryArena(&arena)
+        , itemsPerChunk(itemsPerChunk)
+    {
+    }
+
     MemoryArena* memoryArena;
 
     s32 itemsPerChunk;
-    s32 chunkCount;
-    s32 count;
+    s32 chunkCount { 0 };
+    s32 count { 0 };
 
-    OccupancyArrayChunk<T>* firstChunk;
-    OccupancyArrayChunk<T>* lastChunk;
+    OccupancyArrayChunk<T>* firstChunk { nullptr };
+    OccupancyArrayChunk<T>* lastChunk { nullptr };
 
-    s32 firstChunkWithSpaceIndex;
-    OccupancyArrayChunk<T>* firstChunkWithSpace;
+    s32 firstChunkWithSpaceIndex { -1 };
+    OccupancyArrayChunk<T>* firstChunkWithSpace { nullptr };
 
     // Methods
     Indexed<T> append()
@@ -218,19 +225,6 @@ struct OccupancyArray {
         return chunk;
     }
 };
-
-template<typename T>
-void initOccupancyArray(OccupancyArray<T>* array, MemoryArena* arena, s32 itemsPerChunk)
-{
-    array->memoryArena = arena;
-    array->itemsPerChunk = itemsPerChunk;
-    array->chunkCount = 0;
-    array->count = 0;
-    array->firstChunk = nullptr;
-    array->lastChunk = nullptr;
-    array->firstChunkWithSpace = nullptr;
-    array->firstChunkWithSpaceIndex = -1;
-}
 
 template<typename T>
 struct OccupancyArrayIterator {

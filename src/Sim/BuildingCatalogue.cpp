@@ -29,7 +29,7 @@ void initBuildingCatalogue(MemoryArena& arena)
     catalogue->iGrowableBuildings = { arena, 64 };
     catalogue->intersectionBuildings = { arena, 64 };
 
-    initOccupancyArray(&catalogue->allBuildings, &arena, 64);
+    catalogue->allBuildings = { arena, 64 };
     // NB: BuildingDef ids are 1-indexed. At least one place (BuildingDef.canBeBuiltOnID) uses 0 as a "none" value.
     // So, we have to append a blank for a "null" def. Could probably get rid of it, but initialise-to-zero is convenient
     // and I'm likely to accidentally leave other things set to 0, so it's safer to just keep the null def.
