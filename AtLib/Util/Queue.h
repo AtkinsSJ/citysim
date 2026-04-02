@@ -45,15 +45,14 @@ public:
     Queue() = default;
 
     explicit Queue(MemoryArena& arena, s32 chunk_size = 32)
-        : m_chunk_size(chunk_size)
-    {
-        initPool<QueueChunk<T>>(&m_chunk_pool, &arena, [](MemoryArena* arena, void* userData) {
+        : m_chunk_pool(arena, [](MemoryArena* arena, void* userData) {
                     s32 chunk_size = *static_cast<s32*>(userData);
 
                     auto [new_chunk, items] = arena->allocate_with_data<QueueChunk<T>, T>(chunk_size);
                     new_chunk.items = items.raw_data();
-                    return &new_chunk; }, &m_chunk_size);
-
+                    return &new_chunk; }, &m_chunk_size)
+        , m_chunk_size(chunk_size)
+    {
         // We're starting off with one chunk, even though it's empty. Perhaps we should wait
         // until we actually add something? I'm not sure.
         m_start_chunk = getItemFromPool(&m_chunk_pool);

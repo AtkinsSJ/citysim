@@ -35,27 +35,23 @@ struct PoolItem {
 
 template<typename T>
 struct DeprecatedPool {
+    DeprecatedPool() = default;
+    DeprecatedPool(MemoryArena& arena, T* (*allocateItem)(MemoryArena* arena, void* userData), void* userData = nullptr)
+        : memoryArena(&arena)
+        , allocateItem(allocateItem)
+        , userData(userData)
+    {
+    }
+
     MemoryArena* memoryArena;
     T* (*allocateItem)(MemoryArena* arena, void* userData);
     void* userData; // Passed to allocateItem()
 
-    smm pooledItemCount; // How many items reside in the pool
-    smm totalItemCount;  // How many items this pool has created, total
+    smm pooledItemCount { 0 }; // How many items reside in the pool
+    smm totalItemCount { 0 };  // How many items this pool has created, total
 
-    T* firstItem;
+    T* firstItem { nullptr };
 };
-
-template<typename T>
-void initPool(DeprecatedPool<T>* pool, MemoryArena* arena, T* (*allocateItem)(MemoryArena* arena, void* userData), void* userData = nullptr)
-{
-    *pool = {};
-    pool->memoryArena = arena;
-    pool->allocateItem = allocateItem;
-    pool->userData = userData;
-    pool->firstItem = nullptr;
-    pool->pooledItemCount = 0;
-    pool->totalItemCount = 0;
-}
 
 template<typename T>
 T* getItemFromPool(DeprecatedPool<T>* pool)

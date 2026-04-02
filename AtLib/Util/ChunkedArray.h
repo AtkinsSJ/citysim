@@ -40,6 +40,18 @@ ArrayChunk<T>* allocateChunk(MemoryArena* arena, s32 itemsPerChunk)
 
 template<typename T>
 struct ArrayChunkPool : DeprecatedPool<ArrayChunk<T>> {
+    ArrayChunkPool() = default;
+    explicit ArrayChunkPool(MemoryArena& arena, s32 items_per_chunk)
+        : DeprecatedPool<ArrayChunk<T>>(arena, allocate_chunk, &itemsPerChunk)
+        , itemsPerChunk(items_per_chunk)
+    {
+    }
+
+    static ArrayChunk<T>* allocate_chunk(MemoryArena* arena, void* user_data)
+    {
+        return allocateChunk<T>(arena, *static_cast<s32*>(user_data));
+    }
+
     s32 itemsPerChunk;
 };
 
@@ -609,9 +621,5 @@ struct ChunkedArrayIterator {
 template<typename T>
 void initChunkPool(ArrayChunkPool<T>* pool, MemoryArena* arena, s32 itemsPerChunk)
 {
-    pool->itemsPerChunk = itemsPerChunk;
-
-    initPool<ArrayChunk<T>>(pool, arena, [](MemoryArena* arena, void* userData) {
-    s32 itemsPerChunk = *((s32*)userData);
-    return allocateChunk<T>(arena, itemsPerChunk); }, &pool->itemsPerChunk);
+    new (pool) ArrayChunkPool<T> { *arena, itemsPerChunk };
 }
