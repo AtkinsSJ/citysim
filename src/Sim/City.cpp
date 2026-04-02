@@ -31,10 +31,10 @@ City::City(MemoryArena& arena, u32 width, u32 height, String name, String player
     , bounds(0u, 0u, width, height)
     , tileBuildingIndex(arena.allocate_array_2d<s32>(width, height))
     , sectors(&arena, bounds.size(), 16, 8)
+    , sectorBuildingsChunkPool(arena, 128)
+    , sectorBoundariesChunkPool(arena, 8)
+    , buildingRefsChunkPool(arena, 128)
 {
-    initChunkPool(&sectorBuildingsChunkPool, &arena, 128);
-    initChunkPool(&sectorBoundariesChunkPool, &arena, 8);
-    initChunkPool(&buildingRefsChunkPool, &arena, 128);
 
     for (s32 sectorIndex = 0; sectorIndex < sectors.sector_count(); sectorIndex++) {
         CitySector* sector = sectors.get_by_index(sectorIndex);

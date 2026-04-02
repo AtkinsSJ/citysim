@@ -617,9 +617,3 @@ struct ChunkedArrayIterator {
     s32 getIndex() { return (chunkIndex * array->itemsPerChunk) + indexInChunk; }
     T getValue() { return currentChunk->items[indexInChunk]; }
 };
-
-template<typename T>
-void initChunkPool(ArrayChunkPool<T>* pool, MemoryArena* arena, s32 itemsPerChunk)
-{
-    new (pool) ArrayChunkPool<T> { *arena, itemsPerChunk };
-}

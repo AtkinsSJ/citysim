@@ -18,10 +18,10 @@ PowerLayer::PowerLayer(City& city, MemoryArena& arena)
     , m_sectors(&arena, m_bounds.size(), 16, 0)
     , m_tile_power_distance(arena.allocate_array_2d<u8>(m_bounds.size()))
     , m_networks(arena, 64)
+    , m_power_groups_chunk_pool(arena, 4)
+    , m_power_group_pointers_chunk_pool(arena, 32)
     , m_power_buildings(city.buildingRefsChunkPool)
 {
-    initChunkPool(&m_power_groups_chunk_pool, &arena, 4);
-    initChunkPool(&m_power_group_pointers_chunk_pool, &arena, 32);
 
     m_tile_power_distance.fill(255);
 
