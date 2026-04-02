@@ -65,29 +65,35 @@ AssetManager& asset_manager()
     return *s_assets;
 }
 
-Blob assets_allocate(smm size)
+Span<u8> AssetManager::allocate_internal(size_t size)
 {
     if (size == 0)
         return {};
 
-    Blob result { size, allocateRaw(size) };
+    assetMemoryAllocated += size;
+    maxAssetMemoryAllocated = max(assetMemoryAllocated, maxAssetMemoryAllocated);
 
-    auto& assets = asset_manager();
-    assets.assetMemoryAllocated += size;
-    assets.maxAssetMemoryAllocated = max(assets.assetMemoryAllocated, assets.maxAssetMemoryAllocated);
-
-    return result;
+    return { size, allocateRaw(size) };
 }
 
-void assets_deallocate(Blob& data)
+void AssetManager::deallocate_internal(Span<u8> data)
 {
     if (data.size() == 0)
         return;
 
     auto& assets = asset_manager();
     assets.assetMemoryAllocated -= data.size();
-    deallocateRaw(data.writable_data());
-    data = {};
+    deallocateRaw(data.raw_data());
+}
+
+Blob assets_allocate(smm size)
+{
+    return asset_manager().allocate_blob(size);
+}
+
+void assets_deallocate(Blob& data)
+{
+    asset_manager().deallocate(data);
 }
 
 AssetMetadata* AssetManager::add_asset(AssetType type, StringView short_name, Flags<AssetFlags> flags)
