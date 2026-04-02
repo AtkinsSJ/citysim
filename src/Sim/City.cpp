@@ -38,7 +38,7 @@ City::City(MemoryArena& arena, u32 width, u32 height, String name, String player
 
     for (s32 sectorIndex = 0; sectorIndex < sectors.sector_count(); sectorIndex++) {
         CitySector* sector = sectors.get_by_index(sectorIndex);
-        initChunkedArray(&sector->ownedBuildings, &sectorBuildingsChunkPool);
+        new (&sector->ownedBuildings) ChunkedArray { sectorBuildingsChunkPool };
     }
 
     initOccupancyArray(&buildings, &arena, 1024);
@@ -325,8 +325,7 @@ void City::demolish_rect(Rect2I area)
 
     // Building demolition
     // FIXME: We first accumulate the buildings into an array to make removal safe. Find some way to avoid this?
-    ChunkedArray<Building*> buildingsToDemolish;
-    initChunkedArray(&buildingsToDemolish, &temp_arena(), 1024);
+    ChunkedArray<Building*> buildingsToDemolish { temp_arena(), 1024 };
     for_each_building_overlapping_area(area, {}, [&](Building& building) {
         buildingsToDemolish.append(&building);
     });

@@ -23,11 +23,11 @@ void initBuildingCatalogue(MemoryArena& arena)
 
     BuildingCatalogue* catalogue = arena.allocate<BuildingCatalogue>();
 
-    initChunkedArray(&catalogue->constructibleBuildings, &arena, 64);
-    initChunkedArray(&catalogue->rGrowableBuildings, &arena, 64);
-    initChunkedArray(&catalogue->cGrowableBuildings, &arena, 64);
-    initChunkedArray(&catalogue->iGrowableBuildings, &arena, 64);
-    initChunkedArray(&catalogue->intersectionBuildings, &arena, 64);
+    catalogue->constructibleBuildings = { arena, 64 };
+    catalogue->rGrowableBuildings = { arena, 64 };
+    catalogue->cGrowableBuildings = { arena, 64 };
+    catalogue->iGrowableBuildings = { arena, 64 };
+    catalogue->intersectionBuildings = { arena, 64 };
 
     initOccupancyArray(&catalogue->allBuildings, &arena, 64);
     // NB: BuildingDef ids are 1-indexed. At least one place (BuildingDef.canBeBuiltOnID) uses 0 as a "none" value.

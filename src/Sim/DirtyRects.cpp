@@ -8,8 +8,8 @@
 
 DirtyRects::DirtyRects(MemoryArena& arena, Optional<Rect2I> bounds)
     : m_bounds(move(bounds))
+    , m_rects(arena, 32)
 {
-    initChunkedArray(&m_rects, &arena, 32);
 }
 
 void DirtyRects::mark_dirty(Rect2I rect)

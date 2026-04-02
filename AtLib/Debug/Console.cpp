@@ -64,15 +64,15 @@ void initConsole(MemoryArena* debugArena, float openHeight, float maximisedHeigh
     console->openSpeed = openSpeed;
 
     console->input = UI::newTextInput(debugArena, consoleLineLength);
-    initChunkedArray(&console->inputHistory, debugArena, 256);
+    console->inputHistory = ChunkedArray<String>(*debugArena, 256);
     console->inputHistoryCursor = -1;
 
-    initChunkedArray(&console->outputLines, debugArena, 1024);
+    console->outputLines = ChunkedArray<ConsoleOutputLine>(*debugArena, 1024);
 
     // NB: Increase the count before we reach it - hash tables like lots of extra space!
     s32 commandCapacity = 128;
     console->commands = HashTable<Command>::allocate_fixed_size(*debugArena, commandCapacity);
-    initChunkedArray(&console->commandShortcuts, debugArena, 64);
+    console->commandShortcuts = ChunkedArray<CommandShortcut>(*debugArena, 64);
     console->register_default_commands();
 
     globalConsole = console;

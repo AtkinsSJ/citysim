@@ -43,8 +43,7 @@ ErrorOr<NonnullOwnPtr<Asset>> Cursor::load_defs(AssetMetadata& metadata, Blob da
         StringView filename;
         V2I hotspot;
     };
-    ChunkedArray<CursorDef> cursor_defs;
-    initChunkedArray(&cursor_defs, &temp_arena(), 128);
+    ChunkedArray<CursorDef> cursor_defs { temp_arena(), 128 };
 
     while (reader.load_next_line()) {
         auto name_token = reader.next_token();

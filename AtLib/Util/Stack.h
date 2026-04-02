@@ -28,7 +28,7 @@ struct Stack {
 template<typename T>
 void initStack(Stack<T>* stack, MemoryArena* arena, s32 itemsPerChunk = 32)
 {
-    initChunkedArray(&stack->_array, arena, itemsPerChunk);
+    stack->_array = { *arena, itemsPerChunk };
 }
 
 template<typename T>

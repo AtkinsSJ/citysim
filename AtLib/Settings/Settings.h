@@ -21,7 +21,7 @@ public:
         auto& settings = initialize_internal();
         settings.settings = settings.arena.allocate<T>(settings.arena);
         settings.workingState = settings.arena.allocate<T>(settings.arena);
-        initChunkedArray(&settings.m_listeners, &settings.arena, 32);
+        settings.m_listeners = { settings.arena, 32 };
         settings.arena.mark_reset_position();
 
         settings.load();

@@ -13,15 +13,12 @@
 
 HealthLayer::HealthLayer(City& city, MemoryArena& arena)
     : m_dirty_rects(arena, city.bounds)
+    , m_sectors(&arena, city.bounds.size(), 16, 8)
+    , m_tile_health_coverage(arena.allocate_array_2d<u8>(city.bounds.size()))
+    , m_health_buildings(city.buildingRefsChunkPool)
+    , m_funding_level(1.0f)
 {
-    m_sectors = SectorGrid<BasicSector> { &arena, city.bounds.size(), 16, 8 };
-
-    m_tile_health_coverage = arena.allocate_array_2d<u8>(city.bounds.size());
     m_tile_health_coverage.fill(0);
-
-    initChunkedArray(&m_health_buildings, &city.buildingRefsChunkPool);
-
-    m_funding_level = 1.0f;
 }
 
 void HealthLayer::update(City& city)

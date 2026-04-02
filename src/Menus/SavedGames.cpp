@@ -34,7 +34,7 @@ void initSavedGamesCatalogue()
         catalogue->savedGamesChangeHandle = saved_games_watcher.release_value();
     }
 
-    initChunkedArray(&catalogue->savedGames, &catalogue->savedGamesArena, 64);
+    catalogue->savedGames = { catalogue->savedGamesArena, 64 };
 
     // Window-related stuff
     catalogue->selectedSavedGameName = {};

@@ -14,18 +14,14 @@
 
 CrimeLayer::CrimeLayer(City& city, MemoryArena& arena)
     : m_dirty_rects(arena, city.bounds)
+    , m_sectors(SectorGrid<BasicSector> { &arena, city.bounds.size(), 16, 8 })
+    , m_tile_police_coverage(arena.allocate_array_2d<u8>(city.bounds.size()))
+    , m_police_buildings(city.buildingRefsChunkPool)
+    , m_total_jail_capacity(0)
+    , m_occupied_jail_capacity(0)
+    , m_funding_level(1.0f)
 {
-    m_sectors = SectorGrid<BasicSector> { &arena, city.bounds.size(), 16, 8 };
-
-    m_tile_police_coverage = arena.allocate_array_2d<u8>(city.bounds.size());
     m_tile_police_coverage.fill(0);
-
-    m_total_jail_capacity = 0;
-    m_occupied_jail_capacity = 0;
-
-    m_funding_level = 1.0f;
-
-    initChunkedArray(&m_police_buildings, &city.buildingRefsChunkPool);
 }
 
 void CrimeLayer::update(City& city)

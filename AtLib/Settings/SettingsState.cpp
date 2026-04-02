@@ -9,8 +9,8 @@
 #include <Util/StringBuilder.h>
 
 SettingsState::SettingsState(MemoryArena& arena)
+    : m_settings_order(arena, 32)
 {
-    initChunkedArray(&m_settings_order, &arena, 32);
 }
 
 void SettingsState::restore_default_values()

@@ -24,12 +24,12 @@ void init(MemoryArena* arena)
 {
     uiState = {};
 
-    initChunkedArray(&uiState.uiRects, arena, 64);
+    uiState.uiRects = { *arena, 64 };
     initStack(&uiState.inputScissorRects, arena);
 
     new (&uiState.toasts) Queue<Toast> { *arena };
 
-    initChunkedArray(&uiState.openWindows, arena, 64);
+    uiState.openWindows = { *arena, 64 };
     new (&uiState.windowsToClose) Set<String> { *arena };
     new (&uiState.windowsToMakeActive) Set<String> { *arena };
 }

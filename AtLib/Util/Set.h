@@ -19,10 +19,10 @@ public:
 
     using ComparisonFunction = Function<bool(T*, T*)>;
 
-    Set(MemoryArena& arena, ComparisonFunction are_items_equal = [](T* a, T* b) { return *a == *b; })
-        : m_are_items_equal(are_items_equal)
+    explicit Set(MemoryArena& arena, ComparisonFunction are_items_equal = [](T* a, T* b) { return *a == *b; })
+        : m_items(arena, 64) // 64 is an arbitrary choice!
+        , m_are_items_equal(are_items_equal)
     {
-        initChunkedArray(&m_items, &arena, 64); // 64 is an arbitrary choice!
     }
 
     // Returns true if the item got added (aka, it was not already in the set)

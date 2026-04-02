@@ -33,8 +33,8 @@ void initAssets()
 
     // NB: The arena block size is 1MB currently, so make sure that this number * sizeof(Asset) is less than that!
     // (Otherwise, we waste a LOT of memory with almost-empty memory blocks.)
-    initChunkedArray(&s_assets->allAssets, &s_assets->arena, 1024);
-    initChunkedArray(&s_assets->asset_type_data, &s_assets->arena, 128);
+    s_assets->allAssets = ChunkedArray<AssetMetadata>(s_assets->arena, 1024);
+    s_assets->asset_type_data = ChunkedArray<AssetManager::AssetTypeData>(s_assets->arena, 128);
     s_assets->assetMemoryAllocated = 0;
     s_assets->maxAssetMemoryAllocated = 0;
 
@@ -43,8 +43,8 @@ void initAssets()
     auto compareStrings = [](String* a, String* b) { return *a == *b; };
     new (&s_assets->missingTextIDs) Set<String> { s_assets->arena, compareStrings };
 
-    initChunkedArray(&s_assets->listeners, &s_assets->arena, 32);
-    initChunkedArray(&s_assets->asset_loaders, &s_assets->arena, 32);
+    s_assets->listeners = ChunkedArray<AssetManagerListener*>(s_assets->arena, 32);
+    s_assets->asset_loaders = ChunkedArray<NonnullOwnPtr<AssetLoader>>(s_assets->arena, 32);
 
     // NB: This might fail, or we might be on a platform where it isn't implemented.
     // That's OK though!

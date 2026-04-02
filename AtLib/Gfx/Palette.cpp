@@ -28,8 +28,7 @@ ErrorOr<NonnullOwnPtr<Asset>> Palette::load_defs(AssetMetadata& metadata, Blob f
         Optional<Colour> from_color;
         Optional<Colour> to_color;
     };
-    ChunkedArray<PaletteData> palettes;
-    initChunkedArray(&palettes, &temp_arena(), 128);
+    ChunkedArray<PaletteData> palettes { temp_arena(), 128 };
     while (reader.load_next_line()) {
         auto command_token = reader.next_token();
         if (!command_token.has_value())
@@ -43,7 +42,7 @@ ErrorOr<NonnullOwnPtr<Asset>> Palette::load_defs(AssetMetadata& metadata, Blob f
                 if (auto palette_name = reader.next_token(); palette_name.has_value()) {
                     PaletteData data;
                     data.name = palette_name.release_value();
-                    initChunkedArray(&data.fixed_colors, &temp_arena(), 128);
+                    data.fixed_colors = { temp_arena(), 128 };
                     palettes.append(move(data));
                 } else {
                     return reader.make_error_message("Missing name for Palette"_s);
