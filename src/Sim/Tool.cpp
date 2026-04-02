@@ -209,7 +209,7 @@ void ZoneTool::act(City& city, bool mouse_is_over_ui, V2I mouse_tile_pos)
                 Colour::from_rgb_255(255, 0, 0, 16),
                 ZONE_DEFS[m_zone_type].color
             };
-            drawGrid(&renderer.world_overlay_buffer(), canZoneQuery.bounds, canZoneQuery.tileCanBeZoned, 2, palette);
+            drawGrid(&renderer.world_overlay_buffer(), canZoneQuery.bounds, canZoneQuery.tileCanBeZoned, ReadonlySpan { 2, palette });
         } else {
             drawSingleRect(&renderer.world_overlay_buffer(), drag_rect, renderer.shaderIds.untextured, Colour::from_rgb_255(255, 64, 64, 128));
         }

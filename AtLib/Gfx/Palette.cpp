@@ -164,11 +164,6 @@ Colour Palette::last() const
     return m_colours.last();
 }
 
-Colour* Palette::raw_colour_data() const
-{
-    return m_colours.items;
-}
-
 size_t Palette::size() const
 {
     return m_colours.count;

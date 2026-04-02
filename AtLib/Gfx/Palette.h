@@ -28,7 +28,7 @@ public:
     Colour colour_at(size_t index) const;
     Colour first() const;
     Colour last() const;
-    Colour* raw_colour_data() const;
+    ReadonlySpan<Colour> colours() const { return m_colours; }
 
     virtual void unload(AssetMetadata&) override;
 

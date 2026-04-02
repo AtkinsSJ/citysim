@@ -786,7 +786,7 @@ void GameScene::draw_data_view_overlay(Rect2I visible_tile_bounds) const
         Rect2I bounds = city.bounds;
 
         auto& overlayPalette = Palette::get(dataView.overlayPaletteName);
-        drawGrid(&renderer.world_overlay_buffer(), bounds, *dataView.overlayTileData, (u16)overlayPalette.size(), overlayPalette.raw_colour_data());
+        drawGrid(&renderer.world_overlay_buffer(), bounds, *dataView.overlayTileData, overlayPalette.colours());
     } else if (dataView.calculate_tile_value) {
         // The per-tile overlay data is generated
         Array2<u8> overlayTileData = temp_arena().allocate_array_2d<u8>(visible_tile_bounds.size());
@@ -799,7 +799,7 @@ void GameScene::draw_data_view_overlay(Rect2I visible_tile_bounds) const
         }
 
         auto& overlayPalette = Palette::get(dataView.overlayPaletteName);
-        drawGrid(&renderer.world_overlay_buffer(), visible_tile_bounds, overlayTileData, (u16)overlayPalette.size(), overlayPalette.raw_colour_data());
+        drawGrid(&renderer.world_overlay_buffer(), visible_tile_bounds, overlayTileData, overlayPalette.colours());
     }
 
     if (dataView.highlightedBuildings) {

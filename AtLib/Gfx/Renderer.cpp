@@ -328,13 +328,13 @@ void addSetTextureRaw(RenderBuffer* buffer, s32 width, s32 height, u8 bytesPerPi
     copyMemory(pixels, itemAndData.data, pixelDataSize);
 }
 
-void addSetPalette(RenderBuffer* buffer, s32 paletteSize, Colour* palette)
+void addSetPalette(RenderBuffer* buffer, ReadonlySpan<Colour> palette)
 {
-    auto itemAndData = appendRenderItem<RenderItem_SetPalette>(buffer, RenderItemType::SetPalette, sizeof(Colour) * paletteSize);
+    auto itemAndData = appendRenderItem<RenderItem_SetPalette>(buffer, RenderItemType::SetPalette, sizeof(Colour) * palette.size());
 
-    itemAndData.item->paletteSize = paletteSize;
+    itemAndData.item->paletteSize = palette.size();
 
-    copyMemory(palette, (Colour*)itemAndData.data, paletteSize);
+    copyMemory(palette.raw_data(), (Colour*)itemAndData.data, palette.size());
 }
 
 void addClear(RenderBuffer* buffer, Colour clearColor)
@@ -747,14 +747,14 @@ void endRectsGroup(DrawRectsGroup* group)
     endCurrentSubGroup(group);
 }
 
-void drawGrid(RenderBuffer* buffer, Rect2 bounds, Array2<u8> const& grid, u16 paletteSize, Colour* palette)
+void drawGrid(RenderBuffer* buffer, Rect2 bounds, Array2<u8> const& grid, ReadonlySpan<Colour> palette)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::Renderer);
 
     addSetShader(buffer, s_renderer->shaderIds.paletted);
 
     addSetTextureRaw(buffer, grid.width(), grid.height(), 1, grid.items);
-    addSetPalette(buffer, paletteSize, palette);
+    addSetPalette(buffer, palette);
 
     RenderItem_DrawSingleRect* rect = appendRenderItem<RenderItem_DrawSingleRect>(buffer, RenderItemType::DrawSingleRect);
     rect->bounds = bounds;
