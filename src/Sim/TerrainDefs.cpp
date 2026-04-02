@@ -21,8 +21,7 @@ ErrorOr<NonnullOwnPtr<TerrainDefs>> TerrainDefs::load(AssetMetadata& metadata, B
             terrainCount++;
     }
 
-    auto data = Assets::assets_allocate(sizeof(String) * terrainCount);
-    Array<String> terrain_ids { terrainCount, reinterpret_cast<String*>(data.writable_data()) };
+    auto terrain_ids = asset_manager().allocate_array<String>(terrainCount);
 
     reader.restart();
 
@@ -98,12 +97,11 @@ ErrorOr<NonnullOwnPtr<TerrainDefs>> TerrainDefs::load(AssetMetadata& metadata, B
         }
     }
 
-    return adopt_own(*new TerrainDefs(move(data), move(terrain_ids)));
+    return adopt_own(*new TerrainDefs(move(terrain_ids)));
 }
 
-TerrainDefs::TerrainDefs(Blob data, Array<String> terrain_ids)
-    : m_data(move(data))
-    , m_terrain_ids(move(terrain_ids))
+TerrainDefs::TerrainDefs(Array<String> terrain_ids)
+    : m_terrain_ids(move(terrain_ids))
 {
 }
 
@@ -119,6 +117,6 @@ void TerrainDefs::unload(AssetMetadata& metadata)
         }
     }
 
-    Assets::assets_deallocate(m_data);
+    asset_manager().deallocate(m_terrain_ids);
     m_terrain_ids = {};
 }

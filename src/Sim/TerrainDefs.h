@@ -8,7 +8,6 @@
 
 #include <Assets/Asset.h>
 #include <Util/Array.h>
-#include <Util/Blob.h>
 #include <Util/String.h>
 
 class TerrainDefs final : public Asset {
@@ -24,7 +23,6 @@ public:
     virtual void unload(AssetMetadata& metadata) override;
 
 private:
-    TerrainDefs(Blob data, Array<String> terrain_ids);
-    Blob m_data;
+    TerrainDefs(Array<String> terrain_ids);
     Array<String> m_terrain_ids;
 };
