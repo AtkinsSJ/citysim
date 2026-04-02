@@ -78,6 +78,7 @@ private:
     void free_current_block();
 
     virtual Span<u8> allocate_internal(size_t size) override;
+    virtual void deallocate_internal(Span<u8>) override;
 
     String m_name { "UNINITIALIZED"_s };
     MemoryBlock* m_current_block { nullptr };

@@ -19,3 +19,9 @@ Blob Allocator::allocate_blob(size_t size)
 {
     return Blob { size, allocate_internal(size).raw_data() };
 }
+
+void Allocator::deallocate(Blob& blob)
+{
+    deallocate_internal({ blob.size(), blob.writable_data() });
+    blob = {};
+}

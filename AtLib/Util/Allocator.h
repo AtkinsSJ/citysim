@@ -73,7 +73,10 @@ public:
     String allocate_string(StringView input);
     Blob allocate_blob(size_t size);
 
+    void deallocate(Blob&);
+
 protected:
     // FIXME: Handle alignment here
     virtual Span<u8> allocate_internal(size_t size) = 0;
+    virtual void deallocate_internal(Span<u8>) = 0;
 };

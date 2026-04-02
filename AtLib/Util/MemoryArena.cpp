@@ -177,3 +177,8 @@ Span<u8> MemoryArena::allocate_internal(size_t size)
 
     return { size, result };
 }
+
+void MemoryArena::deallocate_internal(Span<u8>)
+{
+    // No-op. MemoryArenas deallocate in bulk, so probably I should use them way less.
+}
