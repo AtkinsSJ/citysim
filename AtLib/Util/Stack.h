@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2015-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -21,45 +21,42 @@
 //
 
 template<typename T>
-struct Stack {
-    ChunkedArray<T> _array;
-};
-
-template<typename T>
-void initStack(Stack<T>* stack, MemoryArena* arena, s32 itemsPerChunk = 32)
-{
-    stack->_array = { *arena, itemsPerChunk };
-}
-
-template<typename T>
-bool is_empty(Stack<T>* stack)
-{
-    return (stack->_array.is_empty());
-}
-
-template<typename T>
-T* push(Stack<T>* stack, T item)
-{
-    return stack->_array.append(item);
-}
-
-template<typename T>
-T* peek(Stack<T>* stack)
-{
-    T* result = nullptr;
-
-    if (!is_empty(stack)) {
-        result = &stack->_array.get(stack->_array.count - 1);
+class Stack {
+public:
+    Stack() = default; // FIXME: Temporary
+    explicit Stack(MemoryArena& arena, s32 items_per_chunk = 32)
+        : m_array(arena, items_per_chunk)
+    {
     }
 
-    return result;
-}
+    bool is_empty() const { return m_array.is_empty(); }
 
-template<typename T>
-Optional<T> pop(Stack<T>* stack)
-{
-    if (!is_empty(stack))
-        return stack->_array.take_index(stack->_array.count - 1);
+    T* push(T item)
+    {
+        return m_array.append(item);
+    }
 
-    return {};
-}
+    T* peek()
+    {
+        if (is_empty())
+            return nullptr;
+
+        return &m_array.get(m_array.count - 1);
+    }
+
+    T const* peek() const
+    {
+        return const_cast<Stack*>(this)->peek();
+    }
+
+    Optional<T> pop()
+    {
+        if (is_empty())
+            return {};
+
+        return m_array.take_index(m_array.count - 1);
+    }
+
+private:
+    ChunkedArray<T> m_array;
+};

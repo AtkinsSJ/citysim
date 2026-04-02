@@ -25,7 +25,7 @@ void init(MemoryArena* arena)
     uiState = {};
 
     uiState.uiRects = { *arena, 64 };
-    initStack(&uiState.inputScissorRects, arena);
+    uiState.inputScissorRects = Stack<Rect2I> { *arena };
 
     new (&uiState.toasts) Queue<Toast> { *arena };
 
@@ -145,23 +145,23 @@ V2I getDraggingObjectPos()
 
 void pushInputScissorRect(Rect2I bounds)
 {
-    push(&uiState.inputScissorRects, bounds);
+    uiState.inputScissorRects.push(bounds);
 }
 
 void popInputScissorRect()
 {
-    (void)pop(&uiState.inputScissorRects);
+    (void)uiState.inputScissorRects.pop();
 }
 
 bool isInputScissorActive()
 {
-    return !is_empty(&uiState.inputScissorRects);
+    return !uiState.inputScissorRects.is_empty();
 }
 
 Rect2I getInputScissorRect()
 {
     if (isInputScissorActive())
-        return *peek(&uiState.inputScissorRects);
+        return *uiState.inputScissorRects.peek();
 
     return Rect2I::create_infinity();
 }

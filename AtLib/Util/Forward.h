@@ -67,4 +67,7 @@ template<typename T>
 class Span;
 
 template<typename T>
+class Stack;
+
+template<typename T>
 using ReadonlySpan = Span<T const>;

@@ -106,16 +106,13 @@ bool Renderer::set_up_context()
     glGenTextures(1, &m_palette_texture_id);
     glGenTextures(1, &m_raw_texture_id);
 
-    // Other GL_Renderer struct init stuff
-
-    initStack(&m_scissor_stack, &arena());
-
     return true;
 }
 
 Renderer::Renderer(SDL_Window* window)
     : ::Renderer(window)
     , m_shaders(arena(), 64)
+    , m_scissor_stack(arena())
 {
 }
 
@@ -289,11 +286,11 @@ void Renderer::render_internal()
                     flush_vertices();
                 }
 
-                if (is_empty(&m_scissor_stack)) {
+                if (m_scissor_stack.is_empty()) {
                     glEnable(GL_SCISSOR_TEST);
                 }
 
-                push(&m_scissor_stack, header->bounds);
+                m_scissor_stack.push(header->bounds);
 
                 glScissor(header->bounds.x(), header->bounds.y(), header->bounds.width(), header->bounds.height());
             } break;
@@ -308,11 +305,11 @@ void Renderer::render_internal()
                     flush_vertices();
                 }
 
-                (void)pop(&m_scissor_stack);
+                (void)m_scissor_stack.pop();
 
                 // Restore previous scissor
-                if (!is_empty(&m_scissor_stack)) {
-                    Rect2I* previousScissor = peek(&m_scissor_stack);
+                if (!m_scissor_stack.is_empty()) {
+                    auto* previousScissor = m_scissor_stack.peek();
                     glScissor(previousScissor->x(), previousScissor->y(), previousScissor->width(), previousScissor->height());
                 } else {
                     glDisable(GL_SCISSOR_TEST);
@@ -422,7 +419,7 @@ void Renderer::render_internal()
         DEBUG_END_RENDER_BUFFER();
     }
 
-    ASSERT(is_empty(&m_scissor_stack));
+    ASSERT(m_scissor_stack.is_empty());
 }
 
 void Renderer::after_assets_loaded()
