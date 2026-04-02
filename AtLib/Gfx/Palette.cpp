@@ -135,7 +135,7 @@ ErrorOr<NonnullOwnPtr<Asset>> Palette::load_defs(AssetMetadata& metadata, Blob f
         case Type::Fixed: {
             auto data = Assets::assets_allocate(palette.fixed_colors.count * sizeof(Colour));
             Array<Colour> colours_array { static_cast<size_t>(palette.fixed_colors.count), reinterpret_cast<Colour*>(data.writable_data()), static_cast<size_t>(palette.fixed_colors.count) };
-            for (auto i = 0u; i < colours_array.count; i++)
+            for (auto i = 0u; i < colours_array.count(); i++)
                 colours_array[i] = palette.fixed_colors.get(i);
 
             auto& palette_metadata = *asset_manager().add_asset(asset_type(), palette.name, {});
@@ -166,7 +166,7 @@ Colour Palette::last() const
 
 size_t Palette::size() const
 {
-    return m_colours.count;
+    return m_colours.count();
 }
 
 void Palette::unload(AssetMetadata&)

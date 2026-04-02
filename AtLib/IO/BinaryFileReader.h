@@ -65,13 +65,13 @@ struct BinaryFileReader {
     {
         bool succeeded = false;
 
-        if (source.count <= (u32)dest->capacity) {
-            if (source.count < (u32)dest->capacity) {
-                logWarn("Destination passed to readArray() is larger than needed. (Need {0}, got {1})"_s, { formatInt(source.count), formatInt(dest->capacity) });
+        if (source.count <= (u32)dest->capacity()) {
+            if (source.count < (u32)dest->capacity()) {
+                logWarn("Destination passed to readArray() is larger than needed. (Need {0}, got {1})"_s, { formatInt(source.count), formatInt(dest->capacity()) });
             }
 
-            copyMemory<T>((T*)sectionMemoryAt(source.relativeOffset), dest->items, source.count);
-            dest->count = source.count;
+            copyMemory<T>((T*)sectionMemoryAt(source.relativeOffset), dest->raw_items(), source.count);
+            dest->set_count(source.count);
             succeeded = true;
         }
 
@@ -86,11 +86,11 @@ struct BinaryFileReader {
     template<typename T>
     bool readBlob(FileBlob source, Array<T>* dest)
     {
-        smm destSize = dest->capacity * sizeof(T);
+        smm destSize = dest->capacity() * sizeof(T);
 
-        bool succeeded = readBlob(source, (u8*)dest->items, destSize);
+        bool succeeded = readBlob(source, (u8*)dest->raw_items(), destSize);
         if (succeeded) {
-            dest->count = dest->capacity;
+            dest->set_count(dest->capacity());
         }
 
         return succeeded;

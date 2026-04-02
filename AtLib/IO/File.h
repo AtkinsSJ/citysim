@@ -112,11 +112,11 @@ bool readArray(FileHandle* file, smm position, s32 count, Array<T>* result)
 
     bool succeeded = false;
 
-    if (result->capacity >= count) {
+    if (result->capacity() >= count) {
         smm byteLength = sizeof(T) * count;
-        smm bytesRead = readData(file, position, byteLength, result->items);
+        smm bytesRead = readData(file, position, byteLength, result->raw_items());
         if (bytesRead == byteLength) {
-            result->count = count;
+            result->set_count(count);
             succeeded = true;
         } else {
             logWarn("Failed to read array of '{0}', length {1}, from file '{2}': Reached end of file"_s, { typeNameOf<T>(), formatInt(count), file->path });

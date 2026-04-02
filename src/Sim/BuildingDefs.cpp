@@ -323,7 +323,7 @@ ErrorOr<NonnullOwnPtr<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata,
                     def->size.x = w.release_value();
                     def->size.y = h.release_value();
 
-                    if ((def->variants.count > 0) && (def->size.x != 1 || def->size.y != 1)) {
+                    if ((def->variants.count() > 0) && (def->size.x != 1 || def->size.y != 1)) {
                         return reader.make_error_message("This building is {0}x{1} and has variants. Variants are only allowed for 1x1 tile buildings!"_s, { formatInt(def->size.x), formatInt(def->size.y) });
                     }
                 } else {
@@ -356,7 +356,7 @@ ErrorOr<NonnullOwnPtr<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata,
                 // - Sam, 19/02/2020
                 //
 
-                if (def->variants.count < def->variants.capacity) {
+                if (def->variants.count() < def->variants.capacity()) {
                     BuildingVariant* variant = def->variants.append();
 
                     auto maybe_direction_flags = reader.next_token();

@@ -114,7 +114,7 @@ float Random::random_float_0_1()
 
 void Random::fill_with_noise(Array<float>& destination, s32 smoothing_pass_count, bool wrap)
 {
-    for (s32 i = 0; i < destination.count; i++) {
+    for (s32 i = 0; i < destination.count(); i++) {
         destination[i] = random_float_0_1();
     }
 
@@ -122,19 +122,19 @@ void Random::fill_with_noise(Array<float>& destination, s32 smoothing_pass_count
     for (s32 iteration = 0; iteration < smoothing_pass_count; iteration++) {
         if (wrap) {
             // Front
-            destination[0] = (destination[destination.count - 1] + destination[0] + destination[1]) / 3.0f;
+            destination[0] = (destination[destination.count() - 1] + destination[0] + destination[1]) / 3.0f;
             // Back
-            destination[destination.count - 1] = (destination[destination.count - 2] + destination[destination.count - 1] + destination[0]) / 3.0f;
+            destination[destination.count() - 1] = (destination[destination.count() - 2] + destination[destination.count() - 1] + destination[0]) / 3.0f;
         } else {
             // Fake normalisation because otherwise the ends get weird
 
             // Front
             destination[0] = (destination[0] + destination[1]) / 2.0f;
             // Back
-            destination[destination.count - 1] = (destination[destination.count - 2] + destination[destination.count - 1]) / 2.0f;
+            destination[destination.count() - 1] = (destination[destination.count() - 2] + destination[destination.count() - 1]) / 2.0f;
         }
 
-        for (s32 i = 1; i < destination.count - 1; i++) {
+        for (s32 i = 1; i < destination.count() - 1; i++) {
             destination[i] = (destination[i - 1] + destination[i] + destination[i + 1]) / 3.0f;
         }
     }

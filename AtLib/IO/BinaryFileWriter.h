@@ -60,10 +60,10 @@ struct BinaryFileWriter {
     FileArray appendArray(Array<T> const& data)
     {
         FileArray result = {};
-        result.count = data.count;
+        result.count = data.count();
         result.relativeOffset = getSectionRelativeOffset();
 
-        for (s32 i = 0; i < data.count; i++) {
+        for (s32 i = 0; i < data.count(); i++) {
             buffer.append<T>(&data[i]);
         }
 
@@ -79,13 +79,13 @@ struct BinaryFileWriter {
     template<typename T>
     FileArray writeArray(Array<T> const& data, WriteBufferRange location)
     {
-        s32 dataLength = data.count * sizeof(T);
+        s32 dataLength = data.count() * sizeof(T);
         ASSERT(dataLength <= location.length);
 
-        buffer.overwriteAt(location.start, dataLength, data.items);
+        buffer.overwriteAt(location.start, dataLength, data.raw_items());
 
         FileArray result = {};
-        result.count = data.count;
+        result.count = data.count();
         result.relativeOffset = location.start - startOfSectionData;
         return result;
     }

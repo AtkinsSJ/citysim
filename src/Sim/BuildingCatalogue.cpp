@@ -218,7 +218,7 @@ void BuildingCatalogue::remap_building_types(City& city)
         for (auto it = city.buildings.iterate(); it.hasNext(); it.next()) {
             Building* building = it.get();
             auto oldType = building->typeID;
-            if (oldType < oldTypeToNewType.count && (oldTypeToNewType[oldType] != 0)) {
+            if (oldType < oldTypeToNewType.count() && (oldTypeToNewType[oldType] != 0)) {
                 building->typeID = oldTypeToNewType[oldType];
             }
         }

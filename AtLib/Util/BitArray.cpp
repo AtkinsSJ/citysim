@@ -16,7 +16,7 @@ BitArray::BitArray(MemoryArena& arena, s32 size)
 
 BitArray BitArray::from_memory(s32 size, Array<u64> u64s)
 {
-    ASSERT(u64s.count * 64 >= size);
+    ASSERT(u64s.count() * 64 >= size);
     return BitArray { size, u64s };
 }
 

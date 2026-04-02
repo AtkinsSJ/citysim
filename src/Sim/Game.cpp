@@ -891,9 +891,9 @@ void GameScene::draw_data_view_ui()
             // First, the named colors
             if (dataView->hasFixedColors) {
                 auto& fixedPalette = Palette::get(dataView->fixedPaletteName);
-                ASSERT(fixedPalette.size() >= dataView->fixedColorNames.count);
+                ASSERT(fixedPalette.size() >= dataView->fixedColorNames.count());
 
-                for (s32 fixedColorIndex = dataView->fixedColorNames.count - 1; fixedColorIndex >= 0; fixedColorIndex--) {
+                for (s32 fixedColorIndex = dataView->fixedColorNames.count() - 1; fixedColorIndex >= 0; fixedColorIndex--) {
                     Rect2I paletteBlockBounds = ui.addBlank(paletteBlockSize, paletteBlockSize);
                     drawSingleRect(uiBuffer, paletteBlockBounds, renderer.shaderIds.untextured, fixedPalette.colour_at(fixedColorIndex).as_opaque());
 

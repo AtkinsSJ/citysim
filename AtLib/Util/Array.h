@@ -13,83 +13,90 @@
 #include <Util/Span.h>
 
 template<typename T>
-struct Array {
+class Array {
+public:
     Array() = default;
     Array(size_t capacity, T* items, size_t count = 0)
-        : capacity(capacity)
-        , count(count)
-        , items(items)
+        : m_capacity(capacity)
+        , m_count(count)
+        , m_items(items)
     {
     }
 
-    size_t capacity { 0 };
-    size_t count { 0 };
-    T* items { nullptr };
-
+    size_t count() const { return m_count; }
+    size_t capacity() const { return m_capacity; }
     bool is_empty() const
     {
-        return count == 0;
+        return m_count == 0;
+    }
+
+    // FIXME: Temporary, needed for readArray() which could use a rethink.
+    T* raw_items() const { return m_items; }
+    void set_count(size_t count)
+    {
+        ASSERT(count <= m_capacity);
+        m_count = count;
     }
 
     T& operator[](s32 index)
     {
-        ASSERT(index >= 0 && index < count); // Index out of range!
-        return items[index];
+        ASSERT(index >= 0 && index < m_count); // Index out of range!
+        return m_items[index];
     }
     T const& operator[](s32 index) const { return const_cast<Array&>(*this)[index]; }
 
     // Same as [] but easier when we're using an Array*
     T& get(s32 index)
     {
-        ASSERT(index >= 0 && index < count); // Index out of range!
-        return items[index];
+        ASSERT(index >= 0 && index < m_count); // Index out of range!
+        return m_items[index];
     }
     T const& get(s32 index) const { return const_cast<Array&>(*this).get(index); }
 
     T& first()
     {
-        ASSERT(count > 0); // Index out of range!
-        return items[0];
+        ASSERT(m_count > 0); // Index out of range!
+        return m_items[0];
     }
     T const& first() const { return const_cast<Array&>(*this).first(); }
 
     T& last()
     {
-        ASSERT(count > 0); // Index out of range!
-        return items[count - 1];
+        ASSERT(m_count > 0); // Index out of range!
+        return m_items[m_count - 1];
     }
     T const& last() const { return const_cast<Array&>(*this).last(); }
 
     T* append()
     {
-        ASSERT(count < capacity);
-        return new (&items[count++]) T();
+        ASSERT(m_count < m_capacity);
+        return new (&m_items[m_count++]) T();
     }
 
     T* append(T const& item)
     {
-        ASSERT(count < capacity);
-        return new (&items[count++]) T(item);
+        ASSERT(m_count < m_capacity);
+        return new (&m_items[m_count++]) T(item);
     }
 
     T* append(T&& item)
     {
-        ASSERT(count < capacity);
-        return new (&items[count++]) T(move(item));
+        ASSERT(m_count < m_capacity);
+        return new (&m_items[m_count++]) T(move(item));
     }
 
     void swap(s32 indexA, s32 indexB)
     {
-        T temp = items[indexA];
-        items[indexA] = items[indexB];
-        items[indexB] = temp;
+        T temp = m_items[indexA];
+        m_items[indexA] = m_items[indexB];
+        m_items[indexB] = temp;
     }
 
     // compareElements(T a, T b) -> returns (a < b), to sort low to high
     template<typename Comparison>
     void sort(Comparison compareElements)
     {
-        sortInternal(compareElements, 0, count - 1);
+        sortInternal(compareElements, 0, m_count - 1);
     }
 
     template<typename Comparison>
@@ -99,10 +106,10 @@ struct Array {
         if (lowIndex < highIndex) {
             s32 partitionIndex = 0;
             {
-                T pivot = items[highIndex];
+                T pivot = m_items[highIndex];
                 s32 i = (lowIndex - 1);
                 for (s32 j = lowIndex; j < highIndex; j++) {
-                    if (compareElements(items[j], pivot)) {
+                    if (compareElements(m_items[j], pivot)) {
                         i++;
                         swap(i, j);
                     }
@@ -118,12 +125,12 @@ struct Array {
 
     Span<T> span()
     {
-        return { count, items };
+        return { m_count, m_items };
     }
 
     ReadonlySpan<T> span() const
     {
-        return { count, items };
+        return { m_count, m_items };
     }
 
     operator Span<T>() { return span(); }
@@ -168,11 +175,16 @@ struct Array {
 
     Iterator begin() const
     {
-        return Iterator({}, items);
+        return Iterator({}, m_items);
     }
 
     Iterator end() const
     {
-        return Iterator({}, items + count);
+        return Iterator({}, m_items + m_count);
     }
+
+private:
+    size_t m_capacity { 0 };
+    size_t m_count { 0 };
+    T* m_items { nullptr };
 };

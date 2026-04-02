@@ -91,7 +91,7 @@ void Building::update_variant(City& city, Optional<BuildingDef const&> passed_de
 
     auto const& def = passed_def.value_or(get_def());
 
-    if (def.variants.count > 0) {
+    if (def.variants.count() > 0) {
         // NB: Right now we only allow variants for 1x1 buildings.
         // Later, we might want to expand that, but it will make things a LOT more complicated, so I'm
         // starting simple!
@@ -114,7 +114,7 @@ void Building::update_variant(City& city, Optional<BuildingDef const&> passed_de
         // Search for a matching variant
         // Right now... YAY LINEAR SEARCH! @Speed
         bool foundVariant = false;
-        for (s32 variant_index = 0; variant_index < def.variants.count; variant_index++) {
+        for (s32 variant_index = 0; variant_index < def.variants.count(); variant_index++) {
             auto& variant = def.variants[variant_index];
             if (def.matches_variant(variant, neighbourDefs)) {
                 this->variantIndex = variant_index;

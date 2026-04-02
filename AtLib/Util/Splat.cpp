@@ -19,8 +19,8 @@ float Splat::radius_at_angle(float degrees) const
 {
     // Interpolate between the two nearest radius values
     float desired_index = degrees * m_degrees_per_index;
-    s32 indexA = (floor_s32(desired_index) + m_radius.count) % m_radius.count;
-    s32 indexB = (ceil_s32(desired_index) + m_radius.count) % m_radius.count;
+    s32 indexA = (floor_s32(desired_index) + m_radius.count()) % m_radius.count();
+    s32 indexB = (ceil_s32(desired_index) + m_radius.count()) % m_radius.count();
     float noiseAtAngle = lerp(m_radius[indexA], m_radius[indexB], fraction_float(desired_index));
 
     return m_min_radius + (noiseAtAngle * (m_max_radius - m_min_radius));

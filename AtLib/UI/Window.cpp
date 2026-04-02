@@ -382,13 +382,13 @@ void updateAndRenderWindows()
     if (!uiState.windowsToClose.is_empty()) {
         Array<s32> windowsToClose = uiState.windowsToClose.asSortedArray();
 
-        for (s32 i = windowsToClose.count - 1; i >= 0; i--) {
+        for (s32 i = windowsToClose.count() - 1; i >= 0; i--) {
             s32 windowIndex = windowsToClose[i];
             closeWindow(windowIndex);
 
             // Any indices in windowsToMakeActive that are >windowIndex are now inaccurate.
             // Subtract 1 from them to account for this one being removed from the list.
-            for (auto j = 0; j < windowsToMakeActive.count; ++j) {
+            for (auto j = 0; j < windowsToMakeActive.count(); ++j) {
                 if (windowsToMakeActive[j] > windowIndex)
                     windowsToMakeActive[j]--;
             }

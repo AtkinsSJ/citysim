@@ -31,7 +31,7 @@ struct V4;
 using Error = String;
 
 template<typename T>
-struct Array;
+class Array;
 
 template<typename T>
 class Array2;

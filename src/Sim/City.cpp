@@ -673,23 +673,23 @@ void City::update_adjacent_building_variants(Rect2I footprint)
 
     for (s32 y = footprint.y(); y < footprint.y() + footprint.height(); y++) {
         if (auto* left_building = get_building_at(footprint.x() - 1, y)) {
-            if (auto& left_def = left_building->get_def(); left_def.variants.count > 0)
+            if (auto& left_def = left_building->get_def(); left_def.variants.count() > 0)
                 left_building->update_variant(*this, left_def);
         }
 
         if (auto* right_building = get_building_at(footprint.x() + footprint.width(), y)) {
-            if (auto& right_def = right_building->get_def(); right_def.variants.count > 0)
+            if (auto& right_def = right_building->get_def(); right_def.variants.count() > 0)
                 right_building->update_variant(*this, right_def);
         }
     }
 
     for (s32 x = footprint.x(); x < footprint.x() + footprint.width(); x++) {
         if (auto* up_building = get_building_at(x, footprint.y() - 1)) {
-            if (auto& up_def = up_building->get_def(); up_def.variants.count > 0)
+            if (auto& up_def = up_building->get_def(); up_def.variants.count() > 0)
                 up_building->update_variant(*this, up_def);
         }
         if (auto* down_building = get_building_at(x, footprint.y() + footprint.height())) {
-            if (auto& down_def = down_building->get_def(); down_def.variants.count > 0)
+            if (auto& down_def = down_building->get_def(); down_def.variants.count() > 0)
                 down_building->update_variant(*this, down_def);
         }
     }
