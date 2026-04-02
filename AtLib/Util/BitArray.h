@@ -12,27 +12,30 @@
 
 class BitArray {
 public:
-    s32 size;
-    s32 setBitCount;
-
-    Array<u64> u64s;
+    BitArray() = default;
+    BitArray(MemoryArena&, s32 size);
+    static BitArray from_memory(s32 size, Array<u64>);
 
     bool operator[](u32 index) const;
 
     // TODO: Could keep a record of the highest/lowest set/unset bit indices, rather than calculating them each time!
     // Wouldn't even be that hard, just a min() or max() when a bit changes.
 
-    // Methods
-
     static constexpr s32 calculate_u64_count(s32 bitCount)
     {
         return 1 + ((bitCount - 1) / 64);
     }
 
+    s32 size() const { return m_size; }
+
     void set_bit(s32 index);
     void unset_bit(s32 index);
     void set_all();
     void unset_all();
+
+    s32 set_bit_count() const { return m_set_bit_count; }
+    bool is_all_unset() const { return m_set_bit_count == 0; }
+    bool is_all_set() const { return m_set_bit_count == m_size; }
 
     // Returns a temporary array containing the indices of the set bits from this array
     Array<s32> get_set_bit_indices() const;
@@ -47,15 +50,14 @@ public:
     // loop in that case!)
     // - Sam, 18/08/2019
     BitArrayIterator iterate_set_bits() const;
+
+private:
+    BitArray(s32 size, Array<u64>);
+
+    s32 m_size { 0 };
+    s32 m_set_bit_count { 0 };
+    Array<u64> m_data {};
 };
-
-void initBitArray(BitArray* array, MemoryArena* arena, s32 size);
-
-// If you want, you can supply the memory directly, in case you want to allocate it with something else.
-// Of course, you MUST pass an array of u64s that is big enough!
-// IMPORTANT: we assume that the array is set to all 0s!
-// To get the size, call calculateU64Count() below.
-void initBitArray(BitArray* array, s32 size, Array<u64> u64s);
 
 class BitArrayIterator {
 public:

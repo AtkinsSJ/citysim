@@ -57,7 +57,7 @@ struct OccupancyArray {
 
             auto [new_chunk, items] = memoryArena->allocate_with_data<OccupancyArrayChunk<T>>(arraySize + occupancyArraySize);
             new_chunk.items = reinterpret_cast<T*>(items.raw_data());
-            initBitArray(&new_chunk.occupancy, itemsPerChunk, makeArray(occupancyArrayCount, reinterpret_cast<u64*>(items.raw_data() + arraySize), occupancyArrayCount));
+            new_chunk.occupancy = BitArray::from_memory(itemsPerChunk, makeArray(occupancyArrayCount, reinterpret_cast<u64*>(items.raw_data() + arraySize), occupancyArrayCount));
 
             chunkCount++;
 
@@ -95,7 +95,7 @@ struct OccupancyArray {
         // update counts
         count++;
 
-        if (chunk->occupancy.setBitCount == itemsPerChunk) {
+        if (chunk->occupancy.is_all_set()) {
             // recalculate firstChunkWithSpace/Index
             if (count == itemsPerChunk * chunkCount) {
                 // We're full! So just set the firstChunkWithSpace to null
@@ -107,7 +107,7 @@ struct OccupancyArray {
                 // (If that's not, we have bigger problems!)
                 OccupancyArrayChunk<T>* nextChunk = chunk->nextChunk;
                 s32 nextChunkIndex = firstChunkWithSpaceIndex + 1;
-                while (nextChunk->occupancy.setBitCount == itemsPerChunk) {
+                while (nextChunk->occupancy.is_all_set()) {
                     // NB: We don't check for a null nextChunk. It should never be null - if it is, something is corrupted
                     // and we want to crash here, and the dereference will do that so no need to assert!
                     // - Sam, 21/08/2019

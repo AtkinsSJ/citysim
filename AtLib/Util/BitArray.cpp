@@ -8,20 +8,22 @@
 #include <Util/Assert.h>
 #include <Util/MemoryArena.h>
 
-void initBitArray(BitArray* array, MemoryArena* arena, s32 size)
+BitArray::BitArray(MemoryArena& arena, s32 size)
+    : m_size(size)
+    , m_data(arena.allocate_array<u64>(calculate_u64_count(size), true))
 {
-    array->size = size;
-    array->setBitCount = 0;
-    array->u64s = arena->allocate_array<u64>(BitArray::calculate_u64_count(size), true);
 }
 
-void initBitArray(BitArray* array, s32 size, Array<u64> u64s)
+BitArray BitArray::from_memory(s32 size, Array<u64> u64s)
 {
     ASSERT(u64s.count * 64 >= size);
+    return BitArray { size, u64s };
+}
 
-    array->size = size;
-    array->setBitCount = 0;
-    array->u64s = u64s;
+BitArray::BitArray(s32 size, Array<u64> u64s)
+    : m_size(size)
+    , m_data(u64s)
+{
 }
 
 bool BitArray::operator[](u32 index) const
@@ -30,13 +32,13 @@ bool BitArray::operator[](u32 index) const
 
     // NB: Check and assert done this way so that in debug builds, we assert, but
     // in release builds without asserts, we just return false for non-existent bits.
-    if (index >= (u32)this->size || index < 0) {
+    if (index >= (u32)this->m_size || index < 0) {
         ASSERT(false);
     } else {
         u32 fieldIndex = index >> 6;
         u32 bitIndex = index & 63;
         u64 mask = ((u64)1 << bitIndex);
-        result = (this->u64s[fieldIndex] & mask) != 0;
+        result = (this->m_data[fieldIndex] & mask) != 0;
     }
 
     return result;
@@ -46,18 +48,18 @@ void BitArray::set_bit(s32 index)
 {
     // NB: Check and assert done this way so that in debug builds, we assert, but
     // in release builds without asserts, we just do nothing for non-existent bits.
-    if (index >= size || index < 0) {
+    if (index >= m_size || index < 0) {
         ASSERT(false);
     } else {
         u32 fieldIndex = index >> 6;
         u32 bitIndex = index & 63;
         u64 mask = ((u64)1 << bitIndex);
 
-        bool wasSet = (u64s[fieldIndex] & mask) != 0;
+        bool wasSet = (m_data[fieldIndex] & mask) != 0;
 
         if (!wasSet) {
-            u64s[fieldIndex] |= mask;
-            setBitCount++;
+            m_data[fieldIndex] |= mask;
+            m_set_bit_count++;
         }
     }
 }
@@ -66,45 +68,45 @@ void BitArray::unset_bit(s32 index)
 {
     // NB: Check and assert done this way so that in debug builds, we assert, but
     // in release builds without asserts, we just do nothing for non-existent bits.
-    if (index >= size || index < 0) {
+    if (index >= m_size || index < 0) {
         ASSERT(false);
     } else {
         u32 fieldIndex = index >> 6;
         u32 bitIndex = index & 63;
         u64 mask = ((u64)1 << bitIndex);
 
-        bool wasSet = (u64s[fieldIndex] & mask) != 0;
+        bool wasSet = (m_data[fieldIndex] & mask) != 0;
 
         if (wasSet) {
-            u64s[fieldIndex] &= ~mask;
-            setBitCount--;
+            m_data[fieldIndex] &= ~mask;
+            m_set_bit_count--;
         }
     }
 }
 
 void BitArray::set_all()
 {
-    setBitCount = size;
+    m_set_bit_count = m_size;
 
     // FIXME: memset?
-    for (auto& it : u64s) {
+    for (auto& it : m_data) {
         it = ~0;
     }
 }
 
 void BitArray::unset_all()
 {
-    setBitCount = 0;
+    m_set_bit_count = 0;
 
     // FIXME: memset?
-    for (auto& it : u64s) {
+    for (auto& it : m_data) {
         it = 0;
     }
 }
 
 Array<s32> BitArray::get_set_bit_indices() const
 {
-    Array<s32> result = temp_arena().allocate_array<s32>(setBitCount, false);
+    Array<s32> result = temp_arena().allocate_array<s32>(m_set_bit_count, false);
 
     for (auto it = iterate_set_bits(); it.has_next(); it.next()) {
         result.append(it.get_index());
@@ -127,8 +129,8 @@ s32 BitArray::get_first_matching_bit_index(bool set) const
 {
     s32 result = -1;
 
-    if (setBitCount != size) {
-        for (s32 index = 0; index < size; index++) {
+    if (m_set_bit_count != m_size) {
+        for (s32 index = 0; index < m_size; index++) {
             if ((*this)[index] == set) {
                 result = index;
                 break;
@@ -151,7 +153,7 @@ BitArrayIterator BitArray::iterate_set_bits() const
 BitArrayIterator::BitArrayIterator(BitArray const& array)
     : m_array(array)
     , m_current_index(0)
-    , m_is_done(array.setBitCount == 0)
+    , m_is_done(array.is_all_unset())
 {
     // If the first bit is unset, we need to skip ahead
     if (has_next() && !get_value())
@@ -163,7 +165,7 @@ void BitArrayIterator::next()
     while (!m_is_done) {
         m_current_index++;
 
-        if (m_current_index >= m_array.size) {
+        if (m_current_index >= m_array.size()) {
             m_is_done = true;
         } else {
             // Only stop iterating if we find a set bit

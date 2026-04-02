@@ -25,8 +25,8 @@ ZoneLayer::ZoneLayer(City& city, MemoryArena& arena)
 
     // NB: Element 0 is empty because tracking spots with no zone is not useful
     for (auto zone_type : enum_values<ZoneType>()) {
-        initBitArray(&sectorsWithZones[zone_type], &arena, sectorCount);
-        initBitArray(&sectorsWithEmptyZones[zone_type], &arena, sectorCount);
+        sectorsWithZones[zone_type] = { arena, sectorCount };
+        sectorsWithEmptyZones[zone_type] = { arena, sectorCount };
 
         tileDesirability[zone_type] = arena.allocate_array_2d<u8>(city.bounds.size());
 
@@ -399,9 +399,9 @@ void growSomeZoneBuildings(City* city)
             s32 maxRBuildingDim = BuildingCatalogue::the().get_max_building_size(zone_type);
             s32 savedPositionInMostDesirableSectorsTable = 0;
 
-            while ((remainingBuildingCount > 0)
-                && (layer->sectorsWithEmptyZones[zone_type].setBitCount > 0)
-                && (remainingDemand > minimumDemand)) {
+            while (remainingBuildingCount > 0
+                && !layer->sectorsWithEmptyZones[zone_type].is_all_unset()
+                && remainingDemand > minimumDemand) {
                 bool foundAZone = false;
                 s32 randomXOffset = random.next();
                 s32 randomYOffset = random.next();
