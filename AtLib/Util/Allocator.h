@@ -75,6 +75,13 @@ public:
 
     void deallocate(Blob&);
 
+    template<typename T>
+    void deallocate(Array<T>& array)
+    {
+        deallocate_internal({ array.capacity() * sizeof(T), reinterpret_cast<u8*>(array.raw_items()) });
+        array = {};
+    }
+
 protected:
     // FIXME: Handle alignment here
     virtual Span<u8> allocate_internal(size_t size) = 0;
