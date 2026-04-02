@@ -22,7 +22,7 @@ ErrorOr<NonnullOwnPtr<Keymap>> Keymap::load(AssetMetadata& metadata, Blob file_d
     // FIXME: I should really figure out a nicer way of doing asset memory management, but that's a future task.
     Blob data = Assets::assets_allocate(file_data.size() + (command_count * sizeof(CommandShortcut)));
     memcpy(data.writable_data(), file_data.data(), file_data.size());
-    Array<CommandShortcut> shortcuts { static_cast<s32>(command_count), 0, reinterpret_cast<CommandShortcut*>(data.writable_data() + file_data.size()) };
+    Array<CommandShortcut> shortcuts { command_count, reinterpret_cast<CommandShortcut*>(data.writable_data() + file_data.size()) };
 
     // Now we create a reader on the stored copy of the file data, so that we can point StringViews into it.
     LineReader reader { metadata.shortName, data.sub_blob(0, file_data.size()) };

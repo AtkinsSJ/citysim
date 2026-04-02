@@ -111,7 +111,7 @@ ErrorOr<NonnullOwnPtr<Asset>> Palette::load_defs(AssetMetadata& metadata, Blob f
 
     // Load all the palettes, now that we know their properties are all set.
     auto children_data = Assets::assets_allocate(palettes.count * sizeof(GenericAssetRef));
-    auto children = makeArray(palettes.count, reinterpret_cast<GenericAssetRef*>(children_data.writable_data()));
+    Array<GenericAssetRef> children { static_cast<size_t>(palettes.count), reinterpret_cast<GenericAssetRef*>(children_data.writable_data()) };
 
     for (auto it = palettes.iterate(); it.hasNext(); it.next()) {
         auto& palette = it.get();
@@ -119,7 +119,7 @@ ErrorOr<NonnullOwnPtr<Asset>> Palette::load_defs(AssetMetadata& metadata, Blob f
         switch (palette.type) {
         case Type::Gradient: {
             auto data = Assets::assets_allocate(palette.size * sizeof(Colour));
-            auto colours_array = makeArray<Colour>(palette.size, reinterpret_cast<Colour*>(data.writable_data()), palette.size);
+            Array<Colour> colours_array { palette.size, reinterpret_cast<Colour*>(data.writable_data()), palette.size };
 
             float ratio = 1.0f / static_cast<float>(palette.size);
             for (auto i = 0u; i < palette.size; i++) {
@@ -134,7 +134,7 @@ ErrorOr<NonnullOwnPtr<Asset>> Palette::load_defs(AssetMetadata& metadata, Blob f
 
         case Type::Fixed: {
             auto data = Assets::assets_allocate(palette.fixed_colors.count * sizeof(Colour));
-            auto colours_array = makeArray<Colour>(palette.fixed_colors.count, reinterpret_cast<Colour*>(data.writable_data()), palette.fixed_colors.count);
+            Array<Colour> colours_array { static_cast<size_t>(palette.fixed_colors.count), reinterpret_cast<Colour*>(data.writable_data()), static_cast<size_t>(palette.fixed_colors.count) };
             for (auto i = 0u; i < colours_array.count; i++)
                 colours_array[i] = palette.fixed_colors.get(i);
 

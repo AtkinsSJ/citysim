@@ -81,13 +81,13 @@ ErrorOr<NonnullOwnPtr<Asset>> load_sprite_defs(AssetMetadata& metadata, Blob dat
     s32 spriteIndex = 0;
 
     // Count the number of child assets, so we can allocate our spriteNames array
-    s32 childAssetCount = 0;
+    size_t childAssetCount = 0;
     while (reader.load_next_line()) {
         if (auto command = reader.next_token(); command.has_value() && command.value().starts_with(':'))
             childAssetCount++;
     }
     auto children_data = Assets::assets_allocate(childAssetCount * sizeof(GenericAssetRef));
-    auto children = makeArray(childAssetCount, reinterpret_cast<GenericAssetRef*>(children_data.writable_data()));
+    Array<GenericAssetRef> children { childAssetCount, reinterpret_cast<GenericAssetRef*>(children_data.writable_data()) };
     reader.restart();
 
     // Now, actually read things

@@ -62,7 +62,7 @@ ErrorOr<NonnullOwnPtr<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata,
     BuildingCatalogue* catalogue = &BuildingCatalogue::the();
 
     // Count the number of building defs in the file first, so we can allocate the building_ids array in the asset
-    s32 buildingCount = 0;
+    size_t buildingCount = 0;
     // Same for variants as they have their own structs
     s32 totalVariantCount = 0;
     while (reader.load_next_line()) {
@@ -77,7 +77,7 @@ ErrorOr<NonnullOwnPtr<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata,
     smm buildingNamesSize = sizeof(String) * buildingCount;
     smm variantsSize = sizeof(BuildingVariant) * totalVariantCount;
     auto data = Assets::assets_allocate(buildingNamesSize + variantsSize);
-    auto building_ids = makeArray(buildingCount, reinterpret_cast<String*>(data.writable_data()));
+    Array<String> building_ids { buildingCount, reinterpret_cast<String*>(data.writable_data()) };
     u8* variantsMemory = data.writable_data() + buildingNamesSize;
 
     reader.restart();
@@ -134,10 +134,10 @@ ErrorOr<NonnullOwnPtr<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata,
             }
 
             // Read ahead to count how many variants this building/intersection has.
-            s32 variantCount = reader.count_occurrences_of_property_in_current_command("variant"_s);
-            if (variantCount > 0) {
-                def->variants = makeArray(variantCount, (BuildingVariant*)variantsMemory);
-                variantsMemory += sizeof(BuildingVariant) * variantCount;
+            auto variant_count = reader.count_occurrences_of_property_in_current_command("variant"_s);
+            if (variant_count > 0) {
+                def->variants = { variant_count, reinterpret_cast<BuildingVariant*>(variantsMemory) };
+                variantsMemory += sizeof(BuildingVariant) * variant_count;
             }
 
         }

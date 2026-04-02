@@ -15,8 +15,8 @@ ErrorOr<NonnullOwnPtr<TextDocument>> TextDocument::load(AssetMetadata& metadata,
 
     LineReader reader { metadata.shortName, source_data, {} };
     auto line_count = reader.line_count();
-    auto lines_data = Assets::assets_allocate(line_count * sizeof(TextDocument::Line));
-    auto lines_array = makeArray(line_count, reinterpret_cast<TextDocument::Line*>(lines_data.writable_data()));
+    auto lines_data = Assets::assets_allocate(line_count * sizeof(Line));
+    Array<Line> lines_array { line_count, reinterpret_cast<Line*>(lines_data.writable_data()) };
     while (reader.load_next_line()) {
         auto line = reader.current_line();
         lines_array.append({ .text = line });

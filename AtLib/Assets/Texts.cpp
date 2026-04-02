@@ -30,7 +30,7 @@ ErrorOr<NonnullOwnPtr<Texts>> Texts::load(AssetMetadata& metadata, Blob file_dat
     auto line_count = reader.line_count();
     auto key_array_size = sizeof(String) * line_count;
     auto data = assets_allocate(file_data.size() + key_array_size);
-    auto keys = makeArray(line_count, reinterpret_cast<String*>(data.writable_data()));
+    Array<String> keys = { line_count, reinterpret_cast<String*>(data.writable_data()) };
 
     auto text_data = data.sub_blob(key_array_size);
     StringBuilder string_data_builder { text_data };
@@ -98,7 +98,7 @@ void Texts::unload(AssetMetadata&)
     for (auto const& key : m_keys)
         textsTable->remove(key);
     assets_deallocate(m_data);
-    m_keys = makeEmptyArray<String>();
+    m_keys = {};
 }
 
 }

@@ -54,7 +54,7 @@ public:
     Array<T> allocate_array(size_t count, bool mark_as_full = false)
     {
         auto items = allocate_multiple<T>(count);
-        return makeArray<T>(items.size(), items.raw_data(), mark_as_full ? count : 0);
+        return Array<T> { items.size(), items.raw_data(), mark_as_full ? count : 0 };
     }
 
     template<typename T>

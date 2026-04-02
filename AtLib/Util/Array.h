@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2025-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -14,9 +14,17 @@
 
 template<typename T>
 struct Array {
-    s32 capacity;
-    s32 count;
-    T* items;
+    Array() = default;
+    Array(size_t capacity, T* items, size_t count = 0)
+        : capacity(capacity)
+        , count(count)
+        , items(items)
+    {
+    }
+
+    size_t capacity { 0 };
+    size_t count { 0 };
+    T* items { nullptr };
 
     bool is_empty() const
     {
@@ -110,12 +118,12 @@ struct Array {
 
     Span<T> span()
     {
-        return { static_cast<size_t>(count), items };
+        return { count, items };
     }
 
     ReadonlySpan<T> span() const
     {
-        return { static_cast<size_t>(count), items };
+        return { count, items };
     }
 
     operator Span<T>() { return span(); }
@@ -168,20 +176,3 @@ struct Array {
         return Iterator({}, items + count);
     }
 };
-
-template<typename T>
-Array<T> makeArray(s32 capacity, T* items, s32 count = 0)
-{
-    Array<T> result;
-    result.capacity = capacity;
-    result.count = count;
-    result.items = items;
-
-    return result;
-}
-
-template<typename T>
-Array<T> makeEmptyArray()
-{
-    return makeArray<T>(0, nullptr);
-}

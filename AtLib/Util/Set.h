@@ -76,20 +76,18 @@ public:
     // The compare() function should return true if 'a' comes before 'b'
     Array<T> asSortedArray(bool (*compare)(T a, T b) = [](T a, T b) { return a < b; })
     {
-        Array<T> result = makeEmptyArray<T>();
+        if (is_empty())
+            return {};
 
-        if (!is_empty()) {
-            result = temp_arena().allocate_array<T>(m_items.count, false);
+        auto result = temp_arena().allocate_array<T>(m_items.count, false);
 
-            // Gather
-            for (auto it = iterate(); it.hasNext(); it.next()) {
-                result.append(it.getValue());
-            }
-
-            // Sort
-            result.sort(compare);
+        // Gather
+        for (auto it = iterate(); it.hasNext(); it.next()) {
+            result.append(it.getValue());
         }
 
+        // Sort
+        result.sort(compare);
         return result;
     }
 

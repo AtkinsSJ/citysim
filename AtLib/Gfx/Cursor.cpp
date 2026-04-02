@@ -64,7 +64,7 @@ ErrorOr<NonnullOwnPtr<Asset>> Cursor::load_defs(AssetMetadata& metadata, Blob da
     }
 
     auto children_data = Assets::assets_allocate(cursor_defs.count * sizeof(GenericAssetRef));
-    auto children = makeArray(cursor_defs.count, reinterpret_cast<GenericAssetRef*>(children_data.writable_data()));
+    Array<GenericAssetRef> children { static_cast<size_t>(cursor_defs.count), reinterpret_cast<GenericAssetRef*>(children_data.writable_data()) };
 
     for (auto it = cursor_defs.iterate(); it.hasNext(); it.next()) {
         auto& cursor_def = it.get();

@@ -52,12 +52,12 @@ struct OccupancyArray {
         if (firstChunkWithSpace == nullptr) {
             // Append a new chunk
             smm arraySize = sizeof(T) * itemsPerChunk;
-            s32 occupancyArrayCount = BitArray::calculate_u64_count(itemsPerChunk);
+            size_t occupancyArrayCount = BitArray::calculate_u64_count(itemsPerChunk);
             smm occupancyArraySize = occupancyArrayCount * sizeof(u64);
 
             auto [new_chunk, items] = memoryArena->allocate_with_data<OccupancyArrayChunk<T>>(arraySize + occupancyArraySize);
             new_chunk.items = reinterpret_cast<T*>(items.raw_data());
-            new_chunk.occupancy = BitArray::from_memory(itemsPerChunk, makeArray(occupancyArrayCount, reinterpret_cast<u64*>(items.raw_data() + arraySize), occupancyArrayCount));
+            new_chunk.occupancy = BitArray::from_memory(itemsPerChunk, { occupancyArrayCount, reinterpret_cast<u64*>(items.raw_data() + arraySize), occupancyArrayCount });
 
             chunkCount++;
 

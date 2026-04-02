@@ -15,14 +15,14 @@ ErrorOr<NonnullOwnPtr<TerrainDefs>> TerrainDefs::load(AssetMetadata& metadata, B
     LineReader reader { metadata.shortName, file_data };
 
     // Pre scan for the number of Terrains, so we can allocate enough space in the asset.
-    s32 terrainCount = 0;
+    size_t terrainCount = 0;
     while (reader.load_next_line()) {
         if (auto command = reader.next_token(); command == ":Terrain"_s)
             terrainCount++;
     }
 
     auto data = Assets::assets_allocate(sizeof(String) * terrainCount);
-    auto terrain_ids = makeArray(terrainCount, reinterpret_cast<String*>(data.writable_data()));
+    Array<String> terrain_ids { terrainCount, reinterpret_cast<String*>(data.writable_data()) };
 
     reader.restart();
 

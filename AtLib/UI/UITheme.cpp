@@ -675,12 +675,12 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
 
     // Actually write out the styles into the UITheme
 
-    s32 totalStyleCount = 0;
+    size_t total_style_count = 0;
     for (auto style_type : enum_values<StyleType>()) {
-        totalStyleCount += style_count[style_type];
+        total_style_count += style_count[style_type];
     }
-    auto children_data = Assets::assets_allocate(totalStyleCount * sizeof(GenericAssetRef));
-    auto children = makeArray(totalStyleCount, reinterpret_cast<GenericAssetRef*>(children_data.writable_data()));
+    auto children_data = Assets::assets_allocate(total_style_count * sizeof(GenericAssetRef));
+    Array<GenericAssetRef> children { total_style_count, reinterpret_cast<GenericAssetRef*>(children_data.writable_data()) };
 
     // Some default values to use
     auto transparent = Colour::from_rgb_255(0, 0, 0, 0);
