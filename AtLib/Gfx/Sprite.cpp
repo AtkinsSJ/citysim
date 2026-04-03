@@ -10,6 +10,7 @@
 #include <Assets/ContainerAsset.h>
 #include <Gfx/Ninepatch.h>
 #include <Gfx/Texture.h>
+#include <IO/LineReader.h>
 
 Sprite& Sprite::get(StringView name)
 {

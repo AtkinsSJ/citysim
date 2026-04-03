@@ -6,6 +6,7 @@
 #pragma once
 
 #include <Assets/AssetManager.h>
+#include <Debug/Debug.h>
 #include <UI/Drawable.h>
 #include <UI/Forward.h>
 #include <UI/UI.h>

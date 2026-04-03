@@ -5,20 +5,11 @@
  */
 
 #include "AssetManager.h"
-#include <Assets/Asset.h>
-#include <Debug/Console.h>
-#include <Gfx/BitmapFont.h>
-#include <Gfx/Renderer.h>
+#include <Assets/BuiltinAssetLoader.h>
 #include <IO/DirectoryIterator.h>
-#include <IO/DirectoryWatcher.h>
 #include <IO/File.h>
-#include <IO/LineReader.h>
 #include <SDL2/SDL_filesystem.h>
-#include <SDL2/SDL_image.h>
 #include <Settings/Settings.h>
-#include <Sim/Building.h>
-#include <Sim/BuildingCatalogue.h>
-#include <Util/StringBuilder.h>
 
 namespace Assets {
 

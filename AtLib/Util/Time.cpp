@@ -5,6 +5,7 @@
  */
 
 #include <Assets/AssetManager.h>
+#include <Debug/Debug.h>
 #include <Util/Log.h>
 #include <Util/StringBuilder.h>
 #include <Util/Time.h>

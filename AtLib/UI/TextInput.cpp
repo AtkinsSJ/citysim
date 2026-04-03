@@ -6,6 +6,7 @@
 
 #include <App/App.h>
 #include <Assets/AssetManager.h>
+#include <Debug/Debug.h>
 #include <Gfx/BitmapFont.h>
 #include <Gfx/Renderer.h>
 #include <Input/Input.h>

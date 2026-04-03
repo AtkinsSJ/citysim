@@ -6,12 +6,11 @@
 
 #pragma once
 
+#include <Assets/AssetLoader.h>
 #include <Assets/AssetManagerListener.h>
 #include <Assets/AssetMetadata.h>
 #include <Assets/AssetRef.h>
-#include <Assets/BuiltinAssetLoader.h>
 #include <IO/DirectoryWatcher.h>
-#include <IO/File.h>
 #include <Settings/SettingsChangeListener.h>
 #include <Util/ChunkedArray.h>
 #include <Util/Function.h>

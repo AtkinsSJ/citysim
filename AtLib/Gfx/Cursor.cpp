@@ -8,6 +8,8 @@
 #include <Assets/AssetManager.h>
 #include <Assets/AssetRef.h>
 #include <Assets/ContainerAsset.h>
+#include <IO/File.h>
+#include <IO/LineReader.h>
 #include <SDL_image.h>
 
 // FIXME: Put this somewhere proper eventually. It's currently duplicated with the Texture loading code.

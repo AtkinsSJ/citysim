@@ -6,6 +6,7 @@
 
 #include "Settings.h"
 #include <Assets/AssetManager.h>
+#include <IO/File.h>
 #include <IO/Paths.h>
 #include <UI/Window.h>
 #include <Util/StringBuilder.h>

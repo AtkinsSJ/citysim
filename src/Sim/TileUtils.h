@@ -7,10 +7,10 @@
 #pragma once
 
 #include <Assets/AssetManager.h>
+#include <Debug/Debug.h>
 #include <Gfx/Renderer.h>
 #include <Sim/DirtyRects.h>
 #include <Sim/Forward.h>
-#include <Util/Array2.h>
 #include <Util/Basic.h>
 
 // NB: This is a REALLY slow function! It's great for throwing in as a temporary solution, but

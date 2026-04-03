@@ -6,6 +6,7 @@
 
 #include <Assets/AssetManager.h>
 #include <Assets/AssetMetadata.h>
+#include <Debug/Debug.h>
 #include <Gfx/OpenGL.h>
 #include <Gfx/Shader.h>
 #include <Gfx/Texture.h>

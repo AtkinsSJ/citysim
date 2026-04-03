@@ -6,6 +6,7 @@
 
 #include "TerrainDefs.h"
 #include <Assets/AssetManager.h>
+#include <Debug/Debug.h>
 #include <Sim/TerrainCatalogue.h>
 
 ErrorOr<NonnullOwnPtr<TerrainDefs>> TerrainDefs::load(AssetMetadata& metadata, Blob file_data)

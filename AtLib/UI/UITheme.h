@@ -13,6 +13,7 @@
 #include <Gfx/Sprite.h>
 #include <IO/Forward.h>
 #include <UI/Forward.h>
+#include <Util/EnumMap.h>
 #include <Util/HashTable.h>
 #include <Util/Optional.h>
 #include <Util/Variant.h>
