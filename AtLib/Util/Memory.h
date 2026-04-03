@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2015-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -10,9 +10,20 @@
 #include <Util/Maths.h>
 #include <cstring> // For memset
 
-#define KB(x) ((x) * 1024)
-#define MB(x) (KB(x) * 1024)
-#define GB(x) (MB(x) * 1024)
+constexpr size_t operator""_KB(unsigned long long input)
+{
+    return input * 1024;
+}
+
+constexpr size_t operator""_MB(unsigned long long input)
+{
+    return input * 1024 * 1024;
+}
+
+constexpr size_t operator""_GB(unsigned long long input)
+{
+    return input * 1024 * 1024 * 1024;
+}
 
 #define ArrayCount(a) (sizeof(a) / sizeof(a[0]))
 #define ArrayCountS(a) ((int)(ArrayCount(a)))

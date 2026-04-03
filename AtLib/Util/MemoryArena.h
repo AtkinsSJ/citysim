@@ -41,12 +41,12 @@ public:
     };
 
     MemoryArena() = default;
-    MemoryArena(String name, Optional<size_t> initial_size = {}, size_t minimum_block_size = MB(1));
+    MemoryArena(String name, Optional<size_t> initial_size = {}, size_t minimum_block_size = 1_MB);
     MemoryArena(MemoryArena&&);
 
     // Allocates a T, which is contained within its own MemoryArena member.
     template<typename T>
-    static T* bootstrap(String name, size_t minimum_block_size = MB(1))
+    static T* bootstrap(String name, size_t minimum_block_size = 1_MB)
     {
         MemoryArena arena { name, sizeof(T), minimum_block_size };
         auto* container = arena.allocate<T>();

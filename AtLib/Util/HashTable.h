@@ -57,7 +57,7 @@ class HashTable {
 public:
     explicit HashTable(size_t initial_capacity, float max_load_factor = 0.75f)
         : m_max_load_factor(max_load_factor)
-        , m_key_data_arena("HashTable"_s, KB(4), KB(4))
+        , m_key_data_arena("HashTable"_s, 4_KB, 4_KB)
     {
         ASSERT(max_load_factor < 1.0f);
 
@@ -121,7 +121,7 @@ public:
         auto entries = arena.allocate_multiple<HashTableEntry<T>>(slot_count);
 
         return HashTable {
-            { "FixedSizeHashTable"_s, KB(4), KB(4) },
+            { "FixedSizeHashTable"_s, 4_KB, 4_KB },
             move(entries),
             max_load_factor
         };

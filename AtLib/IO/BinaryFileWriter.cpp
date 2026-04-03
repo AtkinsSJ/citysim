@@ -12,7 +12,7 @@ BinaryFileWriter startWritingFile(FileIdentifier identifier, u8 version, MemoryA
 {
     BinaryFileWriter writer = {};
     writer.arena = arena;
-    writer.buffer.init(KB(4), arena);
+    writer.buffer.init(4_KB, arena);
 
     writer.fileHeaderLoc = writer.buffer.reserve<FileHeader>();
 

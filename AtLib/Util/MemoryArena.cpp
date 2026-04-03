@@ -9,7 +9,7 @@
 #include <Util/Memory.h>
 #include <Util/MemoryArena.h>
 
-static MemoryArena s_temp_arena { "Temp"_s, MB(4) };
+static MemoryArena s_temp_arena { "Temp"_s, 4_MB };
 
 MemoryArena::MemoryArena(String name, Optional<size_t> initial_size, size_t minimum_block_size)
     : m_name(name)
@@ -160,7 +160,7 @@ Span<u8> MemoryArena::allocate_internal(size_t size)
         logWarn("Large allocation in {0} arena: {1} bytes when block size is {2} bytes"_s, { name(), formatInt(size), formatInt(m_minimum_block_size) });
     }
 
-    ASSERT(size < GB(1)); // Something is very wrong if we're trying to allocate an entire gigabyte for something!
+    ASSERT(size < 1_GB); // Something is very wrong if we're trying to allocate an entire gigabyte for something!
 
     if ((m_current_block == 0)
         || (m_current_block->used + size > m_current_block->size)) {

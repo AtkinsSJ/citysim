@@ -19,7 +19,7 @@ struct RenderBufferChunk final : public Poolable<RenderBufferChunk> {
     void initialize_from_pool() { }
     virtual void clear_for_pool() override;
 
-    static constexpr u64 DEFAULT_SIZE = KB(64);
+    static constexpr u64 DEFAULT_SIZE = 64_KB;
 
     smm size;
     smm used;
