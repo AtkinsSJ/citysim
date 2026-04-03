@@ -83,6 +83,7 @@ public:
     Blob allocate_blob(size_t size);
 
     void deallocate(Blob&);
+    void deallocate(String&);
 
     template<typename T>
     void deallocate(Array<T>& array)

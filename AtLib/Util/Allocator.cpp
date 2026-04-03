@@ -25,3 +25,9 @@ void Allocator::deallocate(Blob& blob)
     deallocate_internal({ blob.size(), blob.writable_data() });
     blob = {};
 }
+
+void Allocator::deallocate(String& string)
+{
+    deallocate_internal({ string.length(), reinterpret_cast<u8*>(const_cast<char*>(string.raw_pointer_to_characters())) });
+    string = {};
+}
