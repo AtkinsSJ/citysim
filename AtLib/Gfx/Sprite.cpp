@@ -19,25 +19,25 @@ Sprite& Sprite::get(StringView name)
 NonnullOwnPtr<SpriteGroup> SpriteGroup::make_placeholder()
 {
     auto sprite_group = adopt_own(*new SpriteGroup);
-    sprite_group->data = Assets::assets_allocate(1 * sizeof(Sprite));
-    sprite_group->count = 1;
-    sprite_group->sprites = (Sprite*)sprite_group->data.writable_data();
-    sprite_group->sprites[0].texture = &asset_manager().get_placeholder_asset(Texture::asset_type());
-    sprite_group->sprites[0].uv = { 0.0f, 0.0f, 1.0f, 1.0f };
+    sprite_group->sprites = asset_manager().allocate_array<Sprite>(1);
+    sprite_group->sprites.append({
+        .texture = &asset_manager().get_placeholder_asset(Texture::asset_type()),
+        .uv = { 0.0f, 0.0f, 1.0f, 1.0f },
+    });
 
     return sprite_group;
 }
 
-void SpriteGroup::unload(AssetMetadata& metadata)
+void SpriteGroup::unload(AssetMetadata&)
 {
-    Assets::assets_deallocate(data);
+    asset_manager().deallocate(sprites);
 }
 
 Sprite& SpriteRef::get() const
 {
     if (asset_manager().asset_generation() > m_asset_generation) {
         auto& group = SpriteGroup::get(m_sprite_group_name);
-        m_pointer = &group.sprites[m_sprite_index % group.count];
+        m_pointer = &group.sprites[m_sprite_index % group.sprites.count()];
         m_asset_generation = asset_manager().asset_generation();
     }
 
@@ -50,9 +50,7 @@ static AssetMetadata* add_sprite_group(StringView name, s32 spriteCount)
 
     AssetMetadata* metadata = asset_manager().add_asset(SpriteGroup::asset_type(), name, {});
     auto asset = adopt_own(*new SpriteGroup);
-    asset->data = Assets::assets_allocate(spriteCount * sizeof(Sprite));
-    asset->count = spriteCount;
-    asset->sprites = (Sprite*)asset->data.writable_data();
+    asset->sprites = asset_manager().allocate_array<Sprite>(spriteCount);
 
     metadata->loaded_asset = move(asset);
     metadata->state = AssetMetadata::State::Loaded;
@@ -78,7 +76,6 @@ ErrorOr<NonnullOwnPtr<Asset>> load_sprite_defs(AssetMetadata& metadata, Blob dat
     V2I spriteSize = v2i(0, 0);
     V2I spriteBorder = v2i(0, 0);
     AssetMetadata* current_sprite_group_metadata = nullptr;
-    s32 spriteIndex = 0;
 
     // Count the number of child assets, so we can allocate our spriteNames array
     size_t childAssetCount = 0;
@@ -138,11 +135,13 @@ ErrorOr<NonnullOwnPtr<Asset>> load_sprite_defs(AssetMetadata& metadata, Blob dat
                 AssetMetadata* group = add_sprite_group(name.release_value(), 1);
                 auto& group_asset = dynamic_cast<SpriteGroup&>(*group->loaded_asset);
 
-                Sprite* sprite = group_asset.sprites;
-                sprite->texture = asset_manager().add_asset(Texture::asset_type(), filename.release_value());
-                sprite->uv = { 0, 0, spriteSize.x, spriteSize.y };
-                sprite->pixelWidth = spriteSize.x;
-                sprite->pixelHeight = spriteSize.y;
+                group_asset.sprites.append({
+                    .texture = asset_manager()
+                        .add_asset(Texture::asset_type(), filename.release_value()),
+                    .uv = { 0, 0, spriteSize.x, spriteSize.y },
+                    .pixelWidth = spriteSize.x,
+                    .pixelHeight = spriteSize.y,
+                });
 
                 children.append(group->get_ref());
             } else if (command == "SpriteGroup"_s) {
@@ -162,7 +161,6 @@ ErrorOr<NonnullOwnPtr<Asset>> load_sprite_defs(AssetMetadata& metadata, Blob dat
                     return reader.make_error_message("SpriteGroup must contain at least 1 sprite!"_s);
                 }
                 current_sprite_group_metadata = add_sprite_group(name.release_value(), spriteCount);
-                spriteIndex = 0;
 
                 children.append(current_sprite_group_metadata->get_ref());
             } else {
@@ -190,15 +188,14 @@ ErrorOr<NonnullOwnPtr<Asset>> load_sprite_defs(AssetMetadata& metadata, Blob dat
                     s32 y = my.release_value();
 
                     auto& group_asset = dynamic_cast<SpriteGroup&>(*current_sprite_group_metadata->loaded_asset);
-                    Sprite* sprite = group_asset.sprites + spriteIndex;
-                    sprite->texture = textureAsset;
-                    sprite->uv = { spriteBorder.x + x * (spriteSize.x + spriteBorder.x + spriteBorder.x),
-                        spriteBorder.y + y * (spriteSize.y + spriteBorder.y + spriteBorder.y),
-                        spriteSize.x, spriteSize.y };
-                    sprite->pixelWidth = spriteSize.x;
-                    sprite->pixelHeight = spriteSize.y;
-
-                    spriteIndex++;
+                    group_asset.sprites.append({
+                        .texture = textureAsset,
+                        .uv = { spriteBorder.x + x * (spriteSize.x + spriteBorder.x + spriteBorder.x),
+                            spriteBorder.y + y * (spriteSize.y + spriteBorder.y + spriteBorder.y),
+                            spriteSize.x, spriteSize.y },
+                        .pixelWidth = spriteSize.x,
+                        .pixelHeight = spriteSize.y,
+                    });
                 } else {
                     return reader.make_error_message("Couldn't parse {0}. Expected '{0} x y'."_s, { command });
                 }
@@ -217,20 +214,19 @@ ErrorOr<NonnullOwnPtr<Asset>> load_sprite_defs(AssetMetadata& metadata, Blob dat
         auto& sprite_group = dynamic_cast<SpriteGroup&>(*sprite_group_metadata.loaded_asset);
 
         // Convert UVs from pixel space to 0-1 space
-        for (s32 i = 0; i < sprite_group.count; i++) {
-            Sprite* sprite = sprite_group.sprites + i;
+        for (auto& sprite : sprite_group.sprites) {
             // FIXME: Should refer to textures some other way!
-            AssetMetadata* texture_metadata = sprite->texture;
+            AssetMetadata* texture_metadata = sprite.texture;
             texture_metadata->ensure_is_loaded();
             auto& texture = dynamic_cast<Texture&>(*texture_metadata->loaded_asset);
             float textureWidth = texture.surface->w;
             float textureHeight = texture.surface->h;
 
-            sprite->uv = {
-                sprite->uv.x() / textureWidth,
-                sprite->uv.y() / textureHeight,
-                sprite->uv.width() / textureWidth,
-                sprite->uv.height() / textureHeight
+            sprite.uv = {
+                sprite.uv.x() / textureWidth,
+                sprite.uv.y() / textureHeight,
+                sprite.uv.width() / textureWidth,
+                sprite.uv.height() / textureHeight
             };
         }
     }

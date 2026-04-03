@@ -166,6 +166,7 @@ void unloadAsset(AssetMetadata* asset)
         return;
 
     asset->loaded_asset->unload(*asset);
+    // FIXME: Deallocate the loaded asset, once we allocate them all through AssetManager
     asset->state = AssetMetadata::State::Unloaded;
 }
 

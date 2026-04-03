@@ -31,9 +31,7 @@ public:
 
     virtual void unload(AssetMetadata& metadata) override;
 
-    Blob data {};
-    s32 count;
-    Sprite* sprites;
+    Array<Sprite> sprites;
 };
 
 class SpriteRef {
