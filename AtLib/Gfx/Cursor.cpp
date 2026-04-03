@@ -63,8 +63,7 @@ ErrorOr<NonnullOwnPtr<Asset>> Cursor::load_defs(AssetMetadata& metadata, Blob da
         });
     }
 
-    auto children_data = Assets::assets_allocate(cursor_defs.count * sizeof(GenericAssetRef));
-    Array<GenericAssetRef> children { static_cast<size_t>(cursor_defs.count), reinterpret_cast<GenericAssetRef*>(children_data.writable_data()) };
+    auto children = asset_manager().allocate_array<GenericAssetRef>(cursor_defs.count);
 
     for (auto it = cursor_defs.iterate(); it.hasNext(); it.next()) {
         auto& cursor_def = it.get();
@@ -82,7 +81,7 @@ ErrorOr<NonnullOwnPtr<Asset>> Cursor::load_defs(AssetMetadata& metadata, Blob da
         children.append(cursor_metadata->get_ref());
     }
 
-    return { adopt_own(*new ContainerAsset(move(children_data), move(children))) };
+    return { adopt_own(*new ContainerAsset(move(children))) };
 }
 
 Cursor::Cursor()

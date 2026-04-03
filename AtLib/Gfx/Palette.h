@@ -20,7 +20,7 @@ public:
     };
 
     Palette() = default;
-    Palette(Blob data, Type, Array<Colour>);
+    Palette(Type, Array<Colour>);
     static ErrorOr<NonnullOwnPtr<Asset>> load_defs(AssetMetadata&, Blob);
 
     Type type() const { return m_type; }
@@ -33,7 +33,6 @@ public:
     virtual void unload(AssetMetadata&) override;
 
 private:
-    Blob m_data;
     Type m_type { Type::Fixed };
     Array<Colour> m_colours;
 };

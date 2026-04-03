@@ -26,6 +26,6 @@ public:
     String fragmentShader;
 
 private:
-    Shader(Blob data, String vertex_source, String fragment_source);
-    Blob m_data;
+    Shader(String data, String vertex_source, String fragment_source);
+    String m_data;
 };

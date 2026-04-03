@@ -118,5 +118,4 @@ void TerrainDefs::unload(AssetMetadata& metadata)
     }
 
     asset_manager().deallocate(m_terrain_ids);
-    m_terrain_ids = {};
 }

@@ -679,8 +679,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
     for (auto style_type : enum_values<StyleType>()) {
         total_style_count += style_count[style_type];
     }
-    auto children_data = Assets::assets_allocate(total_style_count * sizeof(GenericAssetRef));
-    Array<GenericAssetRef> children { total_style_count, reinterpret_cast<GenericAssetRef*>(children_data.writable_data()) };
+    auto children = asset_manager().allocate_array<GenericAssetRef>(total_style_count);
 
     // Some default values to use
     auto transparent = Colour::from_rgb_255(0, 0, 0, 0);
@@ -929,7 +928,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
         }
     }
 
-    return { adopt_own(*new ContainerAsset(move(children_data), move(children))) };
+    return { adopt_own(*new ContainerAsset(move(children))) };
 }
 
 }

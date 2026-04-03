@@ -86,8 +86,7 @@ ErrorOr<NonnullOwnPtr<Asset>> load_sprite_defs(AssetMetadata& metadata, Blob dat
         if (auto command = reader.next_token(); command.has_value() && command.value().starts_with(':'))
             childAssetCount++;
     }
-    auto children_data = Assets::assets_allocate(childAssetCount * sizeof(GenericAssetRef));
-    Array<GenericAssetRef> children { childAssetCount, reinterpret_cast<GenericAssetRef*>(children_data.writable_data()) };
+    auto children = asset_manager().allocate_array<GenericAssetRef>(childAssetCount);
     reader.restart();
 
     // Now, actually read things
@@ -236,5 +235,5 @@ ErrorOr<NonnullOwnPtr<Asset>> load_sprite_defs(AssetMetadata& metadata, Blob dat
         }
     }
 
-    return { adopt_own(*new ContainerAsset(move(children_data), move(children))) };
+    return { adopt_own(*new ContainerAsset(move(children))) };
 }

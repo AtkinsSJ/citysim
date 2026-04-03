@@ -9,9 +9,8 @@
 #include <Assets/AssetRef.h>
 #include <Assets/ContainerAsset.h>
 
-Palette::Palette(Blob data, Type type, Array<Colour> colours)
-    : m_data(data)
-    , m_type(type)
+Palette::Palette(Type type, Array<Colour> colours)
+    : m_type(type)
     , m_colours(move(colours))
 {
 }
@@ -110,16 +109,14 @@ ErrorOr<NonnullOwnPtr<Asset>> Palette::load_defs(AssetMetadata& metadata, Blob f
     }
 
     // Load all the palettes, now that we know their properties are all set.
-    auto children_data = Assets::assets_allocate(palettes.count * sizeof(GenericAssetRef));
-    Array<GenericAssetRef> children { static_cast<size_t>(palettes.count), reinterpret_cast<GenericAssetRef*>(children_data.writable_data()) };
+    auto children = asset_manager().allocate_array<GenericAssetRef>(palettes.count);
 
     for (auto it = palettes.iterate(); it.hasNext(); it.next()) {
         auto& palette = it.get();
 
         switch (palette.type) {
         case Type::Gradient: {
-            auto data = Assets::assets_allocate(palette.size * sizeof(Colour));
-            Array<Colour> colours_array { palette.size, reinterpret_cast<Colour*>(data.writable_data()), palette.size };
+            auto colours_array = asset_manager().allocate_filled_array<Colour>(palette.size);
 
             float ratio = 1.0f / static_cast<float>(palette.size);
             for (auto i = 0u; i < palette.size; i++) {
@@ -127,26 +124,25 @@ ErrorOr<NonnullOwnPtr<Asset>> Palette::load_defs(AssetMetadata& metadata, Blob f
             }
 
             auto& palette_metadata = *asset_manager().add_asset(asset_type(), palette.name, {});
-            palette_metadata.loaded_asset = adopt_own(*new Palette(move(data), palette.type, move(colours_array)));
+            palette_metadata.loaded_asset = adopt_own(*new Palette(palette.type, move(colours_array)));
             palette_metadata.state = AssetMetadata::State::Loaded;
             children.append(palette_metadata.get_ref());
         } break;
 
         case Type::Fixed: {
-            auto data = Assets::assets_allocate(palette.fixed_colors.count * sizeof(Colour));
-            Array<Colour> colours_array { static_cast<size_t>(palette.fixed_colors.count), reinterpret_cast<Colour*>(data.writable_data()), static_cast<size_t>(palette.fixed_colors.count) };
+            auto colours_array = asset_manager().allocate_filled_array<Colour>(palette.fixed_colors.count);
             for (auto i = 0u; i < colours_array.count(); i++)
                 colours_array[i] = palette.fixed_colors.get(i);
 
             auto& palette_metadata = *asset_manager().add_asset(asset_type(), palette.name, {});
-            palette_metadata.loaded_asset = adopt_own(*new Palette(move(data), palette.type, move(colours_array)));
+            palette_metadata.loaded_asset = adopt_own(*new Palette(palette.type, move(colours_array)));
             palette_metadata.state = AssetMetadata::State::Loaded;
             children.append(palette_metadata.get_ref());
         } break;
         }
     }
 
-    return { adopt_own(*new ContainerAsset(move(children_data), move(children))) };
+    return { adopt_own(*new ContainerAsset(move(children))) };
 }
 
 Colour Palette::colour_at(size_t index) const
@@ -171,6 +167,5 @@ size_t Palette::size() const
 
 void Palette::unload(AssetMetadata&)
 {
-    Assets::assets_deallocate(m_data);
-    m_colours = {};
+    asset_manager().deallocate(m_colours);
 }

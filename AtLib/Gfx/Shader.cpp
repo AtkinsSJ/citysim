@@ -14,17 +14,17 @@ NonnullOwnPtr<Shader> Shader::make_placeholder()
 
 ErrorOr<NonnullOwnPtr<Shader>> Shader::load(AssetMetadata&, Blob data)
 {
-    auto asset_data = Assets::assets_allocate(data.size());
-    memcpy(asset_data.writable_data(), data.data(), data.size());
+    auto data_string = asset_manager().allocate_string({ reinterpret_cast<char const*>(data.data()), data.size() });
 
     String vertex_source;
     String fragment_source;
-    String::from_blob(asset_data).value().split_in_two('$', &vertex_source, &fragment_source);
+    // FIXME: Redo this method
+    data_string.split_in_two('$', &vertex_source, &fragment_source);
 
-    return adopt_own(*new Shader(move(asset_data), vertex_source, fragment_source));
+    return adopt_own(*new Shader(move(data_string), vertex_source, fragment_source));
 }
 
-Shader::Shader(Blob data, String vertex_source, String fragment_source)
+Shader::Shader(String data, String vertex_source, String fragment_source)
     : vertexShader(move(vertex_source))
     , fragmentShader(move(fragment_source))
     , m_data(move(data))
@@ -34,5 +34,5 @@ Shader::Shader(Blob data, String vertex_source, String fragment_source)
 void Shader::unload(AssetMetadata&)
 {
     // FIXME: Maybe remove the shader here instead of in the Renderer's before-asset-unload callback?
-    Assets::assets_deallocate(m_data);
+    asset_manager().deallocate(m_data);
 }

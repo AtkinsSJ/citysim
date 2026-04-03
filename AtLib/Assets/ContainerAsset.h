@@ -16,9 +16,8 @@ namespace Assets {
 class ContainerAsset final : public Asset {
 public:
     ContainerAsset() = default;
-    ContainerAsset(Blob data, Array<GenericAssetRef> children)
-        : m_data(move(data))
-        , m_children(move(children))
+    ContainerAsset(Array<GenericAssetRef> children)
+        : m_children(move(children))
     {
     }
     virtual ~ContainerAsset() override = default;
@@ -27,12 +26,10 @@ public:
     {
         for (auto const& child : m_children)
             removeAsset(child);
-        assets_deallocate(m_data);
-        m_children = {};
+        asset_manager().deallocate(m_children);
     }
 
 private:
-    Blob m_data;
     Array<GenericAssetRef> m_children;
 };
 
