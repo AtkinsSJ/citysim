@@ -18,11 +18,9 @@ ErrorOr<NonnullOwnPtr<Keymap>> Keymap::load(AssetMetadata& metadata, Blob file_d
         }
     }
 
-    // `data` contains both the file data, and the CommandShortcut array, in that order.
-    // FIXME: I should really figure out a nicer way of doing asset memory management, but that's a future task.
-    Blob data = Assets::assets_allocate(file_data.size() + (command_count * sizeof(CommandShortcut)));
-    memcpy(data.writable_data(), file_data.data(), file_data.size());
-    Array<CommandShortcut> shortcuts { command_count, reinterpret_cast<CommandShortcut*>(data.writable_data() + file_data.size()) };
+    auto& assets = asset_manager();
+    auto data = assets.allocate_blob(file_data);
+    auto shortcuts = assets.allocate_array<CommandShortcut>(command_count);
 
     // Now we create a reader on the stored copy of the file data, so that we can point StringViews into it.
     LineReader reader { metadata.shortName, data.sub_blob(0, file_data.size()) };
@@ -53,6 +51,7 @@ Keymap::Keymap(Blob data, Array<CommandShortcut> shortcuts)
 
 void Keymap::unload(AssetMetadata&)
 {
-    Assets::assets_deallocate(m_data);
-    m_shortcuts = {};
+    auto& assets = asset_manager();
+    assets.deallocate(m_data);
+    assets.deallocate(m_shortcuts);
 }
