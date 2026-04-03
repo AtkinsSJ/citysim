@@ -134,12 +134,9 @@ ErrorOr<NonnullOwnPtr<BitmapFont>> BitmapFont::load_from_bmf_data(AssetMetadata&
     auto font = adopt_own(*new BitmapFont);
     font->m_line_height = common->lineHeight;
     font->m_base_y = common->base;
-    font->m_glyph_count = 0;
 
-    font->m_glyph_capacity = ceil_s32(charCount * 2.0f);
-    smm glyphEntryMemorySize = font->m_glyph_capacity * sizeof(BitmapFontGlyphEntry);
-    font->m_data = Assets::assets_allocate(glyphEntryMemorySize);
-    font->m_glyph_entries = (BitmapFontGlyphEntry*)(font->m_data.data());
+    auto glyph_capacity = ceil_s32(charCount * 2.0f);
+    font->m_glyph_entries = asset_manager().allocate_filled_array<BitmapFontGlyphEntry>(glyph_capacity);
 
     String textureName = String::from_null_terminated((char*)pages);
     font->m_texture = asset_manager().add_asset(Texture::asset_type(), textureName);
@@ -172,18 +169,17 @@ ErrorOr<NonnullOwnPtr<BitmapFont>> BitmapFont::load_from_bmf_data(AssetMetadata&
     return font;
 }
 
-BitmapFontGlyphEntry* BitmapFont::find_glyph_entry(unichar target_char) const
+BitmapFontGlyphEntry* BitmapFont::find_glyph_entry(unichar target_char)
 {
     // Protect against div-0 error if this is the empty placeholder font
-    if (m_glyph_capacity > 0) {
-        u32 index = target_char % m_glyph_capacity;
+    if (m_glyph_entries.capacity() > 0) {
+        u32 index = target_char % m_glyph_entries.capacity();
 
         while (true) {
-            BitmapFontGlyphEntry* entry = m_glyph_entries + index;
-            if (entry->codepoint == target_char || !entry->isOccupied)
-                return entry;
+            if (auto& entry = m_glyph_entries[index]; entry.codepoint == target_char || !entry.isOccupied)
+                return &entry;
 
-            index = (index + 1) % m_glyph_capacity;
+            index = (index + 1) % m_glyph_entries.capacity();
         }
     }
 
@@ -203,9 +199,9 @@ void BitmapFont::add_glyph(BitmapFontGlyph&& glyph)
     m_glyph_count++;
 }
 
-BitmapFontGlyph* BitmapFont::find_glyph(unichar target_char) const
+BitmapFontGlyph const* BitmapFont::find_glyph(unichar target_char) const
 {
-    if (auto* entry = find_glyph_entry(target_char))
+    if (auto const* entry = find_glyph_entry(target_char))
         return &entry->glyph;
 
     logWarn("Failed to find char 0x{0} in font."_s, { formatInt(target_char, 16) });
@@ -264,7 +260,7 @@ V2I BitmapFont::calculate_text_size(StringView text, s32 max_width) const
             currentWordWidth = 0;
 
             unichar prevC = 0;
-            BitmapFontGlyph* glyph = nullptr;
+            BitmapFontGlyph const* glyph = nullptr;
 
             do {
                 if (c != prevC) {
@@ -283,7 +279,7 @@ V2I BitmapFont::calculate_text_size(StringView text, s32 max_width) const
 
             continue;
         } else {
-            BitmapFontGlyph* glyph = find_glyph(c);
+            BitmapFontGlyph const* glyph = find_glyph(c);
             if (glyph) {
                 if (doWrap && ((currentX + glyph->xAdvance) > max_width)) {
                     // In case this word is the only one on the line, AND is longer than
@@ -345,7 +341,7 @@ s32 BitmapFont::calculate_max_text_width(std::initializer_list<StringView> texts
 
 void BitmapFont::unload(AssetMetadata&)
 {
-    Assets::assets_deallocate(m_data);
+    asset_manager().deallocate(m_glyph_entries);
 }
 
 void _alignText(DrawRectsGroup* state, s32 startIndex, s32 endIndexInclusive, s32 lineWidth, s32 boundsWidth, Alignment align)
@@ -432,7 +428,7 @@ void drawText(RenderBuffer* renderBuffer, BitmapFont* font, StringView text, Rec
 
     unichar c = 0;
     unichar prevC = 0;
-    BitmapFontGlyph* glyph = nullptr;
+    BitmapFontGlyph const* glyph = nullptr;
 
     bool foundNext = getNextUnichar(text, &bytePos, &c);
     while (foundNext) {

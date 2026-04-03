@@ -221,7 +221,7 @@ DrawRectsGroup* beginRectsGroupForText(RenderBuffer* buffer, BitmapFont* font, s
 // Basically, call this before adding anything, with count <= 255, and you'll be fine.
 RenderItem_DrawRects_Item* reserve(DrawRectsGroup* group, s32 count);
 void addRectInternal(DrawRectsGroup* group, Rect2 bounds, Colour color, Rect2 uv);
-void addGlyphRect(DrawRectsGroup* state, BitmapFontGlyph* glyph, V2 position, Colour color);
+void addGlyphRect(DrawRectsGroup* state, BitmapFontGlyph const* glyph, V2 position, Colour color);
 void addSpriteRect(DrawRectsGroup* state, Sprite* sprite, Rect2 bounds, Colour color);
 void addUntexturedRect(DrawRectsGroup* group, Rect2 bounds, Colour color);
 void offsetRange(DrawRectsGroup* state, s32 startIndex, s32 endIndexInclusive, float offsetX, float offsetY);

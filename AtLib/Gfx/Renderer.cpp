@@ -689,7 +689,7 @@ void addUntexturedRect(DrawRectsGroup* group, Rect2 bounds, Colour color)
     addRectInternal(group, bounds, color, { 0, 0, 0, 0 });
 }
 
-void addGlyphRect(DrawRectsGroup* group, BitmapFontGlyph* glyph, V2 position, Colour color)
+void addGlyphRect(DrawRectsGroup* group, BitmapFontGlyph const* glyph, V2 position, Colour color)
 {
     Rect2 bounds { position.x + glyph->xOffset, position.y + glyph->yOffset, static_cast<float>(glyph->width), static_cast<float>(glyph->height) };
     addRectInternal(group, bounds, color, glyph->uv);

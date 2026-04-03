@@ -10,7 +10,6 @@
 #include <Assets/Forward.h>
 #include <Gfx/Forward.h>
 #include <Util/Alignment.h>
-#include <Util/Blob.h>
 #include <Util/Rectangle.h>
 #include <Util/String.h>
 #include <Util/Vector.h>
@@ -42,7 +41,7 @@ public:
     static ErrorOr<NonnullOwnPtr<BitmapFont>> load_from_bmf_data(AssetMetadata& metadata, Blob data);
 
     void add_glyph(BitmapFontGlyph&&);
-    BitmapFontGlyph* find_glyph(unichar target_char) const;
+    BitmapFontGlyph const* find_glyph(unichar target_char) const;
 
     V2I calculate_text_size(StringView text, s32 max_width = 0) const;
     s32 calculate_max_text_width(std::initializer_list<StringView> texts, s32 limit = 0) const;
@@ -53,17 +52,18 @@ public:
     virtual void unload(AssetMetadata&) override;
 
 private:
-    BitmapFontGlyphEntry* find_glyph_entry(unichar target_char) const;
-
-    Blob m_data {};
+    BitmapFontGlyphEntry* find_glyph_entry(unichar target_char);
+    BitmapFontGlyphEntry const* find_glyph_entry(unichar target_char) const
+    {
+        return const_cast<BitmapFont*>(this)->find_glyph_entry(target_char);
+    }
 
     u16 m_line_height {};
     u16 m_base_y {};
 
     // Hash-table style thing
     u32 m_glyph_count {};
-    u32 m_glyph_capacity {};
-    BitmapFontGlyphEntry* m_glyph_entries {};
+    Array<BitmapFontGlyphEntry> m_glyph_entries {};
 
     AssetMetadata* m_texture {};
 };
