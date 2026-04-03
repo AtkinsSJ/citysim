@@ -9,24 +9,19 @@
 
 ErrorOr<NonnullOwnPtr<TextDocument>> TextDocument::load(AssetMetadata& metadata, Blob file_data)
 {
-    // FIXME: Combine things into one allocation?
-    auto source_data = Assets::assets_allocate(file_data.size());
-    memcpy(source_data.writable_data(), file_data.data(), file_data.size());
+    auto& assets = asset_manager();
+    auto source_data = assets.allocate_blob(file_data);
 
     LineReader reader { metadata.shortName, source_data, {} };
-    auto line_count = reader.line_count();
-    auto lines_data = Assets::assets_allocate(line_count * sizeof(Line));
-    Array<Line> lines_array { line_count, reinterpret_cast<Line*>(lines_data.writable_data()) };
+    auto lines = assets.allocate_array<Line>(reader.line_count());
     while (reader.load_next_line()) {
-        auto line = reader.current_line();
-        lines_array.append({ .text = line });
+        lines.append({ .text = reader.current_line() });
     }
-    return { adopt_own(*new TextDocument { move(source_data), move(lines_data), move(lines_array) }) };
+    return { adopt_own(*new TextDocument { move(source_data), move(lines) }) };
 }
 
-TextDocument::TextDocument(Blob source_data, Blob lines_data, Array<Line> lines)
+TextDocument::TextDocument(Blob source_data, Array<Line> lines)
     : m_source_data(source_data)
-    , m_lines_data(lines_data)
     , m_lines(move(lines))
 {
 }
@@ -35,6 +30,7 @@ TextDocument::~TextDocument() = default;
 
 void TextDocument::unload(AssetMetadata&)
 {
-    Assets::assets_deallocate(m_source_data);
-    Assets::assets_deallocate(m_lines_data);
+    auto& assets = asset_manager();
+    assets.deallocate(m_source_data);
+    assets.deallocate(m_lines);
 }

@@ -30,9 +30,8 @@ public:
     virtual void unload(AssetMetadata&) override;
 
 private:
-    TextDocument(Blob source_data, Blob lines_data, Array<Line> lines);
+    TextDocument(Blob source_data, Array<Line> lines);
 
     Blob m_source_data;
-    Blob m_lines_data;
     Array<Line> m_lines;
 };
