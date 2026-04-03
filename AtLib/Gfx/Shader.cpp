@@ -16,18 +16,17 @@ ErrorOr<NonnullOwnPtr<Shader>> Shader::load(AssetMetadata&, Blob data)
 {
     auto data_string = asset_manager().allocate_string({ reinterpret_cast<char const*>(data.data()), data.size() });
 
-    String vertex_source;
-    String fragment_source;
-    // FIXME: Redo this method
-    data_string.split_in_two('$', &vertex_source, &fragment_source);
-
+    auto parts = data_string.split_in_two('$');
+    if (!parts.has_value())
+        return Error { "Shader file must contain a vertex and fragment shader, separated by `$`. No `$` was found."_s };
+    auto [vertex_source, fragment_source] = parts.value();
     return adopt_own(*new Shader(move(data_string), vertex_source, fragment_source));
 }
 
-Shader::Shader(String data, String vertex_source, String fragment_source)
-    : vertexShader(move(vertex_source))
-    , fragmentShader(move(fragment_source))
-    , m_data(move(data))
+Shader::Shader(String data, StringView vertex_source, StringView fragment_source)
+    : m_data(move(data))
+    , m_vertex_source(move(vertex_source))
+    , m_fragment_source(move(fragment_source))
 {
 }
 

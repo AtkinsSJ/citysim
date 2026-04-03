@@ -7,7 +7,7 @@
 #pragma once
 
 #include <Assets/Asset.h>
-#include <Util/Blob.h>
+#include <Gfx/Forward.h>
 #include <Util/String.h>
 
 class Shader final : public Asset {
@@ -20,12 +20,21 @@ public:
 
     virtual void unload(AssetMetadata& metadata) override;
 
-    s8 rendererShaderID;
+    StringView vertex_source() const { return m_vertex_source; }
+    StringView fragment_source() const { return m_fragment_source; }
 
-    String vertexShader;
-    String fragmentShader;
+    s8 renderer_shader_id() const { return m_renderer_shader_id; }
+    void set_renderer_shader_id(Badge<GL::Renderer>, s8 shader_id)
+    {
+        m_renderer_shader_id = shader_id;
+    }
 
 private:
-    Shader(String data, String vertex_source, String fragment_source);
+    Shader(String data, StringView vertex_source, StringView fragment_source);
+
     String m_data;
+    StringView m_vertex_source;
+    StringView m_fragment_source;
+
+    s8 m_renderer_shader_id { -1 };
 };

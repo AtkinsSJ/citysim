@@ -440,7 +440,7 @@ void Renderer::after_assets_loaded()
         s8 shaderIndex = (s8)m_shaders.count;
         ShaderProgram* shader_program = m_shaders.appendBlank();
         shader_program->asset = &metadata;
-        shader.rendererShaderID = shaderIndex;
+        shader.set_renderer_shader_id({}, shaderIndex);
 
         loadShaderProgram(&metadata, shader_program);
         if (!shader_program->isValid) {
@@ -449,10 +449,10 @@ void Renderer::after_assets_loaded()
     });
 
     // Cache the shader IDs so we don't have to do so many hash lookups
-    shaderIds.pixelArt = Shader::get("pixelart.glsl"_s).rendererShaderID;
-    shaderIds.text = Shader::get("textured.glsl"_s).rendererShaderID;
-    shaderIds.textured = Shader::get("textured.glsl"_s).rendererShaderID;
-    shaderIds.untextured = Shader::get("untextured.glsl"_s).rendererShaderID;
+    shaderIds.pixelArt = Shader::get("pixelart.glsl"_s).renderer_shader_id();
+    shaderIds.text = Shader::get("textured.glsl"_s).renderer_shader_id();
+    shaderIds.textured = Shader::get("textured.glsl"_s).renderer_shader_id();
+    shaderIds.untextured = Shader::get("untextured.glsl"_s).renderer_shader_id();
 }
 
 void Renderer::before_assets_unloaded()
@@ -566,18 +566,18 @@ bool compileShader(ShaderProgram* glShader, String shaderName, Shader* shaderPro
     GLuint shaderID = glCreateShader(to_underlying(shaderPart));
     Deferred defer_delete_shader = [shaderID] { glDeleteShader(shaderID); };
 
-    String source = {};
-    switch (shaderPart) {
-    case ShaderPart::Vertex: {
-        source = shaderProgram->vertexShader;
-    } break;
-
-    case ShaderPart::Fragment: {
-        source = shaderProgram->fragmentShader;
-    } break;
-
-        INVALID_DEFAULT_CASE;
-    }
+    auto source = [&] {
+        switch (shaderPart) {
+        case ShaderPart::Vertex:
+            return shaderProgram->vertex_source();
+        case ShaderPart::Fragment:
+            return shaderProgram->fragment_source();
+        case ShaderPart::Geometry:
+            // FIXME: Actually handle geometry shaders?
+            VERIFY_NOT_REACHED();
+        }
+        VERIFY_NOT_REACHED();
+    }();
 
     GLint source_length = static_cast<GLint>(source.length());
     char const* source_characters = source.raw_pointer_to_characters();

@@ -10,11 +10,10 @@
 
 NonnullOwnPtr<Texture> Texture::make_placeholder()
 {
-    auto pixel_data = Assets::assets_allocate(2 * 2 * sizeof(u32));
-    u32* pixels = (u32*)pixel_data.writable_data();
+    auto pixels = asset_manager().allocate_filled_array<u32>(2 * 2);
     pixels[0] = pixels[3] = 0xffff00ff;
     pixels[1] = pixels[2] = 0xff000000;
-    auto* surface = SDL_CreateRGBSurfaceFrom(pixels, 2, 2, 32, 2 * sizeof(u32),
+    auto* surface = SDL_CreateRGBSurfaceFrom(pixels.raw_items(), 2, 2, 32, 2 * sizeof(u32),
         0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
 
     return adopt_own(*new Texture(surface));

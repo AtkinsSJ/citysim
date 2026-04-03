@@ -47,8 +47,11 @@ public:
 
     String trimmed(TrimSide = TrimSide::Both) const;
 
-    // NB: You can pass null for leftResult or rightResult to ignore that part.
-    bool split_in_two(char divider, String* left_result, String* right_result);
+    struct Parts {
+        StringView left;
+        StringView right;
+    };
+    Optional<Parts> split_in_two(char divider) const;
 
     bool operator==(String const&) const;
 

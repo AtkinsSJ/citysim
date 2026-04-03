@@ -20,3 +20,9 @@ class Sprite;
 class SpriteGroup;
 class SpriteRef;
 class Texture;
+
+namespace GL {
+
+class Renderer;
+
+}

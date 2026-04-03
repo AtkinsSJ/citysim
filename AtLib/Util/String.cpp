@@ -89,18 +89,15 @@ bool String::is_null_terminated() const
 }
 
 // NB: You can pass null for leftResult or rightResult to ignore that part.
-bool String::split_in_two(char divider, String* left_result, String* right_result)
+Optional<String::Parts> String::split_in_two(char divider) const
 {
     if (auto divider_position = find(divider); divider_position.has_value()) {
-        if (left_result)
-            *left_result = view().substring(0, divider_position.value()).deprecated_to_string();
-
-        if (right_result)
-            *right_result = view().substring(divider_position.value() + 1).deprecated_to_string();
-
-        return true;
+        return Parts {
+            view().substring(0, divider_position.value()),
+            view().substring(divider_position.value() + 1),
+        };
     }
-    return false;
+    return {};
 }
 
 String String::join(std::initializer_list<String> strings, Optional<String> between)
