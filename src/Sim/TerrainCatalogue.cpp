@@ -69,7 +69,7 @@ void TerrainCatalogue::remap_terrain_types(City& city)
     }
 
     if (terrainNameToOldType.count() > 0) {
-        Array<TerrainType> oldTypeToNewType = temp_arena().allocate_array<TerrainType>(terrainNameToOldType.count(), true);
+        Array<TerrainType> oldTypeToNewType = temp_arena().allocate_filled_array<TerrainType>(terrainNameToOldType.count());
         for (auto it = terrainNameToOldType.iterate(); it.hasNext(); it.next()) {
             auto entry = it.getEntry();
             String terrainName = entry->key;

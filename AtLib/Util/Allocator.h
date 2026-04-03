@@ -28,8 +28,7 @@ public:
             return {};
 
         auto memory = allocate_internal(sizeof(T) * count);
-        auto* items = new (memory.raw_data()) T[count];
-        return Span { count, items };
+        return Span { count, reinterpret_cast<T*>(memory.raw_data()) };
     }
 
     template<typename T, typename Item = u8>
@@ -50,11 +49,19 @@ public:
         return result;
     }
 
+    // FIXME: Maybe these two should be different types?
     template<typename T>
-    Array<T> allocate_array(size_t count, bool mark_as_full = false)
+    Array<T> allocate_array(size_t count)
     {
         auto items = allocate_multiple<T>(count);
-        return Array<T> { items.size(), items.raw_data(), mark_as_full ? count : 0 };
+        return Array<T> { items.size(), items.raw_data(), 0 };
+    }
+    template<typename T>
+    Array<T> allocate_filled_array(size_t count, T const& value = {})
+    {
+        auto items = allocate_multiple<T>(count);
+        new (items.raw_data()) T[count](value);
+        return Array<T> { count, items.raw_data(), count };
     }
 
     template<typename T>
@@ -67,7 +74,9 @@ public:
     Array2<T> allocate_array_2d(u32 w, u32 h)
     {
         ASSERT(w > 0 && h > 0);
-        return Array2<T> { w, h, allocate_multiple<T>(w * h) };
+        auto items = allocate_multiple<T>(w * h);
+        new (items.raw_data()) T[w * h];
+        return Array2<T> { w, h, items };
     }
 
     String allocate_string(StringView input);

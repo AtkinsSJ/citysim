@@ -590,7 +590,7 @@ bool City::load_buildings(BinaryFileReader* reader)
 
         // Map the file's building type IDs to the game's ones
         // NB: count+1 because the file won't save the null building, so we need to compensate
-        Array<u32> oldTypeToNewType = reader->arena->allocate_array<u32>(section->buildingTypeTable.count + 1, true);
+        Array<u32> oldTypeToNewType = reader->arena->allocate_filled_array<u32>(section->buildingTypeTable.count + 1);
         Array<SAVBuildingTypeEntry> buildingTypeTable = reader->arena->allocate_array<SAVBuildingTypeEntry>(section->buildingTypeTable.count);
         if (!reader->readArray(section->buildingTypeTable, &buildingTypeTable))
             break;

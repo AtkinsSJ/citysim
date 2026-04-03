@@ -10,7 +10,7 @@
 
 BitArray::BitArray(MemoryArena& arena, s32 size)
     : m_size(size)
-    , m_data(arena.allocate_array<u64>(calculate_u64_count(size), true))
+    , m_data(arena.allocate_filled_array<u64>(calculate_u64_count(size)))
 {
 }
 
@@ -106,7 +106,7 @@ void BitArray::unset_all()
 
 Array<s32> BitArray::get_set_bit_indices() const
 {
-    Array<s32> result = temp_arena().allocate_array<s32>(m_set_bit_count, false);
+    Array<s32> result = temp_arena().allocate_array<s32>(m_set_bit_count);
 
     for (auto it = iterate_set_bits(); it.has_next(); it.next()) {
         result.append(it.get_index());

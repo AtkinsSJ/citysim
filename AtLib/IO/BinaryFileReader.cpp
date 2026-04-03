@@ -35,7 +35,7 @@ BinaryFileReader readBinaryFile(FileHandle* handle, FileIdentifier identifier, M
             reader.problems.add(BinaryFileReader::Problems::VersionTooNew);
         } else {
             // Read the TOC in
-            Array<FileTOCEntry> toc = arena->allocate_array<FileTOCEntry>(header.toc.count, false);
+            Array<FileTOCEntry> toc = arena->allocate_array<FileTOCEntry>(header.toc.count);
             if (readArray(handle, header.toc.relativeOffset, header.toc.count, &toc)) {
                 reader.toc = toc;
                 reader.isValidFile = true;

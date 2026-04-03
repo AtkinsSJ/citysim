@@ -30,10 +30,10 @@ ZoneLayer::ZoneLayer(City& city, MemoryArena& arena)
 
         tileDesirability[zone_type] = arena.allocate_array_2d<u8>(city.bounds.size());
 
-        mostDesirableSectors[zone_type] = arena.allocate_array<s32>(sectorCount, true);
+        mostDesirableSectors[zone_type] = arena.allocate_array<s32>(sectorCount);
         for (s32 sectorIndex = 0; sectorIndex < sectorCount; sectorIndex++) {
             // To start with, we just fill the array 0-to-N because we don't know what's the most desirable.
-            mostDesirableSectors[zone_type][sectorIndex] = sectorIndex;
+            mostDesirableSectors[zone_type].append(sectorIndex);
         }
     }
 

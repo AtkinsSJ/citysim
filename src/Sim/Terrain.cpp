@@ -142,7 +142,7 @@ void TerrainLayer::generate(City& city, u32 seed)
     }
 
     // Generate a river
-    Array<float> riverOffset = temp_arena().allocate_array<float>(m_bounds.height(), true);
+    Array<float> riverOffset = temp_arena().allocate_filled_array<float>(m_bounds.height());
     terrainRandom->fill_with_noise(riverOffset, 10);
     float riverMaxWidth = terrainRandom->random_float_between(12, 16);
     float riverMinWidth = terrainRandom->random_float_between(6, riverMaxWidth);
@@ -159,7 +159,7 @@ void TerrainLayer::generate(City& city, u32 seed)
     }
 
     // Coastline
-    Array<float> coastlineOffset = temp_arena().allocate_array<float>(m_bounds.width(), true);
+    Array<float> coastlineOffset = temp_arena().allocate_filled_array<float>(m_bounds.width());
     terrainRandom->fill_with_noise(coastlineOffset, 10);
     for (s32 x = 0; x < m_bounds.width(); x++) {
         s32 coastDepth = 8 + round_s32(coastlineOffset[x] * 16.0f);
@@ -365,7 +365,7 @@ bool TerrainLayer::load(BinaryFileReader& reader)
 
         // Map the file's terrain type IDs to the game's ones
         // NB: count+1 because the file won't save the null terrain, so we need to compensate
-        Array<u8> oldTypeToNewType = reader.arena->allocate_array<u8>(section->terrainTypeTable.count + 1, true);
+        Array<u8> oldTypeToNewType = reader.arena->allocate_filled_array<u8>(section->terrainTypeTable.count + 1);
         Array<SAVTerrainTypeEntry> terrainTypeTable = reader.arena->allocate_array<SAVTerrainTypeEntry>(section->terrainTypeTable.count);
         if (!reader.readArray(section->terrainTypeTable, &terrainTypeTable))
             break;

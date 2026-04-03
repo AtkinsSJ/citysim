@@ -79,7 +79,7 @@ public:
         if (is_empty())
             return {};
 
-        auto result = temp_arena().allocate_array<T>(m_items.count, false);
+        auto result = temp_arena().allocate_array<T>(m_items.count);
 
         // Gather
         for (auto it = iterate(); it.hasNext(); it.next()) {
