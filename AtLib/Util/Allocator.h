@@ -81,6 +81,7 @@ public:
 
     String allocate_string(StringView input);
     Blob allocate_blob(size_t size);
+    Blob allocate_blob(Blob const& source);
 
     void deallocate(Blob&);
     void deallocate(String&);

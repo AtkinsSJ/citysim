@@ -20,6 +20,13 @@ Blob Allocator::allocate_blob(size_t size)
     return Blob { size, allocate_internal(size).raw_data() };
 }
 
+Blob Allocator::allocate_blob(Blob const& source)
+{
+    auto result = allocate_blob(source.size());
+    copy_memory(source.data(), result.writable_data(), source.size());
+    return result;
+}
+
 void Allocator::deallocate(Blob& blob)
 {
     deallocate_internal({ blob.size(), blob.writable_data() });
