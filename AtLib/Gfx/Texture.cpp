@@ -10,7 +10,7 @@
 
 NonnullOwnPtr<Texture> Texture::make_placeholder()
 {
-    auto pixels = asset_manager().allocate_filled_array<u32>(2 * 2);
+    auto pixels = temp_arena().allocate_filled_array<u32>(2 * 2);
     pixels[0] = pixels[3] = 0xffff00ff;
     pixels[1] = pixels[2] = 0xff000000;
     auto* surface = SDL_CreateRGBSurfaceFrom(pixels.raw_items(), 2, 2, 32, 2 * sizeof(u32),
@@ -89,9 +89,8 @@ ErrorOr<NonnullOwnPtr<Texture>> Texture::load(AssetMetadata& metadata, Blob file
     return adopt_own(*new Texture(surface));
 }
 
-Texture::Texture(SDL_Surface* surface, Blob pixel_data)
+Texture::Texture(SDL_Surface* surface)
     : surface(surface)
-    , m_pixel_data(move(pixel_data))
 {
 }
 
@@ -101,5 +100,4 @@ void Texture::unload(AssetMetadata&)
         SDL_FreeSurface(surface);
         surface = nullptr;
     }
-    Assets::assets_deallocate(m_pixel_data);
 }

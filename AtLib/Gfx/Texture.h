@@ -30,6 +30,5 @@ public:
     } gl;
 
 private:
-    explicit Texture(SDL_Surface*, Blob pixel_data = {});
-    Blob m_pixel_data;
+    explicit Texture(SDL_Surface*);
 };
