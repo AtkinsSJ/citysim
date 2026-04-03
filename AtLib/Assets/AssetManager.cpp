@@ -86,16 +86,6 @@ void AssetManager::deallocate_internal(Span<u8> data)
     deallocateRaw(data.raw_data());
 }
 
-Blob assets_allocate(smm size)
-{
-    return asset_manager().allocate_blob(size);
-}
-
-void assets_deallocate(Blob& data)
-{
-    asset_manager().deallocate(data);
-}
-
 AssetMetadata* AssetManager::add_asset(AssetType type, StringView short_name, Flags<AssetFlags> flags)
 {
     String internedShortName = assetStrings.intern(short_name);

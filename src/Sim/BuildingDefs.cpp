@@ -76,7 +76,7 @@ ErrorOr<NonnullOwnPtr<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata,
 
     smm buildingNamesSize = sizeof(String) * buildingCount;
     smm variantsSize = sizeof(BuildingVariant) * totalVariantCount;
-    auto data = Assets::assets_allocate(buildingNamesSize + variantsSize);
+    auto data = asset_manager().allocate_blob(buildingNamesSize + variantsSize);
     Array<String> building_ids { buildingCount, reinterpret_cast<String*>(data.writable_data()) };
     u8* variantsMemory = data.writable_data() + buildingNamesSize;
 
@@ -445,6 +445,6 @@ void BuildingDefs::unload(AssetMetadata& metadata)
         }
     }
 
-    Assets::assets_deallocate(m_data);
+    asset_manager().deallocate(m_data);
     m_building_ids = {};
 }

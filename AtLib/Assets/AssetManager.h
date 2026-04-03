@@ -143,14 +143,6 @@ AssetMetadata* getAssetIfExists(AssetType type, String shortName);
 String getText(String name);
 String getText(String name, std::initializer_list<StringView> args);
 
-//
-// Internal
-//
-
-// FIXME: Some kind of smart pointer to handle memory allocation tracking.
-Blob assets_allocate(smm size);
-void assets_deallocate(Blob& data);
-
 }
 
 using Assets::AssetManager;

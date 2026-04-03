@@ -29,7 +29,7 @@ ErrorOr<NonnullOwnPtr<Texts>> Texts::load(AssetMetadata& metadata, Blob file_dat
 
     auto line_count = reader.line_count();
     auto key_array_size = sizeof(String) * line_count;
-    auto data = assets_allocate(file_data.size() + key_array_size);
+    auto data = asset_manager().allocate_blob(file_data.size() + key_array_size);
     Array<String> keys = { line_count, reinterpret_cast<String*>(data.writable_data()) };
 
     auto text_data = data.sub_blob(key_array_size);
@@ -97,7 +97,7 @@ void Texts::unload(AssetMetadata&)
     HashTable<String>* textsTable = (m_is_fallback_locale ? &asset_manager().defaultTexts : &asset_manager().texts);
     for (auto const& key : m_keys)
         textsTable->remove(key);
-    assets_deallocate(m_data);
+    asset_manager().deallocate(m_data);
     m_keys = {};
 }
 
