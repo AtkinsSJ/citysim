@@ -6,7 +6,7 @@
 
 #include "Random.h"
 #include <Util/Maths.h>
-#include <Util/OwnPtr.h>
+#include <Util/OwnedPtr.h>
 #include <Util/Rectangle.h>
 #include <ctime>
 

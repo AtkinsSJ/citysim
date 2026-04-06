@@ -7,7 +7,7 @@
 #pragma once
 
 #include <Util/ErrorOr.h>
-#include <Util/OwnPtr.h>
+#include <Util/OwnedPtr.h>
 #include <Util/Platform.h>
 #include <Util/String.h>
 

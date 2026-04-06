@@ -7,7 +7,7 @@
 #pragma once
 
 #include <App/Forward.h>
-#include <Util/OwnPtr.h>
+#include <Util/OwnedPtr.h>
 
 class App {
 public:
@@ -36,5 +36,5 @@ private:
 
     NonnullOwnPtr<Random> m_cosmetic_random;
     NonnullOwnPtr<Scene> m_scene;
-    OwnPtr<Scene> m_next_scene { nullptr };
+    OwnedPtr<Scene> m_next_scene { nullptr };
 };

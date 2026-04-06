@@ -49,7 +49,7 @@ template<typename T>
 class Optional;
 
 template<typename T>
-class OwnPtr;
+class OwnedPtr;
 
 template<typename T>
 class NonnullOwnPtr;

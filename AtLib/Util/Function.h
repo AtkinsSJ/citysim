@@ -7,7 +7,7 @@
 #pragma once
 
 #include <Util/Concepts.h>
-#include <Util/OwnPtr.h>
+#include <Util/OwnedPtr.h>
 
 template<typename>
 class Function;
@@ -73,5 +73,5 @@ private:
     private:
         Callable m_callable;
     };
-    OwnPtr<WrapperBase> m_callable;
+    OwnedPtr<WrapperBase> m_callable;
 };

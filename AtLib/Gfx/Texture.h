@@ -9,7 +9,7 @@
 #include <Assets/Asset.h>
 #include <SDL2/SDL_surface.h>
 #include <Util/Blob.h>
-#include <Util/OwnPtr.h>
+#include <Util/OwnedPtr.h>
 
 class Texture final : public Asset {
     ASSET_SUBCLASS_METHODS(Texture);

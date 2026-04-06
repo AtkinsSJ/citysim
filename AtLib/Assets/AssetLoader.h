@@ -9,7 +9,7 @@
 #include <Assets/Forward.h>
 #include <Util/ErrorOr.h>
 #include <Util/Optional.h>
-#include <Util/OwnPtr.h>
+#include <Util/OwnedPtr.h>
 #include <Util/String.h>
 
 namespace Assets {

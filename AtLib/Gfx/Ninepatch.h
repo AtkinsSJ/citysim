@@ -8,7 +8,7 @@
 
 #include <Assets/Asset.h>
 #include <Util/Basic.h>
-#include <Util/OwnPtr.h>
+#include <Util/OwnedPtr.h>
 
 class Ninepatch final : public Asset {
     ASSET_SUBCLASS_METHODS(Ninepatch);

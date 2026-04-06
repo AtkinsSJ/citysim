@@ -27,7 +27,7 @@ struct AssetManager final
     StringTable assetStrings;
 
     // FIXME: This should be nonnull and initialized on construction.
-    OwnPtr<DirectoryWatcher> asset_change_handle;
+    OwnedPtr<DirectoryWatcher> asset_change_handle;
 
     u32 asset_generation() const { return m_asset_generation; }
     bool have_asset_files_changed() const;

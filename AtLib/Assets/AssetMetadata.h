@@ -10,7 +10,7 @@
 #include <Assets/Forward.h>
 #include <Util/Flags.h>
 #include <Util/Locale.h>
-#include <Util/OwnPtr.h>
+#include <Util/OwnedPtr.h>
 
 namespace Assets {
 
@@ -55,7 +55,7 @@ public:
     State state { State::Unloaded };
     Optional<Locale> locale;
 
-    OwnPtr<Asset> loaded_asset;
+    OwnedPtr<Asset> loaded_asset;
 };
 
 }

@@ -469,7 +469,7 @@ ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const
 
         bool succeeded = false;
 
-        OwnPtr<City> city;
+        OwnedPtr<City> city;
 
         BinaryFileReader reader = readBinaryFile(&saveFile, SAV_FILE_ID, &temp_arena());
         // This doesn't actually loop, we're just using a `while` so we can break out of it

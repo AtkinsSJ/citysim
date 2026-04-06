@@ -5,7 +5,7 @@
  */
 
 #include "Harness/Harness.h"
-#include <Util/OwnPtr.h>
+#include <Util/OwnedPtr.h>
 
 void test_main()
 {
@@ -36,7 +36,7 @@ void test_main()
 
     // Basic OwnPtr
     {
-        OwnPtr<ConstructionCounter> value;
+        OwnedPtr<ConstructionCounter> value;
         EXPECT(!value);
         value = adopt_own_if_nonnull(new ConstructionCounter(times_constructed, times_destructed));
         EXPECT(value);
@@ -53,11 +53,11 @@ void test_main()
 
     // OwnPtr moving
     {
-        OwnPtr<ConstructionCounter> first = adopt_own_if_nonnull(new ConstructionCounter(times_constructed, times_destructed));
+        OwnedPtr<ConstructionCounter> first = adopt_own_if_nonnull(new ConstructionCounter(times_constructed, times_destructed));
         EXPECT(times_constructed == 1);
         EXPECT(times_destructed == 0);
 
-        OwnPtr second = move(first);
+        OwnedPtr second = move(first);
         EXPECT(!first);
         EXPECT(second);
         EXPECT(times_constructed == 1);
@@ -83,7 +83,7 @@ void test_main()
 
     // NonnullOwnPtr from OwnPtr
     {
-        OwnPtr<ConstructionCounter> own_ptr = adopt_own_if_nonnull(new ConstructionCounter(times_constructed, times_destructed));
+        OwnedPtr<ConstructionCounter> own_ptr = adopt_own_if_nonnull(new ConstructionCounter(times_constructed, times_destructed));
         EXPECT(times_constructed == 1);
         EXPECT(times_destructed == 0);
 
@@ -102,7 +102,7 @@ void test_main()
         EXPECT(times_constructed == 1);
         EXPECT(times_destructed == 0);
 
-        OwnPtr own_ptr = move(nonnull_own_ptr);
+        OwnedPtr own_ptr = move(nonnull_own_ptr);
         EXPECT(own_ptr);
         EXPECT(times_constructed == 1);
         EXPECT(times_destructed == 0);
@@ -117,7 +117,7 @@ void test_main()
         EXPECT(times_constructed == 1);
         EXPECT(times_destructed == 0);
 
-        OwnPtr<ConstructionCounter> own_ptr = adopt_own_if_nonnull(new ConstructionCounter(times_constructed, times_destructed));
+        OwnedPtr<ConstructionCounter> own_ptr = adopt_own_if_nonnull(new ConstructionCounter(times_constructed, times_destructed));
         EXPECT(own_ptr);
         EXPECT(times_constructed == 2);
         EXPECT(times_destructed == 0);
@@ -148,7 +148,7 @@ void test_main()
         EXPECT(nonnull_a->foo == 23);
 
         // And ownptr
-        OwnPtr<A> a = move(nonnull_a);
+        OwnedPtr<A> a = move(nonnull_a);
         EXPECT(a->foo == 23);
         a = adopt_own(*new B);
         EXPECT(a->foo == 0);

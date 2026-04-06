@@ -7,7 +7,7 @@
 #include "Ninepatch.h"
 #include <Assets/AssetManager.h>
 #include <Gfx/Texture.h>
-#include <Util/OwnPtr.h>
+#include <Util/OwnedPtr.h>
 
 Ninepatch::Ninepatch(AssetMetadata& texture_metadata, s32 pu0, s32 pu1, s32 pu2, s32 pu3, s32 pv0, s32 pv1, s32 pv2, s32 pv3)
     : texture(&texture_metadata)

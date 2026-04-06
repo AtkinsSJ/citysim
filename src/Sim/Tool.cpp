@@ -12,7 +12,7 @@
 #include <Sim/Game.h>
 #include <UI/Toast.h>
 #include <UI/Window.h>
-#include <Util/OwnPtr.h>
+#include <Util/OwnedPtr.h>
 
 Flags<InspectTool::DebugFlags> InspectTool::debug_flags;
 V2I InspectTool::inspected_tile_pos;

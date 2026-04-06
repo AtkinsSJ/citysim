@@ -113,7 +113,7 @@ private:
     void move_camera_from_input(Camera&, V2 window_size, V2 window_mouse_pos, float delta_time);
 
     MemoryArena m_arena { "Game"_s };
-    OwnPtr<City> m_city;
+    OwnedPtr<City> m_city;
 
     EnumMap<DataView, DataViewUI> m_data_view_ui;
     DataView m_active_data_view { DataView::None };

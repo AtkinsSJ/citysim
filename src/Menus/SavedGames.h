@@ -43,7 +43,7 @@ struct SavedGamesCatalogue {
     StringTable stringsTable;
 
     // FIXME: This should be nonnull and initialized on construction.
-    OwnPtr<DirectoryWatcher> savedGamesChangeHandle;
+    OwnedPtr<DirectoryWatcher> savedGamesChangeHandle;
     String savedGamesPath;
 
     ChunkedArray<SavedGameInfo> savedGames;

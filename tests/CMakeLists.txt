@@ -15,5 +15,5 @@ endfunction()
 
 enable_testing()
 citysim_test(TestFunction.cpp)
-citysim_test(TestOwnPtr.cpp)
+citysim_test(TestOwnedPtr.cpp)
 citysim_test(TestVariant.cpp)

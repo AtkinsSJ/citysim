@@ -10,33 +10,33 @@
 #include <Util/Forward.h>
 
 template<typename T>
-class [[nodiscard]] OwnPtr {
+class [[nodiscard]] OwnedPtr {
 public:
-    OwnPtr() = default;
+    OwnedPtr() = default;
 
-    OwnPtr(decltype(nullptr))
+    OwnedPtr(decltype(nullptr))
         : m_ptr(nullptr)
     {
     }
 
-    OwnPtr(OwnPtr&& other)
+    OwnedPtr(OwnedPtr&& other)
         : m_ptr(other.leak_ptr())
     {
     }
 
-    OwnPtr(NonnullOwnPtr<T>&& other)
+    OwnedPtr(NonnullOwnPtr<T>&& other)
         : m_ptr(other.leak_ptr())
     {
     }
 
-    OwnPtr& operator=(OwnPtr&& other)
+    OwnedPtr& operator=(OwnedPtr&& other)
     {
         clear();
         m_ptr = other.leak_ptr();
         return *this;
     }
 
-    OwnPtr& operator=(NonnullOwnPtr<T>&& other)
+    OwnedPtr& operator=(NonnullOwnPtr<T>&& other)
     {
         clear();
         m_ptr = other.leak_ptr();
@@ -44,7 +44,7 @@ public:
     }
 
     template<typename U>
-    OwnPtr& operator=(OwnPtr<U>&& other)
+    OwnedPtr& operator=(OwnedPtr<U>&& other)
     {
         clear();
         m_ptr = other.leak_ptr();
@@ -52,23 +52,23 @@ public:
     }
 
     template<typename U>
-    OwnPtr& operator=(NonnullOwnPtr<U>&& other)
+    OwnedPtr& operator=(NonnullOwnPtr<U>&& other)
     {
         clear();
         m_ptr = other.leak_ptr();
         return *this;
     }
 
-    static OwnPtr adopt(T* pointer)
+    static OwnedPtr adopt(T* pointer)
     {
-        return OwnPtr { pointer };
+        return OwnedPtr { pointer };
     }
 
     // Not copyable
-    OwnPtr(OwnPtr const&) = delete;
-    OwnPtr& operator=(OwnPtr const&) = delete;
+    OwnedPtr(OwnedPtr const&) = delete;
+    OwnedPtr& operator=(OwnedPtr const&) = delete;
 
-    ~OwnPtr()
+    ~OwnedPtr()
     {
         if (m_ptr)
             clear();
@@ -129,7 +129,7 @@ public:
     }
 
 private:
-    explicit OwnPtr(T* ptr)
+    explicit OwnedPtr(T* ptr)
         : m_ptr(ptr)
     {
     }
@@ -140,7 +140,7 @@ private:
 template<typename T>
 class [[nodiscard]] NonnullOwnPtr {
 public:
-    friend class OwnPtr<T>;
+    friend class OwnedPtr<T>;
     enum class AdoptTag : u8 { Adopt };
 
     NonnullOwnPtr(NonnullOwnPtr&& other)
@@ -231,10 +231,10 @@ private:
 };
 
 template<typename T>
-OwnPtr<T> adopt_own_if_nonnull(T* pointer)
+OwnedPtr<T> adopt_own_if_nonnull(T* pointer)
 {
     if (pointer)
-        return OwnPtr<T>::adopt(pointer);
+        return OwnedPtr<T>::adopt(pointer);
     return {};
 }
 
