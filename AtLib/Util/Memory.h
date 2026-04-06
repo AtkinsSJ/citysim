@@ -60,24 +60,6 @@ void fill_memory(T* memory, T const& value, size_t length)
 }
 
 template<typename T>
-void fillMemory(T* memory, T value, smm length)
-{
-    return fill_memory(memory, value, length);
-}
-
-template<>
-inline void fillMemory<s8>(s8* memory, s8 value, smm length)
-{
-    memset(memory, value, length);
-}
-
-template<>
-inline void fillMemory<u8>(u8* memory, u8 value, smm length)
-{
-    memset(memory, value, length);
-}
-
-template<typename T>
 bool isMemoryEqual(T const* a, T const* b, smm length = 1)
 {
     // Shortcut if we're comparing memory with itself

@@ -68,7 +68,7 @@ public:
 
     void fill(T const& value)
     {
-        fillMemory<T>(items, value, m_width * m_height);
+        fill_memory<T>(items, value, m_width * m_height);
     }
 
     void fill_region(Rect2I const& region, T const& value)
@@ -77,7 +77,7 @@ public:
 
         for (s32 y = region.y(); y < region.y() + region.height(); y++) {
             // Set whole rows at a time
-            fillMemory<T>(items + (y * m_width) + region.x(), value, region.width());
+            fill_memory<T>(items + (y * m_width) + region.x(), value, region.width());
         }
     }
 

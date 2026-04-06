@@ -111,7 +111,7 @@ void MemoryArena::revert_to(ResetState const& reset_state)
     if (m_current_block) {
 #if BUILD_DEBUG
         // Clear memory so we spot bugs in keeping pointers to deallocated memory.
-        fillMemory<u8>(m_current_block->memory + reset_state.used(), 0xcd, m_current_block->used - reset_state.used());
+        fill_memory<u8>(m_current_block->memory + reset_state.used(), 0xcd, m_current_block->used - reset_state.used());
 #endif
         m_current_block->used = reset_state.used();
     }

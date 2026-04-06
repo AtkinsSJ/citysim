@@ -25,7 +25,7 @@ void rleDecode(u8* source, u8* dest, smm destSize)
             // RLE
             u8 value = *sourcePos;
             sourcePos++;
-            fillMemory(destPos, value, length);
+            fill_memory(destPos, value, length);
             destPos += length;
         }
     }
