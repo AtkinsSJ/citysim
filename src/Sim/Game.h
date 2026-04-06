@@ -86,18 +86,18 @@ void debugToolsWindowProc(UI::WindowContext* context, void* userData);
 
 class GameScene final : public Scene {
 public:
-    static NonnullOwnPtr<GameScene> create_new(u32 seed);
-    static ErrorOr<NonnullOwnPtr<GameScene>> from_saved_game(SavedGameInfo const&);
+    static OwnedRef<GameScene> create_new(u32 seed);
+    static ErrorOr<OwnedRef<GameScene>> from_saved_game(SavedGameInfo const&);
 
     virtual ~GameScene() override;
     virtual void update_and_render(float delta_time) override;
 
     MemoryArena& arena() { return m_arena; }
     City* city() { return m_city.ptr(); }
-    void set_city(NonnullOwnPtr<City>);
+    void set_city(OwnedRef<City>);
 
     Tool const& active_tool() const { return m_active_tool; }
-    void set_active_tool(NonnullOwnPtr<Tool>);
+    void set_active_tool(OwnedRef<Tool>);
 
     void set_active_data_view(DataView);
 
@@ -118,5 +118,5 @@ private:
     EnumMap<DataView, DataViewUI> m_data_view_ui;
     DataView m_active_data_view { DataView::None };
 
-    NonnullOwnPtr<Tool> m_active_tool;
+    OwnedRef<Tool> m_active_tool;
 };

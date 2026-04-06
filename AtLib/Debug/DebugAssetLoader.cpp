@@ -18,9 +18,9 @@ void DebugAssetLoader::create_placeholder_assets(AssetManager& assets)
     assets.set_placeholder_asset(Keymap::asset_type(), adopt_own(*new Keymap));
 }
 
-ErrorOr<NonnullOwnPtr<Asset>> DebugAssetLoader::load_asset(AssetMetadata& metadata, Blob file_data)
+ErrorOr<OwnedRef<Asset>> DebugAssetLoader::load_asset(AssetMetadata& metadata, Blob file_data)
 {
-    auto to_error_or_asset = [](auto error_or_asset_subclass) -> ErrorOr<NonnullOwnPtr<Asset>> {
+    auto to_error_or_asset = [](auto error_or_asset_subclass) -> ErrorOr<OwnedRef<Asset>> {
         if (error_or_asset_subclass.is_error())
             return error_or_asset_subclass.release_error();
         return { error_or_asset_subclass.release_value() };

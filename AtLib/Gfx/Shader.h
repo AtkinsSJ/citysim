@@ -14,8 +14,8 @@ class Shader final : public Asset {
     ASSET_SUBCLASS_METHODS(Shader);
 
 public:
-    static NonnullOwnPtr<Shader> make_placeholder();
-    static ErrorOr<NonnullOwnPtr<Shader>> load(AssetMetadata&, Blob data);
+    static OwnedRef<Shader> make_placeholder();
+    static ErrorOr<OwnedRef<Shader>> load(AssetMetadata&, Blob data);
     virtual ~Shader() override = default;
 
     virtual void unload(AssetMetadata& metadata) override;

@@ -12,7 +12,7 @@
 #include <UI/UITheme.h>
 #include <Util/Vector.h>
 
-NonnullOwnPtr<CreditsScene> CreditsScene::create()
+OwnedRef<CreditsScene> CreditsScene::create()
 {
     return adopt_own(*new CreditsScene);
 }

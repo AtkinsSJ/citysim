@@ -64,7 +64,7 @@ private:
     u32 m_index;
 };
 
-NonnullOwnPtr<Random> Random::create(Optional<u32> seed, Optional<Type> type)
+OwnedRef<Random> Random::create(Optional<u32> seed, Optional<Type> type)
 {
     auto actual_seed = [&seed] -> u32 {
         if (seed.has_value())

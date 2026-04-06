@@ -17,7 +17,7 @@ Sprite& Sprite::get(StringView name)
     return SpriteGroup::get(name).sprites[0];
 }
 
-NonnullOwnPtr<SpriteGroup> SpriteGroup::make_placeholder()
+OwnedRef<SpriteGroup> SpriteGroup::make_placeholder()
 {
     auto sprite_group = adopt_own(*new SpriteGroup);
     sprite_group->sprites = asset_manager().allocate_array<Sprite>(1);
@@ -69,7 +69,7 @@ static AssetMetadata* add_ninepatch(StringView name, StringView filename, s32 pu
     return metadata;
 }
 
-ErrorOr<NonnullOwnPtr<Asset>> load_sprite_defs(AssetMetadata& metadata, Blob data)
+ErrorOr<OwnedRef<Asset>> load_sprite_defs(AssetMetadata& metadata, Blob data)
 {
     LineReader reader { metadata.shortName, data };
 

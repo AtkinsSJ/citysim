@@ -15,7 +15,7 @@ Palette::Palette(Type type, Array<Colour> colours)
 {
 }
 
-ErrorOr<NonnullOwnPtr<Asset>> Palette::load_defs(AssetMetadata& metadata, Blob file_data)
+ErrorOr<OwnedRef<Asset>> Palette::load_defs(AssetMetadata& metadata, Blob file_data)
 {
     LineReader reader { metadata.shortName, file_data };
 

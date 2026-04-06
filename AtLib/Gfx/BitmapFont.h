@@ -38,7 +38,7 @@ public:
     BitmapFont() = default;
     virtual ~BitmapFont() override = default;
 
-    static ErrorOr<NonnullOwnPtr<BitmapFont>> load_from_bmf_data(AssetMetadata& metadata, Blob data);
+    static ErrorOr<OwnedRef<BitmapFont>> load_from_bmf_data(AssetMetadata& metadata, Blob data);
 
     void add_glyph(BitmapFontGlyph&&);
     BitmapFontGlyph const* find_glyph(unichar target_char) const;

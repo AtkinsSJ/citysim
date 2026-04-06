@@ -10,7 +10,7 @@
 
 class MainMenuScene final : public Scene {
 public:
-    static NonnullOwnPtr<MainMenuScene> create();
+    static OwnedRef<MainMenuScene> create();
 
     virtual ~MainMenuScene() override = default;
     virtual void update_and_render(float delta_time) override;

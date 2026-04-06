@@ -9,7 +9,7 @@
 #include <Debug/Debug.h>
 #include <Sim/TerrainCatalogue.h>
 
-ErrorOr<NonnullOwnPtr<TerrainDefs>> TerrainDefs::load(AssetMetadata& metadata, Blob file_data)
+ErrorOr<OwnedRef<TerrainDefs>> TerrainDefs::load(AssetMetadata& metadata, Blob file_data)
 {
     DEBUG_FUNCTION();
 

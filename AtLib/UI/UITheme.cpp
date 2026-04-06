@@ -491,7 +491,7 @@ void assignStyleProperties(StyleType type, std::initializer_list<String> propert
     }
 }
 
-ErrorOr<NonnullOwnPtr<Asset>> load_theme(AssetMetadata& metadata, Blob data)
+ErrorOr<OwnedRef<Asset>> load_theme(AssetMetadata& metadata, Blob data)
 {
     LineReader reader { metadata.shortName, data };
 

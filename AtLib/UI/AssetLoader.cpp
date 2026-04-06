@@ -34,7 +34,7 @@ void AssetLoader::create_placeholder_assets(AssetManager& assets)
     assets.set_placeholder_asset(m_theme_asset_type, adopt_own(*new ContainerAsset));
 }
 
-ErrorOr<NonnullOwnPtr<Asset>> AssetLoader::load_asset(AssetMetadata& metadata, Blob file_data)
+ErrorOr<OwnedRef<Asset>> AssetLoader::load_asset(AssetMetadata& metadata, Blob file_data)
 {
     if (metadata.type == m_theme_asset_type)
         return load_theme(metadata, file_data);

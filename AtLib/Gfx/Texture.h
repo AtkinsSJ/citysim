@@ -15,8 +15,8 @@ class Texture final : public Asset {
     ASSET_SUBCLASS_METHODS(Texture);
 
 public:
-    static NonnullOwnPtr<Texture> make_placeholder();
-    static ErrorOr<NonnullOwnPtr<Texture>> load(AssetMetadata&, Blob file_data);
+    static OwnedRef<Texture> make_placeholder();
+    static ErrorOr<OwnedRef<Texture>> load(AssetMetadata&, Blob file_data);
     virtual ~Texture() override = default;
 
     virtual void unload(AssetMetadata& metadata) override;

@@ -10,7 +10,7 @@
 
 class CreditsScene final : public Scene {
 public:
-    static NonnullOwnPtr<CreditsScene> create();
+    static OwnedRef<CreditsScene> create();
 
     virtual ~CreditsScene() override = default;
     virtual void update_and_render(float delta_time) override;

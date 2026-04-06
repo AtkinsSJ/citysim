@@ -32,7 +32,7 @@ public:
     // FIXME: This should REALLY go in InspectWindow, so that we can potentially have multiple of them open inspecting different things.
     static V2I inspected_tile_pos;
 
-    static NonnullOwnPtr<InspectTool> create();
+    static OwnedRef<InspectTool> create();
     virtual ~InspectTool() override = default;
 
     virtual void act(City&, bool mouse_is_over_ui, V2I mouse_tile_pos) override;
@@ -40,7 +40,7 @@ public:
 
 class BuildTool final : public Tool {
 public:
-    static NonnullOwnPtr<BuildTool> create(BuildingType);
+    static OwnedRef<BuildTool> create(BuildingType);
     virtual ~BuildTool() override = default;
 
     BuildingType building_type() const { return m_building_type; }
@@ -56,7 +56,7 @@ private:
 
 class DemolishTool final : public Tool {
 public:
-    static NonnullOwnPtr<DemolishTool> create();
+    static OwnedRef<DemolishTool> create();
     virtual ~DemolishTool() override = default;
 
     virtual void act(City&, bool mouse_is_over_ui, V2I mouse_tile_pos) override;
@@ -67,7 +67,7 @@ private:
 
 class ZoneTool final : public Tool {
 public:
-    static NonnullOwnPtr<ZoneTool> create(ZoneType);
+    static OwnedRef<ZoneTool> create(ZoneType);
     virtual ~ZoneTool() override = default;
 
     ZoneType zone_type() const { return m_zone_type; }
@@ -83,7 +83,7 @@ private:
 
 class SetTerrainTool final : public Tool {
 public:
-    static NonnullOwnPtr<SetTerrainTool> create(TerrainType);
+    static OwnedRef<SetTerrainTool> create(TerrainType);
     virtual ~SetTerrainTool() override = default;
 
     TerrainType terrain_type() const { return m_terrain_type; }
@@ -103,7 +103,7 @@ public:
         RemoveFire,
     };
 
-    static NonnullOwnPtr<DebugTool> create(Mode);
+    static OwnedRef<DebugTool> create(Mode);
     virtual ~DebugTool() override = default;
 
     Mode mode() const { return m_mode; }

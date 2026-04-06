@@ -7,12 +7,12 @@
 #include "Shader.h"
 #include <Assets/AssetManager.h>
 
-NonnullOwnPtr<Shader> Shader::make_placeholder()
+OwnedRef<Shader> Shader::make_placeholder()
 {
     return adopt_own(*new Shader({}, ""_s, ""_s));
 }
 
-ErrorOr<NonnullOwnPtr<Shader>> Shader::load(AssetMetadata&, Blob data)
+ErrorOr<OwnedRef<Shader>> Shader::load(AssetMetadata&, Blob data)
 {
     auto data_string = asset_manager().allocate_string({ reinterpret_cast<char const*>(data.data()), data.size() });
 

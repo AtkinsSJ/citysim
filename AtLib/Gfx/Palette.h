@@ -21,7 +21,7 @@ public:
 
     Palette() = default;
     Palette(Type, Array<Colour>);
-    static ErrorOr<NonnullOwnPtr<Asset>> load_defs(AssetMetadata&, Blob);
+    static ErrorOr<OwnedRef<Asset>> load_defs(AssetMetadata&, Blob);
 
     Type type() const { return m_type; }
     size_t size() const;

@@ -16,7 +16,7 @@ class Keymap final : public Asset {
 
 public:
     Keymap() = default;
-    static ErrorOr<NonnullOwnPtr<Keymap>> load(AssetMetadata&, Blob data);
+    static ErrorOr<OwnedRef<Keymap>> load(AssetMetadata&, Blob data);
     virtual ~Keymap() override = default;
 
     ReadonlySpan<CommandShortcut> shortcuts() const { return m_shortcuts; }

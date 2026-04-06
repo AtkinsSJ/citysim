@@ -14,5 +14,5 @@ public:
 
     void register_types(AssetManager&) override;
     void create_placeholder_assets(AssetManager&) override;
-    ErrorOr<NonnullOwnPtr<Asset>> load_asset(AssetMetadata& metadata, Blob file_data) override;
+    ErrorOr<OwnedRef<Asset>> load_asset(AssetMetadata& metadata, Blob file_data) override;
 };

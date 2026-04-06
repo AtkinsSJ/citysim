@@ -8,7 +8,7 @@
 #include <Assets/AssetManager.h>
 #include <IO/LineReader.h>
 
-ErrorOr<NonnullOwnPtr<TextDocument>> TextDocument::load(AssetMetadata& metadata, Blob file_data)
+ErrorOr<OwnedRef<TextDocument>> TextDocument::load(AssetMetadata& metadata, Blob file_data)
 {
     auto& assets = asset_manager();
     auto source_data = assets.allocate_blob(file_data);

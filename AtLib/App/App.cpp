@@ -13,7 +13,7 @@
 
 static App* s_app = nullptr;
 
-NonnullOwnPtr<App> App::initialize(float seconds_per_frame, NonnullOwnPtr<Scene> scene)
+OwnedRef<App> App::initialize(float seconds_per_frame, OwnedRef<Scene> scene)
 {
     logInfo("Constructing app"_s);
     ASSERT(s_app == nullptr);
@@ -27,7 +27,7 @@ App& App::the()
     return *s_app;
 }
 
-App::App(float seconds_per_frame, NonnullOwnPtr<Scene> scene)
+App::App(float seconds_per_frame, OwnedRef<Scene> scene)
     : m_delta_time(seconds_per_frame)
     , m_cosmetic_random(Random::create())
     , m_scene(move(scene))
@@ -41,7 +41,7 @@ App::~App()
     //        (eg, GameScene's destructor does.)
 }
 
-void App::switch_to_scene(NonnullOwnPtr<Scene> scene)
+void App::switch_to_scene(OwnedRef<Scene> scene)
 {
     m_next_scene = move(scene);
 }

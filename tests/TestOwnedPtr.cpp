@@ -69,11 +69,11 @@ void test_main()
 
     // Basic NonnullOwnPtr
     {
-        NonnullOwnPtr<ConstructionCounter> first = adopt_own(*new ConstructionCounter(times_constructed, times_destructed));
+        OwnedRef<ConstructionCounter> first = adopt_own(*new ConstructionCounter(times_constructed, times_destructed));
         EXPECT(times_constructed == 1);
         EXPECT(times_destructed == 0);
 
-        NonnullOwnPtr second = move(first);
+        OwnedRef second = move(first);
         EXPECT(times_constructed == 1);
         EXPECT(times_destructed == 0);
     }
@@ -98,7 +98,7 @@ void test_main()
 
     // OwnPtr from NonnullOwnPtr (construction)
     {
-        NonnullOwnPtr<ConstructionCounter> nonnull_own_ptr = adopt_own(*new ConstructionCounter(times_constructed, times_destructed));
+        OwnedRef<ConstructionCounter> nonnull_own_ptr = adopt_own(*new ConstructionCounter(times_constructed, times_destructed));
         EXPECT(times_constructed == 1);
         EXPECT(times_destructed == 0);
 
@@ -113,7 +113,7 @@ void test_main()
 
     // OwnPtr from NonnullOwnPtr (assignment)
     {
-        NonnullOwnPtr<ConstructionCounter> nonnull_own_ptr = adopt_own(*new ConstructionCounter(times_constructed, times_destructed));
+        OwnedRef<ConstructionCounter> nonnull_own_ptr = adopt_own(*new ConstructionCounter(times_constructed, times_destructed));
         EXPECT(times_constructed == 1);
         EXPECT(times_destructed == 0);
 
@@ -138,7 +138,7 @@ void test_main()
         };
         struct B : A { };
 
-        NonnullOwnPtr<A> nonnull_a = adopt_own(*new A);
+        OwnedRef<A> nonnull_a = adopt_own(*new A);
         EXPECT(nonnull_a->foo == 0);
         nonnull_a->foo = 17;
         EXPECT(nonnull_a->foo == 17);

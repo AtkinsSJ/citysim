@@ -37,7 +37,7 @@ Ninepatch::Ninepatch(AssetMetadata& texture_metadata, s32 pu0, s32 pu1, s32 pu2,
     v3 = pv3 / texture_height;
 }
 
-NonnullOwnPtr<Ninepatch> Ninepatch::make_placeholder()
+OwnedRef<Ninepatch> Ninepatch::make_placeholder()
 {
     auto& placeholder_texture = asset_manager().get_placeholder_asset(Texture::asset_type());
     auto& surface = *dynamic_cast<Texture&>(*placeholder_texture.loaded_asset).surface;

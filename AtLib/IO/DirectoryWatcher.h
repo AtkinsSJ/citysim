@@ -13,7 +13,7 @@
 
 class DirectoryWatcher {
 public:
-    static ErrorOr<NonnullOwnPtr<DirectoryWatcher>> watch(String path);
+    static ErrorOr<OwnedRef<DirectoryWatcher>> watch(String path);
 
     // Movable but not copyable
     DirectoryWatcher(DirectoryWatcher&&) = default;

@@ -35,7 +35,7 @@ void initAssets()
     new (&s_assets->missingTextIDs) Set<String> { s_assets->arena, compareStrings };
 
     s_assets->listeners = ChunkedArray<AssetManagerListener*>(s_assets->arena, 32);
-    s_assets->asset_loaders = ChunkedArray<NonnullOwnPtr<AssetLoader>>(s_assets->arena, 32);
+    s_assets->asset_loaders = ChunkedArray<OwnedRef<AssetLoader>>(s_assets->arena, 32);
 
     // NB: This might fail, or we might be on a platform where it isn't implemented.
     // That's OK though!
@@ -363,7 +363,7 @@ String AssetManager::make_asset_path(AssetType type, StringView short_name) cons
     return myprintf("{0}/{1}"_s, { assetsPath, short_name }, true);
 }
 
-void AssetManager::register_asset_loader(NonnullOwnPtr<AssetLoader>&& asset_loader_ptr)
+void AssetManager::register_asset_loader(OwnedRef<AssetLoader>&& asset_loader_ptr)
 {
     auto& asset_loader = *asset_loader_ptr;
     asset_loaders.append(move(asset_loader_ptr));
@@ -402,7 +402,7 @@ AssetType AssetManager::register_asset_type(String name, AssetLoader& loader, As
     return type;
 }
 
-void AssetManager::set_placeholder_asset(AssetType type, NonnullOwnPtr<Asset> asset)
+void AssetManager::set_placeholder_asset(AssetType type, OwnedRef<Asset> asset)
 {
     asset_type_data[type].placeholder_asset = AssetMetadata {
         .type = type,

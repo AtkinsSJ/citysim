@@ -67,9 +67,9 @@ Optional<String> AssetLoader::make_asset_path(AssetManager const& assets, AssetT
     return {};
 }
 
-ErrorOr<NonnullOwnPtr<Asset>> AssetLoader::load_asset(AssetMetadata& metadata, Blob file_data)
+ErrorOr<OwnedRef<Asset>> AssetLoader::load_asset(AssetMetadata& metadata, Blob file_data)
 {
-    auto to_error_or_asset = [](auto error_or_asset_subclass) -> ErrorOr<NonnullOwnPtr<Asset>> {
+    auto to_error_or_asset = [](auto error_or_asset_subclass) -> ErrorOr<OwnedRef<Asset>> {
         if (error_or_asset_subclass.is_error())
             return error_or_asset_subclass.release_error();
         return { error_or_asset_subclass.release_value() };

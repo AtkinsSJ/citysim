@@ -24,7 +24,7 @@ public:
     // FIXME: Remove this, and use the directories information in the AssetManager instead.
     virtual Optional<String> make_asset_path(AssetManager const&, AssetType, StringView short_name) { return {}; }
 
-    virtual ErrorOr<NonnullOwnPtr<Asset>> load_asset(AssetMetadata& metadata, Blob file_data) = 0;
+    virtual ErrorOr<OwnedRef<Asset>> load_asset(AssetMetadata& metadata, Blob file_data) = 0;
 };
 
 }

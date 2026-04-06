@@ -33,7 +33,7 @@ enum class BuildingQueryFlag : u8 {
 };
 
 struct City {
-    static NonnullOwnPtr<City> create(MemoryArena&, u32 width, u32 height, String name, String player_name, s32 funds, GameTimestamp date = 0, float time_of_day = 0.0f);
+    static OwnedRef<City> create(MemoryArena&, u32 width, u32 height, String name, String player_name, s32 funds, GameTimestamp date = 0, float time_of_day = 0.0f);
 
     Building* get_building(BuildingRef const&);
     Building const* get_building(BuildingRef const& ref) const

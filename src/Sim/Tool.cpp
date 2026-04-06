@@ -17,7 +17,7 @@
 Flags<InspectTool::DebugFlags> InspectTool::debug_flags;
 V2I InspectTool::inspected_tile_pos;
 
-NonnullOwnPtr<InspectTool> InspectTool::create()
+OwnedRef<InspectTool> InspectTool::create()
 {
     return adopt_own(*new InspectTool);
 }
@@ -39,7 +39,7 @@ void InspectTool::act(City& city, bool mouse_is_over_ui, V2I mouse_tile_pos)
     }
 }
 
-NonnullOwnPtr<BuildTool> BuildTool::create(BuildingType type)
+OwnedRef<BuildTool> BuildTool::create(BuildingType type)
 {
     auto& def = *getBuildingDef(type);
     auto drag_type = def.buildMethod == BuildMethod::DragLine ? DragType::Line : DragType::Rect;
@@ -136,7 +136,7 @@ void BuildTool::act(City& city, bool mouse_is_over_ui, V2I mouse_tile_pos)
     }
 }
 
-NonnullOwnPtr<DemolishTool> DemolishTool::create()
+OwnedRef<DemolishTool> DemolishTool::create()
 {
     return adopt_own(*new DemolishTool);
 }
@@ -175,7 +175,7 @@ void DemolishTool::act(City& city, bool mouse_is_over_ui, V2I mouse_tile_pos)
     }
 }
 
-NonnullOwnPtr<ZoneTool> ZoneTool::create(ZoneType type)
+OwnedRef<ZoneTool> ZoneTool::create(ZoneType type)
 {
     return adopt_own(*new ZoneTool(type));
 }
@@ -220,7 +220,7 @@ void ZoneTool::act(City& city, bool mouse_is_over_ui, V2I mouse_tile_pos)
     }
 }
 
-NonnullOwnPtr<SetTerrainTool> SetTerrainTool::create(TerrainType type)
+OwnedRef<SetTerrainTool> SetTerrainTool::create(TerrainType type)
 {
     return adopt_own(*new SetTerrainTool(type));
 }
@@ -242,7 +242,7 @@ void SetTerrainTool::act(City& city, bool mouse_is_over_ui, V2I mouse_tile_pos)
     }
 }
 
-NonnullOwnPtr<DebugTool> DebugTool::create(Mode mode)
+OwnedRef<DebugTool> DebugTool::create(Mode mode)
 {
     return adopt_own(*new DebugTool(mode));
 }

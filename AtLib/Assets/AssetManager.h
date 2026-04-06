@@ -86,8 +86,8 @@ struct AssetManager final
     void load_assets();
     void reload();
 
-    ChunkedArray<NonnullOwnPtr<AssetLoader>> asset_loaders;
-    void register_asset_loader(NonnullOwnPtr<AssetLoader>&&);
+    ChunkedArray<OwnedRef<AssetLoader>> asset_loaders;
+    void register_asset_loader(OwnedRef<AssetLoader>&&);
     AssetLoader& get_asset_loader_for_type(AssetType) const;
 
     struct AssetConfig {
@@ -95,7 +95,7 @@ struct AssetManager final
         Optional<StringView> file_extension;
     };
     AssetType register_asset_type(String name, AssetLoader&, AssetConfig = {});
-    void set_placeholder_asset(AssetType, NonnullOwnPtr<Asset>);
+    void set_placeholder_asset(AssetType, OwnedRef<Asset>);
     AssetMetadata& get_placeholder_asset(AssetType);
 
     template<typename T>

@@ -15,7 +15,7 @@ class BuildingDefs final : public Asset {
     ASSET_SUBCLASS_METHODS(BuildingDefs);
 
 public:
-    static ErrorOr<NonnullOwnPtr<BuildingDefs>> load(AssetMetadata&, Blob data);
+    static ErrorOr<OwnedRef<BuildingDefs>> load(AssetMetadata&, Blob data);
     BuildingDefs() = default;
     virtual ~BuildingDefs() override = default;
 

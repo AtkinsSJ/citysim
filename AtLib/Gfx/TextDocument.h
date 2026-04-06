@@ -21,7 +21,7 @@ public:
     };
 
     TextDocument() = default;
-    static ErrorOr<NonnullOwnPtr<TextDocument>> load(AssetMetadata&, Blob file_data);
+    static ErrorOr<OwnedRef<TextDocument>> load(AssetMetadata&, Blob file_data);
     virtual ~TextDocument() override;
 
     // FIXME: ReadonlySpan

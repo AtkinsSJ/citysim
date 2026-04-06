@@ -432,7 +432,7 @@ void debugToolsWindowProc(UI::WindowContext* context, void*)
     }
 }
 
-NonnullOwnPtr<GameScene> GameScene::create_new(u32 seed)
+OwnedRef<GameScene> GameScene::create_new(u32 seed)
 {
     auto game_scene = adopt_own(*new GameScene);
 
@@ -445,7 +445,7 @@ NonnullOwnPtr<GameScene> GameScene::create_new(u32 seed)
     return game_scene;
 }
 
-ErrorOr<NonnullOwnPtr<GameScene>> GameScene::from_saved_game(SavedGameInfo const& saved_game_info)
+ErrorOr<OwnedRef<GameScene>> GameScene::from_saved_game(SavedGameInfo const& saved_game_info)
 {
     auto game_scene = adopt_own(*new GameScene);
 
@@ -947,12 +947,12 @@ void GameScene::draw_data_view_ui()
     }
 }
 
-void GameScene::set_city(NonnullOwnPtr<City> city)
+void GameScene::set_city(OwnedRef<City> city)
 {
     m_city = move(city);
 }
 
-void GameScene::set_active_tool(NonnullOwnPtr<Tool> tool)
+void GameScene::set_active_tool(OwnedRef<Tool> tool)
 {
     // TODO: Change cursors here
     m_active_tool = move(tool);

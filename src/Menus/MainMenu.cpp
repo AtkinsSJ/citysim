@@ -14,7 +14,7 @@
 #include <Sim/Game.h>
 #include <UI/Panel.h>
 
-NonnullOwnPtr<MainMenuScene> MainMenuScene::create()
+OwnedRef<MainMenuScene> MainMenuScene::create()
 {
     return adopt_own(*new MainMenuScene);
 }

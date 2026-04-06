@@ -53,7 +53,7 @@ static void assign_building_categories(BuildingCatalogue& catalogue, BuildingDef
     ASSERT(catalogue.allBuildings.count == catalogue.buildingsByName.count() + 1); // NB: +1 for the null building.
 }
 
-ErrorOr<NonnullOwnPtr<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata, Blob file_data)
+ErrorOr<OwnedRef<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata, Blob file_data)
 {
     DEBUG_FUNCTION();
 

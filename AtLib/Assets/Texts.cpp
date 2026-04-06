@@ -11,7 +11,7 @@
 
 namespace Assets {
 
-ErrorOr<NonnullOwnPtr<Texts>> Texts::load(AssetMetadata& metadata, Blob file_data, bool is_fallback_locale)
+ErrorOr<OwnedRef<Texts>> Texts::load(AssetMetadata& metadata, Blob file_data, bool is_fallback_locale)
 {
     HashTable<String>& texts_table = is_fallback_locale ? asset_manager().defaultTexts : asset_manager().texts;
     LineReader reader { metadata.shortName, file_data };

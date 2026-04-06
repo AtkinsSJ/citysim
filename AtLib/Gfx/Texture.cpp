@@ -8,7 +8,7 @@
 #include <Assets/AssetManager.h>
 #include <SDL_image.h>
 
-NonnullOwnPtr<Texture> Texture::make_placeholder()
+OwnedRef<Texture> Texture::make_placeholder()
 {
     auto pixels = temp_arena().allocate_filled_array<u32>(2 * 2);
     pixels[0] = pixels[3] = 0xffff00ff;
@@ -43,7 +43,7 @@ static ErrorOr<SDL_Surface*> createSurfaceFromFileData(Blob fileData, String nam
     return result;
 }
 
-ErrorOr<NonnullOwnPtr<Texture>> Texture::load(AssetMetadata& metadata, Blob file_data)
+ErrorOr<OwnedRef<Texture>> Texture::load(AssetMetadata& metadata, Blob file_data)
 {
     auto surface_or_error = createSurfaceFromFileData(file_data, metadata.fullName);
     if (surface_or_error.is_error())

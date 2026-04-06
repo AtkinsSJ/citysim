@@ -15,7 +15,7 @@
 #    include <unistd.h>
 #endif
 
-ErrorOr<NonnullOwnPtr<DirectoryWatcher>> DirectoryWatcher::watch(String path)
+ErrorOr<OwnedRef<DirectoryWatcher>> DirectoryWatcher::watch(String path)
 {
     ASSERT(path.is_null_terminated());
 

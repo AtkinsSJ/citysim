@@ -36,7 +36,7 @@ static SDL_Surface* createSurfaceFromFileData(Blob fileData, String name)
     return result;
 }
 
-ErrorOr<NonnullOwnPtr<Asset>> Cursor::load_defs(AssetMetadata& metadata, Blob data)
+ErrorOr<OwnedRef<Asset>> Cursor::load_defs(AssetMetadata& metadata, Blob data)
 {
     LineReader reader { metadata.shortName, data };
 

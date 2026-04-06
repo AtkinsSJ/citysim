@@ -24,7 +24,7 @@ public:
     {
     }
 
-    OwnedPtr(NonnullOwnPtr<T>&& other)
+    OwnedPtr(OwnedRef<T>&& other)
         : m_ptr(other.leak_ptr())
     {
     }
@@ -36,7 +36,7 @@ public:
         return *this;
     }
 
-    OwnedPtr& operator=(NonnullOwnPtr<T>&& other)
+    OwnedPtr& operator=(OwnedRef<T>&& other)
     {
         clear();
         m_ptr = other.leak_ptr();
@@ -52,7 +52,7 @@ public:
     }
 
     template<typename U>
-    OwnedPtr& operator=(NonnullOwnPtr<U>&& other)
+    OwnedPtr& operator=(OwnedRef<U>&& other)
     {
         clear();
         m_ptr = other.leak_ptr();
@@ -120,10 +120,10 @@ public:
         m_ptr = nullptr;
     }
 
-    NonnullOwnPtr<T> release_nonnull()
+    OwnedRef<T> release_nonnull()
     {
         ASSERT(m_ptr);
-        NonnullOwnPtr<T> result { m_ptr };
+        OwnedRef<T> result { m_ptr };
         m_ptr = nullptr;
         return result;
     }
@@ -138,47 +138,47 @@ private:
 };
 
 template<typename T>
-class [[nodiscard]] NonnullOwnPtr {
+class [[nodiscard]] OwnedRef {
 public:
     friend class OwnedPtr<T>;
     enum class AdoptTag : u8 { Adopt };
 
-    NonnullOwnPtr(NonnullOwnPtr&& other)
+    OwnedRef(OwnedRef&& other)
         : m_ptr(other.leak_ptr())
     {
         ASSERT(m_ptr);
     }
 
     template<typename U>
-    NonnullOwnPtr(NonnullOwnPtr<U>&& other)
+    OwnedRef(OwnedRef<U>&& other)
         : m_ptr(other.leak_ptr())
     {
         ASSERT(m_ptr);
     }
 
-    NonnullOwnPtr& operator=(NonnullOwnPtr&& other)
+    OwnedRef& operator=(OwnedRef&& other)
     {
         m_ptr = other.leak_ptr();
         return *this;
     }
 
     template<typename U>
-    NonnullOwnPtr& operator=(NonnullOwnPtr<U>&& other)
+    OwnedRef& operator=(OwnedRef<U>&& other)
     {
         m_ptr = other.leak_ptr();
         return *this;
     }
 
-    NonnullOwnPtr(AdoptTag, T& pointer)
+    OwnedRef(AdoptTag, T& pointer)
         : m_ptr(&pointer)
     {
     }
 
     // Not copyable
-    NonnullOwnPtr(NonnullOwnPtr const&) = delete;
-    NonnullOwnPtr& operator=(NonnullOwnPtr const&) = delete;
+    OwnedRef(OwnedRef const&) = delete;
+    OwnedRef& operator=(OwnedRef const&) = delete;
 
-    ~NonnullOwnPtr()
+    ~OwnedRef()
     {
         clear();
     }
@@ -216,7 +216,7 @@ public:
     bool operator!() const = delete;
 
 private:
-    explicit NonnullOwnPtr(T* ptr)
+    explicit OwnedRef(T* ptr)
         : m_ptr(ptr)
     {
     }
@@ -239,7 +239,7 @@ OwnedPtr<T> adopt_own_if_nonnull(T* pointer)
 }
 
 template<typename T>
-NonnullOwnPtr<T> adopt_own(T& object)
+OwnedRef<T> adopt_own(T& object)
 {
-    return NonnullOwnPtr<T> { NonnullOwnPtr<T>::AdoptTag::Adopt, object };
+    return OwnedRef<T> { OwnedRef<T>::AdoptTag::Adopt, object };
 }

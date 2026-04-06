@@ -66,7 +66,7 @@ struct BMFont_Char {
 
 #pragma pack(pop)
 
-ErrorOr<NonnullOwnPtr<BitmapFont>> BitmapFont::load_from_bmf_data(AssetMetadata& metadata, Blob data)
+ErrorOr<OwnedRef<BitmapFont>> BitmapFont::load_from_bmf_data(AssetMetadata& metadata, Blob data)
 {
     smm pos = 0;
     BMFontHeader* header = (BMFontHeader*)(data.data() + pos);

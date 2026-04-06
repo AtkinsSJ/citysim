@@ -17,7 +17,7 @@ public:
     enum class Type : u8 {
         MT,
     };
-    static NonnullOwnPtr<Random> create(Optional<u32> seed = {}, Optional<Type> = {});
+    static OwnedRef<Random> create(Optional<u32> seed = {}, Optional<Type> = {});
 
     virtual ~Random() = default;
 

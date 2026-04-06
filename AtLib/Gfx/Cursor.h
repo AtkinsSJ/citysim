@@ -15,7 +15,7 @@ class Cursor final : public Asset {
     ASSET_SUBCLASS_METHODS(Cursor);
 
 public:
-    static ErrorOr<NonnullOwnPtr<Asset>> load_defs(AssetMetadata&, Blob);
+    static ErrorOr<OwnedRef<Asset>> load_defs(AssetMetadata&, Blob);
     Cursor();
     virtual ~Cursor() override = default;
 

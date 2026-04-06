@@ -6,7 +6,7 @@
 
 #include "Keymap.h"
 
-ErrorOr<NonnullOwnPtr<Keymap>> Keymap::load(AssetMetadata& metadata, Blob file_data)
+ErrorOr<OwnedRef<Keymap>> Keymap::load(AssetMetadata& metadata, Blob file_data)
 {
     // Separate reader just for the command count.
     auto command_count = 0u;

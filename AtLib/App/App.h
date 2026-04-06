@@ -12,7 +12,7 @@
 class App {
 public:
     // FIXME: Move SDL and window initialization into here. Maybe other things too.
-    static NonnullOwnPtr<App> initialize(float seconds_per_frame, NonnullOwnPtr<Scene>);
+    static OwnedRef<App> initialize(float seconds_per_frame, OwnedRef<Scene>);
     static App& the();
     ~App();
 
@@ -24,17 +24,17 @@ public:
 
     Random& cosmetic_random() { return *m_cosmetic_random; }
 
-    void switch_to_scene(NonnullOwnPtr<Scene>);
+    void switch_to_scene(OwnedRef<Scene>);
     void transition_to_next_scene_if_needed();
     Scene& scene() const;
 
 private:
-    explicit App(float seconds_per_frame, NonnullOwnPtr<Scene>);
+    explicit App(float seconds_per_frame, OwnedRef<Scene>);
 
     float m_delta_time { 0 };
     float m_speed_multiplier { 1 };
 
-    NonnullOwnPtr<Random> m_cosmetic_random;
-    NonnullOwnPtr<Scene> m_scene;
+    OwnedRef<Random> m_cosmetic_random;
+    OwnedRef<Scene> m_scene;
     OwnedPtr<Scene> m_next_scene { nullptr };
 };

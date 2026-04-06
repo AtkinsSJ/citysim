@@ -26,7 +26,7 @@ class SpriteGroup final : public Asset {
     ASSET_SUBCLASS_METHODS(SpriteGroup);
 
 public:
-    static NonnullOwnPtr<SpriteGroup> make_placeholder();
+    static OwnedRef<SpriteGroup> make_placeholder();
     virtual ~SpriteGroup() override = default;
 
     virtual void unload(AssetMetadata& metadata) override;
@@ -55,4 +55,4 @@ private:
     mutable u32 m_asset_generation { 0 };
 };
 
-ErrorOr<NonnullOwnPtr<Asset>> load_sprite_defs(AssetMetadata&, Blob);
+ErrorOr<OwnedRef<Asset>> load_sprite_defs(AssetMetadata&, Blob);

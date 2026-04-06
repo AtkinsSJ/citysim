@@ -17,7 +17,7 @@
 #include <Util/Random.h>
 #include <Util/Rectangle.h>
 
-NonnullOwnPtr<City> City::create(MemoryArena& arena, u32 width, u32 height, String name, String player_name, s32 funds, GameTimestamp date, float time_of_day)
+OwnedRef<City> City::create(MemoryArena& arena, u32 width, u32 height, String name, String player_name, s32 funds, GameTimestamp date, float time_of_day)
 {
     return adopt_own(*new City(arena, width, height, name, player_name, funds, date, time_of_day));
 }

@@ -52,7 +52,7 @@ template<typename T>
 class OwnedPtr;
 
 template<typename T>
-class NonnullOwnPtr;
+class OwnedRef;
 
 template<typename T>
 class Queue;
