@@ -132,7 +132,7 @@ public:
         // FIXME: We *should* clear() here, but right now that fails if this HashTable was allocated from a MemoryArena,
         //        because the arena may have already deallocated that memory.
         if (!m_has_fixed_memory && !m_entries.is_empty())
-            deallocateRaw(m_entries.raw_data());
+            deallocate_raw(m_entries.raw_data());
     }
 
     size_t count() const { return m_count; }
@@ -282,7 +282,7 @@ private:
         size_t old_count = m_count;
         auto old_entries = m_entries;
 
-        m_entries = { newCapacity, reinterpret_cast<HashTableEntry<T>*>(allocateRaw(newCapacity * sizeof(HashTableEntry<T>))) };
+        m_entries = { newCapacity, reinterpret_cast<HashTableEntry<T>*>(allocate_raw(newCapacity * sizeof(HashTableEntry<T>))) };
         m_count = 0;
 
         if (!old_entries.is_empty()) {
@@ -292,7 +292,7 @@ private:
                     put(old_entry.key, old_entry.value);
             }
 
-            deallocateRaw(old_entries.raw_data());
+            deallocate_raw(old_entries.raw_data());
         }
 
         ASSERT(old_count == m_count);

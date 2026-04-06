@@ -8,16 +8,16 @@
 #include <Util/Assert.h>
 #include <cstdlib> // For calloc
 
-u8* allocateRaw(smm size)
+u8* allocate_raw(size_t size)
 {
     ASSERT(size < 1_GB); // Something is very wrong if we're trying to allocate an entire gigabyte for something!
 
-    u8* result = (u8*)calloc(size, 1);
+    u8* result = static_cast<u8*>(calloc(size, 1));
     ASSERT(result != nullptr); // calloc() failed!!! I don't think there's anything reasonable we can do here.
     return result;
 }
 
-void deallocateRaw(void* memory)
+void deallocate_raw(void* memory)
 {
     free(memory);
 }

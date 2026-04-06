@@ -64,7 +64,7 @@ Span<u8> AssetManager::allocate_internal(size_t size)
     assetMemoryAllocated += size;
     maxAssetMemoryAllocated = max(assetMemoryAllocated, maxAssetMemoryAllocated);
 
-    return { size, allocateRaw(size) };
+    return { size, allocate_raw(size) };
 }
 
 void AssetManager::deallocate_internal(Span<u8> data)
@@ -74,7 +74,7 @@ void AssetManager::deallocate_internal(Span<u8> data)
 
     auto& assets = asset_manager();
     assets.assetMemoryAllocated -= data.size();
-    deallocateRaw(data.raw_data());
+    deallocate_raw(data.raw_data());
 }
 
 AssetMetadata* AssetManager::add_asset(AssetType type, StringView short_name, Flags<AssetFlags> flags)

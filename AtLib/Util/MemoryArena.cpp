@@ -65,7 +65,7 @@ MemoryArena::~MemoryArena()
         // Free original block, which may contain the arena so we have to be careful!
         MemoryBlock* final_block = m_current_block;
         m_current_block = nullptr;
-        deallocateRaw(final_block);
+        deallocate_raw(final_block);
     }
 }
 
@@ -125,7 +125,7 @@ void MemoryArena::reset()
 bool MemoryArena::allocate_block(size_t size)
 {
     size_t totalSize = size + sizeof(MemoryBlock);
-    u8* memory = allocateRaw(totalSize);
+    u8* memory = allocate_raw(totalSize);
 
     if (!memory)
         return false;
@@ -146,7 +146,7 @@ void MemoryArena::free_current_block()
     MemoryBlock* block = m_current_block;
     ASSERT(block != nullptr); // Attempting to free non-existent block
     m_current_block = block->previous_block;
-    deallocateRaw(block);
+    deallocate_raw(block);
 }
 
 MemoryArena& temp_arena()

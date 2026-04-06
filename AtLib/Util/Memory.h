@@ -29,8 +29,8 @@ constexpr size_t operator""_GB(unsigned long long input)
 #define ArrayCountS(a) ((int)(ArrayCount(a)))
 
 // Allocates directly from the OS, not from an arena
-u8* allocateRaw(smm size);
-void deallocateRaw(void* memory);
+u8* allocate_raw(size_t size);
+void deallocate_raw(void* memory);
 
 template<typename T>
 void copy_memory(T const* source, T* dest, size_t length)
