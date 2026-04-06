@@ -19,7 +19,7 @@ char StringBase::char_at(size_t index) const
 
 bool StringBase::operator==(StringBase const& other) const
 {
-    return length() == other.length() && isMemoryEqual(m_chars, other.m_chars, length());
+    return bytes() == other.bytes();
 }
 
 Optional<size_t> StringBase::find(char needle, SearchFrom search_direction, Optional<size_t> start_index) const
@@ -60,18 +60,14 @@ bool StringBase::contains(char c) const
 
 bool StringBase::starts_with(StringBase const& prefix) const
 {
-    bool result = false;
+    if (m_length == prefix.m_length)
+        return *this == prefix;
 
-    if (m_length == prefix.m_length) {
-        result = *this == prefix;
-    } else if (m_length > prefix.m_length) {
-        result = isMemoryEqual<char>(prefix.m_chars, m_chars, prefix.m_length);
-    } else {
-        // Otherwise, prefix > s, so it can't end with it!
-        result = false;
-    }
+    if (m_length > prefix.m_length)
+        return prefix.bytes() == bytes().slice(0, prefix.length());
 
-    return result;
+    // Otherwise, prefix > s, so it can't end with it!
+    return false;
 }
 
 bool StringBase::starts_with(char prefix) const
@@ -81,18 +77,14 @@ bool StringBase::starts_with(char prefix) const
 
 bool StringBase::ends_with(StringBase const& suffix) const
 {
-    bool result = false;
+    if (m_length == suffix.m_length)
+        return *this == suffix;
 
-    if (m_length == suffix.m_length) {
-        result = *this == suffix;
-    } else if (m_length > suffix.m_length) {
-        result = isMemoryEqual<char>(suffix.m_chars, &m_chars[m_length - suffix.m_length], suffix.m_length);
-    } else {
-        // Otherwise, suffix > s, so it can't end with it!
-        result = false;
-    }
+    if (m_length > suffix.m_length)
+        return suffix.bytes() == bytes().slice(m_length - suffix.length());
 
-    return result;
+    // Otherwise, suffix > s, so it can't end with it!
+    return false;
 }
 
 bool StringBase::ends_with(char suffix) const

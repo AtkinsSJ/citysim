@@ -8,6 +8,7 @@
 
 #include <Util/Badge.h>
 #include <Util/Basic.h>
+#include <Util/Memory.h>
 #include <Util/Optional.h>
 
 template<typename T>
@@ -79,6 +80,13 @@ public:
                 return true;
         }
         return false;
+    }
+
+    bool operator==(Span const& other) const
+    {
+        if (m_size != other.m_size)
+            return false;
+        return is_memory_equal(m_items, other.m_items, m_size);
     }
 
     class Iterator {

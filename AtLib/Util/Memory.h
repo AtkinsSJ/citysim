@@ -60,7 +60,7 @@ void fill_memory(T* memory, T const& value, size_t length)
 }
 
 template<typename T>
-bool isMemoryEqual(T const* a, T const* b, smm length = 1)
+bool is_memory_equal(T const* a, T const* b, smm length = 1)
 {
     // Shortcut if we're comparing memory with itself
     return (a == b)
