@@ -25,9 +25,6 @@ constexpr size_t operator""_GB(unsigned long long input)
     return input * 1024 * 1024 * 1024;
 }
 
-#define ArrayCount(a) (sizeof(a) / sizeof(a[0]))
-#define ArrayCountS(a) ((int)(ArrayCount(a)))
-
 // Allocates directly from the OS, not from an arena
 u8* allocate_raw(size_t size);
 void deallocate_raw(void* memory);
