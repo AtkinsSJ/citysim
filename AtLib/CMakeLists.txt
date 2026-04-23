@@ -22,6 +22,7 @@ add_library(AtLib INTERFACE)
 add_subdirectory("App")
 add_subdirectory("Assets")
 add_subdirectory("Debug")
+add_subdirectory("ECS")
 add_subdirectory("Gfx")
 add_subdirectory("Input")
 add_subdirectory("IO")
@@ -33,4 +34,4 @@ add_subdirectory("Tests")
 
 include_directories(".")
 
-target_link_libraries(AtLib INTERFACE App Assets Debug Gfx Input IO Settings UI Util)
+target_link_libraries(AtLib INTERFACE App Assets Debug ECS Gfx Input IO Settings UI Util)

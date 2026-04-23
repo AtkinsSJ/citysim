@@ -8,6 +8,7 @@
 
 #include <Util/Basic.h>
 #include <Util/Concepts.h>
+#include <typeindex>
 
 using Hash = u32;
 
@@ -78,6 +79,20 @@ struct HashTraits<T> : DefaultHashTraits<T> {
     static Hash hash(T const& t)
     {
         return t.hash();
+    }
+};
+
+// FIXME: We can probably implement this for anything that has std::hash defined.
+template<>
+struct HashTraits<std::type_index> {
+    static bool equals(std::type_index const& a, std::type_index const& b)
+    {
+        return a == b;
+    }
+
+    static Hash hash(std::type_index const& t)
+    {
+        return hash_u64(t.hash_code());
     }
 };
 
