@@ -35,6 +35,7 @@ void Allocator::deallocate(Blob& blob)
 
 void Allocator::deallocate(String& string)
 {
+    string.~String();
     deallocate_internal({ string.length(), reinterpret_cast<u8*>(const_cast<char*>(string.raw_pointer_to_characters())) });
     string = {};
 }

@@ -89,6 +89,7 @@ public:
     template<typename T>
     void deallocate(Array<T>& array)
     {
+        array.~Array();
         deallocate_internal({ array.capacity() * sizeof(T), reinterpret_cast<u8*>(array.raw_items()) });
         array = {};
     }
