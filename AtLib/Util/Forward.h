@@ -15,6 +15,7 @@ struct Matrix4;
 class MemoryArena;
 struct Padding;
 class Random;
+class RawAllocator;
 class Rect2;
 class Rect2I;
 class String;

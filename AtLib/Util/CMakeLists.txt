@@ -13,6 +13,7 @@ add_library(Util STATIC
     Padding.cpp
     Platform.cpp
     Random.cpp
+    RawAllocator.cpp
     Rectangle.cpp
     Splat.cpp
     String.cpp
