@@ -92,46 +92,28 @@ public:
         : m_entries(move(other.m_entries))
         , m_count(other.m_count)
         , m_max_load_factor(other.m_max_load_factor)
-        , m_has_fixed_memory(other.m_has_fixed_memory)
         , m_key_data_arena(move(other.m_key_data_arena))
     {
         other.m_entries = {};
         other.m_count = 0;
-        other.m_has_fixed_memory = false;
     }
 
     StringHashTable& operator=(StringHashTable&& other)
     {
         m_count = other.m_count;
         m_max_load_factor = other.m_max_load_factor;
-        m_has_fixed_memory = other.m_has_fixed_memory;
         m_entries = move(other.m_entries);
         m_key_data_arena = move(other.m_key_data_arena);
 
         other.m_count = 0;
         other.m_entries = {};
-        other.m_has_fixed_memory = false;
 
         return *this;
     }
 
-    static StringHashTable allocate_fixed_size(MemoryArena& arena, size_t capacity, float max_load_factor = 0.75f)
-    {
-        auto slot_count = static_cast<size_t>(ceil_s32(static_cast<float>(capacity) / max_load_factor));
-        auto entries = arena.allocate_multiple<StringHashTableEntry<T>>(slot_count);
-
-        return StringHashTable {
-            { "FixedSizeHashTable"_s, 4_KB, 4_KB },
-            move(entries),
-            max_load_factor
-        };
-    }
-
     ~StringHashTable()
     {
-        // FIXME: We *should* clear() here, but right now that fails if this HashTable was allocated from a MemoryArena,
-        //        because the arena may have already deallocated that memory.
-        if (!m_has_fixed_memory && !m_entries.is_empty())
+        if (!m_entries.is_empty())
             deallocate_raw(m_entries.raw_data());
     }
 
@@ -233,8 +215,6 @@ public:
 
     void clear()
     {
-        ASSERT(!m_has_fixed_memory);
-
         if (m_count > 0) {
             m_count = 0;
             if (!m_entries.is_empty()) {
@@ -264,18 +244,8 @@ public:
     }
 
 private:
-    StringHashTable(MemoryArena&& arena, Span<StringHashTableEntry<T>> entries, float max_load_factor)
-        : m_entries(entries)
-        , m_max_load_factor(max_load_factor)
-        , m_has_fixed_memory(true)
-        // TODO: Eliminate the keyDataArena somehow
-        , m_key_data_arena(move(arena))
-    {
-    }
-
     void expand(size_t newCapacity)
     {
-        ASSERT(!m_has_fixed_memory);
         ASSERT(newCapacity > 0);
         ASSERT(newCapacity > capacity());
 
@@ -340,8 +310,6 @@ private:
     StringHashTableEntry<T>* find_or_add_entry(String key)
     {
         auto expand_and_find_new_entry = [&] {
-            ASSERT(!m_has_fixed_memory);
-
             auto new_capacity = max(8, ceil_s32((m_count + 1) / m_max_load_factor), capacity() * 2);
             expand(new_capacity);
 
@@ -367,7 +335,6 @@ private:
     size_t m_count { 0 };
 
     float m_max_load_factor { 0 };
-    bool m_has_fixed_memory { false }; // Fixed-memory HashTables don't expand in size
 
     // @Size: In a lot of cases, we already store the key in a separate StringTable, so having
     // it stored here too is redundant. But, keys are small so it's unlikely to cause any real
