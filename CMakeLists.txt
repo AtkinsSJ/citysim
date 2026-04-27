@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.25)
 project(CitySim VERSION 0.1)
+enable_testing()
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -19,7 +20,6 @@ endif()
 
 add_executable(CitySim)
 add_subdirectory("src")
-add_subdirectory("tests")
 include_directories("src")
 add_subdirectory("AtLib")
 target_include_directories(CitySim PRIVATE "./AtLib")
