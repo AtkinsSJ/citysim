@@ -58,7 +58,7 @@ bool String::is_valid() const
     return true;
 }
 
-String::Hash String::compute_hash() const
+Hash String::compute_hash() const
 {
     // FNV-1a hash
     // http://www.isthe.com/chongo/tech/comp/fnv/
@@ -71,7 +71,7 @@ String::Hash String::compute_hash() const
     return max(result, 1); // Force the hash to be at least 1, so we can use 0 to mean "no hash"
 }
 
-String::Hash String::hash() const
+Hash String::hash() const
 {
     if (!m_hash)
         m_hash = compute_hash();
