@@ -16,5 +16,6 @@ endfunction()
 
 enable_testing()
 atlib_test(TestFunction.cpp)
+atlib_test(TestHashTable.cpp)
 atlib_test(TestOwnedPtr.cpp)
 atlib_test(TestVariant.cpp)

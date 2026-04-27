@@ -53,6 +53,7 @@ public:
     Optional<Parts> split_in_two(char divider) const;
 
     bool operator==(String const&) const;
+    bool equals(String const& other) const { return *this == other; }
 
 private:
     Hash compute_hash() const;

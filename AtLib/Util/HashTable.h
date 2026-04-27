@@ -1,16 +1,321 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2015-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #pragma once
 
+#include <Util/Assert.h>
 #include <Util/Basic.h>
 #include <Util/Forward.h>
 #include <Util/Maths.h>
 #include <Util/MemoryArena.h>
+#include <Util/RawAllocator.h>
 #include <Util/String.h>
+
+template<typename T>
+class HashTable {
+public:
+    explicit HashTable(size_t initial_capacity, float max_load_factor = 0.75f)
+        : m_max_load_factor(max_load_factor)
+    {
+        ASSERT(max_load_factor < 1.0f);
+
+        if (initial_capacity > 0) {
+            expand(ceil_s32(initial_capacity / max_load_factor));
+        }
+    }
+
+    HashTable()
+        : HashTable(0)
+    {
+    }
+
+    HashTable(HashTable const& other)
+        : HashTable(other.capacity(), other.m_max_load_factor)
+    {
+        put_all(other);
+    }
+
+    HashTable& operator=(HashTable const& other)
+    {
+        if (&other == this)
+            return *this;
+
+        clear();
+        m_max_load_factor = other.m_max_load_factor;
+        put_all(other);
+        return *this;
+    }
+
+    HashTable(HashTable&& other)
+        : m_entries(move(other.m_entries))
+        , m_count(other.m_count)
+        , m_max_load_factor(other.m_max_load_factor)
+    {
+        other.m_entries = {};
+        other.m_count = 0;
+    }
+
+    HashTable& operator=(HashTable&& other)
+    {
+        m_count = other.m_count;
+        m_max_load_factor = other.m_max_load_factor;
+        m_entries = move(other.m_entries);
+
+        other.m_count = 0;
+        other.m_entries = {};
+
+        return *this;
+    }
+
+    ~HashTable()
+    {
+        clear();
+
+        if (!m_entries.is_empty())
+            RawAllocator::the().deallocate(m_entries);
+    }
+
+    size_t count() const { return m_count; }
+    size_t capacity() const { return m_entries.size(); }
+
+    bool contains(T const& value) const
+    {
+        if (m_count == 0)
+            return false;
+
+        return find_entry(value).is_occupied;
+    }
+
+    Optional<T*> find(T const& value)
+    {
+        if (m_count == 0)
+            return {};
+
+        if (auto& entry = find_entry(value); entry.is_occupied)
+            return &entry.value;
+
+        return {};
+    }
+
+    Optional<T const*> find(T const& value) const
+    {
+        return const_cast<HashTable*>(this)->find(value);
+    }
+
+    T& put(T const& value)
+    {
+        auto& entry = find_or_add_entry(value);
+
+        if (!entry.is_occupied) {
+            m_count++;
+            entry.is_occupied = true;
+            entry.is_tombstone = false;
+        }
+
+        new (&entry.value) T(move(value));
+
+        return entry.value;
+    }
+
+    void put_all(HashTable const& source)
+    {
+        for (auto value : source)
+            put(value);
+    }
+
+    void remove(T const& value)
+    {
+        if (m_count == 0)
+            return;
+
+        if (auto& entry = find_entry(value); entry.is_occupied) {
+            entry.replace_with_tombstone();
+            m_count--;
+        }
+    }
+
+    void clear()
+    {
+        for (auto& entry : m_entries)
+            entry.clear();
+        m_count = 0;
+    }
+
+    class Iterator {
+    public:
+        Iterator(Badge<HashTable>, HashTable const& table, size_t index)
+            : m_table(table)
+            , m_index(index)
+        {
+        }
+
+        T const& operator*() { return m_table.m_entries[m_index].value; }
+        T const* operator->() { return &m_table.m_entries[m_index].value; }
+
+        Iterator& operator++()
+        {
+            ++m_index;
+            while (m_index < m_table.capacity() && !m_table.m_entries[m_index].is_occupied)
+                ++m_index;
+            return *this;
+        }
+
+        Iterator operator++(int)
+        {
+            auto result = *this;
+            ++(*this);
+            return result;
+        }
+
+        bool operator==(Iterator const& other)
+        {
+            return &m_table == &other.m_table
+                && m_index == other.m_index;
+        }
+
+        bool operator!=(Iterator const& other)
+        {
+            return !(*this == other);
+        }
+
+    private:
+        HashTable const& m_table;
+        size_t m_index;
+    };
+    friend Iterator;
+
+    Iterator begin() const
+    {
+        return Iterator({}, *this, 0);
+    }
+
+    Iterator end() const
+    {
+        return Iterator({}, *this, m_entries.size());
+    }
+
+private:
+    struct Entry {
+        // FIXME: Optional<T> instead of is_occupied?
+        // Or... a Variant of T, Empty, Tombstone?
+        T value;
+        bool is_occupied { false };
+        bool is_tombstone { false };
+
+        void replace_with_tombstone()
+        {
+            clear();
+            is_tombstone = true;
+        }
+
+        void clear()
+        {
+            is_occupied = false;
+            is_tombstone = false;
+            if constexpr (requires { value.~T(); }) {
+                value.~T();
+            } else {
+                value = {};
+            }
+        }
+    };
+
+    void expand(size_t new_capacity)
+    {
+        ASSERT(new_capacity > 0);
+        ASSERT(new_capacity > capacity());
+
+        size_t old_count = m_count;
+        auto old_entries = m_entries;
+
+        m_entries = RawAllocator::the().allocate_multiple<Entry>(new_capacity);
+        m_count = 0;
+
+        if (old_count != 0) {
+            // Migrate old entries over
+            for (auto& old_entry : old_entries) {
+                if (old_entry.is_occupied)
+                    put(move(old_entry.value));
+            }
+
+            RawAllocator::the().deallocate(old_entries);
+        }
+
+        ASSERT(old_count == m_count);
+    }
+
+    Entry& find_entry(T const& needle)
+    {
+        u32 hash = HashTraits<T>::hash(needle);
+        u32 index = hash % capacity();
+        Entry* result = nullptr;
+
+        // "Linear probing" - on collision, just keep going until you find an empty slot
+        size_t items_checked = 0;
+        while (true) {
+            auto& entry = m_entries[index];
+
+            if (entry.is_tombstone) {
+                // Store the first tombstone we find, in case we fail to find the "real" option
+                if (result == nullptr)
+                    result = &entry;
+            } else if (!entry.is_occupied || (hash == HashTraits<T>::hash(entry.value) && HashTraits<T>::equals(needle, entry.value))) {
+                // If the entry is unoccupied, we'd rather re-use the tombstone we found above
+                if (entry.is_occupied || result == nullptr) {
+                    result = &entry;
+                }
+                break;
+            }
+
+            index = (index + 1) % capacity();
+
+            // Prevent the edge case infinite loop if all unoccupied spaces are gravestones
+            items_checked++;
+            if (items_checked >= capacity())
+                break;
+        }
+
+        ASSERT(result != nullptr);
+        return *result;
+    }
+
+    Entry const& find_entry(T const& key) const
+    {
+        return const_cast<HashTable*>(this)->find_entry(key);
+    }
+
+    Entry& find_or_add_entry(T const& key)
+    {
+        auto expand_and_find_new_entry = [&] -> Entry& {
+            auto new_capacity = max(8, ceil_s32((m_count + 1) / m_max_load_factor), capacity() * 2);
+            expand(new_capacity);
+
+            // We now have to search again, because the result we got before is now invalid
+            return find_entry(key);
+        };
+
+        if (capacity() == 0) {
+            // We're at 0 capacity, so expand
+            return expand_and_find_new_entry();
+        }
+
+        auto& result = find_entry(key);
+        if (!result.is_occupied) {
+            // Expand if needed!
+            if (m_count + 1 > (capacity() * m_max_load_factor))
+                return expand_and_find_new_entry();
+        }
+        return result;
+    }
+
+    Span<Entry> m_entries {};
+    size_t m_count { 0 };
+
+    float m_max_load_factor { 0 };
+};
 
 //
 // It's a Hash Table! Keys go in, items go out
