@@ -12,8 +12,8 @@
 
 namespace UI {
 
-static HashTable<Property> styleProperties { 256 };
-static HashTable<StyleType> styleTypesByName { 256 };
+static StringHashTable<Property> styleProperties { 256 };
+static StringHashTable<StyleType> styleTypesByName { 256 };
 
 Optional<DrawableStyle> readDrawableStyle(LineReader* reader)
 {
@@ -495,9 +495,9 @@ ErrorOr<OwnedRef<Asset>> load_theme(AssetMetadata& metadata, Blob data)
 {
     LineReader reader { metadata.shortName, data };
 
-    HashTable<EnumMap<StyleType, Style>> styles;
+    StringHashTable<EnumMap<StyleType, Style>> styles;
 
-    HashTable<String> fontNamesToAssetNames;
+    StringHashTable<String> fontNamesToAssetNames;
 
     EnumMap<StyleType, s32> style_count;
 

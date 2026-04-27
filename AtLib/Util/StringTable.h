@@ -21,5 +21,5 @@ public:
     String intern(StringView input);
 
 private:
-    HashTable<String> m_table;
+    StringHashTable<String> m_table;
 };

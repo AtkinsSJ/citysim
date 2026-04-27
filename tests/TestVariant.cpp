@@ -110,14 +110,14 @@ void test_main()
 
     // Test with movable types.
     {
-        HashTable<int> table { 32 };
+        StringHashTable<int> table { 32 };
         table.put("Hello"_s, 42);
         table.put("World"_s, 17);
-        Variant<HashTable<int>> table_variant { move(table) };
+        Variant<StringHashTable<int>> table_variant { move(table) };
 
         // Make sure the HashTable is in there properly
-        EXPECT(table_variant.has<HashTable<int>>());
-        auto& held_table = table_variant.get<HashTable<int>>();
+        EXPECT(table_variant.has<StringHashTable<int>>());
+        auto& held_table = table_variant.get<StringHashTable<int>>();
         {
             auto hello = held_table.find_value("Hello"_s);
             EXPECT(hello.has_value());

@@ -65,7 +65,7 @@ struct Console : public AssetManagerListener {
     ChunkedArray<ConsoleOutputLine> outputLines;
     UI::Scrollbar scrollbar { Orientation::Vertical };
 
-    HashTable<Command> commands;
+    StringHashTable<Command> commands;
     ChunkedArray<CommandShortcut> commandShortcuts;
 };
 

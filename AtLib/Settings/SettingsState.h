@@ -69,6 +69,6 @@ protected:
     void register_setting(Setting&);
 
 private:
-    HashTable<Ref<Setting>> m_settings_by_name;
+    StringHashTable<Ref<Setting>> m_settings_by_name;
     ChunkedArray<String> m_settings_order;
 };

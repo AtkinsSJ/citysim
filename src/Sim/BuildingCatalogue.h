@@ -25,11 +25,11 @@ struct BuildingCatalogue final : public AssetManagerListener {
     Optional<BuildingDef const&> find_random_zone_building(ZoneType, Random&, Function<bool(BuildingDef const&)> filter) const;
 
     OccupancyArray<BuildingDef> allBuildings;
-    HashTable<BuildingDef*> buildingsByName { 128 };
+    StringHashTable<BuildingDef*> buildingsByName { 128 };
     StringTable buildingNames;
 
-    HashTable<BuildingType> buildingNameToTypeID { 128 };
-    HashTable<BuildingType> buildingNameToOldTypeID { 128 };
+    StringHashTable<BuildingType> buildingNameToTypeID { 128 };
+    StringHashTable<BuildingType> buildingNameToOldTypeID { 128 };
 
     ChunkedArray<BuildingDef*> constructibleBuildings;
     ChunkedArray<BuildingDef*> rGrowableBuildings;

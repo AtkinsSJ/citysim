@@ -13,7 +13,7 @@ namespace Assets {
 
 ErrorOr<OwnedRef<Texts>> Texts::load(AssetMetadata& metadata, Blob file_data, bool is_fallback_locale)
 {
-    HashTable<String>& texts_table = is_fallback_locale ? asset_manager().defaultTexts : asset_manager().texts;
+    StringHashTable<String>& texts_table = is_fallback_locale ? asset_manager().defaultTexts : asset_manager().texts;
     LineReader reader { metadata.shortName, file_data };
 
     // NB: We store the strings inside the asset data, so it's one block of memory instead of many small ones.
@@ -94,7 +94,7 @@ Texts::Texts(Blob data, Array<String> keys, bool is_fallback_locale)
 void Texts::unload(AssetMetadata&)
 {
     // Remove all of our texts from the table
-    HashTable<String>* textsTable = (m_is_fallback_locale ? &asset_manager().defaultTexts : &asset_manager().texts);
+    StringHashTable<String>* textsTable = (m_is_fallback_locale ? &asset_manager().defaultTexts : &asset_manager().texts);
     for (auto const& key : m_keys)
         textsTable->remove(key);
     asset_manager().deallocate(m_data);

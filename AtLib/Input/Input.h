@@ -63,7 +63,7 @@ struct InputState {
     // Extra
     bool receivedQuitSignal;
 
-    HashTable<SDL_Keycode> keyNames { SDL_NUM_SCANCODES };
+    StringHashTable<SDL_Keycode> keyNames { SDL_NUM_SCANCODES };
 
     void* capturedInputTarget; // eg, a TextInput that's currently consuming all key presses
 };

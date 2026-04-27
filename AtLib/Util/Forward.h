@@ -41,7 +41,7 @@ template<typename T>
 class ErrorOr;
 
 template<typename T>
-class HashTable;
+class StringHashTable;
 
 template<typename T>
 class Indexed;

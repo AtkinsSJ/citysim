@@ -36,8 +36,8 @@ struct AssetManager final
     smm maxAssetMemoryAllocated;
 
     String assetsPath;
-    HashTable<AssetType> fileExtensionToType;
-    HashTable<AssetType> directoryNameToType;
+    StringHashTable<AssetType> fileExtensionToType;
+    StringHashTable<AssetType> directoryNameToType;
 
     ChunkedArray<AssetMetadata> allAssets;
 
@@ -46,7 +46,7 @@ struct AssetManager final
 
         AssetLoader& loader;
 
-        HashTable<AssetMetadata*> assets_with_this_type;
+        StringHashTable<AssetMetadata*> assets_with_this_type;
 
         // If a requested asset is not found, the one here is used instead.
         // Probably most of these will be empty, but we do need a placeholder sprite at least,
@@ -63,8 +63,8 @@ struct AssetManager final
     // It feels icky having parts of assets directly in this struct, but when there's only 1, and you
     // have to do a hashtable lookup inside it, it makes more sense to avoid the "find the asset" lookup.
     // FIXME: TextCatalogue?
-    HashTable<String> texts;
-    HashTable<String> defaultTexts; // "en" locale
+    StringHashTable<String> texts;
+    StringHashTable<String> defaultTexts; // "en" locale
     // NB: Sets are stupid right now, they just wrap a ChunkedArray, which means it gets wiped when
     // we reset the assetsArena in reloadAssets()! If we want to remember things across a reload,
     // to eg add a "dump missing texts to a file" command, we'll need to switch to something that

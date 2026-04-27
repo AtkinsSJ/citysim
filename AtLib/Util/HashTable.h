@@ -23,7 +23,7 @@
 //
 
 template<typename T>
-struct HashTableEntry {
+struct StringHashTableEntry {
     bool isOccupied;
     bool isGravestone; // Apparently the correct term is "tombstone", oops.
 
@@ -45,17 +45,17 @@ struct HashTableEntry {
 };
 
 template<typename T>
-struct HashTableIterator;
+struct StringHashTableIterator;
 
 template<typename T>
-class HashTable {
+class StringHashTable {
     // FIXME: Hack so that StringTable::intern() can poke at things it shouldn't.
     friend StringTable;
 
-    friend HashTableIterator<T>;
+    friend StringHashTableIterator<T>;
 
 public:
-    explicit HashTable(size_t initial_capacity, float max_load_factor = 0.75f)
+    explicit StringHashTable(size_t initial_capacity, float max_load_factor = 0.75f)
         : m_max_load_factor(max_load_factor)
         , m_key_data_arena("HashTable"_s, 4_KB, 4_KB)
     {
@@ -66,18 +66,18 @@ public:
         }
     }
 
-    HashTable()
-        : HashTable(0)
+    StringHashTable()
+        : StringHashTable(0)
     {
     }
 
-    HashTable(HashTable const& other)
-        : HashTable(other.capacity(), other.m_max_load_factor)
+    StringHashTable(StringHashTable const& other)
+        : StringHashTable(other.capacity(), other.m_max_load_factor)
     {
         put_all(other);
     }
 
-    HashTable& operator=(HashTable const& other)
+    StringHashTable& operator=(StringHashTable const& other)
     {
         if (&other == this)
             return *this;
@@ -88,7 +88,7 @@ public:
         return *this;
     }
 
-    HashTable(HashTable&& other)
+    StringHashTable(StringHashTable&& other)
         : m_entries(move(other.m_entries))
         , m_count(other.m_count)
         , m_max_load_factor(other.m_max_load_factor)
@@ -100,7 +100,7 @@ public:
         other.m_has_fixed_memory = false;
     }
 
-    HashTable& operator=(HashTable&& other)
+    StringHashTable& operator=(StringHashTable&& other)
     {
         m_count = other.m_count;
         m_max_load_factor = other.m_max_load_factor;
@@ -115,19 +115,19 @@ public:
         return *this;
     }
 
-    static HashTable allocate_fixed_size(MemoryArena& arena, size_t capacity, float max_load_factor = 0.75f)
+    static StringHashTable allocate_fixed_size(MemoryArena& arena, size_t capacity, float max_load_factor = 0.75f)
     {
         auto slot_count = static_cast<size_t>(ceil_s32(static_cast<float>(capacity) / max_load_factor));
-        auto entries = arena.allocate_multiple<HashTableEntry<T>>(slot_count);
+        auto entries = arena.allocate_multiple<StringHashTableEntry<T>>(slot_count);
 
-        return HashTable {
+        return StringHashTable {
             { "FixedSizeHashTable"_s, 4_KB, 4_KB },
             move(entries),
             max_load_factor
         };
     }
 
-    ~HashTable()
+    ~StringHashTable()
     {
         // FIXME: We *should* clear() here, but right now that fails if this HashTable was allocated from a MemoryArena,
         //        because the arena may have already deallocated that memory.
@@ -159,7 +159,7 @@ public:
 
     Optional<T const*> find(String key) const
     {
-        return const_cast<HashTable*>(this)->find(key);
+        return const_cast<StringHashTable*>(this)->find(key);
     }
 
     Optional<T> find_value(String key) const
@@ -175,7 +175,7 @@ public:
 
     T& ensure(String key, T value)
     {
-        HashTableEntry<T>* entry = find_or_add_entry(key);
+        StringHashTableEntry<T>* entry = find_or_add_entry(key);
         if (!entry->isOccupied) {
             m_count++;
             entry->isOccupied = true;
@@ -192,7 +192,7 @@ public:
 
     T& put(String key, T value)
     {
-        HashTableEntry<T>* entry = find_or_add_entry(key);
+        StringHashTableEntry<T>* entry = find_or_add_entry(key);
 
         if (!entry->isOccupied) {
             m_count++;
@@ -209,10 +209,10 @@ public:
         return entry->value;
     }
 
-    void put_all(HashTable const& source)
+    void put_all(StringHashTable const& source)
     {
         // FIXME: Remove const cast when we're const correct
-        for (auto it = const_cast<HashTable&>(source).iterate(); it.hasNext(); it.next()) {
+        for (auto it = const_cast<StringHashTable&>(source).iterate(); it.hasNext(); it.next()) {
             auto entry = it.getEntry();
             put(entry->key, entry->value);
         }
@@ -223,7 +223,7 @@ public:
         if (m_entries.is_empty())
             return;
 
-        HashTableEntry<T>* entry = find_entry(key);
+        StringHashTableEntry<T>* entry = find_entry(key);
         if (entry->isOccupied) {
             entry->isGravestone = true;
             entry->isOccupied = false;
@@ -245,9 +245,9 @@ public:
         }
     }
 
-    HashTableIterator<T> iterate()
+    StringHashTableIterator<T> iterate()
     {
-        HashTableIterator<T> iterator = {};
+        StringHashTableIterator<T> iterator = {};
 
         iterator.hashTable = this;
         iterator.currentIndex = 0;
@@ -264,7 +264,7 @@ public:
     }
 
 private:
-    HashTable(MemoryArena&& arena, Span<HashTableEntry<T>> entries, float max_load_factor)
+    StringHashTable(MemoryArena&& arena, Span<StringHashTableEntry<T>> entries, float max_load_factor)
         : m_entries(entries)
         , m_max_load_factor(max_load_factor)
         , m_has_fixed_memory(true)
@@ -282,7 +282,7 @@ private:
         size_t old_count = m_count;
         auto old_entries = m_entries;
 
-        m_entries = { newCapacity, reinterpret_cast<HashTableEntry<T>*>(allocate_raw(newCapacity * sizeof(HashTableEntry<T>))) };
+        m_entries = { newCapacity, reinterpret_cast<StringHashTableEntry<T>*>(allocate_raw(newCapacity * sizeof(StringHashTableEntry<T>))) };
         m_count = 0;
 
         if (!old_entries.is_empty()) {
@@ -298,11 +298,11 @@ private:
         ASSERT(old_count == m_count);
     }
 
-    HashTableEntry<T>* find_entry(String key)
+    StringHashTableEntry<T>* find_entry(String key)
     {
         u32 hash = key.hash();
         u32 index = hash % capacity();
-        HashTableEntry<T>* result = nullptr;
+        StringHashTableEntry<T>* result = nullptr;
 
         // "Linear probing" - on collision, just keep going until you find an empty slot
         size_t itemsChecked = 0;
@@ -332,12 +332,12 @@ private:
         return result;
     }
 
-    HashTableEntry<T> const* find_entry(String key) const
+    StringHashTableEntry<T> const* find_entry(String key) const
     {
-        return const_cast<HashTable*>(this)->find_entry(key);
+        return const_cast<StringHashTable*>(this)->find_entry(key);
     }
 
-    HashTableEntry<T>* find_or_add_entry(String key)
+    StringHashTableEntry<T>* find_or_add_entry(String key)
     {
         auto expand_and_find_new_entry = [&] {
             ASSERT(!m_has_fixed_memory);
@@ -363,7 +363,7 @@ private:
         return result;
     }
 
-    Span<HashTableEntry<T>> m_entries {};
+    Span<StringHashTableEntry<T>> m_entries {};
     size_t m_count { 0 };
 
     float m_max_load_factor { 0 };
@@ -378,8 +378,8 @@ private:
 };
 
 template<typename T>
-struct HashTableIterator {
-    HashTable<T>* hashTable;
+struct StringHashTableIterator {
+    StringHashTable<T>* hashTable;
     s32 currentIndex;
 
     bool isDone;
@@ -411,7 +411,7 @@ struct HashTableIterator {
         return &getEntry()->value;
     }
 
-    HashTableEntry<T>* getEntry()
+    StringHashTableEntry<T>* getEntry()
     {
         return &hashTable->m_entries[currentIndex];
     }

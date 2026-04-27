@@ -82,7 +82,7 @@ ErrorOr<OwnedRef<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata, Blob
 
     reader.restart();
 
-    HashTable<BuildingDef> templates;
+    StringHashTable<BuildingDef> templates;
 
     BuildingDef* def = nullptr;
 
