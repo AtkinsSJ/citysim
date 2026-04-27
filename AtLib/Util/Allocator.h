@@ -87,6 +87,13 @@ public:
     void deallocate(String&);
 
     template<typename T>
+    void deallocate(Span<T>& span)
+    {
+        deallocate_internal({ span.size() * sizeof(T), reinterpret_cast<u8*>(span.raw_data()) });
+        span = {};
+    }
+
+    template<typename T>
     void deallocate(Array<T>& array)
     {
         array.~Array();
