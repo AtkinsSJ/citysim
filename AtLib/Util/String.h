@@ -9,6 +9,7 @@
 #include <Util/Basic.h>
 #include <Util/Enum.h>
 #include <Util/Forward.h>
+#include <Util/Hash.h>
 #include <Util/Optional.h>
 #include <Util/StringBase.h>
 #include <Util/StringView.h>
@@ -27,8 +28,6 @@ enum class WithHash : u8 {
 
 class String : public StringBase {
 public:
-    using Hash = u32;
-
     // FIXME: initializer_list isn't the best option
     static String join(std::initializer_list<String> strings, Optional<String> between = {});
     static String repeat(char c, u32 length);
