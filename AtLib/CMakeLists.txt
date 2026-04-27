@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.25)
 project(AtLib VERSION 0.1)
+enable_testing()
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -27,6 +28,9 @@ add_subdirectory("IO")
 add_subdirectory("Settings")
 add_subdirectory("UI")
 add_subdirectory("Util")
+
+add_subdirectory("Tests")
+
 include_directories(".")
 
 target_link_libraries(AtLib INTERFACE App Assets Debug Gfx Input IO Settings UI Util)
