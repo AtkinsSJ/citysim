@@ -14,6 +14,7 @@
 #include <Settings/SettingsChangeListener.h>
 #include <Util/ChunkedArray.h>
 #include <Util/Function.h>
+#include <Util/HashTable.h>
 #include <Util/Set.h>
 #include <Util/StringTable.h>
 
