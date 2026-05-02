@@ -55,6 +55,19 @@ struct HashTraits<T> : DefaultHashTraits<T> {
     }
 };
 
+template<typename T>
+struct HashTraits<T*> {
+    static bool equals(T const* a, T const* b)
+    {
+        return a == b;
+    }
+
+    static Hash hash(T const* t)
+    {
+        return HashTraits<smm>::hash(reinterpret_cast<smm>(t));
+    }
+};
+
 template<HashableObject T>
 struct HashTraits<T> : DefaultHashTraits<T> {
     static bool equals(T const& a, T const& b)
