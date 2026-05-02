@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2025-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -8,6 +8,7 @@
 
 #include <Util/Assert.h>
 #include <Util/Basic.h>
+#include <Util/Function.h>
 
 template<typename T>
 class [[nodiscard]] Optional {
@@ -100,6 +101,14 @@ public:
         return alternative;
     }
 
+    template<typename OtherT>
+    Optional<OtherT> map(Function<OtherT(T const&)> mapper) const
+    {
+        if (m_has_value)
+            return mapper(m_value);
+        return {};
+    }
+
     bool operator==(Optional const& other) const
     {
         if (m_has_value != other.m_has_value)
@@ -168,6 +177,14 @@ public:
         return alternative;
     }
 
+    template<typename OtherT>
+    Optional<OtherT> map(Function<OtherT(T&)> mapper) const
+    {
+        if (m_value)
+            return mapper(*m_value);
+        return {};
+    }
+
     bool operator==(Optional const& other) const
     {
         return m_value == other.m_value;
@@ -175,7 +192,9 @@ public:
 
     bool operator==(T const& other) const
     {
-        return m_value == other;
+        if (m_value)
+            return *m_value == other;
+        return false;
     }
 
 private:
