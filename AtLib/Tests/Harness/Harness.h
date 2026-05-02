@@ -37,5 +37,10 @@ int main(int, char*[])
         nullptr);
 
     test_main();
+    if (g_test_context.failures) {
+        printf("\n\x1b[31m❎ Failed %d tests\x1b[0m\n", g_test_context.failures);
+    } else {
+        printf("\n\x1b[32m✅ All tests passed\x1b[0m\n");
+    }
     return g_test_context.failures;
 }
