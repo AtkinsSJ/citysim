@@ -33,3 +33,26 @@ inline constexpr bool IsCallableWithArguments = requires(Callable callable) {
         callable(declval<Arguments>()...)
     } -> SameAs<Out>;
 };
+
+template<typename T>
+inline constexpr bool IsIntegral = false;
+
+template<>
+inline constexpr bool IsIntegral<u8> = true;
+template<>
+inline constexpr bool IsIntegral<u16> = true;
+template<>
+inline constexpr bool IsIntegral<u32> = true;
+template<>
+inline constexpr bool IsIntegral<u64> = true;
+template<>
+inline constexpr bool IsIntegral<s8> = true;
+template<>
+inline constexpr bool IsIntegral<s16> = true;
+template<>
+inline constexpr bool IsIntegral<s32> = true;
+template<>
+inline constexpr bool IsIntegral<s64> = true;
+
+template<typename T>
+concept Integral = IsIntegral<T>;
