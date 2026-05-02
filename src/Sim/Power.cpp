@@ -10,7 +10,6 @@
 #include <Menus/SaveFile.h>
 #include <Sim/City.h>
 #include <UI/Panel.h>
-#include <Util/Set.h>
 
 PowerLayer::PowerLayer(City& city, MemoryArena& arena)
     : m_bounds(city.bounds)
@@ -524,7 +523,7 @@ void PowerLayer::update(City& city)
     DEBUG_FUNCTION_T(DebugCodeDataTag::Simulation);
 
     if (m_dirty_rects.is_dirty()) {
-        Set<PowerSector*> touchedSectors { temp_arena(), [](PowerSector** a, PowerSector** b) { return *a == *b; } };
+        HashSet<PowerSector*> touched_sectors;
 
         for (auto it = m_dirty_rects.rects().iterate();
             it.hasNext();
@@ -554,7 +553,7 @@ void PowerLayer::update(City& city)
             Rect2I sectorsRect = m_sectors.get_sectors_covered(dirtyRect);
             for (s32 sY = sectorsRect.y(); sY < sectorsRect.y() + sectorsRect.height(); sY++) {
                 for (s32 sX = sectorsRect.x(); sX < sectorsRect.x() + sectorsRect.width(); sX++) {
-                    touchedSectors.add(m_sectors.get(sX, sY));
+                    touched_sectors.put(m_sectors.get(sX, sY));
                 }
             }
         }
@@ -563,9 +562,7 @@ void PowerLayer::update(City& city)
         updateDistances(&m_tile_power_distance, &m_dirty_rects, m_power_max_distance);
 
         // Rebuild the sectors that were modified
-        for (auto it = touchedSectors.iterate(); it.hasNext(); it.next()) {
-            PowerSector* sector = it.getValue();
-
+        for (auto* sector : touched_sectors) {
             recalculate_sector_power_groups(city, *sector);
         }
 
