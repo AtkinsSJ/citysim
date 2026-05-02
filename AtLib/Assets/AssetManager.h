@@ -14,8 +14,8 @@
 #include <Settings/SettingsChangeListener.h>
 #include <Util/ChunkedArray.h>
 #include <Util/Function.h>
+#include <Util/HashSet.h>
 #include <Util/HashTable.h>
-#include <Util/Set.h>
 #include <Util/StringTable.h>
 
 namespace Assets {
@@ -56,7 +56,7 @@ struct AssetManager final
         Optional<AssetMetadata> placeholder_asset;
 
         // The missing assets are logged here!
-        Set<String> missing_asset_names;
+        HashSet<String> missing_asset_names;
     };
     ChunkedArray<AssetTypeData> asset_type_data;
 
@@ -66,13 +66,7 @@ struct AssetManager final
     // FIXME: TextCatalogue?
     HashTable<String> texts;
     HashTable<String> defaultTexts; // "en" locale
-    // NB: Sets are stupid right now, they just wrap a ChunkedArray, which means it gets wiped when
-    // we reset the assetsArena in reloadAssets()! If we want to remember things across a reload,
-    // to eg add a "dump missing texts to a file" command, we'll need to switch to something that
-    // survives reloads. Maybe a HashTable of the textID -> whether it found a fallback, that could
-    // be useful.
-    // - Sam, 02/10/2019
-    Set<String> missingTextIDs;
+    HashSet<String> missingTextIDs;
 
     ChunkedArray<AssetManagerListener*> listeners;
     void register_listener(AssetManagerListener*);

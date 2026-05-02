@@ -31,9 +31,6 @@ void initAssets()
 
     UI::initStyleConstants();
 
-    auto compareStrings = [](String* a, String* b) { return *a == *b; };
-    new (&s_assets->missingTextIDs) Set<String> { s_assets->arena, compareStrings };
-
     s_assets->listeners = ChunkedArray<AssetManagerListener*>(s_assets->arena, 32);
     s_assets->asset_loaders = ChunkedArray<OwnedRef<AssetLoader>>(s_assets->arena, 32);
 
@@ -286,8 +283,9 @@ AssetMetadata& getAsset(AssetType type, String shortName)
     if (asset && asset->state == AssetMetadata::State::Loaded)
         return *asset;
 
-    if (s_assets->asset_type_data[type].missing_asset_names.add(shortName)) {
+    if (!s_assets->asset_type_data[type].missing_asset_names.contains(shortName)) {
         logWarn("Requested {0} asset '{1}' was missing or unusable! Using placeholder."_s, { s_assets->asset_type_data[type].name, shortName });
+        s_assets->asset_type_data[type].missing_asset_names.put(shortName);
     }
 
     return s_assets->asset_type_data[type].placeholder_asset.value();
@@ -336,12 +334,13 @@ String getText(String name)
         // What we're doing for now is to only report a missing text if it's not in the missingTextIDs
         // set. (And then add it.)
 
-        if (s_assets->missingTextIDs.add(name)) {
+        if (!s_assets->missingTextIDs.contains(name)) {
             if (default_text.has_value()) {
                 logWarn("Locale {0} is missing text for '{1}'. (Fell back to using the default locale.)"_s, { to_string(s_assets->locale()), name });
             } else {
                 logWarn("Locale {0} is missing text for '{1}'. (No default found!)"_s, { to_string(s_assets->locale()), name });
             }
+            s_assets->missingTextIDs.put(name);
         }
     }
 
@@ -389,8 +388,6 @@ AssetType AssetManager::register_asset_type(String name, AssetLoader& loader, As
         .placeholder_asset = {},
         .missing_asset_names = {},
     };
-    auto compareStrings = [](String* a, String* b) { return *a == *b; };
-    new (&data.missing_asset_names) Set<String> { arena, compareStrings };
     asset_type_data.append(move(data));
 
     if (config.directory.has_value())
