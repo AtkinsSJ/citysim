@@ -8,19 +8,10 @@
 
 String StringTable::intern(StringView input)
 {
-    String input_as_string = input.deprecated_to_string();
-    // FIXME: We really shouldn't be doing this.
-    HashTableEntry<String>& entry = *m_table.find_or_add_entry(input_as_string);
-    if (!entry.isOccupied) {
-        m_table.m_count++;
-        entry.isOccupied = true;
-        entry.isGravestone = false;
+    if (auto existing = m_table.find(input.deprecated_to_string()); existing.has_value())
+        return existing.value();
 
-        String interned_string = m_table.m_key_data_arena.allocate_string(input);
-        interned_string.hash();
-        entry.key = interned_string;
-        entry.value = interned_string;
-    }
-
-    return entry.value;
+    auto interned_string = m_arena.allocate_string(input);
+    m_table.put(interned_string);
+    return interned_string;
 }

@@ -49,9 +49,6 @@ struct HashTableIterator;
 
 template<typename T>
 class HashTable {
-    // FIXME: Hack so that StringTable::intern() can poke at things it shouldn't.
-    friend StringTable;
-
     friend HashTableIterator<T>;
 
 public:
