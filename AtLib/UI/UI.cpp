@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2015-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -30,8 +30,8 @@ void init(MemoryArena* arena)
     new (&uiState.toasts) Queue<Toast> { *arena };
 
     uiState.openWindows = { *arena, 64 };
-    new (&uiState.windowsToClose) Set<String> { *arena };
-    new (&uiState.windowsToMakeActive) Set<String> { *arena };
+    uiState.windowsToClose = HashSet<s32> { 32 };
+    uiState.windowsToMakeActive = HashSet<s32> { 32 };
 }
 
 void startFrame()

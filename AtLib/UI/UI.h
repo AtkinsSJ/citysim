@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2015-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -12,9 +12,9 @@
 #include <UI/Forward.h>
 #include <Util/Array.h>
 #include <Util/Basic.h>
+#include <Util/HashSet.h>
 #include <Util/Orientation.h>
 #include <Util/Queue.h>
-#include <Util/Set.h>
 #include <Util/Stack.h>
 #include <Util/Vector.h>
 
@@ -90,8 +90,8 @@ struct UIState {
     // Window stuff
     s32 nextWindowID;
     ChunkedArray<Window> openWindows; // Order: index 0 is the top, then each one is below the previous
-    Set<s32> windowsToClose;
-    Set<s32> windowsToMakeActive;
+    HashSet<s32> windowsToClose {};
+    HashSet<s32> windowsToMakeActive {};
     bool isAPauseWindowOpen; // Do any open windows have the WindowFlags::Pause flag?
 };
 inline UIState uiState;

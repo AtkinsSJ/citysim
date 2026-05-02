@@ -111,7 +111,7 @@ void showWindow(WindowTitle title, s32 width, s32 height, V2I position, String s
             existing_window->onClose = on_close;
             // NB: existing_window->renderBuffer is left as it is.
 
-            uiState.windowsToMakeActive.add(existing_window_index);
+            uiState.windowsToMakeActive.put(existing_window_index);
             return;
         }
     }
@@ -130,7 +130,7 @@ void showWindow(WindowTitle title, s32 width, s32 height, V2I position, String s
         .renderBuffer = the_renderer().get_temporary_render_buffer(title_string),
     };
     uiState.openWindows.append(new_window);
-    uiState.windowsToMakeActive.add(truncate32(uiState.openWindows.count - 1));
+    uiState.windowsToMakeActive.put(truncate32(uiState.openWindows.count - 1));
 }
 
 bool hasPauseWindowOpen()
@@ -150,7 +150,7 @@ void closeWindow(WindowProc windowProc)
     auto window_to_remove = uiState.openWindows.find_first([&](Window& window) { return window.windowProc == windowProc; });
 
     if (window_to_remove.has_value()) {
-        uiState.windowsToClose.add(window_to_remove.value().index());
+        uiState.windowsToClose.put(window_to_remove.value().index());
     } else if (!uiState.openWindows.is_empty()) {
         logInfo("closeWindow() call didn't find any windows that matched the WindowProc."_s);
     }
@@ -159,7 +159,7 @@ void closeWindow(WindowProc windowProc)
 void closeAllWindows()
 {
     for (s32 windowIndex = 0; windowIndex < uiState.openWindows.count; windowIndex++) {
-        uiState.windowsToClose.add(windowIndex);
+        uiState.windowsToClose.put(windowIndex);
     }
 }
 
@@ -273,7 +273,7 @@ void updateAndRenderWindows()
         }
 
         if (context.closeRequested) {
-            uiState.windowsToClose.add(windowIndex);
+            uiState.windowsToClose.put(windowIndex);
         }
 
         if (!context.closeRequested && ((window.flags & WindowFlags::Pause) != 0)) {
@@ -315,7 +315,7 @@ void updateAndRenderWindows()
                 && mouseButtonJustPressed(MouseButton::Left)) {
                 if (hoveringOverCloseButton) {
                     // If we're inside the X, close it!
-                    uiState.windowsToClose.add(windowIndex);
+                    uiState.windowsToClose.put(windowIndex);
                 } else {
                     if (!isModal && barArea.contains(mousePos)) {
                         // If we're inside the title bar, start dragging!
@@ -330,7 +330,7 @@ void updateAndRenderWindows()
                     }
 
                     // Make this the active window!
-                    uiState.windowsToMakeActive.add(windowIndex);
+                    uiState.windowsToMakeActive.put(windowIndex);
                 }
 
                 // Tooltips don't take mouse input
@@ -373,14 +373,29 @@ void updateAndRenderWindows()
     // Put the tooltip on top of everything else
     // FIXME: Actually, this won't do that! windowsToMakeActive is not FIFO! But, it's better than nothing
     if (tooltipIndex != -1) {
-        uiState.windowsToMakeActive.add(tooltipIndex);
+        uiState.windowsToMakeActive.put(tooltipIndex);
     }
 
-    Array<s32> windowsToMakeActive = uiState.windowsToMakeActive.asSortedArray();
+    auto as_sorted_array = [](HashSet<s32> const& set) -> Array<s32> {
+        if (set.is_empty())
+            return {};
+
+        auto result = temp_arena().allocate_array<s32>(set.count());
+
+        // Gather
+        for (auto it : set)
+            result.append(it);
+
+        // Sort
+        result.sort([](s32 a, s32 b) { return a < b; });
+        return result;
+    };
+
+    Array<s32> windowsToMakeActive = as_sorted_array(uiState.windowsToMakeActive);
 
     // Close any windows that were requested
     if (!uiState.windowsToClose.is_empty()) {
-        Array<s32> windowsToClose = uiState.windowsToClose.asSortedArray();
+        Array<s32> windowsToClose = as_sorted_array(uiState.windowsToClose);
 
         for (s32 i = windowsToClose.count() - 1; i >= 0; i--) {
             s32 windowIndex = windowsToClose[i];
