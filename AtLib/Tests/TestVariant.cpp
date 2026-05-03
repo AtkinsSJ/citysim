@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2025-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "Harness/Harness.h"
-#include <Util/HashTable.h>
+#include <Util/HashMap.h>
 #include <Util/String.h>
 #include <Util/Variant.h>
 
@@ -110,24 +110,26 @@ void test_main()
 
     // Test with movable types.
     {
-        HashTable<int> table { 32 };
-        table.put("Hello"_s, 42);
-        table.put("World"_s, 17);
-        Variant<HashTable<int>> table_variant { move(table) };
+        // We have to do this so that the comma doesn't mess up our EXPECT() macros.
+        using HashMapType = HashMap<String, int>;
+        HashMapType table { 32 };
+        table.set("Hello"_s, 42);
+        table.set("World"_s, 17);
+        Variant<HashMapType> table_variant { move(table) };
 
         // Make sure the HashTable is in there properly
-        EXPECT(table_variant.has<HashTable<int>>());
-        auto& held_table = table_variant.get<HashTable<int>>();
+        EXPECT(table_variant.has<HashMapType>());
+        auto& held_table = table_variant.get<HashMapType>();
         {
-            auto hello = held_table.find_value("Hello"_s);
+            auto hello = held_table.get("Hello"_s);
             EXPECT(hello.has_value());
             EXPECT(hello == 42);
         }
         {
-            auto world = held_table.find_value("World"_s);
+            auto world = held_table.get("World"_s);
             EXPECT(world.has_value());
             EXPECT(world == 17);
         }
-        EXPECT(!held_table.find_value("huh?"_s).has_value());
+        EXPECT(!held_table.get("huh?"_s).has_value());
     }
 }
