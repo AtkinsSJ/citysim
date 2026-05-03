@@ -14,7 +14,7 @@
 #include <IO/Forward.h>
 #include <UI/Forward.h>
 #include <Util/EnumMap.h>
-#include <Util/HashTable.h>
+#include <Util/HashMap.h>
 #include <Util/Optional.h>
 #include <Util/Variant.h>
 #include <Util/Vector.h>
@@ -426,12 +426,12 @@ public:
 
 private:
     // FIXME: Remove `mutable` once HashTable is const-correct
-    mutable HashTable<PropertyValue> m_properties { 128 };
+    HashMap<String, PropertyValue> m_properties { 128 };
 
     template<typename T>
     Optional<T> get_property_value(StringView property) const
     {
-        if (auto property_value = m_properties.find(property.deprecated_to_string()); property_value.has_value()) {
+        if (auto property_value = m_properties.get(property.deprecated_to_string()); property_value.has_value()) {
             if (auto* value = property_value->try_get<T>())
                 return *value;
         }

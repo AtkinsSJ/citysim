@@ -12,8 +12,8 @@
 
 namespace UI {
 
-static HashTable<Property> styleProperties { 256 };
-static HashTable<StyleType> styleTypesByName { 256 };
+static HashMap<String, Property> s_style_properties { 256 };
+static HashMap<String, StyleType> s_style_types_by_name { 256 };
 
 Optional<DrawableStyle> readDrawableStyle(LineReader* reader)
 {
@@ -241,7 +241,7 @@ WindowStyle::WindowStyle(TypedAssetRef<LabelStyle> title_label_style, s32 title_
 
 void Style::set_property(StringView property, PropertyValue&& value)
 {
-    m_properties.put(property.deprecated_to_string(), move(value));
+    m_properties.set(property.deprecated_to_string(), move(value));
 }
 
 bool Style::get_bool(StringView property, bool default_value) const
@@ -296,7 +296,7 @@ Optional<V2I> Style::get_v2i(StringView property) const
 
 void initStyleConstants()
 {
-#define PROP(name, _type) styleProperties.put(#name##_s, Property { .type = PropType::_type });
+#define PROP(name, _type) s_style_properties.set(#name##_s, Property { .type = PropType::_type });
 
     PROP(background, Drawable);
     PROP(backgroundDisabled, Drawable);
@@ -470,24 +470,24 @@ void initStyleConstants()
                                                  "titleLabelStyle"_s,
                                              });
 
-    styleTypesByName.put("Button"_s, StyleType::Button);
-    styleTypesByName.put("Checkbox"_s, StyleType::Checkbox);
-    styleTypesByName.put("Console"_s, StyleType::Console);
-    styleTypesByName.put("DropDownList"_s, StyleType::DropDownList);
-    styleTypesByName.put("Label"_s, StyleType::Label);
-    styleTypesByName.put("Panel"_s, StyleType::Panel);
-    styleTypesByName.put("RadioButton"_s, StyleType::RadioButton);
-    styleTypesByName.put("Scrollbar"_s, StyleType::Scrollbar);
-    styleTypesByName.put("Slider"_s, StyleType::Slider);
-    styleTypesByName.put("TextInput"_s, StyleType::TextInput);
-    styleTypesByName.put("Window"_s, StyleType::Window);
+    s_style_types_by_name.set("Button"_s, StyleType::Button);
+    s_style_types_by_name.set("Checkbox"_s, StyleType::Checkbox);
+    s_style_types_by_name.set("Console"_s, StyleType::Console);
+    s_style_types_by_name.set("DropDownList"_s, StyleType::DropDownList);
+    s_style_types_by_name.set("Label"_s, StyleType::Label);
+    s_style_types_by_name.set("Panel"_s, StyleType::Panel);
+    s_style_types_by_name.set("RadioButton"_s, StyleType::RadioButton);
+    s_style_types_by_name.set("Scrollbar"_s, StyleType::Scrollbar);
+    s_style_types_by_name.set("Slider"_s, StyleType::Slider);
+    s_style_types_by_name.set("TextInput"_s, StyleType::TextInput);
+    s_style_types_by_name.set("Window"_s, StyleType::Window);
 }
 
 void assignStyleProperties(StyleType type, std::initializer_list<String> properties)
 {
     for (String* propName = (String*)properties.begin(); propName < properties.end(); propName++) {
-        Property* property = styleProperties.find(*propName).value();
-        property->existsInStyle[type] = true;
+        auto& property = s_style_properties.get(*propName).value();
+        property.existsInStyle[type] = true;
     }
 }
 
@@ -495,9 +495,9 @@ ErrorOr<OwnedRef<Asset>> load_theme(AssetMetadata& metadata, Blob data)
 {
     LineReader reader { metadata.shortName, data };
 
-    HashTable<EnumMap<StyleType, Style>> styles;
+    HashMap<String, EnumMap<StyleType, Style>> styles;
 
-    HashTable<String> fontNamesToAssetNames;
+    HashMap<String, String> fontNamesToAssetNames;
 
     EnumMap<StyleType, s32> style_count;
 
@@ -522,15 +522,14 @@ ErrorOr<OwnedRef<Asset>> load_theme(AssetMetadata& metadata, Blob data)
 
                 if (fontName.has_value() && !fontFilename.is_empty()) {
                     AssetMetadata* fontAsset = asset_manager().add_asset(BitmapFont::asset_type(), fontFilename);
-                    fontNamesToAssetNames.put(fontName.value().deprecated_to_string(), fontAsset->shortName);
+                    fontNamesToAssetNames.set(fontName.value().deprecated_to_string(), fontAsset->shortName);
                 } else {
                     reader.error("Invalid font declaration: '{0}'"_s, { reader.current_line() });
                 }
             } else {
                 // Create a new style entry if the name matches a style type
-                Optional<StyleType> foundStyleType = styleTypesByName.find_value(firstWord.deprecated_to_string());
-                if (foundStyleType.has_value()) {
-                    StyleType styleType = foundStyleType.release_value();
+                if (auto found_style_type = s_style_types_by_name.get(firstWord.deprecated_to_string()); found_style_type.has_value()) {
+                    auto style_type = found_style_type.release_value();
                     auto name_token = reader.next_token();
                     if (!name_token.has_value()) {
                         reader.error("Missing name for `{}`"_s, { firstWord });
@@ -539,12 +538,12 @@ ErrorOr<OwnedRef<Asset>> load_theme(AssetMetadata& metadata, Blob data)
 
                     String name = asset_manager().assetStrings.intern(name_token.value());
 
-                    auto& pack = styles.ensure(name, {});
-                    target = &pack[styleType];
+                    auto& pack = styles.ensure(name, [] { return EnumMap<StyleType, Style> {}; });
+                    target = &pack[style_type];
                     target->name = name;
-                    target->type = styleType;
+                    target->type = style_type;
 
-                    style_count[styleType]++;
+                    style_count[style_type]++;
                 } else {
                     reader.error("Unrecognized command: '{0}'"_s, { firstWord });
                 }
@@ -560,11 +559,11 @@ ErrorOr<OwnedRef<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                     continue;
                 }
                 auto parent_style = parent_style_token.release_value().deprecated_to_string();
-                auto parentPack = styles.find(parent_style);
+                auto parentPack = styles.get(parent_style);
                 if (!parentPack.has_value()) {
                     reader.error("Unable to find style named '{0}'"_s, { parent_style });
                 } else {
-                    Style const& parent = (*parentPack.value())[target->type];
+                    Style const& parent = parentPack.value()[target->type];
                     // For undefined styles, the parent struct will be all nulls, so the type will not match
                     if (parent.type != target->type) {
                         reader.error("Attempting to extend a style of the wrong type."_s);
@@ -577,8 +576,7 @@ ErrorOr<OwnedRef<Asset>> load_theme(AssetMetadata& metadata, Blob data)
             } else {
                 // Check our properties map for a match
                 auto property_name = firstWord.deprecated_to_string();
-                Property* property = styleProperties.find(property_name).value_or(nullptr);
-                if (property) {
+                if (auto property = s_style_properties.get(property_name); property.has_value()) {
                     if (property->existsInStyle[target->type]) {
                         switch (property->type) {
                         case PropType::Alignment: {
@@ -619,8 +617,7 @@ ErrorOr<OwnedRef<Asset>> load_theme(AssetMetadata& metadata, Blob data)
                                 continue;
                             }
                             String value = asset_manager().assetStrings.intern(name_token.value());
-                            Optional<String> fontFilename = fontNamesToAssetNames.find_value(value);
-                            if (fontFilename.has_value()) {
+                            if (auto fontFilename = fontNamesToAssetNames.get(value); fontFilename.has_value()) {
                                 target->set_property(property_name, fontFilename.value());
                             } else {
                                 reader.error("Unrecognised font name '{0}'. Make sure to declare the :Font before it is used!"_s, { value });
@@ -686,13 +683,12 @@ ErrorOr<OwnedRef<Asset>> load_theme(AssetMetadata& metadata, Blob data)
     auto white = Colour::white();
     auto default_font_name = ""_h;
 
-    for (auto it = styles.iterate(); it.hasNext(); it.next()) {
-        auto* stylePack = it.get();
+    for (auto& [key, style_pack] : styles) {
         for (auto style_type : enum_values<StyleType>()) {
             if (style_type == StyleType::None)
                 continue;
 
-            Style* style = &(*stylePack)[style_type];
+            Style const* style = &(style_pack)[style_type];
             // For undefined styles, the parent struct will be all nulls, so the type will not match
             // FIXME: This seems really sketchy.
             if (style->type == style_type) {
