@@ -11,7 +11,7 @@
 #include <Sim/Zone.h>
 #include <Util/ChunkedArray.h>
 #include <Util/Function.h>
-#include <Util/HashTable.h>
+#include <Util/HashMap.h>
 #include <Util/OccupancyArray.h>
 #include <Util/StringTable.h>
 
@@ -25,11 +25,11 @@ struct BuildingCatalogue final : public AssetManagerListener {
     Optional<BuildingDef const&> find_random_zone_building(ZoneType, Random&, Function<bool(BuildingDef const&)> filter) const;
 
     OccupancyArray<BuildingDef> allBuildings;
-    HashTable<BuildingDef*> buildingsByName { 128 };
+    HashMap<String, BuildingDef*> buildingsByName { 128 };
     StringTable buildingNames;
 
-    HashTable<BuildingType> buildingNameToTypeID { 128 };
-    HashTable<BuildingType> buildingNameToOldTypeID { 128 };
+    HashMap<String, BuildingType> buildingNameToTypeID { 128 };
+    HashMap<String, BuildingType> buildingNameToOldTypeID { 128 };
 
     ChunkedArray<BuildingDef*> constructibleBuildings;
     ChunkedArray<BuildingDef*> rGrowableBuildings;

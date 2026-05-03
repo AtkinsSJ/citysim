@@ -36,7 +36,7 @@ void initBuildingCatalogue(MemoryArena& arena)
     // Update 18/02/2020: We now use the null building def when failing to match an intersection part name.
     (void)catalogue->allBuildings.append(); // Null building def
 
-    catalogue->buildingNameToTypeID.put({}, 0);
+    catalogue->buildingNameToTypeID.set({}, 0);
 
     catalogue->maxRBuildingDim = 0;
     catalogue->maxCBuildingDim = 0;
@@ -137,8 +137,8 @@ BuildingDef* appendNewBuildingDef(StringView name)
     result.typeID = newDef.index();
 
     result.fireRisk = 1.0f;
-    building_catalogue.buildingsByName.put(result.name, &result);
-    building_catalogue.buildingNameToTypeID.put(result.name, result.typeID);
+    building_catalogue.buildingsByName.set(result.name, &result);
+    building_catalogue.buildingNameToTypeID.set(result.name, result.typeID);
 
     return &result;
 }
@@ -159,7 +159,7 @@ BuildingDef* getBuildingDef(BuildingType buildingTypeID)
 
 BuildingDef* findBuildingDef(String name)
 {
-    BuildingDef* result = BuildingCatalogue::the().buildingsByName.find_value(name).value_or(nullptr);
+    BuildingDef* result = BuildingCatalogue::the().buildingsByName.get(name).value_or(nullptr);
 
     return result;
 }
@@ -191,7 +191,7 @@ void saveBuildingTypes()
     }
 
     // Actual saving
-    building_catalogue.buildingNameToOldTypeID.put_all(building_catalogue.buildingNameToTypeID);
+    building_catalogue.buildingNameToOldTypeID.set_all(building_catalogue.buildingNameToTypeID);
 }
 
 void BuildingCatalogue::remap_building_types(City& city)
@@ -200,19 +200,14 @@ void BuildingCatalogue::remap_building_types(City& city)
 
     // First, remap any IDs that are not present in the current data, so they won't get
     // merged accidentally.
-    for (auto it = buildingNameToOldTypeID.iterate(); it.hasNext(); it.next()) {
-        auto entry = it.getEntry();
-        buildingNameToTypeID.ensure(entry->key, buildingNameToTypeID.count());
+    for (auto& [name, old_type] : buildingNameToOldTypeID) {
+        buildingNameToTypeID.ensure(name, [&] { return static_cast<BuildingType>(buildingNameToTypeID.count()); });
     }
 
     if (buildingNameToOldTypeID.count() > 0) {
         Array<BuildingType> oldTypeToNewType = temp_arena().allocate_filled_array<BuildingType>(buildingNameToOldTypeID.count());
-        for (auto it = buildingNameToOldTypeID.iterate(); it.hasNext(); it.next()) {
-            auto entry = it.getEntry();
-            String buildingName = entry->key;
-            auto oldType = entry->value;
-
-            oldTypeToNewType[oldType] = buildingNameToTypeID.find_value(buildingName).value_or(0);
+        for (auto& [name, old_type] : buildingNameToOldTypeID) {
+            oldTypeToNewType[old_type] = buildingNameToTypeID.get(name).value_or(0);
         }
 
         for (auto it = city.buildings.iterate(); it.hasNext(); it.next()) {

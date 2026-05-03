@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2025-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -22,7 +22,7 @@ void initTerrainCatalogue(MemoryArena& arena)
     s_terrain_catalogue.terrainDefs = { arena, 128 };
     (void)s_terrain_catalogue.terrainDefs.append(); // Null terrain def
 
-    s_terrain_catalogue.terrainNameToType.put({}, 0);
+    s_terrain_catalogue.terrainNameToType.set({}, 0);
 
     asset_manager().register_listener(&s_terrain_catalogue);
 }
@@ -44,7 +44,7 @@ TerrainType findTerrainTypeByName(String name)
 
     TerrainType result = 0;
 
-    auto def = s_terrain_catalogue.terrainDefsByName.find_value(name);
+    auto def = s_terrain_catalogue.terrainDefsByName.get(name);
     if (def.has_value() && def != nullptr) {
         result = def.value()->typeID;
     }
@@ -54,7 +54,7 @@ TerrainType findTerrainTypeByName(String name)
 
 void saveTerrainTypes()
 {
-    s_terrain_catalogue.terrainNameToOldType.put_all(s_terrain_catalogue.terrainNameToType);
+    s_terrain_catalogue.terrainNameToOldType.set_all(s_terrain_catalogue.terrainNameToType);
 }
 
 void TerrainCatalogue::remap_terrain_types(City& city)
@@ -63,19 +63,14 @@ void TerrainCatalogue::remap_terrain_types(City& city)
 
     // First, remap any Names that are not present in the current data, so they won't get
     // merged accidentally.
-    for (auto it = terrainNameToOldType.iterate(); it.hasNext(); it.next()) {
-        auto entry = it.getEntry();
-        terrainNameToType.ensure(entry->key, (TerrainType)terrainNameToType.count());
+    for (auto& [name, old_type] : terrainNameToOldType) {
+        terrainNameToType.ensure(name, [&] { return static_cast<TerrainType>(terrainNameToType.count()); });
     }
 
     if (terrainNameToOldType.count() > 0) {
         Array<TerrainType> oldTypeToNewType = temp_arena().allocate_filled_array<TerrainType>(terrainNameToOldType.count());
-        for (auto it = terrainNameToOldType.iterate(); it.hasNext(); it.next()) {
-            auto entry = it.getEntry();
-            String terrainName = entry->key;
-            TerrainType oldType = entry->value;
-
-            oldTypeToNewType[oldType] = terrainNameToType.find_value(terrainName).value_or(0);
+        for (auto& [name, old_type] : terrainNameToOldType) {
+            oldTypeToNewType[old_type] = terrainNameToType.get(name).value_or(0);
         }
 
         TerrainLayer& layer = city.terrainLayer;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2025-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -9,7 +9,7 @@
 #include <Assets/AssetManagerListener.h>
 #include <Assets/Forward.h>
 #include <Sim/Forward.h>
-#include <Util/HashTable.h>
+#include <Util/HashMap.h>
 #include <Util/OccupancyArray.h>
 #include <Util/StringTable.h>
 
@@ -36,11 +36,11 @@ struct TerrainCatalogue final : public AssetManagerListener {
 
     OccupancyArray<TerrainDef> terrainDefs;
 
-    HashTable<TerrainDef*> terrainDefsByName { 128 };
+    HashMap<String, TerrainDef*> terrainDefsByName { 128 };
     StringTable terrainNames;
 
-    HashTable<TerrainType> terrainNameToOldType { 128 };
-    HashTable<TerrainType> terrainNameToType { 128 };
+    HashMap<String, TerrainType> terrainNameToOldType { 128 };
+    HashMap<String, TerrainType> terrainNameToType { 128 };
 
     // ^AssetManagerListener
     virtual void after_assets_loaded() override;

@@ -8,6 +8,7 @@
 #include <Assets/AssetManager.h>
 #include <Sim/Building.h>
 #include <Sim/BuildingCatalogue.h>
+#include <Util/HashMap.h>
 #include <Util/Log.h>
 
 static void assign_building_categories(BuildingCatalogue& catalogue, BuildingDef& def)
@@ -82,7 +83,7 @@ ErrorOr<OwnedRef<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata, Blob
 
     reader.restart();
 
-    HashTable<BuildingDef> templates;
+    HashMap<String, BuildingDef> templates;
 
     BuildingDef* def = nullptr;
 
@@ -128,7 +129,7 @@ ErrorOr<OwnedRef<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata, Blob
                 if (!name.has_value())
                     return reader.make_error_message("Couldn't parse Template. Expected: ':Template identifier'"_s);
 
-                def = &templates.put(name.value().deprecated_to_string(), {});
+                def = &templates.set(name.value().deprecated_to_string(), {});
             } else {
                 reader.warn("Only :Building, :Intersection or :Template definitions are supported right now."_s);
             }
@@ -205,29 +206,29 @@ ErrorOr<OwnedRef<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata, Blob
                     return reader.make_error_message("Missing template name in `extends`"_s);
                 }
 
-                auto templateDef = templates.find(templateName.value().deprecated_to_string());
+                auto templateDef = templates.get(templateName.value().deprecated_to_string());
                 if (!templateDef.has_value()) {
                     return reader.make_error_message("Could not find template named '{0}'. Templates must be defined before the buildings that use them, and in the same file."_s, { templateName.value() });
                 }
-                BuildingDef* tDef = templateDef.value();
+                BuildingDef& tDef = templateDef.value();
 
                 // Copy the def... this could be messy
                 // (We can't just do copyMemory() because we don't want to change the name or typeID.)
-                def->flags = tDef->flags;
-                def->size = tDef->size;
-                def->spriteName = tDef->spriteName;
-                def->buildMethod = tDef->buildMethod;
-                def->buildCost = tDef->buildCost;
-                def->growsInZone = tDef->growsInZone;
-                def->demolishCost = tDef->demolishCost;
-                def->residents = tDef->residents;
-                def->jobs = tDef->jobs;
-                def->transportTypes = tDef->transportTypes;
-                def->power = tDef->power;
-                def->landValueEffect = tDef->landValueEffect;
-                def->pollutionEffect = tDef->pollutionEffect;
-                def->fireRisk = tDef->fireRisk;
-                def->fireProtection = tDef->fireProtection;
+                def->flags = tDef.flags;
+                def->size = tDef.size;
+                def->spriteName = tDef.spriteName;
+                def->buildMethod = tDef.buildMethod;
+                def->buildCost = tDef.buildCost;
+                def->growsInZone = tDef.growsInZone;
+                def->demolishCost = tDef.demolishCost;
+                def->residents = tDef.residents;
+                def->jobs = tDef.jobs;
+                def->transportTypes = tDef.transportTypes;
+                def->power = tDef.power;
+                def->landValueEffect = tDef.landValueEffect;
+                def->pollutionEffect = tDef.pollutionEffect;
+                def->fireRisk = tDef.fireRisk;
+                def->fireProtection = tDef.fireProtection;
             } else if (firstWord == "fire_protection"_s) {
                 if (auto fire_protection = EffectRadius::read(reader); !fire_protection.is_error()) {
                     def->fireProtection = fire_protection.release_value();

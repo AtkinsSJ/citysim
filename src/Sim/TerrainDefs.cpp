@@ -56,8 +56,8 @@ ErrorOr<OwnedRef<TerrainDefs>> TerrainDefs::load(AssetMetadata& metadata, Blob f
 
                 def->name = catalogue.terrainNames.intern(name.value());
                 terrain_ids.append(def->name);
-                catalogue.terrainDefsByName.put(def->name, def);
-                catalogue.terrainNameToType.put(def->name, def->typeID);
+                catalogue.terrainDefsByName.set(def->name, def);
+                catalogue.terrainNameToType.set(def->name, def->typeID);
             } else {
                 reader.error("Unrecognised command: '{0}'"_s, { firstWord });
             }
