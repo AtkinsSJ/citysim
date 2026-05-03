@@ -194,6 +194,9 @@ public:
 
     void clear()
     {
+        if (m_count == 0)
+            return;
+
         for (auto& entry : m_entries)
             entry.clear();
         m_count = 0;
