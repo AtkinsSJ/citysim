@@ -8,7 +8,7 @@
 
 #include <Settings/Setting.h>
 #include <Util/ChunkedArray.h>
-#include <Util/HashTable.h>
+#include <Util/HashMap.h>
 #include <Util/Optional.h>
 #include <Util/Ref.h>
 #include <Util/String.h>
@@ -59,7 +59,7 @@ public:
             it.hasNext();
             it.next()) {
             String name = it.getValue();
-            auto setting = *m_settings_by_name.find(name).value();
+            auto setting = m_settings_by_name.get(name).value();
             callback(*setting);
         }
     }
@@ -69,6 +69,6 @@ protected:
     void register_setting(Setting&);
 
 private:
-    HashTable<Ref<Setting>> m_settings_by_name;
+    HashMap<String, Ref<Setting>> m_settings_by_name;
     ChunkedArray<String> m_settings_order;
 };

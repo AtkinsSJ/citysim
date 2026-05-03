@@ -16,29 +16,21 @@ SettingsState::SettingsState(MemoryArena& arena)
 
 void SettingsState::restore_default_values()
 {
-    for (auto it = m_settings_by_name.iterate();
-        it.hasNext();
-        it.next()) {
-        auto entry = *it.get();
-        entry->restore_default_value();
-    }
+    for (auto& [name, setting] : m_settings_by_name)
+        setting->restore_default_value();
 }
 
 void SettingsState::copy_from(SettingsState& other)
 {
-    for (auto it = m_settings_by_name.iterate();
-        it.hasNext();
-        it.next()) {
-        auto entry = *it.get();
-        entry->set_value_from(other.get_setting(entry->name()).value());
-    }
+    for (auto& [name, setting] : m_settings_by_name)
+        setting->set_value_from(other.get_setting(name).value());
 }
 
 Optional<Ref<Setting>> SettingsState::get_setting(String const& name)
 {
-    auto setting = m_settings_by_name.find(name);
+    auto setting = m_settings_by_name.get(name);
     if (setting.has_value())
-        return *setting.value();
+        return setting.value();
     return {};
 }
 
@@ -54,13 +46,13 @@ void SettingsState::load_from_file(String filename, Blob data)
         }
 
         auto setting_name = maybe_setting_name.value().deprecated_to_string();
-        auto maybe_setting = m_settings_by_name.find(setting_name);
+        auto maybe_setting = m_settings_by_name.get(setting_name);
         if (!maybe_setting.has_value()) {
             reader.warn("Unrecognized setting: {0}"_s, { setting_name });
             continue;
         }
 
-        (*maybe_setting.value())->set_from_file(reader);
+        maybe_setting.value()->set_from_file(reader);
     }
 }
 
@@ -75,11 +67,11 @@ bool SettingsState::save_to_file(String filename)
         it.hasNext();
         it.next()) {
         String name = it.getValue();
-        auto& setting = *m_settings_by_name.find(name).value();
+        auto& setting = *m_settings_by_name.get(name).value();
 
         stb.append(name);
         stb.append(" = "_s);
-        stb.append(setting->serialize_value());
+        stb.append(setting.serialize_value());
         stb.append('\n');
     }
 
@@ -97,6 +89,6 @@ bool SettingsState::save_to_file(String filename)
 
 void SettingsState::register_setting(Setting& setting)
 {
-    m_settings_by_name.put(setting.name(), setting);
+    m_settings_by_name.set(setting.name(), setting);
     m_settings_order.append(setting.name());
 }
