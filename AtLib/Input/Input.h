@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2015-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -14,7 +14,7 @@
 #include <Util/Basic.h>
 #include <Util/EnumMap.h>
 #include <Util/Flags.h>
-#include <Util/HashTable.h>
+#include <Util/HashMap.h>
 #include <Util/String.h>
 #include <Util/StringBuffer.h>
 #include <Util/StringView.h>
@@ -63,7 +63,7 @@ struct InputState {
     // Extra
     bool receivedQuitSignal;
 
-    HashTable<SDL_Keycode> keyNames { SDL_NUM_SCANCODES };
+    HashMap<String, SDL_Keycode> key_by_name { SDL_NUM_SCANCODES };
 
     void* capturedInputTarget; // eg, a TextInput that's currently consuming all key presses
 };

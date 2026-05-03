@@ -1,11 +1,10 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2015-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "Input.h"
-#include <App/App.h>
 #include <Debug/Debug.h>
 #include <Gfx/Renderer.h>
 #include <SDL2/SDL_clipboard.h>
@@ -24,24 +23,24 @@ void init_input_state(MemoryArena& system_arena)
     // Letters
     for (char c = 'A'; c <= 'Z'; c++) {
         String key = system_arena.allocate_string(StringView { &c, 1 });
-        s_input_state.keyNames.put(key, SDLK_a + (c - 'A'));
+        s_input_state.key_by_name.set(key, SDLK_a + (c - 'A'));
     }
 
     // Numbers
     for (char i = 0; i <= 9; i++) {
         char c = '0' + i;
         String key = system_arena.allocate_string(StringView { &c, 1 });
-        s_input_state.keyNames.put(key, SDLK_0 + i);
+        s_input_state.key_by_name.set(key, SDLK_0 + i);
     }
 
     // F keys
     for (char i = 0; i <= 12; i++) {
         String key = system_arena.allocate_string(myprintf("F{0}"_s, { formatInt(i + 1) }));
-        s_input_state.keyNames.put(key, SDLK_F1 + i);
+        s_input_state.key_by_name.set(key, SDLK_F1 + i);
     }
 
     // Misc
-    s_input_state.keyNames.put(system_arena.allocate_string("Home"_sv), SDLK_HOME);
+    s_input_state.key_by_name.set(system_arena.allocate_string("Home"_sv), SDLK_HOME);
 }
 
 InputState& input_state()

@@ -51,7 +51,7 @@ Optional<KeyboardShortcut> KeyboardShortcut::from_string(StringView shortcut_str
         } else {
             // FIXME: Make HashTable compatible with StringViews.
             auto key_string = key_name.value().deprecated_to_string();
-            if (auto found_key = input_state().keyNames.find_value(key_string); found_key.has_value())
+            if (auto found_key = input_state().key_by_name.get(key_string); found_key.has_value())
                 return KeyboardShortcut { found_key.release_value(), move(modifiers) };
 
             // Error!
