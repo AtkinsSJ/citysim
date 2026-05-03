@@ -14,8 +14,8 @@
 #include <Settings/SettingsChangeListener.h>
 #include <Util/ChunkedArray.h>
 #include <Util/Function.h>
+#include <Util/HashMap.h>
 #include <Util/HashSet.h>
-#include <Util/HashTable.h>
 #include <Util/StringTable.h>
 
 namespace Assets {
@@ -37,8 +37,8 @@ struct AssetManager final
     smm maxAssetMemoryAllocated;
 
     String assetsPath;
-    HashTable<AssetType> fileExtensionToType;
-    HashTable<AssetType> directoryNameToType;
+    HashMap<String, AssetType> fileExtensionToType;
+    HashMap<String, AssetType> directoryNameToType;
 
     ChunkedArray<AssetMetadata> allAssets;
 
@@ -47,7 +47,7 @@ struct AssetManager final
 
         AssetLoader& loader;
 
-        HashTable<AssetMetadata*> assets_with_this_type;
+        HashMap<String, AssetMetadata*> assets_with_this_type;
 
         // If a requested asset is not found, the one here is used instead.
         // Probably most of these will be empty, but we do need a placeholder sprite at least,
@@ -64,8 +64,8 @@ struct AssetManager final
     // It feels icky having parts of assets directly in this struct, but when there's only 1, and you
     // have to do a hashtable lookup inside it, it makes more sense to avoid the "find the asset" lookup.
     // FIXME: TextCatalogue?
-    HashTable<String> texts;
-    HashTable<String> defaultTexts; // "en" locale
+    HashMap<String, String> texts;
+    HashMap<String, String> defaultTexts; // "en" locale
     HashSet<String> missingTextIDs;
 
     ChunkedArray<AssetManagerListener*> listeners;
@@ -97,8 +97,7 @@ struct AssetManager final
     void for_each_asset_of_type(Function<void(AssetMetadata&, T&)> callback)
     {
         auto& assets_of_type = asset_type_data[T::asset_type()].assets_with_this_type;
-        for (auto it = assets_of_type.iterate(); it.hasNext(); it.next()) {
-            AssetMetadata* asset = *it.get();
+        for (auto& [name, asset] : assets_of_type) {
             callback(*asset, dynamic_cast<T&>(*asset->loaded_asset));
         }
     }

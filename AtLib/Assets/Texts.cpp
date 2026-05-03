@@ -13,7 +13,7 @@ namespace Assets {
 
 ErrorOr<OwnedRef<Texts>> Texts::load(AssetMetadata& metadata, Blob file_data, bool is_fallback_locale)
 {
-    HashTable<String>& texts_table = is_fallback_locale ? asset_manager().defaultTexts : asset_manager().texts;
+    HashMap<String, String>& texts_table = is_fallback_locale ? asset_manager().defaultTexts : asset_manager().texts;
     LineReader reader { metadata.shortName, file_data };
 
     // NB: We store the strings inside the asset data, so it's one block of memory instead of many small ones.
@@ -71,14 +71,13 @@ ErrorOr<OwnedRef<Texts>> Texts::load(AssetMetadata& metadata, Blob file_data, bo
         // Check that we don't already have a text with that name.
         // If we do, one will overwrite the other, and that could be unpredictable if they're
         // in different files. Things will still work, but it would be confusing! And unintended.
-        auto existing_text = texts_table.find_value(key);
-        if (existing_text.has_value() && existing_text != key) {
+        if (auto existing_text = texts_table.get(key); existing_text.has_value() && existing_text != key) {
             reader.warn("Text asset with ID '{0}' already exists in the texts table! Existing value: \"{1}\""_s, { key, existing_text.value() });
         }
 
         keys.append(key);
 
-        texts_table.put(key, String { text_start, text_length });
+        texts_table.set(key, String { text_start, text_length });
     }
 
     return adopt_own(*new Texts(move(data), move(keys), is_fallback_locale));
@@ -94,7 +93,7 @@ Texts::Texts(Blob data, Array<String> keys, bool is_fallback_locale)
 void Texts::unload(AssetMetadata&)
 {
     // Remove all of our texts from the table
-    HashTable<String>* textsTable = (m_is_fallback_locale ? &asset_manager().defaultTexts : &asset_manager().texts);
+    auto* textsTable = (m_is_fallback_locale ? &asset_manager().defaultTexts : &asset_manager().texts);
     for (auto const& key : m_keys)
         textsTable->remove(key);
     asset_manager().deallocate(m_data);

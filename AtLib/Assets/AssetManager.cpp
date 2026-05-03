@@ -95,7 +95,7 @@ AssetMetadata* AssetManager::add_asset(AssetType type, StringView short_name, Fl
     asset->state = AssetMetadata::State::Unloaded;
     asset->flags = flags;
 
-    asset_type_data[type].assets_with_this_type.put(internedShortName, asset);
+    asset_type_data[type].assets_with_this_type.set(internedShortName, asset);
 
     return asset;
 }
@@ -204,12 +204,12 @@ void AssetManager::scan_assets_from_directory(String subdirectory, Optional<Asse
         }
 
         String filename = assetStrings.intern(file_info.filename);
-        auto assetType = [this, &manual_asset_type, &filename]() -> Optional<AssetType> {
+        auto assetType = [this, &manual_asset_type, &filename]() -> Optional<AssetType&> {
             // Attempt to categorise the asset based on file extension
             if (manual_asset_type.has_value())
                 return manual_asset_type.value();
             auto file_extension = get_file_extension(filename);
-            return fileExtensionToType.find_value(file_extension.deprecated_to_string());
+            return fileExtensionToType.get(file_extension.deprecated_to_string());
         }();
 
         if (assetType.has_value()) {
@@ -226,12 +226,8 @@ void AssetManager::scan_assets()
 
     scan_assets_from_directory({});
 
-    for (auto it = directoryNameToType.iterate();
-        it.hasNext();
-        it.next()) {
-        auto entry = it.getEntry();
-        scan_assets_from_directory(entry->key, entry->value);
-    }
+    for (auto& [name, type] : directoryNameToType)
+        scan_assets_from_directory(name, type);
 }
 
 bool AssetManager::have_asset_files_changed() const
@@ -293,7 +289,7 @@ AssetMetadata& getAsset(AssetType type, String shortName)
 
 AssetMetadata* getAssetIfExists(AssetType type, String shortName)
 {
-    auto asset = s_assets->asset_type_data[type].assets_with_this_type.find_value(shortName);
+    auto asset = s_assets->asset_type_data[type].assets_with_this_type.get(shortName);
     return asset.value_or(nullptr);
 }
 
@@ -305,12 +301,11 @@ String getText(String name)
 
     String result = name;
 
-    auto found_text = s_assets->texts.find_value(name);
-    if (found_text.has_value()) {
+    if (auto found_text = s_assets->texts.get(name); found_text.has_value()) {
         result = found_text.release_value();
     } else {
         // Try to fall back to english if possible
-        auto default_text = s_assets->defaultTexts.find_value(name);
+        auto default_text = s_assets->defaultTexts.get(name);
         if (default_text.has_value()) {
             result = default_text.release_value();
         }
@@ -391,10 +386,10 @@ AssetType AssetManager::register_asset_type(String name, AssetLoader& loader, As
     asset_type_data.append(move(data));
 
     if (config.directory.has_value())
-        directoryNameToType.put(assetStrings.intern(config.directory.value()), type);
+        directoryNameToType.set(assetStrings.intern(config.directory.value()), type);
 
     if (config.file_extension.has_value())
-        fileExtensionToType.put(assetStrings.intern(config.file_extension.value()), type);
+        fileExtensionToType.set(assetStrings.intern(config.file_extension.value()), type);
 
     return type;
 }
