@@ -11,6 +11,7 @@
 #include <UI/UI.h>
 #include <UI/UITheme.h>
 #include <Util/ChunkedArray.h>
+#include <Util/HashMap.h>
 
 struct ConsoleOutputLine {
     String text;
@@ -65,7 +66,7 @@ struct Console : public AssetManagerListener {
     ChunkedArray<ConsoleOutputLine> outputLines;
     UI::Scrollbar scrollbar { Orientation::Vertical };
 
-    HashTable<Command> commands { 128 };
+    HashMap<String, Command> commands { 128 };
     ChunkedArray<CommandShortcut> commandShortcuts;
 };
 

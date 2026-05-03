@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2016-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -10,7 +10,7 @@
 #include <SDL2/SDL_timer.h>
 #include <Util/DeprecatedLinkedList.h>
 #include <Util/EnumMap.h>
-#include <Util/HashTable.h>
+#include <Util/HashMap.h>
 #include <Util/Pool.h>
 
 #define GLUE_(a, b) a##b
@@ -168,7 +168,7 @@ struct DebugState {
     DebugRenderBufferData* currentRenderBuffer;
     DebugAssetData assetData; // Not a sentinel because there's only one asset system!
 
-    HashTable<DebugCodeData> codeData { 2048, 0.5f };
+    HashMap<String, DebugCodeData> codeData { 2048, 0.5f };
 
     // Processed stuff
     DebugCodeDataWrapper topCodeBlocksFreeListSentinel;
@@ -224,7 +224,9 @@ void debugTrackProfile(String name, u64 cycleCount, DebugCodeDataTag tag = Debug
 
 inline DebugCodeData* debugFindOrAddCodeData(String name, DebugCodeDataTag tag)
 {
-    return &globalDebugState->codeData.ensure(name, DebugCodeData { .name = name, .tag = tag });
+    return &globalDebugState->codeData.ensure(name, [&] {
+        return DebugCodeData { .name = name, .tag = tag };
+    });
 }
 
 struct DebugBlock {

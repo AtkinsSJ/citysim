@@ -45,21 +45,20 @@ void processDebugData(DebugState* debugState)
     moveAllNodes(&debugState->topCodeBlocksSentinel, &debugState->topCodeBlocksFreeListSentinel);
     ASSERT(linkedListIsEmpty(&debugState->topCodeBlocksSentinel)); // List we just freed is not empty!
 
-    for (auto it = debugState->codeData.iterate(); it.hasNext(); it.next()) {
-        DebugCodeData* code = it.get();
+    for (auto& [name, code] : debugState->codeData) {
 
         // Move the `working` stuff into the correct frame
         if (debugState->captureDebugData) {
-            code->callCount[oldWritingFrameIndex] = code->workingCallCount;
-            code->totalCycleCount[oldWritingFrameIndex] = code->workingTotalCycleCount;
-            code->averageTotalCycleCount = 0;
+            code.callCount[oldWritingFrameIndex] = code.workingCallCount;
+            code.totalCycleCount[oldWritingFrameIndex] = code.workingTotalCycleCount;
+            code.averageTotalCycleCount = 0;
             for (s32 frameIndex = 0; frameIndex < DEBUG_FRAMES_COUNT; frameIndex++) {
-                code->averageTotalCycleCount += code->totalCycleCount[frameIndex];
+                code.averageTotalCycleCount += code.totalCycleCount[frameIndex];
             }
-            code->averageTotalCycleCount /= DEBUG_FRAMES_COUNT;
+            code.averageTotalCycleCount /= DEBUG_FRAMES_COUNT;
         }
-        code->workingCallCount = 0;
-        code->workingTotalCycleCount = 0;
+        code.workingCallCount = 0;
+        code.workingTotalCycleCount = 0;
 
         //
         // Calculate new top blocks list
@@ -70,7 +69,7 @@ void processDebugData(DebugState* debugState)
         bool foundSmallerItem = false;
         while (target != &debugState->topCodeBlocksSentinel) {
             if (target->data->totalCycleCount[debugState->readingFrameIndex]
-                < code->totalCycleCount[debugState->readingFrameIndex]) {
+                < code.totalCycleCount[debugState->readingFrameIndex]) {
                 foundSmallerItem = true;
                 break;
             }
@@ -96,7 +95,7 @@ void processDebugData(DebugState* debugState)
                 addToLinkedList(item, target);
             }
 
-            item->data = code;
+            item->data = &code;
         }
 
         ASSERT(countNodes(&debugState->topCodeBlocksSentinel) + countNodes(&debugState->topCodeBlocksFreeListSentinel) == DEBUG_TOP_CODE_BLOCKS_COUNT); // We lost a top code blocks node!

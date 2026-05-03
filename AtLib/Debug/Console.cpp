@@ -146,12 +146,9 @@ void updateAndRenderConsole(Console* console)
                     // Eventually, we might want to cache an array of commands, but that's a low priority for now
                     Optional<StringView> command_to_complete;
 
-                    for (auto it = console->commands.iterate();
-                        it.hasNext();
-                        it.next()) {
-                        Command* c = it.get();
-                        if (c->name.view().starts_with(word_to_complete)) {
-                            command_to_complete = c->name.view();
+                    for (auto& [name, command] : console->commands) {
+                        if (name.starts_with(word_to_complete)) {
+                            command_to_complete = name.view();
                             break;
                         }
                     }
@@ -291,19 +288,10 @@ void consoleHandleCommand(Console* console, StringView commandInput)
             auto firstToken = tokens.next_token().release_value();
 
             // Find the command
-            Command* command = nullptr;
-            for (auto it = console->commands.iterate();
-                it.hasNext();
-                it.next()) {
-                Command* c = it.get();
-                if (c->name.view() == firstToken) {
-                    command = c;
-                    break;
-                }
-            }
+            auto command = console->commands.get(firstToken.deprecated_to_string());
 
             // Run the command
-            if (command != nullptr) {
+            if (command.has_value()) {
                 auto argCount = token_count - 1;
                 bool tooManyArgs = (argCount > command->maxArgs) && (command->maxArgs != -1);
                 if ((argCount < command->minArgs) || tooManyArgs) {
@@ -360,7 +348,7 @@ Rect2I getConsoleScrollbarBounds(Console* console)
 void Console::register_command(Command&& command)
 {
     auto name = command.name;
-    commands.put(name, move(command));
+    commands.set(name, move(command));
 }
 
 void Console::after_assets_loaded()
@@ -394,12 +382,8 @@ ConsoleCommand(help)
 {
     consoleWriteLine("Available commands are:"_s);
 
-    for (auto it = globalConsole->commands.iterate();
-        it.hasNext();
-        it.next()) {
-        Command* command = it.get();
-        consoleWriteLine(myprintf(" - {0}"_s, { command->name }));
-    }
+    for (auto& [name, command] : globalConsole->commands)
+        consoleWriteLine(myprintf(" - {0}"_s, { name }));
 }
 
 ConsoleCommand(reload_assets)
