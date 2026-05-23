@@ -24,6 +24,14 @@ include_directories("src")
 add_subdirectory("AtLib")
 target_include_directories(CitySim PRIVATE "./AtLib")
 
+include(FetchContent)
+FetchContent_Declare(
+    flecs
+    GIT_REPOSITORY https://github.com/SanderMertens/flecs.git
+    GIT_TAG d7d0c4f7afb4518a6bae749efdc52c7cb5cffee6 # v4.1.5
+)
+FetchContent_MakeAvailable(flecs)
+
 target_compile_definitions(CitySim PRIVATE
     $<$<CONFIG:Debug>:
         BUILD_DEBUG=1
@@ -33,6 +41,6 @@ target_compile_definitions(CitySim PRIVATE
     >
 )
 
-target_link_libraries(CitySim PRIVATE AtLib)
+target_link_libraries(CitySim PRIVATE AtLib flecs::flecs_static)
 
 file(CREATE_LINK ${CMAKE_SOURCE_DIR}/assets ${CMAKE_BINARY_DIR}/assets SYMBOLIC)
