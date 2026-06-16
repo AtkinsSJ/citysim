@@ -1,5 +1,6 @@
 target_sources(CitySim PRIVATE
     AssetLoader.cpp
+    Basic.cpp
     Building.cpp
     BuildingCatalogue.cpp
     BuildingDefs.cpp

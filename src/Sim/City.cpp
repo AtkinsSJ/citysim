@@ -694,3 +694,11 @@ void City::update_adjacent_building_variants(Rect2I footprint)
         }
     }
 }
+
+mod_city::mod_city(flecs::world& world)
+{
+    world.module<mod_city>();
+    
+    world.set<CityData>({});
+    world.set<GameClock>({});
+}

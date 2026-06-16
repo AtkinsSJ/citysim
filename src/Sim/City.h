@@ -21,6 +21,7 @@
 #include <Util/ChunkedArray.h>
 #include <Util/OccupancyArray.h>
 #include <Util/Rectangle.h>
+#include <flecs.h>
 
 struct CitySector : public BasicSector {
     // NB: A building is owned by a CitySector if its top-left corner tile is inside that CitySector.
@@ -147,3 +148,19 @@ private:
 };
 
 u8 const maxDistanceToWater = 10;
+
+struct mod_city {
+    explicit mod_city(flecs::world&);
+};
+
+struct CityData {
+    // TODO: These want to be in some kind of buffer somewhere so they can be modified!
+    String name;
+    String player_name;
+
+    Rect2I bounds;
+
+    // FIXME: Separate budget
+    s32 funds { 0 };
+    s32 monthly_expenditure { 0 };
+};

@@ -93,6 +93,7 @@ public:
     virtual void update_and_render(float delta_time) override;
 
     MemoryArena& arena() { return m_arena; }
+    flecs::world& world() { return m_world; }
     City* city() { return m_city.ptr(); }
     void set_city(OwnedRef<City>);
 
@@ -113,7 +114,13 @@ private:
     void move_camera_from_input(Camera&, V2 window_size, V2 window_mouse_pos, float delta_time);
 
     MemoryArena m_arena { "Game"_s };
+    flecs::world m_world;
     OwnedPtr<City> m_city;
+
+    flecs::entity m_day_pipeline;
+    flecs::entity m_week_pipeline;
+    flecs::entity m_month_pipeline;
+    flecs::entity m_year_pipeline;
 
     EnumMap<DataView, DataViewUI> m_data_view_ui;
     DataView m_active_data_view { DataView::None };
