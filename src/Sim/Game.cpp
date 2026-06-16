@@ -17,6 +17,7 @@
 #include <Menus/SaveFile.h>
 #include <Menus/SavedGames.h>
 #include <Settings/Settings.h>
+#include <Sim/Basic.h>
 #include <Sim/BuildingCatalogue.h>
 #include <Sim/City.h>
 #include <Sim/TerrainCatalogue.h>
@@ -524,9 +525,44 @@ ErrorOr<OwnedRef<GameScene>> GameScene::from_saved_game(SavedGameInfo const& sav
     return game_scene;
 }
 
+struct DayTick { };
+struct WeekTick { };
+struct MonthTick { };
+struct YearTick { };
+
+template<typename PhaseTag>
+static flecs::entity make_sim_pipeline(flecs::world& world, char const* pre_name, char const* on_name, char const* post_name)
+{
+    auto pre_phase = world.entity(pre_name).add<PhaseTag>();
+    auto on_phase = world.entity(on_name).add<PhaseTag>().depends_on(pre_phase);
+    [[maybe_unused]] auto post_phase = world.entity(post_name).add<PhaseTag>().depends_on(on_phase);
+
+    return world.pipeline()
+        .with(flecs::System)
+        .with<PhaseTag>()
+        .cascade(flecs::DependsOn)
+        .without(flecs::Disabled)
+        .up(flecs::DependsOn)
+        .without(flecs::Disabled)
+        .up(flecs::ChildOf)
+        .build();
+}
+
 GameScene::GameScene()
     : m_active_tool(InspectTool::create())
 {
+    m_day_pipeline = make_sim_pipeline<DayTick>(m_world, "PreDayTick", "OnDayTick", "PostDayTick");
+    m_day_pipeline = make_sim_pipeline<WeekTick>(m_world, "PreWeekTick", "OnWeekTick", "PostWeekTick");
+    m_month_pipeline = make_sim_pipeline<MonthTick>(m_world, "PreMonthTick", "OnMonthTick", "PostMonthTick");
+    m_year_pipeline = make_sim_pipeline<YearTick>(m_world, "PreYearTick", "OnYearTick", "PostYearTick");
+
+    m_world.set<MemoryArena&>(m_arena);
+
+    // NB: The order here matters. Rendering happens in order, and some modules rely on others.
+    m_world.import<mod_basic>();
+    m_world.import<mod_city>();
+    m_world.import<mod_terrain>();
+
     // FIXME: Set cursor for InspectTool
 }
 
@@ -536,7 +572,7 @@ void GameScene::update_and_render(float delta_time)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
 
-    auto& renderer = the_renderer();
+    // auto& renderer = the_renderer();
     City& city = *m_city;
 
     // Update the simulation... need a smarter way of doing this!
@@ -544,60 +580,70 @@ void GameScene::update_and_render(float delta_time)
         DEBUG_BLOCK_T("Update simulation", DebugCodeDataTag::Simulation);
 
         auto clockEvents = city.gameClock.increment(delta_time);
+        if (clockEvents.has(ClockEvents::NewDay)) {
+            logInfo("New day!"_s);
+            m_world.run_pipeline(m_day_pipeline);
+        }
         if (clockEvents.has(ClockEvents::NewWeek)) {
             logInfo("New week!"_s);
+            m_world.run_pipeline(m_week_pipeline);
         }
         if (clockEvents.has(ClockEvents::NewMonth)) {
             logInfo("New month, a budget tick should happen here!"_s);
+            m_world.run_pipeline(m_month_pipeline);
         }
         if (clockEvents.has(ClockEvents::NewYear)) {
             logInfo("New year!"_s);
+            m_world.run_pipeline(m_year_pipeline);
         }
 
-        city.update();
+        // city.update();
     }
+
+    if (!m_world.progress(delta_time))
+        input_state().receivedQuitSignal = true;
 
     // UI!
     update_and_render_game_ui();
 
-    // CAMERA!
-    Camera& world_camera = renderer.world_camera();
-    Camera& ui_camera = renderer.ui_camera();
-    move_camera_from_input(world_camera, ui_camera.size(), ui_camera.mouse_position(), delta_time);
-
-    V2I mouseTilePos = v2i(world_camera.mouse_position());
-    bool mouseIsOverUI = UI::isMouseInputHandled() || UI::mouseIsWithinUIRects();
-
-    city.demolitionRect = Rect2I::create_negative_infinity();
-
-    {
-        DEBUG_BLOCK_T("Tool update", DebugCodeDataTag::GameUpdate);
-        m_active_tool->act(city, mouseIsOverUI, mouseTilePos);
-    }
-
-    if (mouseButtonJustPressed(MouseButton::Right)) {
-        // Switch to inspect tool
-        if (dynamic_cast<InspectTool*>(m_active_tool.ptr()) == nullptr) {
-            set_active_tool(InspectTool::create());
-            renderer.set_cursor("default"_s);
-        }
-    }
-
-    // RENDERING
-    // Pre-calculate the tile area that's visible to the player.
-    // We err on the side of drawing too much, rather than risking having holes in the world.
-    Rect2I visibleTileBounds = Rect2I::create_centre_size(
-        v2i(world_camera.position()), v2i(world_camera.size() / world_camera.zoom()) + v2i(3, 3));
-    visibleTileBounds = visibleTileBounds.intersected(city.bounds);
-
-    // logInfo("visibleTileBounds = {0} {1} {2} {3}"_s, {formatInt(visibleTileBounds.x),formatInt(visibleTileBounds.y),formatInt(visibleTileBounds.w),formatInt(visibleTileBounds.h)});
-
-    city.draw(visibleTileBounds);
-
-    // Data layer rendering
-    if (m_active_data_view != DataView::None) {
-        draw_data_view_overlay(visibleTileBounds);
-    }
+    // // CAMERA!
+    // Camera& world_camera = renderer.world_camera();
+    // Camera& ui_camera = renderer.ui_camera();
+    // move_camera_from_input(world_camera, ui_camera.size(), ui_camera.mouse_position(), delta_time);
+    //
+    // V2I mouseTilePos = v2i(world_camera.mouse_position());
+    // bool mouseIsOverUI = UI::isMouseInputHandled() || UI::mouseIsWithinUIRects();
+    //
+    // city.demolitionRect = Rect2I::create_negative_infinity();
+    //
+    // {
+    //     DEBUG_BLOCK_T("Tool update", DebugCodeDataTag::GameUpdate);
+    //     m_active_tool->act(city, mouseIsOverUI, mouseTilePos);
+    // }
+    //
+    // if (mouseButtonJustPressed(MouseButton::Right)) {
+    //     // Switch to inspect tool
+    //     if (dynamic_cast<InspectTool*>(m_active_tool.ptr()) == nullptr) {
+    //         set_active_tool(InspectTool::create());
+    //         renderer.set_cursor("default"_s);
+    //     }
+    // }
+    //
+    // // RENDERING
+    // // Pre-calculate the tile area that's visible to the player.
+    // // We err on the side of drawing too much, rather than risking having holes in the world.
+    // Rect2I visibleTileBounds = Rect2I::create_centre_size(
+    //     v2i(world_camera.position()), v2i(world_camera.size() / world_camera.zoom()) + v2i(3, 3));
+    // visibleTileBounds = visibleTileBounds.intersected(city.bounds);
+    //
+    // // logInfo("visibleTileBounds = {0} {1} {2} {3}"_s, {formatInt(visibleTileBounds.x),formatInt(visibleTileBounds.y),formatInt(visibleTileBounds.w),formatInt(visibleTileBounds.h)});
+    //
+    // city.draw(visibleTileBounds);
+    //
+    // // Data layer rendering
+    // if (m_active_data_view != DataView::None) {
+    //     draw_data_view_overlay(visibleTileBounds);
+    // }
 }
 
 void GameScene::init_data_view_ui()
@@ -950,6 +996,13 @@ void GameScene::draw_data_view_ui()
 void GameScene::set_city(OwnedRef<City> city)
 {
     m_city = move(city);
+    m_world.set<CityData>({
+        .name = m_city->name,
+        .player_name = m_city->playerName,
+        .bounds = m_city->bounds,
+        .funds = m_city->funds,
+        .monthly_expenditure = m_city->monthlyExpenditure,
+    });
 }
 
 void GameScene::set_active_tool(OwnedRef<Tool> tool)

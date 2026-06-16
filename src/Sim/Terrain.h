@@ -11,6 +11,7 @@
 #include <Sim/Forward.h>
 #include <UI/Forward.h>
 #include <Util/OccupancyArray.h>
+#include <flecs.h>
 
 using TerrainType = u8;
 
@@ -58,3 +59,20 @@ private:
 
 void show_terrain_window();
 void modify_terrain_window_proc(UI::WindowContext* context, void*);
+
+struct mod_terrain {
+    explicit mod_terrain(flecs::world&);
+};
+
+struct TerrainData {
+    Array2<TerrainType> tile_terrain_type;
+    Array2<u8> tile_height;
+    Array2<u8> tile_distance_to_water;
+
+    Array2<u8> tile_sprite_offset;
+    Array2<SpriteRef> tile_sprite;
+    Array2<Optional<SpriteRef>> tile_border_sprite;
+
+    // FIXME: Move to City data
+    s32 terrain_generation_seed { 0 };
+};
