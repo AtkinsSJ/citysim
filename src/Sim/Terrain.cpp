@@ -11,6 +11,7 @@
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
 #include <Menus/SaveFile.h>
+#include <Sim/Basic.h>
 #include <Sim/BuildingCatalogue.h>
 #include <Sim/City.h>
 #include <Sim/Game.h>
@@ -399,4 +400,68 @@ bool TerrainLayer::load(BinaryFileReader& reader)
     }
 
     return succeeded;
+}
+
+static void draw_terrain(TerrainData const& terrain_data, VisibleTileBounds const visible_tile_bounds)
+{
+    DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
+
+    Rect2I const& visible_area = visible_tile_bounds.rect;
+    auto& renderer = the_renderer();
+    auto shader_id = renderer.shaderIds.pixelArt;
+    auto world_buffer = renderer.world_buffer();
+
+    Rect2 sprite_bounds { 0.0f, 0.0f, 1.0f, 1.0f };
+    auto white = Colour::white();
+
+    // FIXME: We should probably be able to combine this into two draw rects calls.
+    for (s32 y = visible_area.y();
+        y < visible_area.y() + visible_area.height();
+        y++) {
+        sprite_bounds.set_y(y);
+
+        for (s32 x = visible_area.x();
+            x < visible_area.x() + visible_area.width();
+            x++) {
+            Sprite* sprite = &terrain_data.tile_sprite.get(x, y).get();
+            sprite_bounds.set_x(x);
+            drawSingleSprite(&renderer.world_buffer(), sprite, sprite_bounds, shader_id, white);
+
+            if (auto& border_sprite_ref = terrain_data.tile_border_sprite.get(x, y); border_sprite_ref.has_value()) {
+                auto& border_sprite = border_sprite_ref.value().get();
+                drawSingleSprite(&renderer.world_buffer(), &border_sprite, sprite_bounds, shader_id, white);
+            }
+        }
+    }
+}
+
+mod_terrain::mod_terrain(flecs::world& world)
+{
+    world.module<mod_terrain>();
+    world.import<mod_basic>();
+
+    // FIXME: Where do we generate the map???
+    world.system("TerrainInit")
+        .kind(flecs::OnStart)
+        .run([](flecs::iter& it) {
+            auto world = it.world();
+            auto& bounds = world.get<CityData>().bounds;
+            auto& arena = world.get_mut<MemoryArena>();
+
+            world.set<TerrainData>({
+                .tile_terrain_type = arena.allocate_array_2d<u8>(bounds.size()),
+                .tile_height = arena.allocate_array_2d<u8>(bounds.size()),
+                .tile_distance_to_water = arena.allocate_array_2d<u8>(bounds.size()),
+                .tile_sprite_offset = arena.allocate_array_2d<u8>(bounds.size()),
+                .tile_sprite = arena.allocate_array_2d<SpriteRef>(bounds.size()),
+                .tile_border_sprite = arena.allocate_array_2d<Optional<SpriteRef>>(bounds.size()),
+                .terrain_generation_seed = 0,
+            });
+        });
+
+    // TODO: Run updates on data when terrain changes.
+
+    world.system<TerrainData const, VisibleTileBounds const>("DrawTerrain")
+        .kind(flecs::OnStore)
+        .each(draw_terrain);
 }
