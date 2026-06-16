@@ -71,3 +71,27 @@ private:
 
 GameTimestamp timestampFromParts(s32 year, MonthOfYear month, s32 day);
 DateTime dateTimeFromTimestamp(GameTimestamp timestamp);
+
+enum class DayPhase : u8 {
+    Pre,
+    On,
+    Post,
+};
+
+enum class WeekPhase : u8 {
+    Pre,
+    On,
+    Post,
+};
+
+enum class MonthPhase : u8 {
+    Pre,
+    On,
+    Post,
+};
+
+enum class YearPhase : u8 {
+    Pre,
+    On,
+    Post,
+};

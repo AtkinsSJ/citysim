@@ -530,12 +530,13 @@ struct WeekTick { };
 struct MonthTick { };
 struct YearTick { };
 
-template<typename PhaseTag>
-static flecs::entity make_sim_pipeline(flecs::world& world, char const* pre_name, char const* on_name, char const* post_name)
+template<typename PhaseTag, typename PhaseEnum>
+static flecs::entity make_pre_on_post_pipeline(flecs::world& world)
 {
-    auto pre_phase = world.entity(pre_name).add<PhaseTag>();
-    auto on_phase = world.entity(on_name).add<PhaseTag>().depends_on(pre_phase);
-    [[maybe_unused]] auto post_phase = world.entity(post_name).add<PhaseTag>().depends_on(on_phase);
+    auto the_enum = enum_type<PhaseEnum>(world);
+    auto pre_phase = world.entity(the_enum.entity(PhaseEnum::Pre)).template add<PhaseTag>();
+    auto on_phase = world.entity(the_enum.entity(PhaseEnum::On)).template add<PhaseTag>().depends_on(pre_phase);
+    [[maybe_unused]] auto post_phase = world.entity(the_enum.entity(PhaseEnum::Post)).template add<PhaseTag>().depends_on(on_phase);
 
     return world.pipeline()
         .with(flecs::System)
@@ -551,10 +552,10 @@ static flecs::entity make_sim_pipeline(flecs::world& world, char const* pre_name
 GameScene::GameScene()
     : m_active_tool(InspectTool::create())
 {
-    m_day_pipeline = make_sim_pipeline<DayTick>(m_world, "PreDayTick", "OnDayTick", "PostDayTick");
-    m_day_pipeline = make_sim_pipeline<WeekTick>(m_world, "PreWeekTick", "OnWeekTick", "PostWeekTick");
-    m_month_pipeline = make_sim_pipeline<MonthTick>(m_world, "PreMonthTick", "OnMonthTick", "PostMonthTick");
-    m_year_pipeline = make_sim_pipeline<YearTick>(m_world, "PreYearTick", "OnYearTick", "PostYearTick");
+    m_day_pipeline = make_pre_on_post_pipeline<DayTick, DayPhase>(m_world);
+    m_week_pipeline = make_pre_on_post_pipeline<WeekTick, WeekPhase>(m_world);
+    m_month_pipeline = make_pre_on_post_pipeline<MonthTick, MonthPhase>(m_world);
+    m_year_pipeline = make_pre_on_post_pipeline<YearTick, YearPhase>(m_world);
 
     m_world.set<MemoryArena&>(m_arena);
 
@@ -573,26 +574,26 @@ void GameScene::update_and_render(float delta_time)
     DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
 
     // auto& renderer = the_renderer();
-    City& city = *m_city;
+    // City& city = *m_city;
 
     // Update the simulation... need a smarter way of doing this!
     if (!UI::hasPauseWindowOpen()) {
         DEBUG_BLOCK_T("Update simulation", DebugCodeDataTag::Simulation);
 
-        auto clockEvents = city.gameClock.increment(delta_time);
-        if (clockEvents.has(ClockEvents::NewDay)) {
+        auto clock_events = m_world.get_mut<GameClock>().increment(delta_time);
+        if (clock_events.has(ClockEvents::NewDay)) {
             logInfo("New day!"_s);
             m_world.run_pipeline(m_day_pipeline);
         }
-        if (clockEvents.has(ClockEvents::NewWeek)) {
+        if (clock_events.has(ClockEvents::NewWeek)) {
             logInfo("New week!"_s);
             m_world.run_pipeline(m_week_pipeline);
         }
-        if (clockEvents.has(ClockEvents::NewMonth)) {
+        if (clock_events.has(ClockEvents::NewMonth)) {
             logInfo("New month, a budget tick should happen here!"_s);
             m_world.run_pipeline(m_month_pipeline);
         }
-        if (clockEvents.has(ClockEvents::NewYear)) {
+        if (clock_events.has(ClockEvents::NewYear)) {
             logInfo("New year!"_s);
             m_world.run_pipeline(m_year_pipeline);
         }
