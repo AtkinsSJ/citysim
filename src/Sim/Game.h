@@ -97,6 +97,8 @@ public:
     City* city() { return m_city.ptr(); }
     void set_city(OwnedRef<City>);
 
+    void generate_map(u32 seed);
+
     Tool const& active_tool() const { return m_active_tool; }
     void set_active_tool(OwnedRef<Tool>);
 
@@ -117,6 +119,7 @@ private:
     flecs::world m_world;
     OwnedPtr<City> m_city;
 
+    flecs::entity m_map_generation_pipeline;
     flecs::entity m_day_pipeline;
     flecs::entity m_week_pipeline;
     flecs::entity m_month_pipeline;

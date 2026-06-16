@@ -5,12 +5,14 @@
  */
 
 #include "City.h"
+
 #include <App/App.h>
 #include <Gfx/Renderer.h>
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
 #include <IO/WriteBuffer.h>
 #include <Menus/SaveFile.h>
+#include <Sim/Basic.h>
 #include <Sim/BuildingCatalogue.h>
 #include <Sim/Layer.h>
 #include <Sim/TerrainCatalogue.h>
@@ -695,10 +697,36 @@ void City::update_adjacent_building_variants(Rect2I footprint)
     }
 }
 
+static void update_visible_tile_bounds(flecs::iter& it, size_t, MapData const& map_data)
+{
+    // Pre-calculate the tile area that's visible to the player.
+    // We err on the side of drawing too much, rather than risking having holes in the world.
+    auto& renderer = the_renderer();
+    auto world_camera = renderer.world_camera();
+    auto world = it.world();
+
+    world.set<VisibleTileBounds>({
+        Rect2I::create_centre_size(
+            v2i(world_camera.position()),
+            v2i(world_camera.size() / world_camera.zoom()) + v2i(3, 3))
+            .intersected(map_data.bounds),
+    });
+}
+
 mod_city::mod_city(flecs::world& world)
 {
     world.module<mod_city>();
-    
+
+    world.component<MapData>().add(flecs::Singleton);
+    world.component<CityData>().add(flecs::Singleton);
+    world.component<GameClock>().add(flecs::Singleton);
+
     world.set<CityData>({});
     world.set<GameClock>({});
+
+    world.system<MapData const>("UpdateVisibleTileBounds")
+        .kind(flecs::PreStore)
+        .read<MapData>()
+        .write<VisibleTileBounds>()
+        .each(update_visible_tile_bounds);
 }

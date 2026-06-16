@@ -8,23 +8,6 @@
 #include <Gfx/Renderer.h>
 #include <Sim/City.h>
 
-static void update_visible_tile_bounds(flecs::iter& it)
-{
-    // Pre-calculate the tile area that's visible to the player.
-    // We err on the side of drawing too much, rather than risking having holes in the world.
-    auto& renderer = the_renderer();
-    auto world_camera = renderer.world_camera();
-    auto world = it.world();
-    auto& city_bounds = world.get<CityData>().bounds;
-
-    world.set<VisibleTileBounds>({
-        Rect2I::create_centre_size(
-            v2i(world_camera.position()),
-            v2i(world_camera.size() / world_camera.zoom()) + v2i(3, 3))
-            .intersected(city_bounds),
-    });
-}
-
 static void draw_entities(flecs::iter& it)
 {
     Rect2I const& crop_area = it.world().get<VisibleTileBounds>().rect;
@@ -38,7 +21,7 @@ static void draw_entities(flecs::iter& it)
 
     while (it.next()) {
         auto positions = it.field<PositionComponent const>(0);
-        auto sprites = it.field<SpriteComponent const>(0);
+        auto sprites = it.field<SpriteComponent const>(1);
 
         for (auto i : it) {
             auto& position = positions[i];
@@ -61,12 +44,9 @@ mod_basic::mod_basic(flecs::world& world)
 
     world.component<VisibleTileBounds>().add(flecs::Singleton);
 
-    world.system("UpdateVisibleTileBounds")
-        .kind(flecs::PreStore)
-        .run(update_visible_tile_bounds);
-
     // FIXME: Depth sorting
     world.system<PositionComponent const, SpriteComponent const>("DrawEntities")
+        .read<VisibleTileBounds>()
         .kind(flecs::OnStore)
         .run(draw_entities);
 }

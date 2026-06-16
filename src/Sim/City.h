@@ -153,12 +153,15 @@ struct mod_city {
     explicit mod_city(flecs::world&);
 };
 
+struct MapData {
+    u32 generation_seed;
+    Rect2I bounds;
+};
+
 struct CityData {
     // TODO: These want to be in some kind of buffer somewhere so they can be modified!
     String name;
     String player_name;
-
-    Rect2I bounds;
 
     // FIXME: Separate budget
     s32 funds { 0 };

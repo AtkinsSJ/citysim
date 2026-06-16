@@ -436,12 +436,13 @@ void debugToolsWindowProc(UI::WindowContext* context, void*)
 OwnedRef<GameScene> GameScene::create_new(u32 seed)
 {
     auto game_scene = adopt_own(*new GameScene);
+    game_scene->generate_map(seed);
 
-    s32 gameStartFunds = 1000000;
-    auto city = City::create(game_scene->m_arena, 128, 128, getText("city_default_name"_s), getText("player_default_name"_s), gameStartFunds);
-    city->terrainLayer.generate(*city, seed);
-    game_scene->set_city(move(city));
-    game_scene->init_data_view_ui();
+    // s32 gameStartFunds = 1000000;
+    // auto city = City::create(game_scene->m_arena, 128, 128, getText("city_default_name"_s), getText("player_default_name"_s), gameStartFunds);
+    // city->terrainLayer.generate(*city, seed);
+    // game_scene->set_city(move(city));
+    // game_scene->init_data_view_ui();
 
     return game_scene;
 }
@@ -525,6 +526,7 @@ ErrorOr<OwnedRef<GameScene>> GameScene::from_saved_game(SavedGameInfo const& sav
     return game_scene;
 }
 
+struct MapGenTag { };
 struct DayTick { };
 struct WeekTick { };
 struct MonthTick { };
@@ -552,6 +554,8 @@ static flecs::entity make_pre_on_post_pipeline(flecs::world& world)
 GameScene::GameScene()
     : m_active_tool(InspectTool::create())
 {
+    m_map_generation_pipeline = make_pre_on_post_pipeline<MapGenTag, MapGenPhase>(m_world);
+
     m_day_pipeline = make_pre_on_post_pipeline<DayTick, DayPhase>(m_world);
     m_week_pipeline = make_pre_on_post_pipeline<WeekTick, WeekPhase>(m_world);
     m_month_pipeline = make_pre_on_post_pipeline<MonthTick, MonthPhase>(m_world);
@@ -605,7 +609,7 @@ void GameScene::update_and_render(float delta_time)
         input_state().receivedQuitSignal = true;
 
     // UI!
-    update_and_render_game_ui();
+    // update_and_render_game_ui();
 
     // // CAMERA!
     // Camera& world_camera = renderer.world_camera();
@@ -1000,10 +1004,19 @@ void GameScene::set_city(OwnedRef<City> city)
     m_world.set<CityData>({
         .name = m_city->name,
         .player_name = m_city->playerName,
-        .bounds = m_city->bounds,
         .funds = m_city->funds,
         .monthly_expenditure = m_city->monthlyExpenditure,
     });
+}
+
+void GameScene::generate_map(u32 seed)
+{
+    m_world.set<MapData>({
+        .generation_seed = seed,
+        .bounds = { 0, 0, 128, 128 },
+    });
+
+    m_world.run_pipeline(m_map_generation_pipeline);
 }
 
 void GameScene::set_active_tool(OwnedRef<Tool> tool)
