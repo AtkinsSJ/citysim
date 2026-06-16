@@ -101,6 +101,15 @@ public:
         array = {};
     }
 
+    template<typename T>
+    void deallocate(Array2<T>& array2)
+    {
+        Span<u8> span { array2.count() * sizeof(T), reinterpret_cast<u8*>(array2.items) };
+        array2.~Array2();
+        deallocate_internal(span);
+        array2 = {};
+    }
+
 protected:
     // FIXME: Handle alignment here
     virtual Span<u8> allocate_internal(size_t size) = 0;

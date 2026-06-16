@@ -28,6 +28,13 @@ public:
     u32 height() const { return m_height; }
     u32 count() const { return m_width * m_height; }
 
+    Rect2I bounds() const
+    {
+        return {
+            0, 0, static_cast<s32>(m_width), static_cast<s32>(m_height)
+        };
+    }
+
     T& get(s32 x, s32 y)
     {
         ASSERT(x >= 0 && x < m_width && y >= 0 && y < m_height);
