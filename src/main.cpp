@@ -159,20 +159,12 @@ int main(int argc, char* argv[])
         globalConsole->register_command(
             { "generate"_s, [](Console&, s32, StringView) {
                  auto game = try_get_game();
-                 if (!game.has_value() || game->city() == nullptr)
+                 if (!game.has_value())
                      return;
-                 auto& city = *game->city();
 
-                 // TODO: Some kind of reset would be better than this, but this is temporary until we add
-                 //       proper terrain generation and UI, so meh.
-                 if (city.buildings.count > 0) {
-                     city.demolish_rect(city.bounds);
-                     city.highestBuildingID = 0;
-                 }
                  // FIXME: Make command take a seed parameter
                  auto seed = static_cast<u32>(time(nullptr));
-                 city.terrainLayer.generate(city, seed);
-
+                 game->generate_map(seed);
                  consoleWriteLine("Generated new map"_s, ConsoleLineStyle::Success);
              } });
 

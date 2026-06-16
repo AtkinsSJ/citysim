@@ -402,6 +402,204 @@ bool TerrainLayer::load(BinaryFileReader& reader)
     return succeeded;
 }
 
+static void generate_terrain(flecs::iter& it, size_t, MapData const& map_data, MemoryArena& arena)
+{
+    DEBUG_FUNCTION();
+    logInfo("Generate terrain!"_s);
+
+    auto world = it.world();
+    auto& bounds = map_data.bounds;
+    TerrainData terrain {
+        .tile_terrain_type = arena.allocate_array_2d<u8>(bounds.size()),
+        .tile_height = arena.allocate_array_2d<u8>(bounds.size()),
+        .tile_distance_to_water = arena.allocate_array_2d<u8>(bounds.size()),
+        .tile_sprite_offset = arena.allocate_array_2d<u8>(bounds.size()),
+        .tile_sprite = arena.allocate_array_2d<SpriteRef>(bounds.size()),
+        .tile_border_sprite = arena.allocate_array_2d<Optional<SpriteRef>>(bounds.size()),
+    };
+
+    auto& cosmetic_random = App::the().cosmetic_random();
+
+    u8 tGround = truncate<u8>(findTerrainTypeByName("ground"_s));
+    u8 tWater = truncate<u8>(findTerrainTypeByName("water"_s));
+    // BuildingDef* treeDef = findBuildingDef("tree"_s);
+
+    auto terrainRandom = Random::create(map_data.generation_seed);
+    terrain.tile_terrain_type.fill(tGround);
+
+    for (s32 y = 0; y < bounds.height(); y++) {
+        for (s32 x = 0; x < bounds.width(); x++) {
+            terrain.tile_sprite_offset.set(x, y, cosmetic_random.random_integer<u8>());
+        }
+    }
+
+    // Generate a river
+    Array<float> riverOffset = temp_arena().allocate_filled_array<float>(bounds.height());
+    terrainRandom->fill_with_noise(riverOffset, 10);
+    float riverMaxWidth = terrainRandom->random_float_between(12, 16);
+    float riverMinWidth = terrainRandom->random_float_between(6, riverMaxWidth);
+    float riverWaviness = 16.0f;
+    s32 riverCentreBase = terrainRandom->random_between(ceil_s32(bounds.width() * 0.4f), floor_s32(bounds.width() * 0.6f));
+    for (s32 y = 0; y < bounds.height(); y++) {
+        s32 riverWidth = ceil_s32(lerp(riverMinWidth, riverMaxWidth, ((float)y / (float)bounds.height())));
+        s32 riverCentre = riverCentreBase - round_s32((riverWaviness * 0.5f) + (riverWaviness * riverOffset[y]));
+        s32 riverLeft = riverCentre - (riverWidth / 2);
+
+        for (s32 x = riverLeft; x < riverLeft + riverWidth; x++) {
+            terrain.tile_terrain_type.set(x, y, tWater);
+        }
+    }
+
+    // Coastline
+    Array<float> coastlineOffset = temp_arena().allocate_filled_array<float>(bounds.width());
+    terrainRandom->fill_with_noise(coastlineOffset, 10);
+    for (s32 x = 0; x < bounds.width(); x++) {
+        s32 coastDepth = 8 + round_s32(coastlineOffset[x] * 16.0f);
+
+        for (s32 i = 0; i < coastDepth; i++) {
+            s32 y = bounds.height() - 1 - i;
+
+            terrain.tile_terrain_type.set(x, y, tWater);
+        }
+    }
+
+    // Lakes/ponds
+    s32 pondCount = terrainRandom->random_between(1, 4);
+    for (s32 pondIndex = 0; pondIndex < pondCount; pondIndex++) {
+        s32 pondCentreX = terrainRandom->random_between(0, bounds.width());
+        s32 pondCentreY = terrainRandom->random_between(0, bounds.height());
+
+        float pondMinRadius = terrainRandom->random_float_between(3.0f, 5.0f);
+        float pondMaxRadius = terrainRandom->random_float_between(pondMinRadius + 3.0f, 20.0f);
+
+        Splat pondSplat = Splat::create_random(pondCentreX, pondCentreY, pondMinRadius, pondMaxRadius, 36, terrainRandom);
+
+        Rect2I boundingBox = pondSplat.bounding_box().intersected(bounds);
+        for (s32 y = boundingBox.y(); y < boundingBox.y() + boundingBox.height(); y++) {
+            for (s32 x = boundingBox.x(); x < boundingBox.x() + boundingBox.width(); x++) {
+                if (pondSplat.contains(x, y)) {
+                    terrain.tile_terrain_type.set(x, y, tWater);
+                }
+            }
+        }
+    }
+
+    // FIXME: Reimplement when we have buildings
+    // // Forest splats
+    // if (treeDef == nullptr) {
+    //     logError("Map generator is unable to place any trees, because the 'tree' building was not found."_s);
+    // } else {
+    //     s32 forestCount = terrainRandom->random_between(10, 20);
+    //     for (s32 forestIndex = 0; forestIndex < forestCount; forestIndex++) {
+    //         s32 centreX = terrainRandom->random_between(0, bounds.width());
+    //         s32 centreY = terrainRandom->random_between(0, bounds.height());
+    //
+    //         float minRadius = terrainRandom->random_float_between(2.0f, 8.0f);
+    //         float maxRadius = terrainRandom->random_float_between(minRadius + 1.0f, 30.0f);
+    //
+    //         Splat forestSplat = Splat::create_random(centreX, centreY, minRadius, maxRadius, 36, terrainRandom);
+    //
+    //         Rect2I boundingBox = forestSplat.bounding_box().intersected(bounds);
+    //         for (s32 y = boundingBox.y(); y < boundingBox.y() + boundingBox.height(); y++) {
+    //             for (s32 x = boundingBox.x(); x < boundingBox.x() + boundingBox.width(); x++) {
+    //                 if (terrain_at(x, y).canBuildOn
+    //                     && (city.get_building_at(x, y) == nullptr)
+    //                     && forestSplat.contains(x, y)) {
+    //                     city.add_building(treeDef, { x, y, treeDef->size.x, treeDef->size.y });
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+
+    world.set<TerrainData>(move(terrain));
+}
+
+static void assign_terrain_sprites(TerrainData& terrain, Rect2I bounds)
+{
+    DEBUG_FUNCTION();
+    auto& terrain_catalogue = TerrainCatalogue::the();
+
+    // Assign a terrain tile variant for each tile, depending on its neighbours
+    for (s32 y = bounds.y(); y < bounds.y() + bounds.height(); y++) {
+        for (s32 x = bounds.x(); x < bounds.x() + bounds.width(); x++) {
+            auto& def = terrain_catalogue.get_def(terrain.tile_terrain_type.get(x, y));
+
+            terrain.tile_sprite.set(x, y, SpriteRef { def.spriteName, terrain.tile_sprite_offset.get(x, y) });
+
+            // FIXME: The way borders work is weird. It assumes there's only one neighbouring terrain type that draws borders.
+            if (def.drawBordersOver) {
+                // First, determine if we have a bordering type
+                TerrainDef const* borders[8] {
+                    // Starting NW, going clockwise
+                    &terrain_catalogue.get_def(terrain.tile_terrain_type.get_if_exists(x - 1, y - 1, 0)),
+                    &terrain_catalogue.get_def(terrain.tile_terrain_type.get_if_exists(x, y - 1, 0)),
+                    &terrain_catalogue.get_def(terrain.tile_terrain_type.get_if_exists(x + 1, y - 1, 0)),
+                    &terrain_catalogue.get_def(terrain.tile_terrain_type.get_if_exists(x + 1, y, 0)),
+                    &terrain_catalogue.get_def(terrain.tile_terrain_type.get_if_exists(x + 1, y + 1, 0)),
+                    &terrain_catalogue.get_def(terrain.tile_terrain_type.get_if_exists(x, y + 1, 0)),
+                    &terrain_catalogue.get_def(terrain.tile_terrain_type.get_if_exists(x - 1, y + 1, 0)),
+                    &terrain_catalogue.get_def(terrain.tile_terrain_type.get_if_exists(x - 1, y, 0)),
+                };
+                // Find the first match, if any
+                // Eventually we probably want to use whichever border terrain is most common instead
+                TerrainDef const* border_terrain = nullptr;
+                for (s32 i = 0; i < 8; i++) {
+                    if ((borders[i] != &def) && (!borders[i]->borderSpriteNames.is_empty())) {
+                        border_terrain = borders[i];
+                        break;
+                    }
+                }
+
+                if (border_terrain) {
+                    // Determine which border sprite to use based on our borders
+                    u8 n = (borders[1] == border_terrain) ? 2 : (borders[0] == border_terrain) ? 1
+                                                                                               : 0;
+                    u8 e = (borders[3] == border_terrain) ? 2 : (borders[2] == border_terrain) ? 1
+                                                                                               : 0;
+                    u8 s = (borders[5] == border_terrain) ? 2 : (borders[4] == border_terrain) ? 1
+                                                                                               : 0;
+                    u8 w = (borders[7] == border_terrain) ? 2 : (borders[6] == border_terrain) ? 1
+                                                                                               : 0;
+
+                    u8 border_sprite_index = w + (s * 3) + (e * 9) + (n * 27) - 1;
+                    ASSERT(border_sprite_index >= 0 && border_sprite_index <= 80);
+                    terrain.tile_border_sprite.set(x, y, SpriteRef { border_terrain->borderSpriteNames[border_sprite_index], terrain.tile_sprite_offset.get(x, y) });
+                } else {
+                    terrain.tile_border_sprite.set(x, y, {});
+                }
+            } else {
+                terrain.tile_border_sprite.set(x, y, {});
+            }
+        }
+    }
+}
+
+static void update_distance_to_water(TerrainData& terrain, Rect2I bounds)
+{
+    DEBUG_FUNCTION();
+
+    bounds = bounds.expanded(maxDistanceToWater).intersected(terrain.tile_distance_to_water.bounds());
+    u8 const water = truncate<u8>(findTerrainTypeByName("water"_s));
+
+    for (s32 y = bounds.y();
+        y < bounds.y() + bounds.height();
+        y++) {
+        for (s32 x = bounds.x();
+            x < bounds.x() + bounds.width();
+            x++) {
+            u8 tile_type = terrain.tile_terrain_type.get_if_exists(x, y, 0);
+            if (tile_type == water) {
+                terrain.tile_distance_to_water.set(x, y, 0);
+            } else {
+                terrain.tile_distance_to_water.set(x, y, 255);
+            }
+        }
+    }
+
+    updateDistances(&terrain.tile_distance_to_water, bounds, maxDistanceToWater);
+}
+
 static void draw_terrain(TerrainData const& terrain_data, VisibleTileBounds const visible_tile_bounds)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
@@ -438,25 +636,44 @@ static void draw_terrain(TerrainData const& terrain_data, VisibleTileBounds cons
 mod_terrain::mod_terrain(flecs::world& world)
 {
     world.module<mod_terrain>();
+
     world.import<mod_basic>();
 
-    // FIXME: Where do we generate the map???
-    world.system("TerrainInit")
-        .kind(flecs::OnStart)
-        .run([](flecs::iter& it) {
-            auto world = it.world();
-            auto& bounds = world.get<CityData>().bounds;
-            auto& arena = world.get_mut<MemoryArena>();
+    world.component<TerrainData>().add(flecs::Singleton);
 
-            world.set<TerrainData>({
-                .tile_terrain_type = arena.allocate_array_2d<u8>(bounds.size()),
-                .tile_height = arena.allocate_array_2d<u8>(bounds.size()),
-                .tile_distance_to_water = arena.allocate_array_2d<u8>(bounds.size()),
-                .tile_sprite_offset = arena.allocate_array_2d<u8>(bounds.size()),
-                .tile_sprite = arena.allocate_array_2d<SpriteRef>(bounds.size()),
-                .tile_border_sprite = arena.allocate_array_2d<Optional<SpriteRef>>(bounds.size()),
-                .terrain_generation_seed = 0,
-            });
+    world.system<TerrainData, MemoryArena>("TerrainCleanup")
+        .kind(MapGenPhase::Pre)
+        .each([](flecs::iter& it, size_t, TerrainData& terrain_data, MemoryArena& arena) {
+            // FIXME: Maybe this should be a destructor?
+            logInfo("Clean up old terrain data"_s);
+            auto world = it.world();
+            arena.deallocate(terrain_data.tile_terrain_type);
+            arena.deallocate(terrain_data.tile_height);
+            arena.deallocate(terrain_data.tile_distance_to_water);
+            arena.deallocate(terrain_data.tile_sprite_offset);
+            arena.deallocate(terrain_data.tile_sprite);
+            arena.deallocate(terrain_data.tile_border_sprite);
+            world.remove<TerrainData>();
+        });
+
+    world.system<MapData const, MemoryArena>("TerrainGen")
+        .kind(MapGenPhase::On)
+        .write<TerrainData>()
+        .each(generate_terrain);
+
+    world.system<MapData const, TerrainData>("TerrainFinalization")
+        .kind(MapGenPhase::Post)
+        // FIXME: Singletons in the system query don't create implicit dependencies, so we have to add them manually.
+        //        https://github.com/SanderMertens/flecs/issues/2146
+        .with<TerrainData>()
+        .read_write()
+
+        .each([](MapData const& map_data, TerrainData& terrain_data) {
+            logInfo("Sorting out terrain stuffs"_s);
+            assign_terrain_sprites(terrain_data, map_data.bounds);
+            update_distance_to_water(terrain_data, map_data.bounds);
+
+            the_renderer().world_camera().set_position(map_data.bounds.centre());
         });
 
     // TODO: Run updates on data when terrain changes.
