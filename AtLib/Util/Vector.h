@@ -30,29 +30,29 @@ float lengthSquaredOf(float x, float y);
 V2 limit(V2 vector, float maxLength);
 V2 lerp(V2 a, V2 b, float position);
 
-inline V2 operator+(V2 lhs, V2 rhs)
+inline V2 operator+(V2 const& lhs, V2 const& rhs)
 {
     return v2(lhs.x + rhs.x, lhs.y + rhs.y);
 }
 
-inline V2 operator+=(V2& lhs, V2 rhs)
+inline V2 operator+=(V2& lhs, V2 const& rhs)
 {
     lhs = lhs + rhs;
     return lhs;
 }
 
-inline V2 operator-(V2 lhs, V2 rhs)
+inline V2 operator-(V2 const& lhs, V2 const& rhs)
 {
     return v2(lhs.x - rhs.x, lhs.y - rhs.y);
 }
 
-inline V2 operator-=(V2& lhs, V2 rhs)
+inline V2 operator-=(V2& lhs, V2 const& rhs)
 {
     lhs = lhs - rhs;
     return lhs;
 }
 
-inline V2 operator*(V2 v, float s)
+inline V2 operator*(V2 const& v, float s)
 {
     return v2(v.x * s, v.y * s);
 }
@@ -63,7 +63,7 @@ inline V2 operator*=(V2& v, float s)
     return v;
 }
 
-inline V2 operator/(V2 v, float s)
+inline V2 operator/(V2 const& v, float s)
 {
     return v2(v.x / s, v.y / s);
 }
@@ -96,29 +96,29 @@ float lengthOf(V2I v);
 // Degrees!
 float angleOf(s32 x, s32 y);
 
-inline V2I operator+(V2I lhs, V2I rhs)
+inline V2I operator+(V2I const& lhs, V2I const& rhs)
 {
     return v2i(lhs.x + rhs.x, lhs.y + rhs.y);
 }
 
-inline V2I operator+=(V2I& lhs, V2I rhs)
+inline V2I operator+=(V2I& lhs, V2I const& rhs)
 {
     lhs = lhs + rhs;
     return lhs;
 }
 
-inline V2I operator-(V2I lhs, V2I rhs)
+inline V2I operator-(V2I const& lhs, V2I const& rhs)
 {
     return v2i(lhs.x - rhs.x, lhs.y - rhs.y);
 }
 
-inline V2I operator-=(V2I& lhs, V2I rhs)
+inline V2I operator-=(V2I& lhs, V2I const& rhs)
 {
     lhs = lhs - rhs;
     return lhs;
 }
 
-inline V2I operator*(V2I v, s32 s)
+inline V2I operator*(V2I const& v, s32 s)
 {
     return v2i(v.x * s, v.y * s);
 }
@@ -129,7 +129,7 @@ inline V2I operator*=(V2I& v, s32 s)
     return v;
 }
 
-inline V2I operator/(V2I v, s32 s)
+inline V2I operator/(V2I const& v, s32 s)
 {
     return v2i(v.x / s, v.y / s);
 }
@@ -155,29 +155,29 @@ V3 v3(s32 x, s32 y, s32 z);
 
 float lengthOf(V3 v);
 
-inline V3 operator+(V3 lhs, V3 rhs)
+inline V3 operator+(V3 const& lhs, V3 const& rhs)
 {
     return v3(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
 }
 
-inline V3 operator+=(V3& lhs, V3 rhs)
+inline V3 operator+=(V3& lhs, V3 const& rhs)
 {
     lhs = lhs + rhs;
     return lhs;
 }
 
-inline V3 operator-(V3 lhs, V3 rhs)
+inline V3 operator-(V3 const& lhs, V3 const& rhs)
 {
     return v3(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
 }
 
-inline V3 operator-=(V3& lhs, V3 rhs)
+inline V3 operator-=(V3& lhs, V3 const& rhs)
 {
     lhs = lhs - rhs;
     return lhs;
 }
 
-inline V3 operator*(V3 v, float s)
+inline V3 operator*(V3 const& v, float s)
 {
     return v3(v.x * s, v.y * s, v.z * s);
 }
@@ -188,7 +188,7 @@ inline V3 operator*=(V3& v, float s)
     return v;
 }
 
-inline V3 operator/(V3 v, float s)
+inline V3 operator/(V3 const& v, float s)
 {
     return v3(v.x / s, v.y / s, v.z / s);
 }
@@ -215,12 +215,12 @@ V4 v4(s32 x, s32 y, s32 z, s32 w);
 
 float lengthOf(V4 v);
 
-inline V4 operator+(V4 lhs, V4 rhs)
+inline V4 operator+(V4 const& lhs, V4 const& rhs)
 {
     return v4(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w);
 }
 
-inline V4 operator+=(V4& lhs, V4 rhs)
+inline V4 operator+=(V4& lhs, V4 const& rhs)
 {
     lhs.x += rhs.x;
     lhs.y += rhs.y;
@@ -230,12 +230,12 @@ inline V4 operator+=(V4& lhs, V4 rhs)
     return lhs;
 }
 
-inline V4 operator-(V4 lhs, V4 rhs)
+inline V4 operator-(V4 const& lhs, V4 const& rhs)
 {
     return v4(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z, lhs.w - rhs.w);
 }
 
-inline V4 operator-=(V4& lhs, V4 rhs)
+inline V4 operator-=(V4& lhs, V4 const& rhs)
 {
     lhs.x -= rhs.x;
     lhs.y -= rhs.y;
@@ -245,12 +245,12 @@ inline V4 operator-=(V4& lhs, V4 rhs)
     return lhs;
 }
 
-inline V4 operator*(V4 lhs, V4 rhs)
+inline V4 operator*(V4 const& lhs, V4 const& rhs)
 {
     return v4(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w);
 }
 
-inline V4 operator*=(V4& lhs, V4 rhs)
+inline V4 operator*=(V4& lhs, V4 const& rhs)
 {
     lhs.x *= rhs.x;
     lhs.y *= rhs.y;
@@ -260,7 +260,7 @@ inline V4 operator*=(V4& lhs, V4 rhs)
     return lhs;
 }
 
-inline V4 operator*(V4 v, float s)
+inline V4 operator*(V4 const& v, float s)
 {
     return v4(v.x * s, v.y * s, v.z * s, v.w * s);
 }
@@ -271,7 +271,7 @@ inline V4 operator*=(V4& v, float s)
     return v;
 }
 
-inline V4 operator/(V4 v, float s)
+inline V4 operator/(V4 const& v, float s)
 {
     return v4(v.x / s, v.y / s, v.z / s, v.w / s);
 }
