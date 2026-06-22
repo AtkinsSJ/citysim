@@ -16,9 +16,14 @@ public:
     {
     }
 
-    operator T&() const { return *m_value; }
-    T* operator->() const { return m_value; }
-    T& operator*() const { return *m_value; }
+    operator T&() { return *m_value; }
+    operator T const&() const { return *m_value; }
+
+    T* operator->() { return m_value; }
+    T const* operator->() const { return m_value; }
+
+    T& operator*() { return *m_value; }
+    T const& operator*() const { return *m_value; }
 
     bool operator==(Ref const&) const = default;
 
