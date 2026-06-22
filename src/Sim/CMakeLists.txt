@@ -4,6 +4,7 @@ target_sources(CitySim PRIVATE
     Building.cpp
     BuildingCatalogue.cpp
     BuildingDefs.cpp
+    Camera.cpp
     City.cpp
     Crime.cpp
     DirtyRects.cpp
