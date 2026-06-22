@@ -19,6 +19,7 @@
 #include <Settings/Settings.h>
 #include <Sim/Basic.h>
 #include <Sim/BuildingCatalogue.h>
+#include <Sim/Camera.h>
 #include <Sim/City.h>
 #include <Sim/TerrainCatalogue.h>
 #include <Sim/Tool.h>
@@ -565,6 +566,7 @@ GameScene::GameScene()
 
     // NB: The order here matters. Rendering happens in order, and some modules rely on others.
     m_world.import<mod_basic>();
+    m_world.import<mod_camera>();
     m_world.import<mod_city>();
     m_world.import<mod_terrain>();
 

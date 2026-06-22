@@ -11,9 +11,11 @@
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
 #include <IO/WriteBuffer.h>
+#include <Input/Input.h>
 #include <Menus/SaveFile.h>
 #include <Sim/Basic.h>
 #include <Sim/BuildingCatalogue.h>
+#include <Sim/Camera.h>
 #include <Sim/Layer.h>
 #include <Sim/TerrainCatalogue.h>
 #include <Util/Random.h>
@@ -697,6 +699,94 @@ void City::update_adjacent_building_variants(Rect2I footprint)
     }
 }
 
+static float snap_zoom(float zoom)
+{
+    return clamp(round_float(10 * zoom) * 0.1f, 0.1f, 10.0f);
+}
+
+static void move_camera(flecs::iter& it, size_t, PositionComponent& position, CameraComponent& camera, MapData const& map_data)
+{
+    DEBUG_FUNCTION();
+
+    auto delta_time = it.delta_time();
+    auto& renderer = the_renderer();
+    auto window_mouse_pos = renderer.ui_camera().mouse_position();
+
+    constexpr s32 CAMERA_MARGIN = 1;          // How many tiles beyond the map can the camera scroll to show?
+    constexpr float CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second
+
+    // Zooming
+    s32 zoom_delta = input_state().wheelY;
+
+    // Turns out that having the zoom bound to the same key I use for navigating debug frames is REALLY ANNOYING
+    if (!isInputCaptured()) {
+        if (keyJustPressed(SDLK_EQUALS) || keyJustPressed(SDLK_KP_PLUS)) {
+            zoom_delta++;
+        } else if (keyJustPressed(SDLK_MINUS) || keyJustPressed(SDLK_KP_MINUS)) {
+            zoom_delta--;
+        }
+    }
+
+    if (zoom_delta)
+        camera.zoom = snap_zoom(camera.zoom + (zoom_delta * 0.1f));
+
+    // Panning
+    float const scroll_speed = CAMERA_PAN_SPEED * sqrt(camera.zoom) * delta_time;
+    float const camera_edge_scroll_pixel_margin = 8.0f;
+
+    if (mouseButtonPressed(MouseButton::Middle)) {
+        // Click-panning!
+        float scale = scroll_speed * 1.0f;
+        auto& gfx_camera = *camera.camera;
+        V2 click_start_pos = getClickStartPos(MouseButton::Middle, &gfx_camera);
+        position.position += (gfx_camera.mouse_position() - click_start_pos) * scale;
+    } else if (!isInputCaptured()) {
+        if (keyIsPressed(SDLK_LEFT) || keyIsPressed(SDLK_a)
+            || (window_mouse_pos.x < camera_edge_scroll_pixel_margin)) {
+            position.position += (v2(-scroll_speed, 0.f));
+        } else if (keyIsPressed(SDLK_RIGHT) || keyIsPressed(SDLK_d)
+            || (window_mouse_pos.x > (renderer.window_width() - camera_edge_scroll_pixel_margin))) {
+            position.position += (v2(scroll_speed, 0.f));
+        }
+
+        if (keyIsPressed(SDLK_UP) || keyIsPressed(SDLK_w)
+            || (window_mouse_pos.y < camera_edge_scroll_pixel_margin)) {
+            position.position += (v2(0.f, -scroll_speed));
+        } else if (keyIsPressed(SDLK_DOWN) || keyIsPressed(SDLK_s)
+            || (window_mouse_pos.y > (renderer.window_height() - camera_edge_scroll_pixel_margin))) {
+            position.position += (v2(0.f, scroll_speed));
+        }
+    }
+
+    // Clamp camera
+    Rect2 camera_bounds {
+        -CAMERA_MARGIN,
+        -CAMERA_MARGIN,
+        map_data.bounds.width() + (2 * CAMERA_MARGIN),
+        map_data.bounds.height() + (2 * CAMERA_MARGIN),
+    };
+    auto camera_size = camera.camera->size() / camera.zoom;
+    if (camera_bounds.width() < camera_size.x) {
+        // City smaller than camera, so centre on it
+        position.position.x = camera_bounds.centre().x;
+    } else {
+        float half_camera_width = camera_size.x / 2;
+        float min_x = camera_bounds.min_x() + half_camera_width;
+        float max_x = camera_bounds.max_x() - half_camera_width;
+        position.position.x = clamp(position.position.x, min_x, max_x);
+    }
+
+    if (camera_bounds.height() < camera_size.y) {
+        // City smaller than camera, so centre on it
+        position.position.y = camera_bounds.centre().y;
+    } else {
+        float half_camera_height = camera_size.y / 2;
+        float min_y = camera_bounds.min_y() + half_camera_height;
+        float max_y = camera_bounds.max_y() - half_camera_height;
+        position.position.y = clamp(position.position.y, min_y, max_y);
+    }
+}
+
 static void update_visible_tile_bounds(flecs::iter& it, size_t, MapData const& map_data)
 {
     // Pre-calculate the tile area that's visible to the player.
@@ -717,12 +807,30 @@ mod_city::mod_city(flecs::world& world)
 {
     world.module<mod_city>();
 
+    world.import<mod_basic>();
+
     world.component<MapData>().add(flecs::Singleton);
     world.component<CityData>().add(flecs::Singleton);
     world.component<GameClock>().add(flecs::Singleton);
 
     world.set<CityData>({});
     world.set<GameClock>({});
+
+    auto& world_camera = the_renderer().world_camera();
+    world.entity("WorldCamera")
+        .set<CameraComponent>({ world_camera, 1.0f })
+        .set<PositionComponent>({ world_camera.position() });
+
+    world.system<PositionComponent, CameraComponent, MapData const>("CenterCameraOnMapGeneration")
+        .kind(MapGenPhase::Post)
+        .each([](PositionComponent& position, CameraComponent& camera, MapData const& map_data) {
+            position.position = map_data.bounds.centre();
+            camera.zoom = 1;
+        });
+
+    world.system<PositionComponent, CameraComponent, MapData const>("MoveCamera")
+        .kind(flecs::PreUpdate)
+        .each(move_camera);
 
     world.system<MapData const>("UpdateVisibleTileBounds")
         .kind(flecs::PreStore)
