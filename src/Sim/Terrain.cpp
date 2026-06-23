@@ -402,12 +402,15 @@ bool TerrainLayer::load(BinaryFileReader& reader)
     return succeeded;
 }
 
-static void generate_terrain(flecs::iter& it, size_t, MapData const& map_data, MemoryArena& arena)
+static void generate_terrain(flecs::iter& it, size_t, MapData const& map_data, BuildingAtPosition const& building_at_position, MemoryArena& arena)
 {
     DEBUG_FUNCTION();
     logInfo("Generate terrain!"_s);
 
     auto world = it.world();
+    world.defer_suspend();
+    Deferred resume_suspend = [&] { world.defer_resume(); };
+
     auto& bounds = map_data.bounds;
     TerrainData terrain {
         .tile_terrain_type = arena.allocate_array_2d<u8>(bounds.size()),
@@ -420,12 +423,12 @@ static void generate_terrain(flecs::iter& it, size_t, MapData const& map_data, M
 
     auto& cosmetic_random = App::the().cosmetic_random();
 
-    u8 tGround = truncate<u8>(findTerrainTypeByName("ground"_s));
-    u8 tWater = truncate<u8>(findTerrainTypeByName("water"_s));
-    // BuildingDef* treeDef = findBuildingDef("tree"_s);
+    u8 ground_tile = truncate<u8>(findTerrainTypeByName("ground"_s));
+    u8 water_tile = truncate<u8>(findTerrainTypeByName("water"_s));
+    BuildingDef* tree_def = findBuildingDef("tree"_s);
 
     auto terrainRandom = Random::create(map_data.generation_seed);
-    terrain.tile_terrain_type.fill(tGround);
+    terrain.tile_terrain_type.fill(ground_tile);
 
     for (s32 y = 0; y < bounds.height(); y++) {
         for (s32 x = 0; x < bounds.width(); x++) {
@@ -446,7 +449,7 @@ static void generate_terrain(flecs::iter& it, size_t, MapData const& map_data, M
         s32 riverLeft = riverCentre - (riverWidth / 2);
 
         for (s32 x = riverLeft; x < riverLeft + riverWidth; x++) {
-            terrain.tile_terrain_type.set(x, y, tWater);
+            terrain.tile_terrain_type.set(x, y, water_tile);
         }
     }
 
@@ -459,7 +462,7 @@ static void generate_terrain(flecs::iter& it, size_t, MapData const& map_data, M
         for (s32 i = 0; i < coastDepth; i++) {
             s32 y = bounds.height() - 1 - i;
 
-            terrain.tile_terrain_type.set(x, y, tWater);
+            terrain.tile_terrain_type.set(x, y, water_tile);
         }
     }
 
@@ -478,39 +481,50 @@ static void generate_terrain(flecs::iter& it, size_t, MapData const& map_data, M
         for (s32 y = boundingBox.y(); y < boundingBox.y() + boundingBox.height(); y++) {
             for (s32 x = boundingBox.x(); x < boundingBox.x() + boundingBox.width(); x++) {
                 if (pondSplat.contains(x, y)) {
-                    terrain.tile_terrain_type.set(x, y, tWater);
+                    terrain.tile_terrain_type.set(x, y, water_tile);
                 }
             }
         }
     }
 
-    // FIXME: Reimplement when we have buildings
-    // // Forest splats
-    // if (treeDef == nullptr) {
-    //     logError("Map generator is unable to place any trees, because the 'tree' building was not found."_s);
-    // } else {
-    //     s32 forestCount = terrainRandom->random_between(10, 20);
-    //     for (s32 forestIndex = 0; forestIndex < forestCount; forestIndex++) {
-    //         s32 centreX = terrainRandom->random_between(0, bounds.width());
-    //         s32 centreY = terrainRandom->random_between(0, bounds.height());
-    //
-    //         float minRadius = terrainRandom->random_float_between(2.0f, 8.0f);
-    //         float maxRadius = terrainRandom->random_float_between(minRadius + 1.0f, 30.0f);
-    //
-    //         Splat forestSplat = Splat::create_random(centreX, centreY, minRadius, maxRadius, 36, terrainRandom);
-    //
-    //         Rect2I boundingBox = forestSplat.bounding_box().intersected(bounds);
-    //         for (s32 y = boundingBox.y(); y < boundingBox.y() + boundingBox.height(); y++) {
-    //             for (s32 x = boundingBox.x(); x < boundingBox.x() + boundingBox.width(); x++) {
-    //                 if (terrain_at(x, y).canBuildOn
-    //                     && (city.get_building_at(x, y) == nullptr)
-    //                     && forestSplat.contains(x, y)) {
-    //                     city.add_building(treeDef, { x, y, treeDef->size.x, treeDef->size.y });
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
+    // Forest splats
+    if (tree_def == nullptr) {
+        logError("Map generator is unable to place any trees, because the 'tree' building was not found."_s);
+    } else {
+        s32 forestCount = terrainRandom->random_between(10, 20);
+        for (s32 forestIndex = 0; forestIndex < forestCount; forestIndex++) {
+            s32 centreX = terrainRandom->random_between(0, bounds.width());
+            s32 centreY = terrainRandom->random_between(0, bounds.height());
+
+            float minRadius = terrainRandom->random_float_between(2.0f, 8.0f);
+            float maxRadius = terrainRandom->random_float_between(minRadius + 1.0f, 30.0f);
+
+            Splat forestSplat = Splat::create_random(centreX, centreY, minRadius, maxRadius, 36, terrainRandom);
+
+            Rect2I boundingBox = forestSplat.bounding_box().intersected(bounds);
+            for (s32 y = boundingBox.y(); y < boundingBox.y() + boundingBox.height(); y++) {
+                for (s32 x = boundingBox.x(); x < boundingBox.x() + boundingBox.width(); x++) {
+                    if (TerrainCatalogue::the().get_def(terrain.tile_terrain_type.get(x, y)).canBuildOn
+                        && !building_at_position.tile_building.get_if_exists(x, y, {}).has_value()
+                        && forestSplat.contains(x, y)) {
+                        // FIXME: Use a prefab!
+                        (void)world.entity()
+                            .set<BuildingComponent>({
+                                .footprint = { x, y, 1, 1 },
+                                .variant_index = {},
+                            })
+                            .set<PositionComponent>({ .position = v2(x, y) })
+                            .set<SpriteComponent>({
+                                .sprite = SpriteRef { "b_forest"_sv, 1 },
+                                .size = { 1, 1 },
+                                .color = Colour::white(),
+                            })
+                            .add<Demolishable>();
+                    }
+                }
+            }
+        }
+    }
 
     world.set<TerrainData>(move(terrain));
 }
@@ -638,6 +652,7 @@ mod_terrain::mod_terrain(flecs::world& world)
     world.module<mod_terrain>();
 
     world.import<mod_basic>();
+    world.import<mod_building>();
 
     world.component<TerrainData>().add(flecs::Singleton);
 
@@ -656,9 +671,11 @@ mod_terrain::mod_terrain(flecs::world& world)
             world.remove<TerrainData>();
         });
 
-    world.system<MapData const, MemoryArena>("TerrainGen")
+    world.system<MapData const, BuildingAtPosition const, MemoryArena>("TerrainGen")
         .kind(MapGenPhase::On)
+        .read<BuildingAtPosition>()
         .write<TerrainData>()
+        .immediate()
         .each(generate_terrain);
 
     world.system<MapData const, TerrainData>("TerrainFinalization")

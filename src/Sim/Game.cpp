@@ -577,6 +577,7 @@ GameScene::GameScene()
     m_world.import<mod_basic>();
     m_world.import<mod_camera>();
     m_world.import<mod_city>();
+    m_world.import<mod_building>();
     m_world.import<mod_terrain>();
 
     // FIXME: Set cursor for InspectTool
