@@ -562,6 +562,15 @@ GameScene::GameScene()
     m_month_pipeline = make_pre_on_post_pipeline<MonthTick, MonthPhase>(m_world);
     m_year_pipeline = make_pre_on_post_pipeline<YearTick, YearPhase>(m_world);
 
+    // Initialize draw phases
+    {
+        auto the_enum = enum_type<DrawPhase>(m_world);
+        auto draw_background = m_world.entity(the_enum.entity(DrawPhase::Background)).add(flecs::Phase).depends_on(flecs::OnStore);
+        auto draw_terrain = m_world.entity(the_enum.entity(DrawPhase::Terrain)).add(flecs::Phase).depends_on(draw_background);
+        auto draw_entities = m_world.entity(the_enum.entity(DrawPhase::Entities)).add(flecs::Phase).depends_on(draw_terrain);
+        [[maybe_unused]] auto draw_overlays = m_world.entity(the_enum.entity(DrawPhase::Overlays)).add(flecs::Phase).depends_on(draw_entities);
+    }
+
     m_world.set<MemoryArena&>(m_arena);
 
     // NB: The order here matters. Rendering happens in order, and some modules rely on others.

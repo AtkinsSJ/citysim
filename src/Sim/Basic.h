@@ -30,3 +30,10 @@ struct SpriteComponent {
 struct VisibleTileBounds {
     Rect2I rect;
 };
+
+enum class DrawPhase : u8 {
+    Background,
+    Terrain,
+    Entities,
+    Overlays,
+};
