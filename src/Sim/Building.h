@@ -13,6 +13,7 @@
 #include <Sim/Transport.h>
 #include <Util/EnumMap.h>
 #include <Util/Flags.h>
+#include <flecs.h>
 
 enum class BuildMethod : u8 {
     None,
@@ -173,4 +174,29 @@ struct Building {
 
     void load_sprite();
     void update_variant(City&, Optional<BuildingDef const&>);
+};
+
+struct mod_building {
+    explicit mod_building(flecs::world&);
+};
+
+struct BuildingComponent {
+    Rect2I footprint;
+    Optional<s16> variant_index;
+};
+
+struct Residents {
+    u32 capacity;
+    u32 current;
+};
+
+struct Jobs {
+    u32 capacity;
+    u32 current;
+};
+
+struct Demolishable { };
+
+struct BuildingAtPosition {
+    Array2<Optional<flecs::entity>> tile_building;
 };
