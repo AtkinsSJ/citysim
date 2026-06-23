@@ -47,6 +47,6 @@ mod_basic::mod_basic(flecs::world& world)
     // FIXME: Depth sorting
     world.system<PositionComponent const, SpriteComponent const>("DrawEntities")
         .read<VisibleTileBounds>()
-        .kind(flecs::OnStore)
+        .kind(DrawPhase::Entities)
         .run(draw_entities);
 }

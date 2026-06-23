@@ -679,6 +679,6 @@ mod_terrain::mod_terrain(flecs::world& world)
     // TODO: Run updates on data when terrain changes.
 
     world.system<TerrainData const, VisibleTileBounds const>("DrawTerrain")
-        .kind(flecs::OnStore)
+        .kind(DrawPhase::Terrain)
         .each(draw_terrain);
 }
