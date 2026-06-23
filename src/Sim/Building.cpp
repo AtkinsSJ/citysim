@@ -309,3 +309,78 @@ BuildingRef Building::get_reference() const
 {
     return BuildingRef { id, footprint.position() };
 }
+
+static void place_building(BuildingAtPosition& building_at_position, flecs::entity& entity, Rect2I const& footprint)
+{
+    for (s32 y = footprint.y(); y < footprint.y() + footprint.height(); y++) {
+        for (s32 x = footprint.x(); x < footprint.x() + footprint.width(); x++) {
+            building_at_position.tile_building.set(x, y, entity);
+        }
+    }
+}
+
+static void remove_building(BuildingAtPosition& building_at_position, Rect2I const& footprint)
+{
+    for (s32 y = footprint.y(); y < footprint.y() + footprint.height(); y++) {
+        for (s32 x = footprint.x(); x < footprint.x() + footprint.width(); x++) {
+            building_at_position.tile_building.set(x, y, Optional<flecs::entity> {});
+        }
+    }
+}
+
+mod_building::mod_building(flecs::world& world)
+{
+    world.module<mod_building>();
+
+    world.component<BuildingAtPosition>().add(flecs::Singleton);
+
+    world.component<BuildingComponent>()
+        .on_set([](flecs::iter& iter, size_t i, BuildingComponent& building) {
+            auto world = iter.world();
+            auto entity = iter.entity(i);
+            auto& building_at_position = world.get_mut<BuildingAtPosition>();
+            place_building(building_at_position, entity, building.footprint);
+        })
+        .on_remove([](flecs::iter& iter, size_t, BuildingComponent& building) {
+            auto world = iter.world();
+            auto& building_at_position = world.get_mut<BuildingAtPosition>();
+            remove_building(building_at_position, building.footprint);
+        });
+
+    world.component<Demolishable>().add(flecs::CanToggle);
+    world.component<Residents>();
+    world.component<Jobs>();
+
+    // FIXME: This suggests that cleanup and init should be different MapGenPhases!
+    world.system<BuildingComponent>("BuildingsCleanup")
+        .kind(MapGenPhase::Pre)
+        .each([](flecs::entity e, BuildingComponent&) {
+            e.destruct();
+        });
+    world.system<BuildingAtPosition, MemoryArena>("TileBuildingsCleanup")
+        .kind(MapGenPhase::Pre)
+        .each([](flecs::iter& it, size_t, BuildingAtPosition& building_at_position, MemoryArena& arena) {
+            auto world = it.world();
+            arena.deallocate(building_at_position.tile_building);
+            world.remove<BuildingAtPosition>();
+        });
+
+    world.system<MapData const, MemoryArena>("BuildingsInit")
+        .kind(MapGenPhase::Pre)
+        .write<BuildingAtPosition>()
+        .each([](flecs::iter& it, size_t, MapData const& map_data, MemoryArena& arena) {
+            auto world = it.world();
+            auto& bounds = map_data.bounds;
+            logInfo("BuildingsInit {}x{}"_s, { formatInt(bounds.width()), formatInt(bounds.height()) });
+            BuildingAtPosition building_at_position {
+                .tile_building = arena.allocate_array_2d<Optional<flecs::entity>>(bounds.size()),
+            };
+            world.set<BuildingAtPosition>(move(building_at_position));
+        });
+
+    // FIXME: Figure out BuildingProblems. Maybe use relationships?
+
+    // TODO: A system that assigns tints to buildings based on being powered, demolition overlay, etc.
+
+    // FIXME: React to building construction/destruction and update building variants.
+}
