@@ -119,7 +119,6 @@ private:
     flecs::world m_world;
     OwnedPtr<City> m_city;
 
-    flecs::entity m_map_generation_pipeline;
     flecs::entity m_day_pipeline;
     flecs::entity m_week_pipeline;
     flecs::entity m_month_pipeline;

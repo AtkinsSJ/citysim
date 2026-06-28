@@ -15,6 +15,7 @@
 #include <Sim/BuildingCatalogue.h>
 #include <Sim/City.h>
 #include <Sim/Game.h>
+#include <Sim/MapGeneration.h>
 #include <Sim/TerrainCatalogue.h>
 #include <Sim/Tool.h>
 #include <UI/Window.h>
@@ -402,133 +403,6 @@ bool TerrainLayer::load(BinaryFileReader& reader)
     return succeeded;
 }
 
-static void generate_terrain(flecs::iter& it, size_t, MapData const& map_data, BuildingAtPosition const& building_at_position, MemoryArena& arena)
-{
-    DEBUG_FUNCTION();
-    logInfo("Generate terrain!"_s);
-
-    auto world = it.world();
-    world.defer_suspend();
-    Deferred resume_suspend = [&] { world.defer_resume(); };
-
-    auto& bounds = map_data.bounds;
-    TerrainData terrain {
-        .tile_terrain_type = arena.allocate_array_2d<u8>(bounds.size()),
-        .tile_height = arena.allocate_array_2d<u8>(bounds.size()),
-        .tile_distance_to_water = arena.allocate_array_2d<u8>(bounds.size()),
-        .tile_sprite_offset = arena.allocate_array_2d<u8>(bounds.size()),
-        .tile_sprite = arena.allocate_array_2d<SpriteRef>(bounds.size()),
-        .tile_border_sprite = arena.allocate_array_2d<Optional<SpriteRef>>(bounds.size()),
-    };
-
-    auto& cosmetic_random = App::the().cosmetic_random();
-
-    u8 ground_tile = truncate<u8>(findTerrainTypeByName("ground"_s));
-    u8 water_tile = truncate<u8>(findTerrainTypeByName("water"_s));
-    BuildingDef* tree_def = findBuildingDef("tree"_s);
-
-    auto terrainRandom = Random::create(map_data.generation_seed);
-    terrain.tile_terrain_type.fill(ground_tile);
-
-    for (s32 y = 0; y < bounds.height(); y++) {
-        for (s32 x = 0; x < bounds.width(); x++) {
-            terrain.tile_sprite_offset.set(x, y, cosmetic_random.random_integer<u8>());
-        }
-    }
-
-    // Generate a river
-    Array<float> riverOffset = temp_arena().allocate_filled_array<float>(bounds.height());
-    terrainRandom->fill_with_noise(riverOffset, 10);
-    float riverMaxWidth = terrainRandom->random_float_between(12, 16);
-    float riverMinWidth = terrainRandom->random_float_between(6, riverMaxWidth);
-    float riverWaviness = 16.0f;
-    s32 riverCentreBase = terrainRandom->random_between(ceil_s32(bounds.width() * 0.4f), floor_s32(bounds.width() * 0.6f));
-    for (s32 y = 0; y < bounds.height(); y++) {
-        s32 riverWidth = ceil_s32(lerp(riverMinWidth, riverMaxWidth, ((float)y / (float)bounds.height())));
-        s32 riverCentre = riverCentreBase - round_s32((riverWaviness * 0.5f) + (riverWaviness * riverOffset[y]));
-        s32 riverLeft = riverCentre - (riverWidth / 2);
-
-        for (s32 x = riverLeft; x < riverLeft + riverWidth; x++) {
-            terrain.tile_terrain_type.set(x, y, water_tile);
-        }
-    }
-
-    // Coastline
-    Array<float> coastlineOffset = temp_arena().allocate_filled_array<float>(bounds.width());
-    terrainRandom->fill_with_noise(coastlineOffset, 10);
-    for (s32 x = 0; x < bounds.width(); x++) {
-        s32 coastDepth = 8 + round_s32(coastlineOffset[x] * 16.0f);
-
-        for (s32 i = 0; i < coastDepth; i++) {
-            s32 y = bounds.height() - 1 - i;
-
-            terrain.tile_terrain_type.set(x, y, water_tile);
-        }
-    }
-
-    // Lakes/ponds
-    s32 pondCount = terrainRandom->random_between(1, 4);
-    for (s32 pondIndex = 0; pondIndex < pondCount; pondIndex++) {
-        s32 pondCentreX = terrainRandom->random_between(0, bounds.width());
-        s32 pondCentreY = terrainRandom->random_between(0, bounds.height());
-
-        float pondMinRadius = terrainRandom->random_float_between(3.0f, 5.0f);
-        float pondMaxRadius = terrainRandom->random_float_between(pondMinRadius + 3.0f, 20.0f);
-
-        Splat pondSplat = Splat::create_random(pondCentreX, pondCentreY, pondMinRadius, pondMaxRadius, 36, terrainRandom);
-
-        Rect2I boundingBox = pondSplat.bounding_box().intersected(bounds);
-        for (s32 y = boundingBox.y(); y < boundingBox.y() + boundingBox.height(); y++) {
-            for (s32 x = boundingBox.x(); x < boundingBox.x() + boundingBox.width(); x++) {
-                if (pondSplat.contains(x, y)) {
-                    terrain.tile_terrain_type.set(x, y, water_tile);
-                }
-            }
-        }
-    }
-
-    // Forest splats
-    if (tree_def == nullptr) {
-        logError("Map generator is unable to place any trees, because the 'tree' building was not found."_s);
-    } else {
-        s32 forestCount = terrainRandom->random_between(10, 20);
-        for (s32 forestIndex = 0; forestIndex < forestCount; forestIndex++) {
-            s32 centreX = terrainRandom->random_between(0, bounds.width());
-            s32 centreY = terrainRandom->random_between(0, bounds.height());
-
-            float minRadius = terrainRandom->random_float_between(2.0f, 8.0f);
-            float maxRadius = terrainRandom->random_float_between(minRadius + 1.0f, 30.0f);
-
-            Splat forestSplat = Splat::create_random(centreX, centreY, minRadius, maxRadius, 36, terrainRandom);
-
-            Rect2I boundingBox = forestSplat.bounding_box().intersected(bounds);
-            for (s32 y = boundingBox.y(); y < boundingBox.y() + boundingBox.height(); y++) {
-                for (s32 x = boundingBox.x(); x < boundingBox.x() + boundingBox.width(); x++) {
-                    if (TerrainCatalogue::the().get_def(terrain.tile_terrain_type.get(x, y)).canBuildOn
-                        && !building_at_position.tile_building.get_if_exists(x, y, {}).has_value()
-                        && forestSplat.contains(x, y)) {
-                        // FIXME: Use a prefab!
-                        (void)world.entity()
-                            .set<BuildingComponent>({
-                                .footprint = { x, y, 1, 1 },
-                                .variant_index = {},
-                            })
-                            .set<PositionComponent>({ .position = v2(x, y) })
-                            .set<SpriteComponent>({
-                                .sprite = SpriteRef { "b_forest"_sv, 1 },
-                                .size = { 1, 1 },
-                                .color = Colour::white(),
-                            })
-                            .add<Demolishable>();
-                    }
-                }
-            }
-        }
-    }
-
-    world.set<TerrainData>(move(terrain));
-}
-
 static void assign_terrain_sprites(TerrainData& terrain, Rect2I bounds)
 {
     DEBUG_FUNCTION();
@@ -652,12 +526,11 @@ mod_terrain::mod_terrain(flecs::world& world)
     world.module<mod_terrain>();
 
     world.import<mod_basic>();
-    world.import<mod_building>();
 
     world.component<TerrainData>().add(flecs::Singleton);
 
     world.system<TerrainData, MemoryArena>("TerrainCleanup")
-        .kind(MapGenPhase::Pre)
+        .kind(MapGenPhase::Deallocate)
         .each([](flecs::iter& it, size_t, TerrainData& terrain_data, MemoryArena& arena) {
             // FIXME: Maybe this should be a destructor?
             logInfo("Clean up old terrain data"_s);
@@ -671,12 +544,21 @@ mod_terrain::mod_terrain(flecs::world& world)
             world.remove<TerrainData>();
         });
 
-    world.system<MapData const, BuildingAtPosition const, MemoryArena>("TerrainGen")
-        .kind(MapGenPhase::On)
-        .read<BuildingAtPosition>()
+    world.system<MapData const, MemoryArena>("TerrainAllocation")
+        .kind(MapGenPhase::Allocate)
         .write<TerrainData>()
-        .immediate()
-        .each(generate_terrain);
+        .each([](flecs::iter& it, size_t, MapData const& map_data, MemoryArena& arena) {
+            logInfo("Allocate terrain data"_s);
+            auto& bounds = map_data.bounds;
+            it.world().set<TerrainData>({
+                .tile_terrain_type = arena.allocate_array_2d<u8>(bounds.size()),
+                .tile_height = arena.allocate_array_2d<u8>(bounds.size()),
+                .tile_distance_to_water = arena.allocate_array_2d<u8>(bounds.size()),
+                .tile_sprite_offset = arena.allocate_array_2d<u8>(bounds.size()),
+                .tile_sprite = arena.allocate_array_2d<SpriteRef>(bounds.size()),
+                .tile_border_sprite = arena.allocate_array_2d<Optional<SpriteRef>>(bounds.size()),
+            });
+        });
 
     world.system<MapData const, TerrainData>("TerrainFinalization")
         .kind(MapGenPhase::Post)

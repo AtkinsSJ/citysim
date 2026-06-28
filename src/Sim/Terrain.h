@@ -64,12 +64,6 @@ struct mod_terrain {
     explicit mod_terrain(flecs::world&);
 };
 
-enum class MapGenPhase : u8 {
-    Pre,
-    On,
-    Post,
-};
-
 struct TerrainData {
     Array2<TerrainType> tile_terrain_type;
     Array2<u8> tile_height;
