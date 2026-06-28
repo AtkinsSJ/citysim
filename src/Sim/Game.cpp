@@ -21,6 +21,7 @@
 #include <Sim/BuildingCatalogue.h>
 #include <Sim/Camera.h>
 #include <Sim/City.h>
+#include <Sim/MapGeneration.h>
 #include <Sim/TerrainCatalogue.h>
 #include <Sim/Tool.h>
 #include <UI/Toast.h>
@@ -527,7 +528,6 @@ ErrorOr<OwnedRef<GameScene>> GameScene::from_saved_game(SavedGameInfo const& sav
     return game_scene;
 }
 
-struct MapGenTag { };
 struct DayTick { };
 struct WeekTick { };
 struct MonthTick { };
@@ -555,8 +555,6 @@ static flecs::entity make_pre_on_post_pipeline(flecs::world& world)
 GameScene::GameScene()
     : m_active_tool(InspectTool::create())
 {
-    m_map_generation_pipeline = make_pre_on_post_pipeline<MapGenTag, MapGenPhase>(m_world);
-
     m_day_pipeline = make_pre_on_post_pipeline<DayTick, DayPhase>(m_world);
     m_week_pipeline = make_pre_on_post_pipeline<WeekTick, WeekPhase>(m_world);
     m_month_pipeline = make_pre_on_post_pipeline<MonthTick, MonthPhase>(m_world);
@@ -579,6 +577,7 @@ GameScene::GameScene()
     m_world.import<mod_city>();
     m_world.import<mod_building>();
     m_world.import<mod_terrain>();
+    m_world.import<mod_map_generation>();
 
     // FIXME: Set cursor for InspectTool
 }
@@ -1023,12 +1022,7 @@ void GameScene::set_city(OwnedRef<City> city)
 
 void GameScene::generate_map(u32 seed)
 {
-    m_world.set<MapData>({
-        .generation_seed = seed,
-        .bounds = { 0, 0, 128, 128 },
-    });
-
-    m_world.run_pipeline(m_map_generation_pipeline);
+    ::generate_map(m_world, seed);
 }
 
 void GameScene::set_active_tool(OwnedRef<Tool> tool)

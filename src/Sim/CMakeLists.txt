@@ -17,6 +17,7 @@ target_sources(CitySim PRIVATE
     Health.cpp
     LandValue.cpp
     Layer.cpp
+    MapGeneration.cpp
     Pollution.cpp
     Power.cpp
     Terrain.cpp
