@@ -17,6 +17,7 @@
 #include <Sim/BuildingCatalogue.h>
 #include <Sim/Camera.h>
 #include <Sim/Layer.h>
+#include <Sim/MapGeneration.h>
 #include <Sim/TerrainCatalogue.h>
 #include <Util/Random.h>
 #include <Util/Rectangle.h>

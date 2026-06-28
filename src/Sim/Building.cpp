@@ -5,10 +5,11 @@
  */
 
 #include "Building.h"
-#include <Assets/AssetManager.h>
+
 #include <Gfx/Colour.h>
 #include <Sim/BuildingCatalogue.h>
 #include <Sim/City.h>
+#include <Sim/MapGeneration.h>
 
 BuildingDef const& Building::get_def() const
 {
@@ -351,14 +352,14 @@ mod_building::mod_building(flecs::world& world)
     world.component<Residents>();
     world.component<Jobs>();
 
-    // FIXME: This suggests that cleanup and init should be different MapGenPhases!
     world.system<BuildingComponent>("BuildingsCleanup")
-        .kind(MapGenPhase::Pre)
+        .kind(MapGenPhase::Deallocate)
         .each([](flecs::entity e, BuildingComponent&) {
             e.destruct();
         });
+
     world.system<BuildingAtPosition, MemoryArena>("TileBuildingsCleanup")
-        .kind(MapGenPhase::Pre)
+        .kind(MapGenPhase::Deallocate)
         .each([](flecs::iter& it, size_t, BuildingAtPosition& building_at_position, MemoryArena& arena) {
             auto world = it.world();
             arena.deallocate(building_at_position.tile_building);
@@ -366,7 +367,7 @@ mod_building::mod_building(flecs::world& world)
         });
 
     world.system<MapData const, MemoryArena>("BuildingsInit")
-        .kind(MapGenPhase::Pre)
+        .kind(MapGenPhase::Allocate)
         .write<BuildingAtPosition>()
         .each([](flecs::iter& it, size_t, MapData const& map_data, MemoryArena& arena) {
             auto world = it.world();
