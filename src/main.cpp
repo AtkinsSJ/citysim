@@ -156,17 +156,31 @@ int main(int argc, char* argv[])
              },
                 1, 1 });
 
-        globalConsole->register_command(
-            { "generate"_s, [](Console&, s32, StringView) {
-                 auto game = try_get_game();
-                 if (!game.has_value())
-                     return;
+        globalConsole->register_command({
+            "generate"_s,
+            [](Console&, s32 argument_count, StringView arguments) {
+                auto game = try_get_game();
+                if (!game.has_value())
+                    return;
 
-                 // FIXME: Make command take a seed parameter
-                 auto seed = static_cast<u32>(time(nullptr));
-                 game->generate_map(seed);
-                 consoleWriteLine("Generated new map"_s, ConsoleLineStyle::Success);
-             } });
+                u32 seed = 0;
+                if (argument_count == 0) {
+                    seed = static_cast<u32>(time(nullptr));
+                } else {
+                    TokenReader tokens { arguments };
+                    if (auto seed_string = tokens.next_token(); seed_string.has_value()) {
+                        if (auto maybe_seed = seed_string.value().to_int(); maybe_seed.has_value()) {
+                            seed = maybe_seed.release_value();
+                        }
+                    }
+                }
+
+                game->generate_map(seed);
+                consoleWriteLine(myprintf("Generated new map #{}"_s, { formatInt(seed) }), ConsoleLineStyle::Success);
+            },
+            0,
+            1,
+        });
 
         globalConsole->register_command(
             { "map_info"_s, [](Console&, s32, StringView) {
