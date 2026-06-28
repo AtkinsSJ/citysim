@@ -25,7 +25,7 @@ struct CommandShortcut {
 
 struct Console;
 
-using CommandFunction = void (*)(Console*, s32, StringView);
+using CommandFunction = void (*)(Console&, s32 argument_count, StringView arguments);
 struct Command {
     String name;
     CommandFunction function;

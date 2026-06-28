@@ -129,7 +129,7 @@ int main(int argc, char* argv[])
         initConsole(&globalDebugState->arena, 0.2f, 0.9f, 6.0f);
 
         globalConsole->register_command(
-            { "debug_tools"_s, [](Console*, s32, StringView) {
+            { "debug_tools"_s, [](Console&, s32, StringView) {
                  // @Hack: This sets the position to outside the camera, and then relies on it automatically snapping back into bounds
                  auto& renderer = the_renderer();
                  V2I windowPos = v2i(renderer.ui_camera().position() + renderer.ui_camera().size());
@@ -138,7 +138,7 @@ int main(int argc, char* argv[])
              } });
 
         globalConsole->register_command(
-            { "funds"_s, [](Console*, s32, StringView arguments) {
+            { "funds"_s, [](Console&, s32, StringView arguments) {
                  auto game = try_get_game();
                  if (!game.has_value() || game->city() == nullptr)
                      return;
@@ -157,7 +157,7 @@ int main(int argc, char* argv[])
                 1, 1 });
 
         globalConsole->register_command(
-            { "generate"_s, [](Console*, s32, StringView) {
+            { "generate"_s, [](Console&, s32, StringView) {
                  auto game = try_get_game();
                  if (!game.has_value() || game->city() == nullptr)
                      return;
@@ -177,7 +177,7 @@ int main(int argc, char* argv[])
              } });
 
         globalConsole->register_command(
-            { "map_info"_s, [](Console*, s32, StringView) {
+            { "map_info"_s, [](Console&, s32, StringView) {
                  auto game = try_get_game();
                  if (!game.has_value() || game->city() == nullptr)
                      return;
@@ -187,7 +187,7 @@ int main(int argc, char* argv[])
              } });
 
         globalConsole->register_command(
-            { "mark_all_dirty"_s, [](Console*, s32, StringView) {
+            { "mark_all_dirty"_s, [](Console&, s32, StringView) {
                  auto game = try_get_game();
                  if (!game.has_value() || game->city() == nullptr)
                      return;
@@ -197,7 +197,7 @@ int main(int argc, char* argv[])
              } });
 
         globalConsole->register_command(
-            { "show_layer"_s, [](Console*, s32 argumentsCount, StringView arguments) {
+            { "show_layer"_s, [](Console&, s32 argumentsCount, StringView arguments) {
                  auto game = try_get_game();
                  if (!game.has_value())
                      return;

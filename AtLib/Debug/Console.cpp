@@ -310,7 +310,7 @@ void consoleHandleCommand(Console* console, StringView commandInput)
                     }
                 } else {
                     u32 commandStartTime = SDL_GetTicks();
-                    command->function(console, argCount, tokens.remaining_input());
+                    command->function(*console, argCount, tokens.remaining_input());
                     u32 commandEndTime = SDL_GetTicks();
 
                     consoleWriteLine(myprintf("Command executed in {0}ms"_s, { formatInt(commandEndTime - commandStartTime) }));
@@ -365,7 +365,7 @@ void Console::before_assets_unloaded()
     commandShortcuts.clear();
 }
 
-#define ConsoleCommand(name) static void cmd_##name([[maybe_unused]] Console* console, [[maybe_unused]] s32 argumentsCount, [[maybe_unused]] StringView arguments)
+#define ConsoleCommand(name) static void cmd_##name([[maybe_unused]] Console& console, [[maybe_unused]] s32 argumentsCount, [[maybe_unused]] StringView arguments)
 ConsoleCommand(exit)
 {
     consoleWriteLine("Quitting game..."_s, ConsoleLineStyle::Success);
@@ -382,7 +382,7 @@ ConsoleCommand(help)
 {
     consoleWriteLine("Available commands are:"_s);
 
-    for (auto& [name, command] : globalConsole->commands)
+    for (auto& [name, command] : console.commands)
         consoleWriteLine(myprintf(" - {0}"_s, { name }));
 }
 
