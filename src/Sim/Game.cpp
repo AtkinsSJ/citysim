@@ -579,6 +579,8 @@ GameScene::GameScene()
     m_world.import<mod_terrain>();
     m_world.import<mod_map_generation>();
 
+    BuildingCatalogue::the().update_prefabs(m_world);
+
     // FIXME: Set cursor for InspectTool
 }
 

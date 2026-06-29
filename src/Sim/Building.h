@@ -71,6 +71,7 @@ struct BuildingVariant {
 struct BuildingDef {
     String name;
     BuildingType typeID;
+    flecs::entity prefab;
 
     String textAssetName;
 
@@ -117,6 +118,8 @@ struct BuildingDef {
 
     bool has_type(BuildingType) const;
     bool matches_variant(BuildingVariant const& variant, EnumMap<ConnectionDirection, Optional<BuildingDef const&>> const&) const;
+
+    flecs::entity instantiate(flecs::world&, V2I position) const;
 };
 
 struct BuildingProblem {
@@ -195,7 +198,9 @@ struct Jobs {
     u32 current;
 };
 
-struct Demolishable { };
+struct Demolishable {
+    s32 cost;
+};
 
 struct BuildingAtPosition {
     Array2<Optional<flecs::entity>> tile_building;

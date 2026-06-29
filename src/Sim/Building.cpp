@@ -6,10 +6,13 @@
 
 #include "Building.h"
 
+#include <App/App.h>
 #include <Gfx/Colour.h>
+#include <Sim/Basic.h>
 #include <Sim/BuildingCatalogue.h>
 #include <Sim/City.h>
 #include <Sim/MapGeneration.h>
+#include <Util/Random.h>
 
 BuildingDef const& Building::get_def() const
 {
@@ -84,6 +87,22 @@ bool BuildingDef::matches_variant(BuildingVariant const& variant, EnumMap<Connec
     }
 
     return result;
+}
+
+flecs::entity BuildingDef::instantiate(flecs::world& world, V2I position) const
+{
+    return world.entity()
+        .is_a(prefab)
+        .set<BuildingComponent>({
+            .footprint = { position.x, position.y, size.x, size.y },
+            .variant_index = {},
+        })
+        .set<PositionComponent>({ v2(position) })
+        .set<SpriteComponent>({
+            .sprite = SpriteRef { spriteName, App::the().cosmetic_random().random_integer<u16>() },
+            .size = v2(size),
+            .color = Colour::white(),
+        });
 }
 
 void Building::update_variant(City& city, Optional<BuildingDef const&> passed_def)
@@ -348,7 +367,7 @@ mod_building::mod_building(flecs::world& world)
             remove_building(building_at_position, building.footprint);
         });
 
-    world.component<Demolishable>().add(flecs::CanToggle);
+    world.component<Demolishable>().add(flecs::OnInstantiate, flecs::Inherit);
     world.component<Residents>();
     world.component<Jobs>();
 
