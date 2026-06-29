@@ -80,7 +80,7 @@ City::City(MemoryArena& arena, u32 width, u32 height, String name, String player
 
     the_renderer().world_camera().set_position(v2(bounds.size()) / 2);
 
-    saveBuildingTypes();
+    post_process_buildings();
     saveTerrainTypes();
 }
 

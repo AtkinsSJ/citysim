@@ -28,10 +28,10 @@ static void generate_map_impl(flecs::iter& it, size_t, MapData const& map_data, 
 
     auto& bounds = map_data.bounds;
     auto& cosmetic_random = App::the().cosmetic_random();
+    auto& building_catalogue = BuildingCatalogue::the();
 
     u8 ground_tile = truncate<u8>(findTerrainTypeByName("ground"_s));
     u8 water_tile = truncate<u8>(findTerrainTypeByName("water"_s));
-    BuildingDef* tree_def = findBuildingDef("tree"_s);
 
     auto terrain_random = Random::create(map_data.generation_seed);
     terrain.tile_terrain_type.fill(ground_tile);
@@ -94,7 +94,8 @@ static void generate_map_impl(flecs::iter& it, size_t, MapData const& map_data, 
     }
 
     // Forest splats
-    if (tree_def == nullptr) {
+    auto tree_def = building_catalogue.try_find_def("tree"_s);
+    if (!tree_def.has_value()) {
         logError("Map generator is unable to place any trees, because the 'tree' building was not found."_s);
     } else {
         s32 forest_count = terrain_random->random_between(10, 20);
@@ -113,19 +114,8 @@ static void generate_map_impl(flecs::iter& it, size_t, MapData const& map_data, 
                     if (TerrainCatalogue::the().get_def(terrain.tile_terrain_type.get(x, y)).canBuildOn
                         && !building_at_position.tile_building.get_if_exists(x, y, {}).has_value()
                         && forest_splat.contains(x, y)) {
-                        // FIXME: Use a prefab!
-                        (void)world.entity()
-                            .set<BuildingComponent>({
-                                .footprint = { x, y, 1, 1 },
-                                .variant_index = {},
-                            })
-                            .set<PositionComponent>({ .position = v2(x, y) })
-                            .set<SpriteComponent>({
-                                .sprite = SpriteRef { "b_forest"_sv, 1 },
-                                .size = { 1, 1 },
-                                .color = Colour::white(),
-                            })
-                            .add<Demolishable>();
+
+                        tree_def->instantiate(world, v2i(x, y));
                     }
                 }
             }

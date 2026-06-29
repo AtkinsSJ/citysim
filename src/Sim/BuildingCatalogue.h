@@ -14,6 +14,7 @@
 #include <Util/HashMap.h>
 #include <Util/OccupancyArray.h>
 #include <Util/StringTable.h>
+#include <flecs.h>
 
 struct BuildingCatalogue final : public AssetManagerListener {
     static BuildingCatalogue& the();
@@ -23,6 +24,10 @@ struct BuildingCatalogue final : public AssetManagerListener {
     Optional<BuildingDef const&> find_building_intersection(BuildingDef const&, BuildingDef const&) const;
 
     Optional<BuildingDef const&> find_random_zone_building(ZoneType, Random&, Function<bool(BuildingDef const&)> filter) const;
+
+    Optional<BuildingDef&> try_find_def(String const& name);
+    // Returns the null building def if the name isn't found.
+    BuildingDef& find_def(String const& name);
 
     OccupancyArray<BuildingDef> allBuildings;
     HashMap<String, BuildingDef*> buildingsByName { 128 };
@@ -43,9 +48,11 @@ struct BuildingCatalogue final : public AssetManagerListener {
     s32 overallMaxBuildingDim;
 
     // ^AssetManagerListener
+    virtual void before_assets_unloaded() override;
     virtual void after_assets_loaded() override;
 
     void remap_building_types(City& city);
+    void update_prefabs(flecs::world& world);
 };
 
 void initBuildingCatalogue(MemoryArena&);
@@ -54,4 +61,4 @@ BuildingDef* appendNewBuildingDef(StringView name);
 BuildingDef* getBuildingDef(BuildingType buildingTypeID);
 BuildingDef* findBuildingDef(String name);
 
-void saveBuildingTypes();
+void post_process_buildings();
