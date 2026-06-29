@@ -5,7 +5,9 @@
  */
 
 #include "BuildingCatalogue.h"
+
 #include <App/App.h>
+#include <Sim/Basic.h>
 #include <Sim/Building.h>
 #include <Sim/Game.h>
 #include <Util/Random.h>
@@ -120,11 +122,51 @@ Optional<BuildingDef const&> BuildingCatalogue::find_random_zone_building(ZoneTy
     return {};
 }
 
+void BuildingCatalogue::before_assets_unloaded()
+{
+    // Store old building names, and then clear them.
+    buildingNameToOldTypeID = buildingNameToTypeID;
+    buildingNameToTypeID.clear();
+}
+
 void BuildingCatalogue::after_assets_loaded()
 {
     if (auto* game_scene = dynamic_cast<GameScene*>(&App::the().scene())) {
         if (auto* city = game_scene->city())
             remap_building_types(*city);
+
+        auto& world = game_scene->world();
+        update_prefabs(world);
+    }
+}
+
+void BuildingCatalogue::update_prefabs(flecs::world& world)
+{
+    // Update Flecs prefabs:
+    // - Now-unused prefabs need deleting.
+    for (auto const& [name, old_id] : buildingNameToOldTypeID) {
+        if (!buildingNameToTypeID.contains(name)) {
+            auto& def = find_def(name);
+            if (def.prefab.is_alive())
+                def.prefab.destruct();
+        }
+    }
+    // - Other prefabs need updating to match their new definition.
+    for (auto const& [name, id] : buildingNameToTypeID) {
+        auto& def = find_def(name);
+        if (def.prefab.is_alive()) {
+            def.prefab.clear();
+        } else {
+            def.prefab = world.prefab(name.raw_pointer_to_characters());
+        }
+
+        auto& prefab = def.prefab;
+        prefab.set<Demolishable>({ .cost = def.demolishCost });
+        if (def.residents > 0)
+            prefab.set<Residents>({ .capacity = static_cast<u32>(def.residents), .current = 0 });
+        if (def.jobs > 0)
+            prefab.set<Jobs>({ .capacity = static_cast<u32>(def.jobs), .current = 0 });
+        // TODO: Add other components as we implement them.
     }
 }
 
@@ -157,6 +199,20 @@ BuildingDef* getBuildingDef(BuildingType buildingTypeID)
     return result;
 }
 
+Optional<BuildingDef&> BuildingCatalogue::try_find_def(String const& name)
+{
+    if (auto def = buildingsByName.get(name); def.has_value())
+        return *def.release_value();
+    return {};
+}
+
+BuildingDef& BuildingCatalogue::find_def(String const& name)
+{
+    if (auto def = buildingsByName.get(name); def.has_value())
+        return *def.release_value();
+    return *allBuildings.get(0);
+}
+
 BuildingDef* findBuildingDef(String name)
 {
     BuildingDef* result = BuildingCatalogue::the().buildingsByName.get(name).value_or(nullptr);
@@ -164,7 +220,7 @@ BuildingDef* findBuildingDef(String name)
     return result;
 }
 
-void saveBuildingTypes()
+void post_process_buildings()
 {
     auto& building_catalogue = BuildingCatalogue::the();
     // Post-processing of BuildingDefs
@@ -189,9 +245,6 @@ void saveBuildingTypes()
             }
         }
     }
-
-    // Actual saving
-    building_catalogue.buildingNameToOldTypeID.set_all(building_catalogue.buildingNameToTypeID);
 }
 
 void BuildingCatalogue::remap_building_types(City& city)
@@ -219,5 +272,5 @@ void BuildingCatalogue::remap_building_types(City& city)
         }
     }
 
-    saveBuildingTypes();
+    post_process_buildings();
 }
