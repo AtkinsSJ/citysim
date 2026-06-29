@@ -33,7 +33,7 @@ static void generate_map_impl(flecs::iter& it, size_t, MapData const& map_data, 
     u8 water_tile = truncate<u8>(findTerrainTypeByName("water"_s));
     BuildingDef* tree_def = findBuildingDef("tree"_s);
 
-    auto terrainRandom = Random::create(map_data.generation_seed);
+    auto terrain_random = Random::create(map_data.generation_seed);
     terrain.tile_terrain_type.fill(ground_tile);
 
     for (s32 y = 0; y < bounds.height(); y++) {
@@ -43,29 +43,29 @@ static void generate_map_impl(flecs::iter& it, size_t, MapData const& map_data, 
     }
 
     // Generate a river
-    Array<float> riverOffset = temp_arena().allocate_filled_array<float>(bounds.height());
-    terrainRandom->fill_with_noise(riverOffset, 10);
-    float riverMaxWidth = terrainRandom->random_float_between(12, 16);
-    float riverMinWidth = terrainRandom->random_float_between(6, riverMaxWidth);
-    float riverWaviness = 16.0f;
-    s32 riverCentreBase = terrainRandom->random_between(ceil_s32(bounds.width() * 0.4f), floor_s32(bounds.width() * 0.6f));
+    Array<float> river_offset = temp_arena().allocate_filled_array<float>(bounds.height());
+    terrain_random->fill_with_noise(river_offset, 10);
+    float river_max_width = terrain_random->random_float_between(12, 16);
+    float river_min_width = terrain_random->random_float_between(6, river_max_width);
+    float river_waviness = 16.0f;
+    s32 river_centre_base = terrain_random->random_between(ceil_s32(bounds.width() * 0.4f), floor_s32(bounds.width() * 0.6f));
     for (s32 y = 0; y < bounds.height(); y++) {
-        s32 riverWidth = ceil_s32(lerp(riverMinWidth, riverMaxWidth, ((float)y / (float)bounds.height())));
-        s32 riverCentre = riverCentreBase - round_s32((riverWaviness * 0.5f) + (riverWaviness * riverOffset[y]));
-        s32 riverLeft = riverCentre - (riverWidth / 2);
+        s32 river_width = ceil_s32(lerp(river_min_width, river_max_width, ((float)y / (float)bounds.height())));
+        s32 river_centre = river_centre_base - round_s32((river_waviness * 0.5f) + (river_waviness * river_offset[y]));
+        s32 river_left = river_centre - (river_width / 2);
 
-        for (s32 x = riverLeft; x < riverLeft + riverWidth; x++) {
+        for (s32 x = river_left; x < river_left + river_width; x++) {
             terrain.tile_terrain_type.set(x, y, water_tile);
         }
     }
 
     // Coastline
-    Array<float> coastlineOffset = temp_arena().allocate_filled_array<float>(bounds.width());
-    terrainRandom->fill_with_noise(coastlineOffset, 10);
+    Array<float> coastline_offset = temp_arena().allocate_filled_array<float>(bounds.width());
+    terrain_random->fill_with_noise(coastline_offset, 10);
     for (s32 x = 0; x < bounds.width(); x++) {
-        s32 coastDepth = 8 + round_s32(coastlineOffset[x] * 16.0f);
+        s32 coast_depth = 8 + round_s32(coastline_offset[x] * 16.0f);
 
-        for (s32 i = 0; i < coastDepth; i++) {
+        for (s32 i = 0; i < coast_depth; i++) {
             s32 y = bounds.height() - 1 - i;
 
             terrain.tile_terrain_type.set(x, y, water_tile);
@@ -73,20 +73,20 @@ static void generate_map_impl(flecs::iter& it, size_t, MapData const& map_data, 
     }
 
     // Lakes/ponds
-    s32 pondCount = terrainRandom->random_between(1, 4);
-    for (s32 pondIndex = 0; pondIndex < pondCount; pondIndex++) {
-        s32 pondCentreX = terrainRandom->random_between(0, bounds.width());
-        s32 pondCentreY = terrainRandom->random_between(0, bounds.height());
+    s32 pond_count = terrain_random->random_between(1, 4);
+    for (s32 pond_index = 0; pond_index < pond_count; pond_index++) {
+        s32 pond_centre_x = terrain_random->random_between(0, bounds.width());
+        s32 pond_centre_y = terrain_random->random_between(0, bounds.height());
 
-        float pondMinRadius = terrainRandom->random_float_between(3.0f, 5.0f);
-        float pondMaxRadius = terrainRandom->random_float_between(pondMinRadius + 3.0f, 20.0f);
+        float pond_min_radius = terrain_random->random_float_between(3.0f, 5.0f);
+        float pond_max_radius = terrain_random->random_float_between(pond_min_radius + 3.0f, 20.0f);
 
-        Splat pondSplat = Splat::create_random(pondCentreX, pondCentreY, pondMinRadius, pondMaxRadius, 36, terrainRandom);
+        Splat pond_splat = Splat::create_random(pond_centre_x, pond_centre_y, pond_min_radius, pond_max_radius, 36, terrain_random);
 
-        Rect2I boundingBox = pondSplat.bounding_box().intersected(bounds);
-        for (s32 y = boundingBox.y(); y < boundingBox.y() + boundingBox.height(); y++) {
-            for (s32 x = boundingBox.x(); x < boundingBox.x() + boundingBox.width(); x++) {
-                if (pondSplat.contains(x, y)) {
+        Rect2I bounding_box = pond_splat.bounding_box().intersected(bounds);
+        for (s32 y = bounding_box.y(); y < bounding_box.y() + bounding_box.height(); y++) {
+            for (s32 x = bounding_box.x(); x < bounding_box.x() + bounding_box.width(); x++) {
+                if (pond_splat.contains(x, y)) {
                     terrain.tile_terrain_type.set(x, y, water_tile);
                 }
             }
@@ -97,22 +97,22 @@ static void generate_map_impl(flecs::iter& it, size_t, MapData const& map_data, 
     if (tree_def == nullptr) {
         logError("Map generator is unable to place any trees, because the 'tree' building was not found."_s);
     } else {
-        s32 forestCount = terrainRandom->random_between(10, 20);
-        for (s32 forestIndex = 0; forestIndex < forestCount; forestIndex++) {
-            s32 centreX = terrainRandom->random_between(0, bounds.width());
-            s32 centreY = terrainRandom->random_between(0, bounds.height());
+        s32 forest_count = terrain_random->random_between(10, 20);
+        for (s32 forest_index = 0; forest_index < forest_count; forest_index++) {
+            s32 centre_x = terrain_random->random_between(0, bounds.width());
+            s32 centre_y = terrain_random->random_between(0, bounds.height());
 
-            float minRadius = terrainRandom->random_float_between(2.0f, 8.0f);
-            float maxRadius = terrainRandom->random_float_between(minRadius + 1.0f, 30.0f);
+            float min_radius = terrain_random->random_float_between(2.0f, 8.0f);
+            float max_radius = terrain_random->random_float_between(min_radius + 1.0f, 30.0f);
 
-            Splat forestSplat = Splat::create_random(centreX, centreY, minRadius, maxRadius, 36, terrainRandom);
+            Splat forest_splat = Splat::create_random(centre_x, centre_y, min_radius, max_radius, 36, terrain_random);
 
-            Rect2I boundingBox = forestSplat.bounding_box().intersected(bounds);
-            for (s32 y = boundingBox.y(); y < boundingBox.y() + boundingBox.height(); y++) {
-                for (s32 x = boundingBox.x(); x < boundingBox.x() + boundingBox.width(); x++) {
+            Rect2I bounding_box = forest_splat.bounding_box().intersected(bounds);
+            for (s32 y = bounding_box.y(); y < bounding_box.y() + bounding_box.height(); y++) {
+                for (s32 x = bounding_box.x(); x < bounding_box.x() + bounding_box.width(); x++) {
                     if (TerrainCatalogue::the().get_def(terrain.tile_terrain_type.get(x, y)).canBuildOn
                         && !building_at_position.tile_building.get_if_exists(x, y, {}).has_value()
-                        && forestSplat.contains(x, y)) {
+                        && forest_splat.contains(x, y)) {
                         // FIXME: Use a prefab!
                         (void)world.entity()
                             .set<BuildingComponent>({
