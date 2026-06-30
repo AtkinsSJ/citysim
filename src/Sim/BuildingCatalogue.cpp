@@ -161,6 +161,7 @@ void BuildingCatalogue::update_prefabs(flecs::world& world)
         }
 
         auto& prefab = def.prefab;
+        prefab.set<Name>({ def.textAssetName });
         prefab.set<Demolishable>({ .cost = def.demolishCost });
         if (def.residents > 0)
             prefab.set<Residents>({ .capacity = static_cast<u32>(def.residents), .current = 0 });

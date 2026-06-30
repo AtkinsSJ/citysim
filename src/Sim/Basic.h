@@ -16,6 +16,10 @@ struct mod_basic {
 };
 
 // Components
+struct Name {
+    String text_asset_name;
+};
+
 struct PositionComponent {
     V2 position;
 };
