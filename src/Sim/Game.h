@@ -79,7 +79,6 @@ void setHighlightedBuildings(DataViewUI* dataViewUI, ChunkedArray<BuildingRef>* 
 void setTileOverlay(DataViewUI* dataViewUI, Array2<u8>* tileData, String paletteName);
 void setTileOverlayCallback(DataViewUI* dataViewUI, DataViewUI::CalculateTileValue, String paletteName);
 
-void inspectTileWindowProc(UI::WindowContext* context, void* userData);
 void pauseMenuWindowProc(UI::WindowContext* context, void* userData);
 void costTooltipWindowProc(UI::WindowContext* context, void* userData);
 void debugToolsWindowProc(UI::WindowContext* context, void* userData);
