@@ -162,8 +162,4 @@ struct CityData {
     // TODO: These want to be in some kind of buffer somewhere so they can be modified!
     String name;
     String player_name;
-
-    // FIXME: Separate budget
-    s32 funds { 0 };
-    s32 monthly_expenditure { 0 };
 };
