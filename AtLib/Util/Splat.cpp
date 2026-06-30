@@ -48,3 +48,35 @@ bool Splat::contains(s32 x, s32 y) const
     float angle = angleOf(x - m_centre.x, y - m_centre.y);
     return distance < radius_at_angle(angle);
 }
+
+void Splat::for_each_tile(Function<void(s32 x, s32 y)> const& callback) const
+{
+    Rect2I bounds = bounding_box();
+    for (s32 y = bounds.y(); y < bounds.y() + bounds.height(); y++) {
+        for (s32 x = bounds.x(); x < bounds.x() + bounds.width(); x++) {
+            if (contains(x, y))
+                callback(x, y);
+        }
+    }
+}
+
+void Splat::for_each_tile_with_centre_distance(Function<void(s32 x, s32 y, float percentage_closeness_to_centre)> const& callback) const
+{
+    Rect2I bounds = bounding_box();
+    for (s32 y = bounds.y(); y < bounds.y() + bounds.height(); y++) {
+        for (s32 x = bounds.x(); x < bounds.x() + bounds.width(); x++) {
+
+            float distance = lengthOf(x - m_centre.x, y - m_centre.y);
+            // If we're outside the max, we must be outside the splat
+            if (distance > m_max_radius)
+                continue;
+
+            float angle = angleOf(x - m_centre.x, y - m_centre.y);
+            auto radius = radius_at_angle(angle);
+            if (distance > radius)
+                continue;
+
+            callback(x, y, 1.0f - (distance / radius));
+        }
+    }
+}

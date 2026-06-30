@@ -42,6 +42,9 @@ struct Splat {
     Rect2I bounding_box() const;
     bool contains(s32 x, s32 y) const;
 
+    void for_each_tile(Function<void(s32 x, s32 y)> const& callback) const;
+    void for_each_tile_with_centre_distance(Function<void(s32 x, s32 y, float percentage_closeness_to_centre)> const& callback) const;
+
 private:
     Splat(V2I centre, float min_radius, float max_radius, Array<float> radius, float degrees_per_index)
         : m_centre(centre)
