@@ -18,11 +18,11 @@
 #include <Menus/SavedGames.h>
 #include <Settings/Settings.h>
 #include <Sim/Basic.h>
+#include <Sim/Budget.h>
 #include <Sim/BuildingCatalogue.h>
 #include <Sim/Camera.h>
 #include <Sim/City.h>
 #include <Sim/MapGeneration.h>
-#include <Sim/TerrainCatalogue.h>
 #include <Sim/Tool.h>
 #include <UI/Toast.h>
 #include <UI/Window.h>
@@ -82,7 +82,8 @@ void GameScene::update_and_render_game_ui()
 
     UI::putLabel(city.name, { left, uiPadding, width3, rowHeight }, &label_style);
 
-    UI::putLabel(myprintf("£{0} (-£{1}/month)"_s, { formatInt(city.funds), formatInt(city.monthly_expenditure) }), { width3, uiPadding, width3, rowHeight }, &label_style);
+    auto& budget = m_world.get<Budget>();
+    UI::putLabel(myprintf("£{0} (-£{1}/month)"_s, { formatInt(budget.funds()), formatInt(budget.monthly_expenditure()) }), { width3, uiPadding, width3, rowHeight }, &label_style);
 
     // FIXME: Re-enable jobs and pop display
     UI::putLabel(myprintf("Pop: ?, Jobs: ?"_s, {}), { width3, uiPadding + rowHeight, width3, rowHeight }, &label_style);
@@ -448,6 +449,7 @@ GameScene::GameScene()
 
     // NB: The order here matters. Rendering happens in order, and some modules rely on others.
     m_world.import<mod_basic>();
+    m_world.import<mod_budget>();
     m_world.import<mod_camera>();
     m_world.import<mod_city>();
     m_world.import<mod_building>();
