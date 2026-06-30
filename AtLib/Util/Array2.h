@@ -45,6 +45,15 @@ public:
         return const_cast<Array2*>(this)->get(x, y);
     }
 
+    T& get(V2I const& position)
+    {
+        return get(position.x, position.y);
+    }
+    T const& get(V2I const& position) const
+    {
+        return const_cast<Array2*>(this)->get(position);
+    }
+
     T& get_flat(size_t index)
     {
         ASSERT(index < count());
@@ -60,6 +69,11 @@ public:
         return x >= 0 && x < m_width && y >= 0 && y < m_height;
     }
 
+    bool contains_coordinate(V2I const& position) const
+    {
+        return contains_coordinate(position.x, position.y);
+    }
+
     T get_if_exists(s32 x, s32 y, T default_value) const
     {
         if (contains_coordinate(x, y))
@@ -68,9 +82,19 @@ public:
         return default_value;
     }
 
+    T get_if_exists(V2I const& position, T default_value) const
+    {
+        return get_if_exists(position.x, position.y, move(default_value));
+    }
+
     void set(s32 x, s32 y, T value)
     {
         get(x, y) = value;
+    }
+
+    void set(V2I const& position, T value)
+    {
+        get(position) = value;
     }
 
     void fill(T const& value)
