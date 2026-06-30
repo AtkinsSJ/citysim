@@ -184,6 +184,8 @@ struct mod_building {
 };
 
 struct BuildingComponent {
+    BuildingType type;
+    GameTimestamp creation_date;
     Rect2I footprint;
     Optional<s16> variant_index;
 };

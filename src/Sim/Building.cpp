@@ -94,6 +94,8 @@ flecs::entity BuildingDef::instantiate(flecs::world& world, V2I position) const
     return world.entity()
         .is_a(prefab)
         .set<BuildingComponent>({
+            .type = typeID,
+            .creation_date = world.get<GameClock>().current_day(),
             .footprint = { position.x, position.y, size.x, size.y },
             .variant_index = {},
         })
