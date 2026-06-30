@@ -94,8 +94,9 @@ public:
 
     MemoryArena& arena() { return m_arena; }
     flecs::world& world() { return m_world; }
-    City* city() { return m_city.ptr(); }
-    void set_city(OwnedRef<City>);
+
+    // DEPRECATED
+    City* city() { return nullptr; }
 
     void generate_map(u32 seed);
 
@@ -113,11 +114,8 @@ private:
 
     void update_and_render_game_ui();
 
-    void move_camera_from_input(Camera&, V2 window_size, V2 window_mouse_pos, float delta_time);
-
     MemoryArena m_arena { "Game"_s };
     flecs::world m_world;
-    OwnedPtr<City> m_city;
 
     flecs::entity m_day_pipeline;
     flecs::entity m_week_pipeline;
