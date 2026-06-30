@@ -28,64 +28,6 @@
 #include <UI/Window.h>
 #include <Util/Random.h>
 
-void GameScene::move_camera_from_input(Camera& camera, V2 window_size, V2 window_mouse_pos, float delta_time)
-{
-    DEBUG_FUNCTION();
-
-    s32 const CAMERA_MARGIN = 1;          // How many tiles beyond the map can the camera scroll to show?
-    float const CAMERA_PAN_SPEED = 10.0f; // Measured in world units per second
-
-    // Zooming
-    s32 zoomDelta = input_state().wheelY;
-
-    // Turns out that having the zoom bound to the same key I use for navigating debug frames is REALLY ANNOYING
-    if (!isInputCaptured()) {
-        if (keyJustPressed(SDLK_EQUALS) || keyJustPressed(SDLK_KP_PLUS)) {
-            zoomDelta++;
-        } else if (keyJustPressed(SDLK_MINUS) || keyJustPressed(SDLK_KP_MINUS)) {
-            zoomDelta--;
-        }
-    }
-
-    if (zoomDelta) {
-        camera.zoom_by(zoomDelta * 0.1f);
-    }
-
-    // Panning
-    float scrollSpeed = (CAMERA_PAN_SPEED * sqrt(camera.zoom())) * delta_time;
-    float cameraEdgeScrollPixelMargin = 8.0f;
-
-    if (mouseButtonPressed(MouseButton::Middle)) {
-        // Click-panning!
-        float scale = scrollSpeed * 1.0f;
-        V2 clickStartPos = getClickStartPos(MouseButton::Middle, &camera);
-        camera.move_by((camera.mouse_position() - clickStartPos) * scale);
-    } else if (!isInputCaptured()) {
-        if (keyIsPressed(SDLK_LEFT)
-            || keyIsPressed(SDLK_a)
-            || (window_mouse_pos.x < cameraEdgeScrollPixelMargin)) {
-            camera.move_by(v2(-scrollSpeed, 0.f));
-        } else if (keyIsPressed(SDLK_RIGHT)
-            || keyIsPressed(SDLK_d)
-            || (window_mouse_pos.x > (window_size.x - cameraEdgeScrollPixelMargin))) {
-            camera.move_by(v2(scrollSpeed, 0.f));
-        }
-
-        if (keyIsPressed(SDLK_UP)
-            || keyIsPressed(SDLK_w)
-            || (window_mouse_pos.y < cameraEdgeScrollPixelMargin)) {
-            camera.move_by(v2(0.f, -scrollSpeed));
-        } else if (keyIsPressed(SDLK_DOWN)
-            || keyIsPressed(SDLK_s)
-            || (window_mouse_pos.y > (window_size.y - cameraEdgeScrollPixelMargin))) {
-            camera.move_by(v2(0.f, scrollSpeed));
-        }
-    }
-
-    // Clamp camera
-    camera.snap_to_rectangle({ -CAMERA_MARGIN, -CAMERA_MARGIN, m_city->bounds.width() + (2 * CAMERA_MARGIN), m_city->bounds.height() + (2 * CAMERA_MARGIN) });
-}
-
 void inspectTileWindowProc(UI::WindowContext* context, void* userData)
 {
     DEBUG_FUNCTION();
@@ -195,7 +137,7 @@ void GameScene::update_and_render_game_ui()
     RenderBuffer* uiBuffer = &renderer.ui_buffer();
     auto& label_style = UI::LabelStyle::get("title"_s);
     auto& font = label_style.font.get();
-    auto& city = *m_city;
+    auto& city = m_world.get<CityData>();
 
     s32 const uiPadding = 4; // TODO: Move this somewhere sensible!
     s32 left = uiPadding;
@@ -210,14 +152,15 @@ void GameScene::update_and_render_game_ui()
 
     UI::putLabel(city.name, { left, uiPadding, width3, rowHeight }, &label_style);
 
-    UI::putLabel(myprintf("£{0} (-£{1}/month)"_s, { formatInt(city.funds), formatInt(city.monthlyExpenditure) }), { width3, uiPadding, width3, rowHeight }, &label_style);
+    UI::putLabel(myprintf("£{0} (-£{1}/month)"_s, { formatInt(city.funds), formatInt(city.monthly_expenditure) }), { width3, uiPadding, width3, rowHeight }, &label_style);
 
-    UI::putLabel(myprintf("Pop: {0}, Jobs: {1}"_s, { formatInt(city.zoneLayer.total_residents()), formatInt(city.zoneLayer.total_jobs()) }), { width3, uiPadding + rowHeight, width3, rowHeight }, &label_style);
+    // FIXME: Re-enable jobs and pop display
+    UI::putLabel(myprintf("Pop: ?, Jobs: ?"_s, {}), { width3, uiPadding + rowHeight, width3, rowHeight }, &label_style);
 
     // Game clock
     Rect2I clockBounds = {};
     {
-        GameClock* clock = &city.gameClock;
+        auto& clock = m_world.get_mut<GameClock>();
 
         // We're sizing the clock area based on the speed control buttons.
         // The >>> button is the largest, so they're all set to that size.
@@ -227,14 +170,14 @@ void GameScene::update_and_render_game_ui()
         s32 clockWidth = (speedButtonSize.x * 4) + (uiPadding * 3);
         clockBounds = { right - clockWidth, uiPadding, clockWidth, toolbarHeight };
 
-        String dateString = formatDateTime(clock->cosmetic_date(), DateTimeFormat::ShortDate);
+        String dateString = formatDateTime(clock.cosmetic_date(), DateTimeFormat::ShortDate);
         V2I dateStringSize = font.calculate_text_size(dateString, clockWidth);
 
         // Draw a progress bar for the current day
         Rect2I dateRect { right - clockWidth, uiPadding, clockWidth, dateStringSize.y };
         drawSingleRect(uiBuffer, dateRect, renderer.shaderIds.untextured, Colour::from_rgb_255(0, 0, 0, 128));
         Rect2I dateProgressRect = dateRect;
-        dateProgressRect.set_width(round_s32(dateProgressRect.width() * clock->current_day_completion()));
+        dateProgressRect.set_width(round_s32(dateProgressRect.width() * clock.current_day_completion()));
         drawSingleRect(uiBuffer, dateProgressRect, renderer.shaderIds.untextured, Colour::from_rgb_255(64, 255, 64, 128));
 
         UI::putLabel(dateString, dateRect, &label_style);
@@ -242,30 +185,31 @@ void GameScene::update_and_render_game_ui()
         // Speed control buttons
         Rect2I speedButtonRect { right - speedButtonSize.x, toolbarHeight - (uiPadding + speedButtonSize.y), speedButtonSize.x, speedButtonSize.y };
 
-        if (UI::putTextButton(">>>"_s, speedButtonRect, &button_style, buttonIsActive(clock->speed() == GameClockSpeed::Fast))) {
-            clock->set_speed(GameClockSpeed::Fast);
-            clock->set_is_paused(false);
+        if (UI::putTextButton(">>>"_s, speedButtonRect, &button_style, buttonIsActive(clock.speed() == GameClockSpeed::Fast))) {
+            clock.set_speed(GameClockSpeed::Fast);
+            clock.set_is_paused(false);
         }
         speedButtonRect.set_x(speedButtonRect.x() - (speedButtonRect.width() + uiPadding));
 
-        if (UI::putTextButton(">>"_s, speedButtonRect, &button_style, buttonIsActive(clock->speed() == GameClockSpeed::Medium))) {
-            clock->set_speed(GameClockSpeed::Medium);
-            clock->set_is_paused(false);
+        if (UI::putTextButton(">>"_s, speedButtonRect, &button_style, buttonIsActive(clock.speed() == GameClockSpeed::Medium))) {
+            clock.set_speed(GameClockSpeed::Medium);
+            clock.set_is_paused(false);
         }
         speedButtonRect.set_x(speedButtonRect.x() - (speedButtonRect.width() + uiPadding));
 
-        if (UI::putTextButton(">"_s, speedButtonRect, &button_style, buttonIsActive(clock->speed() == GameClockSpeed::Slow))) {
-            clock->set_speed(GameClockSpeed::Slow);
-            clock->set_is_paused(false);
+        if (UI::putTextButton(">"_s, speedButtonRect, &button_style, buttonIsActive(clock.speed() == GameClockSpeed::Slow))) {
+            clock.set_speed(GameClockSpeed::Slow);
+            clock.set_is_paused(false);
         }
         speedButtonRect.set_x(speedButtonRect.x() - (speedButtonRect.width() + uiPadding));
 
-        if (UI::putTextButton("||"_s, speedButtonRect, &button_style, buttonIsActive(clock->is_paused()))) {
-            clock->set_is_paused(!clock->is_paused());
+        if (UI::putTextButton("||"_s, speedButtonRect, &button_style, buttonIsActive(clock.is_paused()))) {
+            clock.set_is_paused(!clock.is_paused());
         }
     }
 
-    UI::putLabel(myprintf("R: {0}\nC: {1}\nI: {2}"_s, { formatInt(city.zoneLayer.demand[ZoneType::Residential]), formatInt(city.zoneLayer.demand[ZoneType::Commercial]), formatInt(city.zoneLayer.demand[ZoneType::Industrial]) }),
+    // FIXME: Re-enable RCI demand display
+    UI::putLabel(myprintf("R: ?\nC: ?\nI: ?"_s, {}),
         { clockBounds.x() - 100, uiPadding, 100, toolbarHeight }, &label_style);
 
     auto& button_style = UI::ButtonStyle::get("default"_s);
@@ -513,7 +457,8 @@ ErrorOr<OwnedRef<GameScene>> GameScene::from_saved_game(SavedGameInfo const& sav
                 break;
 
             // And we're done!
-            game_scene->set_city(city.release_nonnull());
+            // FIXME: Reimplement this!
+            // game_scene->set_city(city.release_nonnull());
             succeeded = true;
             break;
         }
@@ -622,7 +567,7 @@ void GameScene::update_and_render(float delta_time)
         input_state().receivedQuitSignal = true;
 
     // UI!
-    // update_and_render_game_ui();
+    update_and_render_game_ui();
 
     // // CAMERA!
     // Camera& world_camera = renderer.world_camera();
@@ -666,53 +611,53 @@ void GameScene::update_and_render(float delta_time)
 
 void GameScene::init_data_view_ui()
 {
-    City& city = *m_city;
-
-    m_data_view_ui[DataView::None].title = "data_view_none"_s;
-
-    m_data_view_ui[DataView::Desirability_Residential].title = "data_view_desirability_residential"_s;
-    setGradient(&m_data_view_ui[DataView::Desirability_Residential], "desirability"_s);
-    setTileOverlay(&m_data_view_ui[DataView::Desirability_Residential], &city.zoneLayer.tileDesirability[ZoneType::Residential], "desirability"_s);
-
-    m_data_view_ui[DataView::Desirability_Commercial].title = "data_view_desirability_commercial"_s;
-    setGradient(&m_data_view_ui[DataView::Desirability_Commercial], "desirability"_s);
-    setTileOverlay(&m_data_view_ui[DataView::Desirability_Commercial], &city.zoneLayer.tileDesirability[ZoneType::Commercial], "desirability"_s);
-
-    m_data_view_ui[DataView::Desirability_Industrial].title = "data_view_desirability_industrial"_s;
-    setGradient(&m_data_view_ui[DataView::Desirability_Industrial], "desirability"_s);
-    setTileOverlay(&m_data_view_ui[DataView::Desirability_Industrial], &city.zoneLayer.tileDesirability[ZoneType::Industrial], "desirability"_s);
-
-    m_data_view_ui[DataView::Crime].title = "data_view_crime"_s;
-    setGradient(&m_data_view_ui[DataView::Crime], "service_coverage"_s);
-    setFixedColors(&m_data_view_ui[DataView::Crime], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, m_arena);
-    setHighlightedBuildings(&m_data_view_ui[DataView::Crime], city.crimeLayer.police_buildings(), &BuildingDef::policeEffect);
-    setTileOverlay(&m_data_view_ui[DataView::Crime], city.crimeLayer.tile_police_coverage(), "service_coverage"_s);
-
-    m_data_view_ui[DataView::Fire].title = "data_view_fire"_s;
-    setGradient(&m_data_view_ui[DataView::Fire], "risk"_s);
-    setFixedColors(&m_data_view_ui[DataView::Fire], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, m_arena);
-    setHighlightedBuildings(&m_data_view_ui[DataView::Fire], city.fireLayer.fire_protection_buildings(), &BuildingDef::fireProtection);
-    setTileOverlay(&m_data_view_ui[DataView::Fire], city.fireLayer.tile_overall_fire_risk(), "risk"_s);
-
-    m_data_view_ui[DataView::Health].title = "data_view_health"_s;
-    setGradient(&m_data_view_ui[DataView::Health], "service_coverage"_s);
-    setFixedColors(&m_data_view_ui[DataView::Health], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, m_arena);
-    setHighlightedBuildings(&m_data_view_ui[DataView::Health], city.healthLayer.health_buildings(), &BuildingDef::healthEffect);
-    setTileOverlay(&m_data_view_ui[DataView::Health], city.healthLayer.tile_health_coverage(), "service_coverage"_s);
-
-    m_data_view_ui[DataView::LandValue].title = "data_view_landvalue"_s;
-    setGradient(&m_data_view_ui[DataView::LandValue], "land_value"_s);
-    setTileOverlay(&m_data_view_ui[DataView::LandValue], city.landValueLayer.tile_land_value(), "land_value"_s);
-
-    m_data_view_ui[DataView::Pollution].title = "data_view_pollution"_s;
-    setGradient(&m_data_view_ui[DataView::Pollution], "pollution"_s);
-    setTileOverlay(&m_data_view_ui[DataView::Pollution], city.pollutionLayer.tile_pollution(), "pollution"_s);
-
-    m_data_view_ui[DataView::Power].title = "data_view_power"_s;
-    setFixedColors(&m_data_view_ui[DataView::Power], "power"_s, { "data_view_power_powered"_s, "data_view_power_brownout"_s, "data_view_power_blackout"_s }, m_arena);
-
-    setHighlightedBuildings(&m_data_view_ui[DataView::Power], city.powerLayer.power_buildings());
-    setTileOverlayCallback(&m_data_view_ui[DataView::Power], [](City* city, s32 x, s32 y) { return city->powerLayer.calculate_power_overlay_for_tile(x, y); }, "power"_s);
+    // City& city = *m_city;
+    //
+    // m_data_view_ui[DataView::None].title = "data_view_none"_s;
+    //
+    // m_data_view_ui[DataView::Desirability_Residential].title = "data_view_desirability_residential"_s;
+    // setGradient(&m_data_view_ui[DataView::Desirability_Residential], "desirability"_s);
+    // setTileOverlay(&m_data_view_ui[DataView::Desirability_Residential], &city.zoneLayer.tileDesirability[ZoneType::Residential], "desirability"_s);
+    //
+    // m_data_view_ui[DataView::Desirability_Commercial].title = "data_view_desirability_commercial"_s;
+    // setGradient(&m_data_view_ui[DataView::Desirability_Commercial], "desirability"_s);
+    // setTileOverlay(&m_data_view_ui[DataView::Desirability_Commercial], &city.zoneLayer.tileDesirability[ZoneType::Commercial], "desirability"_s);
+    //
+    // m_data_view_ui[DataView::Desirability_Industrial].title = "data_view_desirability_industrial"_s;
+    // setGradient(&m_data_view_ui[DataView::Desirability_Industrial], "desirability"_s);
+    // setTileOverlay(&m_data_view_ui[DataView::Desirability_Industrial], &city.zoneLayer.tileDesirability[ZoneType::Industrial], "desirability"_s);
+    //
+    // m_data_view_ui[DataView::Crime].title = "data_view_crime"_s;
+    // setGradient(&m_data_view_ui[DataView::Crime], "service_coverage"_s);
+    // setFixedColors(&m_data_view_ui[DataView::Crime], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, m_arena);
+    // setHighlightedBuildings(&m_data_view_ui[DataView::Crime], city.crimeLayer.police_buildings(), &BuildingDef::policeEffect);
+    // setTileOverlay(&m_data_view_ui[DataView::Crime], city.crimeLayer.tile_police_coverage(), "service_coverage"_s);
+    //
+    // m_data_view_ui[DataView::Fire].title = "data_view_fire"_s;
+    // setGradient(&m_data_view_ui[DataView::Fire], "risk"_s);
+    // setFixedColors(&m_data_view_ui[DataView::Fire], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, m_arena);
+    // setHighlightedBuildings(&m_data_view_ui[DataView::Fire], city.fireLayer.fire_protection_buildings(), &BuildingDef::fireProtection);
+    // setTileOverlay(&m_data_view_ui[DataView::Fire], city.fireLayer.tile_overall_fire_risk(), "risk"_s);
+    //
+    // m_data_view_ui[DataView::Health].title = "data_view_health"_s;
+    // setGradient(&m_data_view_ui[DataView::Health], "service_coverage"_s);
+    // setFixedColors(&m_data_view_ui[DataView::Health], "service_buildings"_s, { "data_view_buildings_powered"_s, "data_view_buildings_unpowered"_s }, m_arena);
+    // setHighlightedBuildings(&m_data_view_ui[DataView::Health], city.healthLayer.health_buildings(), &BuildingDef::healthEffect);
+    // setTileOverlay(&m_data_view_ui[DataView::Health], city.healthLayer.tile_health_coverage(), "service_coverage"_s);
+    //
+    // m_data_view_ui[DataView::LandValue].title = "data_view_landvalue"_s;
+    // setGradient(&m_data_view_ui[DataView::LandValue], "land_value"_s);
+    // setTileOverlay(&m_data_view_ui[DataView::LandValue], city.landValueLayer.tile_land_value(), "land_value"_s);
+    //
+    // m_data_view_ui[DataView::Pollution].title = "data_view_pollution"_s;
+    // setGradient(&m_data_view_ui[DataView::Pollution], "pollution"_s);
+    // setTileOverlay(&m_data_view_ui[DataView::Pollution], city.pollutionLayer.tile_pollution(), "pollution"_s);
+    //
+    // m_data_view_ui[DataView::Power].title = "data_view_power"_s;
+    // setFixedColors(&m_data_view_ui[DataView::Power], "power"_s, { "data_view_power_powered"_s, "data_view_power_brownout"_s, "data_view_power_blackout"_s }, m_arena);
+    //
+    // setHighlightedBuildings(&m_data_view_ui[DataView::Power], city.powerLayer.power_buildings());
+    // setTileOverlayCallback(&m_data_view_ui[DataView::Power], [](City* city, s32 x, s32 y) { return city->powerLayer.calculate_power_overlay_for_tile(x, y); }, "power"_s);
 }
 
 void setGradient(DataViewUI* dataView, String paletteName)
@@ -828,51 +773,51 @@ static void drawBuildingEffectRadii(City* city, Iterable* buildingRefs, EffectRa
 
 void GameScene::draw_data_view_overlay(Rect2I visible_tile_bounds) const
 {
-    DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
-
-    if (m_active_data_view == DataView::None)
-        return;
-    ASSERT(to_underlying(m_active_data_view) < to_underlying(DataView::COUNT));
-    auto& renderer = the_renderer();
-
-    auto& city = *m_city;
-    auto& dataView = m_data_view_ui[m_active_data_view];
-
-    if (dataView.overlayTileData) {
-        // TODO: Use the visible tile bounds for rendering instead. We have two paths, one is just to output
-        // an array in the layer as a texture, which we use for most things. The other is to generate an array
-        // dynamically, which we only calculate for the visibleTileBounds to save unnecessary work.
-        // The array-as-texture path currently returns the entire map, because that was simplest, but that
-        // wastefully uploads the entire map's data to the GPU each frame anyway, so it's inefficient, even
-        // though cropping it is non-trivial. But yeah, if they are consistent that would make things easier
-        // to follow.
-        // - Sam, 28/03/2020
-        Rect2I bounds = city.bounds;
-
-        auto& overlayPalette = Palette::get(dataView.overlayPaletteName);
-        drawGrid(&renderer.world_overlay_buffer(), bounds, *dataView.overlayTileData, overlayPalette.colours());
-    } else if (dataView.calculate_tile_value) {
-        // The per-tile overlay data is generated
-        Array2<u8> overlayTileData = temp_arena().allocate_array_2d<u8>(visible_tile_bounds.size());
-
-        for (s32 gridY = 0; gridY < visible_tile_bounds.height(); gridY++) {
-            for (s32 gridX = 0; gridX < visible_tile_bounds.width(); gridX++) {
-                u8 tileValue = dataView.calculate_tile_value(&city, visible_tile_bounds.x() + gridX, visible_tile_bounds.y() + gridY);
-                overlayTileData.set(gridX, gridY, tileValue);
-            }
-        }
-
-        auto& overlayPalette = Palette::get(dataView.overlayPaletteName);
-        drawGrid(&renderer.world_overlay_buffer(), visible_tile_bounds, overlayTileData, overlayPalette.colours());
-    }
-
-    if (dataView.highlightedBuildings) {
-        drawBuildingHighlights(&city, dataView.highlightedBuildings);
-
-        if (dataView.effectRadiusMember) {
-            drawBuildingEffectRadii(&city, dataView.highlightedBuildings, dataView.effectRadiusMember);
-        }
-    }
+    // DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
+    //
+    // if (m_active_data_view == DataView::None)
+    //     return;
+    // ASSERT(to_underlying(m_active_data_view) < to_underlying(DataView::COUNT));
+    // auto& renderer = the_renderer();
+    //
+    // auto& city = *m_city;
+    // auto& dataView = m_data_view_ui[m_active_data_view];
+    //
+    // if (dataView.overlayTileData) {
+    //     // TODO: Use the visible tile bounds for rendering instead. We have two paths, one is just to output
+    //     // an array in the layer as a texture, which we use for most things. The other is to generate an array
+    //     // dynamically, which we only calculate for the visibleTileBounds to save unnecessary work.
+    //     // The array-as-texture path currently returns the entire map, because that was simplest, but that
+    //     // wastefully uploads the entire map's data to the GPU each frame anyway, so it's inefficient, even
+    //     // though cropping it is non-trivial. But yeah, if they are consistent that would make things easier
+    //     // to follow.
+    //     // - Sam, 28/03/2020
+    //     Rect2I bounds = city.bounds;
+    //
+    //     auto& overlayPalette = Palette::get(dataView.overlayPaletteName);
+    //     drawGrid(&renderer.world_overlay_buffer(), bounds, *dataView.overlayTileData, overlayPalette.colours());
+    // } else if (dataView.calculate_tile_value) {
+    //     // The per-tile overlay data is generated
+    //     Array2<u8> overlayTileData = temp_arena().allocate_array_2d<u8>(visible_tile_bounds.size());
+    //
+    //     for (s32 gridY = 0; gridY < visible_tile_bounds.height(); gridY++) {
+    //         for (s32 gridX = 0; gridX < visible_tile_bounds.width(); gridX++) {
+    //             u8 tileValue = dataView.calculate_tile_value(&city, visible_tile_bounds.x() + gridX, visible_tile_bounds.y() + gridY);
+    //             overlayTileData.set(gridX, gridY, tileValue);
+    //         }
+    //     }
+    //
+    //     auto& overlayPalette = Palette::get(dataView.overlayPaletteName);
+    //     drawGrid(&renderer.world_overlay_buffer(), visible_tile_bounds, overlayTileData, overlayPalette.colours());
+    // }
+    //
+    // if (dataView.highlightedBuildings) {
+    //     drawBuildingHighlights(&city, dataView.highlightedBuildings);
+    //
+    //     if (dataView.effectRadiusMember) {
+    //         drawBuildingEffectRadii(&city, dataView.highlightedBuildings, dataView.effectRadiusMember);
+    //     }
+    // }
 }
 
 void GameScene::draw_data_view_ui()
@@ -1009,17 +954,6 @@ void GameScene::draw_data_view_ui()
         }
         ui.end(true);
     }
-}
-
-void GameScene::set_city(OwnedRef<City> city)
-{
-    m_city = move(city);
-    m_world.set<CityData>({
-        .name = m_city->name,
-        .player_name = m_city->playerName,
-        .funds = m_city->funds,
-        .monthly_expenditure = m_city->monthlyExpenditure,
-    });
 }
 
 void GameScene::generate_map(u32 seed)
