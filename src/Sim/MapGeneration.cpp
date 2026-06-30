@@ -82,15 +82,11 @@ static void generate_map_impl(flecs::iter& it, size_t, MapData const& map_data, 
         float pond_max_radius = terrain_random->random_float_between(pond_min_radius + 3.0f, 20.0f);
 
         Splat pond_splat = Splat::create_random(pond_centre_x, pond_centre_y, pond_min_radius, pond_max_radius, 36, terrain_random);
-
-        Rect2I bounding_box = pond_splat.bounding_box().intersected(bounds);
-        for (s32 y = bounding_box.y(); y < bounding_box.y() + bounding_box.height(); y++) {
-            for (s32 x = bounding_box.x(); x < bounding_box.x() + bounding_box.width(); x++) {
-                if (pond_splat.contains(x, y)) {
-                    terrain.tile_terrain_type.set(x, y, water_tile);
-                }
-            }
-        }
+        pond_splat.for_each_tile([&](s32 x, s32 y) {
+            if (!bounds.contains(x, y))
+                return;
+            terrain.tile_terrain_type.set(x, y, water_tile);
+        });
     }
 
     // Forest splats
@@ -103,22 +99,25 @@ static void generate_map_impl(flecs::iter& it, size_t, MapData const& map_data, 
             s32 centre_x = terrain_random->random_between(0, bounds.width());
             s32 centre_y = terrain_random->random_between(0, bounds.height());
 
-            float min_radius = terrain_random->random_float_between(2.0f, 8.0f);
-            float max_radius = terrain_random->random_float_between(min_radius + 1.0f, 30.0f);
+            float min_radius = terrain_random->random_float_between(2.0f, 5.0f);
+            float max_radius = terrain_random->random_float_between(min_radius + 1.0f, 15.0f);
 
             Splat forest_splat = Splat::create_random(centre_x, centre_y, min_radius, max_radius, 36, terrain_random);
+            forest_splat.for_each_tile_with_centre_distance([&](s32 x, s32 y, float percentage_distance_from_centre) {
+                if (!bounds.contains(x, y))
+                    return;
 
-            Rect2I bounding_box = forest_splat.bounding_box().intersected(bounds);
-            for (s32 y = bounding_box.y(); y < bounding_box.y() + bounding_box.height(); y++) {
-                for (s32 x = bounding_box.x(); x < bounding_box.x() + bounding_box.width(); x++) {
-                    if (TerrainCatalogue::the().get_def(terrain.tile_terrain_type.get(x, y)).canBuildOn
-                        && !building_at_position.tile_building.get_if_exists(x, y, {}).has_value()
-                        && forest_splat.contains(x, y)) {
+                // Make forests less dense towards their edges
+                float density = sqrt_float(percentage_distance_from_centre);
+                if (terrain_random->random_float_0_1() > density)
+                    return;
 
-                        tree_def->instantiate(world, v2i(x, y));
-                    }
+                if (TerrainCatalogue::the().get_def(terrain.tile_terrain_type.get(x, y)).canBuildOn
+                    && !building_at_position.tile_building.get_if_exists(x, y, {}).has_value()) {
+
+                    tree_def->instantiate(world, v2i(x, y));
                 }
-            }
+            });
         }
     }
 }
