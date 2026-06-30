@@ -23,6 +23,8 @@ public:
     s32 funds() const { return m_funds; }
     s32 monthly_expenditure() const { return m_monthly_expenditure; }
 
+    void show_cost_tooltip(s32 cost) const;
+
 private:
     s32 m_funds { 0 };
     s32 m_monthly_expenditure { 0 };
