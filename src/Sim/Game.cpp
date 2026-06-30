@@ -28,76 +28,6 @@
 #include <UI/Window.h>
 #include <Util/Random.h>
 
-void inspectTileWindowProc(UI::WindowContext* context, void* userData)
-{
-    DEBUG_FUNCTION();
-
-    UI::Panel* ui = &context->windowPanel;
-    ui->alignWidgets(HAlign::Fill);
-
-    City* city = static_cast<City*>(userData);
-
-    auto const& tile_pos = InspectTool::inspected_tile_pos;
-
-    // CitySector
-    CitySector* sector = city->sectors.get_sector_at_tile_pos(tile_pos.x, tile_pos.y);
-    ui->addLabel(myprintf("CitySector: x={0} y={1} w={2} h={3}"_s, { formatInt(sector->bounds.x()), formatInt(sector->bounds.y()), formatInt(sector->bounds.width()), formatInt(sector->bounds.height()) }));
-
-    // Terrain
-    auto& terrain = city->terrainLayer.terrain_at(tile_pos.x, tile_pos.y);
-    ui->addLabel(myprintf("Terrain: {0}, {1} tiles from water"_s, { getText(terrain.textAssetName), formatInt(city->terrainLayer.distance_to_water_at(tile_pos.x, tile_pos.y)) }));
-
-    // Zone
-    ZoneType zone = city->zoneLayer.get_zone_at(tile_pos.x, tile_pos.y);
-    ui->addLabel(myprintf("Zone: {0}"_s, { zone == ZoneType::None ? "None"_s : getText(ZONE_DEFS[zone].textAssetName) }));
-
-    // Building
-    Building* building = city->get_building_at(tile_pos.x, tile_pos.y);
-    if (building != nullptr) {
-        s32 buildingIndex = city->tileBuildingIndex.get(tile_pos.x, tile_pos.y);
-        auto& def = building->get_def();
-        ui->addLabel(myprintf("Building: {0} (ID {1}, array index {2})"_s, { getText(def.textAssetName), formatInt(building->id), formatInt(buildingIndex) }));
-        ui->addLabel(myprintf("Constructed: {0}"_s, { formatDateTime(dateTimeFromTimestamp(building->creationDate), DateTimeFormat::ShortDate) }));
-        ui->addLabel(myprintf("Variant: {0}"_s, { formatInt(building->variantIndex.value_or(-1)) }));
-        ui->addLabel(myprintf("- Residents: {0} / {1}"_s, { formatInt(building->currentResidents), formatInt(def.residents) }));
-        ui->addLabel(myprintf("- Jobs: {0} / {1}"_s, { formatInt(building->currentJobs), formatInt(def.jobs) }));
-        ui->addLabel(myprintf("- Power: {0}"_s, { formatInt(def.power) }));
-
-        // Problems
-        for (auto problem_type : enum_values<BuildingProblem::Type>()) {
-            if (building->has_problem(problem_type)) {
-                ui->addLabel(myprintf("- PROBLEM: {0}"_s, { getText(buildingProblemNames[problem_type]) }));
-            }
-        }
-    } else {
-        ui->addLabel("Building: None"_s);
-    }
-
-    // Land value
-    ui->addLabel(myprintf("Land value: {0}%"_s, { formatFloat(city->landValueLayer.get_land_value_percent_at(tile_pos.x, tile_pos.y) * 100.0f, 0) }));
-
-    // Debug info
-    auto& inspection_flags = InspectTool::debug_flags;
-    if (inspection_flags.has(InspectTool::DebugFlags::Fire))
-        city->fireLayer.debug_inspect(*ui, tile_pos, building);
-    if (inspection_flags.has(InspectTool::DebugFlags::Power))
-        city->powerLayer.debug_inspect(*ui, tile_pos);
-    if (inspection_flags.has(InspectTool::DebugFlags::Transport))
-        city->transportLayer.debug_inspect(*ui, tile_pos);
-
-    // Highlight
-    // Part of me wants this to happen outside of this windowproc, but we don't have a way of knowing when
-    // the uiwindow is closed. Maybe at some point we'll want that functionality for other reasons, but
-    // for now, it's cleaner and simpler to just do that drawing here.
-    // Though, that does mean we can't control *when* the highlight is drawn, or make the building be drawn
-    // as highlighted, so maybe this won't work and I'll have to delete this comment in 30 seconds' time!
-    // - Sam, 28/08/2019
-
-    auto tileHighlightColor = Colour::from_rgb_255(196, 196, 255, 64);
-    auto& renderer = the_renderer();
-    drawSingleRect(&renderer.world_overlay_buffer(), Rect2 { tile_pos.x, tile_pos.y, 1, 1 }, renderer.shaderIds.untextured, tileHighlightColor);
-}
-
 void pauseMenuWindowProc(UI::WindowContext* context, void* /*userData*/)
 {
     DEBUG_FUNCTION();
@@ -535,10 +465,6 @@ void GameScene::update_and_render(float delta_time)
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
 
-    // auto& renderer = the_renderer();
-    // City& city = *m_city;
-
-    // Update the simulation... need a smarter way of doing this!
     if (!UI::hasPauseWindowOpen()) {
         DEBUG_BLOCK_T("Update simulation", DebugCodeDataTag::Simulation);
 
@@ -559,8 +485,6 @@ void GameScene::update_and_render(float delta_time)
             logInfo("New year!"_s);
             m_world.run_pipeline(m_year_pipeline);
         }
-
-        // city.update();
     }
 
     if (!m_world.progress(delta_time))
@@ -569,29 +493,26 @@ void GameScene::update_and_render(float delta_time)
     // UI!
     update_and_render_game_ui();
 
-    // // CAMERA!
-    // Camera& world_camera = renderer.world_camera();
-    // Camera& ui_camera = renderer.ui_camera();
-    // move_camera_from_input(world_camera, ui_camera.size(), ui_camera.mouse_position(), delta_time);
-    //
-    // V2I mouseTilePos = v2i(world_camera.mouse_position());
-    // bool mouseIsOverUI = UI::isMouseInputHandled() || UI::mouseIsWithinUIRects();
+    auto& renderer = the_renderer();
+    Camera& world_camera = renderer.world_camera();
+    V2I mouseTilePos = v2i(world_camera.mouse_position());
+    bool mouseIsOverUI = UI::isMouseInputHandled() || UI::mouseIsWithinUIRects();
     //
     // city.demolitionRect = Rect2I::create_negative_infinity();
     //
-    // {
-    //     DEBUG_BLOCK_T("Tool update", DebugCodeDataTag::GameUpdate);
-    //     m_active_tool->act(city, mouseIsOverUI, mouseTilePos);
-    // }
-    //
-    // if (mouseButtonJustPressed(MouseButton::Right)) {
-    //     // Switch to inspect tool
-    //     if (dynamic_cast<InspectTool*>(m_active_tool.ptr()) == nullptr) {
-    //         set_active_tool(InspectTool::create());
-    //         renderer.set_cursor("default"_s);
-    //     }
-    // }
-    //
+    {
+        DEBUG_BLOCK_T("Tool update", DebugCodeDataTag::GameUpdate);
+        m_active_tool->act(m_world, mouseIsOverUI, mouseTilePos);
+    }
+
+    if (mouseButtonJustPressed(MouseButton::Right)) {
+        // Switch to inspect tool
+        if (dynamic_cast<InspectTool*>(m_active_tool.ptr()) == nullptr) {
+            set_active_tool(InspectTool::create());
+            renderer.set_cursor("default"_s);
+        }
+    }
+
     // // RENDERING
     // // Pre-calculate the tile area that's visible to the player.
     // // We err on the side of drawing too much, rather than risking having holes in the world.

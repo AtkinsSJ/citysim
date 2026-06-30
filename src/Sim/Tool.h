@@ -14,7 +14,7 @@ class Tool {
 public:
     virtual ~Tool() = default;
 
-    virtual void act(City&, bool mouse_is_over_ui, V2I mouse_tile_pos) = 0;
+    virtual void act(flecs::world&, bool mouse_is_over_ui, V2I mouse_tile_pos) = 0;
 };
 
 class InspectTool final : public Tool {
@@ -35,7 +35,9 @@ public:
     static OwnedRef<InspectTool> create();
     virtual ~InspectTool() override = default;
 
-    virtual void act(City&, bool mouse_is_over_ui, V2I mouse_tile_pos) override;
+    virtual void act(flecs::world&, bool mouse_is_over_ui, V2I mouse_tile_pos) override;
+
+    static void window_proc(UI::WindowContext* context, void* userData);
 };
 
 class BuildTool final : public Tool {
@@ -45,7 +47,7 @@ public:
 
     BuildingType building_type() const { return m_building_type; }
 
-    virtual void act(City&, bool mouse_is_over_ui, V2I mouse_tile_pos) override;
+    virtual void act(flecs::world&, bool mouse_is_over_ui, V2I mouse_tile_pos) override;
 
 private:
     explicit BuildTool(BuildingType, DragType, V2I building_size);
@@ -59,7 +61,7 @@ public:
     static OwnedRef<DemolishTool> create();
     virtual ~DemolishTool() override = default;
 
-    virtual void act(City&, bool mouse_is_over_ui, V2I mouse_tile_pos) override;
+    virtual void act(flecs::world&, bool mouse_is_over_ui, V2I mouse_tile_pos) override;
 
 private:
     DragState m_drag_state { DragType::Rect, { 1, 1 } };
@@ -72,7 +74,7 @@ public:
 
     ZoneType zone_type() const { return m_zone_type; }
 
-    virtual void act(City&, bool mouse_is_over_ui, V2I mouse_tile_pos) override;
+    virtual void act(flecs::world&, bool mouse_is_over_ui, V2I mouse_tile_pos) override;
 
 private:
     explicit ZoneTool(ZoneType);
@@ -88,7 +90,7 @@ public:
 
     TerrainType terrain_type() const { return m_terrain_type; }
 
-    virtual void act(City&, bool mouse_is_over_ui, V2I mouse_tile_pos) override;
+    virtual void act(flecs::world&, bool mouse_is_over_ui, V2I mouse_tile_pos) override;
 
 private:
     explicit SetTerrainTool(TerrainType);
@@ -108,7 +110,7 @@ public:
 
     Mode mode() const { return m_mode; }
 
-    virtual void act(City&, bool mouse_is_over_ui, V2I mouse_tile_pos) override;
+    virtual void act(flecs::world&, bool mouse_is_over_ui, V2I mouse_tile_pos) override;
 
 private:
     explicit DebugTool(Mode);
