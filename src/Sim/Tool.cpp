@@ -8,6 +8,7 @@
 
 #include <Input/Input.h>
 #include <Sim/Basic.h>
+#include <Sim/Budget.h>
 #include <Sim/BuildingCatalogue.h>
 #include <Sim/City.h>
 #include <Sim/Game.h>
@@ -216,36 +217,49 @@ OwnedRef<DemolishTool> DemolishTool::create()
 
 void DemolishTool::act(flecs::world& world, bool mouse_is_over_ui, V2I mouse_tile_pos)
 {
-    // auto& renderer = the_renderer();
-    // auto [drag_operation, drag_rect] = m_drag_state.update(world.bounds, mouse_tile_pos, mouse_is_over_ui);
-    // s32 demolishCost = world.calculate_demolition_cost(drag_rect);
-    // world.demolitionRect = drag_rect;
-    //
-    // switch (drag_operation) {
-    // case DragResultOperation::DoAction: {
-    //     if (world.can_afford(demolishCost)) {
-    //         world.demolish_rect(drag_rect);
-    //         world.spend(demolishCost);
-    //     } else {
-    //         UI::Toast::show(getText("msg_cannot_afford_demolition"_s));
-    //     }
-    // } break;
-    //
-    // case DragResultOperation::ShowPreview: {
-    //     if (!mouse_is_over_ui)
-    //         showCostTooltip(demolishCost);
-    //
-    //     if (world.can_afford(demolishCost)) {
-    //         // Demolition outline
-    //         drawSingleRect(&renderer.world_overlay_buffer(), drag_rect, renderer.shaderIds.untextured, Colour::from_rgb_255(128, 0, 0, 128));
-    //     } else {
-    //         drawSingleRect(&renderer.world_overlay_buffer(), drag_rect, renderer.shaderIds.untextured, Colour::from_rgb_255(255, 64, 64, 128));
-    //     }
-    // } break;
-    //
-    // default:
-    //     break;
-    // }
+    auto& renderer = the_renderer();
+    auto [drag_operation, drag_rect] = m_drag_state.update(world.get<MapData>().bounds, mouse_tile_pos, mouse_is_over_ui);
+    auto& budget = world.get_mut<Budget>();
+
+    s32 demolish_cost = 0;
+    // FIXME: Figure out how to cache the query for this and the destruction below.
+    world.each([&drag_rect, &demolish_cost](Demolishable const& demolishable, BuildingComponent const& building) {
+        if (!drag_rect.overlaps(building.footprint))
+            return;
+        demolish_cost += demolishable.cost;
+    });
+
+    switch (drag_operation) {
+    case DragResultOperation::DoAction: {
+        if (budget.can_afford(demolish_cost)) {
+            world.defer([&world, &drag_rect] {
+                world.each([&drag_rect](flecs::entity entity, Demolishable const&, BuildingComponent const& building) {
+                    if (!drag_rect.overlaps(building.footprint))
+                        return;
+                    entity.destruct();
+                });
+            });
+            budget.spend(demolish_cost);
+        } else {
+            UI::Toast::show(getText("msg_cannot_afford_demolition"_s));
+        }
+    } break;
+
+    case DragResultOperation::ShowPreview: {
+        if (!mouse_is_over_ui)
+            budget.show_cost_tooltip(demolish_cost);
+
+        if (budget.can_afford(demolish_cost)) {
+            // Demolition outline
+            drawSingleRect(&renderer.world_overlay_buffer(), drag_rect, renderer.shaderIds.untextured, Colour::from_rgb_255(128, 0, 0, 128));
+        } else {
+            drawSingleRect(&renderer.world_overlay_buffer(), drag_rect, renderer.shaderIds.untextured, Colour::from_rgb_255(255, 64, 64, 128));
+        }
+    } break;
+
+    default:
+        break;
+    }
 }
 
 OwnedRef<ZoneTool> ZoneTool::create(ZoneType type)
