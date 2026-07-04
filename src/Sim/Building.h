@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <Sim/Budget.h>
 #include <Sim/Effect.h>
 #include <Sim/Entity.h>
 #include <Sim/GameClock.h>
@@ -207,3 +208,9 @@ struct Demolishable {
 struct BuildingAtPosition {
     Array2<Optional<flecs::entity>> tile_building;
 };
+
+bool can_place_building(flecs::world&, BuildingDef const&, V2I const& top_left);
+flecs::entity place_building(flecs::world&, BuildingDef const&, V2I const& top_left);
+void place_building_rect(flecs::world&, BuildingDef const&, Rect2I const&);
+
+Money calculate_build_cost(flecs::world&, BuildingDef const&, Rect2I const& area);

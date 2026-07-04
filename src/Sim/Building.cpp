@@ -12,6 +12,7 @@
 #include <Sim/BuildingCatalogue.h>
 #include <Sim/City.h>
 #include <Sim/MapGeneration.h>
+#include <Sim/TerrainCatalogue.h>
 #include <Util/Random.h>
 
 BuildingDef const& Building::get_def() const
@@ -405,4 +406,130 @@ mod_building::mod_building(flecs::world& world)
     // TODO: A system that assigns tints to buildings based on being powered, demolition overlay, etc.
 
     // FIXME: React to building construction/destruction and update building variants.
+}
+
+static bool can_place_building_internal(MapData const& map_data, TerrainData const& terrain_data, BuildingAtPosition const& building_at_position, BuildingDef const& def, Rect2I const& footprint)
+{
+    // Are we in bounds?
+    if (!map_data.bounds.contains(footprint))
+        return false;
+
+    // Check terrain is buildable and empty
+    for (s32 y = footprint.y(); y < footprint.y() + footprint.height(); y++) {
+        for (s32 x = footprint.x(); x < footprint.x() + footprint.width(); x++) {
+            auto& terrain_def = terrain_data.terrain_def_at(x, y);
+            if (!terrain_def.canBuildOn)
+                return false;
+
+            if (auto existing_building = building_at_position.tile_building.get(x, y); existing_building.has_value()) {
+                // FIXME: Reimplement intersections
+                return false;
+
+                // // Check if we can combine this with the building that's already there
+                // if (catalogue.find_building_intersection(buildingAtPos->get_def(), *def).has_value()) {
+                //     // We can!
+                //     // TODO: We want to check if there is a valid variant, before we build.
+                //     // But that means matching against buildings that aren't constructed yet,
+                //     // but just part of the drag-rect planned construction!
+                //     // (eg, dragging a road across a rail, we want to check for a rail-crossing
+                //     // variant that matches the planned road tiles.)
+                // } else {
+                //     return false;
+                // }
+            }
+        }
+    }
+    return true;
+}
+
+bool can_place_building(flecs::world& world, BuildingDef const& def, V2I const& top_left)
+{
+    DEBUG_FUNCTION();
+
+    Rect2I footprint { top_left, def.size };
+
+    auto& map_data = world.get<MapData>();
+    auto& terrain_data = world.get<TerrainData>();
+    auto& building_at_position = world.get<BuildingAtPosition>();
+
+    return can_place_building_internal(map_data, terrain_data, building_at_position, def, footprint);
+}
+
+flecs::entity place_building(flecs::world& world, BuildingDef const& def, V2I const& top_left)
+{
+    DEBUG_FUNCTION();
+
+    auto& building_at_position = world.get<BuildingAtPosition>();
+    auto building = building_at_position.tile_building.get(top_left);
+    if (building.has_value()) {
+        // Do a quick replace! We already established in can_place_building() that we match.
+        auto& catalogue = BuildingCatalogue::the();
+        auto& building_component = building.value().get_mut<BuildingComponent>();
+        auto& old_def = catalogue.get_def(building_component.type);
+        auto& intersection_def = catalogue.find_building_intersection(old_def, def).release_value();
+
+        building_component.type = intersection_def.typeID;
+
+        building.value()
+            .remove(flecs::IsA)
+            .is_a(intersection_def.prefab)
+            .modified<BuildingComponent>();
+
+        // def = const_cast<BuildingDef*>(&intersection_def);
+        //
+        // zoneLayer.population[old_def.growsInZone] -= building->currentResidents + building->currentJobs;
+    } else {
+        // FIXME: Remove zones? We used to, but I feel like we should keep the zone data around.
+        // placeZone(this, ZoneType::None, footprint);
+
+        // No existing building so instantiate a new one.
+        building = def.instantiate(world, top_left);
+    }
+
+    // // TODO: Calculate residents/jobs properly!
+    // building->currentResidents = def->residents;
+    // building->currentJobs = def->jobs;
+    //
+    // zoneLayer.population[def->growsInZone] += building->currentResidents + building->currentJobs;
+
+    // FIXME: We should probably do this in an event hook!
+    // building->update_variant(*this, *def);
+    // update_adjacent_building_variants(footprint);
+
+    return building.release_value();
+}
+
+void place_building_rect(flecs::world& world, BuildingDef const& def, Rect2I const& area)
+{
+    DEBUG_FUNCTION();
+
+    for (s32 y = 0; y + def.size.y <= area.height(); y += def.size.y) {
+        for (s32 x = 0; x + def.size.x <= area.width(); x += def.size.x) {
+            V2I const top_left { area.x() + x, area.y() + y };
+            if (can_place_building(world, def, top_left))
+                place_building(world, def, top_left);
+        }
+    }
+}
+
+Money calculate_build_cost(flecs::world& world, BuildingDef const& def, Rect2I const& area)
+{
+    DEBUG_FUNCTION();
+
+    auto& map_data = world.get<MapData>();
+    auto& terrain_data = world.get<TerrainData>();
+    auto& building_at_position = world.get<BuildingAtPosition>();
+
+    Money total_cost = 0;
+
+    for (s32 y = 0; y + def.size.y <= area.height(); y += def.size.y) {
+        for (s32 x = 0; x + def.size.x <= area.width(); x += def.size.x) {
+            Rect2I footprint { area.x() + x, area.y() + y, def.size.x, def.size.y };
+            if (can_place_building_internal(map_data, terrain_data, building_at_position, def, footprint)) {
+                total_cost += def.buildCost;
+            }
+        }
+    }
+
+    return total_cost;
 }

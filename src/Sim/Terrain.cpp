@@ -581,3 +581,8 @@ mod_terrain::mod_terrain(flecs::world& world)
         .kind(DrawPhase::Terrain)
         .each(draw_terrain);
 }
+
+TerrainDef const& TerrainData::terrain_def_at(s32 x, s32 y) const
+{
+    return TerrainCatalogue::the().get_def(tile_terrain_type.get_if_exists(x, y, 0));
+}
