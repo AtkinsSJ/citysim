@@ -221,7 +221,7 @@ void DemolishTool::act(flecs::world& world, bool mouse_is_over_ui, V2I mouse_til
     auto [drag_operation, drag_rect] = m_drag_state.update(world.get<MapData>().bounds, mouse_tile_pos, mouse_is_over_ui);
     auto& budget = world.get_mut<Budget>();
 
-    s32 demolish_cost = 0;
+    Money demolish_cost = 0;
     // FIXME: Figure out how to cache the query for this and the destruction below.
     world.each([&drag_rect, &demolish_cost](Demolishable const& demolishable, BuildingComponent const& building) {
         if (!drag_rect.overlaps(building.footprint))
