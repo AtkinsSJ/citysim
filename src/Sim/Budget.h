@@ -13,19 +13,21 @@ struct mod_budget {
     explicit mod_budget(flecs::world&);
 };
 
+using Money = s32;
+
 class Budget {
 public:
-    explicit Budget(s32 funds);
+    explicit Budget(Money funds);
 
-    bool can_afford(s32 cost) const;
-    void spend(s32 cost);
+    bool can_afford(Money cost) const;
+    void spend(Money cost);
 
-    s32 funds() const { return m_funds; }
-    s32 monthly_expenditure() const { return m_monthly_expenditure; }
+    Money funds() const { return m_funds; }
+    Money monthly_expenditure() const { return m_monthly_expenditure; }
 
-    void show_cost_tooltip(s32 cost) const;
+    void show_cost_tooltip(Money cost) const;
 
 private:
-    s32 m_funds { 0 };
-    s32 m_monthly_expenditure { 0 };
+    Money m_funds { 0 };
+    Money m_monthly_expenditure { 0 };
 };
