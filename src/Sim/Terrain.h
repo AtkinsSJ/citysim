@@ -72,4 +72,6 @@ struct TerrainData {
     Array2<u8> tile_sprite_offset;
     Array2<SpriteRef> tile_sprite;
     Array2<Optional<SpriteRef>> tile_border_sprite;
+
+    TerrainDef const& terrain_def_at(s32 x, s32 y) const;
 };
