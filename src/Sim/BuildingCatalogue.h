@@ -28,6 +28,7 @@ struct BuildingCatalogue final : public AssetManagerListener {
     Optional<BuildingDef&> try_find_def(String const& name);
     // Returns the null building def if the name isn't found.
     BuildingDef& find_def(String const& name);
+    BuildingDef& get_def(BuildingType);
 
     OccupancyArray<BuildingDef> allBuildings;
     HashMap<String, BuildingDef*> buildingsByName { 128 };

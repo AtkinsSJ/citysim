@@ -128,86 +128,87 @@ BuildTool::BuildTool(BuildingType type, DragType drag_type, V2I building_size)
 
 void BuildTool::act(flecs::world& world, bool mouse_is_over_ui, V2I mouse_tile_pos)
 {
-    // auto& renderer = the_renderer();
-    // auto ghostColorValid = Colour::from_rgb_255(128, 255, 128, 255);
-    // auto ghostColorInvalid = Colour::from_rgb_255(255, 0, 0, 128);
-    //
-    // BuildingDef* buildingDef = getBuildingDef(m_building_type);
-    //
-    // switch (buildingDef->buildMethod) {
-    // case BuildMethod::Paint: // Fallthrough
-    // case BuildMethod::Plop: {
-    //     if (!mouse_is_over_ui) {
-    //         Rect2I footprint = Rect2I::create_centre_size(mouse_tile_pos, buildingDef->size);
-    //         s32 buildCost = buildingDef->buildCost;
-    //
-    //         bool canPlace = world.can_place_building(buildingDef, footprint.x(), footprint.y());
-    //
-    //         if ((buildingDef->buildMethod == BuildMethod::Plop && mouseButtonJustReleased(MouseButton::Left))
-    //             || (buildingDef->buildMethod == BuildMethod::Paint && mouseButtonPressed(MouseButton::Left))) {
-    //             if (canPlace && world.can_afford(buildCost)) {
-    //                 world.place_building(buildingDef, footprint.x(), footprint.y());
-    //                 world.spend(buildCost);
-    //             }
-    //         }
-    //
-    //         showCostTooltip(buildCost);
-    //
-    //         auto& sprite = Sprite::get(buildingDef->spriteName);
-    //         auto color = canPlace ? ghostColorValid : ghostColorInvalid;
-    //         drawSingleSprite(&renderer.world_overlay_buffer(), &sprite, footprint, renderer.shaderIds.pixelArt, color);
-    //     }
-    // } break;
-    //
-    // case BuildMethod::DragLine: // Fallthrough
-    // case BuildMethod::DragRect: {
-    //     auto [drag_operation, drag_rect] = m_drag_state.update(world.bounds, mouse_tile_pos, mouse_is_over_ui);
-    //     s32 buildCost = world.calculate_build_cost(buildingDef, drag_rect);
-    //
-    //     switch (drag_operation) {
-    //     case DragResultOperation::DoAction: {
-    //         if (world.can_afford(buildCost)) {
-    //             world.place_building_rect(buildingDef, drag_rect);
-    //             world.spend(buildCost);
-    //         } else {
-    //             UI::Toast::show(getText("msg_cannot_afford_construction"_s));
-    //         }
-    //     } break;
-    //
-    //     case DragResultOperation::ShowPreview: {
-    //         if (!mouse_is_over_ui)
-    //             showCostTooltip(buildCost);
-    //
-    //         if (world.can_afford(buildCost)) {
-    //             auto& sprite = Sprite::get(buildingDef->spriteName);
-    //             s32 maxGhosts = (drag_rect.width() / buildingDef->size.x) * (drag_rect.height() / buildingDef->size.y);
-    //             // TODO: If maxGhosts is 1, just draw 1!
-    //             DrawRectsGroup* rectsGroup = beginRectsGroupTextured(&renderer.world_overlay_buffer(), sprite.texture, renderer.shaderIds.pixelArt, maxGhosts);
-    //             for (s32 y = 0; y + buildingDef->size.y <= drag_rect.height(); y += buildingDef->size.y) {
-    //                 for (s32 x = 0; x + buildingDef->size.x <= drag_rect.width(); x += buildingDef->size.x) {
-    //                     bool canPlace = world.can_place_building(buildingDef, drag_rect.x() + x, drag_rect.y() + y);
-    //
-    //                     Rect2 rect { drag_rect.x() + x, drag_rect.y() + y, buildingDef->size.x, buildingDef->size.y };
-    //
-    //                     auto color = canPlace ? ghostColorValid : ghostColorInvalid;
-    //                     // TODO: All the sprites are the same, so we could optimise this!
-    //                     // Then again, eventually we might want ghosts to not be identical, eg ghost roads that visually connect.
-    //                     addSpriteRect(rectsGroup, &sprite, rect, color);
-    //                 }
-    //             }
-    //             endRectsGroup(rectsGroup);
-    //         } else {
-    //             drawSingleRect(&renderer.world_overlay_buffer(), drag_rect, renderer.shaderIds.untextured, Colour::from_rgb_255(255, 64, 64, 128));
-    //         }
-    //     } break;
-    //
-    //     default:
-    //         break;
-    //     }
-    // } break;
-    //
-    //     INVALID_DEFAULT_CASE;
-    // }
+    auto& renderer = the_renderer();
+    auto const ghost_color_valid = Colour::from_rgb_255(128, 255, 128, 255);
+    auto const ghost_color_invalid = Colour::from_rgb_255(255, 0, 0, 128);
+
+    auto& def = BuildingCatalogue::the().get_def(m_building_type);
+    auto& budget = world.get_mut<Budget>();
+
+    switch (def.buildMethod) {
+    case BuildMethod::Paint: // Fallthrough
+    case BuildMethod::Plop: {
+        if (!mouse_is_over_ui) {
+            Rect2I footprint = Rect2I::create_centre_size(mouse_tile_pos, def.size);
+            s32 build_cost = def.buildCost;
+
+            bool can_place = can_place_building(world, def, { footprint.x(), footprint.y() });
+
+            if ((def.buildMethod == BuildMethod::Plop && mouseButtonJustReleased(MouseButton::Left))
+                || (def.buildMethod == BuildMethod::Paint && mouseButtonPressed(MouseButton::Left))) {
+                if (can_place && budget.can_afford(build_cost)) {
+                    place_building(world, def, footprint.position());
+                    budget.spend(build_cost);
+                }
+            }
+
+            budget.show_cost_tooltip(build_cost);
+
+            auto& sprite = Sprite::get(def.spriteName);
+            auto color = can_place ? ghost_color_valid : ghost_color_invalid;
+            drawSingleSprite(&renderer.world_overlay_buffer(), &sprite, footprint, renderer.shaderIds.pixelArt, color);
+        }
+    } break;
+
+    case BuildMethod::DragLine: // Fallthrough
+    case BuildMethod::DragRect: {
+        auto [drag_operation, drag_rect] = m_drag_state.update(world.get<MapData>().bounds, mouse_tile_pos, mouse_is_over_ui);
+        s32 build_cost = calculate_build_cost(world, def, drag_rect);
+
+        switch (drag_operation) {
+        case DragResultOperation::DoAction: {
+            if (budget.can_afford(build_cost)) {
+                place_building_rect(world, def, drag_rect);
+                budget.spend(build_cost);
+            } else {
+                UI::Toast::show(getText("msg_cannot_afford_construction"_s));
+            }
+        } break;
+
+        case DragResultOperation::ShowPreview: {
+            if (!mouse_is_over_ui)
+                budget.show_cost_tooltip(build_cost);
+
+            if (budget.can_afford(build_cost)) {
+                auto& sprite = Sprite::get(def.spriteName);
+                s32 maxGhosts = (drag_rect.width() / def.size.x) * (drag_rect.height() / def.size.y);
+                // TODO: If maxGhosts is 1, just draw 1!
+                DrawRectsGroup* rectsGroup = beginRectsGroupTextured(&renderer.world_overlay_buffer(), sprite.texture, renderer.shaderIds.pixelArt, maxGhosts);
+                for (s32 y = 0; y + def.size.y <= drag_rect.height(); y += def.size.y) {
+                    for (s32 x = 0; x + def.size.x <= drag_rect.width(); x += def.size.x) {
+                        bool can_place = can_place_building(world, def, { drag_rect.x() + x, drag_rect.y() + y });
+
+                        Rect2 rect { drag_rect.x() + x, drag_rect.y() + y, def.size.x, def.size.y };
+
+                        auto color = can_place ? ghost_color_valid : ghost_color_invalid;
+                        // TODO: All the sprites are the same, so we could optimise this!
+                        // Then again, eventually we might want ghosts to not be identical, eg ghost roads that visually connect.
+                        addSpriteRect(rectsGroup, &sprite, rect, color);
+                    }
+                }
+                endRectsGroup(rectsGroup);
+            } else {
+                drawSingleRect(&renderer.world_overlay_buffer(), drag_rect, renderer.shaderIds.untextured, Colour::from_rgb_255(255, 64, 64, 128));
+            }
+        } break;
+
+        default:
+            break;
+        }
+    } break;
+
+        INVALID_DEFAULT_CASE;
+    }
 }
 
 OwnedRef<DemolishTool> DemolishTool::create()

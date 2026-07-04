@@ -200,6 +200,16 @@ BuildingDef* getBuildingDef(BuildingType buildingTypeID)
     return result;
 }
 
+BuildingDef& BuildingCatalogue::get_def(BuildingType type)
+{
+    if (type > 0 && type < allBuildings.count) {
+        if (BuildingDef* found = allBuildings.get(type))
+            return *found;
+    }
+
+    return *allBuildings.get(0);
+}
+
 Optional<BuildingDef&> BuildingCatalogue::try_find_def(String const& name)
 {
     if (auto def = buildingsByName.get(name); def.has_value())
