@@ -48,7 +48,10 @@ public:
     float a() const { return m_a; }
 
     Colour as_opaque() const;
+
     Colour multiplied_by(Colour const&) const;
+    Colour operator*(Colour const&) const;
+    Colour& operator*=(Colour const&);
 
     Colour operator*(float value) const
     {

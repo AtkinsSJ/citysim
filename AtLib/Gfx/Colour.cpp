@@ -56,10 +56,21 @@ Colour Colour::as_opaque() const
 
 Colour Colour::multiplied_by(Colour const& other) const
 {
+    return *this * other;
+}
+
+Colour Colour::operator*(Colour const& other) const
+{
     return {
         m_r * other.m_r,
         m_g * other.m_g,
         m_b * other.m_b,
         m_a * other.m_a,
     };
+}
+
+Colour& Colour::operator*=(Colour const& other)
+{
+    *this = *this * other;
+    return *this;
 }
