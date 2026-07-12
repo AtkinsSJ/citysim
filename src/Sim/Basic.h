@@ -27,7 +27,7 @@ struct PositionComponent {
 struct SpriteComponent {
     SpriteRef sprite;
     V2 size;
-    Colour color;
+    Colour colour;
 };
 
 // Singletons
