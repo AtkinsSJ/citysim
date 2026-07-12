@@ -30,7 +30,7 @@ static void draw_entities(flecs::iter& it)
             if (!sprite_bounds.overlaps(crop_area))
                 continue;
 
-            drawSingleSprite(&world_buffer, &sprite.sprite.get(), sprite_bounds, shader_id, sprite.color);
+            drawSingleSprite(&world_buffer, &sprite.sprite.get(), sprite_bounds, shader_id, sprite.colour);
         }
     }
 }
