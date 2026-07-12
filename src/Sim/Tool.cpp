@@ -223,20 +223,21 @@ void DemolishTool::act(flecs::world& world, bool mouse_is_over_ui, V2I mouse_til
     auto& budget = world.get_mut<Budget>();
 
     Money demolish_cost = 0;
-    // FIXME: Figure out how to cache the query for this and the destruction below.
-    world.each([&drag_rect, &demolish_cost](Demolishable const& demolishable, BuildingComponent const& building) {
-        if (!drag_rect.overlaps(building.footprint))
-            return;
-        demolish_cost += demolishable.cost;
+    // FIXME: Figure out how to cache the query for this.
+    world.defer([&] {
+        world.each([&drag_rect, &demolish_cost](flecs::entity entity, Demolishable const& demolishable, BuildingComponent const& building) {
+            if (!drag_rect.overlaps(building.footprint))
+                return;
+            demolish_cost += demolishable.cost;
+            (void)entity.add<PendingDemolition>();
+        });
     });
 
     switch (drag_operation) {
     case DragResultOperation::DoAction: {
         if (budget.can_afford(demolish_cost)) {
-            world.defer([&world, &drag_rect] {
-                world.each([&drag_rect](flecs::entity entity, Demolishable const&, BuildingComponent const& building) {
-                    if (!drag_rect.overlaps(building.footprint))
-                        return;
+            world.defer([&] {
+                world.each([](flecs::entity entity, PendingDemolition) {
                     entity.destruct();
                 });
             });

@@ -205,6 +205,8 @@ struct Demolishable {
     s32 cost;
 };
 
+struct PendingDemolition { };
+
 struct BuildingAtPosition {
     Array2<Optional<flecs::entity>> tile_building;
 };

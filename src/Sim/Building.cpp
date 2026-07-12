@@ -353,9 +353,9 @@ static void remove_building(BuildingAtPosition& building_at_position, Rect2I con
 
 mod_building::mod_building(flecs::world& world)
 {
-    world.module<mod_building>();
+    (void)world.module<mod_building>();
 
-    world.component<BuildingAtPosition>().add(flecs::Singleton);
+    (void)world.component<BuildingAtPosition>().add(flecs::Singleton);
 
     world.component<BuildingComponent>()
         .on_set([](flecs::iter& iter, size_t i, BuildingComponent& building) {
@@ -370,9 +370,10 @@ mod_building::mod_building(flecs::world& world)
             remove_building(building_at_position, building.footprint);
         });
 
-    world.component<Demolishable>().add(flecs::OnInstantiate, flecs::Inherit);
-    world.component<Residents>();
-    world.component<Jobs>();
+    (void)world.component<Demolishable>().add(flecs::OnInstantiate, flecs::Inherit);
+    (void)world.component<PendingDemolition>();
+    (void)world.component<Residents>();
+    (void)world.component<Jobs>();
 
     world.system<BuildingComponent>("BuildingsCleanup")
         .kind(MapGenPhase::Deallocate)
@@ -403,7 +404,25 @@ mod_building::mod_building(flecs::world& world)
 
     // FIXME: Figure out BuildingProblems. Maybe use relationships?
 
-    // TODO: A system that assigns tints to buildings based on being powered, demolition overlay, etc.
+    world.system<SpriteComponent>("TintBuildings")
+        .with<BuildingComponent>()
+        .kind(flecs::PreStore)
+        .each([](flecs::entity entity, SpriteComponent& sprite) {
+            Colour colour = Colour::white();
+
+            if (entity.has<PendingDemolition>())
+                colour *= Colour::from_rgb_255(255, 128, 128, 255);
+
+            // TODO: Other reasons for tints (whether we're powered, etc.)
+
+            sprite.colour = colour;
+        });
+    world.system("RemovePendingDemolition")
+        .with<PendingDemolition>()
+        .kind(flecs::PostFrame)
+        .each([](flecs::entity entity) {
+            (void)entity.remove<PendingDemolition>();
+        });
 
     // FIXME: React to building construction/destruction and update building variants.
 }
