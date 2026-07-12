@@ -74,4 +74,5 @@ struct TerrainData {
     Array2<Optional<SpriteRef>> tile_border_sprite;
 
     TerrainDef const& terrain_def_at(s32 x, s32 y) const;
+    // void set_terrain_at(s32 x, s32 y, TerrainType);
 };

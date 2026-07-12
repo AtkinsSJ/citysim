@@ -575,7 +575,10 @@ mod_terrain::mod_terrain(flecs::world& world)
             the_renderer().world_camera().set_position(map_data.bounds.centre());
         });
 
-    // TODO: Run updates on data when terrain changes.
+    world.component<TerrainData>().on_set([](flecs::iter& iter, size_t i, TerrainData& terrain_data) {
+        // FIXME: Actually do things.
+        logInfo("Updated terrain"_s);
+    });
 
     world.system<TerrainData const, VisibleTileBounds const>("DrawTerrain")
         .kind(DrawPhase::Terrain)
@@ -586,3 +589,22 @@ TerrainDef const& TerrainData::terrain_def_at(s32 x, s32 y) const
 {
     return TerrainCatalogue::the().get_def(tile_terrain_type.get_if_exists(x, y, 0));
 }
+
+// void TerrainData::set_terrain_at(s32 x, s32 y, TerrainType type)
+// {
+//     u8 existingTerrain = tile_terrain_type.get_if_exists(x, y, 0);
+//     // Ignore for tiles that don't exist, or are already the desired type
+//     if (existingTerrain == 0 || existingTerrain == type) {
+//         return;
+//     }
+//
+//     // Set the terrain
+//     tile_terrain_type.set(x, y, type);
+//
+//     // Update sprites on this and neighbouring tiles
+//     Rect2I sprite_update_bounds = bounds.intersected({ x - 1, y - 1, 3, 3 });
+//     assign_terrain_sprites(sprite_update_bounds);
+//
+//     // Update distance to water
+//     update_distance_to_water({ x, y, 1, 1 });
+// }
