@@ -104,7 +104,7 @@ flecs::entity BuildingDef::instantiate(flecs::world& world, V2I position) const
         .set<SpriteComponent>({
             .sprite = SpriteRef { spriteName, App::the().cosmetic_random().random_integer<u16>() },
             .size = v2(size),
-            .color = Colour::white(),
+            .colour = Colour::white(),
         });
 }
 
