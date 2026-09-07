@@ -163,10 +163,15 @@ void BuildingCatalogue::update_prefabs(flecs::world& world)
         auto& prefab = def.prefab;
         prefab.set<Name>({ def.textAssetName });
         prefab.set<Demolishable>({ .cost = def.demolishCost });
-        if (def.residents > 0)
-            prefab.set<Residents>({ .capacity = static_cast<u32>(def.residents), .current = 0 });
-        if (def.jobs > 0)
-            prefab.set<Jobs>({ .capacity = static_cast<u32>(def.jobs), .current = 0 });
+        // FIXME: Split the def up so we have different types of resident and job.
+        if (def.residents > 0) {
+            prefab.set<ProvidesResidents>(ResidentType::People, { .count = static_cast<u32>(def.residents) });
+            prefab.set<HasResidents>(ResidentType::People, { .count = 0 });
+        }
+        if (def.jobs > 0) {
+            prefab.set<ProvidesJobs>(JobType::Civic, { .count = static_cast<u32>(def.jobs) });
+            prefab.set<HasJobs>(JobType::Civic, { .count = 0 });
+        }
         // TODO: Add other components as we implement them.
     }
 }

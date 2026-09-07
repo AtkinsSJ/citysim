@@ -92,20 +92,37 @@ bool BuildingDef::matches_variant(BuildingVariant const& variant, EnumMap<Connec
 
 flecs::entity BuildingDef::instantiate(flecs::world& world, V2I position) const
 {
-    return world.entity()
-        .is_a(prefab)
-        .set<BuildingComponent>({
-            .type = typeID,
-            .creation_date = world.get<GameClock>().current_day(),
-            .footprint = { position.x, position.y, size.x, size.y },
-            .variant_index = {},
-        })
-        .set<PositionComponent>({ v2(position) })
-        .set<SpriteComponent>({
-            .sprite = SpriteRef { spriteName, App::the().cosmetic_random().random_integer<u16>() },
-            .size = v2(size),
-            .colour = Colour::white(),
+    auto building = world.entity()
+                        .is_a(prefab)
+                        .set<BuildingComponent>({
+                            .type = typeID,
+                            .creation_date = world.get<GameClock>().current_day(),
+                            .footprint = { position.x, position.y, size.x, size.y },
+                            .variant_index = {},
+                        })
+                        .set<PositionComponent>({ v2(position) })
+                        .set<SpriteComponent>({
+                            .sprite = SpriteRef { spriteName, App::the().cosmetic_random().random_integer<u16>() },
+                            .size = v2(size),
+                            .colour = Colour::white(),
+                        });
+
+    // FIXME: Dynamically populate jobs and residents. This is a temporary hack!
+    if (building.has<ProvidesResidents>(flecs::Wildcard) || building.has<ProvidesJobs>(flecs::Wildcard)) {
+        auto& random = App::the().cosmetic_random();
+        building.each<ProvidesResidents>([&](flecs::entity target) {
+            auto resident_type = target.to_constant<ResidentType>();
+            auto const& provides_residents = building.get<ProvidesResidents>(target);
+            building.set<HasResidents>(resident_type, { .count = random.random_between<u32>(0, provides_residents.count + 1) });
         });
+        building.each<ProvidesJobs>([&](flecs::entity target) {
+            auto job_type = target.to_constant<JobType>();
+            auto const& provides_jobs = building.get<ProvidesJobs>(target);
+            building.set<HasJobs>(job_type, { .count = random.random_between<u32>(0, provides_jobs.count + 1) });
+        });
+    }
+
+    return building;
 }
 
 void Building::update_variant(City& city, Optional<BuildingDef const&> passed_def)
@@ -372,8 +389,10 @@ mod_building::mod_building(flecs::world& world)
 
     (void)world.component<Demolishable>().add(flecs::OnInstantiate, flecs::Inherit);
     (void)world.component<PendingDemolition>();
-    (void)world.component<Residents>();
-    (void)world.component<Jobs>();
+    (void)world.component<ProvidesResidents>();
+    (void)world.component<HasResidents>();
+    (void)world.component<ProvidesJobs>();
+    (void)world.component<HasJobs>();
 
     world.system<BuildingComponent>("BuildingsCleanup")
         .kind(MapGenPhase::Deallocate)
