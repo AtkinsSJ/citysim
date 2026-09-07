@@ -20,6 +20,11 @@
 Flags<InspectTool::DebugFlags> InspectTool::debug_flags;
 V2I InspectTool::inspected_tile_pos;
 
+void Tool::activate()
+{
+    the_renderer().set_cursor("default"_s);
+}
+
 OwnedRef<InspectTool> InspectTool::create()
 {
     return adopt_own(*new InspectTool);
@@ -125,6 +130,11 @@ BuildTool::BuildTool(BuildingType type, DragType drag_type, V2I building_size)
 {
 }
 
+void BuildTool::activate()
+{
+    the_renderer().set_cursor("build"_s);
+}
+
 void BuildTool::act(flecs::world& world, bool mouse_is_over_ui, V2I mouse_tile_pos)
 {
     auto& renderer = the_renderer();
@@ -215,6 +225,11 @@ OwnedRef<DemolishTool> DemolishTool::create()
     return adopt_own(*new DemolishTool);
 }
 
+void DemolishTool::activate()
+{
+    the_renderer().set_cursor("demolish"_s);
+}
+
 void DemolishTool::act(flecs::world& world, bool mouse_is_over_ui, V2I mouse_tile_pos)
 {
     auto& renderer = the_renderer();
@@ -271,6 +286,11 @@ OwnedRef<ZoneTool> ZoneTool::create(ZoneType type)
 ZoneTool::ZoneTool(ZoneType type)
     : m_zone_type(type)
 {
+}
+
+void ZoneTool::activate()
+{
+    the_renderer().set_cursor("build"_s);
 }
 
 void ZoneTool::act(flecs::world& world, bool mouse_is_over_ui, V2I mouse_tile_pos)

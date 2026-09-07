@@ -14,6 +14,8 @@ class Tool {
 public:
     virtual ~Tool() = default;
 
+    virtual void activate();
+    virtual void deactivate() { }
     virtual void act(flecs::world&, bool mouse_is_over_ui, V2I mouse_tile_pos) = 0;
 };
 
@@ -47,6 +49,8 @@ public:
 
     BuildingType building_type() const { return m_building_type; }
 
+    virtual void activate() override;
+
     virtual void act(flecs::world&, bool mouse_is_over_ui, V2I mouse_tile_pos) override;
 
 private:
@@ -61,6 +65,8 @@ public:
     static OwnedRef<DemolishTool> create();
     virtual ~DemolishTool() override = default;
 
+    virtual void activate() override;
+
     virtual void act(flecs::world&, bool mouse_is_over_ui, V2I mouse_tile_pos) override;
 
 private:
@@ -73,6 +79,8 @@ public:
     virtual ~ZoneTool() override = default;
 
     ZoneType zone_type() const { return m_zone_type; }
+
+    virtual void activate() override;
 
     virtual void act(flecs::world&, bool mouse_is_over_ui, V2I mouse_tile_pos) override;
 
