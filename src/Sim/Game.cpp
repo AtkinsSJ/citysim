@@ -82,11 +82,11 @@ void GameScene::update_and_render_game_ui()
 
     UI::putLabel(city.name, { left, uiPadding, width3, rowHeight }, &label_style);
 
-    auto& budget = m_world.get<Budget>();
+    auto const& budget = m_world.get<Budget>();
     UI::putLabel(myprintf("£{0} (-£{1}/month)"_s, { formatInt(budget.funds()), formatInt(budget.monthly_expenditure()) }), { width3, uiPadding, width3, rowHeight }, &label_style);
 
-    // FIXME: Re-enable jobs and pop display
-    UI::putLabel(myprintf("Pop: ?, Jobs: ?"_s, {}), { width3, uiPadding + rowHeight, width3, rowHeight }, &label_style);
+    auto const& population_cache = m_world.get<PopulationCache>();
+    UI::putLabel(myprintf("Pop: {}, Jobs: {}"_s, { formatInt(population_cache.resident_count()), formatInt(population_cache.job_count()) }), { width3, uiPadding + rowHeight, width3, rowHeight }, &label_style);
 
     // Game clock
     Rect2I clockBounds = {};
