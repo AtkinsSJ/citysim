@@ -10,6 +10,7 @@
 #include <Sim/Effect.h>
 #include <Sim/Entity.h>
 #include <Sim/GameClock.h>
+#include <Sim/Residents.h>
 #include <Sim/TileUtils.h>
 #include <Sim/Transport.h>
 #include <Util/EnumMap.h>
@@ -189,16 +190,6 @@ struct BuildingComponent {
     GameTimestamp creation_date;
     Rect2I footprint;
     Optional<s16> variant_index;
-};
-
-struct Residents {
-    u32 capacity;
-    u32 current;
-};
-
-struct Jobs {
-    u32 capacity;
-    u32 current;
 };
 
 struct Demolishable {

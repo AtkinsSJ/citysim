@@ -78,8 +78,34 @@ void InspectTool::window_proc(UI::WindowContext* context, void* userData)
         ui->addLabel(myprintf("Building: {} (Type #{}, Entity #{})"_s, { getText(building.get<Name>().text_asset_name), formatInt(building_component.type), formatInt(building.id()) }));
         ui->addLabel(myprintf("Constructed: {0}"_s, { formatDateTime(dateTimeFromTimestamp(building_component.creation_date), DateTimeFormat::ShortDate) }));
         ui->addLabel(myprintf("Variant: {0}"_s, { building_component.variant_index.map<String>([](auto const& it) { return formatInt(it); }).value_or("None"_s) }));
-        // ui->addLabel(myprintf("- Residents: {0} / {1}"_s, { formatInt(building.currentResidents), formatInt(def.residents) }));
-        // ui->addLabel(myprintf("- Jobs: {0} / {1}"_s, { formatInt(building.currentJobs), formatInt(def.jobs) }));
+        if (building.has<ProvidesResidents>(flecs::Wildcard)) {
+            ui->addLabel("Residents:"_s);
+            building.each<ProvidesResidents>([&](flecs::entity target) {
+                auto resident_type = target.to_constant<ResidentType>();
+                auto const& provides_residents = building.get<ProvidesResidents>(target);
+                auto const* has_residents = building.try_get<HasResidents>(target);
+                ui->addLabel(myprintf("- {}: {} / {}"_s,
+                    {
+                        to_string(resident_type),
+                        formatInt(has_residents ? has_residents->count : 0),
+                        formatInt(provides_residents.count),
+                    }));
+            });
+        }
+        if (building.has<ProvidesJobs>(flecs::Wildcard)) {
+            ui->addLabel("Jobs:"_s);
+            building.each<ProvidesJobs>([&](flecs::entity target) {
+                auto job_type = target.to_constant<JobType>();
+                auto const& provides_jobs = building.get<ProvidesJobs>(target);
+                auto const* has_jobs = building.try_get<HasJobs>(target);
+                ui->addLabel(myprintf("- {}: {} / {}"_s,
+                    {
+                        to_string(job_type),
+                        formatInt(has_jobs ? has_jobs->count : 0),
+                        formatInt(provides_jobs.count),
+                    }));
+            });
+        }
         // ui->addLabel(myprintf("- Power: {0}"_s, { formatInt(def.power) }));
 
         // Problems
