@@ -76,7 +76,7 @@ void InspectTool::window_proc(UI::WindowContext* context, void* userData)
         auto building = maybe_building.release_value();
         auto& building_component = building.get<BuildingComponent>();
         ui->addLabel(myprintf("Building: {} (Type #{}, Entity #{})"_s, { getText(building.get<Name>().text_asset_name), formatInt(building_component.type), formatInt(building.id()) }));
-        ui->addLabel(myprintf("Constructed: {0}"_s, { formatDateTime(dateTimeFromTimestamp(building_component.creation_date), DateTimeFormat::ShortDate) }));
+        ui->addLabel(myprintf("Constructed: {0}"_s, { formatDateTime(dateTimeFromTimestamp(building.get<CreationDate>().date), DateTimeFormat::ShortDate) }));
         ui->addLabel(myprintf("Variant: {0}"_s, { building_component.variant_index.map<String>([](auto const& it) { return formatInt(it); }).value_or("None"_s) }));
         if (building.has<ProvidesResidents>(flecs::Wildcard)) {
             ui->addLabel("Residents:"_s);

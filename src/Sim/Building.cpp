@@ -96,10 +96,10 @@ flecs::entity BuildingDef::instantiate(flecs::world& world, V2I position) const
                         .is_a(prefab)
                         .set<BuildingComponent>({
                             .type = typeID,
-                            .creation_date = world.get<GameClock>().current_day(),
                             .footprint = { position.x, position.y, size.x, size.y },
                             .variant_index = {},
                         })
+                        .set<CreationDate>({ world.get<GameClock>().current_day() })
                         .set<PositionComponent>({ v2(position) })
                         .set<SpriteComponent>({
                             .sprite = SpriteRef { spriteName, App::the().cosmetic_random().random_integer<u16>() },
@@ -388,6 +388,7 @@ mod_building::mod_building(flecs::world& world)
         });
 
     (void)world.component<Demolishable>().add(flecs::OnInstantiate, flecs::Inherit);
+    (void)world.component<CreationDate>();
     (void)world.component<PendingDemolition>();
     (void)world.component<ProvidesResidents>();
     (void)world.component<HasResidents>();
