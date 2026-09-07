@@ -179,7 +179,6 @@ void GameScene::update_and_render_game_ui()
                 if (menu.addTextButton(getText(ZONE_DEFS[zone_type].textAssetName), is_active)) {
                     UI::hideMenus();
                     set_active_tool(ZoneTool::create(zone_type));
-                    renderer.set_cursor("build"_s);
                 }
             }
             menu.end(true);
@@ -216,7 +215,6 @@ void GameScene::update_and_render_game_ui()
                 if (menu.addTextButton(getText(buildingDef->textAssetName), is_active)) {
                     UI::hideMenus();
                     set_active_tool(BuildTool::create(buildingDef->typeID));
-                    renderer.set_cursor("build"_s);
                 }
             }
 
@@ -243,7 +241,6 @@ void GameScene::update_and_render_game_ui()
         if (UI::putTextButton(demolishButtonText, buttonRect, &button_style,
                 buttonIsActive(dynamic_cast<DemolishTool*>(m_active_tool.ptr()) != nullptr))) {
             set_active_tool(DemolishTool::create());
-            renderer.set_cursor("demolish"_s);
         }
         buttonRect.set_x(buttonRect.x() + buttonRect.width() + uiPadding);
     }
@@ -511,7 +508,6 @@ void GameScene::update_and_render(float delta_time)
         // Switch to inspect tool
         if (dynamic_cast<InspectTool*>(m_active_tool.ptr()) == nullptr) {
             set_active_tool(InspectTool::create());
-            renderer.set_cursor("default"_s);
         }
     }
 
@@ -886,8 +882,9 @@ void GameScene::generate_map(u32 seed)
 
 void GameScene::set_active_tool(OwnedRef<Tool> tool)
 {
-    // TODO: Change cursors here
+    m_active_tool->deactivate();
     m_active_tool = move(tool);
+    m_active_tool->activate();
 }
 
 void GameScene::set_active_data_view(DataView data_view)
