@@ -53,6 +53,19 @@ public:
         return const_cast<EnumMap&>(*this)[index];
     }
 
+    void clear()
+    {
+        for (auto enum_value : enum_values<EnumT>())
+            m_values[to_underlying(enum_value)] = {};
+    }
+
+    template<typename Callback>
+    void for_each(Callback const& callback) const
+    {
+        for (auto enum_value : enum_values<EnumT>())
+            callback(enum_value, m_values[to_underlying(enum_value)]);
+    }
+
 private:
     EntryType m_values[ENTRY_COUNT] {};
 };
