@@ -27,6 +27,7 @@ class LandValueLayer;
 class Layer;
 class PollutionLayer;
 class PowerLayer;
+class Terrain;
 struct TerrainCatalogue;
 struct TerrainDef;
 class TerrainLayer;

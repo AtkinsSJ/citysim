@@ -7,6 +7,7 @@
 #include "MapGeneration.h"
 
 #include <App/App.h>
+#include <Debug/Debug.h>
 #include <Sim/Basic.h>
 #include <Sim/BuildingCatalogue.h>
 #include <Sim/City.h>
@@ -17,7 +18,7 @@
 struct MapGenTag { };
 flecs::entity mod_map_generation::map_generation_pipeline;
 
-static void generate_map_impl(flecs::iter& it, size_t, MapData const& map_data, BuildingAtPosition const& building_at_position, TerrainData& terrain)
+static void generate_map_impl(flecs::iter& it, size_t, MapData const& map_data, BuildingAtPosition const& building_at_position, Terrain& terrain)
 {
     DEBUG_FUNCTION();
     logInfo("Generate map!"_s);
@@ -30,15 +31,15 @@ static void generate_map_impl(flecs::iter& it, size_t, MapData const& map_data, 
     auto& cosmetic_random = App::the().cosmetic_random();
     auto& building_catalogue = BuildingCatalogue::the();
 
-    u8 ground_tile = truncate<u8>(findTerrainTypeByName("ground"_s));
-    u8 water_tile = truncate<u8>(findTerrainTypeByName("water"_s));
+    auto ground_tile = truncate<TerrainType>(findTerrainTypeByName("ground"_s));
+    auto water_tile = truncate<TerrainType>(findTerrainTypeByName("water"_s));
 
     auto terrain_random = Random::create(map_data.generation_seed);
-    terrain.tile_terrain_type.fill(ground_tile);
+    terrain.fill_with(ground_tile, Terrain::RecomputeData::No);
 
     for (s32 y = 0; y < bounds.height(); y++) {
         for (s32 x = 0; x < bounds.width(); x++) {
-            terrain.tile_sprite_offset.set(x, y, cosmetic_random.random_integer<u8>());
+            terrain.set_sprite_offset_at({ x, y }, cosmetic_random.random_integer<u8>());
         }
     }
 
@@ -55,7 +56,7 @@ static void generate_map_impl(flecs::iter& it, size_t, MapData const& map_data, 
         s32 river_left = river_centre - (river_width / 2);
 
         for (s32 x = river_left; x < river_left + river_width; x++) {
-            terrain.tile_terrain_type.set(x, y, water_tile);
+            terrain.set_terrain_at({ x, y }, water_tile, Terrain::RecomputeData::No);
         }
     }
 
@@ -68,7 +69,7 @@ static void generate_map_impl(flecs::iter& it, size_t, MapData const& map_data, 
         for (s32 i = 0; i < coast_depth; i++) {
             s32 y = bounds.height() - 1 - i;
 
-            terrain.tile_terrain_type.set(x, y, water_tile);
+            terrain.set_terrain_at({ x, y }, water_tile, Terrain::RecomputeData::No);
         }
     }
 
@@ -85,7 +86,7 @@ static void generate_map_impl(flecs::iter& it, size_t, MapData const& map_data, 
         pond_splat.for_each_tile([&](s32 x, s32 y) {
             if (!bounds.contains(x, y))
                 return;
-            terrain.tile_terrain_type.set(x, y, water_tile);
+            terrain.set_terrain_at({ x, y }, water_tile, Terrain::RecomputeData::No);
         });
     }
 
@@ -112,7 +113,7 @@ static void generate_map_impl(flecs::iter& it, size_t, MapData const& map_data, 
                 if (terrain_random->random_float_0_1() > density)
                     return;
 
-                if (TerrainCatalogue::the().get_def(terrain.tile_terrain_type.get(x, y)).canBuildOn
+                if (terrain.terrain_def_at({ x, y }).canBuildOn
                     && !building_at_position.tile_building.get_if_exists(x, y, {}).has_value()) {
 
                     tree_def->instantiate(world, v2i(x, y));
@@ -146,11 +147,11 @@ mod_map_generation::mod_map_generation(flecs::world& world)
                                   .up(flecs::ChildOf)
                                   .build();
 
-    world.system<MapData const, BuildingAtPosition const, TerrainData>("MapGen")
+    world.system<MapData const, BuildingAtPosition const, Terrain>("MapGen")
         .kind(MapGenPhase::Generate)
         .read<MapData>()
         .read<BuildingAtPosition>()
-        .with<TerrainData>()
+        .with<Terrain>()
         .read_write()
         .immediate()
         .each(generate_map_impl);

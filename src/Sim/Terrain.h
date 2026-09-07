@@ -64,15 +64,34 @@ struct mod_terrain {
     explicit mod_terrain(flecs::world&);
 };
 
-struct TerrainData {
-    Array2<TerrainType> tile_terrain_type;
-    Array2<u8> tile_height;
-    Array2<u8> tile_distance_to_water;
+class Terrain {
+public:
+    Terrain(Allocator&, V2I size);
+    void deallocate(Allocator&);
 
-    Array2<u8> tile_sprite_offset;
-    Array2<SpriteRef> tile_sprite;
-    Array2<Optional<SpriteRef>> tile_border_sprite;
+    TerrainDef const& terrain_def_at(V2I position) const;
+    u8 distance_to_water_at(V2I position) const { return m_tile_distance_to_water.get(position); }
 
-    TerrainDef const& terrain_def_at(s32 x, s32 y) const;
-    void set_terrain_at(V2I position, TerrainType);
+    enum class RecomputeData : u8 {
+        No,
+        Yes,
+    };
+    void fill_with(TerrainType, RecomputeData = RecomputeData::Yes);
+    void set_terrain_at(V2I position, TerrainType, RecomputeData = RecomputeData::Yes);
+    void set_sprite_offset_at(V2I position, u8 value);
+
+    void draw(Rect2I const& visible_area) const;
+
+    void update_distance_to_water(Rect2I bounds);
+    void assign_terrain_sprites(Rect2I bounds);
+
+private:
+    Array2<TerrainType> m_tile_terrain_type;
+    Array2<u8> m_tile_height;
+    Array2<u8> m_tile_distance_to_water;
+
+    // FIXME: Replace this with a per-position hash
+    Array2<u8> m_tile_sprite_offset;
+    Array2<SpriteRef> m_tile_sprite;
+    Array2<Optional<SpriteRef>> m_tile_border_sprite;
 };

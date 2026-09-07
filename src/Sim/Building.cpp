@@ -427,7 +427,7 @@ mod_building::mod_building(flecs::world& world)
     // FIXME: React to building construction/destruction and update building variants.
 }
 
-static bool can_place_building_internal(MapData const& map_data, TerrainData const& terrain_data, BuildingAtPosition const& building_at_position, BuildingDef const& def, Rect2I const& footprint)
+static bool can_place_building_internal(MapData const& map_data, Terrain const& terrain_data, BuildingAtPosition const& building_at_position, BuildingDef const& def, Rect2I const& footprint)
 {
     // Are we in bounds?
     if (!map_data.bounds.contains(footprint))
@@ -436,7 +436,7 @@ static bool can_place_building_internal(MapData const& map_data, TerrainData con
     // Check terrain is buildable and empty
     for (s32 y = footprint.y(); y < footprint.y() + footprint.height(); y++) {
         for (s32 x = footprint.x(); x < footprint.x() + footprint.width(); x++) {
-            auto& terrain_def = terrain_data.terrain_def_at(x, y);
+            auto& terrain_def = terrain_data.terrain_def_at({ x, y });
             if (!terrain_def.canBuildOn)
                 return false;
 
@@ -468,7 +468,7 @@ bool can_place_building(flecs::world& world, BuildingDef const& def, V2I const& 
     Rect2I footprint { top_left, def.size };
 
     auto& map_data = world.get<MapData>();
-    auto& terrain_data = world.get<TerrainData>();
+    auto& terrain_data = world.get<Terrain>();
     auto& building_at_position = world.get<BuildingAtPosition>();
 
     return can_place_building_internal(map_data, terrain_data, building_at_position, def, footprint);
@@ -536,7 +536,7 @@ Money calculate_build_cost(flecs::world& world, BuildingDef const& def, Rect2I c
     DEBUG_FUNCTION();
 
     auto& map_data = world.get<MapData>();
-    auto& terrain_data = world.get<TerrainData>();
+    auto& terrain_data = world.get<Terrain>();
     auto& building_at_position = world.get<BuildingAtPosition>();
 
     Money total_cost = 0;
