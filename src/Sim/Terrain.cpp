@@ -404,7 +404,7 @@ bool TerrainLayer::load(BinaryFileReader& reader)
     return succeeded;
 }
 
-static void assign_terrain_sprites(TerrainData& terrain, Rect2I bounds)
+void Terrain::assign_terrain_sprites(Rect2I bounds)
 {
     DEBUG_FUNCTION();
     auto& terrain_catalogue = TerrainCatalogue::the();
@@ -412,23 +412,23 @@ static void assign_terrain_sprites(TerrainData& terrain, Rect2I bounds)
     // Assign a terrain tile variant for each tile, depending on its neighbours
     for (s32 y = bounds.y(); y < bounds.y() + bounds.height(); y++) {
         for (s32 x = bounds.x(); x < bounds.x() + bounds.width(); x++) {
-            auto& def = terrain_catalogue.get_def(terrain.tile_terrain_type.get(x, y));
+            auto& def = terrain_catalogue.get_def(m_tile_terrain_type.get(x, y));
 
-            terrain.tile_sprite.set(x, y, SpriteRef { def.spriteName, terrain.tile_sprite_offset.get(x, y) });
+            m_tile_sprite.set(x, y, SpriteRef { def.spriteName, m_tile_sprite_offset.get(x, y) });
 
             // FIXME: The way borders work is weird. It assumes there's only one neighbouring terrain type that draws borders.
             if (def.drawBordersOver) {
                 // First, determine if we have a bordering type
                 TerrainDef const* borders[8] {
                     // Starting NW, going clockwise
-                    &terrain_catalogue.get_def(terrain.tile_terrain_type.get_if_exists(x - 1, y - 1, 0)),
-                    &terrain_catalogue.get_def(terrain.tile_terrain_type.get_if_exists(x, y - 1, 0)),
-                    &terrain_catalogue.get_def(terrain.tile_terrain_type.get_if_exists(x + 1, y - 1, 0)),
-                    &terrain_catalogue.get_def(terrain.tile_terrain_type.get_if_exists(x + 1, y, 0)),
-                    &terrain_catalogue.get_def(terrain.tile_terrain_type.get_if_exists(x + 1, y + 1, 0)),
-                    &terrain_catalogue.get_def(terrain.tile_terrain_type.get_if_exists(x, y + 1, 0)),
-                    &terrain_catalogue.get_def(terrain.tile_terrain_type.get_if_exists(x - 1, y + 1, 0)),
-                    &terrain_catalogue.get_def(terrain.tile_terrain_type.get_if_exists(x - 1, y, 0)),
+                    &terrain_catalogue.get_def(m_tile_terrain_type.get_if_exists(x - 1, y - 1, 0)),
+                    &terrain_catalogue.get_def(m_tile_terrain_type.get_if_exists(x, y - 1, 0)),
+                    &terrain_catalogue.get_def(m_tile_terrain_type.get_if_exists(x + 1, y - 1, 0)),
+                    &terrain_catalogue.get_def(m_tile_terrain_type.get_if_exists(x + 1, y, 0)),
+                    &terrain_catalogue.get_def(m_tile_terrain_type.get_if_exists(x + 1, y + 1, 0)),
+                    &terrain_catalogue.get_def(m_tile_terrain_type.get_if_exists(x, y + 1, 0)),
+                    &terrain_catalogue.get_def(m_tile_terrain_type.get_if_exists(x - 1, y + 1, 0)),
+                    &terrain_catalogue.get_def(m_tile_terrain_type.get_if_exists(x - 1, y, 0)),
                 };
                 // Find the first match, if any
                 // Eventually we probably want to use whichever border terrain is most common instead
@@ -453,22 +453,22 @@ static void assign_terrain_sprites(TerrainData& terrain, Rect2I bounds)
 
                     u8 border_sprite_index = w + (s * 3) + (e * 9) + (n * 27) - 1;
                     ASSERT(border_sprite_index >= 0 && border_sprite_index <= 80);
-                    terrain.tile_border_sprite.set(x, y, SpriteRef { border_terrain->borderSpriteNames[border_sprite_index], terrain.tile_sprite_offset.get(x, y) });
+                    m_tile_border_sprite.set(x, y, SpriteRef { border_terrain->borderSpriteNames[border_sprite_index], m_tile_sprite_offset.get(x, y) });
                 } else {
-                    terrain.tile_border_sprite.set(x, y, {});
+                    m_tile_border_sprite.set(x, y, {});
                 }
             } else {
-                terrain.tile_border_sprite.set(x, y, {});
+                m_tile_border_sprite.set(x, y, {});
             }
         }
     }
 }
 
-static void update_distance_to_water(TerrainData& terrain, Rect2I bounds)
+void Terrain::update_distance_to_water(Rect2I bounds)
 {
     DEBUG_FUNCTION();
 
-    bounds = bounds.expanded(maxDistanceToWater).intersected(terrain.tile_distance_to_water.bounds());
+    bounds = bounds.expanded(maxDistanceToWater).intersected(m_tile_distance_to_water.bounds());
     u8 const water = truncate<u8>(findTerrainTypeByName("water"_s));
 
     for (s32 y = bounds.y();
@@ -477,23 +477,22 @@ static void update_distance_to_water(TerrainData& terrain, Rect2I bounds)
         for (s32 x = bounds.x();
             x < bounds.x() + bounds.width();
             x++) {
-            u8 tile_type = terrain.tile_terrain_type.get_if_exists(x, y, 0);
+            u8 tile_type = m_tile_terrain_type.get_if_exists(x, y, 0);
             if (tile_type == water) {
-                terrain.tile_distance_to_water.set(x, y, 0);
+                m_tile_distance_to_water.set(x, y, 0);
             } else {
-                terrain.tile_distance_to_water.set(x, y, 255);
+                m_tile_distance_to_water.set(x, y, 255);
             }
         }
     }
 
-    updateDistances(&terrain.tile_distance_to_water, bounds, maxDistanceToWater);
+    updateDistances(&m_tile_distance_to_water, bounds, maxDistanceToWater);
 }
 
-static void draw_terrain(TerrainData const& terrain_data, VisibleTileBounds const visible_tile_bounds)
+void Terrain::draw(Rect2I const& visible_area) const
 {
     DEBUG_FUNCTION_T(DebugCodeDataTag::GameUpdate);
 
-    Rect2I const& visible_area = visible_tile_bounds.rect;
     auto& renderer = the_renderer();
     auto shader_id = renderer.shaderIds.pixelArt;
     auto world_buffer = renderer.world_buffer();
@@ -510,11 +509,11 @@ static void draw_terrain(TerrainData const& terrain_data, VisibleTileBounds cons
         for (s32 x = visible_area.x();
             x < visible_area.x() + visible_area.width();
             x++) {
-            Sprite* sprite = &terrain_data.tile_sprite.get(x, y).get();
+            Sprite* sprite = &m_tile_sprite.get(x, y).get();
             sprite_bounds.set_x(x);
             drawSingleSprite(&renderer.world_buffer(), sprite, sprite_bounds, shader_id, white);
 
-            if (auto& border_sprite_ref = terrain_data.tile_border_sprite.get(x, y); border_sprite_ref.has_value()) {
+            if (auto& border_sprite_ref = m_tile_border_sprite.get(x, y); border_sprite_ref.has_value()) {
                 auto& border_sprite = border_sprite_ref.value().get();
                 drawSingleSprite(&renderer.world_buffer(), &border_sprite, sprite_bounds, shader_id, white);
             }
@@ -528,80 +527,105 @@ mod_terrain::mod_terrain(flecs::world& world)
 
     world.import<mod_basic>();
 
-    world.component<TerrainData>().add(flecs::Singleton);
+    world.component<Terrain>().add(flecs::Singleton);
 
-    world.system<TerrainData, MemoryArena>("TerrainCleanup")
+    world.system<Terrain, MemoryArena>("TerrainCleanup")
         .kind(MapGenPhase::Deallocate)
-        .each([](flecs::iter& it, size_t, TerrainData& terrain_data, MemoryArena& arena) {
+        .each([](flecs::iter& it, size_t, Terrain& terrain, MemoryArena& arena) {
             // FIXME: Maybe this should be a destructor?
             logInfo("Clean up old terrain data"_s);
+            terrain.deallocate(arena);
             auto world = it.world();
-            arena.deallocate(terrain_data.tile_terrain_type);
-            arena.deallocate(terrain_data.tile_height);
-            arena.deallocate(terrain_data.tile_distance_to_water);
-            arena.deallocate(terrain_data.tile_sprite_offset);
-            arena.deallocate(terrain_data.tile_sprite);
-            arena.deallocate(terrain_data.tile_border_sprite);
-            world.remove<TerrainData>();
+            world.remove<Terrain>();
         });
 
     world.system<MapData const, MemoryArena>("TerrainAllocation")
         .kind(MapGenPhase::Allocate)
-        .write<TerrainData>()
+        .write<Terrain>()
         .each([](flecs::iter& it, size_t, MapData const& map_data, MemoryArena& arena) {
             logInfo("Allocate terrain data"_s);
             auto& bounds = map_data.bounds;
-            it.world().set<TerrainData>({
-                .tile_terrain_type = arena.allocate_array_2d<u8>(bounds.size()),
-                .tile_height = arena.allocate_array_2d<u8>(bounds.size()),
-                .tile_distance_to_water = arena.allocate_array_2d<u8>(bounds.size()),
-                .tile_sprite_offset = arena.allocate_array_2d<u8>(bounds.size()),
-                .tile_sprite = arena.allocate_array_2d<SpriteRef>(bounds.size()),
-                .tile_border_sprite = arena.allocate_array_2d<Optional<SpriteRef>>(bounds.size()),
-            });
+            it.world().emplace<Terrain>(arena, bounds.size());
         });
 
-    world.system<MapData const, TerrainData>("TerrainFinalization")
+    world.system<MapData const, Terrain>("TerrainFinalization")
         .kind(MapGenPhase::Post)
         // FIXME: Singletons in the system query don't create implicit dependencies, so we have to add them manually.
         //        https://github.com/SanderMertens/flecs/issues/2146
-        .with<TerrainData>()
+        .with<Terrain>()
         .read_write()
 
-        .each([](MapData const& map_data, TerrainData& terrain_data) {
+        .each([](MapData const& map_data, Terrain& terrain) {
             logInfo("Sorting out terrain stuffs"_s);
-            assign_terrain_sprites(terrain_data, map_data.bounds);
-            update_distance_to_water(terrain_data, map_data.bounds);
-
+            terrain.assign_terrain_sprites(map_data.bounds);
+            terrain.update_distance_to_water(map_data.bounds);
             the_renderer().world_camera().set_position(map_data.bounds.centre());
         });
 
-    world.system<TerrainData const, VisibleTileBounds const>("DrawTerrain")
+    world.system<Terrain const, VisibleTileBounds const>("DrawTerrain")
         .kind(DrawPhase::Terrain)
-        .each(draw_terrain);
+        .each([](Terrain const& terrain_data, VisibleTileBounds const visible_tile_bounds) {
+            terrain_data.draw(visible_tile_bounds.rect);
+        });
 }
 
-TerrainDef const& TerrainData::terrain_def_at(s32 x, s32 y) const
+Terrain::Terrain(Allocator& allocator, V2I size)
+    : m_tile_terrain_type(allocator.allocate_array_2d<u8>(size))
+    , m_tile_height(allocator.allocate_array_2d<u8>(size))
+    , m_tile_distance_to_water(allocator.allocate_array_2d<u8>(size))
+    , m_tile_sprite_offset(allocator.allocate_array_2d<u8>(size))
+    , m_tile_sprite(allocator.allocate_array_2d<SpriteRef>(size))
+    , m_tile_border_sprite(allocator.allocate_array_2d<Optional<SpriteRef>>(size))
 {
-    return TerrainCatalogue::the().get_def(tile_terrain_type.get_if_exists(x, y, 0));
 }
 
-void TerrainData::set_terrain_at(V2I position, TerrainType type)
+void Terrain::deallocate(Allocator& allocator)
 {
-    u8 existingTerrain = tile_terrain_type.get_if_exists(position, 0);
+    allocator.deallocate(m_tile_terrain_type);
+    allocator.deallocate(m_tile_height);
+    allocator.deallocate(m_tile_distance_to_water);
+    allocator.deallocate(m_tile_sprite_offset);
+    allocator.deallocate(m_tile_sprite);
+    allocator.deallocate(m_tile_border_sprite);
+}
+
+TerrainDef const& Terrain::terrain_def_at(V2I position) const
+{
+    return TerrainCatalogue::the().get_def(m_tile_terrain_type.get_if_exists(position, 0));
+}
+
+void Terrain::fill_with(TerrainType type, RecomputeData recompute_data)
+{
+    m_tile_terrain_type.fill(type);
+
+    if (recompute_data == RecomputeData::Yes) {
+        assign_terrain_sprites(m_tile_terrain_type.bounds());
+        update_distance_to_water(m_tile_terrain_type.bounds());
+    }
+}
+
+void Terrain::set_terrain_at(V2I position, TerrainType type, RecomputeData recompute_data)
+{
+    u8 existingTerrain = m_tile_terrain_type.get_if_exists(position, 0);
     // Ignore for tiles that don't exist, or are already the desired type
     if (existingTerrain == 0 || existingTerrain == type) {
         return;
     }
 
     // Set the terrain
-    tile_terrain_type.set(position, type);
+    m_tile_terrain_type.set(position, type);
 
-    // Update sprites on this and neighbouring tiles
-    // FIXME: Should a couple of these things just be methods?
-    auto const sprite_update_bounds = Rect2I::create_centre_size(position, { 3, 3 }).intersected(tile_terrain_type.bounds());
-    assign_terrain_sprites(*this, sprite_update_bounds);
+    if (recompute_data == RecomputeData::Yes) {
+        // Update sprites on this and neighbouring tiles
+        auto const sprite_update_bounds = Rect2I::create_centre_size(position, { 3, 3 }).intersected(m_tile_terrain_type.bounds());
+        assign_terrain_sprites(sprite_update_bounds);
 
-    // Update distance to water
-    update_distance_to_water(*this, { position.x, position.y, 1, 1 });
+        // Update distance to water
+        update_distance_to_water({ position.x, position.y, 1, 1 });
+    }
+}
+
+void Terrain::set_sprite_offset_at(V2I position, u8 value)
+{
+    m_tile_sprite_offset.set(position, value);
 }

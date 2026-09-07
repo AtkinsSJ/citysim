@@ -57,10 +57,9 @@ void InspectTool::window_proc(UI::WindowContext* context, void* userData)
     ui->alignWidgets(HAlign::Fill);
 
     // Terrain
-    auto& terrain = world.get<TerrainData>();
-    auto terrain_type = terrain.tile_terrain_type.get(tile_pos.x, tile_pos.y);
-    auto& terrain_def = TerrainCatalogue::the().get_def(terrain_type);
-    ui->addLabel(myprintf("Terrain: {0}, {1} tiles from water"_s, { getText(terrain_def.textAssetName), formatInt(terrain.tile_distance_to_water.get(tile_pos.x, tile_pos.y)) }));
+    auto& terrain = world.get<Terrain>();
+    auto& terrain_def = terrain.terrain_def_at(tile_pos);
+    ui->addLabel(myprintf("Terrain: {0}, {1} tiles from water"_s, { getText(terrain_def.textAssetName), formatInt(terrain.distance_to_water_at(tile_pos)) }));
 
     // Zone
     // ZoneType zone = world->zoneLayer.get_zone_at(tile_pos.x, tile_pos.y);
@@ -327,8 +326,8 @@ void SetTerrainTool::act(flecs::world& world, bool mouse_is_over_ui, V2I mouse_t
         && mouseButtonPressed(MouseButton::Left)
         && world.get<MapData>().bounds.contains(mouse_tile_pos)) {
 
-        world.get_mut<TerrainData>().set_terrain_at(mouse_tile_pos, m_terrain_type);
-        world.modified<TerrainData>();
+        world.get_mut<Terrain>().set_terrain_at(mouse_tile_pos, m_terrain_type);
+        world.modified<Terrain>();
     }
 }
 
