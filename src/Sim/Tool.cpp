@@ -327,8 +327,7 @@ void SetTerrainTool::act(flecs::world& world, bool mouse_is_over_ui, V2I mouse_t
         && mouseButtonPressed(MouseButton::Left)
         && world.get<MapData>().bounds.contains(mouse_tile_pos)) {
 
-        // FIXME: What exactly do we want to do when we modify terrain?
-        world.get_mut<TerrainData>().tile_terrain_type.set(mouse_tile_pos.x, mouse_tile_pos.y, m_terrain_type);
+        world.get_mut<TerrainData>().set_terrain_at(mouse_tile_pos, m_terrain_type);
         world.modified<TerrainData>();
     }
 }
