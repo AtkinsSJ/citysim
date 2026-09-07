@@ -30,11 +30,29 @@ public:
     T random_integer()
     {
         static_assert(sizeof(T) < 8);
-        return static_cast<T>(random_between(minPossibleValue<T>(), maxPossibleValue<T>() + 1));
+        return random_between<T>(minPossibleValue<T>(), maxPossibleValue<T>() + 1);
     }
 
-    s32 random_below(s32 max_exclusive);
-    s32 random_between(s32 min_inclusive, s32 max_exclusive);
+    template<Integral T>
+    T random_between(T min_inclusive, T max_exclusive)
+    {
+        // If the max is less than the min, just return the min.
+        if (max_exclusive <= min_inclusive)
+            return min_inclusive;
+
+        T range = max_exclusive - min_inclusive;
+        return min_inclusive + (next() % range);
+    }
+
+    template<Integral T>
+    T random_below(T max_exclusive)
+    {
+        // 0 or negative max values don't make sense, so we return a 0 for those.
+        if (max_exclusive <= 0)
+            return 0;
+
+        return static_cast<T>(next() % max_exclusive);
+    }
 
     bool random_bool();
     float random_float_between(float min_inclusive, float max_exclusive);

@@ -78,25 +78,6 @@ OwnedRef<Random> Random::create(Optional<u32> seed, Optional<Type> type)
     VERIFY_NOT_REACHED();
 }
 
-s32 Random::random_below(s32 max_exclusive)
-{
-    // 0 or negative max values don't make sense, so we return a 0 for those.
-    if (max_exclusive <= 0)
-        return 0;
-
-    return next() % max_exclusive;
-}
-
-s32 Random::random_between(s32 min_inclusive, s32 max_exclusive)
-{
-    // If the max is less than the min, just return the min.
-    if (max_exclusive <= min_inclusive)
-        return min_inclusive;
-
-    s32 range = max_exclusive - min_inclusive;
-    return min_inclusive + (next() % range);
-}
-
 bool Random::random_bool()
 {
     return (next() % 2) != 0;
