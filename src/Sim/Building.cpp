@@ -406,6 +406,7 @@ mod_building::mod_building(flecs::world& world)
             auto world = it.world();
             arena.deallocate(building_at_position.tile_building);
             world.remove<BuildingAtPosition>();
+            world.remove<PopulationCache>();
         });
 
     world.system<MapData const, MemoryArena>("BuildingsInit")
@@ -419,6 +420,7 @@ mod_building::mod_building(flecs::world& world)
                 .tile_building = arena.allocate_array_2d<Optional<flecs::entity>>(bounds.size()),
             };
             world.set<BuildingAtPosition>(move(building_at_position));
+            world.set<PopulationCache>({});
         });
 
     // FIXME: Figure out BuildingProblems. Maybe use relationships?

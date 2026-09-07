@@ -10,7 +10,7 @@
 #include <Sim/Effect.h>
 #include <Sim/Entity.h>
 #include <Sim/GameClock.h>
-#include <Sim/Residents.h>
+#include <Sim/Population.h>
 #include <Sim/TileUtils.h>
 #include <Sim/Transport.h>
 #include <Util/EnumMap.h>

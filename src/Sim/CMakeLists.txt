@@ -20,6 +20,7 @@ target_sources(CitySim PRIVATE
     Layer.cpp
     MapGeneration.cpp
     Pollution.cpp
+    Population.cpp
     Power.cpp
     Terrain.cpp
     TerrainCatalogue.cpp

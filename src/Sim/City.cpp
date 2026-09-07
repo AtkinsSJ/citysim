@@ -813,6 +813,7 @@ mod_city::mod_city(flecs::world& world)
     world.component<MapData>().add(flecs::Singleton);
     world.component<CityData>().add(flecs::Singleton);
     world.component<GameClock>().add(flecs::Singleton);
+    world.component<PopulationCache>().add(flecs::Singleton);
 
     world.set<CityData>({});
     world.set<GameClock>({});
@@ -838,4 +839,11 @@ mod_city::mod_city(flecs::world& world)
         .read<MapData>()
         .write<VisibleTileBounds>()
         .each(update_visible_tile_bounds);
+
+    world.system<PopulationCache>("UpdatePopulationCache")
+        .kind(DayPhase::Pre)
+        .write<PopulationCache>()
+        .each([](flecs::iter& it, size_t, PopulationCache& population_cache) {
+            population_cache.update(it.world());
+        });
 }
