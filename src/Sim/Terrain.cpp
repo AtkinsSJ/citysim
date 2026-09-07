@@ -7,6 +7,7 @@
 #include "Terrain.h"
 
 #include <App/App.h>
+#include <Debug/Debug.h>
 #include <Gfx/Renderer.h>
 #include <IO/BinaryFileReader.h>
 #include <IO/BinaryFileWriter.h>
@@ -575,8 +576,6 @@ mod_terrain::mod_terrain(flecs::world& world)
             the_renderer().world_camera().set_position(map_data.bounds.centre());
         });
 
-    // TODO: Run updates on data when terrain changes.
-
     world.system<TerrainData const, VisibleTileBounds const>("DrawTerrain")
         .kind(DrawPhase::Terrain)
         .each(draw_terrain);
@@ -585,4 +584,24 @@ mod_terrain::mod_terrain(flecs::world& world)
 TerrainDef const& TerrainData::terrain_def_at(s32 x, s32 y) const
 {
     return TerrainCatalogue::the().get_def(tile_terrain_type.get_if_exists(x, y, 0));
+}
+
+void TerrainData::set_terrain_at(V2I position, TerrainType type)
+{
+    u8 existingTerrain = tile_terrain_type.get_if_exists(position, 0);
+    // Ignore for tiles that don't exist, or are already the desired type
+    if (existingTerrain == 0 || existingTerrain == type) {
+        return;
+    }
+
+    // Set the terrain
+    tile_terrain_type.set(position, type);
+
+    // Update sprites on this and neighbouring tiles
+    // FIXME: Should a couple of these things just be methods?
+    auto const sprite_update_bounds = Rect2I::create_centre_size(position, { 3, 3 }).intersected(tile_terrain_type.bounds());
+    assign_terrain_sprites(*this, sprite_update_bounds);
+
+    // Update distance to water
+    update_distance_to_water(*this, { position.x, position.y, 1, 1 });
 }
