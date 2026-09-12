@@ -6,48 +6,50 @@
 
 #include "Population.h"
 
-void PopulationCache::update(flecs::world const& world)
+PopulationCache::PopulationCache(flecs::world& world)
 {
-    // FIXME: Save these queries!
-    flecs::query<ProvidesResidents const> query_provides_residents
+    m_query_provides_residents
         = world.query_builder<ProvidesResidents const>()
               .term_at(0)
               .second(flecs::Wildcard)
               .build();
-    flecs::query<HasResidents const> query_has_residents
+    m_query_has_residents
         = world.query_builder<HasResidents const>()
               .term_at(0)
               .second(flecs::Wildcard)
               .build();
-    flecs::query<ProvidesJobs const> query_provides_jobs
+    m_query_provides_jobs
         = world.query_builder<ProvidesJobs const>()
               .term_at(0)
               .second(flecs::Wildcard)
               .build();
-    flecs::query<HasJobs const> query_has_jobs
+    m_query_has_jobs
         = world.query_builder<HasJobs const>()
               .term_at(0)
               .second(flecs::Wildcard)
               .build();
+}
 
+void PopulationCache::update()
+{
     m_resident_capacity.clear();
     m_resident_count.clear();
     m_job_capacity.clear();
     m_job_count.clear();
 
-    query_provides_residents.each([&](flecs::iter& it, size_t, ProvidesResidents const& residents) {
+    m_query_provides_residents.each([&](flecs::iter& it, size_t, ProvidesResidents const& residents) {
         auto type = it.pair(0).second().to_constant<ResidentType>();
         m_resident_capacity[type] += residents.count;
     });
-    query_has_residents.each([&](flecs::iter& it, size_t, HasResidents const& residents) {
+    m_query_has_residents.each([&](flecs::iter& it, size_t, HasResidents const& residents) {
         auto type = it.pair(0).second().to_constant<ResidentType>();
         m_resident_count[type] += residents.count;
     });
-    query_provides_jobs.each([&](flecs::iter& it, size_t, ProvidesJobs const& jobs) {
+    m_query_provides_jobs.each([&](flecs::iter& it, size_t, ProvidesJobs const& jobs) {
         auto type = it.pair(0).second().to_constant<JobType>();
         m_job_capacity[type] += jobs.count;
     });
-    query_has_jobs.each([&](flecs::iter& it, size_t, HasJobs const& jobs) {
+    m_query_has_jobs.each([&](flecs::iter& it, size_t, HasJobs const& jobs) {
         auto type = it.pair(0).second().to_constant<JobType>();
         m_job_count[type] += jobs.count;
     });
