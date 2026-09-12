@@ -421,7 +421,7 @@ mod_building::mod_building(flecs::world& world)
                 .tile_building = arena.allocate_array_2d<Optional<flecs::entity>>(bounds.size()),
             };
             world.set<BuildingAtPosition>(move(building_at_position));
-            world.set<PopulationCache>({});
+            world.emplace<PopulationCache>(world);
         });
 
     // FIXME: Figure out BuildingProblems. Maybe use relationships?

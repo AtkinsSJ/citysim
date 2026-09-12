@@ -67,7 +67,9 @@ constexpr StringView to_string(JobType const type)
 
 class PopulationCache {
 public:
-    void update(flecs::world const&);
+    explicit PopulationCache(flecs::world&);
+
+    void update();
 
     u32 resident_capacity(Optional<ResidentType> = {}) const;
     u32 resident_count(Optional<ResidentType> = {}) const;
@@ -80,4 +82,9 @@ private:
     EnumMap<ResidentType, u32> m_resident_count;
     EnumMap<JobType, u32> m_job_capacity;
     EnumMap<JobType, u32> m_job_count;
+
+    flecs::query<ProvidesResidents const> m_query_provides_residents;
+    flecs::query<HasResidents const> m_query_has_residents;
+    flecs::query<ProvidesJobs const> m_query_provides_jobs;
+    flecs::query<HasJobs const> m_query_has_jobs;
 };

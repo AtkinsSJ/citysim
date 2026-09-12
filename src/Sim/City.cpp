@@ -843,7 +843,7 @@ mod_city::mod_city(flecs::world& world)
     world.system<PopulationCache>("UpdatePopulationCache")
         .kind(DayPhase::Pre)
         .write<PopulationCache>()
-        .each([](flecs::iter& it, size_t, PopulationCache& population_cache) {
-            population_cache.update(it.world());
+        .each([](PopulationCache& population_cache) {
+            population_cache.update();
         });
 }
