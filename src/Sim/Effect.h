@@ -28,7 +28,7 @@ public:
     {
     }
 
-    static ErrorOr<EffectRadius> read(LineReader&);
+    static Optional<EffectRadius> read(Lexer&);
 
     s32 radius() const { return m_radius; }
     bool has_effect() const { return m_radius > 0; }
