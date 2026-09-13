@@ -56,3 +56,26 @@ inline constexpr bool IsIntegral<s64> = true;
 
 template<typename T>
 concept Integral = IsIntegral<T>;
+
+template<Integral I>
+inline constexpr bool IsSigned = false;
+
+template<>
+inline constexpr bool IsSigned<s8> = true;
+template<>
+inline constexpr bool IsSigned<s16> = true;
+template<>
+inline constexpr bool IsSigned<s32> = true;
+template<>
+inline constexpr bool IsSigned<s64> = true;
+
+template<typename T>
+inline constexpr bool IsFloatingPoint = false;
+
+template<>
+inline constexpr bool IsFloatingPoint<float> = true;
+template<>
+inline constexpr bool IsFloatingPoint<double> = true;
+
+template<typename T>
+concept FloatingPoint = IsFloatingPoint<T>;

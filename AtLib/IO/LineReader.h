@@ -77,7 +77,7 @@ public:
         auto& token = maybe_token.value();
 
         if (auto maybe_s64 = token.to_int(); maybe_s64.has_value()) {
-            if (canCastIntTo<T>(maybe_s64.value()))
+            if (is_within_integer_range<T>(maybe_s64.value()))
                 return static_cast<T>(maybe_s64.value());
 
             error("Value {0} cannot fit in a {1}."_s, { token, typeNameOf<T>() });

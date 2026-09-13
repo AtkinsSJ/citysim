@@ -110,66 +110,61 @@ s32 manhattanDistance(Rect2I a, Rect2I b);
 
 bool equals_with_epsilon(float a, float b, float epsilon);
 
-//
-// All this mess is just so we can access a type's min/max values from a template.
-//
 template<typename T>
-inline T const minPossibleValue();
+inline constexpr T MaxValue;
 template<typename T>
-inline T const maxPossibleValue();
+inline constexpr T MinValue;
+template<>
+inline constexpr u8 MinValue<u8> = u8Min;
+template<>
+inline constexpr u8 MaxValue<u8> = u8Max;
+template<>
+inline constexpr u16 MinValue<u16> = u16Min;
+template<>
+inline constexpr u16 MaxValue<u16> = u16Max;
+template<>
+inline constexpr u32 MinValue<u32> = u32Min;
+template<>
+inline constexpr u32 MaxValue<u32> = u32Max;
+template<>
+inline constexpr u64 MinValue<u64> = u64Min;
+template<>
+inline constexpr u64 MaxValue<u64> = u64Max;
+template<>
+inline constexpr s8 MinValue<s8> = s8Min;
+template<>
+inline constexpr s8 MaxValue<s8> = s8Max;
+template<>
+inline constexpr s16 MinValue<s16> = s16Min;
+template<>
+inline constexpr s16 MaxValue<s16> = s16Max;
+template<>
+inline constexpr s32 MinValue<s32> = s32Min;
+template<>
+inline constexpr s32 MaxValue<s32> = s32Max;
+template<>
+inline constexpr s64 MinValue<s64> = s64Min;
+template<>
+inline constexpr s64 MaxValue<s64> = s64Max;
 
 template<>
-inline u8 const minPossibleValue<u8>() { return 0; }
+inline constexpr float MinValue<float> = floatMin;
 template<>
-inline u8 const maxPossibleValue<u8>() { return u8Max; }
+inline constexpr float MaxValue<float> = floatMax;
 template<>
-inline u16 const minPossibleValue<u16>() { return 0; }
+inline constexpr double MinValue<double> = f64Min;
 template<>
-inline u16 const maxPossibleValue<u16>() { return u16Max; }
-template<>
-inline u32 const minPossibleValue<u32>() { return 0; }
-template<>
-inline u32 const maxPossibleValue<u32>() { return u32Max; }
-template<>
-inline u64 const minPossibleValue<u64>() { return 0; }
-template<>
-inline u64 const maxPossibleValue<u64>() { return u64Max; }
-
-template<>
-inline s8 const minPossibleValue<s8>() { return s8Min; }
-template<>
-inline s8 const maxPossibleValue<s8>() { return s8Max; }
-template<>
-inline s16 const minPossibleValue<s16>() { return s16Min; }
-template<>
-inline s16 const maxPossibleValue<s16>() { return s16Max; }
-template<>
-inline s32 const minPossibleValue<s32>() { return s32Min; }
-template<>
-inline s32 const maxPossibleValue<s32>() { return s32Max; }
-template<>
-inline s64 const minPossibleValue<s64>() { return s64Min; }
-template<>
-inline s64 const maxPossibleValue<s64>() { return s64Max; }
-
-template<>
-inline float const minPossibleValue<float>() { return floatMin; }
-template<>
-inline float const maxPossibleValue<float>() { return floatMax; }
-template<>
-inline double const minPossibleValue<double>() { return f64Min; }
-template<>
-inline double const maxPossibleValue<double>() { return f64Max; }
+inline constexpr double MaxValue<double> = f64Max;
 
 template<typename T>
-bool canCastIntTo(s64 input)
+constexpr bool is_within_integer_range(s64 input)
 {
-    return (input >= minPossibleValue<T>() && input <= maxPossibleValue<T>());
+    return input >= MinValue<T> && input <= MaxValue<T>;
 }
 
 template<typename T>
 T truncate(s64 in)
 {
-    ASSERT(canCastIntTo<T>(in));
+    ASSERT(is_within_integer_range<T>(in));
     return (T)in;
 }

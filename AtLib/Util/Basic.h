@@ -34,9 +34,13 @@ s32 constexpr s32Max = INT32_MAX;
 s64 constexpr s64Min = INT64_MIN;
 s64 constexpr s64Max = INT64_MAX;
 
+u8 constexpr u8Min = 0;
 u8 constexpr u8Max = UINT8_MAX;
+u16 constexpr u16Min = 0;
 u16 constexpr u16Max = UINT16_MAX;
+u32 constexpr u32Min = 0;
 u32 constexpr u32Max = UINT32_MAX;
+u64 constexpr u64Min = 0;
 u64 constexpr u64Max = UINT64_MAX;
 
 float constexpr floatMin = -FLT_MAX;

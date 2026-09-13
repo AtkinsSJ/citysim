@@ -64,7 +64,7 @@ public:
                         T originalValue = tiles.get(x, y);
 
                         // This clamp is probably unnecessary but just in case.
-                        T newValue = clamp<T>(originalValue + contribution, minPossibleValue<T>(), maxPossibleValue<T>());
+                        T newValue = clamp<T>(originalValue + contribution, MinValue<T>, MaxValue<T>);
                         tiles.set(x, y, newValue);
                     } break;
 
