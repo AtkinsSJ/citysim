@@ -344,7 +344,7 @@ int main(int argc, char* argv[])
                 DEBUG_ARENA(&system_arena, "System");
                 DEBUG_ARENA(&temp_arena(), "Global Temp Arena");
                 DEBUG_ARENA(&renderer.arena(), "Renderer");
-                if (auto* game_scene = dynamic_cast<GameScene*>(&app->scene())) {
+                if ([[maybe_unused]] auto* game_scene = dynamic_cast<GameScene*>(&app->scene())) {
                     DEBUG_ARENA(&game_scene->arena(), "Game");
                 } else {
                     DEBUG_ARENA(nullptr, "Game");
