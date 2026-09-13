@@ -9,12 +9,3 @@ add_library(UI STATIC
     Window.cpp
 )
 target_include_directories(UI PUBLIC "../")
-
-target_compile_definitions(UI PRIVATE
-    $<$<CONFIG:Debug>:
-        BUILD_DEBUG=1
-    >
-    $<$<CONFIG:Release>:
-        BUILD_DEBUG=0
-    >
-)

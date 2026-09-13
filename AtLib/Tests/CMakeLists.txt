@@ -5,10 +5,6 @@ function(atlib_test source)
     add_executable(${ATLIB_TEST_NAME} ${source})
     target_include_directories(${ATLIB_TEST_NAME} PRIVATE "../" ${SDL2_INCLUDE_DIRS})
     target_link_libraries(${ATLIB_TEST_NAME} PRIVATE Util ${SDL2_LIBRARIES})
-
-    target_compile_definitions(${ATLIB_TEST_NAME} PRIVATE
-        BUILD_DEBUG=0
-    )
     
     add_test(NAME ${ATLIB_TEST_NAME}
              COMMAND ${ATLIB_TEST_NAME})

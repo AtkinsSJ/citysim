@@ -28,12 +28,3 @@ add_library(Util STATIC
     Vector.cpp
 )
 target_include_directories(Util PUBLIC "../")
-
-target_compile_definitions(Util PRIVATE
-    $<$<CONFIG:Debug>:
-        BUILD_DEBUG=1
-    >
-    $<$<CONFIG:Release>:
-        BUILD_DEBUG=0
-    >
-)

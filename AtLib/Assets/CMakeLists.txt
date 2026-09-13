@@ -6,12 +6,3 @@ add_library(Assets STATIC
     Texts.cpp
 )
 target_include_directories(Assets PUBLIC "../")
-
-target_compile_definitions(Assets PRIVATE
-    $<$<CONFIG:Debug>:
-        BUILD_DEBUG=1
-    >
-    $<$<CONFIG:Release>:
-        BUILD_DEBUG=0
-    >
-)
