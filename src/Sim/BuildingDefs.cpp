@@ -5,10 +5,12 @@
  */
 
 #include "BuildingDefs.h"
+
 #include <Assets/AssetManager.h>
 #include <Sim/Building.h>
 #include <Sim/BuildingCatalogue.h>
 #include <Util/HashMap.h>
+#include <Util/Lexer.h>
 #include <Util/Log.h>
 
 static void assign_building_categories(BuildingCatalogue& catalogue, BuildingDef& def)
@@ -88,34 +90,36 @@ ErrorOr<OwnedRef<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata, Blob
     BuildingDef* def = nullptr;
 
     while (reader.load_next_line()) {
-        auto maybe_first_word = reader.next_token();
-        if (!maybe_first_word.has_value())
-            break;
-        auto& firstWord = maybe_first_word.value();
+        Lexer lexer { reader.current_line() };
 
-        // Definitions
-        if (firstWord.starts_with(':')) {
+        // Commands
+        if (lexer.consume_specific(':')) {
             // Define something
-            firstWord = firstWord.substring(1);
+            auto command = lexer.consume_token();
+            lexer.discard_whitespace();
 
             if (def != nullptr) {
                 // Now that the previous building is done, we can categorise it
                 assign_building_categories(*catalogue, *def);
             }
 
-            if (firstWord == "Building"_s) {
-                auto name = reader.next_token();
-                if (!name.has_value())
+            if (command == "Building"_s) {
+                auto name = lexer.consume_token();
+                lexer.discard_whitespace();
+                if (!name.has_value() || lexer.has_next())
                     return reader.make_error_message("Couldn't parse Building. Expected: ':Building identifier'"_s);
 
                 def = appendNewBuildingDef(name.value());
                 building_ids.append(def->name);
-            } else if (firstWord == "Intersection"_s) {
-                auto name = reader.next_token();
-                auto part1Name = reader.next_token();
-                auto part2Name = reader.next_token();
+            } else if (command == "Intersection"_s) {
+                auto name = lexer.consume_token();
+                lexer.discard_whitespace();
+                auto part1Name = lexer.consume_token();
+                lexer.discard_whitespace();
+                auto part2Name = lexer.consume_token();
+                lexer.discard_whitespace();
 
-                if (!name.has_value() || !part1Name.has_value() || !part2Name.has_value())
+                if (!name.has_value() || !part1Name.has_value() || !part2Name.has_value() || lexer.has_next())
                     return reader.make_error_message("Couldn't parse Intersection. Expected: ':Intersection identifier part1 part2'"_s);
 
                 def = appendNewBuildingDef(name.value());
@@ -124,9 +128,10 @@ ErrorOr<OwnedRef<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata, Blob
                 def->isIntersection = true;
                 def->intersectionPart1Name = catalogue->buildingNames.intern(part1Name.value());
                 def->intersectionPart2Name = catalogue->buildingNames.intern(part2Name.value());
-            } else if (firstWord == "Template"_s) {
-                auto name = reader.next_token();
-                if (!name.has_value())
+            } else if (command == "Template"_s) {
+                auto name = lexer.consume_token();
+                lexer.discard_whitespace();
+                if (!name.has_value() || lexer.has_next())
                     return reader.make_error_message("Couldn't parse Template. Expected: ':Template identifier'"_s);
 
                 def = &templates.set(name.value().deprecated_to_string(), {});
@@ -140,272 +145,301 @@ ErrorOr<OwnedRef<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata, Blob
                 def->variants = { variant_count, reinterpret_cast<BuildingVariant*>(variantsMemory) };
                 variantsMemory += sizeof(BuildingVariant) * variant_count;
             }
-
+            continue;
         }
+
+        auto maybe_property = lexer.consume_token();
+        if (!maybe_property.has_value())
+            continue;
+        auto property_name = maybe_property.release_value();
+        lexer.discard_whitespace();
+
         // Properties!
-        else {
-            if (def == nullptr)
-                return reader.make_error_message("Found a property before starting a :Building, :Intersection or :Template!"_s);
+        if (def == nullptr)
+            return reader.make_error_message("Found a property before starting a :Building, :Intersection or :Template!"_s);
 
-            if (firstWord == "build"_s) {
-                auto buildMethodString = reader.next_token();
-                if (auto cost = reader.read_int<s32>(); cost.has_value()) {
-                    if (buildMethodString == "paint"_s) {
-                        def->buildMethod = BuildMethod::Paint;
-                    } else if (buildMethodString == "plop"_s) {
-                        def->buildMethod = BuildMethod::Plop;
-                    } else if (buildMethodString == "line"_s) {
-                        def->buildMethod = BuildMethod::DragLine;
-                    } else if (buildMethodString == "rect"_s) {
-                        def->buildMethod = BuildMethod::DragRect;
-                    } else {
-                        reader.warn("Couldn't parse the build method, assuming NONE."_s);
-                        def->buildMethod = BuildMethod::None;
-                    }
+        auto read_optional_bool_property = [&]() -> ErrorOr<bool> {
+            auto const bool_value = lexer.consume_bool();
+            lexer.discard_whitespace();
+            if (lexer.has_next())
+                return reader.make_error_message("Couldn't parse {0}. Expected: `{0} [BOOLEAN]` (default true)"_s, { property_name });
+            return bool_value != false;
+        };
 
-                    def->buildCost = cost.release_value();
-                } else {
-                    return reader.make_error_message("Couldn't parse build. Expected use:\"build method cost\", where method is (plop/line/rect). If it's not buildable, just don't have a \"build\" line at all."_s);
-                }
-            } else if (firstWord == "carries_power"_s) {
-                if (auto carries_power = reader.read_bool(); carries_power.has_value()) {
-                    if (carries_power.value()) {
-                        def->flags.add(BuildingFlags::CarriesPower);
-                    } else {
-                        def->flags.remove(BuildingFlags::CarriesPower);
-                    }
-                }
-            } else if (firstWord == "carries_transport"_s) {
-                auto token_count = reader.count_remaining_tokens_in_current_line();
-                for (auto tokenIndex = 0u; tokenIndex < token_count; tokenIndex++) {
-                    auto transportName = reader.next_token().release_value();
-
-                    if (transportName == "road"_s) {
-                        def->transportTypes.add(TransportType::Road);
-                    } else if (transportName == "rail"_s) {
-                        def->transportTypes.add(TransportType::Rail);
-                    } else {
-                        reader.warn("Unrecognised transport type \"{0}\"."_s, { transportName });
-                    }
-                }
-            } else if (firstWord == "crime_protection"_s) {
-                if (auto crime_protection = EffectRadius::read(reader); !crime_protection.is_error()) {
-                    def->policeEffect = crime_protection.release_value();
-                } else {
-                    return crime_protection.release_error();
-                }
-            } else if (firstWord == "demolish_cost"_s) {
-                if (auto demolish_cost = reader.read_int<s32>(); demolish_cost.has_value()) {
-                    def->demolishCost = demolish_cost.release_value();
-                } else {
-                    return "Failed to read demolish_cost"_s;
-                }
-            } else if (firstWord == "extends"_s) {
-                auto templateName = reader.next_token();
-                if (!templateName.has_value()) {
-                    return reader.make_error_message("Missing template name in `extends`"_s);
-                }
-
-                auto templateDef = templates.get(templateName.value().deprecated_to_string());
-                if (!templateDef.has_value()) {
-                    return reader.make_error_message("Could not find template named '{0}'. Templates must be defined before the buildings that use them, and in the same file."_s, { templateName.value() });
-                }
-                BuildingDef& tDef = templateDef.value();
-
-                // Copy the def... this could be messy
-                // (We can't just do copyMemory() because we don't want to change the name or typeID.)
-                def->flags = tDef.flags;
-                def->size = tDef.size;
-                def->spriteName = tDef.spriteName;
-                def->buildMethod = tDef.buildMethod;
-                def->buildCost = tDef.buildCost;
-                def->growsInZone = tDef.growsInZone;
-                def->demolishCost = tDef.demolishCost;
-                def->residents = tDef.residents;
-                def->jobs = tDef.jobs;
-                def->transportTypes = tDef.transportTypes;
-                def->power = tDef.power;
-                def->landValueEffect = tDef.landValueEffect;
-                def->pollutionEffect = tDef.pollutionEffect;
-                def->fireRisk = tDef.fireRisk;
-                def->fireProtection = tDef.fireProtection;
-            } else if (firstWord == "fire_protection"_s) {
-                if (auto fire_protection = EffectRadius::read(reader); !fire_protection.is_error()) {
-                    def->fireProtection = fire_protection.release_value();
-                } else {
-                    return fire_protection.release_error();
-                }
-            } else if (firstWord == "fire_risk"_s) {
-                if (auto fire_risk = reader.read_float(); fire_risk.has_value()) {
-                    def->fireRisk = fire_risk.release_value();
-                } else {
-                    return "Failed to read fire_risk"_s;
-                }
-            } else if (firstWord == "grows_in"_s) {
-                auto zoneName = reader.next_token();
-                if (zoneName == "r"_s) {
-                    def->growsInZone = ZoneType::Residential;
-                } else if (zoneName == "c"_s) {
-                    def->growsInZone = ZoneType::Commercial;
-                } else if (zoneName == "i"_s) {
-                    def->growsInZone = ZoneType::Industrial;
-                } else {
-                    return reader.make_error_message("Couldn't parse grows_in. Expected use:\"grows_in r/c/i\""_s);
-                }
-            } else if (firstWord == "health_effect"_s) {
-                if (auto health_effect = EffectRadius::read(reader); !health_effect.is_error()) {
-                    def->healthEffect = health_effect.release_value();
-                } else {
-                    return health_effect.release_error();
-                }
-            } else if (firstWord == "jail_size"_s) {
-                if (auto jail_size = reader.read_int<s32>(); jail_size.has_value()) {
-                    def->jailCapacity = jail_size.release_value();
-                } else {
-                    return "Failed to read jail_size"_s;
-                }
-            } else if (firstWord == "jobs"_s) {
-                if (auto jobs = reader.read_int<s32>(); jobs.has_value()) {
-                    def->jobs = jobs.release_value();
-                } else {
-                    return "Failed to read jobs"_s;
-                }
-            } else if (firstWord == "land_value"_s) {
-                if (auto land_value = EffectRadius::read(reader); !land_value.is_error()) {
-                    def->landValueEffect = land_value.release_value();
-                } else {
-                    return land_value.release_error();
-                }
-            } else if (firstWord == "name"_s) {
-                if (auto name = reader.next_token(); name.has_value()) {
-                    def->textAssetName = asset_manager().assetStrings.intern(name.value());
-                } else {
-                    return reader.make_error_message("Missing value for `name`"_s);
-                }
-            } else if (firstWord == "pollution"_s) {
-                if (auto pollution = EffectRadius::read(reader); !pollution.is_error()) {
-                    def->pollutionEffect = pollution.release_value();
-                } else {
-                    return pollution.release_error();
-                }
-            } else if (firstWord == "power_gen"_s) {
-                if (auto power_gen = reader.read_int<s32>(); power_gen.has_value()) {
-                    def->power = power_gen.release_value();
-                } else {
-                    return "Failed to read power_gen"_s;
-                }
-            } else if (firstWord == "power_use"_s) {
-                if (auto power_use = reader.read_int<s32>(); power_use.has_value()) {
-                    def->power = -power_use.release_value();
-                } else {
-                    return "Failed to read power_use"_s;
-                }
-            } else if (firstWord == "requires_transport_connection"_s) {
-                if (auto requires_transport_connection = reader.read_bool(); requires_transport_connection.has_value()) {
-                    if (requires_transport_connection.value()) {
-                        def->flags.add(BuildingFlags::RequiresTransportConnection);
-                    } else {
-                        def->flags.remove(BuildingFlags::RequiresTransportConnection);
-                    }
-                } else {
-                    return "Failed to read requires_transport_connection"_s;
-                }
-            } else if (firstWord == "residents"_s) {
-                if (auto residents = reader.read_int<s32>(); residents.has_value()) {
-                    def->residents = residents.release_value();
-                } else {
-                    return "Failed to read residents"_s;
-                }
-            } else if (firstWord == "size"_s) {
-                auto w = reader.read_int<s32>();
-                auto h = reader.read_int<s32>();
-
-                if (w.has_value() && h.has_value()) {
-                    def->size.x = w.release_value();
-                    def->size.y = h.release_value();
-
-                    if ((def->variants.count() > 0) && (def->size.x != 1 || def->size.y != 1)) {
-                        return reader.make_error_message("This building is {0}x{1} and has variants. Variants are only allowed for 1x1 tile buildings!"_s, { formatInt(def->size.x), formatInt(def->size.y) });
-                    }
-                } else {
-                    return reader.make_error_message("Couldn't parse size. Expected 2 ints (w,h)."_s);
-                }
-            } else if (firstWord == "sprite"_s) {
-                if (auto name = reader.next_token(); name.has_value()) {
-                    String spriteName = asset_manager().assetStrings.intern(name.value());
-                    def->spriteName = spriteName;
-                } else {
-                    return reader.make_error_message("Missing name in `sprite`"_s);
-                }
-            } else if (firstWord == "variant"_s) {
-                //
-                // NB: Not really related to this code but I needed somewhere to put this:
-                // Right now, we linerarly search through variants and pick the first one
-                // that matches. (And though I originally expected some kind of map, that was
-                // before we had 4 different states per connection, which prevents that.)
-                // So, this makes the order important! If multiple variants can match a
-                // situation, then the more specific one needs to come first.
-                //
-                // eg, if you have an "anything in all directions" variant, and it's first,
-                // then nothing else will ever get chosen!
-                //
-                // I'm not sure if this is actually a problem, but it's something to keep in
-                // mind. Maybe we could check all the variants when matching, and choose the
-                // most specific one, which is calculated somehow. IDK. That would mean having
-                // to check every variant, instead of stopping once we find one.
-                //
-                // - Sam, 19/02/2020
-                //
-
-                if (def->variants.count() < def->variants.capacity()) {
-                    BuildingVariant* variant = def->variants.append();
-
-                    auto maybe_direction_flags = reader.next_token();
-                    auto maybe_sprite_name = reader.next_token();
-                    if (!maybe_direction_flags.has_value() || !maybe_sprite_name.has_value()) {
-                        return reader.make_error_message("`variant` missing direction flags or sprite name"_s);
-                    }
-                    auto directionFlags = maybe_direction_flags.release_value();
-                    auto spriteName = asset_manager().assetStrings.intern(maybe_sprite_name.value());
-
-                    // Check the values are valid first, because that's less verbose than checking each one individually.
-                    for (auto i = 0; i < directionFlags.length(); i++) {
-                        if (!connection_type_of(directionFlags[i]).has_value()) {
-                            return reader.make_error_message("Unrecognized connection type character '{0}', valid values: '012*'"_s, { String::repeat(directionFlags[i], 1) });
-                        }
-                    }
-
-                    if (directionFlags.length() == 8) {
-                        variant->connections[ConnectionDirection::N] = connection_type_of(directionFlags[0]).value();
-                        variant->connections[ConnectionDirection::NE] = connection_type_of(directionFlags[1]).value();
-                        variant->connections[ConnectionDirection::E] = connection_type_of(directionFlags[2]).value();
-                        variant->connections[ConnectionDirection::SE] = connection_type_of(directionFlags[3]).value();
-                        variant->connections[ConnectionDirection::S] = connection_type_of(directionFlags[4]).value();
-                        variant->connections[ConnectionDirection::SW] = connection_type_of(directionFlags[5]).value();
-                        variant->connections[ConnectionDirection::W] = connection_type_of(directionFlags[6]).value();
-                        variant->connections[ConnectionDirection::NW] = connection_type_of(directionFlags[7]).value();
-                    } else if (directionFlags.length() == 4) {
-                        // The 4 other directions don't matter
-                        variant->connections[ConnectionDirection::NE] = ConnectionType::Anything;
-                        variant->connections[ConnectionDirection::SE] = ConnectionType::Anything;
-                        variant->connections[ConnectionDirection::SW] = ConnectionType::Anything;
-                        variant->connections[ConnectionDirection::NW] = ConnectionType::Anything;
-
-                        variant->connections[ConnectionDirection::N] = connection_type_of(directionFlags[0]).value();
-                        variant->connections[ConnectionDirection::E] = connection_type_of(directionFlags[1]).value();
-                        variant->connections[ConnectionDirection::S] = connection_type_of(directionFlags[2]).value();
-                        variant->connections[ConnectionDirection::W] = connection_type_of(directionFlags[3]).value();
-                    } else {
-                        return reader.make_error_message("First argument for a building 'variant' should be a 4 or 8 character string consisting of 0/1/2/* flags (meaning nothing/part1/part2/anything) for N/E/S/W or N/NE/E/SE/S/SW/W/NW connectivity. eg, 101012**"_s);
-                    }
-
-                    variant->spriteName = spriteName;
-                } else {
-                    return reader.make_error_message("Too many variants for building '{0}'!"_s, { def->name });
-                }
-            } else {
-                return reader.make_error_message("Unrecognized token: {0}"_s, { firstWord });
+        auto read_effect_radius_property = [&]() -> ErrorOr<EffectRadius> {
+            auto effect = EffectRadius::read(lexer);
+            lexer.discard_whitespace();
+            if (!effect.has_value() || lexer.has_next()) {
+                return reader.make_error_message("Couldn't parse {0}. Expected: `{0} RADIUS [EFFECT_AT_CENTRE] [EFFECT_AT_EDGE]` where all 3 parameters are ints."_s, { property_name });
             }
+            return effect.release_value();
+        };
+
+        auto read_s32_property = [&]() -> ErrorOr<s32> {
+            auto int_value = lexer.consume_int<s32>();
+            lexer.discard_whitespace();
+            if (!int_value.has_value() || lexer.has_next()) {
+                return reader.make_error_message("Couldn't parse {0}. Expected: `{0} INTEGER`"_s, { property_name });
+            }
+            return int_value.release_value();
+        };
+
+        if (property_name == "build"_s) {
+            auto build_method_name = lexer.consume_token();
+            lexer.discard_whitespace();
+            auto cost = lexer.consume_int<s32>();
+            lexer.discard_whitespace();
+
+            if (!build_method_name.has_value() || !cost.has_value() || lexer.has_next()) {
+                return reader.make_error_message("Couldn't parse build. Expected use:\"build method cost\", where method is (plop/line/rect). If it's not buildable, just don't have a \"build\" line at all."_s);
+            }
+
+            if (build_method_name == "paint"_s) {
+                def->buildMethod = BuildMethod::Paint;
+            } else if (build_method_name == "plop"_s) {
+                def->buildMethod = BuildMethod::Plop;
+            } else if (build_method_name == "line"_s) {
+                def->buildMethod = BuildMethod::DragLine;
+            } else if (build_method_name == "rect"_s) {
+                def->buildMethod = BuildMethod::DragRect;
+            } else {
+                return reader.make_error_message("Couldn't parse the build method."_s);
+            }
+            def->buildCost = cost.release_value();
+
+        } else if (property_name == "carries_power"_s) {
+            auto carries_power = read_optional_bool_property();
+            if (carries_power.is_error())
+                return carries_power.release_error();
+            def->flags.set(BuildingFlags::CarriesPower, carries_power.value());
+        } else if (property_name == "carries_transport"_s) {
+            if (!lexer.has_next()) {
+                return reader.make_error_message("Couldn't parse carries_transport. Expected: `carries_transport` followed by a list of transport names (`road`, `rail`)"_s);
+            }
+            while (lexer.has_next()) {
+                auto transport_name = lexer.consume_token();
+                lexer.discard_whitespace();
+
+                if (!transport_name.has_value()) {
+                    return reader.make_error_message("Couldn't parse carries_transport. Expected: `carries_transport` followed by a list of transport names (`road`, `rail`)"_s);
+                }
+
+                if (transport_name == "road"_s) {
+                    def->transportTypes.add(TransportType::Road);
+                } else if (transport_name == "rail"_s) {
+                    def->transportTypes.add(TransportType::Rail);
+                } else {
+                    return reader.make_error_message("Unrecognised transport type \"{0}\"."_s, { transport_name.value() });
+                }
+            }
+        } else if (property_name == "crime_protection"_s) {
+            auto effect = read_effect_radius_property();
+            if (effect.is_error())
+                return effect.release_error();
+            def->policeEffect = effect.release_value();
+        } else if (property_name == "demolish_cost"_s) {
+            auto demolish_cost = read_s32_property();
+            if (demolish_cost.is_error())
+                return demolish_cost.release_error();
+            def->demolishCost = demolish_cost.release_value();
+        } else if (property_name == "extends"_s) {
+            auto template_name = lexer.consume_token();
+            lexer.discard_whitespace();
+            if (!template_name.has_value() || lexer.has_next()) {
+                return reader.make_error_message("Couldn't parse extends. Expected: `extends NAME`"_s);
+            }
+
+            auto maybe_template_def = templates.get(template_name.value().deprecated_to_string());
+            if (!maybe_template_def.has_value()) {
+                return reader.make_error_message("Could not find template named '{0}'. Templates must be defined before the buildings that use them, and in the same file."_s, { template_name.value() });
+            }
+            auto const& template_def = maybe_template_def.value();
+
+            // Copy the def... this could be messy
+            // (We can't just do copyMemory() because we don't want to change the name or typeID.)
+            def->flags = template_def.flags;
+            def->size = template_def.size;
+            def->spriteName = template_def.spriteName;
+            def->buildMethod = template_def.buildMethod;
+            def->buildCost = template_def.buildCost;
+            def->growsInZone = template_def.growsInZone;
+            def->demolishCost = template_def.demolishCost;
+            def->residents = template_def.residents;
+            def->jobs = template_def.jobs;
+            def->transportTypes = template_def.transportTypes;
+            def->power = template_def.power;
+            def->landValueEffect = template_def.landValueEffect;
+            def->pollutionEffect = template_def.pollutionEffect;
+            def->fireRisk = template_def.fireRisk;
+            def->fireProtection = template_def.fireProtection;
+        } else if (property_name == "fire_protection"_s) {
+            auto effect = read_effect_radius_property();
+            if (effect.is_error())
+                return effect.release_error();
+            def->fireProtection = effect.release_value();
+        } else if (property_name == "fire_risk"_s) {
+            auto fire_risk = lexer.consume_float<float>();
+            lexer.discard_whitespace();
+            if (fire_risk.has_value() && !lexer.has_next()) {
+                def->fireRisk = fire_risk.release_value();
+            } else {
+                return reader.make_error_message("Failed to read fire_risk"_s);
+            }
+        } else if (property_name == "grows_in"_s) {
+            // FIXME: We probably want zone names to be dynamic here, and allow multiple zones per building.
+            auto zone_name = lexer.consume_token();
+            if (zone_name == "r"_s) {
+                def->growsInZone = ZoneType::Residential;
+            } else if (zone_name == "c"_s) {
+                def->growsInZone = ZoneType::Commercial;
+            } else if (zone_name == "i"_s) {
+                def->growsInZone = ZoneType::Industrial;
+            } else {
+                return reader.make_error_message("Couldn't parse grows_in. Expected: `grows_in ZONE` where ZONE is r/c/i"_s);
+            }
+        } else if (property_name == "health_effect"_s) {
+            auto effect = read_effect_radius_property();
+            if (effect.is_error())
+                return effect.release_error();
+            def->healthEffect = effect.release_value();
+        } else if (property_name == "jail_size"_s) {
+            auto jail_size = read_s32_property();
+            if (jail_size.is_error())
+                return jail_size.release_error();
+            def->jailCapacity = jail_size.release_value();
+        } else if (property_name == "jobs"_s) {
+            auto jobs = read_s32_property();
+            if (jobs.is_error())
+                return jobs.release_error();
+            def->jobs = jobs.release_value();
+        } else if (property_name == "land_value"_s) {
+            auto effect = read_effect_radius_property();
+            if (effect.is_error())
+                return effect.release_error();
+            def->landValueEffect = effect.release_value();
+        } else if (property_name == "name"_s) {
+            auto name = lexer.consume_token();
+            lexer.discard_whitespace();
+            if (name.has_value() && !lexer.has_next()) {
+                def->textAssetName = asset_manager().assetStrings.intern(name.value());
+            } else {
+                return reader.make_error_message("Failed to parse name. Expected: `name NAME`"_s);
+            }
+        } else if (property_name == "pollution"_s) {
+            auto effect = read_effect_radius_property();
+            if (effect.is_error())
+                return effect.release_error();
+            def->pollutionEffect = effect.release_value();
+        } else if (property_name == "power_gen"_s) {
+            auto power_gen = read_s32_property();
+            if (power_gen.is_error())
+                return power_gen.release_error();
+            def->power = power_gen.release_value();
+        } else if (property_name == "power_use"_s) {
+            auto power_use = read_s32_property();
+            if (power_use.is_error())
+                return power_use.release_error();
+            def->power = -power_use.release_value();
+        } else if (property_name == "requires_transport_connection"_s) {
+            auto carries_power = read_optional_bool_property();
+            if (carries_power.is_error())
+                return carries_power.release_error();
+            def->flags.set(BuildingFlags::RequiresTransportConnection, carries_power.value());
+        } else if (property_name == "residents"_s) {
+            auto residents = read_s32_property();
+            if (residents.is_error())
+                return residents.release_error();
+            def->residents = residents.release_value();
+        } else if (property_name == "size"_s) {
+            auto size = V2I::read_size(lexer);
+            lexer.discard_whitespace();
+            if (!size.has_value() || lexer.has_next()) {
+                return reader.make_error_message("Failed to parse size. Expected: `size #x#` where both #s are positive integers."_s);
+            }
+
+            def->size = size.release_value();
+            if ((def->variants.count() > 0) && (def->size.x != 1 || def->size.y != 1)) {
+                return reader.make_error_message("This building is {0}x{1} and has variants. Variants are only allowed for 1x1 tile buildings!"_s, { formatInt(def->size.x), formatInt(def->size.y) });
+            }
+        } else if (property_name == "sprite"_s) {
+            auto name = lexer.consume_token();
+            lexer.discard_whitespace();
+            if (name.has_value() && !lexer.has_next()) {
+                String spriteName = asset_manager().assetStrings.intern(name.value());
+                def->spriteName = spriteName;
+            } else {
+                return reader.make_error_message("Missing name in `sprite`"_s);
+            }
+        } else if (property_name == "variant"_s) {
+            //
+            // NB: Not really related to this code but I needed somewhere to put this:
+            // Right now, we linearly search through variants and pick the first one
+            // that matches. (And though I originally expected some kind of map, that was
+            // before we had 4 different states per connection, which prevents that.)
+            // So, this makes the order important! If multiple variants can match a
+            // situation, then the more specific one needs to come first.
+            //
+            // eg, if you have an "anything in all directions" variant, and it's first,
+            // then nothing else will ever get chosen!
+            //
+            // I'm not sure if this is actually a problem, but it's something to keep in
+            // mind. Maybe we could check all the variants when matching, and choose the
+            // most specific one, which is calculated somehow. IDK. That would mean having
+            // to check every variant, instead of stopping once we find one.
+            //
+            // - Sam, 19/02/2020
+            //
+
+            if (def->variants.count() < def->variants.capacity()) {
+                BuildingVariant* variant = def->variants.append();
+
+                auto maybe_direction_flags = lexer.consume_token();
+                lexer.discard_whitespace();
+                auto maybe_sprite_name = lexer.consume_token();
+                lexer.discard_whitespace();
+                if (!maybe_direction_flags.has_value() || !maybe_sprite_name.has_value() || lexer.has_next()) {
+                    return reader.make_error_message("Failed to read variant. Expected `variant DIRECTION_FLAGS SPRITE_NAME`"_s);
+                }
+                auto direction_flags = maybe_direction_flags.release_value();
+                auto sprite_name = asset_manager().assetStrings.intern(maybe_sprite_name.value());
+
+                // Check the values are valid first, because that's less verbose than checking each one individually.
+                for (auto i = 0; i < direction_flags.length(); i++) {
+                    if (!connection_type_of(direction_flags[i]).has_value()) {
+                        return reader.make_error_message("Unrecognized connection type character '{0}', valid values: '012*'"_s, { String::repeat(direction_flags[i], 1) });
+                    }
+                }
+
+                if (direction_flags.length() == 8) {
+                    variant->connections[ConnectionDirection::N] = connection_type_of(direction_flags[0]).value();
+                    variant->connections[ConnectionDirection::NE] = connection_type_of(direction_flags[1]).value();
+                    variant->connections[ConnectionDirection::E] = connection_type_of(direction_flags[2]).value();
+                    variant->connections[ConnectionDirection::SE] = connection_type_of(direction_flags[3]).value();
+                    variant->connections[ConnectionDirection::S] = connection_type_of(direction_flags[4]).value();
+                    variant->connections[ConnectionDirection::SW] = connection_type_of(direction_flags[5]).value();
+                    variant->connections[ConnectionDirection::W] = connection_type_of(direction_flags[6]).value();
+                    variant->connections[ConnectionDirection::NW] = connection_type_of(direction_flags[7]).value();
+                } else if (direction_flags.length() == 4) {
+                    // The 4 other directions don't matter
+                    variant->connections[ConnectionDirection::NE] = ConnectionType::Anything;
+                    variant->connections[ConnectionDirection::SE] = ConnectionType::Anything;
+                    variant->connections[ConnectionDirection::SW] = ConnectionType::Anything;
+                    variant->connections[ConnectionDirection::NW] = ConnectionType::Anything;
+
+                    variant->connections[ConnectionDirection::N] = connection_type_of(direction_flags[0]).value();
+                    variant->connections[ConnectionDirection::E] = connection_type_of(direction_flags[1]).value();
+                    variant->connections[ConnectionDirection::S] = connection_type_of(direction_flags[2]).value();
+                    variant->connections[ConnectionDirection::W] = connection_type_of(direction_flags[3]).value();
+                } else {
+                    return reader.make_error_message("First argument for a building 'variant' should be a 4 or 8 character string consisting of 0/1/2/* flags (meaning nothing/part1/part2/anything) for N/E/S/W or N/NE/E/SE/S/SW/W/NW connectivity. eg, 101012**"_s);
+                }
+
+                variant->spriteName = sprite_name;
+            } else {
+                return reader.make_error_message("Too many variants for building '{0}'!"_s, { def->name });
+            }
+        } else {
+            return reader.make_error_message("Unrecognized token: {0}"_s, { property_name });
         }
     }
 

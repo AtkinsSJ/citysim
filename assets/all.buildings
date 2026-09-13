@@ -2,7 +2,7 @@
 
 :Building powerline
 name b_powerline
-size 1 1
+size 1x1
 sprite b_powerline_0000
 build line 2
 demolish_cost 2
@@ -28,7 +28,7 @@ variant 1111 b_powerline_1111
 
 :Building road
 name b_road
-size 1 1
+size 1x1
 sprite b_road_0000
 build line 12
 demolish_cost 10
@@ -56,7 +56,7 @@ variant 1111 b_road_1111
 :Intersection powerline_road powerline road
 name b_powerline_road
 sprite b_powerline_road_1212
-size 1 1
+size 1x1
 demolish_cost 10
 carries_transport road
 carries_power true
@@ -74,7 +74,7 @@ variant *1*1 b_powerline_road_2121
 
 :Building res-small1
 name b_res-small1
-size 1 1
+size 1x1
 sprite b_house_2x2
 grows_in r
 demolish_cost 50
@@ -83,7 +83,7 @@ power_use 10
 
 :Building res-med1
 name b_res-med1
-size 2 2
+size 2x2
 sprite b_house_2x2
 grows_in r
 demolish_cost 200
@@ -92,7 +92,7 @@ power_use 20
 
 :Building com-med1
 name b_com-med1
-size 2 2
+size 2x2
 sprite b_shop_2x2
 grows_in c
 build rect 50
@@ -103,7 +103,7 @@ jobs 20
 
 :Building ind-large1
 name b_ind-large1
-size 3 3
+size 3x3
 sprite b_factory_3x3
 grows_in i
 build rect 80
@@ -120,7 +120,7 @@ fire_risk 150%
 
 :Building tree
 name b_tree
-size 1 1
+size 1x1
 sprite b_forest
 build paint 100
 demolish_cost 100
