@@ -80,6 +80,17 @@ public:
         return *this;
     }
 
+    Flags& set(EnumT flag, bool value)
+    {
+        ASSERT(flag_is_valid(flag));
+        if (value) {
+            m_data |= 1u << to_underlying(flag);
+        } else {
+            m_data &= ~(1u << to_underlying(flag));
+        }
+        return *this;
+    }
+
     bool is_empty() const
     {
         return m_data == 0;
