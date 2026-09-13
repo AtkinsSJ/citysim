@@ -4,6 +4,7 @@ add_library(Util STATIC
     BitArray.cpp
     Blob.cpp
     Interpolate.cpp
+    Lexer.cpp
     Locale.cpp
     Log.cpp
     Maths.cpp

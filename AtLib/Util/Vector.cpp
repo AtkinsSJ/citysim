@@ -1,11 +1,13 @@
 /*
- * Copyright (c) 2015-2025, Sam Atkins <sam@samatkins.co.uk>
+ * Copyright (c) 2015-2026, Sam Atkins <sam@samatkins.co.uk>
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "Vector.h"
+
 #include <IO/LineReader.h>
+#include <Util/Lexer.h>
 #include <Util/Maths.h>
 #include <Util/Optional.h>
 #include <cmath>
@@ -85,6 +87,25 @@ Optional<V2I> V2I::read(LineReader& reader)
 
     reader.error("Couldn't parse '{0}' as a V2I, expected 2 integers with an 'x' between, eg '8x12'"_s, { token.value_or({}) });
     return {};
+}
+
+Optional<V2I> V2I::read_size(Lexer& lexer)
+{
+    return lexer.consume_with_callback<V2I>([](Lexer& lexer) -> Optional<V2I> {
+        auto x = lexer.consume_int<s32>();
+        if (!x.has_value())
+            return {};
+        if (!lexer.consume_specific('x'))
+            return {};
+        auto y = lexer.consume_int<s32>();
+        if (!y.has_value())
+            return {};
+
+        if (x.value() < 0 || y.value() < 0)
+            return {};
+
+        return V2I { x.release_value(), y.release_value() };
+    });
 }
 
 float lengthOf(V2I v)

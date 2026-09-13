@@ -83,6 +83,7 @@ struct V2I {
     s32 y;
 
     static Optional<V2I> read(LineReader&);
+    static Optional<V2I> read_size(Lexer&);
 
     bool operator==(V2I const&) const = default;
 };

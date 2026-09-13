@@ -11,6 +11,7 @@ class BitArray;
 class BitArrayIterator;
 class Blob;
 struct DateTime;
+class Lexer;
 struct Matrix4;
 class MemoryArena;
 struct Padding;
