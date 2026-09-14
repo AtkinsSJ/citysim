@@ -96,8 +96,8 @@ struct BuildingDef {
 
     s32 demolishCost;
 
-    s32 residents;
-    s32 jobs;
+    EnumMap<ResidentType, u32> residents;
+    EnumMap<JobType, u32> jobs;
 
     Flags<TransportType> transportTypes;
 
