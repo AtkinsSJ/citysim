@@ -7,6 +7,7 @@
 #pragma once
 
 #include <Util/Basic.h>
+#include <Util/Optional.h>
 
 template<typename T>
 inline constexpr bool IsEnum = __is_enum(T);
@@ -100,3 +101,6 @@ EnumIterator<T> enum_values()
 {
     return EnumIterator<T>::begin();
 }
+
+template<Enum E>
+constexpr Optional<E> enum_from_string(StringView const&);
