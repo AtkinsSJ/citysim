@@ -56,6 +56,34 @@ static void assign_building_categories(BuildingCatalogue& catalogue, BuildingDef
     ASSERT(catalogue.allBuildings.count == catalogue.buildingsByName.count() + 1); // NB: +1 for the null building.
 }
 
+template<typename T>
+static ErrorOr<EnumMap<T, u32>> read_tagged_u32_series_property(StringView property_name, Lexer& lexer)
+{
+    EnumMap<T, u32> result;
+    bool any_values_defined = false;
+
+    while (lexer.has_next()) {
+        auto type_name = lexer.consume_until(':');
+        bool had_colon = lexer.consume_specific(':');
+        auto count = lexer.consume_int<u32>();
+        lexer.discard_whitespace();
+
+        if (!type_name.has_value() || !had_colon || !count.has_value())
+            return "Invalid definition, expected a series of `NAME:COUNT` separated by spaces."_s;
+
+        auto type = enum_from_string<T>(type_name.value());
+        if (!type.has_value())
+            return myprintf("Unrecognized type `{}`"_s, { type_name.value() });
+
+        any_values_defined = true;
+        result[type.value()] = count.value();
+    }
+
+    if (!any_values_defined)
+        return myprintf("Couldn't parse {}: No values defined."_s, { property_name });
+    return result;
+}
+
 ErrorOr<OwnedRef<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata, Blob file_data)
 {
     DEBUG_FUNCTION();
@@ -308,9 +336,10 @@ ErrorOr<OwnedRef<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata, Blob
                 return jail_size.release_error();
             def->jailCapacity = jail_size.release_value();
         } else if (property_name == "jobs"_s) {
-            auto jobs = read_s32_property();
+            // This replaces any `jobs` defined by a template. I think that's desirable.
+            auto jobs = read_tagged_u32_series_property<JobType>(property_name, lexer);
             if (jobs.is_error())
-                return jobs.release_error();
+                return reader.make_error_message(jobs.release_error());
             def->jobs = jobs.release_value();
         } else if (property_name == "land_value"_s) {
             auto effect = read_effect_radius_property();
@@ -346,9 +375,10 @@ ErrorOr<OwnedRef<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata, Blob
                 return carries_power.release_error();
             def->flags.set(BuildingFlags::RequiresTransportConnection, carries_power.value());
         } else if (property_name == "residents"_s) {
-            auto residents = read_s32_property();
+            // This replaces any `residents` defined by a template. I think that's desirable.
+            auto residents = read_tagged_u32_series_property<ResidentType>(property_name, lexer);
             if (residents.is_error())
-                return residents.release_error();
+                return reader.make_error_message(residents.release_error());
             def->residents = residents.release_value();
         } else if (property_name == "size"_s) {
             auto size = V2I::read_size(lexer);

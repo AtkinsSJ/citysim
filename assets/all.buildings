@@ -78,7 +78,7 @@ size 1x1
 sprite b_house_2x2
 grows_in r
 demolish_cost 50
-residents 10
+residents people:10
 power_use 10
 
 :Building res-med1
@@ -87,7 +87,7 @@ size 2x2
 sprite b_house_2x2
 grows_in r
 demolish_cost 200
-residents 40
+residents people:40
 power_use 20
 
 :Building com-med1
@@ -99,7 +99,7 @@ build rect 50
 demolish_cost 300
 carries_power true
 power_use 30
-jobs 20
+jobs commercial:20
 
 :Building ind-large1
 name b_ind-large1
@@ -110,7 +110,7 @@ build rect 80
 demolish_cost 500
 carries_power true
 power_use 200
-jobs 80
+jobs industrial:80
 pollution 8 50
 fire_risk 150%
 

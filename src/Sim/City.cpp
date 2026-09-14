@@ -163,8 +163,8 @@ Building* City::add_building(BuildingDef* def, Rect2I footprint, Optional<GameTi
     Building* building = add_building_direct(++highestBuildingID, def, footprint, creation_date.value_or(gameClock.current_day()));
 
     // TODO: Properly calculate occupancy!
-    building->currentResidents = def->residents;
-    building->currentJobs = def->jobs;
+    // building->currentResidents = def->residents;
+    // building->currentJobs = def->jobs;
 
     return building;
 }
@@ -262,8 +262,8 @@ void City::place_building(BuildingDef* def, s32 left, s32 top, bool markAreasDir
     }
 
     // TODO: Calculate residents/jobs properly!
-    building->currentResidents = def->residents;
-    building->currentJobs = def->jobs;
+    building->currentResidents = 0; // def->residents;
+    building->currentJobs = 0;      // def->jobs;
 
     zoneLayer.population[def->growsInZone] += building->currentResidents + building->currentJobs;
 

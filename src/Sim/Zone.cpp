@@ -388,7 +388,7 @@ void growSomeZoneBuildings(City* city)
 
     ZoneLayer* layer = &city->zoneLayer;
     auto& random = *city->random;
-    auto& building_catalogue = BuildingCatalogue::the();
+    // auto& building_catalogue = BuildingCatalogue::the();
 
     for (auto zone_type : enum_values<ZoneType>()) {
         if (layer->demand[zone_type] > 0) {
@@ -551,16 +551,18 @@ void growSomeZoneBuildings(City* city)
                 }
 
                 // Pick a building def that fits the space and is not more than 10% more than the remaining demand
-                s32 maxPopulation = (s32)((float)remainingDemand * 1.1f);
-                auto buildingDef = building_catalogue.find_random_zone_building(zone_type, random, [=](BuildingDef const& it) -> bool {
-                    if (it.size.x > zoneFootprint.width() || it.size.y > zoneFootprint.height())
-                        return false;
-
-                    if (it.growsInZone == ZoneType::Residential)
-                        return it.residents > 0 && it.residents <= maxPopulation;
-
-                    return it.jobs > 0 && it.jobs <= maxPopulation;
-                });
+                // FIXME: This is all bodged until we reimplement it in Flecs.
+                Optional<BuildingDef&> buildingDef;
+                // s32 maxPopulation = (s32)((float)remainingDemand * 1.1f);
+                // auto buildingDef = building_catalogue.find_random_zone_building(zone_type, random, [=](BuildingDef const& it) -> bool {
+                //     if (it.size.x > zoneFootprint.width() || it.size.y > zoneFootprint.height())
+                //         return false;
+                //
+                //     if (it.growsInZone == ZoneType::Residential)
+                //         return it.residents > 0 && it.residents <= maxPopulation;
+                //
+                //     return it.jobs > 0 && it.jobs <= maxPopulation;
+                // });
 
                 if (buildingDef.has_value()) {
                     // Place it!

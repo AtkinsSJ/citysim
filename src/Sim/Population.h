@@ -24,6 +24,14 @@ enum class ResidentType : u8 {
     COUNT,
 };
 
+template<>
+constexpr Optional<ResidentType> enum_from_string<ResidentType>(StringView const& string)
+{
+    if (string == "people"_sv)
+        return ResidentType::People;
+    return {};
+}
+
 constexpr StringView to_string(ResidentType const type)
 {
     switch (type) {
@@ -49,6 +57,18 @@ enum class JobType : u8 {
     Industrial,
     COUNT,
 };
+
+template<>
+constexpr Optional<JobType> enum_from_string<JobType>(StringView const& string)
+{
+    if (string == "civic"_sv)
+        return JobType::Civic;
+    if (string == "commercial"_sv)
+        return JobType::Commercial;
+    if (string == "industrial"_sv)
+        return JobType::Industrial;
+    return {};
+}
 
 constexpr StringView to_string(JobType const type)
 {
