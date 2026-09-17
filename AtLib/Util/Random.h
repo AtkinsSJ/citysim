@@ -29,8 +29,18 @@ public:
     template<typename T>
     T random_integer()
     {
-        static_assert(sizeof(T) < 8);
-        return random_between<T>(minPossibleValue<T>(), maxPossibleValue<T>() + 1);
+        if constexpr (sizeof(T) == sizeof(u64)) {
+            u64 const high = next();
+            u64 const low = next();
+            return static_cast<T>(high << 32 | low);
+        }
+        if constexpr (sizeof(T) == sizeof(u32))
+            return static_cast<T>(next());
+        if constexpr (sizeof(T) == sizeof(u16))
+            return static_cast<T>(next() & 0xFFFF);
+        if constexpr (sizeof(T) == sizeof(u8))
+            return static_cast<T>(next() & 0xFF);
+        VERIFY_NOT_REACHED();
     }
 
     template<Integral T>
