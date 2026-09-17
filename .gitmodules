@@ -1,0 +1,3 @@
+[submodule "AtLib"]
+	path = AtLib
+	url = git@github.com:AtkinsSJ/atlib.git
