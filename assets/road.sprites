@@ -31,5 +31,5 @@
 :Sprite b_road_0111 road-0111.png 16x16
 
 :SpriteGroup b_road_1111 road-1111.png 16x16
-sprite 0 0
-sprite 1 0
+sprite 0,0
+sprite 1,0

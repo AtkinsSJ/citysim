@@ -7,6 +7,7 @@
 #include "BuildingDefs.h"
 
 #include <Assets/AssetManager.h>
+#include <IO/LineReader.h>
 #include <Sim/Building.h>
 #include <Sim/BuildingCatalogue.h>
 #include <Util/HashMap.h>

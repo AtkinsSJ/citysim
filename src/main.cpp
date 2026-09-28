@@ -40,6 +40,7 @@
 #include <Sim/TerrainCatalogue.h>
 #include <UI/AssetLoader.h>
 #include <UI/Window.h>
+#include <Util/TokenReader.h>
 
 SDL_Window* initSDL(V2I window_size, bool is_windowed, char const* windowTitle)
 {
@@ -95,7 +96,7 @@ public:
 
 private:
     BoolSetting windowed { "windowed"_s, "setting_windowed"_s, true };
-    V2ISetting resolution { "resolution"_s, "setting_resolution"_s, v2i(1024, 600) };
+    IntSizeSetting resolution { "resolution"_s, "setting_resolution"_s, v2i(1024, 600) };
     EnumSetting<Locale> locale { "locale"_s, "setting_locale"_s,
         EnumMap<Locale, EnumSettingData> {
             { "en"_s, "locale_en"_s },

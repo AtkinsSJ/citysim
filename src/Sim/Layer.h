@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <IO/Forward.h>
 #include <Sim/Forward.h>
 #include <Util/Rectangle.h>
 
