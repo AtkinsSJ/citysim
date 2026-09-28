@@ -94,22 +94,22 @@ ErrorOr<OwnedRef<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata, Blob
     BuildingCatalogue* catalogue = &BuildingCatalogue::the();
 
     // Count the number of building defs in the file first, so we can allocate the building_ids array in the asset
-    size_t buildingCount = 0;
+    size_t building_count = 0;
     // Same for variants as they have their own structs
-    s32 totalVariantCount = 0;
+    s32 total_variant_count = 0;
     while (reader.load_next_line()) {
-        auto command = reader.next_token();
+        auto command = Lexer { reader.current_line() }.consume_token();
         if (command == ":Building"_s || command == ":Intersection"_s) {
-            buildingCount++;
+            building_count++;
         } else if (command == "variant"_s) {
-            totalVariantCount++;
+            total_variant_count++;
         }
     }
 
-    smm buildingNamesSize = sizeof(String) * buildingCount;
-    smm variantsSize = sizeof(BuildingVariant) * totalVariantCount;
+    smm buildingNamesSize = sizeof(String) * building_count;
+    smm variantsSize = sizeof(BuildingVariant) * total_variant_count;
     auto data = asset_manager().allocate_blob(buildingNamesSize + variantsSize);
-    Array<String> building_ids { buildingCount, reinterpret_cast<String*>(data.writable_data()) };
+    Array<String> building_ids { building_count, reinterpret_cast<String*>(data.writable_data()) };
     u8* variantsMemory = data.writable_data() + buildingNamesSize;
 
     reader.restart();
@@ -169,7 +169,18 @@ ErrorOr<OwnedRef<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata, Blob
             }
 
             // Read ahead to count how many variants this building/intersection has.
-            auto variant_count = reader.count_occurrences_of_property_in_current_command("variant"_s);
+            auto variant_count = 0u;
+            {
+                auto saved_position = reader.save_state();
+                while (reader.load_next_line()) {
+                    Lexer variant_lexer { reader.current_line() };
+                    if (variant_lexer.consume_specific(':'))
+                        break; // Next command
+                    if (variant_lexer.consume_token() == "variant"_sv)
+                        variant_count++;
+                }
+                reader.restore_state(saved_position);
+            }
             if (variant_count > 0) {
                 def->variants = { variant_count, reinterpret_cast<BuildingVariant*>(variantsMemory) };
                 variantsMemory += sizeof(BuildingVariant) * variant_count;
@@ -177,13 +188,13 @@ ErrorOr<OwnedRef<BuildingDefs>> BuildingDefs::load(AssetMetadata& metadata, Blob
             continue;
         }
 
+        // Properties!
         auto maybe_property = lexer.consume_token();
         if (!maybe_property.has_value())
             continue;
         auto property_name = maybe_property.release_value();
         lexer.discard_whitespace();
 
-        // Properties!
         if (def == nullptr)
             return reader.make_error_message("Found a property before starting a :Building, :Intersection or :Template!"_s);
 

@@ -9,6 +9,7 @@
 #include <Debug/Debug.h>
 #include <IO/LineReader.h>
 #include <Sim/TerrainCatalogue.h>
+#include <Util/Lexer.h>
 
 ErrorOr<OwnedRef<TerrainDefs>> TerrainDefs::load(AssetMetadata& metadata, Blob file_data)
 {
@@ -17,13 +18,14 @@ ErrorOr<OwnedRef<TerrainDefs>> TerrainDefs::load(AssetMetadata& metadata, Blob f
     LineReader reader { metadata.shortName, file_data };
 
     // Pre scan for the number of Terrains, so we can allocate enough space in the asset.
-    size_t terrainCount = 0;
+    size_t terrain_count = 0;
     while (reader.load_next_line()) {
-        if (auto command = reader.next_token(); command == ":Terrain"_s)
-            terrainCount++;
+        auto command = Lexer { reader.current_line() }.consume_token();
+        if (command == ":Terrain"_s)
+            terrain_count++;
     }
 
-    auto terrain_ids = asset_manager().allocate_array<String>(terrainCount);
+    auto terrain_ids = asset_manager().allocate_array<String>(terrain_count);
 
     reader.restart();
 
@@ -32,19 +34,18 @@ ErrorOr<OwnedRef<TerrainDefs>> TerrainDefs::load(AssetMetadata& metadata, Blob f
     TerrainDef* def = nullptr;
 
     while (reader.load_next_line()) {
-        auto maybe_first_word = reader.next_token();
-        if (!maybe_first_word.has_value())
-            continue;
-        auto firstWord = maybe_first_word.release_value();
+        Lexer lexer { reader.current_line() };
 
-        if (firstWord.starts_with(':')) // Definitions
-        {
+        // Commands
+        if (lexer.consume_specific(':')) {
             // Define something
-            firstWord = firstWord.substring(1).deprecated_to_string();
+            auto command = lexer.consume_token();
+            lexer.discard_whitespace();
 
-            if (firstWord == "Terrain"_s) {
-                auto name = reader.next_token();
-                if (!name.has_value())
+            if (command == "Terrain"_s) {
+                auto name = lexer.consume_token();
+                lexer.discard_whitespace();
+                if (!name.has_value() || lexer.has_next())
                     return reader.make_error_message("Couldn't parse Terrain. Expected: ':Terrain identifier'"_s);
 
                 Indexed<TerrainDef> slot = catalogue.terrainDefs.append();
@@ -60,42 +61,58 @@ ErrorOr<OwnedRef<TerrainDefs>> TerrainDefs::load(AssetMetadata& metadata, Blob f
                 catalogue.terrainDefsByName.set(def->name, def);
                 catalogue.terrainNameToType.set(def->name, def->typeID);
             } else {
-                reader.error("Unrecognised command: '{0}'"_s, { firstWord });
+                reader.warn("Only :Terrain definitions are supported right now."_s);
             }
-        } else // Properties!
-        {
-            if (def == nullptr)
-                return reader.make_error_message("Found a property before starting a :Terrain!"_s);
+            continue;
+        }
 
-            if (firstWord == "borders"_s) {
-                def->borderSpriteNames = asset_manager().arena.allocate_array<String>(80);
-            } else if (firstWord == "border"_s) {
-                if (auto token = reader.next_token(); token.has_value()) {
-                    def->borderSpriteNames.append(asset_manager().assetStrings.intern(token.release_value()));
-                } else {
-                    return reader.make_error_message("Missing sprite name for `border`"_s);
-                }
-            } else if (firstWord == "can_build_on"_s) {
-                if (auto maybe_bool = reader.read_bool(); maybe_bool.has_value())
-                    def->canBuildOn = maybe_bool.release_value();
-            } else if (firstWord == "draw_borders_over"_s) {
-                if (auto maybe_bool = reader.read_bool(); maybe_bool.has_value())
-                    def->drawBordersOver = maybe_bool.release_value();
-            } else if (firstWord == "name"_s) {
-                if (auto token = reader.next_token(); token.has_value()) {
-                    def->textAssetName = asset_manager().assetStrings.intern(token.release_value());
-                } else {
-                    return reader.make_error_message("Missing name for `name`"_s);
-                }
-            } else if (firstWord == "sprite"_s) {
-                if (auto token = reader.next_token(); token.has_value()) {
-                    def->spriteName = asset_manager().assetStrings.intern(token.release_value());
-                } else {
-                    return reader.make_error_message("Missing name for `sprite`"_s);
-                }
-            } else {
-                reader.warn("Unrecognised property '{0}' inside command ':Terrain'"_s, { firstWord });
-            }
+        // Properties!
+        auto maybe_property = lexer.consume_token();
+        if (!maybe_property.has_value())
+            continue;
+        auto property_name = maybe_property.release_value();
+        lexer.discard_whitespace();
+
+        if (def == nullptr)
+            return reader.make_error_message("Found a property before starting a :Terrain!"_s);
+
+        if (property_name == "borders"_s) {
+            lexer.discard_whitespace();
+            if (lexer.has_next())
+                return reader.make_error_message("Couldn't parse borders. Expected: `borders` with nothing after."_s);
+            def->borderSpriteNames = asset_manager().arena.allocate_array<String>(80);
+        } else if (property_name == "border"_s) {
+            auto sprite_name = lexer.consume_token();
+            lexer.discard_whitespace();
+            if (!sprite_name.has_value() || lexer.has_next())
+                return reader.make_error_message("Couldn't parse border. Expected: `border SPRITE_NAME`."_s);
+            def->borderSpriteNames.append(asset_manager().assetStrings.intern(sprite_name.release_value()));
+        } else if (property_name == "can_build_on"_s) {
+            auto can_build_on = lexer.consume_bool();
+            lexer.discard_whitespace();
+            if (!can_build_on.has_value() || lexer.has_next())
+                return reader.make_error_message("Couldn't parse can_build_on. Expected: `can_build_on BOOLEAN`."_s);
+            def->canBuildOn = can_build_on.release_value();
+        } else if (property_name == "draw_borders_over"_s) {
+            auto draw_borders_over = lexer.consume_bool();
+            lexer.discard_whitespace();
+            if (!draw_borders_over.has_value() || lexer.has_next())
+                return reader.make_error_message("Couldn't parse draw_borders_over. Expected: `draw_borders_over BOOLEAN`."_s);
+            def->drawBordersOver = draw_borders_over.release_value();
+        } else if (property_name == "name"_s) {
+            auto name = lexer.consume_token();
+            lexer.discard_whitespace();
+            if (!name.has_value() || lexer.has_next())
+                return reader.make_error_message("Couldn't parse name. Expected: `name NAME`."_s);
+            def->textAssetName = asset_manager().assetStrings.intern(name.release_value());
+        } else if (property_name == "sprite"_s) {
+            auto sprite_name = lexer.consume_token();
+            lexer.discard_whitespace();
+            if (!sprite_name.has_value() || lexer.has_next())
+                return reader.make_error_message("Couldn't parse sprite. Expected: `sprite SPRITE_NAME`."_s);
+            def->spriteName = asset_manager().assetStrings.intern(sprite_name.release_value());
+        } else {
+            reader.warn("Unrecognised property '{0}' inside command ':Terrain'"_s, { property_name });
         }
     }
 
