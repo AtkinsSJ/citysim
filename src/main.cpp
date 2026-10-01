@@ -40,7 +40,6 @@
 #include <Sim/TerrainCatalogue.h>
 #include <UI/AssetLoader.h>
 #include <UI/Window.h>
-#include <Util/TokenReader.h>
 
 SDL_Window* initSDL(V2I window_size, bool is_windowed, char const* windowTitle)
 {
@@ -130,7 +129,7 @@ int main(int argc, char* argv[])
         initConsole(&globalDebugState->arena, 0.2f, 0.9f, 6.0f);
 
         globalConsole->register_command(
-            { "debug_tools"_s, [](Console&, s32, StringView) {
+            { "debug_tools"_s, [](Console&, Lexer&) {
                  // @Hack: This sets the position to outside the camera, and then relies on it automatically snapping back into bounds
                  auto& renderer = the_renderer();
                  V2I windowPos = v2i(renderer.ui_camera().position() + renderer.ui_camera().size());
@@ -139,52 +138,53 @@ int main(int argc, char* argv[])
              } });
 
         globalConsole->register_command(
-            { "funds"_s, [](Console&, s32, StringView arguments) {
+            { "funds"_s, [](Console&, Lexer& arguments) {
                  auto game = try_get_game();
                  if (!game.has_value() || game->city() == nullptr)
                      return;
                  auto& city = *game->city();
 
-                 TokenReader tokens { arguments };
-                 if (auto sAmount = tokens.next_token(); sAmount.has_value()) {
-                     if (auto amount = sAmount.value().to_int(); amount.has_value()) {
-                         consoleWriteLine(myprintf("Set funds to {0}"_s, { sAmount.value() }), ConsoleLineStyle::Success);
-                         city.funds = truncate32(amount.value());
-                         return;
-                     }
+                 if (!arguments.has_next()) {
+                     consoleWriteLine(myprintf("Funds: {0}"_s, { formatInt(city.funds) }), ConsoleLineStyle::Success);
+                     return;
                  }
-                 consoleWriteLine("Usage: funds amount, where amount is an integer"_s, ConsoleLineStyle::Error);
-             },
-                1, 1 });
 
-        globalConsole->register_command({
-            "generate"_s,
-            [](Console&, s32 argument_count, StringView arguments) {
+                 auto amount = arguments.consume_int<s32>();
+                 arguments.discard_whitespace();
+                 if (amount.has_value() && !arguments.has_next()) {
+                     city.funds = amount.value();
+                     consoleWriteLine(myprintf("Set funds to {0}"_s, { formatInt(city.funds) }), ConsoleLineStyle::Success);
+                     return;
+                 }
+                 consoleWriteLine("Usage: `funds [AMOUNT]`, where AMOUNT is an integer"_s, ConsoleLineStyle::Error);
+             } });
+
+        globalConsole->register_command({ "generate"_s,
+            [](Console&, Lexer& arguments) {
                 auto game = try_get_game();
                 if (!game.has_value())
                     return;
 
                 u32 seed = 0;
-                if (argument_count == 0) {
+                if (!arguments.has_next()) {
                     seed = static_cast<u32>(time(nullptr));
                 } else {
-                    TokenReader tokens { arguments };
-                    if (auto seed_string = tokens.next_token(); seed_string.has_value()) {
-                        if (auto maybe_seed = seed_string.value().to_int(); maybe_seed.has_value()) {
-                            seed = maybe_seed.release_value();
-                        }
+                    auto requested_seed = arguments.consume_int<u32>();
+                    arguments.discard_whitespace();
+                    if (requested_seed.has_value() && !arguments.has_next()) {
+                        seed = requested_seed.release_value();
+                    } else {
+                        consoleWriteLine("Usage: `generate [SEED]`, where SEED is an integer"_s, ConsoleLineStyle::Error);
+                        return;
                     }
                 }
 
                 game->generate_map(seed);
                 consoleWriteLine(myprintf("Generated new map #{}"_s, { formatInt(seed) }), ConsoleLineStyle::Success);
-            },
-            0,
-            1,
-        });
+            } });
 
         globalConsole->register_command(
-            { "map_info"_s, [](Console&, s32, StringView) {
+            { "map_info"_s, [](Console&, Lexer&) {
                  auto game = try_get_game();
                  if (!game.has_value() || game->city() == nullptr)
                      return;
@@ -194,7 +194,7 @@ int main(int argc, char* argv[])
              } });
 
         globalConsole->register_command(
-            { "mark_all_dirty"_s, [](Console&, s32, StringView) {
+            { "mark_all_dirty"_s, [](Console&, Lexer&) {
                  auto game = try_get_game();
                  if (!game.has_value() || game->city() == nullptr)
                      return;
@@ -204,51 +204,68 @@ int main(int argc, char* argv[])
              } });
 
         globalConsole->register_command(
-            { "show_layer"_s, [](Console&, s32 argumentsCount, StringView arguments) {
+            { "show_layer"_s, [](Console&, Lexer& arguments) {
                  auto game = try_get_game();
                  if (!game.has_value())
                      return;
 
-                 if (argumentsCount == 0) {
+                 if (!arguments.has_next()) {
                      // Hide layers
                      game->set_active_data_view(DataView::None);
                      consoleWriteLine("Hiding data layers"_s, ConsoleLineStyle::Success);
-                 } else if (argumentsCount == 1) {
-                     TokenReader tokens { arguments };
-                     auto layerName = tokens.next_token();
-                     if (layerName == "crime"_s) {
+                     return;
+                 }
+                 auto layer_name = arguments.consume_token();
+                 arguments.discard_whitespace();
+                 if (layer_name.has_value() && !arguments.has_next()) {
+                     if (layer_name == "crime"_s) {
                          game->set_active_data_view(DataView::Crime);
                          consoleWriteLine("Showing crime layer"_s, ConsoleLineStyle::Success);
-                     } else if (layerName == "des_res"_s) {
+                         return;
+                     }
+                     if (layer_name == "des_res"_s) {
                          game->set_active_data_view(DataView::Desirability_Residential);
                          consoleWriteLine("Showing residential desirability"_s, ConsoleLineStyle::Success);
-                     } else if (layerName == "des_com"_s) {
+                         return;
+                     }
+                     if (layer_name == "des_com"_s) {
                          game->set_active_data_view(DataView::Desirability_Commercial);
                          consoleWriteLine("Showing commercial desirability"_s, ConsoleLineStyle::Success);
-                     } else if (layerName == "des_ind"_s) {
+                         return;
+                     }
+                     if (layer_name == "des_ind"_s) {
                          game->set_active_data_view(DataView::Desirability_Industrial);
                          consoleWriteLine("Showing industrial desirability"_s, ConsoleLineStyle::Success);
-                     } else if (layerName == "fire"_s) {
+                         return;
+                     }
+                     if (layer_name == "fire"_s) {
                          game->set_active_data_view(DataView::Fire);
                          consoleWriteLine("Showing fire layer"_s, ConsoleLineStyle::Success);
-                     } else if (layerName == "health"_s) {
+                         return;
+                     }
+                     if (layer_name == "health"_s) {
                          game->set_active_data_view(DataView::Health);
                          consoleWriteLine("Showing health layer"_s, ConsoleLineStyle::Success);
-                     } else if (layerName == "land_value"_s) {
+                         return;
+                     }
+                     if (layer_name == "land_value"_s) {
                          game->set_active_data_view(DataView::LandValue);
                          consoleWriteLine("Showing land value layer"_s, ConsoleLineStyle::Success);
-                     } else if (layerName == "pollution"_s) {
+                         return;
+                     }
+                     if (layer_name == "pollution"_s) {
                          game->set_active_data_view(DataView::Pollution);
                          consoleWriteLine("Showing pollution layer"_s, ConsoleLineStyle::Success);
-                     } else if (layerName == "power"_s) {
+                         return;
+                     }
+                     if (layer_name == "power"_s) {
                          game->set_active_data_view(DataView::Power);
                          consoleWriteLine("Showing power layer"_s, ConsoleLineStyle::Success);
-                     } else {
-                         consoleWriteLine("Usage: show_layer (layer_name), or with no argument to hide the data layer. Layer names are: crime, des_res, des_com, des_ind, fire, health, land_value, pollution, power"_s, ConsoleLineStyle::Error);
+                         return;
                      }
                  }
-             },
-                0, 1 });
+                 consoleWriteLine("Usage: `show_layer [LAYER_NAME]`, or with no argument to hide the data layer. Layer names are: crime, des_res, des_com, des_ind, fire, health, land_value, pollution, power"_s, ConsoleLineStyle::Error);
+             } });
 
         consoleWriteLine(myprintf("Loaded {} commands. Type 'help' to list them."_s, { formatInt(globalConsole->commands.count()) }), ConsoleLineStyle::Default);
         consoleWriteLine("GREETINGS PROFESSOR FALKEN.\nWOULD YOU LIKE TO PLAY A GAME?"_s);
